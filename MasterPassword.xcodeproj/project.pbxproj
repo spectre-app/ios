@@ -26,7 +26,7 @@
 		DA5BFA55147E415C00F98B1E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DA5BFA53147E415C00F98B1E /* InfoPlist.strings */; };
 		DA5BFA57147E415C00F98B1E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA5BFA56147E415C00F98B1E /* main.m */; };
 		DA5BFA5B147E415C00F98B1E /* OPAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DA5BFA5A147E415C00F98B1E /* OPAppDelegate.m */; };
-		DA5BFA64147E415C00F98B1E /* OnePassword.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DA5BFA62147E415C00F98B1E /* OnePassword.xcdatamodeld */; };
+		DA5BFA64147E415C00F98B1E /* MasterPassword.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DA5BFA62147E415C00F98B1E /* MasterPassword.xcdatamodeld */; };
 		DA5BFA67147E415C00F98B1E /* OPMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DA5BFA66147E415C00F98B1E /* OPMainViewController.m */; };
 		DA5DB7A614BE4B19002DD256 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = DA5DB7A514BE4B19002DD256 /* Default.png */; };
 		DA5DB7A814BE4B4B002DD256 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA5DB7A714BE4B4B002DD256 /* Default@2x.png */; };
@@ -714,18 +714,18 @@
 		DA55B29D14B38272001131B7 /* OPContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OPContentViewController.m; sourceTree = "<group>"; };
 		DA55B2A014B4EB46001131B7 /* OPSearchDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OPSearchDelegate.h; sourceTree = "<group>"; };
 		DA55B2A114B4EB46001131B7 /* OPSearchDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OPSearchDelegate.m; sourceTree = "<group>"; };
-		DA5BFA44147E415C00F98B1E /* OnePassword.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OnePassword.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA5BFA44147E415C00F98B1E /* MasterPassword.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MasterPassword.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA5BFA48147E415C00F98B1E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DA5BFA4A147E415C00F98B1E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DA5BFA4C147E415C00F98B1E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		DA5BFA4E147E415C00F98B1E /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
-		DA5BFA52147E415C00F98B1E /* OnePassword-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "OnePassword-Info.plist"; sourceTree = "<group>"; };
+		DA5BFA52147E415C00F98B1E /* MasterPassword-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MasterPassword-Info.plist"; sourceTree = "<group>"; };
 		DA5BFA54147E415C00F98B1E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DA5BFA56147E415C00F98B1E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		DA5BFA58147E415C00F98B1E /* OnePassword-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OnePassword-Prefix.pch"; sourceTree = "<group>"; };
+		DA5BFA58147E415C00F98B1E /* MasterPassword-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MasterPassword-Prefix.pch"; sourceTree = "<group>"; };
 		DA5BFA59147E415C00F98B1E /* OPAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OPAppDelegate.h; sourceTree = "<group>"; };
 		DA5BFA5A147E415C00F98B1E /* OPAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OPAppDelegate.m; sourceTree = "<group>"; };
-		DA5BFA63147E415C00F98B1E /* OnePassword.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = OnePassword.xcdatamodel; sourceTree = "<group>"; };
+		DA5BFA63147E415C00F98B1E /* MasterPassword.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MasterPassword.xcdatamodel; sourceTree = "<group>"; };
 		DA5BFA65147E415C00F98B1E /* OPMainViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OPMainViewController.h; sourceTree = "<group>"; };
 		DA5BFA66147E415C00F98B1E /* OPMainViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OPMainViewController.m; sourceTree = "<group>"; };
 		DA5DB7A514BE4B19002DD256 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Default.png; path = ../Default.png; sourceTree = "<group>"; };
@@ -1769,7 +1769,7 @@
 		DA5BFA39147E415C00F98B1E = {
 			isa = PBXGroup;
 			children = (
-				DA5BFA50147E415C00F98B1E /* OnePassword */,
+				DA5BFA50147E415C00F98B1E /* MasterPassword */,
 				DAC77CAF148291A600BCF976 /* Pearl */,
 				DAC6325F1486805C0075AEA5 /* uicolor-utilities */,
 				DAC6326E148680650075AEA5 /* jrswizzle */,
@@ -1781,7 +1781,7 @@
 		DA5BFA45147E415C00F98B1E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DA5BFA44147E415C00F98B1E /* OnePassword.app */,
+				DA5BFA44147E415C00F98B1E /* MasterPassword.app */,
 				DAC77CAD148291A600BCF976 /* libPearl.a */,
 				DAC6325D1486805C0075AEA5 /* libuicolor-utilities.a */,
 				DAC6326C148680650075AEA5 /* libjrswizzle.a */,
@@ -1802,7 +1802,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DA5BFA50147E415C00F98B1E /* OnePassword */ = {
+		DA5BFA50147E415C00F98B1E /* MasterPassword */ = {
 			isa = PBXGroup;
 			children = (
 				DA7C28A214AF02A000491972 /* Models */,
@@ -1828,7 +1828,7 @@
 				DADC3C4C14C62B350091CB4D /* Settings.bundle */,
 				DA5BFA51147E415C00F98B1E /* Supporting Files */,
 			);
-			path = OnePassword;
+			path = MasterPassword;
 			sourceTree = "<group>";
 		};
 		DA5BFA51147E415C00F98B1E /* Supporting Files */ = {
@@ -1852,10 +1852,10 @@
 				DAE998A114C1D2A0002D7C22 /* iTunesArtwork.png */,
 				DA5DB7A714BE4B4B002DD256 /* Default@2x.png */,
 				DA5DB7A514BE4B19002DD256 /* Default.png */,
-				DA5BFA52147E415C00F98B1E /* OnePassword-Info.plist */,
+				DA5BFA52147E415C00F98B1E /* MasterPassword-Info.plist */,
 				DA5BFA53147E415C00F98B1E /* InfoPlist.strings */,
 				DA5BFA56147E415C00F98B1E /* main.m */,
-				DA5BFA58147E415C00F98B1E /* OnePassword-Prefix.pch */,
+				DA5BFA58147E415C00F98B1E /* MasterPassword-Prefix.pch */,
 				DA007F5414B25EE100251337 /* ciphers.plist */,
 			);
 			name = "Supporting Files";
@@ -1888,7 +1888,7 @@
 			children = (
 				DA7974C314C8C98500A71457 /* MainStoryboard_iPhone.storyboard */,
 				DA7974C514C8C98C00A71457 /* MainStoryboard_iPad.storyboard */,
-				DA5BFA62147E415C00F98B1E /* OnePassword.xcdatamodeld */,
+				DA5BFA62147E415C00F98B1E /* MasterPassword.xcdatamodeld */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -2338,8 +2338,8 @@
 				DAC63282148681190075AEA5 /* PBXTargetDependency */,
 			);
 			name = MasterPassword;
-			productName = OnePassword;
-			productReference = DA5BFA44147E415C00F98B1E /* OnePassword.app */;
+			productName = MasterPassword;
+			productReference = DA5BFA44147E415C00F98B1E /* MasterPassword.app */;
 			productType = "com.apple.product-type.application";
 		};
 		DAC6325C1486805C0075AEA5 /* uicolor-utilities */ = {
@@ -2404,7 +2404,7 @@
 				LastUpgradeCheck = 0420;
 				ORGANIZATIONNAME = Lyndir;
 			};
-			buildConfigurationList = DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "OnePassword" */;
+			buildConfigurationList = DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "MasterPassword" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -3021,7 +3021,7 @@
 			files = (
 				DA5BFA57147E415C00F98B1E /* main.m in Sources */,
 				DA5BFA5B147E415C00F98B1E /* OPAppDelegate.m in Sources */,
-				DA5BFA64147E415C00F98B1E /* OnePassword.xcdatamodeld in Sources */,
+				DA5BFA64147E415C00F98B1E /* MasterPassword.xcdatamodeld in Sources */,
 				DA5BFA67147E415C00F98B1E /* OPMainViewController.m in Sources */,
 				DAE2C648148247E500BA6B10 /* OPTypeViewController.m in Sources */,
 				DAC781361482E67300BCF976 /* OPRecentViewController.m in Sources */,
@@ -3183,8 +3183,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "OnePassword/OnePassword-Prefix.pch";
-				INFOPLIST_FILE = "OnePassword/OnePassword-Info.plist";
+				GCC_PREFIX_HEADER = "MasterPassword/MasterPassword-Prefix.pch";
+				INFOPLIST_FILE = "MasterPassword/MasterPassword-Info.plist";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -3195,8 +3195,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "OnePassword/OnePassword-Prefix.pch";
-				INFOPLIST_FILE = "OnePassword/OnePassword-Info.plist";
+				GCC_PREFIX_HEADER = "MasterPassword/MasterPassword-Prefix.pch";
+				INFOPLIST_FILE = "MasterPassword/MasterPassword-Info.plist";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -3280,7 +3280,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "OnePassword" */ = {
+		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "MasterPassword" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA5BFA6B147E415C00F98B1E /* Debug */,
@@ -3328,13 +3328,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		DA5BFA62147E415C00F98B1E /* OnePassword.xcdatamodeld */ = {
+		DA5BFA62147E415C00F98B1E /* MasterPassword.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				DA5BFA63147E415C00F98B1E /* OnePassword.xcdatamodel */,
+				DA5BFA63147E415C00F98B1E /* MasterPassword.xcdatamodel */,
 			);
-			currentVersion = DA5BFA63147E415C00F98B1E /* OnePassword.xcdatamodel */;
-			path = OnePassword.xcdatamodeld;
+			currentVersion = DA5BFA63147E415C00F98B1E /* MasterPassword.xcdatamodel */;
+			path = MasterPassword.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

@@ -1,6 +1,6 @@
 //
 //  OPSearchDelegate.m
-//  OnePassword
+//  MasterPassword
 //
 //  Created by Maarten Billemont on 04/01/12.
 //  Copyright (c) 2012 Lyndir. All rights reserved.

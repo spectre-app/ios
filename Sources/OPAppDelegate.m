@@ -1,6 +1,6 @@
 //
 //  OPAppDelegate.m
-//  OnePassword
+//  MasterPassword
 //
 //  Created by Maarten Billemont on 24/11/11.
 //  Copyright (c) 2011 Lyndir. All rights reserved.
@@ -196,7 +196,7 @@
         NSData *keyPhraseHash = [KeyChain dataOfItemForQuery:[OPAppDelegate keyPhraseHashQuery]];
         dbg(@"Key phrase hash %@.", keyPhraseHash? @"known": @"NOT known");
         
-        [AlertViewController showAlertWithTitle:@"One Password"
+        [AlertViewController showAlertWithTitle:@"Master Password"
                                         message:keyPhraseHash? @"Unlock with your master password:": @"Choose your master password:"
                                       viewStyle:UIAlertViewStyleSecureTextInput
                               tappedButtonBlock:
@@ -336,7 +336,7 @@
     {
         return __managedObjectModel;
     }
-    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"OnePassword" withExtension:@"momd"];
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"MasterPassword" withExtension:@"momd"];
     __managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
     
     return __managedObjectModel;
@@ -353,7 +353,7 @@
         return __persistentStoreCoordinator;
     }
     
-    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"OnePassword.sqlite"];
+    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"MasterPassword.sqlite"];
     
     NSError *error = nil;
     __persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
