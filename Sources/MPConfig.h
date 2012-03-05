@@ -9,10 +9,8 @@
 @interface MPConfig : PearlConfig
 
 @property (nonatomic, retain) NSNumber *dataStoreError;
-@property (nonatomic, retain) NSNumber *storeKeyPhrase;
-@property (nonatomic, retain) NSNumber *rememberKeyPhrase;
-@property (nonatomic, retain) NSNumber *helpHidden;
-@property (nonatomic, retain) NSNumber *showQuickStart;
+@property (nonatomic, retain) NSNumber *storeKey;
+@property (nonatomic, retain) NSNumber *rememberKey;
 
 + (MPConfig *)get;
 
