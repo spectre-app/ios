@@ -9,16 +9,18 @@
  */
 
 //
-//  MPEmergencySegue.h
-//  MPEmergencySegue
+//  MPOverlayViewController.h
+//  MPOverlayViewController
 //
-//  Created by lhunath on 2014-04-09.
+//  Created by lhunath on 2014-09-22.
 //  Copyright, lhunath (Maarten Billemont) 2014. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
-@interface MPEmergencySegue : UIStoryboardSegue
 
-@property(nonatomic) BOOL unwind;
+@interface MPOverlayViewController : UIViewController
+@end
+
+@interface MPOverlaySegue : UIStoryboardSegue
 @end
