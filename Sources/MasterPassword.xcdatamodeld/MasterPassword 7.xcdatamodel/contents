@@ -34,6 +34,7 @@
         <attribute name="saveKey_" attributeType="Boolean" defaultValueString="NO">
             <userInfo/>
         </attribute>
+        <attribute name="version_" attributeType="Integer 16" minValueString="0" defaultValueString="2" syncable="YES"/>
         <relationship name="sites" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="MPSiteEntity" inverseName="user" inverseEntity="MPSiteEntity" elementID="D18D6772-040E-4CFE-8F32-A34B08E9E9BC" syncable="YES"/>
     </entity>
     <elements>
@@ -41,6 +42,6 @@
         <element name="MPSiteEntity" positionX="-0" positionY="-286" width="128" height="208"/>
         <element name="MPSiteQuestionEntity" positionX="-2" positionY="-9" width="128" height="73"/>
         <element name="MPStoredSiteEntity" positionX="214" positionY="-171" width="128" height="58"/>
-        <element name="MPUserEntity" positionX="-218" positionY="-288" width="128" height="148"/>
+        <element name="MPUserEntity" positionX="-218" positionY="-288" width="128" height="165"/>
     </elements>
 </model>
