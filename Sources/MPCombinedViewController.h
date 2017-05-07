@@ -17,7 +17,7 @@
 //==============================================================================
 
 #import "MPUsersViewController.h"
-#import "MPPasswordsViewController.h"
+#import "MPSitesViewController.h"
 #import "MPEmergencyViewController.h"
 
 typedef NS_ENUM( NSUInteger, MPCombinedMode ) {
@@ -29,7 +29,7 @@ typedef NS_ENUM( NSUInteger, MPCombinedMode ) {
 
 @property(nonatomic) MPCombinedMode mode;
 @property(nonatomic, weak) MPUsersViewController *usersVC;
-@property(nonatomic, weak) MPPasswordsViewController *passwordsVC;
+@property(nonatomic, weak) MPSitesViewController *sitesVC;
 @property(nonatomic, weak) MPEmergencyViewController *emergencyVC;
 
 @end
