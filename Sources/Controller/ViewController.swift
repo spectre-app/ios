@@ -11,13 +11,14 @@ import UIKit
 class ViewController: UIViewController {
 
     let starsView = MPStarView()
-    let userView = MPUserView()
+    let usersView = MPUsersView()
 
     override func viewDidLoad() {
         self.view.addSubview( self.starsView )
         self.starsView.setFrameFrom( "|[]|" )
 
-        self.view.addSubview( self.userView )
+        self.view.addSubview( self.usersView )
+        self.usersView.setFrameFrom( "|[]|" )
     }
 }
 
