@@ -10,12 +10,14 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    let backgroundView = MPBackgroundView()
+    let starsView = MPStarView()
+    let userView = MPUserView()
 
     override func viewDidLoad() {
-        self.view.addSubview( self.backgroundView )
-        self.backgroundView.backgroundColor = UIColor.black
-        self.backgroundView.setFrameFrom( "|[]|" );
+        self.view.addSubview( self.starsView )
+        self.starsView.setFrameFrom( "|[]|" )
+
+        self.view.addSubview( self.userView )
     }
 }
 
