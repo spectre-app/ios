@@ -4,10 +4,20 @@
 //
 
 import UIKit
+import pop
 
 class MPSpinnerView: UIView {
 
     private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
+    private let pop_scannedItem = POPAnimatableProperty.property( withName: "MPSpinnerView.scannedItem", initializer: { prop in
+        prop!.readBlock = { obj, floats in
+            floats![0] = (obj as! MPSpinnerView).scannedItem
+        }
+        prop!.writeBlock = { obj, floats in
+            (obj as! MPSpinnerView).scannedItem = floats![0]
+        }
+        prop!.threshold = 0.01
+    } ) as! POPAnimatableProperty
 
     var items:        Int {
         get {
@@ -16,7 +26,10 @@ class MPSpinnerView: UIView {
     }
     var selectedItem: Int? {
         didSet {
-            self.scannedItem = CGFloat( self.selectedItem ?? 0 )
+            let anim = POPSpringAnimation()
+            anim.property = pop_scannedItem
+            anim.toValue = (self.selectedItem ?? 0)
+            self.pop_add( anim, forKey: pop_scannedItem.name )
         }
     }
     var scannedItem:  CGFloat = 0 {
@@ -33,7 +46,7 @@ class MPSpinnerView: UIView {
     }
 
     required init?(coder aDecoder: NSCoder) {
-        super.init( coder: aDecoder )
+        fatalError( "init(coder:) is not supported for this class" )
     }
 
     override func didAddSubview(_ subview: UIView) {
@@ -55,8 +68,18 @@ class MPSpinnerView: UIView {
             let subview = self.subviews[s]
             subview.sizeToFit()
 
-            let itemDistance = 50 * (CGFloat( s ) - self.scannedItem)
-            subview.center = CGPoint( x: self.center.x, y: self.center.y + itemDistance )
+            let ds = CGFloat( s ) - self.scannedItem
+            if ds < 0 {
+                subview.center = CGPoint( x: self.center.x, y: self.center.y + 20 * sqrt( -ds / CGFloat( self.items ) ) )
+                subview.alpha = 1
+                let scale = 1 - pow( -ds / CGFloat( self.items ), 2 ) / 2
+                subview.transform = CGAffineTransform.init( scaleX: scale, y: scale )
+            } else {
+                subview.center = CGPoint( x: self.center.x, y: self.center.y - 100 * sqrt( ds / CGFloat( self.items ) ) )
+                subview.alpha = 1 - min( 0.8, ds ) / 0.8
+                let scale = 1 + pow( ds / CGFloat( self.items ), 2 ) * 2
+                subview.transform = CGAffineTransform.init(scaleX: scale, y: scale)
+            }
         }
     }
 
@@ -70,11 +93,11 @@ class MPSpinnerView: UIView {
                     return
                 }
 
-                let itemDistance = self.bounds.height / CGFloat( self.items )
+                let itemDistance = (self.bounds.height * 2 / 3) / CGFloat( self.items )
                 self.scannedItem = CGFloat( self.selectedItem ?? 0 ) + recognizer.translation( in: self ).y / itemDistance
 
             case .ended:
-                self.selectedItem = Int( self.scannedItem.rounded( .toNearestOrAwayFromZero ) )
+                self.selectedItem = max( 0, min( self.items - 1, Int( self.scannedItem.rounded( .toNearestOrAwayFromZero ) ) ) )
 
             case .cancelled, .failed:
                 self.scannedItem = CGFloat( self.selectedItem ?? 0 )
