@@ -5,16 +5,21 @@
 
 import UIKit
 
-class MPUsersView: UIView {
+class MPUsersView: UIView, MPSpinnerDelegate {
 
-    let avatarSpinner = MPSpinnerView()
-    let newUserView   = MPUserAvatarView( user: nil )
-    let nameLabel     = UILabel()
-    var users         = [ MPUser ]() {
+    let namesSpinner   = MPSpinnerView()
+    let avatarsSpinner = MPSpinnerView()
+    let nameLabel      = UILabel()
+    var users          = [ MPUser ]() {
         willSet {
             for user in self.users {
-                for subview in self.avatarSpinner.subviews {
+                for subview in self.avatarsSpinner.subviews {
                     if let avatarView = subview as? MPUserAvatarView, user === avatarView.user {
+                        avatarView.removeFromSuperview()
+                    }
+                }
+                for subview in self.namesSpinner.subviews {
+                    if let avatarView = subview as? MPUserNameView, user === avatarView.user {
                         avatarView.removeFromSuperview()
                     }
                 }
@@ -22,7 +27,8 @@ class MPUsersView: UIView {
         }
         didSet {
             for user in self.users {
-                self.avatarSpinner.addSubview( MPUserAvatarView( user: user ) )
+                self.avatarsSpinner.addSubview( MPUserAvatarView( user: user ) )
+                self.namesSpinner.addSubview( MPUserNameView( user: user ) )
             }
         }
     }
@@ -30,18 +36,27 @@ class MPUsersView: UIView {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.addSubview( self.avatarSpinner )
-        self.avatarSpinner.addSubview( self.newUserView )
-        self.avatarSpinner.setFrameFrom( "|[]|" )
+        self.addSubview( self.namesSpinner )
+        self.namesSpinner.addSubview( MPUserNameView( user: nil ) )
+        self.namesSpinner.setAlignmentRectOutsets( UIEdgeInsets( top: -60, left: 0, bottom: 0, right: 0 ) )
+        self.namesSpinner.isUserInteractionEnabled = false
+
+        self.addSubview( self.avatarsSpinner )
+        self.avatarsSpinner.addSubview( MPUserAvatarView( user: nil ) )
+        self.avatarsSpinner.delegate = self
+
+        self.avatarsSpinner.setFrameFrom( "|[]|" )
+        self.namesSpinner.setFrameFrom( "|>[]<|" )
 
         defer {
             self.users = [ MPUser( named: "Maarten Billemont", avatar: .avatar_3 ),
                            MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 ) ]
+            self.avatarsSpinner.selectedItem = self.avatarsSpinner.items - 1
         }
     }
 
     required init?(coder aDecoder: NSCoder) {
-        super.init( coder: aDecoder )
+        fatalError( "init(coder:) is not supported for this class" )
     }
 
     class MPUserAvatarView: UIImageView {
@@ -60,11 +75,38 @@ class MPUsersView: UIView {
         }
 
         required init?(coder aDecoder: NSCoder) {
-            super.init( coder: aDecoder )
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+    }
+
+    class MPUserNameView: UILabel {
+        var user: MPUser? {
+            didSet {
+                self.text = self.user?.name ?? "Tap to create a new user"
+            }
         }
 
-        func set(user: MPUser?) {
-            self.user = user
+        init(user: MPUser?) {
+            super.init( frame: CGRect() )
+
+            self.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )
+            self.textAlignment = .center
+            self.textColor = .white
+
+            defer {
+                self.user = user
+            }
         }
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+    }
+
+    func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat) {
+        self.namesSpinner.scan( toItem: scannedItem, animated: false )
+    }
+
+    func spinner(_ spinner: MPSpinnerView, didSelectItem selectedItem: Int?) {
     }
 }

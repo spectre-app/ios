@@ -115,7 +115,7 @@ class MPStarView: UIView {
 
             switch layout {
                 case .bang:
-                    self.speedQueue.addOperation( MPStarFieldDistanceSpeedOperation( field: self, distance: 100 ) )
+                    self.speedQueue.addOperation( MPStarFieldDistanceSpeedOperation( field: self, distance: 50, time: 1.5 ) )
                 default:
                     ()
             }
@@ -163,18 +163,20 @@ class MPStarView: UIView {
         class MPStarFieldDistanceSpeedOperation: MPStarFieldSpeedOperation {
             let field:          MPStarField
             let distanceNeeded: Double
+            let time:           TimeInterval
             var distanceTravelled = 0.0
 
-            init(field: MPStarField, distance: Double) {
+            init(field: MPStarField, distance: Double = 10, time: TimeInterval = 3) {
                 self.field = field
                 self.distanceNeeded = distance;
+                self.time = time;
             }
 
             override func main() {
                 super.main()
 
                 self.field.speedDelta = 1 - self.field.speed
-                self.field.speedAcceleration = self.field.speedDelta / 3 /* seconds */
+                self.field.speedAcceleration = self.field.speedDelta / self.time
             }
 
             override func animate(seconds: TimeInterval) {
@@ -224,7 +226,7 @@ class MPStarView: UIView {
                     dx = 0.5 - dx
                     dy = 0.5 - dy
                     self.location = CGPoint( x: 0.5 + bangSpace * dx, y: 0.5 + bangSpace * dy )
-                    self.distance = drand48() * bangSpace * (0.5 - abs( dx )) * (0.5 - abs( dy ))
+                    self.distance = drand48() * sqrt( (0.5 - abs( dx )) * (0.5 - abs( dy )) )
             }
 
             self.actions.append( MPBackgroundStarTravelAction( star: self ) )

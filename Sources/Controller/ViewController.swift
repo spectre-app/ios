@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import pop
 
 class ViewController: UIViewController {
 
@@ -19,6 +20,17 @@ class ViewController: UIViewController {
 
         self.view.addSubview( self.usersView )
         self.usersView.setFrameFrom( "|[]|" )
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        if let anim = POPSpringAnimation( propertyNamed: kPOPViewScaleXY ) {
+            anim.fromValue = CGPoint( x: 0, y: 0 )
+            anim.toValue = CGPoint( x: 1, y: 1 )
+            anim.springSpeed = 1
+            self.usersView.pop_add( anim, forKey: "pop" )
+        }
     }
 }
 
