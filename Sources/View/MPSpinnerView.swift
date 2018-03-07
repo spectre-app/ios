@@ -9,11 +9,14 @@ import pop
 protocol MPSpinnerDelegate {
     func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat)
     func spinner(_ spinner: MPSpinnerView, didSelectItem selectedItem: Int?)
+    func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int)
+    func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int)
 }
 
 class MPSpinnerView: UIView {
 
     private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
+    private lazy var tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTap(recognizer:) ) )
     private let pop_scannedItem = POPAnimatableProperty.property( withName: "MPSpinnerView.scannedItem", initializer: { prop in
         prop!.readBlock = { obj, floats in
             floats![0] = (obj as! MPSpinnerView).scannedItem
@@ -34,8 +37,8 @@ class MPSpinnerView: UIView {
         }
     }
 
-    public var delegate:     MPSpinnerDelegate?
-    public var selectedItem: Int? {
+    public var delegate:      MPSpinnerDelegate?
+    public var selectedItem:  Int? {
         didSet {
             self.scan( toItem: CGFloat( self.selectedItem ?? 0 ) )
             if let delegate = self.delegate {
@@ -43,7 +46,20 @@ class MPSpinnerView: UIView {
             }
         }
     }
-    public var items:        Int {
+    public var activatedItem: Int? {
+        willSet {
+            if let delegate = self.delegate, let activatedItem = self.activatedItem, let newValue = newValue, activatedItem != newValue {
+                delegate.spinner( self, didDeactivateItem: activatedItem )
+            }
+        }
+        didSet {
+            self.selectedItem = self.activatedItem
+            if let delegate = self.delegate, let activatedItem = self.activatedItem {
+                delegate.spinner( self, didActivateItem: activatedItem )
+            }
+        }
+    }
+    public var items:         Int {
         get {
             return self.subviews.count
         }
@@ -53,6 +69,7 @@ class MPSpinnerView: UIView {
         super.init( frame: frame )
 
         self.addGestureRecognizer( self.panRecognizer )
+        self.addGestureRecognizer( self.tapRecognizer )
         self.isUserInteractionEnabled = true
     }
 
@@ -164,7 +181,7 @@ class MPSpinnerView: UIView {
                 // After decaying, select the item we land on.
                 anim.completionBlock = { animation, finished in
                     if finished {
-                        self.selectedItem = max( 0, min( self.items - 1, Int( self.scannedItem.rounded( .toNearestOrAwayFromZero ) ) ) )
+                        self.selectedItem = self.findScannedItem()
                     }
                 }
 
@@ -175,5 +192,20 @@ class MPSpinnerView: UIView {
                 // Abort by resetting to the selected item.
                 self.scan( toItem: CGFloat( self.selectedItem ?? 0 ) )
         }
+    }
+
+    @objc private func didTap(recognizer: UITapGestureRecognizer) {
+        switch recognizer.state {
+
+            case .possible, .began, .changed, .cancelled, .failed:
+                ()
+
+            case .ended:
+                self.activatedItem = self.findScannedItem()
+        }
+    }
+
+    private func findScannedItem() -> Int {
+        return max( 0, min( self.items - 1, Int( self.scannedItem.rounded( .toNearestOrAwayFromZero ) ) ) )
     }
 }
