@@ -43,6 +43,7 @@ class MPSpinnerView: UIView {
             self.scan( toItem: CGFloat( self.selectedItem ?? 0 ) )
             if let delegate = self.delegate {
                 delegate.spinner( self, didSelectItem: self.selectedItem )
+                self.setNeedsLayout()
             }
         }
     }
@@ -56,6 +57,7 @@ class MPSpinnerView: UIView {
             self.selectedItem = self.activatedItem
             if let delegate = self.delegate, let activatedItem = self.activatedItem {
                 delegate.spinner( self, didActivateItem: activatedItem )
+                self.setNeedsLayout()
             }
         }
     }
@@ -70,6 +72,8 @@ class MPSpinnerView: UIView {
 
         self.addGestureRecognizer( self.panRecognizer )
         self.addGestureRecognizer( self.tapRecognizer )
+
+        self.autoresizesSubviews = false
         self.isUserInteractionEnabled = true
     }
 
@@ -102,25 +106,27 @@ class MPSpinnerView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let center = CGRectGetCenter( self.bounds )
+        let viewCenter = CGRectGetCenter( self.bounds )
         for s in 0..<self.subviews.count {
             let subview = self.subviews[s]
-            subview.sizeToFit()
+            let subviewCenter = subview.center
 
             let ds = CGFloat( s ) - self.scannedItem
             if ds > 0 {
                 // subview shows before scanned item.
-                subview.center = CGPoint( x: center.x, y: center.y - 100 * pow( ds, 2 ) )
-                subview.alpha = max( 0, 1 - pow( ds, 2 ) )
                 let scale = pow( ds * 0.2 + 1, 2 )
-                subview.transform = CGAffineTransform.init( scaleX: scale, y: scale )
+                subview.transform = CGAffineTransform.identity
+                        .translatedBy( x: viewCenter.x - subviewCenter.x, y: viewCenter.y - 100 * pow( ds, 2 ) - subviewCenter.y )
+                        .scaledBy( x: scale, y: scale )
+                subview.alpha = max( 0, 1 - pow( ds, 2 ) )
             }
             else {
                 // subview shows behind scanned item.
-                subview.center = CGPoint( x: center.x, y: center.y + 100 * pow( ds * 0.5, 2 ) )
-                subview.alpha = max( 0, 1 - pow( ds * 0.8, 2 ) )
                 let scale = 1 / pow( ds * 0.2 - 1, 2 )
-                subview.transform = CGAffineTransform.init( scaleX: scale, y: scale )
+                subview.transform = CGAffineTransform.identity
+                        .translatedBy( x: viewCenter.x - subviewCenter.x, y: viewCenter.y + 100 * pow( ds * 0.5, 2 ) - subviewCenter.y )
+                        .scaledBy( x: scale, y: scale )
+                subview.alpha = max( 0, 1 - pow( ds * 0.8, 2 ) )
             }
         }
     }

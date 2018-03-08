@@ -14,6 +14,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        PearlLogger.get().printLevel = .trace
+
         // Start UI
         self.window = UIWindow()
         self.window!.rootViewController = ViewController()

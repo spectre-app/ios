@@ -95,7 +95,7 @@ class MPUsersView: UIView, MPSpinnerDelegate {
             self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.active ? 2: 1) )
 
             self.nameLabel.setFrameFrom( "|[]<|" )
-            self.avatarView.setFrameFrom( "|x-[]|", x: self.nameLabel.alignmentAnchors.bottom )
+            self.avatarView.setFrameFrom( "|xy[]|", x: self.nameLabel.alignmentAnchors.bottom, y: 8 )
 
             path = CGMutablePath()
             path.move( to: CGRectGetCenter( self.bounds ) )
