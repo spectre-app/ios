@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import pop
 
 class MPUsersView: UIView, MPSpinnerDelegate {
 
@@ -48,10 +49,11 @@ class MPUsersView: UIView, MPSpinnerDelegate {
 
     class MPUserView: UIView {
 
-        public var active = false {
+        public var active: Bool = false {
             didSet {
-                self.setNeedsLayout()
-                self.setNeedsDisplay()
+                let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
+                anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
+                self.nameLabel.pop_add( anim, forKey: "pop.font" )
             }
         }
         public var user: MPUser? {
@@ -71,9 +73,6 @@ class MPUsersView: UIView, MPSpinnerDelegate {
             defer {
                 self.isOpaque = false
 
-                self.addSubview( self.avatarView )
-                self.addSubview( self.nameLabel )
-
                 self.avatarView.contentMode = .center
 
                 self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 4, right: 0 ) )
@@ -81,7 +80,21 @@ class MPUsersView: UIView, MPSpinnerDelegate {
                 self.nameLabel.textAlignment = .center
                 self.nameLabel.textColor = .white
 
+                self.addSubview( self.nameLabel )
+                self.addSubview( self.avatarView )
+                self.translatesAutoresizingMaskIntoConstraints = false
+                self.nameLabel.translatesAutoresizingMaskIntoConstraints = false
+                self.nameLabel.topAnchor.constraint( equalTo: self.topAnchor ).isActive = true
+                self.nameLabel.leadingAnchor.constraint( equalTo: self.leadingAnchor ).isActive = true
+                self.nameLabel.trailingAnchor.constraint( equalTo: self.trailingAnchor ).isActive = true
+                self.nameLabel.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor ).isActive = true
+                self.avatarView.translatesAutoresizingMaskIntoConstraints = false
+                self.avatarView.leadingAnchor.constraint( equalTo: self.leadingAnchor ).isActive = true
+                self.avatarView.trailingAnchor.constraint( equalTo: self.trailingAnchor ).isActive = true
+                self.avatarView.bottomAnchor.constraint( equalTo: self.bottomAnchor ).isActive = true
+
                 self.user = user
+                self.active = false;
             }
         }
 
@@ -91,11 +104,6 @@ class MPUsersView: UIView, MPSpinnerDelegate {
 
         override func layoutSubviews() {
             super.layoutSubviews()
-
-            self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.active ? 2: 1) )
-
-            self.nameLabel.setFrameFrom( "|[]<|" )
-            self.avatarView.setFrameFrom( "|xy[]|", x: self.nameLabel.alignmentAnchors.bottom, y: 8 )
 
             path = CGMutablePath()
             path.move( to: CGRectGetCenter( self.bounds ) )

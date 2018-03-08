@@ -37,6 +37,7 @@
 		93D39A53D76CA70786423458 /* UICollectionView+PearlReloadItems.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */; };
 		93D39A8EA1C49CE43B63F47B /* PearlUICollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D8A953779B35403AF6E /* PearlUICollectionView.m */; };
 		93D39AA4A0BE66A872CCC02E /* NSPersistentStore+PearlMigration.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D397F4BAFFF7CF3F1B21A4 /* NSPersistentStore+PearlMigration.h */; };
+		93D39AC1059337C3B45E06CB /* POPAnimation+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926035A7C671030D3C31 /* POPAnimation+MP.m */; };
 		93D39B76DD5AB108BA8928E8 /* UIScrollView+PearlAdjustInsets.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39DE2CB351D4E3789462B /* UIScrollView+PearlAdjustInsets.h */; };
 		93D39B842AB9A5D072810D76 /* NSError+PearlFullDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D398C95847261903D781D3 /* NSError+PearlFullDescription.h */; };
 		93D39BED3DFB61513B0D015D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BEF8D21F9BC5C3A9F16 /* ViewController.swift */; };
@@ -360,10 +361,12 @@
 		93D39169E1BADEFA0517D4D2 /* MPUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUser.swift; sourceTree = "<group>"; };
 		93D391AA32F24290C424438E /* NSNotificationCenter+PearlEasyCleanup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNotificationCenter+PearlEasyCleanup.h"; sourceTree = "<group>"; };
 		93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+PearlReloadItems.h"; sourceTree = "<group>"; };
+		93D3926035A7C671030D3C31 /* POPAnimation+MP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "POPAnimation+MP.m"; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
 		93D393B97158D7BE9332EA53 /* NSDictionary+Indexing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+Indexing.h"; sourceTree = "<group>"; };
 		93D393BB973253D4BAAC84AA /* PearlEMail.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlEMail.m; sourceTree = "<group>"; };
 		93D394077F8FAB8167647187 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
+		93D3940D5C3196FC1B248C34 /* POPAnimation+MP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "POPAnimation+MP.h"; sourceTree = "<group>"; };
 		93D39424D508440582DC7FD0 /* MPSpinnerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSpinnerView.swift; sourceTree = "<group>"; };
 		93D3942A356B639724157982 /* PearlOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlOverlay.h; sourceTree = "<group>"; };
 		93D394482BB07F90E8FD1314 /* UIResponder+PearlFirstResponder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIResponder+PearlFirstResponder.h"; sourceTree = "<group>"; };
@@ -1213,6 +1216,15 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		93D39760DAE73795CA63D02A /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				93D3926035A7C671030D3C31 /* POPAnimation+MP.m */,
+				93D3940D5C3196FC1B248C34 /* POPAnimation+MP.h */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
 		93D39A2239FFFE6BEC83E191 /* C */ = {
 			isa = PBXGroup;
 			children = (
@@ -1400,6 +1412,7 @@
 				DA4A0C1F201531B9004E2CE5 /* MasterPassword-Info.plist */,
 				93D39472440F87F0B0FAD295 /* View */,
 				93D39E0C533C1943D2425F07 /* Controller */,
+				93D39760DAE73795CA63D02A /* Util */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -2862,6 +2875,7 @@
 				93D39EDADBB0A8211D8CF2A5 /* MPUsersView.swift in Sources */,
 				93D39BED3DFB61513B0D015D /* ViewController.swift in Sources */,
 				93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */,
+				93D39AC1059337C3B45E06CB /* POPAnimation+MP.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

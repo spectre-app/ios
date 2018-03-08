@@ -17,17 +17,8 @@ class MPSpinnerView: UIView {
 
     private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
     private lazy var tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTap(recognizer:) ) )
-    private let pop_scannedItem = POPAnimatableProperty.property( withName: "MPSpinnerView.scannedItem", initializer: { prop in
-        prop!.readBlock = { obj, floats in
-            floats![0] = (obj as! MPSpinnerView).scannedItem
-        }
-        prop!.writeBlock = { obj, floats in
-            (obj as! MPSpinnerView).scannedItem = floats![0]
-        }
-        prop!.threshold = 0.01
-    } ) as! POPAnimatableProperty
 
-    private var startedItem: CGFloat = 0
+    @objc
     private var scannedItem: CGFloat = 0 {
         didSet {
             self.setNeedsLayout()
@@ -36,6 +27,7 @@ class MPSpinnerView: UIView {
             }
         }
     }
+    private var startedItem: CGFloat = 0
 
     public var delegate:      MPSpinnerDelegate?
     public var selectedItem:  Int? {
@@ -108,7 +100,7 @@ class MPSpinnerView: UIView {
 
         let viewCenter = CGRectGetCenter( self.bounds )
         for s in 0..<self.subviews.count {
-            let subview = self.subviews[s]
+            let subview       = self.subviews[s]
             let subviewCenter = subview.center
 
             let ds = CGFloat( s ) - self.scannedItem
@@ -137,14 +129,13 @@ class MPSpinnerView: UIView {
         }
 
         if animated {
-            let anim = POPSpringAnimation()
-            anim.property = self.pop_scannedItem
+            let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
             anim.toValue = item
-            self.pop_removeAnimation( forKey: anim.property.name )
-            self.pop_add( anim, forKey: anim.property.name )
+            self.pop_removeAnimation( forKey: "pop.scannedItem" )
+            self.pop_add( anim, forKey: "pop.scannedItem" )
         }
         else {
-            self.pop_removeAnimation( forKey: self.pop_scannedItem.name )
+            self.pop_removeAnimation( forKey: "pop.scannedItem" )
             self.scannedItem = item
         }
     }
@@ -167,20 +158,18 @@ class MPSpinnerView: UIView {
                 self.scan( toItem: self.startedItem + recognizer.translation( in: self ).y / itemDistance, animated: false )
 
             case .ended:
-                let anim = POPDecayAnimation()
-                anim.property = self.pop_scannedItem
+                let anim = POPDecayAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
                 anim.velocity = recognizer.velocity( in: self ).y / itemDistance
 
                 // Enforce a limit on scannedItem when ending/decaying.
                 anim.animationDidApplyBlock = { animation in
                     if self.scannedItem < 0 || self.scannedItem > CGFloat( self.items - 1 ) {
-                        let anim = POPSpringAnimation()
-                        anim.property = self.pop_scannedItem
+                        let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
                         anim.velocity = (animation as? POPDecayAnimation)?.velocity ?? 0
                         anim.toValue = max( 0, min( self.items - 1, Int( self.scannedItem ) ) )
                         anim.completionBlock = animation?.completionBlock
-                        self.pop_removeAnimation( forKey: anim.property.name )
-                        self.pop_add( anim, forKey: anim.property.name )
+                        self.pop_removeAnimation( forKey: "pop.scannedItem" )
+                        self.pop_add( anim, forKey: "pop.scannedItem" )
                     }
                 }
 
@@ -191,8 +180,8 @@ class MPSpinnerView: UIView {
                     }
                 }
 
-                self.pop_removeAnimation( forKey: anim.property.name )
-                self.pop_add( anim, forKey: anim.property.name )
+                self.pop_removeAnimation( forKey: "pop.scannedItem" )
+                self.pop_add( anim, forKey: "pop.scannedItem" )
 
             case .cancelled, .failed:
                 // Abort by resetting to the selected item.

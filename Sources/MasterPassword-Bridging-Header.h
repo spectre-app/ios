@@ -3,3 +3,5 @@
 //
 
 #import "Pearl-Bridging-Header.h"
+
+#import "POPAnimation+MP.h"
