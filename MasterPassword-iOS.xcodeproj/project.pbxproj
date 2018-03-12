@@ -47,7 +47,7 @@
 		93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */; };
 		93D39E281E3658B30550CB55 /* NSDictionary+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39AA1EE2E1E7B81372240 /* NSDictionary+Indexing.m */; };
 		93D39E34FD28D24FE3442C48 /* UITextView+PearlAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3977321EB249981821AB0 /* UITextView+PearlAttributes.m */; };
-		93D39EDADBB0A8211D8CF2A5 /* MPUsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397615F791F856B7814B9 /* MPUsersView.swift */; };
+		93D39EDADBB0A8211D8CF2A5 /* MPLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397615F791F856B7814B9 /* MPLoginView.swift */; };
 		DA04E33E14B1E70400ECA4F3 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */; };
 		DA071BF3190187FE00179766 /* empty@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA071BF1190187FE00179766 /* empty@2x.png */; };
 		DA071BF4190187FE00179766 /* empty.png in Resources */ = {isa = PBXBuildFile; fileRef = DA071BF2190187FE00179766 /* empty.png */; };
@@ -377,7 +377,7 @@
 		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
 		93D396D04E57792A54D437AC /* NSArray+Indexing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+Indexing.h"; sourceTree = "<group>"; };
 		93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v1.c"; sourceTree = "<group>"; };
-		93D397615F791F856B7814B9 /* MPUsersView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUsersView.swift; sourceTree = "<group>"; };
+		93D397615F791F856B7814B9 /* MPLoginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPLoginView.swift; sourceTree = "<group>"; };
 		93D3977321EB249981821AB0 /* UITextView+PearlAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITextView+PearlAttributes.m"; sourceTree = "<group>"; };
 		93D39789AAF49338F8AC8B02 /* NSOrderedSetOrArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSOrderedSetOrArray.m; sourceTree = "<group>"; };
 		93D397F4BAFFF7CF3F1B21A4 /* NSPersistentStore+PearlMigration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPersistentStore+PearlMigration.h"; sourceTree = "<group>"; };
@@ -1210,7 +1210,7 @@
 			isa = PBXGroup;
 			children = (
 				93D39633973C6D2EAB335D68 /* MPStarView.swift */,
-				93D397615F791F856B7814B9 /* MPUsersView.swift */,
+				93D397615F791F856B7814B9 /* MPLoginView.swift */,
 				93D39424D508440582DC7FD0 /* MPSpinnerView.swift */,
 			);
 			path = View;
@@ -2872,7 +2872,7 @@
 				DA5B0B401F36469400B663F0 /* base64.c in Sources */,
 				93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */,
 				93D39D45180726A9C2484030 /* MPStarView.swift in Sources */,
-				93D39EDADBB0A8211D8CF2A5 /* MPUsersView.swift in Sources */,
+				93D39EDADBB0A8211D8CF2A5 /* MPLoginView.swift in Sources */,
 				93D39BED3DFB61513B0D015D /* ViewController.swift in Sources */,
 				93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */,
 				93D39AC1059337C3B45E06CB /* POPAnimation+MP.m in Sources */,

@@ -41,7 +41,7 @@ class MPSpinnerView: UIView {
     }
     public var activatedItem: Int? {
         willSet {
-            if let delegate = self.delegate, let activatedItem = self.activatedItem, let newValue = newValue, activatedItem != newValue {
+            if let delegate = self.delegate, let activatedItem = self.activatedItem, activatedItem != newValue {
                 delegate.spinner( self, didDeactivateItem: activatedItem )
             }
         }
@@ -152,6 +152,7 @@ class MPSpinnerView: UIView {
 
             case .began:
                 self.startedItem = self.scannedItem
+                self.activatedItem = nil
 
             case .changed:
                 // While panning, update scannedItem relative to startedItem.
