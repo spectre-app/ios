@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		85CD8F96F4AF2E32ECC42FA9 /* Pods_MasterPassword.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B187A357B4ACE4B9C8631D9 /* Pods_MasterPassword.framework */; };
+		93D391D6972E170A5056A9BF /* UILayoutGuide+Pearl.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39AAF25A004C87766DCA8 /* UILayoutGuide+Pearl.h */; };
 		93D391ECBD9BD2C64115B5DD /* PearlSizedTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39156E806BB78E04F78B9 /* PearlSizedTextView.m */; };
 		93D3922A53E41A54832E90D9 /* PearlOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D390FADEB325D8D54A957D /* PearlOverlay.m */; };
 		93D39262A8A97DB748213309 /* PearlEMail.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D393BB973253D4BAAC84AA /* PearlEMail.m */; };
@@ -25,6 +26,7 @@
 		93D395B715D15F2B56F2A2EE /* mpw-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* mpw-types.c */; };
 		93D395F08A087F8A24689347 /* NSArray+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39067C0AFDC581794E2B8 /* NSArray+Indexing.m */; };
 		93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39424D508440582DC7FD0 /* MPSpinnerView.swift */; };
+		93D3964B458F9F940A790D6F /* UILayoutGuide+Pearl.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */; };
 		93D396AA30690B256F30378A /* PearlNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3956915634581E737B38C /* PearlNavigationController.m */; };
 		93D396BA1C74C4A06FD86437 /* PearlOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D3942A356B639724157982 /* PearlOverlay.h */; };
 		93D397952F5635C793C24DF1 /* NSError+PearlFullDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F9106F2CCFB94283188 /* NSError+PearlFullDescription.m */; };
@@ -363,6 +365,7 @@
 		93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+PearlReloadItems.h"; sourceTree = "<group>"; };
 		93D3926035A7C671030D3C31 /* POPAnimation+MP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "POPAnimation+MP.m"; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
+		93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILayoutGuide+Pearl.m"; sourceTree = "<group>"; };
 		93D393B97158D7BE9332EA53 /* NSDictionary+Indexing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+Indexing.h"; sourceTree = "<group>"; };
 		93D393BB973253D4BAAC84AA /* PearlEMail.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlEMail.m; sourceTree = "<group>"; };
 		93D394077F8FAB8167647187 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
@@ -389,6 +392,7 @@
 		93D39A4759186F6D2D34AA6B /* PearlSizedTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlSizedTextView.h; sourceTree = "<group>"; };
 		93D39AA10CD00D05937671B1 /* UITextView+PearlAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITextView+PearlAttributes.h"; sourceTree = "<group>"; };
 		93D39AA1EE2E1E7B81372240 /* NSDictionary+Indexing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+Indexing.m"; sourceTree = "<group>"; };
+		93D39AAF25A004C87766DCA8 /* UILayoutGuide+Pearl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UILayoutGuide+Pearl.h"; sourceTree = "<group>"; };
 		93D39AFD17CBE324D745DAB0 /* mpw-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-types.h"; sourceTree = "<group>"; };
 		93D39B1D8177A86C5B9EDDE3 /* PearlUICollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlUICollectionView.h; sourceTree = "<group>"; };
 		93D39B7B765546B1F1900CB7 /* UIView+Visible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Visible.h"; sourceTree = "<group>"; };
@@ -2192,6 +2196,8 @@
 			children = (
 				DA2CA4E218D28866007798F8 /* NSLayoutConstraint+PearlUIKit.h */,
 				DA2CA4E518D2AC10007798F8 /* NSLayoutConstraint+PearlUIKit.m */,
+				93D39AAF25A004C87766DCA8 /* UILayoutGuide+Pearl.h */,
+				93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */,
 				DAFE460815039823003ABA7C /* Pearl-UIKit-Dependencies.h */,
 				DAFE460915039823003ABA7C /* Pearl-UIKit.h */,
 				DA30E9D315722EF400A68B4C /* Pearl-UIKit.m */,
@@ -2365,6 +2371,7 @@
 				93D399E4BC1E092A8C8B12AE /* NSOrderedSetOrArray.h in Headers */,
 				93D39BFB5F5F9337F6565DE3 /* UIView+Visible.h in Headers */,
 				93D39359B0DF9823F6C56A05 /* PearlHangDetector.h in Headers */,
+				93D391D6972E170A5056A9BF /* UILayoutGuide+Pearl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2953,6 +2960,7 @@
 				93D392A33CCE85431E910C7B /* NSOrderedSetOrArray.m in Sources */,
 				93D3942C1B117EE4851AA7B6 /* UIView+Visible.m in Sources */,
 				93D395373A425B05C86B2268 /* PearlHangDetector.m in Sources */,
+				93D3964B458F9F940A790D6F /* UILayoutGuide+Pearl.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
