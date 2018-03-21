@@ -57,7 +57,8 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
                 if self.active {
                     self.passwordField.becomeFirstResponder()
-                } else {
+                }
+                else {
                     self.passwordField.resignFirstResponder()
                 }
 
@@ -92,6 +93,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.nameLabel.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )
                 self.nameLabel.textAlignment = .center
                 self.nameLabel.textColor = .white
+                self.nameLabel.numberOfLines = 0
                 self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
                 self.avatarView.contentMode = .center
@@ -111,16 +113,15 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.addSubview( self.idBadgeView )
                 self.addSubview( self.authBadgeView )
 
-                self.translatesAutoresizingMaskIntoConstraints = false
                 self.nameLabel.translatesAutoresizingMaskIntoConstraints = false
                 self.nameLabel.topAnchor.constraint( equalTo: self.layoutMarginsGuide.topAnchor ).isActive = true
                 self.nameLabel.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ).isActive = true
                 self.nameLabel.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ).isActive = true
-                self.nameLabel.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -8 ).isActive = true
+                self.nameLabel.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -20 ).isActive = true
                 self.avatarView.translatesAutoresizingMaskIntoConstraints = false
                 self.avatarView.centerXAnchor.constraint( equalTo: self.layoutMarginsGuide.centerXAnchor ).isActive = true
                 self.passwordField.translatesAutoresizingMaskIntoConstraints = false
-                self.passwordField.topAnchor.constraint( equalTo: self.avatarView.bottomAnchor, constant: 8 ).isActive = true
+                self.passwordField.topAnchor.constraint( equalTo: self.avatarView.bottomAnchor, constant: 20 ).isActive = true
                 self.passwordField.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ).isActive = true
                 self.passwordField.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ).isActive = true
                 self.passwordField.bottomAnchor.constraint( equalTo: self.layoutMarginsGuide.bottomAnchor ).isActive = true
@@ -152,19 +153,8 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             super.layoutSubviews()
 
             path = CGMutablePath()
-            path.move( to: CGRectGetCenter( self.idBadgeView.alignmentRect ) )
-            path.addLine( to: CGPoint( x: 0, y: CGRectGetCenter( self.idBadgeView.alignmentRect ).y ) )
-            path.addLine( to: CGPoint( x: 0, y: CGRectGetLeft( self.nameLabel.alignmentRect ).y ) )
-            path.addLine( to: CGRectGetLeft( self.nameLabel.alignmentRect ) )
-            path.move( to: CGRectGetTopLeft( self.nameLabel.alignmentRect ) )
-            path.addLine( to: CGRectGetBottomLeft( self.nameLabel.alignmentRect ) )
-
-            path.move( to: CGRectGetCenter( self.authBadgeView.alignmentRect ) )
-            path.addLine( to: CGPoint( x: self.bounds.size.width, y: CGRectGetCenter( self.idBadgeView.alignmentRect ).y ) )
-            path.addLine( to: CGPoint( x: self.bounds.size.width, y: CGRectGetRight(self.passwordField.alignmentRect).y ) )
-            path.addLine( to: CGRectGetRight( self.passwordField.alignmentRect ) )
-            path.move( to: CGRectGetTopRight( self.passwordField.alignmentRect ) )
-            path.addLine( to: CGRectGetBottomRight( self.passwordField.alignmentRect ) )
+            path.addPath( CGPathCreateBetween( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
+            path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
             self.setNeedsDisplay()
         }
 
@@ -172,7 +162,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             super.draw( rect )
 
             if self.active, let context = UIGraphicsGetCurrentContext() {
-                self.tintColor.withAlphaComponent( 0.8 ).setStroke()
+                UIColor.white.withAlphaComponent( 0.8 ).setStroke()
                 context.addPath( path )
                 context.strokePath()
             }

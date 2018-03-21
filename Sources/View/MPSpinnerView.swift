@@ -95,20 +95,37 @@ class MPSpinnerView: UIView {
         return fittingSize
     }
 
+    override func updateConstraints() {
+        super.updateConstraints()
+
+        for subview in self.subviews {
+            if subview.tag != 1 {
+                subview.tag = 1
+                subview.translatesAutoresizingMaskIntoConstraints = false
+                subview.topAnchor.constraint( greaterThanOrEqualTo: self.topAnchor ).activate()
+                subview.leadingAnchor.constraint( greaterThanOrEqualTo: self.leadingAnchor ).activate()
+                subview.trailingAnchor.constraint( lessThanOrEqualTo: self.trailingAnchor ).activate()
+                subview.bottomAnchor.constraint( lessThanOrEqualTo: self.bottomAnchor ).activate()
+                subview.centerXAnchor.constraint( equalTo: self.centerXAnchor ).activate()
+                subview.centerYAnchor.constraint( equalTo: self.centerYAnchor ).activate()
+                subview.widthAnchor.constraint( equalToConstant: 0 ).updatePriority( .fittingSizeLevel ).activate()
+                subview.heightAnchor.constraint( equalToConstant: 0 ).updatePriority( .fittingSizeLevel ).activate()
+            }
+        }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let viewCenter = CGRectGetCenter( self.bounds )
         for s in 0..<self.subviews.count {
-            let subview       = self.subviews[s]
-            let subviewCenter = subview.center
+            let subview = self.subviews[s] as UIView
 
             let ds = CGFloat( s ) - self.scannedItem
             if ds > 0 {
                 // subview shows before scanned item.
                 let scale = pow( ds * 0.2 + 1, 2 )
                 subview.transform = CGAffineTransform.identity
-                        .translatedBy( x: viewCenter.x - subviewCenter.x, y: viewCenter.y - 100 * pow( ds, 2 ) - subviewCenter.y )
+                        .translatedBy( x: 0, y: -100 * pow( ds, 2 ) )
                         .scaledBy( x: scale, y: scale )
                 subview.alpha = max( 0, 1 - pow( ds, 2 ) )
             }
@@ -116,7 +133,7 @@ class MPSpinnerView: UIView {
                 // subview shows behind scanned item.
                 let scale = 1 / pow( ds * 0.2 - 1, 2 )
                 subview.transform = CGAffineTransform.identity
-                        .translatedBy( x: viewCenter.x - subviewCenter.x, y: viewCenter.y + 100 * pow( ds * 0.5, 2 ) - subviewCenter.y )
+                        .translatedBy( x: 0, y: 100 * pow( ds * 0.5, 2 ) )
                         .scaledBy( x: scale, y: scale )
                 subview.alpha = max( 0, 1 - pow( ds * 0.8, 2 ) )
             }
@@ -197,7 +214,8 @@ class MPSpinnerView: UIView {
                 ()
 
             case .ended:
-                self.activatedItem = self.findScannedItem()
+                let scannedItem = self.findScannedItem()
+                self.activatedItem = self.activatedItem == scannedItem ? nil: scannedItem
         }
     }
 

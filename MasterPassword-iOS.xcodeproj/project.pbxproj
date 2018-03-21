@@ -49,6 +49,7 @@
 		93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */; };
 		93D39E281E3658B30550CB55 /* NSDictionary+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39AA1EE2E1E7B81372240 /* NSDictionary+Indexing.m */; };
 		93D39E34FD28D24FE3442C48 /* UITextView+PearlAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3977321EB249981821AB0 /* UITextView+PearlAttributes.m */; };
+		93D39E501250468B10790F5F /* UIUtils+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B2EC0C429BBBF90463B /* UIUtils+MP.m */; };
 		93D39EDADBB0A8211D8CF2A5 /* MPLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397615F791F856B7814B9 /* MPLoginView.swift */; };
 		DA04E33E14B1E70400ECA4F3 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */; };
 		DA071BF3190187FE00179766 /* empty@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA071BF1190187FE00179766 /* empty@2x.png */; };
@@ -354,6 +355,7 @@
 		3F5740BEFF88DA7457A3AE61 /* Pods-MasterPassword.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.debug.xcconfig"; sourceTree = "<group>"; };
 		8673E273737E67D2A774177F /* Pods-MasterPassword.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.release.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.release.xcconfig"; sourceTree = "<group>"; };
 		93D39067C0AFDC581794E2B8 /* NSArray+Indexing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+Indexing.m"; sourceTree = "<group>"; };
+		93D3908853D4BE6569DCC64F /* UIUtils+MP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIUtils+MP.h"; sourceTree = "<group>"; };
 		93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UICollectionView+PearlReloadItems.m"; sourceTree = "<group>"; };
 		93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v2.c"; sourceTree = "<group>"; };
 		93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v0.c"; sourceTree = "<group>"; };
@@ -395,6 +397,7 @@
 		93D39AAF25A004C87766DCA8 /* UILayoutGuide+Pearl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UILayoutGuide+Pearl.h"; sourceTree = "<group>"; };
 		93D39AFD17CBE324D745DAB0 /* mpw-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-types.h"; sourceTree = "<group>"; };
 		93D39B1D8177A86C5B9EDDE3 /* PearlUICollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlUICollectionView.h; sourceTree = "<group>"; };
+		93D39B2EC0C429BBBF90463B /* UIUtils+MP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIUtils+MP.m"; sourceTree = "<group>"; };
 		93D39B7B765546B1F1900CB7 /* UIView+Visible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Visible.h"; sourceTree = "<group>"; };
 		93D39BDA5DB85FCDE4E6450A /* PearlHangDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlHangDetector.m; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -1225,6 +1228,8 @@
 			children = (
 				93D3926035A7C671030D3C31 /* POPAnimation+MP.m */,
 				93D3940D5C3196FC1B248C34 /* POPAnimation+MP.h */,
+				93D39B2EC0C429BBBF90463B /* UIUtils+MP.m */,
+				93D3908853D4BE6569DCC64F /* UIUtils+MP.h */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -2883,6 +2888,7 @@
 				93D39BED3DFB61513B0D015D /* ViewController.swift in Sources */,
 				93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */,
 				93D39AC1059337C3B45E06CB /* POPAnimation+MP.m in Sources */,
+				93D39E501250468B10790F5F /* UIUtils+MP.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3023,7 +3029,7 @@
 				CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = NO;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -3185,7 +3191,7 @@
 				CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = NO;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -3295,7 +3301,7 @@
 				CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = NO;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
