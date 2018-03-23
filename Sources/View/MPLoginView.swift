@@ -55,18 +55,22 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
                 self.nameLabel.pop_add( anim, forKey: "pop.font" )
 
-                if self.active {
-                    self.passwordField.becomeFirstResponder()
-                }
-                else {
-                    self.passwordField.resignFirstResponder()
+                UIView.animate( withDuration: 0.6 ) {
+                    self.passwordField.alpha = self.active ? 1: 0
+
+                    if self.active {
+                        self.passwordField.becomeFirstResponder()
+                        self.idBadgeConfiguration.activate();
+                        self.authBadgeConfiguration.activate();
+                    }
+                    else {
+                        self.passwordField.resignFirstResponder()
+                        self.idBadgeConfiguration.deactivate();
+                        self.authBadgeConfiguration.deactivate();
+                    }
                 }
 
-                UIView.animate( withDuration: 0.3 ) {
-                    self.passwordField.alpha = self.active ? 1: 0
-                    self.idBadgeView.alpha = self.active ? 1: 0
-                    self.authBadgeView.alpha = self.active ? 1: 0
-                }
+                self.setNeedsDisplay()
             }
         }
         public var user: MPUser? {
@@ -81,6 +85,8 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         private let passwordField = UITextField()
         private let idBadgeView   = UIImageView( image: UIImage( named: "icon_person" ) )
         private let authBadgeView = UIImageView( image: UIImage( named: "icon_key" ) )
+        private var idBadgeConfiguration:   ViewConfiguration!
+        private var authBadgeConfiguration: ViewConfiguration!
         private var path          = CGMutablePath()
 
         init(user: MPUser?) {
@@ -107,30 +113,43 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
                 self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
 
-                self.addSubview( self.nameLabel )
-                self.addSubview( self.avatarView )
-                self.addSubview( self.passwordField )
                 self.addSubview( self.idBadgeView )
                 self.addSubview( self.authBadgeView )
+                self.addSubview( self.avatarView )
+                self.addSubview( self.nameLabel )
+                self.addSubview( self.passwordField )
 
-                self.nameLabel.translatesAutoresizingMaskIntoConstraints = false
-                self.nameLabel.topAnchor.constraint( equalTo: self.layoutMarginsGuide.topAnchor ).isActive = true
-                self.nameLabel.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ).isActive = true
-                self.nameLabel.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ).isActive = true
-                self.nameLabel.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -20 ).isActive = true
-                self.avatarView.translatesAutoresizingMaskIntoConstraints = false
-                self.avatarView.centerXAnchor.constraint( equalTo: self.layoutMarginsGuide.centerXAnchor ).isActive = true
-                self.passwordField.translatesAutoresizingMaskIntoConstraints = false
-                self.passwordField.topAnchor.constraint( equalTo: self.avatarView.bottomAnchor, constant: 20 ).isActive = true
-                self.passwordField.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ).isActive = true
-                self.passwordField.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ).isActive = true
-                self.passwordField.bottomAnchor.constraint( equalTo: self.layoutMarginsGuide.bottomAnchor ).isActive = true
-                self.idBadgeView.translatesAutoresizingMaskIntoConstraints = false
-                self.idBadgeView.trailingAnchor.constraint( equalTo: self.avatarView.leadingAnchor ).isActive = true;
-                self.idBadgeView.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ).isActive = true;
-                self.authBadgeView.translatesAutoresizingMaskIntoConstraints = false
-                self.authBadgeView.leadingAnchor.constraint( equalTo: self.avatarView.trailingAnchor ).isActive = true;
-                self.authBadgeView.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ).isActive = true;
+                ViewConfiguration( view: self.nameLabel )
+                        .add { $0.topAnchor.constraint( equalTo: self.layoutMarginsGuide.topAnchor ) }
+                        .add { $0.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ) }
+                        .add { $0.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ) }
+                        .add { $0.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -20 ) }
+                        .activate()
+                ViewConfiguration( view: self.avatarView )
+                        .add { $0.centerXAnchor.constraint( equalTo: self.layoutMarginsGuide.centerXAnchor ) }
+                        .activate()
+                ViewConfiguration( view: self.passwordField )
+                        .add { $0.topAnchor.constraint( equalTo: self.avatarView.bottomAnchor, constant: 20 ) }
+                        .add { $0.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ) }
+                        .add { $0.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ) }
+                        .add { $0.bottomAnchor.constraint( equalTo: self.layoutMarginsGuide.bottomAnchor ) }
+                        .activate()
+                self.idBadgeConfiguration = ViewConfiguration( view: self.idBadgeView ) { active, inactive in
+                    active.add { $0.trailingAnchor.constraint( equalTo: self.avatarView.leadingAnchor ) }
+                    active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                    active.add( 1, forKey: "alpha" )
+                    inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
+                    inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                    inactive.add( 0, forKey: "alpha" )
+                }
+                self.authBadgeConfiguration = ViewConfiguration( view: self.authBadgeView ) { active, inactive in
+                    active.add { $0.leadingAnchor.constraint( equalTo: self.avatarView.trailingAnchor ) }
+                    active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                    active.add( 1, forKey: "alpha" )
+                    inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
+                    inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                    inactive.add( 0, forKey: "alpha" )
+                }
 
                 self.user = user
                 self.active = false;
@@ -162,7 +181,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             super.draw( rect )
 
             if self.active, let context = UIGraphicsGetCurrentContext() {
-                UIColor.white.withAlphaComponent( 0.8 ).setStroke()
+                UIColor.white.withAlphaComponent( 0.62 ).setStroke()
                 context.addPath( path )
                 context.strokePath()
             }

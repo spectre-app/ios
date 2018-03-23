@@ -32,7 +32,9 @@ class MPSpinnerView: UIView {
     public var delegate:      MPSpinnerDelegate?
     public var selectedItem:  Int? {
         didSet {
-            self.scan( toItem: CGFloat( self.selectedItem ?? 0 ) )
+            if let selectedItem = self.selectedItem {
+                self.scan( toItem: CGFloat( selectedItem ) )
+            }
             if let delegate = self.delegate {
                 delegate.spinner( self, didSelectItem: self.selectedItem )
                 self.setNeedsLayout()

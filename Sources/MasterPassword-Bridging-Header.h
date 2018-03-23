@@ -6,3 +6,4 @@
 
 #import "POPAnimation+MP.h"
 #import "UIUtils+MP.h"
+#import "ViewConfiguration.h"
