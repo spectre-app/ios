@@ -85,6 +85,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         private let avatarView         = UIImageView()
         private let passwordField      = UITextField()
         private let identiconLabel     = UILabel()
+        private var identiconTimer:         Timer?
         private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
         private let idBadgeView        = UIImageView( image: UIImage( named: "icon_person" ) )
         private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
@@ -178,36 +179,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.active = false;
 
                 NotificationCenter.default.addObserver( forName: .UITextFieldTextDidChange, object: self.passwordField, queue: nil ) { notification in
-                    if let userName = self.user?.name {
-                        userName.withCString { userName in
-                            if let masterPassword = self.passwordField.text {
-                                masterPassword.withCString { masterPassword in
-                                    let identicon = mpw_identicon( userName, masterPassword )
-                                    self.identiconLabel.text = [
-                                        String( cString: identicon.leftArm ),
-                                        String( cString: identicon.body ),
-                                        String( cString: identicon.rightArm ),
-                                        String( cString: identicon.accessory ) ].joined()
-                                    switch identicon.color {
-                                        case .red:
-                                            self.identiconLabel.textColor = .red
-                                        case .green:
-                                            self.identiconLabel.textColor = .green
-                                        case .yellow:
-                                            self.identiconLabel.textColor = .yellow
-                                        case .blue:
-                                            self.identiconLabel.textColor = .blue
-                                        case .magenta:
-                                            self.identiconLabel.textColor = .magenta
-                                        case .cyan:
-                                            self.identiconLabel.textColor = .cyan
-                                        case .white:
-                                            self.identiconLabel.textColor = .white
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    self.setNeedsIdenticon()
                 }
             }
         }
@@ -240,6 +212,56 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 UIColor.white.withAlphaComponent( 0.62 ).setStroke()
                 context.addPath( path )
                 context.strokePath()
+            }
+        }
+
+        func textFieldDidBeginEditing(_ textField: UITextField) {
+            self.identiconLabel.text = nil
+        }
+
+        func textFieldDidEndEditing(_ textField: UITextField) {
+            self.identiconLabel.text = nil
+        }
+
+        func setNeedsIdenticon() {
+            self.identiconTimer?.invalidate()
+            self.identiconTimer = Timer.scheduledTimer(
+                    timeInterval: 0.3 + drand48() * 0.2,
+                    target: self, selector: #selector( MPUserView.updateIdenticon ),
+                    userInfo: nil, repeats: false )
+        }
+
+        @objc
+        func updateIdenticon() {
+            if let userName = self.user?.name {
+                userName.withCString { userName in
+                    if let masterPassword = self.passwordField.text {
+                        masterPassword.withCString { masterPassword in
+                            let identicon = mpw_identicon( userName, masterPassword )
+                            self.identiconLabel.text = [
+                                String( cString: identicon.leftArm ),
+                                String( cString: identicon.body ),
+                                String( cString: identicon.rightArm ),
+                                String( cString: identicon.accessory ) ].joined()
+                            switch identicon.color {
+                                case .red:
+                                    self.identiconLabel.textColor = .red
+                                case .green:
+                                    self.identiconLabel.textColor = .green
+                                case .yellow:
+                                    self.identiconLabel.textColor = .yellow
+                                case .blue:
+                                    self.identiconLabel.textColor = .blue
+                                case .magenta:
+                                    self.identiconLabel.textColor = .magenta
+                                case .cyan:
+                                    self.identiconLabel.textColor = .cyan
+                                case .white:
+                                    self.identiconLabel.textColor = .white
+                            }
+                        }
+                    }
+                }
             }
         }
     }
