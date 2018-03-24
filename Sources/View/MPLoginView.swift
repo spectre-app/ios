@@ -47,7 +47,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    class MPUserView: UIView {
+    class MPUserView: UIView, UITextFieldDelegate {
 
         public var active: Bool = false {
             didSet {
@@ -55,8 +55,9 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
                 self.nameLabel.pop_add( anim, forKey: "pop.font" )
 
-                UIView.animate( withDuration: 0.6 ) {
+                UIView.animate( withDuration: self.superview == nil ? 0.0: 0.6 ) {
                     self.passwordField.alpha = self.active ? 1: 0
+                    self.identiconLabel.alpha = self.active ? 1: 0
 
                     if self.active {
                         self.passwordField.becomeFirstResponder()
@@ -80,14 +81,16 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             }
         }
 
-        private let nameLabel     = UILabel()
-        private let avatarView    = UIImageView()
-        private let passwordField = UITextField()
-        private let idBadgeView   = UIImageView( image: UIImage( named: "icon_person" ) )
-        private let authBadgeView = UIImageView( image: UIImage( named: "icon_key" ) )
+        private let nameLabel          = UILabel()
+        private let avatarView         = UIImageView()
+        private let passwordField      = UITextField()
+        private let identiconLabel     = UILabel()
+        private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
+        private let idBadgeView        = UIImageView( image: UIImage( named: "icon_person" ) )
+        private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
         private var idBadgeConfiguration:   ViewConfiguration!
         private var authBadgeConfiguration: ViewConfiguration!
-        private var path          = CGMutablePath()
+        private var path               = CGMutablePath()
 
         init(user: MPUser?) {
             super.init( frame: CGRect() )
@@ -104,11 +107,31 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
                 self.avatarView.contentMode = .center
 
+                self.identiconLabel.font = UIFont( name: "SourceCodePro-Regular", size: UIFont.labelFontSize )
+                self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
+                self.identiconLabel.shadowOffset = CGSize( width: 0, height: 1 )
+                self.identiconLabel.shadowColor = .darkGray
+                self.identiconLabel.textColor = .lightText
+
+                self.identiconAccessory.allowsSelfSizing = true
+                self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
+                self.identiconAccessory.addSubview( self.identiconLabel )
+                ViewConfiguration( view: self.identiconLabel )
+                        .add { $0.topAnchor.constraint( equalTo: self.identiconAccessory.topAnchor ) }
+                        .add { $0.centerXAnchor.constraint( equalTo: self.identiconAccessory.centerXAnchor ) }
+                        .add { $0.leadingAnchor.constraint( greaterThanOrEqualTo: self.identiconAccessory.leadingAnchor ) }
+                        .add { $0.trailingAnchor.constraint( lessThanOrEqualTo: self.identiconAccessory.trailingAnchor ) }
+                        .add { $0.bottomAnchor.constraint( equalTo: self.identiconAccessory.bottomAnchor ) }
+                        .activate()
+
                 self.passwordField.placeholder = "Enter your master password"
                 self.passwordField.borderStyle = .roundedRect
                 self.passwordField.font = UIFont( name: "SourceCodePro-Regular", size: UIFont.systemFontSize )
                 self.passwordField.textAlignment = .center
                 self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
+                self.passwordField.inputAccessoryView = self.identiconAccessory;
+                self.passwordField.isSecureTextEntry = true
+                self.passwordField.delegate = self
 
                 self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
                 self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
@@ -153,6 +176,39 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
                 self.user = user
                 self.active = false;
+
+                NotificationCenter.default.addObserver( forName: .UITextFieldTextDidChange, object: self.passwordField, queue: nil ) { notification in
+                    if let userName = self.user?.name {
+                        userName.withCString { userName in
+                            if let masterPassword = self.passwordField.text {
+                                masterPassword.withCString { masterPassword in
+                                    let identicon = mpw_identicon( userName, masterPassword )
+                                    self.identiconLabel.text = [
+                                        String( cString: identicon.leftArm ),
+                                        String( cString: identicon.body ),
+                                        String( cString: identicon.rightArm ),
+                                        String( cString: identicon.accessory ) ].joined()
+                                    switch identicon.color {
+                                        case .red:
+                                            self.identiconLabel.textColor = .red
+                                        case .green:
+                                            self.identiconLabel.textColor = .green
+                                        case .yellow:
+                                            self.identiconLabel.textColor = .yellow
+                                        case .blue:
+                                            self.identiconLabel.textColor = .blue
+                                        case .magenta:
+                                            self.identiconLabel.textColor = .magenta
+                                        case .cyan:
+                                            self.identiconLabel.textColor = .cyan
+                                        case .white:
+                                            self.identiconLabel.textColor = .white
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
