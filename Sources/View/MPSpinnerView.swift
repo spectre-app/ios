@@ -61,6 +61,8 @@ class MPSpinnerView: UIView {
         }
     }
 
+    // MARK: - Life
+
     override init(frame: CGRect) {
         super.init( frame: frame )
 
@@ -142,6 +144,8 @@ class MPSpinnerView: UIView {
         }
     }
 
+    // MARK: - Interface
+
     public func scan(toItem item: CGFloat, animated: Bool = true) {
         guard self.scannedItem != item else {
             return
@@ -158,6 +162,8 @@ class MPSpinnerView: UIView {
             self.scannedItem = item
         }
     }
+
+    // MARK: - Private
 
     @objc private func didPan(recognizer: UIPanGestureRecognizer) {
         guard self.items > 0 else {

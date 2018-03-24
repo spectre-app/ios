@@ -27,6 +27,8 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         }
     }
 
+    // MARK: - Life
+
     override init(frame: CGRect) {
         super.init( frame: frame )
 
@@ -45,6 +47,26 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    // MARK: - MPSpinnerDelegate
+
+    func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat) {
+    }
+
+    func spinner(_ spinner: MPSpinnerView, didSelectItem selectedItem: Int?) {
+    }
+
+    func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int) {
+        if let userView = spinner.subviews[activatedItem] as? MPUserView {
+            userView.active = true
+        }
+    }
+
+    func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int) {
+        if let userView = spinner.subviews[deactivatedItem] as? MPUserView {
+            userView.active = false
+        }
     }
 
     class MPUserView: UIView, UITextFieldDelegate {
@@ -215,6 +237,14 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             }
         }
 
+        override func willMove(toWindow newWindow: UIWindow?) {
+            super.willMove( toWindow: newWindow )
+
+            if newWindow == nil {
+                self.identiconTimer?.invalidate()
+            }
+        }
+
         func textFieldDidBeginEditing(_ textField: UITextField) {
             self.identiconLabel.text = nil
         }
@@ -263,24 +293,6 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                     }
                 }
             }
-        }
-    }
-
-    func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat) {
-    }
-
-    func spinner(_ spinner: MPSpinnerView, didSelectItem selectedItem: Int?) {
-    }
-
-    func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int) {
-        if let userView = spinner.subviews[activatedItem] as? MPUserView {
-            userView.active = true
-        }
-    }
-
-    func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int) {
-        if let userView = spinner.subviews[deactivatedItem] as? MPUserView {
-            userView.active = false
         }
     }
 }

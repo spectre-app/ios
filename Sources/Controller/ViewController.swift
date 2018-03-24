@@ -14,6 +14,8 @@ class ViewController: UIViewController {
     private let starsView = MPStarView()
     private let loginView = MPLoginView()
 
+    // MARK: - Life
+
     override func viewDidLoad() {
         self.view.addSubview( self.starsView )
         self.view.addSubview( self.loginView )
