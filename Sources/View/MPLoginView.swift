@@ -99,13 +99,14 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         public var user: MPUser? {
             didSet {
                 self.avatarView.image = (self.user?.avatar ?? MPUser.MPUserAvatar.avatar_add).image()
-                self.nameLabel.text = self.user?.name ?? "Tap to create a new user"
+                self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
             }
         }
 
         private let nameLabel          = UILabel()
         private let avatarView         = UIImageView()
         private let passwordField      = UITextField()
+        private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
         private let identiconLabel     = UILabel()
         private var identiconTimer:         Timer?
         private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
@@ -155,6 +156,13 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.passwordField.inputAccessoryView = self.identiconAccessory;
                 self.passwordField.isSecureTextEntry = true
                 self.passwordField.delegate = self
+
+                self.passwordIndicator.hidesWhenStopped = true
+                self.passwordIndicator.frame = self.passwordIndicator.frame.insetBy( dx: -8, dy: 0 )
+                self.passwordField.rightView = self.passwordIndicator
+                self.passwordField.leftView = UIView( frame: self.passwordIndicator.frame )
+                self.passwordField.leftViewMode = .always
+                self.passwordField.rightViewMode = .always
 
                 self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
                 self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
@@ -246,11 +254,36 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         }
 
         func textFieldDidBeginEditing(_ textField: UITextField) {
-            self.identiconLabel.text = nil
+            if textField == self.passwordField {
+                self.identiconLabel.text = nil
+            }
         }
 
         func textFieldDidEndEditing(_ textField: UITextField) {
-            self.identiconLabel.text = nil
+            if textField == self.passwordField {
+                self.identiconLabel.text = nil
+            }
+        }
+
+        func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+            if textField == self.passwordField, let masterPassword = self.passwordField.text {
+                guard masterPassword.count > 0
+                else { return false }
+
+                self.passwordIndicator.startAnimating()
+                self.passwordField.resignFirstResponder()
+
+                PearlNotMainQueue {
+                    self.user!.authenticate( masterPassword: masterPassword )
+
+                    PearlMainQueue {
+                        self.passwordIndicator.stopAnimating()
+                    }
+                }
+                return true
+            }
+
+            return true
         }
 
         func setNeedsIdenticon() {
@@ -263,7 +296,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
         @objc
         func updateIdenticon() {
-            if let userName = self.user?.name {
+            if let userName = self.user?.fullName {
                 userName.withCString { userName in
                     if let masterPassword = self.passwordField.text {
                         masterPassword.withCString { masterPassword in

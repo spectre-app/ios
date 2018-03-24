@@ -6,12 +6,25 @@
 import Foundation
 
 class MPUser {
-    let name:   String
-    var avatar: MPUserAvatar
+    let fullName:  String
+    var avatar:    MPUserAvatar
+    var masterKey: Data?
+
+    // MARK: - Life
 
     init(named name: String, avatar: MPUserAvatar = .avatar_0) {
-        self.name = name;
+        self.fullName = name;
         self.avatar = avatar;
+    }
+
+    // MARK: - Interface
+
+    func authenticate(masterPassword: String) {
+        self.masterKey = masterPassword.withCString { masterPassword in
+            fullName.withCString { fullName in
+                Data( bytes: mpw_masterKey( fullName, masterPassword, .versionCurrent ), count: MPMasterKeySize )
+            }
+        }
     }
 
     enum MPUserAvatar: Int {
