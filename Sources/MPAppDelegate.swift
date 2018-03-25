@@ -1,5 +1,5 @@
 //
-//  AppDelegate.swift
+//  MPAppDelegate.swift
 //  MasterPassword
 //
 //  Created by Maarten Billemont on 2018-01-21.
@@ -9,17 +9,16 @@
 import UIKit
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow?
+    let window: UIWindow = UIWindow()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         PearlLogger.get().printLevel = .trace
 
         // Start UI
-        self.window = UIWindow()
-        self.window!.rootViewController = ViewController()
-        self.window!.makeKeyAndVisible()
+        self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
+        self.window.makeKeyAndVisible()
 
         return true
     }

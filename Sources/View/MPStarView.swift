@@ -44,7 +44,7 @@ class MPStarView: UIView {
     }
 
     required init?(coder aDecoder: NSCoder) {
-        super.init( coder: aDecoder )
+        fatalError( "init(coder:) is not supported for this class" )
     }
 
     override func willMove(toWindow newWindow: UIWindow?) {
@@ -53,6 +53,7 @@ class MPStarView: UIView {
         if (newWindow == nil) {
             self.motionManager.stopDeviceMotionUpdates()
         }
+
         else {
             if self.motionManager.isDeviceMotionAvailable {
                 self.motionManager.deviceMotionUpdateInterval = 1 / self.fps
@@ -62,9 +63,8 @@ class MPStarView: UIView {
                     if let error = error {
                         err( "Core Motion error: \(error)" )
                     }
-                    guard let data = data else {
-                        return
-                    }
+                    guard let data = data
+                    else { return }
 
                     let initialAttitude = self.initialAttitude ?? data.attitude
                     if self.initialAttitude == nil {
@@ -265,7 +265,7 @@ class MPStarView: UIView {
                     x: bounds.origin.x + self.location.x * bounds.size.width + padding.width * CGFloat( self.distance * rolled ),
                     y: bounds.origin.y + self.location.y * bounds.size.height + padding.height * CGFloat( self.distance * pitched ) )
             if center.x - CGFloat( 2 * self.radius ) < bounds.minX || center.x + CGFloat( 2 * self.radius ) > bounds.maxX ||
-               center.y - CGFloat( 2 * self.radius ) < bounds.minY || center.y + CGFloat( 2 * self.radius ) > bounds.maxY {
+                       center.y - CGFloat( 2 * self.radius ) < bounds.minY || center.y + CGFloat( 2 * self.radius ) > bounds.maxY {
                 return
             }
 
