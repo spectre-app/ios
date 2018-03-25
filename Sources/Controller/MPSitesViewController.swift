@@ -11,6 +11,5 @@ class MPSitesViewController: UIViewController {
     // MARK: - Life
 
     override func viewDidLoad() {
-
     }
 }

@@ -16,11 +16,14 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     // MARK: - Life
 
     override init(rootViewController: UIViewController) {
-        super.init( nibName: nil, bundle: nil )
+        super.init( rootViewController: rootViewController )
+    }
 
-        self.delegate = self
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
+
         self.isNavigationBarHidden = true
-        self.pushViewController( rootViewController, animated: true )
+        self.delegate = self
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -30,11 +33,12 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     override func viewDidLoad() {
         self.view.insertSubview( self.starsView, at: 0 )
 
-        self.starsView.translatesAutoresizingMaskIntoConstraints = false
-        self.starsView.topAnchor.constraint( equalTo: self.view.topAnchor ).activate()
-        self.starsView.leadingAnchor.constraint( equalTo: self.view.leadingAnchor ).activate()
-        self.starsView.trailingAnchor.constraint( equalTo: self.view.trailingAnchor ).activate()
-        self.starsView.bottomAnchor.constraint( equalTo: self.view.bottomAnchor ).activate()
+        ViewConfiguration( view: self.starsView )
+                .add { $0.topAnchor.constraint( equalTo: self.view.topAnchor ) }
+                .add { $0.leadingAnchor.constraint( equalTo: self.view.leadingAnchor ) }
+                .add { $0.trailingAnchor.constraint( equalTo: self.view.trailingAnchor ) }
+                .add { $0.bottomAnchor.constraint( equalTo: self.view.bottomAnchor ) }
+                .activate()
     }
 
     // MARK: - UINavigationControllerDelegate

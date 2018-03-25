@@ -17,14 +17,15 @@ class MPUsersViewController: UIViewController {
     override func viewDidLoad() {
         self.view.addSubview( self.loginView )
 
-        self.loginView.translatesAutoresizingMaskIntoConstraints = false
-        self.loginView.topAnchor.constraint( equalTo: self.view.topAnchor ).activate()
-        self.loginView.leadingAnchor.constraint( equalTo: self.view.leadingAnchor ).activate()
-        self.loginView.trailingAnchor.constraint( equalTo: self.view.trailingAnchor ).activate()
-        self.loginView.bottomAnchor.constraint( equalTo: self.view.bottomAnchor ).updatePriority( .defaultHigh ).activate()
+        ViewConfiguration( view: self.loginView )
+                .add { $0.topAnchor.constraint( equalTo: self.view.topAnchor ) }
+                .add { $0.leadingAnchor.constraint( equalTo: self.view.leadingAnchor ) }
+                .add { $0.trailingAnchor.constraint( equalTo: self.view.trailingAnchor ) }
+                .add { $0.bottomAnchor.constraint( equalTo: self.view.bottomAnchor ).updatePriority( .defaultHigh ) }
+                .activate()
 
-        UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
-            return [ self.loginView.bottomAnchor.constraint( lessThanOrEqualTo: keyboardLayoutGuide.topAnchor ) ]
+        UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
+            [ $0.topAnchor.constraint( greaterThanOrEqualTo: self.loginView.bottomAnchor ) ]
         }
     }
 }
