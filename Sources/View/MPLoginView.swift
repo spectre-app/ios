@@ -7,9 +7,6 @@ import UIKit
 import pop
 
 class MPLoginView: UIView, MPSpinnerDelegate {
-
-    let usersSpinner = MPSpinnerView()
-    let nameLabel    = UILabel()
     var users        = [ MPUser ]() {
         willSet {
             for user in self.users {
@@ -24,8 +21,13 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             for user in self.users {
                 self.usersSpinner.addSubview( MPUserView( user: user ) )
             }
+
+            self.usersSpinner.selectedItem = self.usersSpinner.items - 1
         }
     }
+
+    let usersSpinner = MPSpinnerView()
+    let nameLabel    = UILabel()
 
     // MARK: - Life
 
@@ -37,12 +39,6 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         self.usersSpinner.delegate = self
 
         self.usersSpinner.setFrameFrom( "|[]|" )
-
-        defer {
-            self.users = [ MPUser( named: "Maarten Billemont", avatar: .avatar_3 ),
-                           MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 ) ]
-            self.usersSpinner.selectedItem = self.usersSpinner.items - 1
-        }
     }
 
     required init?(coder aDecoder: NSCoder) {

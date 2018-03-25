@@ -17,7 +17,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         PearlLogger.get().printLevel = .trace
 
         // Start UI
-        self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
+        self.window.rootViewController = MPNavigationController( rootViewController: MPSitesViewController() )
         self.window.makeKeyAndVisible()
 
         return true

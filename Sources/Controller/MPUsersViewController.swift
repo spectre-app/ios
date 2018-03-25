@@ -9,6 +9,8 @@
 import UIKit
 
 class MPUsersViewController: UIViewController {
+    private let users     = [ MPUser( named: "Maarten Billemont", avatar: .avatar_3 ),
+                              MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 ) ]
 
     private let loginView = MPLoginView()
 
@@ -27,6 +29,12 @@ class MPUsersViewController: UIViewController {
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
             [ $0.topAnchor.constraint( greaterThanOrEqualTo: self.loginView.bottomAnchor ) ]
         }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        self.loginView.users = self.users
     }
 }
 

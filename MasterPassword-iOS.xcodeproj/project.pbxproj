@@ -18,6 +18,7 @@
 		93D392EC39DA43C46C692C12 /* NSDictionary+Indexing.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D393B97158D7BE9332EA53 /* NSDictionary+Indexing.h */; };
 		93D3932889B6B4206E66A6D6 /* PearlEMail.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39F7C9F47BF6387FBC5C3 /* PearlEMail.h */; };
 		93D39359B0DF9823F6C56A05 /* PearlHangDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39D8508BF868907E9732E /* PearlHangDetector.h */; };
+		93D393C161EB8FA55FA5174F /* MPSitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesView.swift */; };
 		93D393DB5325820241BA90A7 /* PearlSizedTextView.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39A4759186F6D2D34AA6B /* PearlSizedTextView.h */; };
 		93D3942C1B117EE4851AA7B6 /* UIView+Visible.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3952910EDB8E0EBC94BA9 /* UIView+Visible.m */; };
 		93D39536EB550E811CCD04BC /* UIResponder+PearlFirstResponder.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D394482BB07F90E8FD1314 /* UIResponder+PearlFirstResponder.h */; };
@@ -38,6 +39,7 @@
 		93D3992FA1546E01F498F665 /* PearlNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D398567FD02DB2647B8CF3 /* PearlNavigationController.h */; };
 		93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
 		93D399E4BC1E092A8C8B12AE /* NSOrderedSetOrArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39FBF8FCEB4C106272334 /* NSOrderedSetOrArray.h */; };
+		93D39A2954B245FC0D925312 /* MPSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPSite.swift */; };
 		93D39A53D76CA70786423458 /* UICollectionView+PearlReloadItems.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */; };
 		93D39A8EA1C49CE43B63F47B /* PearlUICollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D8A953779B35403AF6E /* PearlUICollectionView.m */; };
 		93D39AA4A0BE66A872CCC02E /* NSPersistentStore+PearlMigration.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D397F4BAFFF7CF3F1B21A4 /* NSPersistentStore+PearlMigration.h */; };
@@ -357,6 +359,7 @@
 		1BD89466760B83CE30B9ECED /* Pods_Pearl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pearl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F5740BEFF88DA7457A3AE61 /* Pods-MasterPassword.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.debug.xcconfig"; sourceTree = "<group>"; };
 		8673E273737E67D2A774177F /* Pods-MasterPassword.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.release.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.release.xcconfig"; sourceTree = "<group>"; };
+		93D3903B1B32B494FBD792EC /* MPSitesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesView.swift; sourceTree = "<group>"; };
 		93D39067C0AFDC581794E2B8 /* NSArray+Indexing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+Indexing.m"; sourceTree = "<group>"; };
 		93D3908853D4BE6569DCC64F /* UIUtils+MP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIUtils+MP.h"; sourceTree = "<group>"; };
 		93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UICollectionView+PearlReloadItems.m"; sourceTree = "<group>"; };
@@ -413,6 +416,7 @@
 		93D39D8A953779B35403AF6E /* PearlUICollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlUICollectionView.m; sourceTree = "<group>"; };
 		93D39DE2CB351D4E3789462B /* UIScrollView+PearlAdjustInsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+PearlAdjustInsets.h"; sourceTree = "<group>"; };
 		93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPNavigationController.swift; sourceTree = "<group>"; };
+		93D39F718C1C38C46D9D5078 /* MPSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSite.swift; sourceTree = "<group>"; };
 		93D39F7C9F47BF6387FBC5C3 /* PearlEMail.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlEMail.h; sourceTree = "<group>"; };
 		93D39F9106F2CCFB94283188 /* NSError+PearlFullDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError+PearlFullDescription.m"; sourceTree = "<group>"; };
 		93D39FBF8FCEB4C106272334 /* NSOrderedSetOrArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSOrderedSetOrArray.h; sourceTree = "<group>"; };
@@ -1217,6 +1221,7 @@
 			isa = PBXGroup;
 			children = (
 				93D39169E1BADEFA0517D4D2 /* MPUser.swift */,
+				93D39F718C1C38C46D9D5078 /* MPSite.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -1227,6 +1232,7 @@
 				93D39633973C6D2EAB335D68 /* MPStarView.swift */,
 				93D397615F791F856B7814B9 /* MPLoginView.swift */,
 				93D39424D508440582DC7FD0 /* MPSpinnerView.swift */,
+				93D3903B1B32B494FBD792EC /* MPSitesView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2905,6 +2911,8 @@
 				93D39EBD5353FE65B8F5EDF7 /* ViewConfiguration.m in Sources */,
 				93D3960D18CFE6BBCD31C84E /* MPSitesViewController.swift in Sources */,
 				93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */,
+				93D39A2954B245FC0D925312 /* MPSite.swift in Sources */,
+				93D393C161EB8FA55FA5174F /* MPSitesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

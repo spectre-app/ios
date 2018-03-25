@@ -9,12 +9,20 @@ class MPUser {
     let fullName:  String
     var avatar:    MPUserAvatar
     var masterKey: Data?
+    var sites = [ MPSite ]()
 
     // MARK: - Life
 
     init(named name: String, avatar: MPUserAvatar = .avatar_0) {
-        self.fullName = name;
-        self.avatar = avatar;
+        self.fullName = name
+        self.avatar = avatar
+
+        self.sites.append( MPSite( named: "apple.com", uses: 5, lastUsed: Date().addingTimeInterval( -1000 ) ) )
+        self.sites.append( MPSite( named: "google.com", uses: 20, lastUsed: Date().addingTimeInterval( -2000 ) ) )
+        self.sites.append( MPSite( named: "twitter.com", uses: 3, lastUsed: Date().addingTimeInterval( -5000 ) ) )
+        self.sites.append( MPSite( named: "reddit.com", uses: 8, lastUsed: Date().addingTimeInterval( -10000 ) ) )
+        self.sites.append( MPSite( named: "pinterest.com", uses: 7, lastUsed: Date().addingTimeInterval( -12000 ) ) )
+        self.sites.append( MPSite( named: "whatsapp.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
     }
 
     // MARK: - Interface

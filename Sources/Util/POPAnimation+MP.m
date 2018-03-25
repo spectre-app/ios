@@ -17,7 +17,7 @@
 
 + (instancetype)animationWithFloatAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass {
 
-    return [self animationWithFloatAtKeyPath:aKeyPath onClass:aClass threshold:0.01];
+    return [self animationWithFloatAtKeyPath:aKeyPath onClass:aClass threshold:0.01f];
 }
 
 + (instancetype)animationWithFloatAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass threshold:(CGFloat)threshold {
@@ -37,7 +37,7 @@
 
 + (instancetype)animationWithPointAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass {
 
-    return [self animationWithPointAtKeyPath:aKeyPath onClass:aClass threshold:0.01];
+    return [self animationWithPointAtKeyPath:aKeyPath onClass:aClass threshold:0.01f];
 }
 
 + (instancetype)animationWithPointAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass threshold:(CGFloat)threshold {
@@ -59,7 +59,7 @@
 
 + (instancetype)animationWithSizeAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass {
 
-    return [self animationWithSizeAtKeyPath:aKeyPath onClass:aClass threshold:0.01];
+    return [self animationWithSizeAtKeyPath:aKeyPath onClass:aClass threshold:0.01f];
 }
 
 + (instancetype)animationWithSizeAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass threshold:(CGFloat)threshold {
@@ -82,7 +82,7 @@
 
 + (instancetype)animationWithRectAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass {
 
-    return [self animationWithRectAtKeyPath:aKeyPath onClass:aClass threshold:0.01];
+    return [self animationWithRectAtKeyPath:aKeyPath onClass:aClass threshold:0.01f];
 }
 
 + (instancetype)animationWithRectAtKeyPath:(NSString *)aKeyPath onClass:(Class)aClass threshold:(CGFloat)threshold {
@@ -118,7 +118,7 @@
                             UIFont *font = [obj valueForKeyPath:aKeyPath];
                             [obj setValue:[font fontWithSize:values[0]] forKey:aKeyPath];
                         };
-                        prop.threshold = 0.01;
+                        prop.threshold = 0.01f;
                     }]];
 }
 
