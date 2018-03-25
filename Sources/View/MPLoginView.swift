@@ -79,17 +79,12 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
                 UIView.animate( withDuration: self.superview == nil ? 0.0: 0.6 ) {
                     self.passwordField.alpha = self.active ? 1: 0
-                    self.identiconLabel.alpha = self.active ? 1: 0
 
                     if self.active {
-                        self.passwordField.becomeFirstResponder()
-                        self.idBadgeConfiguration.activate();
-                        self.authBadgeConfiguration.activate();
+                        self.passwordConfiguration.activate()
                     }
                     else {
-                        self.passwordField.resignFirstResponder()
-                        self.idBadgeConfiguration.deactivate();
-                        self.authBadgeConfiguration.deactivate();
+                        self.passwordConfiguration.deactivate()
                     }
                 }
 
@@ -108,12 +103,11 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         private let passwordField      = UITextField()
         private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
         private let identiconLabel     = UILabel()
-        private var identiconTimer:         Timer?
+        private var identiconTimer:        Timer?
         private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
         private let idBadgeView        = UIImageView( image: UIImage( named: "icon_person" ) )
         private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
-        private var idBadgeConfiguration:   ViewConfiguration!
-        private var authBadgeConfiguration: ViewConfiguration!
+        private var passwordConfiguration: ViewConfiguration!
         private var path               = CGMutablePath()
 
         init(user: MPUser?) {
@@ -188,22 +182,33 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                         .add { $0.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ) }
                         .add { $0.bottomAnchor.constraint( equalTo: self.layoutMarginsGuide.bottomAnchor ) }
                         .activate()
-                self.idBadgeConfiguration = ViewConfiguration( view: self.idBadgeView ) { active, inactive in
-                    active.add { $0.trailingAnchor.constraint( equalTo: self.avatarView.leadingAnchor ) }
-                    active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+
+                self.passwordConfiguration = ViewConfiguration( view: self.passwordField ) { active, inactive in
                     active.add( 1, forKey: "alpha" )
-                    inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
-                    inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                    active.add( true, forKey: "enabled" )
+                    active.becomeFirstResponder()
                     inactive.add( 0, forKey: "alpha" )
+                    inactive.add( false, forKey: "enabled" )
+                    inactive.add( nil, forKey: "text" )
+                    inactive.resignFirstResponder()
                 }
-                self.authBadgeConfiguration = ViewConfiguration( view: self.authBadgeView ) { active, inactive in
-                    active.add { $0.leadingAnchor.constraint( equalTo: self.avatarView.trailingAnchor ) }
-                    active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
-                    active.add( 1, forKey: "alpha" )
-                    inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
-                    inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
-                    inactive.add( 0, forKey: "alpha" )
-                }
+                        .add( ViewConfiguration( view: self.idBadgeView ) { active, inactive in
+                            active.add { $0.trailingAnchor.constraint( equalTo: self.avatarView.leadingAnchor ) }
+                            active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            active.add( 1, forKey: "alpha" )
+                            inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
+                            inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            inactive.add( 0, forKey: "alpha" )
+                        } )
+                        .add( ViewConfiguration( view: self.authBadgeView ) { active, inactive in
+                            active.add { $0.leadingAnchor.constraint( equalTo: self.avatarView.trailingAnchor ) }
+                            active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            active.add( 1, forKey: "alpha" )
+                            inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
+                            inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            inactive.add( 0, forKey: "alpha" )
+                        } )
+                        .addNeedsLayout( self )
 
                 self.user = user
                 self.active = false;
@@ -230,8 +235,10 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             super.layoutSubviews()
 
             path = CGMutablePath()
-            path.addPath( CGPathCreateBetween( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
-            path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
+            if self.passwordConfiguration.activated {
+                path.addPath( CGPathCreateBetween( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
+                path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
+            }
             self.setNeedsDisplay()
         }
 
@@ -271,13 +278,17 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 else { return false }
 
                 self.passwordIndicator.startAnimating()
-                self.passwordField.resignFirstResponder()
+                self.passwordField.isEnabled = false
 
                 PearlNotMainQueue {
                     self.user!.authenticate( masterPassword: masterPassword )
 
                     PearlMainQueue {
                         self.passwordIndicator.stopAnimating()
+
+                        UIView.animate( withDuration: 0.6 ) {
+                            self.passwordConfiguration.deactivate()
+                        }
                     }
                 }
                 return true
