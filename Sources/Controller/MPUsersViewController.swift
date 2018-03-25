@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import pop
 
 class MPUsersViewController: UIViewController {
 
@@ -26,17 +25,6 @@ class MPUsersViewController: UIViewController {
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
             return [ self.loginView.bottomAnchor.constraint( lessThanOrEqualTo: keyboardLayoutGuide.topAnchor ) ]
-        }
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear( animated )
-
-        if let anim = POPSpringAnimation( propertyNamed: kPOPViewScaleXY ) {
-            anim.fromValue = CGPoint( x: 0, y: 0 )
-            anim.toValue = CGPoint( x: 1, y: 1 )
-            anim.springSpeed = 1
-            self.loginView.pop_add( anim, forKey: "pop.scale" )
         }
     }
 }
