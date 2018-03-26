@@ -93,6 +93,7 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
 
             if let layoutAttributes = layoutAttributes as? LayoutAttributes {
                 self.nameLabel.alpha = 1 / sqrt( CGFloat( layoutAttributes.band ) )
+                self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * layoutAttributes.scale )
             }
         }
     }
@@ -100,37 +101,41 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
     class Layout: UICollectionViewLayout {
         var itemSize = CGFloat( 0 )
         var items    = [ IndexPath: LayoutAttributes ]()
+        var bounds   = CGRect.zero
 
         // MARK: - Life
 
         override func prepare() {
             super.prepare()
 
-            self.itemSize = min( self.collectionViewContentSize.width / 2, self.collectionViewContentSize.height / 2 )
+            let viewSize = self.collectionView?.bounds.size ?? .zero
+            self.itemSize = min( viewSize.width / 2, viewSize.height / 2 )
             self.items.removeAll()
 
             let section = 0
             guard self.collectionView?.numberOfSections ?? 0 > section
             else { return }
 
-            let center = CGPoint(
-                    x: self.collectionViewContentSize.width / 2,
-                    y: self.collectionViewContentSize.height / 2 )
+            let items    = self.collectionView?.numberOfItems( inSection: section ) ?? 0
+            var band     = 1
 
-            let items = self.collectionView?.numberOfItems( inSection: section ) ?? 0
-            var band  = 1
+            self.bounds = CGRect.zero
             for item in 0..<items {
                 let indexPath = IndexPath( item: item, section: section )
                 let attr      = LayoutAttributes( forCellWith: indexPath )
-                let size      = self.itemSize / sqrt( CGFloat( band ) )
                 attr.band = band
+                attr.scale = 1 / sqrt( CGFloat( band ) )
+
+                let size = self.itemSize * attr.scale
                 attr.size = CGSize( width: size, height: size )
-                attr.center = center
                 let x = (Double( item - 1 ) * .pi) / pow( 2.0, Double( band ) )
-                attr.center.x += CGFloat( band - 1 ) * size * CGFloat( sin( x ) )
-                attr.center.y -= CGFloat( band - 1 ) * size * CGFloat( cos( x ) )
+                attr.center = CGPoint(
+                        x: CGFloat( band - 1 ) * size * CGFloat( sin( x ) ),
+                        y: CGFloat( band - 1 ) * size * CGFloat( -cos( x ) ) )
                 attr.zIndex = -item
                 self.items[indexPath] = attr
+
+                self.bounds = self.bounds.union( CGRectFromCenterWithSize( attr.center, viewSize ) )
 
                 // TODO: Make band calculation less procedural and fucked up.
                 let y = (Double( item ) * .pi) / pow( 2.0, Double( band ) )
@@ -138,10 +143,17 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
                     band += 1
                 }
             }
+
+            self.bounds.origin = .zero
+            let center = CGRectGetCenter( self.bounds )
+            for item in self.items.values {
+                item.center.x += center.x
+                item.center.y += center.y
+            }
         }
 
         override var collectionViewContentSize: CGSize {
-            return self.collectionView?.bounds.size ?? .zero
+            return self.bounds.size
         }
 
         override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
@@ -158,11 +170,13 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
     }
 
     class LayoutAttributes: UICollectionViewLayoutAttributes {
-        var band : Int = 0
+        var band:  Int     = 0
+        var scale: CGFloat = 1
 
         override func copy(with zone: NSZone? = nil) -> Any {
-            let copy = super.copy(with: zone) as! LayoutAttributes
+            let copy = super.copy( with: zone ) as! LayoutAttributes
             copy.band = self.band
+            copy.scale = self.scale
             return copy
         }
     }
