@@ -34,29 +34,29 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate {
         self.view.addSubview( self.sitesView )
 
         ViewConfiguration( view: self.topContainer )
-                .add { $0.topAnchor.constraint( equalTo: self.view.topAnchor ) }
-                .add { $0.leadingAnchor.constraint( equalTo: self.view.leadingAnchor ) }
-                .add { $0.trailingAnchor.constraint( equalTo: self.view.trailingAnchor ) }
+                .add { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                .add { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                .add { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.searchField )
-                .add { $0.topAnchor.constraint( equalTo: $0.superview!.layoutMarginsGuide.topAnchor ) }
-                .add { $0.leadingAnchor.constraint( equalTo: $0.superview!.layoutMarginsGuide.leadingAnchor ) }
-                .add { $0.trailingAnchor.constraint( equalTo: $0.superview!.layoutMarginsGuide.trailingAnchor ) }
-                .add { $0.bottomAnchor.constraint( equalTo: $0.superview!.layoutMarginsGuide.bottomAnchor ) }
+                .add { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                .add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.sitesView )
-                .add { $0.topAnchor.constraint( equalTo: self.topContainer.bottomAnchor ) }
-                .add { $0.leadingAnchor.constraint( equalTo: self.view.leadingAnchor ) }
-                .add { $0.trailingAnchor.constraint( equalTo: self.view.trailingAnchor ) }
-                .add { $0.bottomAnchor.constraint( equalTo: self.userNameLabel.topAnchor ) }
+                .add { self.topContainer.bottomAnchor.constraint( equalTo: $1.topAnchor ) }
+                .add { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                .add { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                .add { self.userNameLabel.topAnchor.constraint( equalTo: $1.bottomAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.userNameLabel )
-                .add { $0.leadingAnchor.constraint( equalTo: self.view.layoutMarginsGuide.leadingAnchor ) }
-                .add { $0.trailingAnchor.constraint( equalTo: self.view.layoutMarginsGuide.trailingAnchor ) }
-                .add { $0.bottomAnchor.constraint( equalTo: self.view.layoutMarginsGuide.bottomAnchor ) }
+                .add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                 .activate()
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {

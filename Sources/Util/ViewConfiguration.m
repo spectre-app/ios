@@ -215,14 +215,9 @@
     return self;
 }
 
-//- (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *view, UIView *superview))constraintBlock {
-//
-//    return [self addConstraint:constraintBlock( self.view, self.view.superview )];
-//}
-//
-- (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *view))constraintBlock {
+- (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock {
 
-    return [self addConstraint:constraintBlock( self.view )];
+    return [self addConstraint:constraintBlock( self.view.superview, self.view )];
 }
 
 - (instancetype)addFloat:(CGFloat)value forKey:(NSString *)key {

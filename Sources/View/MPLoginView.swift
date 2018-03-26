@@ -7,7 +7,7 @@ import UIKit
 import pop
 
 class MPLoginView: UIView, MPSpinnerDelegate {
-    var users        = [ MPUser ]() {
+    var users = [ MPUser ]() {
         willSet {
             for user in self.users {
                 for subview in self.usersSpinner.subviews {
@@ -131,11 +131,11 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
                 self.identiconAccessory.addSubview( self.identiconLabel )
                 ViewConfiguration( view: self.identiconLabel )
-                        .add { $0.topAnchor.constraint( equalTo: self.identiconAccessory.topAnchor ) }
-                        .add { $0.centerXAnchor.constraint( equalTo: self.identiconAccessory.centerXAnchor ) }
-                        .add { $0.leadingAnchor.constraint( greaterThanOrEqualTo: self.identiconAccessory.leadingAnchor ) }
-                        .add { $0.trailingAnchor.constraint( lessThanOrEqualTo: self.identiconAccessory.trailingAnchor ) }
-                        .add { $0.bottomAnchor.constraint( equalTo: self.identiconAccessory.bottomAnchor ) }
+                        .add { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                        .add { $0.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
+                        .add { $0.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ) }
+                        .add { $0.trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ) }
+                        .add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                         .activate()
 
                 self.passwordField.placeholder = "Enter your master password"
@@ -164,19 +164,19 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.addSubview( self.passwordField )
 
                 ViewConfiguration( view: self.nameLabel )
-                        .add { $0.topAnchor.constraint( equalTo: self.layoutMarginsGuide.topAnchor ) }
-                        .add { $0.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ) }
-                        .add { $0.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ) }
-                        .add { $0.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -20 ) }
+                        .add { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                        .add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                        .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                        .add { self.avatarView.topAnchor.constraint( equalTo: $1.bottomAnchor, constant: 20 ) }
                         .activate()
                 ViewConfiguration( view: self.avatarView )
-                        .add { $0.centerXAnchor.constraint( equalTo: self.layoutMarginsGuide.centerXAnchor ) }
+                        .add { $0.layoutMarginsGuide.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
                         .activate()
                 ViewConfiguration( view: self.passwordField )
-                        .add { $0.topAnchor.constraint( equalTo: self.avatarView.bottomAnchor, constant: 20 ) }
-                        .add { $0.leadingAnchor.constraint( equalTo: self.layoutMarginsGuide.leadingAnchor ) }
-                        .add { $0.trailingAnchor.constraint( equalTo: self.layoutMarginsGuide.trailingAnchor ) }
-                        .add { $0.bottomAnchor.constraint( equalTo: self.layoutMarginsGuide.bottomAnchor ) }
+                        .add { self.avatarView.bottomAnchor.constraint( equalTo: $1.topAnchor, constant: -20 ) }
+                        .add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                        .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                        .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                         .activate()
 
                 self.passwordConfiguration = ViewConfiguration( view: self.passwordField ) { active, inactive in
@@ -189,19 +189,19 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                     inactive.resignFirstResponder()
                 }
                         .add( ViewConfiguration( view: self.idBadgeView ) { active, inactive in
-                            active.add { $0.trailingAnchor.constraint( equalTo: self.avatarView.leadingAnchor ) }
-                            active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            active.add { $1.trailingAnchor.constraint( equalTo: self.avatarView.leadingAnchor ) }
+                            active.add { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
                             active.add( 1, forKey: "alpha" )
-                            inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
-                            inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            inactive.add { $1.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
+                            inactive.add { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
                             inactive.add( 0, forKey: "alpha" )
                         } )
                         .add( ViewConfiguration( view: self.authBadgeView ) { active, inactive in
-                            active.add { $0.leadingAnchor.constraint( equalTo: self.avatarView.trailingAnchor ) }
-                            active.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            active.add { $1.leadingAnchor.constraint( equalTo: self.avatarView.trailingAnchor ) }
+                            active.add { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
                             active.add( 1, forKey: "alpha" )
-                            inactive.add { $0.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
-                            inactive.add { $0.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                            inactive.add { $1.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
+                            inactive.add { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
                             inactive.add( 0, forKey: "alpha" )
                         } )
                         .addNeedsLayout( self )

@@ -29,10 +29,10 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
         self.addSubview( self.collectionView )
 
         ViewConfiguration( view: self.collectionView )
-                .add { $0.topAnchor.constraint( equalTo: self.topAnchor ) }
-                .add { $0.leadingAnchor.constraint( equalTo: self.leadingAnchor ) }
-                .add { $0.trailingAnchor.constraint( equalTo: self.trailingAnchor ) }
-                .add { $0.bottomAnchor.constraint( equalTo: self.bottomAnchor ) }
+                .add { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                .add { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                .add { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                .add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                 .activate()
     }
 
@@ -77,10 +77,10 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
             self.contentView.addSubview( self.nameLabel )
 
             ViewConfiguration( view: self.nameLabel )
-                    .add { $0.topAnchor.constraint( equalTo: self.contentView.topAnchor ) }
-                    .add { $0.leadingAnchor.constraint( equalTo: self.contentView.leadingAnchor ) }
-                    .add { $0.trailingAnchor.constraint( equalTo: self.contentView.trailingAnchor ) }
-                    .add { $0.bottomAnchor.constraint( equalTo: self.contentView.bottomAnchor ) }
+                    .add { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                    .add { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                    .add { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                    .add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                     .activate()
         }
 
@@ -161,7 +161,7 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
         var band : Int = 0
 
         override func copy(with zone: NSZone? = nil) -> Any {
-            var copy = super.copy(with: zone) as! LayoutAttributes
+            let copy = super.copy(with: zone) as! LayoutAttributes
             copy.band = self.band
             return copy
         }

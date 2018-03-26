@@ -34,10 +34,10 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
         self.view.insertSubview( self.starsView, at: 0 )
 
         ViewConfiguration( view: self.starsView )
-                .add { $0.topAnchor.constraint( equalTo: self.view.topAnchor ) }
-                .add { $0.leadingAnchor.constraint( equalTo: self.view.leadingAnchor ) }
-                .add { $0.trailingAnchor.constraint( equalTo: self.view.trailingAnchor ) }
-                .add { $0.bottomAnchor.constraint( equalTo: self.view.bottomAnchor ) }
+                .add { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                .add { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                .add { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                .add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                 .activate()
     }
 
