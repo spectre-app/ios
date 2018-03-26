@@ -23,6 +23,16 @@ class MPUser {
         self.sites.append( MPSite( named: "reddit.com", uses: 8, lastUsed: Date().addingTimeInterval( -10000 ) ) )
         self.sites.append( MPSite( named: "pinterest.com", uses: 7, lastUsed: Date().addingTimeInterval( -12000 ) ) )
         self.sites.append( MPSite( named: "whatsapp.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "ivpn.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "amazon.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "matrix.org", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "spotify.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "netflix.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "uber.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "battle.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "gandi.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "ebay.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( named: "last.fm", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
     }
 
     // MARK: - Interface

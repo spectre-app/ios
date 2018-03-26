@@ -215,6 +215,11 @@
     return self;
 }
 
+//- (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *view, UIView *superview))constraintBlock {
+//
+//    return [self addConstraint:constraintBlock( self.view, self.view.superview )];
+//}
+//
 - (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *view))constraintBlock {
 
     return [self addConstraint:constraintBlock( self.view )];

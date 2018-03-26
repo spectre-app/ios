@@ -17,7 +17,11 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         PearlLogger.get().printLevel = .trace
 
         // Start UI
-        self.window.rootViewController = MPNavigationController( rootViewController: MPSitesViewController() )
+        if #available(iOS 10.0, *) {
+            self.window.rootViewController = MPNavigationController( rootViewController: MPSitesViewController() )
+        } else {
+            // Fallback on earlier versions
+        }
         self.window.makeKeyAndVisible()
 
         return true

@@ -58,6 +58,7 @@ CF_IMPLICIT_BRIDGING_ENABLED
 // Convenience alternatives.
 
 - (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *view))constraintBlock;
+//- (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *view, UIView *superview))constraintBlock;
 - (instancetype)addFloat:(CGFloat)value forKey:(NSString *)key;
 - (instancetype)addPoint:(CGPoint)value forKey:(NSString *)key;
 - (instancetype)addSize:(CGSize)value forKey:(NSString *)key;
