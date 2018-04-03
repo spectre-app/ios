@@ -16,7 +16,7 @@ CF_IMPLICIT_BRIDGING_ENABLED
 //! The view upon which this configuration's operations operate.
 @property(nonatomic, readonly, strong) UIView *view;
 //! Whether this configuration has last been activated or deactivated.
-@property(nonatomic, readonly, assign) BOOL activated;
+@property(nonatomic, readwrite, assign) BOOL activated;
 //! Child configurations which will be activated when this configuration is activated and deactivated when this configuration is deactivated.
 @property(nonatomic, readonly, strong) NSMutableArray<ViewConfiguration *> *activeConfigurations;
 //! Child configurations which will be deactivated when this configuration is activated and activated when this configuration is deactivated.
@@ -61,6 +61,11 @@ CF_IMPLICIT_BRIDGING_ENABLED
  * @param constraintBlock \c $0 superview; \c $1 configuration view
  */
 - (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock;
+- (instancetype)addConstraintedInSuperview;
+- (instancetype)addConstraintedInSuperviewForAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)addConstraintedInSuperviewMargins;
+- (instancetype)addConstraintedInSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes;
+
 - (instancetype)addFloat:(CGFloat)value forKey:(NSString *)key;
 - (instancetype)addPoint:(CGPoint)value forKey:(NSString *)key;
 - (instancetype)addSize:(CGSize)value forKey:(NSString *)key;

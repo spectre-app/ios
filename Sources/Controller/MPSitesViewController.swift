@@ -40,10 +40,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate {
                 .activate()
 
         ViewConfiguration( view: self.searchField )
-                .add { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                .add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                .addConstraintedInSuperview()
                 .activate()
 
         ViewConfiguration( view: self.sitesView )

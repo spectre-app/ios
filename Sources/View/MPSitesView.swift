@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource {
+class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     var user: MPUser? {
         willSet {
         }
@@ -29,10 +29,7 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
         self.addSubview( self.collectionView )
 
         ViewConfiguration( view: self.collectionView )
-                .add { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                .add { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .add { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                .add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                .addConstraintedInSuperview()
                 .activate()
     }
 
@@ -42,11 +39,13 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
 
     // MARK: - UICollectionViewDataSource
 
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int)
+                    -> Int {
         return self.user?.sites.count ?? 0
     }
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath)
+                    -> UICollectionViewCell {
         let cell = SiteCell.dequeue( from: collectionView, indexPath: indexPath )
         cell.indexPath = indexPath
         cell.site = self.user!.sites[indexPath.item]
@@ -54,16 +53,73 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
         return cell
     }
 
+    // MARK: - UICollectionViewDelegate
+    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
+    func collectionView(_ collectionView: UICollectionView, shouldDeselectItemAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+//        collectionView.setCollectionViewLayout( Layout(), animated: true )
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+//        collectionView.setCollectionViewLayout( Layout(), animated: true )
+    }
+
+    // MARK: - UICollectionViewDelegateFlowLayout
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath)
+                    -> CGSize {
+        guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout
+        else { fatalError( "unexpected collectionView layout: \(collectionViewLayout)" ) }
+
+        let selected      = collectionView.indexPathsForSelectedItems?.contains( indexPath ) ?? false
+        let columns       = selected ? 1: 2
+        var availableSize = collectionView.bounds.size
+        availableSize.width -= flowLayout.sectionInset.left + flowLayout.sectionInset.right
+        availableSize.width -= flowLayout.minimumInteritemSpacing * CGFloat( columns - 1 )
+
+        return CGSize( width: availableSize.width / CGFloat( columns ), height: selected ? 200: 100 )
+    }
+
+    // MARK: - Types
+
+    class Layout: UICollectionViewFlowLayout {
+        override init() {
+            super.init()
+
+            self.sectionInset = UIEdgeInsetsMake( 8, 8, 8, 8 )
+            self.minimumInteritemSpacing = 8
+            self.minimumLineSpacing = 8
+        }
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+    }
+
     class SiteCell: UICollectionViewCell {
         var indexPath: IndexPath?
         var site:      MPSite! {
             didSet {
-                self.nameLabel.text = self.site.siteName
-//                self.nameLabel.text = "\(self.indexPath!.item): \(self.site.siteName)"
+                self.setNeedsLayout()
+            }
+        }
+        override var isSelected: Bool {
+            didSet {
+                self.setNeedsLayout()
             }
         }
 
-        let nameLabel = UILabel()
+        let effectView = UIVisualEffectView( effect: nil )
+        let tagView    = UIView()
+        let nameLabel  = UILabel()
+
+        var tagConfiguration: ViewConfiguration!
 
         // MARK: - Life
 
@@ -74,13 +130,24 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
             self.nameLabel.textAlignment = .center
             self.nameLabel.textColor = .white
 
-            self.contentView.addSubview( self.nameLabel )
+            self.contentView.addSubview( self.effectView )
+            self.effectView.contentView.addSubview( self.tagView )
+            self.effectView.contentView.addSubview( self.nameLabel )
 
+            self.tagView.layer.masksToBounds = true
+
+            ViewConfiguration( view: self.effectView )
+                    .addConstraintedInSuperview()
+                    .activate()
+            self.tagConfiguration = ViewConfiguration( view: self.tagView ) { active, inactive in
+                active.addConstraintedInSuperview()
+                inactive.addConstraintedInSuperview( forAttributes: [ .alignAllTop, .alignAllBottom ] )
+                inactive.add { $0.leadingAnchor.constraint( equalTo: $1.centerXAnchor ) }
+                inactive.add { $0.heightAnchor.constraint( equalTo: $1.heightAnchor ) }
+                inactive.add { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+            }
             ViewConfiguration( view: self.nameLabel )
-                    .add { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                    .add { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                    .add { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                    .add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                    .addConstraintedInSuperview()
                     .activate()
         }
 
@@ -88,96 +155,20 @@ class MPSitesView: UIView, UICollectionViewDelegate, UICollectionViewDataSource 
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
-            super.apply( layoutAttributes )
+        override func layoutSubviews() {
+            super.layoutSubviews()
 
-            if let layoutAttributes = layoutAttributes as? LayoutAttributes {
-                self.nameLabel.alpha = 1 / sqrt( CGFloat( layoutAttributes.band ) )
-                self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * layoutAttributes.scale )
-            }
-        }
-    }
-
-    class Layout: UICollectionViewLayout {
-        var itemSize = CGFloat( 0 )
-        var items    = [ IndexPath: LayoutAttributes ]()
-        var bounds   = CGRect.zero
-
-        // MARK: - Life
-
-        override func prepare() {
-            super.prepare()
-
-            let viewSize = self.collectionView?.bounds.size ?? .zero
-            self.itemSize = min( viewSize.width / 2, viewSize.height / 2 )
-            self.items.removeAll()
-
-            let section = 0
-            guard self.collectionView?.numberOfSections ?? 0 > section
-            else { return }
-
-            let items    = self.collectionView?.numberOfItems( inSection: section ) ?? 0
-            var band     = 1
-
-            self.bounds = CGRect.zero
-            for item in 0..<items {
-                let indexPath = IndexPath( item: item, section: section )
-                let attr      = LayoutAttributes( forCellWith: indexPath )
-                attr.band = band
-                attr.scale = 1 / sqrt( CGFloat( band ) )
-
-                let size = self.itemSize * attr.scale
-                attr.size = CGSize( width: size, height: size )
-                let x = (Double( item - 1 ) * .pi) / pow( 2.0, Double( band ) )
-                attr.center = CGPoint(
-                        x: CGFloat( band - 1 ) * size * CGFloat( sin( x ) ),
-                        y: CGFloat( band - 1 ) * size * CGFloat( -cos( x ) ) )
-                attr.zIndex = -item
-                self.items[indexPath] = attr
-
-                self.bounds = self.bounds.union( CGRectFromCenterWithSize( attr.center, viewSize ) )
-
-                // TODO: Make band calculation less procedural and fucked up.
-                let y = (Double( item ) * .pi) / pow( 2.0, Double( band ) )
-                if y / (2 * .pi) == (y / (2 * .pi)).rounded( .down ) {
-                    band += 1
-                }
-            }
-
-            self.bounds.origin = .zero
-            let center = CGRectGetCenter( self.bounds )
-            for item in self.items.values {
-                item.center.x += center.x
-                item.center.y += center.y
-            }
-        }
-
-        override var collectionViewContentSize: CGSize {
-            return self.bounds.size
-        }
-
-        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-            return [ LayoutAttributes ]( self.items.values )
-        }
-
-        override func layoutAttributesForItem(at indexPath: IndexPath) -> LayoutAttributes? {
-            return self.items[indexPath]
-        }
-
-        override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-            return true
-        }
-    }
-
-    class LayoutAttributes: UICollectionViewLayoutAttributes {
-        var band:  Int     = 0
-        var scale: CGFloat = 1
-
-        override func copy(with zone: NSZone? = nil) -> Any {
-            let copy = super.copy( with: zone ) as! LayoutAttributes
-            copy.band = self.band
-            copy.scale = self.scale
-            return copy
+            self.nameLabel.text = self.site.siteName
+//            self.nameLabel.text = "\(self.indexPath!.item): \(self.site.siteName)"
+            let color = UIColor( red: CGFloat( drand48() ), green: CGFloat( drand48() ), blue: CGFloat( drand48() ), alpha: 1 )
+            self.window!.layoutIfNeeded()
+            UIView.animate( withDuration: 3, delay: 0, options: [ .allowAnimatedContent, .beginFromCurrentState ], animations: {
+                self.effectView.effect = self.isSelected ? UIBlurEffect( style: .dark ): nil
+                self.tagConfiguration.activated = self.isSelected
+                self.tagView.layer.cornerRadius = self.tagView.bounds.size.height / 2
+                self.tagView.backgroundColor = color
+                self.window!.layoutIfNeeded()
+            }, completion: nil )
         }
     }
 }

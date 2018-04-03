@@ -8,7 +8,6 @@
 @interface ViewConfiguration()
 
 @property(nonatomic, readwrite, strong) UIView *view;
-@property(nonatomic, readwrite, assign) BOOL activated;
 @property(nonatomic, readwrite, strong) ViewConfiguration *parent;
 @property(nonatomic, readwrite, strong) NSMutableArray<NSLayoutConstraint *> *constraints;
 @property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *> *activeConfigurations;
@@ -134,6 +133,17 @@
     }];
 }
 
+- (void)setActivated:(BOOL)activated {
+
+    if (activated == _activated)
+        return;
+
+    if (activated)
+        [self activate];
+    else
+        [self deactivate];
+}
+
 - (instancetype)activate {
 
     for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
@@ -144,7 +154,7 @@
 
     for (NSLayoutConstraint *constraint in self.constraints)
         if (!constraint.active) {
-            trc( @"%@: activating %@", [self.view infoPathName], constraint );
+            //trc( @"%@: activating %@", [self.view infoPathName], constraint );
             constraint.active = YES;
         }
 
@@ -156,17 +166,19 @@
         if ([[self.inactiveValues allKeys] containsObject:key])
             self.inactiveValues[key] = oldValue;
 
-        trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
+        //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
         [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
     }];
 
-    for (void(^action)(UIView *) in self.actions)
+    for (
+            void(^action)(UIView *)
+            in self.actions)
         action( self.view );
 
     for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
         [activeConfiguration activate];
 
-    self.activated = YES;
+    _activated = YES;
 
     for (UIView *view in self.layoutViews)
         [view setNeedsLayout];
@@ -186,7 +198,7 @@
 
     for (NSLayoutConstraint *constraint in self.constraints)
         if (constraint.active) {
-            trc( @"%@: deactivating %@", [self.view infoPathName], constraint );
+            //trc( @"%@: deactivating %@", [self.view infoPathName], constraint );
             constraint.active = NO;
         }
 
@@ -195,14 +207,14 @@
         if ([newValue isEqual:oldValue])
             return;
 
-        trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
+        //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
         [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
     }];
 
     for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
         [inactiveConfiguration activate];
 
-    self.activated = NO;
+    _activated = NO;
 
     for (UIView *view in self.layoutViews)
         [view setNeedsLayout];
@@ -218,6 +230,62 @@
 - (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock {
 
     return [self addConstraint:constraintBlock( self.view.superview, self.view )];
+}
+
+- (instancetype)addConstraintedInSuperview {
+
+    return [self addConstraintedInSuperviewForAttributes:
+            NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
+}
+
+- (instancetype)addConstraintedInSuperviewForAttributes:(NSLayoutFormatOptions)attributes {
+
+    if (attributes & NSLayoutFormatAlignAllTop)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.topAnchor constraintEqualToAnchor:view.topAnchor];
+        }];
+    if (attributes & NSLayoutFormatAlignAllLeading)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
+        }];
+    if (attributes & NSLayoutFormatAlignAllTrailing)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
+        }];
+    if (attributes & NSLayoutFormatAlignAllBottom)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
+        }];
+
+    return self;
+}
+
+- (instancetype)addConstraintedInSuperviewMargins {
+
+    return [self addConstraintedInSuperviewMarginsForAttributes:
+            NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
+}
+
+- (instancetype)addConstraintedInSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes {
+
+    if (attributes & NSLayoutFormatAlignAllTop)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.layoutMarginsGuide.topAnchor constraintEqualToAnchor:view.topAnchor];
+        }];
+    if (attributes & NSLayoutFormatAlignAllLeading)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.layoutMarginsGuide.leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
+        }];
+    if (attributes & NSLayoutFormatAlignAllTrailing)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.layoutMarginsGuide.trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
+        }];
+    if (attributes & NSLayoutFormatAlignAllBottom)
+        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            return [superview.layoutMarginsGuide.bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
+        }];
+
+    return self;
 }
 
 - (instancetype)addFloat:(CGFloat)value forKey:(NSString *)key {
