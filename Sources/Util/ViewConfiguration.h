@@ -22,7 +22,10 @@ CF_IMPLICIT_BRIDGING_ENABLED
 //! Child configurations which will be deactivated when this configuration is activated and activated when this configuration is deactivated.
 @property(nonatomic, readonly, strong) NSMutableArray<ViewConfiguration *> *inactiveConfigurations;
 
-//! Create a new empty configuration for the view.
+//! Create a new configuration without a view context.
++ (instancetype)configuration;
+
+//! Create a new configuration for the view.
 + (instancetype)configurationWithView:(UIView *)view;
 
 //! Create a new configuration for the view and automatically add an active and inactive child configuration for it; configure them in the block.
@@ -61,10 +64,10 @@ CF_IMPLICIT_BRIDGING_ENABLED
  * @param constraintBlock \c $0 superview; \c $1 configuration view
  */
 - (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock;
-- (instancetype)addConstraintedInSuperview;
-- (instancetype)addConstraintedInSuperviewForAttributes:(NSLayoutFormatOptions)attributes;
-- (instancetype)addConstraintedInSuperviewMargins;
-- (instancetype)addConstraintedInSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)addConstrainedInSuperview;
+- (instancetype)addConstrainedInSuperviewForAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)addConstrainedInSuperviewMargins;
+- (instancetype)addConstrainedInSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes;
 
 - (instancetype)addFloat:(CGFloat)value forKey:(NSString *)key;
 - (instancetype)addPoint:(CGPoint)value forKey:(NSString *)key;

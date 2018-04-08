@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import AlignedCollectionViewFlowLayout
 
 class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     var user: MPUser? {
@@ -29,7 +30,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         self.addSubview( self.collectionView )
 
         ViewConfiguration( view: self.collectionView )
-                .addConstraintedInSuperview()
+                .addConstrainedInSuperview()
                 .activate()
     }
 
@@ -54,20 +55,19 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
     }
 
     // MARK: - UICollectionViewDelegate
-    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-
-    func collectionView(_ collectionView: UICollectionView, shouldDeselectItemAt indexPath: IndexPath) -> Bool {
-        return true
-    }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        collectionView.setCollectionViewLayout( Layout(), animated: true )
+        UIView.animate( withDuration: 0.3, delay: 0, options: .beginFromCurrentState, animations: {
+            collectionView.performBatchUpdates( nil )
+            collectionView.layoutIfNeeded()
+        }, completion: nil )
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-//        collectionView.setCollectionViewLayout( Layout(), animated: true )
+        UIView.animate( withDuration: 0.3, delay: 0, options: .beginFromCurrentState, animations: {
+            collectionView.performBatchUpdates( nil )
+            collectionView.layoutIfNeeded()
+        }, completion: nil )
     }
 
     // MARK: - UICollectionViewDelegateFlowLayout
@@ -88,11 +88,10 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
     // MARK: - Types
 
-    class Layout: UICollectionViewFlowLayout {
-        override init() {
-            super.init()
+    class Layout: AlignedCollectionViewFlowLayout {
+        init() {
+            super.init( horizontalAlignment: .left, verticalAlignment: .center )
 
-            self.sectionInset = UIEdgeInsetsMake( 8, 8, 8, 8 )
             self.minimumInteritemSpacing = 8
             self.minimumLineSpacing = 8
         }
@@ -106,7 +105,10 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         var indexPath: IndexPath?
         var site:      MPSite! {
             didSet {
-                self.setNeedsLayout()
+                self.nameLabel.text = self.site.siteName
+//              self.nameLabel.text = "\(self.indexPath!.item): \(self.site.siteName)"
+                let color = UIColor( red: CGFloat( drand48() ), green: CGFloat( drand48() ), blue: CGFloat( drand48() ), alpha: 1 )
+                self.tagView.backgroundColor = color
             }
         }
         override var isSelected: Bool {
@@ -115,11 +117,10 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
             }
         }
 
-        let effectView = UIVisualEffectView( effect: nil )
-        let tagView    = UIView()
-        let nameLabel  = UILabel()
+        let tagView   = UIView()
+        let nameLabel = UILabel()
 
-        var tagConfiguration: ViewConfiguration!
+        var selectedConfiguration: ViewConfiguration!
 
         // MARK: - Life
 
@@ -129,26 +130,29 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
             self.nameLabel.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )
             self.nameLabel.textAlignment = .center
             self.nameLabel.textColor = .white
+            self.nameLabel.shadowColor = .black
 
-            self.contentView.addSubview( self.effectView )
-            self.effectView.contentView.addSubview( self.tagView )
-            self.effectView.contentView.addSubview( self.nameLabel )
+            self.contentView.addSubview( self.tagView )
+            self.contentView.addSubview( self.nameLabel )
 
             self.tagView.layer.masksToBounds = true
 
-            ViewConfiguration( view: self.effectView )
-                    .addConstraintedInSuperview()
-                    .activate()
-            self.tagConfiguration = ViewConfiguration( view: self.tagView ) { active, inactive in
-                active.addConstraintedInSuperview()
-                inactive.addConstraintedInSuperview( forAttributes: [ .alignAllTop, .alignAllBottom ] )
-                inactive.add { $0.leadingAnchor.constraint( equalTo: $1.centerXAnchor ) }
-                inactive.add { $0.heightAnchor.constraint( equalTo: $1.heightAnchor ) }
-                inactive.add { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-            }
-            ViewConfiguration( view: self.nameLabel )
-                    .addConstraintedInSuperview()
-                    .activate()
+            self.selectedConfiguration = ViewConfiguration()
+                    .add( ViewConfiguration( view: self.tagView ) { active, inactive in
+                        inactive.add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                        inactive.add { $0.layoutMarginsGuide.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
+                        inactive.add { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+                        inactive.add { $1.heightAnchor.constraint( equalToConstant: 40 ) }
+                        inactive.add( 20, forKey: "layer.cornerRadius" )
+                        active.addConstrainedInSuperview()
+                        active.add( 8, forKey: "layer.cornerRadius" )
+                    } )
+                    .add( ViewConfiguration( view: self.nameLabel ) { active, inactive in
+                        inactive.add { self.tagView.centerXAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                        inactive.add { self.tagView.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
+                        active.add { $0.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
+                        active.add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                    } )
         }
 
         required init?(coder aDecoder: NSCoder) {
@@ -157,18 +161,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
         override func layoutSubviews() {
             super.layoutSubviews()
-
-            self.nameLabel.text = self.site.siteName
-//            self.nameLabel.text = "\(self.indexPath!.item): \(self.site.siteName)"
-            let color = UIColor( red: CGFloat( drand48() ), green: CGFloat( drand48() ), blue: CGFloat( drand48() ), alpha: 1 )
-            self.window!.layoutIfNeeded()
-            UIView.animate( withDuration: 3, delay: 0, options: [ .allowAnimatedContent, .beginFromCurrentState ], animations: {
-                self.effectView.effect = self.isSelected ? UIBlurEffect( style: .dark ): nil
-                self.tagConfiguration.activated = self.isSelected
-                self.tagView.layer.cornerRadius = self.tagView.bounds.size.height / 2
-                self.tagView.backgroundColor = color
-                self.window!.layoutIfNeeded()
-            }, completion: nil )
+            self.selectedConfiguration.activated = self.isSelected
         }
     }
 }

@@ -23,6 +23,11 @@
 @implementation ViewConfiguration {
 }
 
++ (instancetype)configuration {
+
+    return [self configurationWithParent:nil];
+}
+
 + (instancetype)configurationWithView:(UIView *)view {
 
     return [self configurationWithView:view configurations:nil];
@@ -232,13 +237,13 @@
     return [self addConstraint:constraintBlock( self.view.superview, self.view )];
 }
 
-- (instancetype)addConstraintedInSuperview {
+- (instancetype)addConstrainedInSuperview {
 
-    return [self addConstraintedInSuperviewForAttributes:
+    return [self addConstrainedInSuperviewForAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)addConstraintedInSuperviewForAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)addConstrainedInSuperviewForAttributes:(NSLayoutFormatOptions)attributes {
 
     if (attributes & NSLayoutFormatAlignAllTop)
         [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
@@ -260,13 +265,13 @@
     return self;
 }
 
-- (instancetype)addConstraintedInSuperviewMargins {
+- (instancetype)addConstrainedInSuperviewMargins {
 
-    return [self addConstraintedInSuperviewMarginsForAttributes:
+    return [self addConstrainedInSuperviewMarginsForAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)addConstraintedInSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)addConstrainedInSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes {
 
     if (attributes & NSLayoutFormatAlignAllTop)
         [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {

@@ -40,7 +40,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate {
                 .activate()
 
         ViewConfiguration( view: self.searchField )
-                .addConstraintedInSuperview()
+                .addConstrainedInSuperview()
                 .activate()
 
         ViewConfiguration( view: self.sitesView )
