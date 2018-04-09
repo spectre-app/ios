@@ -74,7 +74,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath)
                     -> CGSize {
-        guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout
+        guard let flowLayout = collectionViewLayout as? Layout
         else { fatalError( "unexpected collectionView layout: \(collectionViewLayout)" ) }
 
         let selected      = collectionView.indexPathsForSelectedItems?.contains( indexPath ) ?? false
@@ -101,14 +101,13 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         }
     }
 
-    class SiteCell: UICollectionViewCell {
+    class SiteCell: UICollectionViewCell, MPSiteObserver {
         var indexPath: IndexPath?
-        var site:      MPSite! {
+        var site:      MPSite? {
             didSet {
-                self.nameLabel.text = self.site.siteName
-//              self.nameLabel.text = "\(self.indexPath!.item): \(self.site.siteName)"
-                let color = UIColor( red: CGFloat( drand48() ), green: CGFloat( drand48() ), blue: CGFloat( drand48() ), alpha: 1 )
-                self.tagView.backgroundColor = color
+                if let site = self.site {
+                    site.observers.register( self ).siteDidChange()
+                }
             }
         }
         override var isSelected: Bool {
@@ -126,6 +125,14 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
         override init(frame: CGRect) {
             super.init( frame: frame )
+
+            self.tagView.layer.cornerRadius = 4;
+            self.tagView.layer.shadowOffset = .zero;
+            self.tagView.layer.shadowRadius = 5;
+            self.tagView.layer.shadowOpacity = 0;
+            self.tagView.layer.shadowColor = UIColor.white.cgColor;
+            self.tagView.layer.borderWidth = 1;
+            self.tagView.layer.borderColor = UIColor( white: 0.15, alpha: 0.6 ).cgColor;
 
             self.nameLabel.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )
             self.nameLabel.textAlignment = .center
@@ -162,6 +169,15 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         override func layoutSubviews() {
             super.layoutSubviews()
             self.selectedConfiguration.activated = self.isSelected
+        }
+
+        // MARK: - MPSiteObserver
+        func siteDidChange() {
+            PearlMainQueue {
+//          self.nameLabel.text = "\(self.indexPath!.item): \(self.site.siteName)"
+                self.nameLabel.text = self.site?.siteName
+                self.tagView.backgroundColor = self.site?.color
+            }
         }
     }
 }

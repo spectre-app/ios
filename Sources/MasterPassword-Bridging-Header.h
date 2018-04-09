@@ -4,8 +4,11 @@
 
 #import "Pearl-Bridging-Header.h"
 
+#import <CommonCrypto/CommonCrypto.h>
+
 #import "POPAnimation+MP.h"
 #import "UIUtils+MP.h"
 #import "ViewConfiguration.h"
+#import "Observers.h"
 
 #import "mpw-algorithm.h"
