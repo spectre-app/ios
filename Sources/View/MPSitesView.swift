@@ -48,8 +48,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath)
                     -> UICollectionViewCell {
         let cell = SiteCell.dequeue( from: collectionView, indexPath: indexPath )
-        cell.indexPath = indexPath
-        cell.site = self.user!.sites[indexPath.item]
+        cell.site = self.user?.sites[indexPath.item]
 
         return cell
     }
@@ -57,34 +56,36 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
     // MARK: - UICollectionViewDelegate
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        UIView.animate( withDuration: 0.3, delay: 0, options: .beginFromCurrentState, animations: {
-            collectionView.performBatchUpdates( nil )
-            collectionView.layoutIfNeeded()
-        }, completion: nil )
+//        collectionView.collectionViewLayout.invalidateLayout()
+//        collectionView.setCollectionViewLayout(Layout(), animated: true)
+//        UIView.animate( withDuration: 2, delay: 0, options: .beginFromCurrentState, animations: {
+//            collectionView.collectionViewLayout.invalidateLayout()
+        collectionView.performBatchUpdates( {
+//                let context = UICollectionViewFlowLayoutInvalidationContext()
+//                context.invalidateFlowLayoutDelegateMetrics = true
+//                context.invalidateFlowLayoutAttributes = true
+//                collectionView.collectionViewLayout.invalidateLayout( with: context )
+//                collectionView.setNeedsLayout()
+        } )
+//        collectionView.setNeedsUpdateConstraints()
+//        collectionView.setNeedsLayout()
+//        collectionView.setNeedsDisplay()
+//        collectionView.layoutIfNeeded()
+//            collectionView.performBatchUpdates( nil )
+//            collectionView.reloadData()
+//        }, completion: nil )
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        UIView.animate( withDuration: 0.3, delay: 0, options: .beginFromCurrentState, animations: {
-            collectionView.performBatchUpdates( nil )
-            collectionView.layoutIfNeeded()
-        }, completion: nil )
+//        UIView.animate( withDuration: 0.3, delay: 0, options: .beginFromCurrentState, animations: {
+//            collectionView.collectionViewLayout.invalidateLayout()
+//            collectionView.performBatchUpdates( nil )
+//            collectionView.reloadData()
+//            collectionView.layoutIfNeeded()
+//        }, completion: nil )
     }
 
     // MARK: - UICollectionViewDelegateFlowLayout
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath)
-                    -> CGSize {
-        guard let flowLayout = collectionViewLayout as? Layout
-        else { fatalError( "unexpected collectionView layout: \(collectionViewLayout)" ) }
-
-        let selected      = collectionView.indexPathsForSelectedItems?.contains( indexPath ) ?? false
-        let columns       = selected ? 1: 2
-        var availableSize = collectionView.bounds.size
-        availableSize.width -= flowLayout.sectionInset.left + flowLayout.sectionInset.right
-        availableSize.width -= flowLayout.minimumInteritemSpacing * CGFloat( columns - 1 )
-
-        return CGSize( width: availableSize.width / CGFloat( columns ), height: selected ? 200: 100 )
-    }
 
     // MARK: - Types
 
@@ -92,8 +93,16 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         init() {
             super.init( horizontalAlignment: .left, verticalAlignment: .center )
 
-            self.minimumInteritemSpacing = 8
-            self.minimumLineSpacing = 8
+            self.sectionInset = UIEdgeInsetsMake( 8, 8, 8, 8 )
+            self.minimumInteritemSpacing = 10
+            self.minimumLineSpacing = 10
+            if #available( iOS 10.0, * ) {
+                self.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
+            }
+            else {
+                self.estimatedItemSize = CGSize(
+                        width: UIScreen.main.bounds.size.width - self.sectionInset.left - self.sectionInset.right, height: 200 )
+            }
         }
 
         required init?(coder aDecoder: NSCoder) {
@@ -102,12 +111,16 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
     }
 
     class SiteCell: UICollectionViewCell, MPSiteObserver {
-        var indexPath: IndexPath?
-        var site:      MPSite? {
+        var site: MPSite? {
             didSet {
                 if let site = self.site {
                     site.observers.register( self ).siteDidChange()
                 }
+            }
+        }
+        override var bounds:     CGRect {
+            didSet {
+                self.contentView.layer.shadowPath = UIBezierPath( roundedRect: self.bounds, cornerRadius: 4 ).cgPath
             }
         }
         override var isSelected: Bool {
@@ -116,54 +129,112 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
             }
         }
 
-        let tagView   = UIView()
-        let nameLabel = UILabel()
+        let contentButton   = UIView()
+        let nameLabel       = UILabel()
+        let passwordLabel   = UILabel()
+        let configureButton = UIButton( type: .custom )
 
+        var widthConstraint:       NSLayoutConstraint!
         var selectedConfiguration: ViewConfiguration!
 
         // MARK: - Life
 
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
         override init(frame: CGRect) {
             super.init( frame: frame )
 
-            self.tagView.layer.cornerRadius = 4;
-            self.tagView.layer.shadowOffset = .zero;
-            self.tagView.layer.shadowRadius = 5;
-            self.tagView.layer.shadowOpacity = 0;
-            self.tagView.layer.shadowColor = UIColor.white.cgColor;
-            self.tagView.layer.borderWidth = 1;
-            self.tagView.layer.borderColor = UIColor( white: 0.15, alpha: 0.6 ).cgColor;
+            // - View
+            self.isOpaque = false
+            self.clipsToBounds = true
 
-            self.nameLabel.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )
+            self.contentView.layer.shadowRadius = 5
+            self.contentView.layer.shadowOpacity = 1
+            self.contentView.layer.shadowColor = UIColor( white: 0, alpha: 0.6 ).cgColor
+            self.contentView.layer.masksToBounds = true
+            self.contentView.clipsToBounds = true
+            self.layer.masksToBounds = true
+            self.clipsToBounds = true
+
+            self.contentButton.layer.cornerRadius = 4
+            self.contentButton.layer.shadowOffset = .zero
+            self.contentButton.layer.shadowRadius = 5
+            self.contentButton.layer.shadowOpacity = 0
+            self.contentButton.layer.shadowColor = UIColor.white.cgColor
+            self.contentButton.layer.borderWidth = 1
+            self.contentButton.layer.borderColor = UIColor( white: 0.15, alpha: 0.6 ).cgColor
+
+            self.nameLabel.font = UIFont( name: "Futura-CondensedMedium", size: 22 )
             self.nameLabel.textAlignment = .center
-            self.nameLabel.textColor = .white
+            self.nameLabel.textColor = UIColor.lightText
             self.nameLabel.shadowColor = .black
 
-            self.contentView.addSubview( self.tagView )
-            self.contentView.addSubview( self.nameLabel )
+            self.passwordLabel.text = "Jaji9,GowzLanr"
+            self.passwordLabel.font = UIFont( name: "SourceCodePro-Black", size: 28 )
+            self.passwordLabel.textAlignment = .center
+            self.passwordLabel.textColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 1 )
+            self.passwordLabel.shadowColor = .black
 
-            self.tagView.layer.masksToBounds = true
+            self.configureButton.setImage( UIImage( named: "icon_tools" ), for: .normal )
+            self.configureButton.alpha = 0.1
+
+            // - Hierarchy
+            self.contentView.addSubview( self.contentButton )
+            self.contentButton.addSubview( self.nameLabel )
+            self.contentButton.addSubview( self.passwordLabel )
+            self.contentButton.addSubview( self.configureButton )
+
+            // - Layout
+            self.contentView.translatesAutoresizingMaskIntoConstraints = false
+            self.widthConstraint = self.contentView.widthAnchor.constraint( equalToConstant: UIScreen.main.bounds.width ).activate()
+
+            ViewConfiguration( view: self.contentButton )
+                    .addConstrainedInSuperview().activate()
+
+            ViewConfiguration( view: self.nameLabel )
+                    .add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                    .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                    .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                    .activate()
+
+            ViewConfiguration( view: self.configureButton )
+                    .add { $0.layoutMarginsGuide.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ) }
+                    .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                    .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                    .activate()
 
             self.selectedConfiguration = ViewConfiguration()
-                    .add( ViewConfiguration( view: self.tagView ) { active, inactive in
-                        inactive.add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                        inactive.add { $0.layoutMarginsGuide.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
-                        inactive.add { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                        inactive.add { $1.heightAnchor.constraint( equalToConstant: 40 ) }
-                        inactive.add( 20, forKey: "layer.cornerRadius" )
-                        active.addConstrainedInSuperview()
-                        active.add( 8, forKey: "layer.cornerRadius" )
+                    .add( ViewConfiguration( view: self.contentButton ) { active, inactive in
+                        inactive.add( 0, forKey: "layer.shadowOpacity" )
+                        active.add( 0.7, forKey: "layer.shadowOpacity" )
                     } )
-                    .add( ViewConfiguration( view: self.nameLabel ) { active, inactive in
-                        inactive.add { self.tagView.centerXAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                        inactive.add { self.tagView.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
-                        active.add { $0.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
-                        active.add { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                    .add( ViewConfiguration( view: self.passwordLabel ) { active, inactive in
+                        inactive.add( true, forKey: "hidden" )
+                        active.add( false, forKey: "hidden" )
+                        active.add { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
+                        active.add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                        active.add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                        active.add { self.nameLabel.topAnchor.constraint( equalTo: $1.bottomAnchor ) }
                     } )
         }
 
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
+        override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes)
+                        -> UICollectionViewLayoutAttributes {
+
+            // Stretch cell to collection view width.
+            if let collectionView = UICollectionView.find( asSuperviewOf: self ),
+               let collectionViewLayout = collectionView.collectionViewLayout as? Layout {
+                self.widthConstraint.constant = collectionView.bounds.size.width
+                        - collectionViewLayout.sectionInset.left - collectionViewLayout.sectionInset.right
+            }
+
+            // Determine size based on Auto Layout.
+            let attr = super.preferredLayoutAttributesFitting( layoutAttributes )
+            attr.size = self.systemLayoutSizeFitting( UILayoutFittingCompressedSize )
+
+            return attr
         }
 
         override func layoutSubviews() {
@@ -172,11 +243,11 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         }
 
         // MARK: - MPSiteObserver
+
         func siteDidChange() {
             PearlMainQueue {
-//          self.nameLabel.text = "\(self.indexPath!.item): \(self.site.siteName)"
                 self.nameLabel.text = self.site?.siteName
-                self.tagView.backgroundColor = self.site?.color
+                self.contentButton.backgroundColor = self.site?.color.withAlphaComponent( 0.2 )
             }
         }
     }
