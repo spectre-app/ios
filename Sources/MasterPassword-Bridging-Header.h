@@ -9,6 +9,7 @@
 #import "POPAnimation+MP.h"
 #import "UIUtils+MP.h"
 #import "ViewConfiguration.h"
+#import "AutoLayoutCollectionViewCell.h"
 #import "Observers.h"
 
 #import "mpw-algorithm.h"

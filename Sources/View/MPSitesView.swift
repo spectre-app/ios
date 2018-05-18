@@ -8,9 +8,8 @@ import AlignedCollectionViewFlowLayout
 
 class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     var user: MPUser? {
-        willSet {
-        }
         didSet {
+            self.collectionView.reloadData()
         }
     }
 
@@ -55,36 +54,6 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
     // MARK: - UICollectionViewDelegate
 
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        collectionView.collectionViewLayout.invalidateLayout()
-//        collectionView.setCollectionViewLayout(Layout(), animated: true)
-//        UIView.animate( withDuration: 2, delay: 0, options: .beginFromCurrentState, animations: {
-//            collectionView.collectionViewLayout.invalidateLayout()
-        collectionView.performBatchUpdates( {
-//                let context = UICollectionViewFlowLayoutInvalidationContext()
-//                context.invalidateFlowLayoutDelegateMetrics = true
-//                context.invalidateFlowLayoutAttributes = true
-//                collectionView.collectionViewLayout.invalidateLayout( with: context )
-//                collectionView.setNeedsLayout()
-        } )
-//        collectionView.setNeedsUpdateConstraints()
-//        collectionView.setNeedsLayout()
-//        collectionView.setNeedsDisplay()
-//        collectionView.layoutIfNeeded()
-//            collectionView.performBatchUpdates( nil )
-//            collectionView.reloadData()
-//        }, completion: nil )
-    }
-
-    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-//        UIView.animate( withDuration: 0.3, delay: 0, options: .beginFromCurrentState, animations: {
-//            collectionView.collectionViewLayout.invalidateLayout()
-//            collectionView.performBatchUpdates( nil )
-//            collectionView.reloadData()
-//            collectionView.layoutIfNeeded()
-//        }, completion: nil )
-    }
-
     // MARK: - UICollectionViewDelegateFlowLayout
 
     // MARK: - Types
@@ -93,15 +62,16 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         init() {
             super.init( horizontalAlignment: .left, verticalAlignment: .center )
 
-            self.sectionInset = UIEdgeInsetsMake( 8, 8, 8, 8 )
-            self.minimumInteritemSpacing = 10
             self.minimumLineSpacing = 10
+            self.minimumInteritemSpacing = 10
+            self.sectionInset = UIEdgeInsetsMake( 8, 8, 8, 8 )
+
             if #available( iOS 10.0, * ) {
                 self.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
             }
             else {
                 self.estimatedItemSize = CGSize(
-                        width: UIScreen.main.bounds.size.width - self.sectionInset.left - self.sectionInset.right, height: 200 )
+                        width: UIScreen.main.bounds.size.width - self.sectionInset.left - self.sectionInset.right, height: 50 )
             }
         }
 
@@ -110,7 +80,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         }
     }
 
-    class SiteCell: UICollectionViewCell, MPSiteObserver {
+    class SiteCell: AutoLayoutCollectionViewCell, MPSiteObserver {
         var site: MPSite? {
             didSet {
                 if let site = self.site {
@@ -125,7 +95,17 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         }
         override var isSelected: Bool {
             didSet {
-                self.setNeedsLayout()
+                if oldValue != self.isSelected {
+                    self.invalidateLayout( animated: true )
+                }
+            }
+        }
+
+        override var isHighlighted: Bool {
+            didSet {
+                if oldValue != self.isHighlighted {
+                    self.invalidateLayout( animated: true )
+                }
             }
         }
 
@@ -134,8 +114,8 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
         let passwordLabel   = UILabel()
         let configureButton = UIButton( type: .custom )
 
-        var widthConstraint:       NSLayoutConstraint!
-        var selectedConfiguration: ViewConfiguration!
+        var selectedConfiguration:    ViewConfiguration!
+        var highlightedConfiguration: ViewConfiguration!
 
         // MARK: - Life
 
@@ -149,6 +129,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
             // - View
             self.isOpaque = false
             self.clipsToBounds = true
+            self.fullWidth = true;
 
             self.contentView.layer.shadowRadius = 5
             self.contentView.layer.shadowOpacity = 1
@@ -188,7 +169,6 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
             // - Layout
             self.contentView.translatesAutoresizingMaskIntoConstraints = false
-            self.widthConstraint = self.contentView.widthAnchor.constraint( equalToConstant: UIScreen.main.bounds.width ).activate()
 
             ViewConfiguration( view: self.contentButton )
                     .addConstrainedInSuperview().activate()
@@ -199,47 +179,41 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
                     .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                     .activate()
 
+            ViewConfiguration( view: self.passwordLabel )
+                    .add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
+                    .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                    .activate()
+
             ViewConfiguration( view: self.configureButton )
                     .add { $0.layoutMarginsGuide.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ) }
                     .add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
                     .add { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
                     .activate()
 
-            self.selectedConfiguration = ViewConfiguration()
+            self.highlightedConfiguration = ViewConfiguration()
                     .add( ViewConfiguration( view: self.contentButton ) { active, inactive in
                         inactive.add( 0, forKey: "layer.shadowOpacity" )
                         active.add( 0.7, forKey: "layer.shadowOpacity" )
                     } )
+            self.selectedConfiguration = ViewConfiguration()
                     .add( ViewConfiguration( view: self.passwordLabel ) { active, inactive in
                         inactive.add( true, forKey: "hidden" )
+                        inactive.add { $0.topAnchor.constraint( equalTo: $1.bottomAnchor ) }
                         active.add( false, forKey: "hidden" )
                         active.add { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                        active.add { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                        active.add { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
                         active.add { self.nameLabel.topAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                    } )
+                    .add( ViewConfiguration( view: self.nameLabel ) { active, inactive in
+                        inactive.add( 22, forKey: "fontSize" )
+                        active.add( 12, forKey: "fontSize" )
                     } )
         }
 
-        override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes)
-                        -> UICollectionViewLayoutAttributes {
+        override func updateConstraints() {
+            super.updateConstraints()
 
-            // Stretch cell to collection view width.
-            if let collectionView = UICollectionView.find( asSuperviewOf: self ),
-               let collectionViewLayout = collectionView.collectionViewLayout as? Layout {
-                self.widthConstraint.constant = collectionView.bounds.size.width
-                        - collectionViewLayout.sectionInset.left - collectionViewLayout.sectionInset.right
-            }
-
-            // Determine size based on Auto Layout.
-            let attr = super.preferredLayoutAttributesFitting( layoutAttributes )
-            attr.size = self.systemLayoutSizeFitting( UILayoutFittingCompressedSize )
-
-            return attr
-        }
-
-        override func layoutSubviews() {
-            super.layoutSubviews()
             self.selectedConfiguration.activated = self.isSelected
+            self.highlightedConfiguration.activated = self.isHighlighted
         }
 
         // MARK: - MPSiteObserver

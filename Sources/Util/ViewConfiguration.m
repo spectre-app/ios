@@ -140,94 +140,105 @@
 
 - (void)setActivated:(BOOL)activated {
 
+    [self updateActivated:activated];
+}
+
+- (BOOL)updateActivated:(BOOL)activated {
+
     if (activated == _activated)
-        return;
+        return NO;
 
     if (activated)
         [self activate];
     else
         [self deactivate];
+
+    return YES;
 }
 
 - (instancetype)activate {
 
-    for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
-        [inactiveConfiguration deactivate];
+    PearlMainQueue( ^{
+        for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
+            [inactiveConfiguration deactivate];
 
-    if (self.constraints)
-        self.view.translatesAutoresizingMaskIntoConstraints = NO;
+        if (self.constraints)
+            self.view.translatesAutoresizingMaskIntoConstraints = NO;
 
-    for (NSLayoutConstraint *constraint in self.constraints)
-        if (!constraint.active) {
-            //trc( @"%@: activating %@", [self.view infoPathName], constraint );
-            constraint.active = YES;
-        }
+        for (NSLayoutConstraint *constraint in self.constraints)
+            if (!constraint.active) {
+                //trc( @"%@: activating %@", [self.view infoPathName], constraint );
+                constraint.active = YES;
+            }
 
-    [self.activeValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
-        id oldValue = [self.view valueForKeyPath:key]?: [NSNull null];
-        if ([newValue isEqual:oldValue])
-            return;
+        [self.activeValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
+            id oldValue = [self.view valueForKeyPath:key]?: [NSNull null];
+            if ([newValue isEqual:oldValue])
+                return;
 
-        if ([[self.inactiveValues allKeys] containsObject:key])
-            self.inactiveValues[key] = oldValue;
+            if ([[self.inactiveValues allKeys] containsObject:key])
+                self.inactiveValues[key] = oldValue;
 
-        //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
-        [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
-    }];
+            //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
+            [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
+        }];
 
-    for (
-            void(^action)(UIView *)
-            in self.actions)
-        action( self.view );
+        for (
+                void(^action)(UIView *)
+                in self.actions)
+            action( self.view );
 
-    for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
-        [activeConfiguration activate];
+        for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
+            [activeConfiguration activate];
 
-    _activated = YES;
+        self->_activated = YES;
 
-    for (UIView *view in self.layoutViews)
-        [view setNeedsLayout];
-    for (UIView *view in self.displayViews)
-        [view setNeedsDisplay];
+        for (UIView *view in self.layoutViews)
+            [view setNeedsLayout];
+        for (UIView *view in self.displayViews)
+            [view setNeedsDisplay];
 
-    if (!self.parent)
-        [self.view.window layoutIfNeeded];
+        if (!self.parent)
+            [self.view.window layoutIfNeeded];
+    } );
 
     return self;
 }
 
 - (instancetype)deactivate {
 
-    for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
-        [activeConfiguration deactivate];
+    PearlMainQueue( ^{
+        for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
+            [activeConfiguration deactivate];
 
-    for (NSLayoutConstraint *constraint in self.constraints)
-        if (constraint.active) {
-            //trc( @"%@: deactivating %@", [self.view infoPathName], constraint );
-            constraint.active = NO;
-        }
+        for (NSLayoutConstraint *constraint in self.constraints)
+            if (constraint.active) {
+                //trc( @"%@: deactivating %@", [self.view infoPathName], constraint );
+                constraint.active = NO;
+            }
 
-    [self.inactiveValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
-        id oldValue = [self.view valueForKeyPath:key]?: [NSNull null];
-        if ([newValue isEqual:oldValue])
-            return;
+        [self.inactiveValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
+            id oldValue = [self.view valueForKeyPath:key]?: [NSNull null];
+            if ([newValue isEqual:oldValue])
+                return;
 
-        //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
-        [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
-    }];
+            //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
+            [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
+        }];
 
-    for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
-        [inactiveConfiguration activate];
+        for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
+            [inactiveConfiguration activate];
 
-    _activated = NO;
+        self->_activated = NO;
 
-    for (UIView *view in self.layoutViews)
-        [view setNeedsLayout];
-    for (UIView *view in self.displayViews)
-        [view setNeedsDisplay];
+        for (UIView *view in self.layoutViews)
+            [view setNeedsLayout];
+        for (UIView *view in self.displayViews)
+            [view setNeedsDisplay];
 
-    if (!self.parent)
-        [self.view.window layoutIfNeeded];
+//        if (!self.parent)
+//            [self.view.window layoutIfNeeded];
+    } );
 
     return self;
 }

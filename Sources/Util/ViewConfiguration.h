@@ -57,6 +57,8 @@ CF_IMPLICIT_BRIDGING_ENABLED
 - (instancetype)activate;
 //! Deactivate this configuration and reverse its relevant operations.
 - (instancetype)deactivate;
+//! If the given activation state is different from the current, update it and return YES, otherwise return NO.
+- (BOOL)updateActivated:(BOOL)activated;
 
 // Convenience alternatives.
 
