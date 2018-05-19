@@ -6,31 +6,23 @@
 import UIKit
 import AlignedCollectionViewFlowLayout
 
-class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
+class MPSitesView: UICollectionView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     var user: MPUser? {
         didSet {
-            self.collectionView.reloadData()
+            self.reloadData()
         }
     }
 
-    let collectionView = UICollectionView( frame: .zero, collectionViewLayout: Layout() )
-
     // MARK: - Life
 
-    override init(frame: CGRect) {
-        super.init( frame: frame )
+    init() {
+        super.init( frame: .zero, collectionViewLayout: Layout() )
 
-        self.collectionView.registerCell( SiteCell.self )
-        self.collectionView.delegate = self
-        self.collectionView.dataSource = self
-        self.collectionView.backgroundColor = .clear
-        self.collectionView.isOpaque = false
-
-        self.addSubview( self.collectionView )
-
-        ViewConfiguration( view: self.collectionView )
-                .addConstrainedInSuperview()
-                .activate()
+        self.registerCell( SiteCell.self )
+        self.delegate = self
+        self.dataSource = self
+        self.backgroundColor = .clear
+        self.isOpaque = false
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -88,22 +80,32 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
                 }
             }
         }
-        override var bounds:     CGRect {
+        override var bounds:        CGRect {
             didSet {
                 self.contentView.layer.shadowPath = UIBezierPath( roundedRect: self.bounds, cornerRadius: 4 ).cgPath
             }
         }
-        override var isSelected: Bool {
+        override var isSelected:    Bool {
             didSet {
                 if oldValue != self.isSelected {
+                    self.invalidateLayout( animated: true )
+
+                    if !self.isSelected {
+                        self.isExpanded = false
+                    }
+                }
+            }
+        }
+        override var isHighlighted: Bool {
+            didSet {
+                if oldValue != self.isHighlighted {
                     self.invalidateLayout( animated: true )
                 }
             }
         }
-
-        override var isHighlighted: Bool {
+        var isExpanded: Bool = false {
             didSet {
-                if oldValue != self.isHighlighted {
+                if oldValue != self.isExpanded {
                     self.invalidateLayout( animated: true )
                 }
             }
@@ -116,6 +118,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
         var selectedConfiguration:    ViewConfiguration!
         var highlightedConfiguration: ViewConfiguration!
+        var expandedConfiguration:    ViewConfiguration!
 
         // MARK: - Life
 
@@ -160,6 +163,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
             self.configureButton.setImage( UIImage( named: "icon_tools" ), for: .normal )
             self.configureButton.alpha = 0.1
+            self.configureButton.addTargetBlock( { _, _ in self.isExpanded = true }, for: .touchUpInside )
 
             // - Hierarchy
             self.contentView.addSubview( self.contentButton )
@@ -207,6 +211,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
                         inactive.add( 22, forKey: "fontSize" )
                         active.add( 12, forKey: "fontSize" )
                     } )
+            self.expandedConfiguration = ViewConfiguration()
         }
 
         override func updateConstraints() {
@@ -214,6 +219,7 @@ class MPSitesView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewD
 
             self.selectedConfiguration.activated = self.isSelected
             self.highlightedConfiguration.activated = self.isHighlighted
+            self.expandedConfiguration.activated = self.isExpanded
         }
 
         // MARK: - MPSiteObserver

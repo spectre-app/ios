@@ -6,6 +6,7 @@
 #import "AutoLayoutCollectionViewCell.h"
 
 @implementation AutoLayoutCollectionViewCell {
+    BOOL needsLayoutInvalidation;
     NSLayoutConstraint *widthConstraint;
 }
 
@@ -24,6 +25,10 @@
 
 - (void)invalidateLayoutAnimated:(BOOL)animated {
 
+    if (needsLayoutInvalidation)
+        return;
+
+    needsLayoutInvalidation = YES;
     PearlMainQueueOperation( ^{
         UICollectionView *collectionView = [UICollectionView findAsSuperviewOf:self];
         [UIView animateWithDuration:animated? 0.3: 0 animations:^{
@@ -31,6 +36,8 @@
             [collectionView performBatchUpdates:nil completion:nil];
             [collectionView layoutIfNeeded];
         }];
+
+        self->needsLayoutInvalidation = NO;
     } );
 }
 
