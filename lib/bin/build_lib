@@ -1,0 +1,382 @@
+#!/usr/bin/env bash
+#
+# Your build script should simply source this script, optionally override any build hooks and then invoke `build`.
+# The build product should be available under `build-<platform>~/out`, under the library path.
+#
+# Hook lifecycle:
+# - build
+#     - initialize
+#         - needs
+#     - clean & exit (only if script was ran with "clean" argument)
+#     - prepare
+#         - clean
+#         - config
+#     - target
+#         - prepare
+#         - configure
+#         - build
+#     - finalize
+#         - merge
+#         - clean
+#
+# You can override any of these hooks to provide a custom implementation or call their underscore variant to delegate to the default implementation.
+# For example:
+# target_prepare() { make -s distclean; }
+# target_configure() { _target_configure "$@" --enable-minimal; }
+set -e
+PATH+=:/usr/local/bin
+
+# needs <binary> ...
+#
+# Utility for ensuring all tools needed by the script are installed prior to starting.
+needs() { _needs "$@"; }
+_needs() {
+    local failed=0
+    for spec; do
+        IFS=: read pkg tools <<< "$spec"
+        IFS=, read -a tools <<< "${tools:-$pkg}"
+        for tool in "${tools[@]}"; do
+            hash "$tool" 2>/dev/null && continue 2
+        done
+
+        echo >&2 "Missing: $pkg.  Please install this package."
+        (( failed++ ))
+    done
+
+    return $failed
+}
+
+# initialize <prefix> <platform>
+#
+# The build script invokes this once prior to all other actions if the user wants a clean slate.
+initialize() { _initialize "$@"; }
+_initialize() {
+    initialize_needs "$@"
+}
+
+# initialize_needs <prefix> <platform>
+#
+# Check if all tools needed for the default implementations are available.
+#
+# By default, this will check for `libtool` (for libtoolize), `automake` (for aclocal), `autoconf` (for autoreconf) and make.
+initialize_needs() { _initialize_needs "$@"; }
+_initialize_needs() {
+    if [[ $platform = windows ]]; then
+        needs cmd
+        export VSINSTALLDIR="${VSINSTALLDIR:-$(cd "$(cygpath -F 0x002a)/Microsoft Visual Studio"/*/*/Common7/.. && pwd)}"
+        [[ -e "$VSINSTALLDIR/Common7/Tools/VsMSBuildCmd.bat" ]] || { echo >&2 "Missing: msbuild.  Please install 'Build Tools for Visual Studio'.  See https://visualstudio.microsoft.com/downloads/?q=build+tools"; return 1; }
+    else
+        needs libtool:libtoolize,glibtoolize automake autoconf make
+    fi
+}
+
+# clean <prefix> <platform>
+#
+# Fully clean up the library code, restoring it to a pristine state.
+#
+# By default, this will wipe the prefix, run `make distclean` and `git clean -fdx`.
+clean() { _clean "$@"; }
+_clean() {
+    if [[ $platform = windows ]]; then
+        printf '"%%VSINSTALLDIR%%\Common7\Tools\VsMSBuildCmd.bat" && msbuild /t:Clean' > .clean.bat
+        cmd //c .clean.bat
+        rm -f .clean.bat
+    elif [[ -e Makefile ]] && make -s distclean; then :
+    elif [[ -e .git ]] && git clean -fdx; then :
+    fi
+
+    rm -rf "$prefix"
+}
+
+# prepare <prefix> <platform> [ <arch> ... ]
+#
+# Configure the library for building the <arch>s on this machine.
+# The build script invokes this once prior to building each of its targets.
+# The <prefix> has been newly created.
+#
+# By default, this will run `autoreconf`.
+prepare() { _prepare "$@"; }
+_prepare() {
+    prepare_clean "$@"
+    prepare_config "$@"
+}
+
+# prepare_clean <prefix> <platform> [ <arch> ... ]
+#
+# Perform any necessary clean-up of the library code prior to building.
+#
+# By default, this will wipe and re-create the prefix.
+prepare_clean() { _prepare_clean "$@"; }
+_prepare_clean() {
+    local prefix=$1 platform=$2; shift 2
+
+    rm -rf "$prefix"
+    install -d "$prefix/out"
+}
+
+# prepare_config <prefix> <platform> [ <arch> ... ]
+#
+# Configure the library for building the <arch>s on this machine.
+#
+# By default, this will run `autoreconf`.
+prepare_config() { _prepare_config "$@"; }
+_prepare_config() {
+    local prefix=$1 platform=$2; shift 2
+
+    [[ -e "$prefix/out/.prepared" ]] && return
+
+    if [[ $platform = windows ]]; then :
+    else
+        autoreconf --verbose --install --force 2> >(sed 's/^\([^:]*\):[0-9]\{1,\}: /\1: /')
+    fi
+
+    touch "$prefix/out/.prepared"
+}
+
+# target <prefix> <platform> <arch>
+#
+# Build the library for the given <arch> and <platform> into the given <prefix>.
+# The build script invokes this function when it's ready to build the library's code.
+# Generic platform-specific environment setup has been done.
+target() { _target "$@"; }
+_target() {
+    target_prepare "$@"
+    target_configure "$@"
+    target_build "$@"
+}
+
+# target_prepare <prefix> <platform> <arch>
+#
+# Prepare the library configuration for building the target.
+#
+# By default, this will run `make clean` if a Makefile is found.
+target_prepare() { _target_prepare "$@"; }
+_target_prepare() {
+    local prefix=$1 platform=$2 arch=$3; shift 3
+
+    if [[ $platform = windows ]]; then :
+    else
+        [[ ! -e Makefile ]] || make -s clean
+    fi
+}
+
+# target_configure <prefix> <platform> <arch> [ <args> ... ]
+#
+# Configure the library for building the target.
+#
+# By default, this will run `./configure --host=<host> --prefix=<prefix>/<arch> <args>`.
+# By default, some platform-specific arguments will be passed in as well as
+# --enable-pic --disable-pie to ensure the resulting library can be linked again.
+target_configure() { _target_configure "$@"; }
+_target_configure() {
+    local prefix=$1 platform=$2 arch=$3; shift 3
+
+    case "$platform" in
+        'windows')
+            return
+        ;;
+        'android')
+            host=( "$SDKROOT"/*-android* ) host=${host##*/}
+
+            set -- --with-sysroot="$SDKROOT/sysroot" "$@"
+        ;;
+        'ios')
+            [[ $arch = *arm* ]] && host=arm || host=$arch
+            host+=-apple
+
+            set -- --disable-shared "$@"
+        ;;
+    esac
+
+    ./configure ${host:+--host="$host"} --enable-pic --disable-pie --prefix="$prefix/$arch" "$@"
+}
+
+# target_build <prefix> <platform> <arch>
+#
+# Build the library code for the target.
+#
+# By default, this will run `make check install`.
+target_build() { _target_build "$@"; }
+_target_build() {
+    local prefix=$1 platform=$2 arch=$3; shift 3
+
+    if [[ $platform = windows ]]; then
+        # I cannot for the life of me figure out how to pass this command directly into cmd.
+        printf '"%%VSINSTALLDIR%%\Common7\Tools\VsMSBuildCmd.bat" && msbuild /t:Rebuild /p:Configuration=Release;Platform=%s;OutDir=%s' "$arch" "$(cygpath -w "${prefix##$PWD/}/$arch/")" > .build.bat
+        cmd //c .build.bat
+        rm -f .build.bat
+    else
+        local cores=$(getconf NPROCESSORS_ONLN 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null ||:)
+        make -j"${cores:-3}" install
+    fi
+}
+
+# finalize <prefix> <platform> [ <arch> ... ]
+#
+# Prepare the final build product.
+# The build script invokes this once after a successful build of all targets.
+finalize() { _finalize "$@"; }
+_finalize() {
+    finalize_merge "$@"
+    finalize_clean "$@"
+}
+
+# finalize_merge <prefix> <platform> [ <arch> ... ]
+#
+# Merge all targets into a product the application can use, available at `<prefix>/out`.
+#
+# By default, this will copy the headers to `<prefix>/out/include`, install libraries into `<prefix>/out/lib` and mark the output product as successful.
+finalize_merge() { _finalize_merge "$@"; }
+_finalize_merge() {
+    local prefix=$1 platform=$2; shift 2
+    local archs=( "$@" )
+
+    [[ -e "$prefix/$archs/include" ]] && mv -f -- "$prefix/$archs/include" "$prefix/out/"
+
+    install -d "$prefix/out/lib"
+    case "$platform" in
+        'linux')
+            for arch in "${archs[@]}"; do
+                install -d "$prefix/out/lib/$arch"
+                install -p "$prefix/$arch/lib/"*.a "$prefix/out/lib/$arch/"
+            done
+        ;;
+        'windows')
+            for arch in "${archs[@]}"; do
+                install -d "$prefix/out/lib/$arch"
+                install -p "$prefix/$arch/"*.lib "$prefix/out/lib/$arch/"
+            done
+        ;;
+        'macos'|'ios')
+            for lib in "$prefix/$archs/lib/"*; do
+                if lipo -info "$lib" >/dev/null 2>&1; then
+                    local lib=("${lib##*/}") libs=("${archs[@]/#/$prefix/}") libs=("${libs[@]/%//lib/$lib}")
+                    lipo -create "${libs[@]}" -output "$prefix/out/lib/$lib"
+                fi
+            done
+        ;;
+        'android')
+            for arch in "${archs[@]}"; do
+                local abi=$arch
+                case "$arch" in
+                    'arm')      abi='armeabi-v7a' ;;
+                    'arm64')    abi='arm64-v8a' ;;
+                esac
+                install -d "$prefix/out/lib/$abi"
+                install -p "$prefix/$arch/lib/"*.so "$prefix/out/lib/$abi"
+            done
+        ;;
+    esac
+
+    touch "$prefix/out/.success"
+}
+
+# finalize_clean <prefix> [ <arch> ... ]
+#
+# Clean up the library after a successful build (eg. housekeeping of temporary files).
+#
+# By default, this will run `make clean`.
+finalize_clean() { _finalize_clean "$@"; }
+_finalize_clean() {
+    if [[ $platform = windows ]]; then :
+    else
+        [[ ! -e Makefile ]] || make -s clean
+    fi
+}
+
+# build <name> [<platform>]
+#
+# Build the library <name> (found at ../<name>) for platform <platform> (or "host" if unspecified).
+build() { _build "$@"; }
+_build() {
+    local name=$1 platform=${2:-host}
+    local path="../$name"
+    [[ $path = /* ]] || path="${BASH_SOURCE%/*}/$path"
+    cd "$path"
+
+    if [[ $platform = host ]]; then
+        case "$(uname -s)" in
+            'Darwin') platform='macos' archs=( "$(uname -m)" ) ;;
+        esac
+    fi
+    if (( ! ${#archs[@]} )); then
+        case "$platform" in
+            'macos') archs=( 'x86_64' ) ;;
+            'ios') archs=( 'i386' 'x86_64' 'armv7' 'armv7s' 'arm64' ) ;;
+            'android') archs=( 'arm' 'arm64' 'x86' 'x86_64' ) ;;
+            'windows') archs=( 'Win32' 'x64' ) ;;
+            *) archs=( 'i386' 'x86_64' ) ;;
+        esac
+    fi
+
+    local prefix="$PWD/build-$platform~"
+    initialize "$prefix" "$platform"
+
+    # "clean" argument wipes the lib clean and exits. If .success exists in prefix output, skip build.
+    if [[ ${BASH_ARGV[@]:(-1)} = clean ]]; then
+        clean "$prefix" "$platform"
+        exit
+    elif [[ -e "$prefix"/out/.success ]]; then
+        echo >&2 "Skipping build for $platform: output product already built successfully."
+        exit
+    fi
+
+    # Prepare the output location and build configuration.
+    prepare "$prefix" "$platform" "${archs[@]}"
+
+    # Repeat the build for each individual architecture.
+    for arch in "${archs[@]}"; do (
+
+        # Set up a base environment for the platform.
+        case "$platform" in
+            'windows')
+            ;;
+            'macos')
+                SDKROOT="$(xcrun --show-sdk-path --sdk macosx)"
+                export PATH="$(xcrun --show-sdk-platform-path --sdk macosx)/usr/bin:$PATH"
+                export CFLAGS="-arch $arch -flto -O2 -g -isysroot $SDKROOT -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:-10.8} $CFLAGS"
+                export LDFLAGS="-arch $arch -flto -isysroot $SDKROOT -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:-10.8} $LDFLAGS"
+                export CPPFLAGS="$CFLAGS $CPPFLAGS"
+            ;;
+            'ios')
+                case "$arch" in
+                    *'arm'*)
+                        SDKROOT="$(xcrun --show-sdk-path --sdk iphoneos)"
+                        export PATH="$(xcrun --show-sdk-platform-path --sdk iphoneos)/usr/bin:$PATH"
+                        export CFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -O2 -g -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $CFLAGS"
+                        export LDFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $LDFLAGS"
+                        export CPPFLAGS="$CFLAGS $CPPFLAGS"
+                    ;;
+                    *)
+                        SDKROOT="$(xcrun --show-sdk-path --sdk iphonesimulator)"
+                        export PATH="$(xcrun --show-sdk-platform-path --sdk iphonesimulator)/usr/bin:$PATH"
+                        export CFLAGS="-arch $arch -flto -O2 -g -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $CFLAGS"
+                        export LDFLAGS="-arch $arch -flto -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $LDFLAGS"
+                        export CPPFLAGS="$CFLAGS $CPPFLAGS"
+                    ;;
+                esac
+            ;;
+            'android')
+                [[ -x $ANDROID_NDK_HOME/build/ndk-build ]] || { echo >&2 "Android NDK not found.  Please set ANDROID_NDK_HOME."; return 1; }
+
+                SDKROOT="$prefix/$arch/ndk"
+                # Platform 21 is lowest that supports x86_64
+                "$ANDROID_NDK_HOME/build/tools/make-standalone-toolchain.sh" --force --install-dir="$SDKROOT" --platform='android-21' --arch="$arch"
+                export PATH="$SDKROOT/bin:$PATH"
+                export CFLAGS="-O2 -g $CFLAGS"
+                export LDFLAGS="-avoid-version $LDFLAGS"
+                export CC='clang'
+
+                # For GCC:
+                # arm    CFLAGS="-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb" LDFLAGS="-Wl,--fix-cortex-a8"
+                # arm64  CFLAGS="-march=armv8-a"
+                # x86    CFLAGS="-march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32"
+                # x86_64 CFLAGS="-march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel"
+            ;;
+        esac
+
+        target "$prefix" "$platform" "$arch"
+    ); done
+
+    finalize "$prefix" "$platform" "${archs[@]}"
+}

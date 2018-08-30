@@ -7,6 +7,7 @@ Thumbs.db
 *.iml
 *.ipr
 *.iws
+out
 
 # Xcode IDE
 xcuserdata/
@@ -14,18 +15,12 @@ DerivedData/
 
 # Generated
 /platform-darwin/Resources/Media/Images.xcassets/
-
-# Media
-public/Press/Background.png
-public/Press/Front-Page.png
-public/Press/MasterPassword_PressKit/MasterPassword_pressrelease_*.pdf
+/platform-darwin/Podfile.lock
+/platform-darwin/Pods/
 
 # Gradle
 build
-!/build
 .gradle
 local.properties
-
-# Maven
-target
-dependency-reduced-pom.xml
+/gradle/builds
+/platform-android/.externalNativeBuild
