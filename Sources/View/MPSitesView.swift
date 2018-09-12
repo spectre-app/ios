@@ -111,7 +111,8 @@ class MPSitesView: UICollectionView, UICollectionViewDelegateFlowLayout, UIColle
             }
         }
 
-        let contentButton   = UIView()
+        let backgroundView  = UIView()
+        let indicatorView  = UIView()
         let nameLabel       = UILabel()
         let passwordLabel   = UILabel()
         let configureButton = UIButton( type: .custom )
@@ -142,13 +143,19 @@ class MPSitesView: UICollectionView, UICollectionViewDelegateFlowLayout, UIColle
             self.layer.masksToBounds = true
             self.clipsToBounds = true
 
-            self.contentButton.layer.cornerRadius = 4
-            self.contentButton.layer.shadowOffset = .zero
-            self.contentButton.layer.shadowRadius = 5
-            self.contentButton.layer.shadowOpacity = 0
-            self.contentButton.layer.shadowColor = UIColor.white.cgColor
-            self.contentButton.layer.borderWidth = 1
-            self.contentButton.layer.borderColor = UIColor( white: 0.15, alpha: 0.6 ).cgColor
+            self.backgroundView.backgroundColor = UIColor( white: 0, alpha: 0.6 )
+            self.backgroundView.layer.cornerRadius = 4
+            self.backgroundView.layer.shadowOffset = .zero
+            self.backgroundView.layer.shadowRadius = 5
+            self.backgroundView.layer.shadowOpacity = 0
+            self.backgroundView.layer.shadowColor = UIColor.white.cgColor
+            self.backgroundView.layer.borderWidth = 1
+            self.backgroundView.layer.borderColor = UIColor( white: 0.15, alpha: 0.6 ).cgColor
+
+            self.indicatorView.backgroundColor = UIColor( white: 0, alpha: 0.6 )
+            self.indicatorView.layer.cornerRadius = 4
+            self.indicatorView.layer.borderWidth = 1
+            self.indicatorView.layer.borderColor = UIColor( white: 0, alpha: 1 ).cgColor
 
             self.nameLabel.font = UIFont( name: "Futura-CondensedMedium", size: 22 )
             self.nameLabel.textAlignment = .center
@@ -166,15 +173,15 @@ class MPSitesView: UICollectionView, UICollectionViewDelegateFlowLayout, UIColle
             self.configureButton.addTargetBlock( { _, _ in self.isExpanded = true }, for: .touchUpInside )
 
             // - Hierarchy
-            self.contentView.addSubview( self.contentButton )
-            self.contentButton.addSubview( self.nameLabel )
-            self.contentButton.addSubview( self.passwordLabel )
-            self.contentButton.addSubview( self.configureButton )
+            self.contentView.addSubview( self.backgroundView )
+            self.backgroundView.addSubview( self.nameLabel )
+            self.backgroundView.addSubview( self.passwordLabel )
+            self.backgroundView.addSubview( self.configureButton )
 
             // - Layout
             self.contentView.translatesAutoresizingMaskIntoConstraints = false
 
-            ViewConfiguration( view: self.contentButton )
+            ViewConfiguration( view: self.backgroundView )
                     .addConstrainedInSuperview().activate()
 
             ViewConfiguration( view: self.nameLabel )
@@ -195,7 +202,7 @@ class MPSitesView: UICollectionView, UICollectionViewDelegateFlowLayout, UIColle
                     .activate()
 
             self.highlightedConfiguration = ViewConfiguration()
-                    .add( ViewConfiguration( view: self.contentButton ) { active, inactive in
+                    .add( ViewConfiguration( view: self.backgroundView ) { active, inactive in
                         inactive.add( 0, forKey: "layer.shadowOpacity" )
                         active.add( 0.7, forKey: "layer.shadowOpacity" )
                     } )
@@ -227,7 +234,7 @@ class MPSitesView: UICollectionView, UICollectionViewDelegateFlowLayout, UIColle
         func siteDidChange() {
             PearlMainQueue {
                 self.nameLabel.text = self.site?.siteName
-                self.contentButton.backgroundColor = self.site?.color.withAlphaComponent( 0.2 )
+                self.indicatorView.backgroundColor = self.site?.color.withAlphaComponent( 0.85 )
             }
         }
     }
