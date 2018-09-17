@@ -74,18 +74,18 @@
     return self;
 }
 
-- (instancetype)addConstraint:(NSLayoutConstraint *)constraint {
+- (instancetype)constrainTo:(NSLayoutConstraint *)constraint {
 
     [self.constraints addObject:constraint];
     return self;
 }
 
-- (instancetype)add:(nullable id)value forKey:(NSString *)key {
+- (instancetype)set:(nullable id)value forKey:(NSString *)key {
 
-    return [self add:value forKey:key reverses:NO];
+    return [self set:value forKey:key reverses:NO];
 }
 
-- (instancetype)add:(nullable id)value forKey:(NSString *)key reverses:(BOOL)reverses {
+- (instancetype)set:(nullable id)value forKey:(NSString *)key reverses:(BOOL)reverses {
 
     self.activeValues[key] = value?: [NSNull null];
 
@@ -95,30 +95,36 @@
     return self;
 }
 
-- (instancetype)addViewConfiguration:(ViewConfiguration *)configuration {
+- (instancetype)applyViewConfiguration:(ViewConfiguration *)configuration {
 
-    return [self addViewConfiguration:configuration active:YES];
+    return [self applyViewConfiguration:configuration active:YES];
 }
 
-- (instancetype)addViewConfiguration:(ViewConfiguration *)configuration active:(BOOL)active {
+- (instancetype)applyViewConfiguration:(ViewConfiguration *)configuration active:(BOOL)active {
 
     [(active? self.activeConfigurations: self.inactiveConfigurations) addObject:configuration];
+
+    if (self.activated && active)
+        [configuration activate];
+    else if (!self.activated && !active)
+        [configuration activate];
+
     return self;
 }
 
-- (instancetype)addNeedsLayout:(UIView *)view {
+- (instancetype)needsLayout:(UIView *)view {
 
     [self.layoutViews addObject:view];
     return self;
 }
 
-- (instancetype)addNeedsDisplay:(UIView *)view {
+- (instancetype)needsDisplay:(UIView *)layoutView {
 
-    [self.displayViews addObject:view];
+    [self.displayViews addObject:layoutView];
     return self;
 }
 
-- (instancetype)addAction:(void ( ^ )(UIView *view))action {
+- (instancetype)doAction:(void ( ^ )(UIView *view))action {
 
     [self.actions addObject:[action copy]];
     return self;
@@ -126,14 +132,14 @@
 
 - (instancetype)becomeFirstResponder {
 
-    return [self addAction:^(UIView *view) {
+    return [self doAction:^(UIView *view) {
         [view becomeFirstResponder];
     }];
 }
 
 - (instancetype)resignFirstResponder {
 
-    return [self addAction:^(UIView *view) {
+    return [self doAction:^(UIView *view) {
         [view resignFirstResponder];
     }];
 }
@@ -243,100 +249,100 @@
     return self;
 }
 
-- (instancetype)addUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock {
+- (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock {
 
-    return [self addConstraint:constraintBlock( self.view.superview, self.view )];
+    return [self constrainTo:constraintBlock( self.view.superview, self.view )];
 }
 
-- (instancetype)addConstrainedInSuperview {
+- (instancetype)constrainToSuperview {
 
-    return [self addConstrainedInSuperviewForAttributes:
+    return [self constrainToSuperviewForAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)addConstrainedInSuperviewForAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)constrainToSuperviewForAttributes:(NSLayoutFormatOptions)attributes {
 
     if (attributes & NSLayoutFormatAlignAllTop)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.topAnchor constraintEqualToAnchor:view.topAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllLeading)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllTrailing)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllBottom)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
         }];
 
     return self;
 }
 
-- (instancetype)addConstrainedInSuperviewMargins {
+- (instancetype)constrainToSuperviewMargins {
 
-    return [self addConstrainedInSuperviewMarginsForAttributes:
+    return [self constrainToSuperviewMarginsForAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)addConstrainedInSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)constrainToSuperviewMarginsForAttributes:(NSLayoutFormatOptions)attributes {
 
     if (attributes & NSLayoutFormatAlignAllTop)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.layoutMarginsGuide.topAnchor constraintEqualToAnchor:view.topAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllLeading)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.layoutMarginsGuide.leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllTrailing)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.layoutMarginsGuide.trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllBottom)
-        [self addUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             return [superview.layoutMarginsGuide.bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
         }];
 
     return self;
 }
 
-- (instancetype)addFloat:(CGFloat)value forKey:(NSString *)key {
+- (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key {
 
-    return [self add:@(value) forKey:key];
+    return [self set:@(value) forKey:key];
 }
 
-- (instancetype)addPoint:(CGPoint)value forKey:(NSString *)key {
+- (instancetype)setPoint:(CGPoint)value forKey:(NSString *)key {
 
-    return [self add:[NSValue valueWithCGPoint:value] forKey:key];
+    return [self set:[NSValue valueWithCGPoint:value] forKey:key];
 }
 
-- (instancetype)addSize:(CGSize)value forKey:(NSString *)key {
+- (instancetype)setSize:(CGSize)value forKey:(NSString *)key {
 
-    return [self add:[NSValue valueWithCGSize:value] forKey:key];
+    return [self set:[NSValue valueWithCGSize:value] forKey:key];
 }
 
-- (instancetype)addRect:(CGRect)value forKey:(NSString *)key {
+- (instancetype)setRect:(CGRect)value forKey:(NSString *)key {
 
-    return [self add:[NSValue valueWithCGRect:value] forKey:key];
+    return [self set:[NSValue valueWithCGRect:value] forKey:key];
 }
 
-- (instancetype)addTransform:(CGAffineTransform)value forKey:(NSString *)key {
+- (instancetype)setTransform:(CGAffineTransform)value forKey:(NSString *)key {
 
-    return [self add:[NSValue valueWithCGAffineTransform:value] forKey:key];
+    return [self set:[NSValue valueWithCGAffineTransform:value] forKey:key];
 }
 
-- (instancetype)addEdgeInsets:(UIEdgeInsets)value forKey:(NSString *)key {
+- (instancetype)setEdgeInsets:(UIEdgeInsets)value forKey:(NSString *)key {
 
-    return [self add:[NSValue valueWithUIEdgeInsets:value] forKey:key];
+    return [self set:[NSValue valueWithUIEdgeInsets:value] forKey:key];
 }
 
-- (instancetype)addOffset:(UIOffset)value forKey:(NSString *)key {
+- (instancetype)setOffset:(UIOffset)value forKey:(NSString *)key {
 
-    return [self add:[NSValue valueWithUIOffset:value] forKey:key];
+    return [self set:[NSValue valueWithUIOffset:value] forKey:key];
 }
 
 @end

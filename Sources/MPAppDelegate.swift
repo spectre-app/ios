@@ -20,6 +20,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         let sitesViewController = MPSitesViewController()
         sitesViewController.user = MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 )
 
+//        self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window.rootViewController = MPNavigationController( rootViewController: sitesViewController )
         self.window.makeKeyAndVisible()
 

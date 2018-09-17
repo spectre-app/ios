@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPSite {
+class MPSite : NSObject {
     var observers = Observers<MPSiteObserver>()
 
     let siteName: String
@@ -20,6 +20,7 @@ class MPSite {
         self.uses = uses
         self.lastUsed = lastUsed
         self.color = MPUtils.color( message: self.siteName )
+        super.init()
 
 //        if self.siteName == "reddit.com" {
             URLSession.shared.dataTask( with: URL( string: "http://\(self.siteName)/favicon.ico" )! ) {
@@ -73,7 +74,6 @@ class MPSite {
     }
 
     private func changed() {
-        dbg( "changed: \(self.siteName)" )
         self.observers.notify { $0.siteDidChange() }
     }
 }
