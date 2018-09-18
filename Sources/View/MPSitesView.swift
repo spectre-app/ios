@@ -4,10 +4,10 @@
 //
 
 import UIKit
-import AlignedCollectionViewFlowLayout
 
 class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
-    var observers = Observers<MPSitesViewObserver>()
+    var observers   = Observers<MPSitesViewObserver>()
+    var isSelecting = false
 
     var user: MPUser? {
         didSet {
@@ -40,23 +40,25 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
 
     // MARK: - UITableViewDelegate
 
-    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        dbg( "willSelectRowAt \(indexPath)" )
-        return indexPath
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        self.selectRow(at: nil, animated: true, scrollPosition: .none)
+        self.selectedSite = nil
     }
 
-    func tableView(_ tableView: UITableView, willDeselectRowAt indexPath: IndexPath) -> IndexPath? {
-        dbg( "willDeselectRowAt \(indexPath)" )
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        self.isSelecting = true;
         return indexPath
     }
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        dbg( "didDeselectRowAt \(indexPath)" )
+        if !isSelecting {
+            self.selectedSite = nil
+        }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        dbg( "didSelectRowAt \(indexPath)" )
         self.selectedSite = self.user?.sites[indexPath.row]
+        self.isSelecting = false
     }
 
     // MARK: - UITableViewDataSource
@@ -110,6 +112,8 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
             self.isOpaque = false
             self.clipsToBounds = true
             self.backgroundColor = .clear
+            self.selectedBackgroundView = UIView()
+            self.selectedBackgroundView?.backgroundColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.3 )
 
             self.indicatorView.backgroundColor = UIColor( white: 0, alpha: 0.6 )
             self.indicatorView.layer.cornerRadius = 4

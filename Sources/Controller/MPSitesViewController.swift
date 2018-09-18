@@ -28,7 +28,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
 
     override func viewDidLoad() {
 
-        self.topContainer.layer.cornerRadius = 12;
+        self.topContainer.layer.cornerRadius = 4;
         self.topContainer.layer.masksToBounds = true;
 
         self.searchField.delegate = self
@@ -101,7 +101,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
         super.viewDidLayoutSubviews()
 
         // Offset site content's bottom margin to make space for the top container.
-        self.siteView.layoutMargins = UIEdgeInsetsMake( 8, 8, 8 + self.topContainer.frame.size.height / 2, 8 )
+        self.siteView.layoutMargins = UIEdgeInsetsMake( 0, 0, self.topContainer.frame.size.height / 2, 0 )
 
         // Offset sites content's top margin to make space for the top container.
         let top = self.sitesView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y

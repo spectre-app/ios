@@ -22,6 +22,7 @@
 		93D3932889B6B4206E66A6D6 /* PearlEMail.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39F7C9F47BF6387FBC5C3 /* PearlEMail.h */; };
 		93D39359B0DF9823F6C56A05 /* PearlHangDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39D8508BF868907E9732E /* PearlHangDetector.h */; };
 		93D3935F05DB41DFB75D907C /* AutoLayoutCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D399AC72BBE25033B26BF0 /* AutoLayoutCollectionViewCell.m */; };
+		93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPURLUtils.swift */; };
 		93D393C161EB8FA55FA5174F /* MPSitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesView.swift */; };
 		93D393DB5325820241BA90A7 /* PearlSizedTextView.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39A4759186F6D2D34AA6B /* PearlSizedTextView.h */; };
 		93D3942C1B117EE4851AA7B6 /* UIView+Visible.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3952910EDB8E0EBC94BA9 /* UIView+Visible.m */; };
@@ -157,6 +158,7 @@
 		DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA945C8617E3F3FD0053236B /* Images.xcassets */; };
 		DA95B50C1C476B6A0067F5EF /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA95B50B1C476B6A0067F5EF /* LocalAuthentication.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		DA95D5F214DF0B2C008D1B94 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA95D5F014DF0B1E008D1B94 /* MessageUI.framework */; };
+		DA9BA096215025A9006406F6 /* PearlProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39524126AC11848BDC6F4 /* PearlProfiler.swift */; };
 		DAA141201922FF020032B392 /* PearlTween.m in Sources */ = {isa = PBXBuildFile; fileRef = DAA1411C1922FF020032B392 /* PearlTween.m */; };
 		DAA141211922FF020032B392 /* PearlTween.h in Headers */ = {isa = PBXBuildFile; fileRef = DAA1411D1922FF020032B392 /* PearlTween.h */; };
 		DAA141221922FF020032B392 /* map-macro.h in Headers */ = {isa = PBXBuildFile; fileRef = DAA1411F1922FF020032B392 /* map-macro.h */; };
@@ -388,6 +390,7 @@
 		93D39424D508440582DC7FD0 /* MPSpinnerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSpinnerView.swift; sourceTree = "<group>"; };
 		93D3942A356B639724157982 /* PearlOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlOverlay.h; sourceTree = "<group>"; };
 		93D394482BB07F90E8FD1314 /* UIResponder+PearlFirstResponder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIResponder+PearlFirstResponder.h"; sourceTree = "<group>"; };
+		93D39524126AC11848BDC6F4 /* PearlProfiler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PearlProfiler.swift; sourceTree = "<group>"; };
 		93D3952910EDB8E0EBC94BA9 /* UIView+Visible.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Visible.m"; sourceTree = "<group>"; };
 		93D39564D6408073D59CDB6A /* MPButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPButton.swift; sourceTree = "<group>"; };
 		93D3956915634581E737B38C /* PearlNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlNavigationController.m; sourceTree = "<group>"; };
@@ -424,6 +427,7 @@
 		93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILabel+MPFontSize.m"; sourceTree = "<group>"; };
 		93D39CF7DB942C69D1C5D6BE /* mpw-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-util.h"; sourceTree = "<group>"; };
 		93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesViewController.swift; sourceTree = "<group>"; };
+		93D39D251169E42F0AAC451F /* MPURLUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPURLUtils.swift; sourceTree = "<group>"; };
 		93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v3.c"; sourceTree = "<group>"; };
 		93D39D8508BF868907E9732E /* PearlHangDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlHangDetector.h; sourceTree = "<group>"; };
 		93D39D8A953779B35403AF6E /* PearlUICollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlUICollectionView.m; sourceTree = "<group>"; };
@@ -1274,6 +1278,7 @@
 				93D399146F2E9498E71C2B0A /* Observers.h */,
 				93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */,
 				93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */,
+				93D39D251169E42F0AAC451F /* MPURLUtils.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -2208,6 +2213,7 @@
 				DAFE45F015039823003ABA7C /* PearlObjectUtils.m */,
 				DACE2F6419BA6A0A0010F92E /* PearlProfiler.h */,
 				DACE2F6319BA6A0A0010F92E /* PearlProfiler.m */,
+				93D39524126AC11848BDC6F4 /* PearlProfiler.swift */,
 				DA3509FC15F101A500C14A8E /* PearlQueue.h */,
 				DA3509FD15F101A500C14A8E /* PearlQueue.m */,
 				DAFE45F115039823003ABA7C /* PearlResettable.h */,
@@ -2875,12 +2881,12 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/AlignedCollectionViewFlowLayout/AlignedCollectionViewFlowLayout.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftLinkPreview/SwiftLinkPreview.framework",
 				"${BUILT_PRODUCTS_DIR}/pop/pop.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AlignedCollectionViewFlowLayout.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftLinkPreview.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/pop.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2915,6 +2921,7 @@
 				93D3960D18CFE6BBCD31C84E /* MPSitesViewController.swift in Sources */,
 				93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */,
 				93D39A2954B245FC0D925312 /* MPSite.swift in Sources */,
+				DA9BA096215025A9006406F6 /* PearlProfiler.swift in Sources */,
 				93D393C161EB8FA55FA5174F /* MPSitesView.swift in Sources */,
 				93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */,
 				93D3926D54D9CAB45F0772BB /* Observers.m in Sources */,
@@ -2922,6 +2929,7 @@
 				93D3935F05DB41DFB75D907C /* AutoLayoutCollectionViewCell.m in Sources */,
 				93D39139805FC516B6C2C181 /* MPButton.swift in Sources */,
 				93D392937A9E6664CA09124D /* MPSiteView.swift in Sources */,
+				93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
