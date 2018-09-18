@@ -7,20 +7,22 @@ import UIKit
 import pop
 
 class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewObserver {
-    private let topContainer = UIVisualEffectView( effect: UIBlurEffect( style: .dark ) )
-    private let searchField  = UISearchBar()
-    private let userButton   = MPButton()
-    private let sitesView    = MPSitesView()
-    private let siteView     = MPSiteView()
+    private lazy var topContainer = MPButton( subview: self.searchField )
+    private let searchField = UITextField()
+    private let userButton  = UIButton( type: .custom )
+    private let sitesView   = MPSitesView()
+    private let siteView    = MPSiteView()
 
     private let siteViewConfiguration = ViewConfiguration()
 
     var user: MPUser? {
         didSet {
+            self.sitesView.user = self.user
+
             var userButtonTitle = ""
             self.user?.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
             self.userButton.setTitle( userButtonTitle.uppercased(), for: .normal )
-            self.sitesView.user = self.user
+            self.userButton.sizeToFit()
         }
     }
 
@@ -28,17 +30,24 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
 
     override func viewDidLoad() {
 
-        self.topContainer.layer.cornerRadius = 4;
-        self.topContainer.layer.masksToBounds = true;
-
-        self.searchField.delegate = self
-        self.searchField.placeholder = "Site name"
-        self.searchField.searchBarStyle = .minimal
-        self.searchField.keyboardAppearance = .dark
-
         self.userButton.setImage( UIImage( named: "icon_person" ), for: .normal )
+        self.userButton.sizeToFit()
+
+        self.searchField.textColor = .white
+        self.searchField.rightView = self.userButton
+        self.searchField.clearButtonMode = .whileEditing
+        self.searchField.rightViewMode = .unlessEditing
+        self.searchField.keyboardAppearance = .dark
+        self.searchField.keyboardType = .URL
+        self.searchField.autocapitalizationType = .none
+        self.searchField.autocorrectionType = .no
+        self.topContainer.layoutMargins = UIEdgeInsets( top: 8, left: 8, bottom: 8, right: 8 )
+        if #available( iOS 10.0, * ) {
+            self.searchField.textContentType = .URL
+        }
 
         self.sitesView.observers.register( self )
+        self.sitesView.keyboardDismissMode = .onDrag
 
         if #available( iOS 11.0, * ) {
             self.sitesView.contentInsetAdjustmentBehavior = .never
@@ -48,8 +57,6 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
         self.view.addSubview( self.siteView )
         self.view.addSubview( self.sitesView )
         self.view.addSubview( self.topContainer )
-        self.view.addSubview( self.userButton )
-        self.topContainer.contentView.addSubview( self.searchField )
 
         // - Layout
         ViewConfiguration( view: self.siteView )
@@ -81,15 +88,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
                 .constrainTo { self.siteView.bottomAnchor.constraint( lessThanOrEqualTo: $1.centerYAnchor ) }
                 .constrainTo { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor, constant: -8 ) }
                 .constrainTo { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor, constant: 8 ) }
-                .activate()
-
-        ViewConfiguration( view: self.searchField )
-                .constrainToSuperview()
-                .activate()
-
-        ViewConfiguration( view: self.userButton )
-                .constrainTo { self.topContainer.bottomAnchor.constraint( equalTo: $1.centerYAnchor ) }
-                .constrainTo { self.topContainer.trailingAnchor.constraint( equalTo: $1.trailingAnchor, constant: 40 ) }
+                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 50 ) }
                 .activate()
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {

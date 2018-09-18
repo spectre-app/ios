@@ -28,7 +28,6 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
         self.registerCell( SiteCell.self )
         self.delegate = self
         self.dataSource = self
-        self.keyboardDismissMode = .interactive
         self.backgroundColor = .clear
         self.isOpaque = false
         self.separatorStyle = .none
@@ -41,7 +40,7 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
     // MARK: - UITableViewDelegate
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        self.selectRow(at: nil, animated: true, scrollPosition: .none)
+        self.selectRow( at: nil, animated: true, scrollPosition: .none )
         self.selectedSite = nil
     }
 
@@ -95,7 +94,7 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
         let indicatorView = UIView()
         let passwordLabel = UILabel()
         let nameLabel     = UILabel()
-        let copyButton    = MPButton()
+        let copyButton    = MPButton( image: nil, title: "copy" )
 
         let highlightedConfiguration = ViewConfiguration()
 
@@ -130,8 +129,6 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
             self.nameLabel.textAlignment = .natural
             self.nameLabel.textColor = UIColor.lightText
             self.nameLabel.shadowColor = .black
-
-            self.copyButton.setTitle( "Copy", for: .normal )
 
             // - Hierarchy
             self.contentView.addSubview( self.passwordLabel )

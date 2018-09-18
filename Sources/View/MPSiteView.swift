@@ -14,8 +14,10 @@ class MPSiteView: UIView, MPSiteObserver {
         }
     }
 
-    let imageButton = UIButton( type: .custom )
-    let nameLabel   = UILabel()
+    let siteButton     = UIButton( type: .custom )
+    let settingsButton = MPButton( image: UIImage( named: "icon_settings" ) )
+    let recoveryButton = MPButton( image: UIImage( named: "icon_question" ) )
+    let keysButton     = MPButton( image: UIImage( named: "icon_key" ) )
 
     // MARK: - Life
 
@@ -23,27 +25,30 @@ class MPSiteView: UIView, MPSiteObserver {
         super.init( frame: .zero )
         self.clipsToBounds = true
 
-        self.imageButton.imageView?.contentMode = .scaleAspectFill
-        self.imageButton.imageView?.layer.cornerRadius = 4
-        self.imageButton.layer.shadowRadius = 20
-        self.imageButton.layer.shadowOffset = .zero
-        self.imageButton.layer.shadowOpacity = 0.3
-
+        self.siteButton.imageView?.contentMode = .scaleAspectFill
+        self.siteButton.imageView?.layer.cornerRadius = 4
+        self.siteButton.layer.shadowRadius = 20
+        self.siteButton.layer.shadowOffset = .zero
+        self.siteButton.layer.shadowOpacity = 0.3
         if #available( iOS 11.0, * ) {
-            self.imageButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+            self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .largeTitle )
         }
         else {
-            self.imageButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .title1 )
+            self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .title1 )
         }
-        self.nameLabel.textAlignment = .center
-        self.nameLabel.textColor = .white
+
+        let toolBar = UIStackView( arrangedSubviews: [ self.settingsButton, self.recoveryButton, self.keysButton ] )
+        toolBar.isLayoutMarginsRelativeArrangement = true
+        toolBar.layoutMargins = UIEdgeInsetsMake( 8, 8, 8, 8 )
+        toolBar.axis = .vertical
+        toolBar.spacing = 8
 
         // - Hierarchy
-        self.addSubview( self.imageButton )
-        self.addSubview( self.nameLabel )
+        self.addSubview( self.siteButton )
+        self.addSubview( toolBar )
 
         // - Layout
-        ViewConfiguration( view: self.imageButton )
+        ViewConfiguration( view: self.siteButton )
                 .constrainTo { $0.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor, constant: 2 ) }
                 .constrainTo { $0.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ) }
                 .constrainTo { $0.trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ) }
@@ -51,10 +56,10 @@ class MPSiteView: UIView, MPSiteObserver {
                 .constrainTo { $0.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
                 .constrainTo { $0.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
                 .activate()
-        ViewConfiguration( view: self.nameLabel )
+        ViewConfiguration( view: toolBar )
+                .constrainTo { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
                 .constrainTo { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .constrainTo { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                .constrainTo { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor, constant: 8 ) }
+                .constrainTo { $0.layoutMarginsGuide.bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ) }
                 .activate()
         ViewConfiguration( view: self )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor, multiplier: 1.618 ) }
@@ -71,8 +76,8 @@ class MPSiteView: UIView, MPSiteObserver {
         PearlMainQueue {
             self.unanimate {
                 self.backgroundColor = self.site?.color
-                self.imageButton.setImage( self.site?.image, for: .normal )
-                self.imageButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
+                self.siteButton.setImage( self.site?.image, for: .normal )
+                self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
 //                self.nameLabel.text = self.site?.siteName
 //                self.nameLabel.isHidden = self.site?.image != nil
             }
