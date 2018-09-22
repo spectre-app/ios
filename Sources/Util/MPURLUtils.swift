@@ -41,8 +41,6 @@ class MPURLUtils {
 
     static func preview(url: String, imageResult: @escaping (UIImage?) -> Void, colorResult: @escaping (UIColor?) -> Void) {
         linkPreview.preview( url, onSuccess: { response in
-            dbg( "preview \(url):\n\(response)" )
-
             if let imageURL = validImageURL( response[.image] as? String ) ?? validImageURL( response[.icon] as? String ) {
                 self.loadImage( url: imageURL ) { image in
                     imageResult( image )
@@ -68,7 +66,6 @@ class MPURLUtils {
                             cgContext.draw( cgImage, in: CGRect( x: 0, y: 0, width: cgImage.width, height: cgImage.height ) )
 
                             // Extract the colors from the image.
-//                            var colors = [ UIColor ]()
                             var scoresByColor = [ UIColor: Int ]()
                             for offset in stride( from: 0, to: cgContext.bytesPerRow * cgContext.height, by: cgContext.bitsPerPixel / 8 ) {
                                 let r                   = CGFloat( pixelData.load( fromByteOffset: offset + 0, as: UInt8.self ) ) / CGFloat( UInt8.max )
@@ -76,20 +73,15 @@ class MPURLUtils {
                                 let b                   = CGFloat( pixelData.load( fromByteOffset: offset + 2, as: UInt8.self ) ) / CGFloat( UInt8.max )
                                 let a                   = CGFloat( pixelData.load( fromByteOffset: offset + 3, as: UInt8.self ) ) / CGFloat( UInt8.max )
                                 let color               = UIColor( red: r, green: g, blue: b, alpha: a )
-//                                colors.append( UIColor( red: r, green: g, blue: b, alpha: a ) )
-//                            }
 
                                 // Weigh colors according to interested parameters.
-//                            for color in colors {
                                 var saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
                                 color.getHue( nil, saturation: &saturation, brightness: &brightness, alpha: &alpha );
 
-//                                let similarity = color.similarityOfHue( in: colors )
                                 var score = 0
                                 score += Int( pow( alpha, 2 ) * 400 )
                                 score += Int( saturation * 200 )
                                 score += Int( MPUtils.mirror( ratio: brightness, center: 0.85 ) * 100 )
-//                                score += Int( similarity * 100 )
 
                                 scoresByColor[color] = score
                             }
@@ -120,9 +112,9 @@ class MPURLUtils {
 
     private class func validImageURL(_ string: String?) -> URL? {
         if let string = string, !string.isEmpty, string.lowercased().hasSuffix( "png" ) ||
-                   string.lowercased().hasSuffix( "jpg" ) ||
-                   string.lowercased().hasSuffix( "jpeg" ) ||
-                   string.lowercased().hasSuffix( "gif" ),
+                string.lowercased().hasSuffix( "jpg" ) ||
+                string.lowercased().hasSuffix( "jpeg" ) ||
+                string.lowercased().hasSuffix( "gif" ),
            let url = URL( string: string ) {
             return url
         }

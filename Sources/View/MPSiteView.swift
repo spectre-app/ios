@@ -23,10 +23,13 @@ class MPSiteView: UIView, MPSiteObserver {
 
     init() {
         super.init( frame: .zero )
-        self.clipsToBounds = true
+        self.layer.shadowOpacity = 1
+        self.layer.shadowOffset = .zero
+        self.layer.shadowRadius = 40
 
-        self.siteButton.imageView?.contentMode = .scaleAspectFill
         self.siteButton.imageView?.layer.cornerRadius = 4
+        self.siteButton.imageView?.contentMode = .scaleAspectFill
+        self.siteButton.imageView?.clipsToBounds = true
         self.siteButton.layer.shadowRadius = 20
         self.siteButton.layer.shadowOffset = .zero
         self.siteButton.layer.shadowOpacity = 0.3
@@ -49,10 +52,10 @@ class MPSiteView: UIView, MPSiteObserver {
 
         // - Layout
         ViewConfiguration( view: self.siteButton )
-                .constrainTo { $0.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor, constant: 2 ) }
+                .constrainTo { $0.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ) }
                 .constrainTo { $0.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ) }
                 .constrainTo { $0.trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ) }
-                .constrainTo { $0.bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor, constant: -2 ) }
+                .constrainTo { $0.bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ) }
                 .constrainTo { $0.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
                 .constrainTo { $0.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
                 .activate()
@@ -78,8 +81,13 @@ class MPSiteView: UIView, MPSiteObserver {
                 self.backgroundColor = self.site?.color
                 self.siteButton.setImage( self.site?.image, for: .normal )
                 self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
-//                self.nameLabel.text = self.site?.siteName
-//                self.nameLabel.isHidden = self.site?.image != nil
+
+                if let brightness = self.site?.color.brightness(), brightness < 0.1 {
+                    self.siteButton.layer.shadowColor = UIColor.white.cgColor
+                }
+                else {
+                    self.siteButton.layer.shadowColor = UIColor.black.cgColor
+                }
             }
         }
     }

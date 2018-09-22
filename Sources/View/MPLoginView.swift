@@ -242,7 +242,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             super.draw( rect )
 
             if self.active, let context = UIGraphicsGetCurrentContext() {
-                UIColor.white.withAlphaComponent( 0.62 ).setStroke()
+                UIColor.white.withAlphaComponent( 0.618 ).setStroke()
                 context.addPath( path )
                 context.strokePath()
             }

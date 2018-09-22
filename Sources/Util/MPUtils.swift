@@ -49,16 +49,35 @@ extension UIColor {
     // Determine how common a color is in a list of colors.
     // Compares the color to the other colors only by average hue distance.
     func similarityOfHue(in colors: [UIColor]) -> CGFloat {
-        var swatchHue: CGFloat = 0
-        self.getHue( &swatchHue, saturation: nil, brightness: nil, alpha: nil )
+        let swatchHue = self.hue()
 
         var commonality: CGFloat = 0
         for color in colors {
-            var colorHue: CGFloat = 0
-            color.getHue( &colorHue, saturation: nil, brightness: nil, alpha: nil )
+            let colorHue = color.hue()
             commonality += abs( colorHue - swatchHue )
         }
 
         return commonality / CGFloat( colors.count )
+    }
+
+    func hue() -> CGFloat {
+        var hue: CGFloat = 0
+        self.getHue( &hue, saturation: nil, brightness: nil, alpha: nil )
+
+        return hue;
+    }
+
+    func saturation() -> CGFloat {
+        var saturation: CGFloat = 0
+        self.getHue( nil, saturation: &saturation, brightness: nil, alpha: nil )
+
+        return saturation;
+    }
+
+    func brightness() -> CGFloat {
+        var brightness: CGFloat = 0
+        self.getHue( nil, saturation: nil, brightness: &brightness, alpha: nil )
+
+        return brightness;
     }
 }

@@ -54,8 +54,8 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
         }
 
         // - Hierarchy
-        self.view.addSubview( self.siteView )
         self.view.addSubview( self.sitesView )
+        self.view.addSubview( self.siteView )
         self.view.addSubview( self.topContainer )
 
         // - Layout
