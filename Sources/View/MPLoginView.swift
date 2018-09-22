@@ -131,11 +131,11 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
                 self.identiconAccessory.addSubview( self.identiconLabel )
                 ViewConfiguration( view: self.identiconLabel )
-                        .constrainTo { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                        .constrainTo { $0.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
-                        .constrainTo { $0.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ) }
-                        .constrainTo { $0.trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ) }
-                        .constrainTo { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                        .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                        .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                        .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                         .activate()
 
                 self.passwordField.placeholder = "Enter your master password"
@@ -164,19 +164,19 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.addSubview( self.passwordField )
 
                 ViewConfiguration( view: self.nameLabel )
-                        .constrainTo { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                        .constrainTo { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                        .constrainTo { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                        .constrainTo { self.avatarView.topAnchor.constraint( equalTo: $1.bottomAnchor, constant: 20 ) }
+                        .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -20 ) }
                         .activate()
                 ViewConfiguration( view: self.avatarView )
-                        .constrainTo { $0.layoutMarginsGuide.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
+                        .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                         .activate()
                 ViewConfiguration( view: self.passwordField )
-                        .constrainTo { self.avatarView.bottomAnchor.constraint( equalTo: $1.topAnchor, constant: -20 ) }
-                        .constrainTo { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                        .constrainTo { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                        .constrainTo { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                        .constrainTo { $1.topAnchor.constraint( equalTo: self.avatarView.bottomAnchor, constant: 20 ) }
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                         .activate()
 
                 self.passwordConfiguration = ViewConfiguration( view: self.passwordField ) { active, inactive in

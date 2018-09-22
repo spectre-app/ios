@@ -254,29 +254,47 @@
     return [self constrainTo:constraintBlock( self.view.superview, self.view )];
 }
 
-- (instancetype)constrainToView:(UIView *)view {
+- (instancetype)constrainToView:(UIView *__nullable)view {
 
-    return [self constrainToView:view margins:NO forAttributes:
+    return [self constrainToView:view withMargins:NO forAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)constrainToView:(UIView *)host margins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)constrainToMarginsOfView:(UIView *__nullable)view {
+
+    return [self constrainToView:view withMargins:YES forAttributes:
+            NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
+}
+
+- (instancetype)constrainToView:(UIView *__nullable)host withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
 
     if (attributes & NSLayoutFormatAlignAllTop)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
-            return [(host?: superview).topAnchor constraintEqualToAnchor:view.topAnchor];
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.topAnchor constraintEqualToAnchor:view.topAnchor];
+            else
+                return [(host?: superview).topAnchor constraintEqualToAnchor:view.topAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllLeading)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
-            return [(host?: superview).leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
+            else
+                return [(host?: superview).leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllTrailing)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
-            return [(host?: superview).trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
+            else
+                return [(host?: superview).trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
         }];
     if (attributes & NSLayoutFormatAlignAllBottom)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
-            return [(host?: superview).bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
+            else
+                return [(host?: superview).bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
         }];
 
     return self;
@@ -287,15 +305,15 @@
     return [self constrainToView:nil];
 }
 
-- (instancetype)constrainToSuperviewMargins {
+- (instancetype)constrainToMarginsOfSuperview {
 
-    return [self constrainToSuperviewMargins:YES forAttributes:
+    return [self constrainToSuperviewWithMargins:YES forAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)constrainToSuperviewMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
 
-    return [self constrainToView:nil margins:margins forAttributes:attributes];
+    return [self constrainToView:nil withMargins:margins forAttributes:attributes];
 }
 
 - (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key {

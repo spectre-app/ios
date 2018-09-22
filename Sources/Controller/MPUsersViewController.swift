@@ -20,10 +20,10 @@ class MPUsersViewController: UIViewController {
         self.view.addSubview( self.loginView )
 
         ViewConfiguration( view: self.loginView )
-                .constrainTo { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                .constrainTo { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .constrainTo { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                .constrainTo { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ).updatePriority( .defaultHigh ) }
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).updatePriority( .defaultHigh ) }
                 .activate()
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {

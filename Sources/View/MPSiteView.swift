@@ -52,17 +52,17 @@ class MPSiteView: UIView, MPSiteObserver {
 
         // - Layout
         ViewConfiguration( view: self.siteButton )
-                .constrainTo { $0.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ) }
-                .constrainTo { $0.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ) }
-                .constrainTo { $0.trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ) }
-                .constrainTo { $0.bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ) }
-                .constrainTo { $0.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
-                .constrainTo { $0.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                 .activate()
         ViewConfiguration( view: toolBar )
-                .constrainTo { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                .constrainTo { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .constrainTo { $0.layoutMarginsGuide.bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                 .activate()
         ViewConfiguration( view: self )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor, multiplier: 1.618 ) }

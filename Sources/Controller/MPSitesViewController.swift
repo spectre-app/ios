@@ -60,34 +60,34 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
 
         // - Layout
         ViewConfiguration( view: self.siteView )
-                .constrainTo { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .constrainTo { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.sitesView )
-                .constrainTo { self.siteView.bottomAnchor.constraint( equalTo: $1.topAnchor ) }
-                .constrainTo { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .constrainTo { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                .constrainTo { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( equalTo: self.siteView.bottomAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
         siteViewConfiguration
                 .apply( ViewConfiguration( view: self.siteView )
-                                .constrainTo { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }, active: true )
+                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: true )
                 .apply( ViewConfiguration( view: self.sitesView )
-                                .constrainTo { $0.topAnchor.constraint( equalTo: $1.topAnchor ) }, active: false )
+                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
 
         ViewConfiguration( view: self.sitesView )
-                .constrainTo { $0.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .constrainTo { $0.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                .constrainTo { $0.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.topContainer )
-                .constrainTo { $0.layoutMarginsGuide.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor, constant: -8 ) }
-                .constrainTo { self.siteView.bottomAnchor.constraint( lessThanOrEqualTo: $1.centerYAnchor ) }
-                .constrainTo { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor, constant: -8 ) }
-                .constrainTo { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor, constant: 8 ) }
+                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ) }
+                .constrainTo { $1.centerYAnchor.constraint( greaterThanOrEqualTo: self.siteView.bottomAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ) }
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 50 ) }
                 .activate()
 

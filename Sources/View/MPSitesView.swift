@@ -137,21 +137,21 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
 
             // - Layout
             ViewConfiguration( view: self.passwordLabel )
-                    .constrainTo { $0.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                    .constrainTo { $0.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                    .constrainTo { self.copyButton.leadingAnchor.constraint( equalTo: $1.trailingAnchor, constant: 20 ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .activate()
 
             ViewConfiguration( view: self.nameLabel )
-                    .constrainTo { self.passwordLabel.bottomAnchor.constraint( equalTo: $1.topAnchor ) }
-                    .constrainTo { self.passwordLabel.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                    .constrainTo { self.passwordLabel.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                    .constrainTo { $0.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: self.passwordLabel.bottomAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.passwordLabel.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.passwordLabel.trailingAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
             ViewConfiguration( view: self.copyButton )
-                    .constrainTo { $0.layoutMarginsGuide.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
-                    .constrainTo { $0.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.passwordLabel.trailingAnchor, constant: 20 ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .activate()
         }
 

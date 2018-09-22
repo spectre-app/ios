@@ -67,10 +67,11 @@ CF_IMPLICIT_BRIDGING_ENABLED
  */
 - (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock;
 - (instancetype)constrainToView:(UIView *__nullable)view;
-- (instancetype)constrainToView:(UIView *__nullable)view  margins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)constrainToMarginsOfView:(UIView *__nullable)view;
+- (instancetype)constrainToView:(UIView *__nullable)view withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
 - (instancetype)constrainToSuperview;
-- (instancetype)constrainToSuperviewMargins;
-- (instancetype)constrainToSuperviewMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)constrainToMarginsOfSuperview;
+- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
 
 - (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key;
 - (instancetype)setPoint:(CGPoint)value forKey:(NSString *)key;

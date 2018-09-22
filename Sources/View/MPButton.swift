@@ -59,12 +59,7 @@ class MPButton: UIView {
         self.effectView.contentView.addSubview( subview )
 
         ViewConfiguration( view: self.effectView ).constrainToSuperview().activate()
-        ViewConfiguration( view: subview )
-                .constrainTo { self.layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor ) }
-                .constrainTo { self.layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor ) }
-                .constrainTo { self.layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor ) }
-                .constrainTo { self.layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor ) }
-                .activate()
+        ViewConfiguration( view: subview ).constrain( toMarginsOf: self ).activate()
     }
 
     @objc
@@ -99,10 +94,10 @@ class MPButton: UIView {
 
             effectContainer.insertSubview( self, aboveSubview: hostContainer )
             ViewConfiguration( view: self )
-                    .constrainTo { self.host.centerXAnchor.constraint( equalTo: $1.centerXAnchor ) }
-                    .constrainTo { self.host.centerYAnchor.constraint( equalTo: $1.centerYAnchor ) }
-                    .constrainTo { $0.widthAnchor.constraint( lessThanOrEqualTo: $1.widthAnchor, multiplier: 2 ) }
-                    .constrainTo { $0.heightAnchor.constraint( lessThanOrEqualTo: $1.heightAnchor, multiplier: 2 ) }
+                    .constrainTo { $1.centerXAnchor.constraint( equalTo: self.host.centerXAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: self.host.centerYAnchor ) }
+                    .constrainTo { $1.widthAnchor.constraint( greaterThanOrEqualTo: $0.widthAnchor, multiplier: 1 / 2 ) }
+                    .constrainTo { $1.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor, multiplier: 1 / 2 ) }
                     .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                     .activate()
         }
