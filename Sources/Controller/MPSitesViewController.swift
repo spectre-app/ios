@@ -41,7 +41,6 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
         self.searchField.keyboardType = .URL
         self.searchField.autocapitalizationType = .none
         self.searchField.autocorrectionType = .no
-        self.topContainer.layoutMargins = UIEdgeInsets( top: 8, left: 8, bottom: 8, right: 8 )
         if #available( iOS 10.0, * ) {
             self.searchField.textContentType = .URL
         }

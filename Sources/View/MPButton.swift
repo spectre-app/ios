@@ -33,9 +33,15 @@ class MPButton: UIView {
         button.setImage( image, for: .normal )
         button.setTitle( title, for: .normal )
         button.setTitleColor( .lightText, for: .normal )
-        button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
         button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
 
+        if title != nil {
+            button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 10, bottom: 4, right: 10 )
+        } else {
+            button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
+        }
+
+        self.layoutMargins = .zero
         self.button = button
         self.round = true
     }
@@ -43,7 +49,6 @@ class MPButton: UIView {
     init(subview: UIView) {
         super.init( frame: .zero )
 
-        self.layoutMargins = .zero
         if #available( iOS 11.0, * ) {
             self.insetsLayoutMarginsFromSafeArea = false
         }

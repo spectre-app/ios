@@ -5,13 +5,17 @@
 
 import UIKit
 
-class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
+class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver {
     var observers   = Observers<MPSitesViewObserver>()
     var isSelecting = false
 
     var user: MPUser? {
+        willSet {
+            self.user?.observers.unregister( self )
+        }
         didSet {
-            self.reloadData()
+            self.user?.observers.register( self )
+            self.userDidUpdateSites()
         }
     }
     var selectedSite: MPSite? {
@@ -75,6 +79,29 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
         return cell
     }
 
+    // MARK: - MPUserObserver
+
+    func userDidLogin() {
+        PearlMainQueue {
+            self.reloadData()
+        }
+    }
+
+    func userDidLogout() {
+        PearlMainQueue {
+            self.reloadData()
+        }
+    }
+
+    func userDidChange() {
+    }
+
+    func userDidUpdateSites() {
+        PearlMainQueue {
+            self.reloadData()
+        }
+    }
+
     // MARK: - Types
 
     class SiteCell: UITableViewCell, MPSiteObserver {
@@ -119,7 +146,7 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
             self.indicatorView.layer.borderWidth = 1
             self.indicatorView.layer.borderColor = UIColor( white: 0, alpha: 1 ).cgColor
 
-            self.passwordLabel.text = "Jaji9,GowzLanr"
+            self.passwordLabel.text = " "
             self.passwordLabel.font = UIFont( name: "SourceCodePro-Black", size: 28 )
             self.passwordLabel.textAlignment = .natural
             self.passwordLabel.textColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 1 )
@@ -139,12 +166,13 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
             ViewConfiguration( view: self.passwordLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .fittingSizeLevel )
                     .activate()
 
             ViewConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.passwordLabel.bottomAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.passwordLabel.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.passwordLabel.trailingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.passwordLabel.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
@@ -167,6 +195,13 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource {
             PearlMainQueue {
                 self.nameLabel.text = self.site?.siteName
                 self.indicatorView.backgroundColor = self.site?.color.withAlphaComponent( 0.85 )
+            }
+            PearlNotMainQueue {
+                let password = self.site?.result()
+
+                PearlMainQueue {
+                    self.passwordLabel.text = password ?? " "
+                }
             }
         }
     }

@@ -6,33 +6,77 @@
 import Foundation
 
 class MPUser {
-    let fullName:  String
-    var avatar:    MPUserAvatar
-    var masterKey: Data?
-    var sites = [ MPSite ]()
+    var observers = Observers<MPUserObserver>()
+
+    let fullName: String
+    var avatar: MPUserAvatar {
+        didSet {
+            self.observers.notify { $0.userDidChange() }
+        }
+    }
+
+    var algorithm: MPAlgorithmVersion {
+        didSet {
+            self.observers.notify { $0.userDidChange() }
+        }
+    }
+    var defaultType: MPResultType {
+        didSet {
+            self.observers.notify { $0.userDidChange() }
+        }
+    }
+
+    var masterKeyID: MPKeyID? {
+        didSet {
+            self.observers.notify { $0.userDidChange() }
+        }
+    }
+    var masterKey: MPMasterKey? {
+        didSet {
+            if let _ = self.masterKey {
+                self.observers.notify { $0.userDidLogin() }
+            }
+            else {
+                self.observers.notify { $0.userDidLogout() }
+            }
+        }
+    }
+    var sites = [ MPSite ]() {
+        didSet {
+            self.observers.notify { $0.userDidUpdateSites() }
+        }
+    }
 
     // MARK: - Life
 
-    init(named name: String, avatar: MPUserAvatar = .avatar_0) {
+    init(named name: String, avatar: MPUserAvatar = .avatar_0,
+         algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, masterKeyID: MPKeyID? = nil) {
         self.fullName = name
         self.avatar = avatar
+        self.algorithm = algorithm ?? .versionCurrent
+        self.defaultType = defaultType ?? .default
+        self.masterKeyID = masterKeyID
 
-        self.sites.append( MPSite( named: "apple.com", uses: 5, lastUsed: Date().addingTimeInterval( -1000 ) ) )
-        self.sites.append( MPSite( named: "google.com", uses: 20, lastUsed: Date().addingTimeInterval( -2000 ) ) )
-        self.sites.append( MPSite( named: "twitter.com", uses: 3, lastUsed: Date().addingTimeInterval( -5000 ) ) )
-        self.sites.append( MPSite( named: "reddit.com", uses: 8, lastUsed: Date().addingTimeInterval( -10000 ) ) )
-        self.sites.append( MPSite( named: "pinterest.com", uses: 7, lastUsed: Date().addingTimeInterval( -12000 ) ) )
-        self.sites.append( MPSite( named: "whatsapp.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "ivpn.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "amazon.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "matrix.org", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "spotify.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "netflix.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "uber.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "battle.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "gandi.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "ebay.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( named: "last.fm", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "apple.com", uses: 5, lastUsed: Date().addingTimeInterval( -1000 ) ) )
+        self.sites.append( MPSite( user: self, named: "google.com", uses: 20, lastUsed: Date().addingTimeInterval( -2000 ) ) )
+        self.sites.append( MPSite( user: self, named: "twitter.com", uses: 3, lastUsed: Date().addingTimeInterval( -5000 ) ) )
+        self.sites.append( MPSite( user: self, named: "reddit.com", uses: 8, lastUsed: Date().addingTimeInterval( -10000 ) ) )
+        self.sites.append( MPSite( user: self, named: "pinterest.com", uses: 7, lastUsed: Date().addingTimeInterval( -12000 ) ) )
+        self.sites.append( MPSite( user: self, named: "whatsapp.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "ivpn.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "amazon.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "matrix.org", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "spotify.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "netflix.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "uber.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "battle.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "gandi.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "ebay.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+        self.sites.append( MPSite( user: self, named: "last.fm", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
+
+        PearlNotMainQueue {
+            self.masterKey = mpw_masterKey( self.fullName, "test", self.algorithm )
+        }
     }
 
     // MARK: - Interface
@@ -40,7 +84,7 @@ class MPUser {
     func authenticate(masterPassword: String) {
         self.masterKey = masterPassword.withCString { masterPassword in
             fullName.withCString { fullName in
-                Data( bytes: mpw_masterKey( fullName, masterPassword, .versionCurrent ), count: MPMasterKeySize )
+                mpw_masterKey( fullName, masterPassword, .versionCurrent )
             }
         }
     }
@@ -66,4 +110,13 @@ class MPUser {
             }
         }
     }
+}
+
+@objc
+protocol MPUserObserver {
+    func userDidLogin()
+    func userDidLogout()
+
+    func userDidChange()
+    func userDidUpdateSites()
 }

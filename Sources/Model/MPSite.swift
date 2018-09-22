@@ -8,35 +8,83 @@ import Foundation
 class MPSite: NSObject {
     var observers = Observers<MPSiteObserver>()
 
+    let user:     MPUser
     let siteName: String
 
-    var uses:     UInt = 0 {
+    var algorithm: MPAlgorithmVersion {
         didSet {
-            self.changed()
+            self.observers.notify { $0.siteDidChange() }
         }
     }
-    var lastUsed: Date? {
+    var counter: MPCounterValue = .default {
         didSet {
-            self.changed()
+            self.observers.notify { $0.siteDidChange() }
         }
     }
-    var color:    UIColor {
+    var resultType: MPResultType {
         didSet {
-            self.changed()
+            self.observers.notify { $0.siteDidChange() }
         }
     }
-    var image:    UIImage? {
+    var loginType: MPResultType {
         didSet {
-            self.changed()
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
+
+    var resultState: String? {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
+    var loginState: String? {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
+
+    var url: String? {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
+    var uses: UInt = 0 {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
+    var lastUsed: Date {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
+    var color: UIColor {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
+    var image: UIImage? {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
         }
     }
 
     // MARK: - Life
 
-    init(named name: String, uses: UInt = 0, lastUsed: Date? = nil) {
+    init(user: MPUser, named name: String,
+         algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
+         resultType: MPResultType? = nil, resultState: String? = nil,
+         loginType: MPResultType? = nil, loginState: String? = nil,
+         url: String? = nil, uses: UInt = 0, lastUsed: Date? = nil) {
+        self.user = user
         self.siteName = name
+        self.algorithm = algorithm ?? user.algorithm
+        self.counter = counter ?? MPCounterValue.default
+        self.resultType = resultType ?? user.defaultType
+        self.loginType = loginType ?? MPResultType.templateName
+        self.url = url
         self.uses = uses
-        self.lastUsed = lastUsed
+        self.lastUsed = lastUsed ?? Date()
         self.color = MPUtils.color( message: self.siteName )
         super.init()
 
@@ -51,8 +99,17 @@ class MPSite: NSObject {
         } )
     }
 
-    private func changed() {
-        self.observers.notify { $0.siteDidChange() }
+    // MARK: - mpw
+
+    func result(keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil, resultParam: String? = nil)
+                    -> String? {
+        if let masterKey = self.user.masterKey,
+           let result = mpw_siteResult( masterKey, self.siteName, self.counter,
+                                        keyPurpose, keyContext, self.resultType, resultParam, self.algorithm ) {
+            return String( utf8String: result )
+        }
+
+        return nil
     }
 }
 

@@ -34,6 +34,10 @@ CF_IMPLICIT_BRIDGING_ENABLED
 
 //! Activate this constraint when the configuration becomes active.
 - (instancetype)constrainTo:(NSLayoutConstraint *)constraint;
+- (instancetype)compressionResistancePriority;
+- (instancetype)compressionResistancePriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical;
+- (instancetype)huggingPriority;
+- (instancetype)huggingPriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical;
 //! Set a given value for the view at the given key, when the configuration becomes active.
 - (instancetype)set:(nullable id)value forKey:(NSString *)key;
 //! Set a given value for the view at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.

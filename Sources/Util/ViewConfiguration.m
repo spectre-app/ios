@@ -15,8 +15,10 @@
 @property(nonatomic, readwrite, strong) NSMutableArray<UIView *> *layoutViews;
 @property(nonatomic, readwrite, strong) NSMutableArray<UIView *> *displayViews;
 @property(nonatomic, readwrite, strong) NSMutableArray<void ( ^ )(UIView *)> *actions;
-@property(nonatomic, readwrite, strong) NSMutableDictionary <NSString *, id> *activeValues;
-@property(nonatomic, readwrite, strong) NSMutableDictionary <NSString *, id> *inactiveValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *activeValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *inactiveValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *activeProperties;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *inactiveProperties;
 
 @end
 
@@ -70,6 +72,7 @@
     self.actions = [NSMutableArray new];
     self.activeValues = [NSMutableDictionary new];
     self.inactiveValues = [NSMutableDictionary new];
+    self.activeProperties = [NSMutableDictionary new];
 
     return self;
 }
@@ -77,6 +80,30 @@
 - (instancetype)constrainTo:(NSLayoutConstraint *)constraint {
 
     [self.constraints addObject:constraint];
+    return self;
+}
+
+- (instancetype)compressionResistancePriority {
+
+    return [self compressionResistancePriorityHorizontal:UILayoutPriorityRequired vertical:UILayoutPriorityRequired];
+}
+
+- (instancetype)compressionResistancePriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical {
+
+    self.activeProperties[@"compressionResistance.horizontal"] = @(horizontal);
+    self.activeProperties[@"compressionResistance.vertical"] = @(vertical);
+    return self;
+}
+
+- (instancetype)huggingPriority {
+
+    return [self huggingPriorityHorizontal:UILayoutPriorityRequired vertical:UILayoutPriorityRequired];
+}
+
+- (instancetype)huggingPriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical {
+
+    self.activeProperties[@"hugging.horizontal"] = @(horizontal);
+    self.activeProperties[@"hugging.vertical"] = @(vertical);
     return self;
 }
 
@@ -171,6 +198,28 @@
         if (self.constraints)
             self.view.translatesAutoresizingMaskIntoConstraints = NO;
 
+        UILayoutPriority oldPriority, newPriority;
+        if ((newPriority = [self.activeProperties[@"compressionResistance.horizontal"]?: @(-1) floatValue]) >= 0)
+            if ((oldPriority = [self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
+                self.inactiveProperties[@"compressionResistance.horizontal"] = @(oldPriority);
+                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+            }
+        if ((newPriority = [self.activeProperties[@"compressionResistance.vertical"]?: @(-1) floatValue]) >= 0)
+            if ((oldPriority = [self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
+                self.inactiveProperties[@"compressionResistance.vertical"] = @(oldPriority);
+                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+            }
+        if ((newPriority = [self.activeProperties[@"hugging.horizontal"]?: @(-1) floatValue]) >= 0)
+            if ((oldPriority = [self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
+                self.inactiveProperties[@"hugging.horizontal"] = @(oldPriority);
+                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+            }
+        if ((newPriority = [self.activeProperties[@"hugging.vertical"]?: @(-1) floatValue]) >= 0)
+            if ((oldPriority = [self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
+                self.inactiveProperties[@"hugging.vertical"] = @(oldPriority);
+                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+            }
+
         for (NSLayoutConstraint *constraint in self.constraints)
             if (!constraint.active) {
                 //trc( @"%@: activating %@", [self.view infoPathName], constraint );
@@ -189,9 +238,7 @@
             [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 
-        for (
-                void(^action)(UIView *)
-                in self.actions)
+        for (void(^action)(UIView *) in self.actions)
             action( self.view );
 
         for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
@@ -216,6 +263,20 @@
     PearlMainQueue( ^{
         for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
             [activeConfiguration deactivate];
+
+        UILayoutPriority newPriority;
+        if ((newPriority = [self.inactiveProperties[@"compressionResistance.horizontal"]?: @(-1) floatValue]) >= 0)
+            if ([self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
+                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+        if ((newPriority = [self.inactiveProperties[@"compressionResistance.vertical"]?: @(-1) floatValue]) >= 0)
+            if ([self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
+                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+        if ((newPriority = [self.inactiveProperties[@"hugging.horizontal"]?: @(-1) floatValue]) >= 0)
+            if ([self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
+                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+        if ((newPriority = [self.inactiveProperties[@"hugging.vertical"]?: @(-1) floatValue]) >= 0)
+            if ([self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
+                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
 
         for (NSLayoutConstraint *constraint in self.constraints)
             if (constraint.active) {
