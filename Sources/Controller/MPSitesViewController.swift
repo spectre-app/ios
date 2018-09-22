@@ -113,14 +113,14 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
     // MARK: - MPSitesViewObserver
 
     func siteWasSelected(selectedSite: MPSite?) {
-        if selectedSite != nil {
+        if let selectedSite = selectedSite {
             self.siteView.site = selectedSite
         }
         UIView.animate( withDuration: 1, animations: {
             self.siteViewConfiguration.activated = selectedSite != nil;
         }, completion: { finished in
             if selectedSite == nil {
-                self.siteView.site = selectedSite
+                self.siteView.site = nil
             }
         } )
     }

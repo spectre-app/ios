@@ -106,6 +106,9 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
 
     class SiteCell: UITableViewCell, MPSiteObserver {
         var site: MPSite? {
+            willSet {
+                self.site?.observers.unregister( self )
+            }
             didSet {
                 if let site = self.site {
                     site.observers.register( self ).siteDidChange()

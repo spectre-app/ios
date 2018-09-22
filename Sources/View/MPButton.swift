@@ -35,7 +35,7 @@ class MPButton: UIView {
         button.setTitleColor( .lightText, for: .normal )
         button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
 
-        if title != nil {
+        if let _ = title {
             button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 10, bottom: 4, right: 10 )
         } else {
             button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
