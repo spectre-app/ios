@@ -160,6 +160,8 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
             self.nameLabel.textColor = UIColor.lightText
             self.nameLabel.shadowColor = .black
 
+            self.copyButton.button.addTarget( self, action: #selector( copySite ), for: .touchUpInside )
+
             // - Hierarchy
             self.contentView.addSubview( self.passwordLabel )
             self.contentView.addSubview( self.nameLabel )
@@ -190,6 +192,34 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
             super.updateConstraints()
 
             self.highlightedConfiguration.activated = self.isHighlighted
+        }
+
+        @objc
+        func copySite() {
+            PearlNotMainQueue {
+                if let site = self.site, let password = site.result() {
+
+                    if #available( iOS 10.0, * ) {
+                        UIPasteboard.general.setItems(
+                                [ [ UIPasteboardTypeAutomatic: password ] ],
+                                options: [
+                                    UIPasteboard.OptionsKey.localOnly: true,
+                                    UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
+                                ] )
+
+                        PearlMainQueue {
+                            MPAlertView( title: site.siteName, message: "Password Copied (3 min)" ).show( in: self )
+                        }
+                    }
+                    else {
+                        UIPasteboard.general.string = password;
+
+                        PearlMainQueue {
+                            MPAlertView( title: site.siteName, message: "Password Copied" ).show( in: self )
+                        }
+                    }
+                }
+            }
         }
 
         // MARK: - MPSiteObserver

@@ -7,7 +7,7 @@ import UIKit
 import pop
 
 class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewObserver {
-    private lazy var topContainer = MPButton( subview: self.searchField )
+    private lazy var topContainer = MPButton( content: self.searchField )
     private let searchField = UITextField()
     private let userButton  = UIButton( type: .custom )
     private let sitesView   = MPSitesView()
@@ -30,6 +30,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
 
     override func viewDidLoad() {
 
+        // - View
         self.userButton.setImage( UIImage( named: "icon_person" ), for: .normal )
         self.userButton.sizeToFit()
 

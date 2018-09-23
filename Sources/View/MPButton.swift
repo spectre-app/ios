@@ -28,7 +28,7 @@ class MPButton: UIView {
 
     convenience init(image: UIImage? = nil, title: String? = nil) {
         let button = UIButton( type: .custom )
-        self.init( subview: button )
+        self.init( content: button )
 
         button.setImage( image, for: .normal )
         button.setTitle( title, for: .normal )
@@ -46,7 +46,7 @@ class MPButton: UIView {
         self.round = true
     }
 
-    init(subview: UIView) {
+    init(content: UIView) {
         super.init( frame: .zero )
 
         if #available( iOS 11.0, * ) {
@@ -61,10 +61,10 @@ class MPButton: UIView {
         self.effectView.layer.cornerRadius = 4
 
         self.addSubview( self.effectView )
-        self.effectView.contentView.addSubview( subview )
+        self.effectView.contentView.addSubview( content )
 
         ViewConfiguration( view: self.effectView ).constrainToSuperview().activate()
-        ViewConfiguration( view: subview ).constrain( toMarginsOf: self ).activate()
+        ViewConfiguration( view: content ).constrain( toMarginsOf: self ).activate()
     }
 
     @objc

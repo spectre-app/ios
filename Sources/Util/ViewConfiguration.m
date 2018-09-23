@@ -303,8 +303,8 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-//        if (!self.parent)
-//            [self.view.window layoutIfNeeded];
+        if (!self.parent)
+            [self.view.window layoutIfNeeded];
     } );
 
     return self;

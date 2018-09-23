@@ -40,6 +40,7 @@
 		93D397952F5635C793C24DF1 /* NSError+PearlFullDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F9106F2CCFB94283188 /* NSError+PearlFullDescription.m */; };
 		93D3980046016EFD05B35BC5 /* PearlUICollectionView.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39B1D8177A86C5B9EDDE3 /* PearlUICollectionView.h */; };
 		93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */; };
+		93D398854968B51F6B8DB031 /* MPAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlertView.swift */; };
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
 		93D399246DC90F50913A1287 /* UIResponder+PearlFirstResponder.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A1DDFA09AE2E14D26DC /* UIResponder+PearlFirstResponder.m */; };
 		93D3992FA1546E01F498F665 /* PearlNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D398567FD02DB2647B8CF3 /* PearlNavigationController.h */; };
@@ -407,6 +408,7 @@
 		93D3984BB76CF8DB86D9D2C6 /* ViewConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewConfiguration.m; sourceTree = "<group>"; };
 		93D398567FD02DB2647B8CF3 /* PearlNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlNavigationController.h; sourceTree = "<group>"; };
 		93D398C95847261903D781D3 /* NSError+PearlFullDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError+PearlFullDescription.h"; sourceTree = "<group>"; };
+		93D3990C92C01413465156FF /* MPAlertView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAlertView.swift; sourceTree = "<group>"; };
 		93D3990D850D76A94C6B7A4D /* mpw-algorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm.h"; sourceTree = "<group>"; };
 		93D399146F2E9498E71C2B0A /* Observers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Observers.h; sourceTree = "<group>"; };
 		93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UILabel+MPFontSize.h"; sourceTree = "<group>"; };
@@ -1260,6 +1262,7 @@
 				93D39A199BE0BC2D2EDBCC34 /* AutoLayoutCollectionViewCell.h */,
 				93D39564D6408073D59CDB6A /* MPButton.swift */,
 				93D39F997E40F20C5B75ADAD /* MPSiteView.swift */,
+				93D3990C92C01413465156FF /* MPAlertView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2930,6 +2933,7 @@
 				93D39139805FC516B6C2C181 /* MPButton.swift in Sources */,
 				93D392937A9E6664CA09124D /* MPSiteView.swift in Sources */,
 				93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */,
+				93D398854968B51F6B8DB031 /* MPAlertView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

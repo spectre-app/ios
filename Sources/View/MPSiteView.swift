@@ -26,6 +26,8 @@ class MPSiteView: UIView, MPSiteObserver {
 
     init() {
         super.init( frame: .zero )
+
+        // - View
         self.layer.shadowOpacity = 1
         self.layer.shadowOffset = .zero
         self.layer.shadowRadius = 40
