@@ -101,7 +101,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         private let identiconLabel     = UILabel()
         private var identiconTimer:        Timer?
         private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
-        private let idBadgeView        = UIImageView( image: UIImage( named: "icon_person" ) )
+        private let idBadgeView        = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
         private var passwordConfiguration: ViewConfiguration!
         private var path               = CGMutablePath()

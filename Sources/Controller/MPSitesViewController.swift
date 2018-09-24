@@ -6,7 +6,7 @@
 import UIKit
 import pop
 
-class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewObserver {
+class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSiteViewObserver, MPSitesViewObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
     private let searchField = UITextField()
     private let userButton  = UIButton( type: .custom )
@@ -28,11 +28,22 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
 
     // MARK: - Life
 
+    required init?(coder aDecoder: NSCoder) {
+        fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    init(user: MPUser) {
+        super.init( nibName: nil, bundle: nil )
+
+        defer {
+            self.user = user
+        }
+    }
+
     override func viewDidLoad() {
 
         // - View
-        self.userButton.setImage( UIImage( named: "icon_person" ), for: .normal )
-        self.userButton.sizeToFit()
+        self.topContainer.darkBackground = true
 
         self.searchField.textColor = .white
         self.searchField.rightView = self.userButton
@@ -45,6 +56,11 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
         if #available( iOS 10.0, * ) {
             self.searchField.textContentType = .URL
         }
+
+        self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
+        self.userButton.sizeToFit()
+
+        self.siteView.observers.register( self )
 
         self.sitesView.observers.register( self )
         self.sitesView.keyboardDismissMode = .onDrag
@@ -85,7 +101,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
 
         ViewConfiguration( view: self.topContainer )
                 .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ) }
-                .constrainTo { $1.centerYAnchor.constraint( greaterThanOrEqualTo: self.siteView.bottomAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteView.layoutMarginsGuide.bottomAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ) }
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 50 ) }
@@ -99,9 +115,6 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        // Offset site content's bottom margin to make space for the top container.
-        self.siteView.layoutMargins = UIEdgeInsetsMake( 0, 0, self.topContainer.frame.size.height / 2, 0 )
-
         // Offset sites content's top margin to make space for the top container.
         let top = self.sitesView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y
         self.sitesView.contentInset = UIEdgeInsetsMake( max( 0, top - self.sitesView.bounds.origin.y ), 0, 0, 0 )
@@ -109,6 +122,12 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSitesViewO
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
+    }
+
+    // MARK: - MPSiteViewObserver
+
+    func siteWasActivated(activatedSite: MPSite) {
+        self.present( MPSiteDetailsViewController( site: activatedSite ), animated: true )
     }
 
     // MARK: - MPSitesViewObserver

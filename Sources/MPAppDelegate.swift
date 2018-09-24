@@ -17,11 +17,9 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         PearlLogger.get().printLevel = .trace
 
         // Start UI
-        let sitesViewController = MPSitesViewController()
-        sitesViewController.user = MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 )
-
-//        self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
-        self.window.rootViewController = MPNavigationController( rootViewController: sitesViewController )
+        self.window.rootViewController = MPNavigationController(
+//                rootViewController: MPUsersViewController() )
+                rootViewController: MPSitesViewController( user: MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 ) ) )
         self.window.makeKeyAndVisible()
 
         return true

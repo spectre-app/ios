@@ -16,6 +16,7 @@ class MPAlertView: MPButton {
         super.init( content: contentStack )
 
         // - View
+        self.darkBackground = true
         if #available(iOS 11.0, *) {
             self.insetsLayoutMarginsFromSafeArea = true
         }

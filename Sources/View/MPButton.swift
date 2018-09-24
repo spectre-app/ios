@@ -6,7 +6,7 @@
 import Foundation
 
 class MPButton: UIView {
-    let effectView = UIVisualEffectView( effect: UIBlurEffect( style: .dark ) )
+    let effectView = UIVisualEffectView()
     var button: UIButton!
 
     override var bounds: CGRect {
@@ -16,9 +16,21 @@ class MPButton: UIView {
             }
         }
     }
-    var round = false {
+    var round            = false {
         didSet {
             self.bounds = self.bounds.standardized
+        }
+    }
+    var effectBackground = true {
+        didSet {
+            self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark: .light ): nil
+        }
+    }
+    var darkBackground   = false {
+        didSet {
+            self.tintColor = self.darkBackground ? .white: .black
+            self.effectBackground = self.effectBackground || self.effectBackground
+//            self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
         }
     }
 
@@ -32,13 +44,15 @@ class MPButton: UIView {
 
         button.setImage( image, for: .normal )
         button.setTitle( title, for: .normal )
+        button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
         button.setTitleColor( .lightText, for: .normal )
         button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
 
         if let _ = title {
-            button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 10, bottom: 4, right: 10 )
-        } else {
-            button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
+            button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+        }
+        else {
+            button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
         }
 
         self.layoutMargins = .zero
@@ -53,9 +67,9 @@ class MPButton: UIView {
             self.insetsLayoutMarginsFromSafeArea = false
         }
 
-        self.layer.shadowOffset = .zero
-        self.layer.shadowRadius = 10
-        self.layer.shadowOpacity = 0.5
+        self.layer.shadowRadius = 8
+        self.layer.shadowOffset = CGSize( width: 0, height: 3 )
+        self.layer.shadowOpacity = 0.382
 
         self.effectView.layer.masksToBounds = true
         self.effectView.layer.cornerRadius = 4
@@ -65,6 +79,11 @@ class MPButton: UIView {
 
         ViewConfiguration( view: self.effectView ).constrainToSuperview().activate()
         ViewConfiguration( view: content ).constrain( toMarginsOf: self ).activate()
+
+        defer {
+            self.effectBackground = true
+            self.darkBackground = false
+        }
     }
 
     @objc

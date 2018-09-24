@@ -160,6 +160,7 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
             self.nameLabel.textColor = UIColor.lightText
             self.nameLabel.shadowColor = .black
 
+            self.copyButton.darkBackground = true
             self.copyButton.button.addTarget( self, action: #selector( copySite ), for: .touchUpInside )
 
             // - Hierarchy
@@ -244,4 +245,3 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
 protocol MPSitesViewObserver {
     func siteWasSelected(selectedSite: MPSite?)
 }
-

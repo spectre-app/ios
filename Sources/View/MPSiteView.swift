@@ -6,6 +6,8 @@
 import Foundation
 
 class MPSiteView: UIView, MPSiteObserver {
+    var observers = Observers<MPSiteViewObserver>()
+
     var site: MPSite? {
         willSet {
             self.site?.observers.unregister( self )
@@ -18,8 +20,8 @@ class MPSiteView: UIView, MPSiteObserver {
     }
 
     let siteButton     = UIButton( type: .custom )
-    let settingsButton = MPButton( image: UIImage( named: "icon_settings" ) )
-    let recoveryButton = MPButton( image: UIImage( named: "icon_question" ) )
+    let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
+    let recoveryButton = MPButton( image: UIImage( named: "icon_btn_question" ) )
     let keysButton     = MPButton( image: UIImage( named: "icon_key" ) )
 
     // MARK: - Life
@@ -28,6 +30,7 @@ class MPSiteView: UIView, MPSiteObserver {
         super.init( frame: .zero )
 
         // - View
+        self.layoutMargins = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
         self.layer.shadowOpacity = 1
         self.layer.shadowOffset = .zero
         self.layer.shadowRadius = 40
@@ -44,16 +47,24 @@ class MPSiteView: UIView, MPSiteObserver {
         else {
             self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .title1 )
         }
+        self.siteButton.addTarget( self, action: #selector( openSiteDetails ), for: .touchUpInside )
 
-        let toolBar = UIStackView( arrangedSubviews: [ self.settingsButton, self.recoveryButton, self.keysButton ] )
-        toolBar.isLayoutMarginsRelativeArrangement = true
-        toolBar.layoutMargins = UIEdgeInsetsMake( 8, 8, 8, 8 )
-        toolBar.axis = .vertical
-        toolBar.spacing = 8
+        let leadingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton ] )
+        leadingToolBar.isLayoutMarginsRelativeArrangement = true
+        leadingToolBar.layoutMargins = UIEdgeInsetsMake( 12, 12, 12, 12 )
+        leadingToolBar.axis = .vertical
+        leadingToolBar.spacing = 12
+
+        let trailingToolBar = UIStackView( arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
+        trailingToolBar.isLayoutMarginsRelativeArrangement = true
+        trailingToolBar.layoutMargins = UIEdgeInsetsMake( 12, 12, 12, 12 )
+        trailingToolBar.axis = .vertical
+        trailingToolBar.spacing = 12
 
         // - Hierarchy
         self.addSubview( self.siteButton )
-        self.addSubview( toolBar )
+        self.addSubview( leadingToolBar )
+        self.addSubview( trailingToolBar )
 
         // - Layout
         ViewConfiguration( view: self.siteButton )
@@ -64,9 +75,14 @@ class MPSiteView: UIView, MPSiteObserver {
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
                 .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                 .activate()
-        ViewConfiguration( view: toolBar )
+        ViewConfiguration( view: leadingToolBar )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .activate()
+        ViewConfiguration( view: trailingToolBar )
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                 .activate()
         ViewConfiguration( view: self )
@@ -76,6 +92,13 @@ class MPSiteView: UIView, MPSiteObserver {
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    @objc
+    func openSiteDetails() {
+        if let site = self.site {
+            self.observers.notify { $0.siteWasActivated( activatedSite: site ) }
+        }
     }
 
     // MARK: - MPSiteObserver
@@ -89,11 +112,22 @@ class MPSiteView: UIView, MPSiteObserver {
 
                 if let brightness = self.site?.color.brightness(), brightness < 0.1 {
                     self.siteButton.layer.shadowColor = UIColor.white.cgColor
+                    self.settingsButton.darkBackground = true
+                    self.recoveryButton.darkBackground = true
+                    self.keysButton.darkBackground = true
                 }
                 else {
                     self.siteButton.layer.shadowColor = UIColor.black.cgColor
+                    self.settingsButton.darkBackground = false
+                    self.recoveryButton.darkBackground = false
+                    self.keysButton.darkBackground = false
                 }
             }
         }
     }
+}
+
+@objc
+protocol MPSiteViewObserver {
+    func siteWasActivated(activatedSite: MPSite)
 }
