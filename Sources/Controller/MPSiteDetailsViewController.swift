@@ -20,7 +20,7 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
     let backgroundImage  = UIImageView()
     let effectView       = UIVisualEffectView( effect: UIBlurEffect( style: .dark ) )
     let closeButton      = MPButton( title: "╳" )
-    let headingImageView = AutoresizingImageView()
+    let headingImageView = MPImageView( image: UIImage( named: "icon_sliders" ) )
     let headingLabel     = UILabel()
 
     // MARK: - Life
@@ -47,7 +47,7 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
         self.closeButton.layoutMargins = UIEdgeInsetsMake( 8, 8, 8, 8 )
         self.closeButton.button.addTarget( self, action: #selector( close ), for: .touchUpInside )
 
-        self.headingImageView.image = UIImage( named: "icon_sliders" )
+        self.headingImageView.preservesImageRatio = true
         self.headingLabel.textColor = .white
         self.headingLabel.textAlignment = .center
         if #available( iOS 11.0, * ) {
