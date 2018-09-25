@@ -8,7 +8,6 @@
 @interface ViewConfiguration()
 
 @property(nonatomic, readwrite, strong) UIView *view;
-@property(nonatomic, readwrite, strong) ViewConfiguration *parent;
 @property(nonatomic, readwrite, strong) NSMutableArray<NSLayoutConstraint *> *constraints;
 @property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *> *activeConfigurations;
 @property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *> *inactiveConfigurations;
@@ -27,36 +26,30 @@
 
 + (instancetype)configuration {
 
-    return [self configurationWithParent:nil];
+    return [[self new] deactivate];
 }
 
 + (instancetype)configurationWithView:(UIView *)view {
 
-    return [self configurationWithView:view configurations:nil];
-}
-
-+ (instancetype)configurationWithParent:(ViewConfiguration *)parent {
-
-    ViewConfiguration *configuration = [self configurationWithView:parent.view configurations:nil];
-    configuration.parent = parent;
+    ViewConfiguration *configuration = [self configuration];
+    configuration.view = view;
     return configuration;
 }
 
 + (instancetype)configurationWithView:(UIView *)view
                        configurations:(nullable void ( ^ )(ViewConfiguration *active, ViewConfiguration *inactive))configurationBlocks {
 
-    ViewConfiguration *configuration = [self new];
-    configuration.view = view;
+    ViewConfiguration *configuration = [self configurationWithView:view];
 
     if (configurationBlocks) {
-        ViewConfiguration *active = [[self class] configurationWithParent:configuration];
-        ViewConfiguration *inactive = [[self class] configurationWithParent:configuration];
-        [configuration.activeConfigurations addObject:active];
-        [configuration.inactiveConfigurations addObject:inactive];
+        ViewConfiguration *active = [self configurationWithView:view];
+        ViewConfiguration *inactive = [self configurationWithView:view];
         configurationBlocks( active, inactive );
+        [configuration applyViewConfiguration:active active:YES];
+        [configuration applyViewConfiguration:inactive active:NO];
     }
 
-    return [configuration deactivate];
+    return configuration;
 }
 
 - (instancetype)init {
@@ -191,9 +184,28 @@
 
 - (instancetype)activate {
 
+    return [self activateFromParent:nil];
+}
+
+- (instancetype)activateAnimated:(BOOL)animated {
+
+    if (animated)
+        [UIView animateWithDuration:1 animations:^{
+            [self activate];
+        }];
+    else
+        [self.view unanimated:^{
+            [self activate];
+        }];
+
+    return self;
+}
+
+- (instancetype)activateFromParent:(ViewConfiguration *)parent {
+
     PearlMainQueue( ^{
         for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
-            [inactiveConfiguration deactivate];
+            [inactiveConfiguration deactivateFromParent:self];
 
         if (self.constraints)
             self.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -242,7 +254,7 @@
             action( self.view );
 
         for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
-            [activeConfiguration activate];
+            [activeConfiguration activateFromParent:self];
 
         self->_activated = YES;
 
@@ -251,7 +263,7 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-        if (!self.parent)
+        if (!parent.view.window)
             [self.view.window layoutIfNeeded];
     } );
 
@@ -260,9 +272,28 @@
 
 - (instancetype)deactivate {
 
+    return [self deactivateFromParent:nil];
+}
+
+- (instancetype)deactivateAnimated:(BOOL)animated {
+
+    if (animated)
+        [UIView animateWithDuration:1 animations:^{
+            [self activate];
+        }];
+    else
+        [self.view unanimated:^{
+            [self activate];
+        }];
+
+    return self;
+}
+
+- (instancetype)deactivateFromParent:(ViewConfiguration *)parent {
+
     PearlMainQueue( ^{
         for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
-            [activeConfiguration deactivate];
+            [activeConfiguration deactivateFromParent:self];
 
         UILayoutPriority newPriority;
         if ((newPriority = [self.inactiveProperties[@"compressionResistance.horizontal"]?: @(-1) floatValue]) >= 0)
@@ -294,7 +325,7 @@
         }];
 
         for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
-            [inactiveConfiguration activate];
+            [inactiveConfiguration activateFromParent:self];
 
         self->_activated = NO;
 
@@ -303,7 +334,7 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-        if (!self.parent)
+        if (!parent.view.window)
             [self.view.window layoutIfNeeded];
     } );
 

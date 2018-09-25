@@ -123,7 +123,6 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
                 self.identiconLabel.font = UIFont( name: "SourceCodePro-Regular", size: UIFont.labelFontSize )
                 self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
-                self.identiconLabel.shadowOffset = CGSize( width: 0, height: 1 )
                 self.identiconLabel.shadowColor = .darkGray
                 self.identiconLabel.textColor = .lightText
 

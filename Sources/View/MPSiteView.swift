@@ -30,7 +30,7 @@ class MPSiteView: UIView, MPSiteObserver {
         super.init( frame: .zero )
 
         // - View
-        self.layoutMargins = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
+        self.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 20, right: 12)
         self.layer.shadowOpacity = 1
         self.layer.shadowOffset = .zero
         self.layer.shadowRadius = 40
@@ -40,7 +40,7 @@ class MPSiteView: UIView, MPSiteObserver {
         self.siteButton.imageView?.clipsToBounds = true
         self.siteButton.layer.shadowRadius = 20
         self.siteButton.layer.shadowOffset = .zero
-        self.siteButton.layer.shadowOpacity = 0.3
+        self.siteButton.layer.shadowOpacity = 0.382
         if #available( iOS 11.0, * ) {
             self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .largeTitle )
         }
@@ -50,14 +50,10 @@ class MPSiteView: UIView, MPSiteObserver {
         self.siteButton.addTarget( self, action: #selector( openSiteDetails ), for: .touchUpInside )
 
         let leadingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton ] )
-        leadingToolBar.isLayoutMarginsRelativeArrangement = true
-        leadingToolBar.layoutMargins = UIEdgeInsetsMake( 12, 12, 12, 12 )
         leadingToolBar.axis = .vertical
         leadingToolBar.spacing = 12
 
         let trailingToolBar = UIStackView( arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
-        trailingToolBar.isLayoutMarginsRelativeArrangement = true
-        trailingToolBar.layoutMargins = UIEdgeInsetsMake( 12, 12, 12, 12 )
         trailingToolBar.axis = .vertical
         trailingToolBar.spacing = 12
 
@@ -105,7 +101,7 @@ class MPSiteView: UIView, MPSiteObserver {
 
     func siteDidChange() {
         PearlMainQueue {
-            self.unanimate {
+            self.unanimated {
                 self.backgroundColor = self.site?.color
                 self.siteButton.setImage( self.site?.image, for: .normal )
                 self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )

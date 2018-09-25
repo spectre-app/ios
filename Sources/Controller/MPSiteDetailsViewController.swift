@@ -17,11 +17,12 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    let backgroundImage  = UIImageView()
-    let effectView       = UIVisualEffectView( effect: UIBlurEffect( style: .dark ) )
-    let closeButton      = MPButton( title: "╳" )
-    let headingImageView = MPImageView( image: UIImage( named: "icon_sliders" ) )
-    let headingLabel     = UILabel()
+    let effectView              = UIVisualEffectView( effect: UIBlurEffect( style: .light ) )
+    let closeButton             = MPButton( title: "╳" )
+    let headingImageView        = MPImageView( image: UIImage( named: "icon_sliders" ) )
+    let headingLabel            = UILabel()
+    let contentView             = UIView()
+    let tableView               = UITableView( frame: .zero, style: .plain )
 
     // MARK: - Life
 
@@ -31,6 +32,7 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
 
     init(site: MPSite) {
         super.init( nibName: nil, bundle: nil )
+        self.modalPresentationStyle = .overCurrentContext
 
         defer {
             self.site = site
@@ -40,42 +42,60 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
     override func viewDidLoad() {
 
         // - View
-        self.backgroundImage.contentMode = .scaleAspectFill
+        self.effectView.contentView.layoutMargins = UIEdgeInsetsMake( 12, 12, 12, 12 )
 
-        self.closeButton.darkBackground = true
-        self.closeButton.effectBackground = false
-        self.closeButton.layoutMargins = UIEdgeInsetsMake( 8, 8, 8, 8 )
         self.closeButton.button.addTarget( self, action: #selector( close ), for: .touchUpInside )
 
-        self.headingImageView.preservesImageRatio = true
         self.headingLabel.textColor = .white
-        self.headingLabel.textAlignment = .center
+        self.headingLabel.shadowColor = .black
+        self.headingImageView.preservesImageRatio = true
         if #available( iOS 11.0, * ) {
             self.headingLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
         }
         else {
             self.headingLabel.font = UIFont.preferredFont( forTextStyle: .title1 )
         }
+        self.headingLabel.font = UIFont.preferredFont( forTextStyle: .headline )
+
+        let tableViewEffect = UIView( containing: self.tableView, withLayoutMargins: .zero )!
+        tableViewEffect.layer.shadowRadius = 8
+        tableViewEffect.layer.shadowOpacity = 0.382
+        self.tableView.layer.cornerRadius = 8
+        self.contentView.backgroundColor = UIColor( white: 0.9, alpha: 1 )
+        self.contentView.layer.shadowOpacity = 1
+        self.contentView.layer.shadowRadius = 80
 
         // - Hierarchy
-        self.view.addSubview( self.backgroundImage )
         self.view.addSubview( self.effectView )
-        self.effectView.contentView.addSubview( self.headingImageView )
-        self.effectView.contentView.addSubview( self.headingLabel )
+        self.effectView.contentView.addSubview( self.contentView )
         self.effectView.contentView.addSubview( self.closeButton )
+        self.contentView.addSubview( self.headingImageView )
+        self.contentView.addSubview( self.headingLabel )
+        self.contentView.addSubview( tableViewEffect )
 
         // - Layout
-        ViewConfiguration( view: self.backgroundImage ).constrainToSuperview().activate()
         ViewConfiguration( view: self.effectView ).constrainToSuperview().activate()
-        ViewConfiguration( view: self.headingImageView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 150 ) }
+        ViewConfiguration( view: self.contentView )
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor, multiplier: 0.618 ) }
                 .activate()
         ViewConfiguration( view: self.headingLabel )
-                .constrainTo { $1.topAnchor.constraint( equalTo: self.headingImageView.bottomAnchor, constant: 8 ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: self.tableView.leadingAnchor, constant: 8 ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: self.tableView.trailingAnchor, constant: -8 ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: self.tableView.topAnchor, constant: -8 ) }
+                .activate()
+        ViewConfiguration( view: self.headingImageView )
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: self.tableView.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: self.tableView.topAnchor, constant: 20 ) }
+                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 96 ) }
+                .activate()
+        ViewConfiguration( view: tableViewEffect )
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: -40 ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                 .activate()
         ViewConfiguration( view: self.closeButton )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
@@ -92,9 +112,8 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
 
     func siteDidChange() {
         PearlMainQueue {
-            self.backgroundImage.image = self.site?.image
-            self.backgroundImage.backgroundColor = self.site?.color
             self.headingLabel.text = self.site?.siteName
+            self.contentView.layer.shadowColor = self.site?.color.cgColor
         }
     }
 }

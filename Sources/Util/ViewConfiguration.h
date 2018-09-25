@@ -22,13 +22,13 @@ CF_IMPLICIT_BRIDGING_ENABLED
 //! Child configurations which will be deactivated when this configuration is activated and activated when this configuration is deactivated.
 @property(nonatomic, readonly, strong) NSMutableArray<ViewConfiguration *> *inactiveConfigurations;
 
-//! Create a new configuration without a view context.
+//! Create a new configuration without a view context.  New configurations start deactivated.
 + (instancetype)configuration;
 
-//! Create a new configuration for the view.
+//! Create a new configuration for the view.  New configurations start deactivated.
 + (instancetype)configurationWithView:(UIView *)view;
 
-//! Create a new configuration for the view and automatically add an active and inactive child configuration for it; configure them in the block.
+//! Create a new configuration for the view and automatically add an active and inactive child configuration for it; configure them in the block.  New configurations start deactivated and the inactive configuration starts activated.
 + (instancetype)configurationWithView:(UIView *)view
                        configurations:(nullable void ( ^ )(ViewConfiguration *active, ViewConfiguration *inactive))configurationBlocks;
 
@@ -59,8 +59,10 @@ CF_IMPLICIT_BRIDGING_ENABLED
 
 //! Activate this configuration and apply its operations.
 - (instancetype)activate;
+- (instancetype)activateAnimated:(BOOL)animated;
 //! Deactivate this configuration and reverse its relevant operations.
 - (instancetype)deactivate;
+- (instancetype)deactivateAnimated:(BOOL)animated;
 //! If the given activation state is different from the current, update it and return YES, otherwise return NO.
 - (BOOL)updateActivated:(BOOL)activated;
 

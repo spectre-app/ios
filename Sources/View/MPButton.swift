@@ -44,12 +44,18 @@ class MPButton: UIView {
 
         button.setImage( image, for: .normal )
         button.setTitle( title, for: .normal )
-        button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
         button.setTitleColor( .lightText, for: .normal )
+        button.setTitleShadowColor( .black, for: .normal )
+        button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
+        button.titleLabel?.shadowOffset = CGSize( width: 0, height: -1 )
         button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
 
-        if let _ = title {
+        if let title = title, title.count > 1 {
             button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+        }
+        else if let title = title, title.count == 1 {
+            button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+            button.widthAnchor.constraint( equalTo: button.heightAnchor ).isActive = true
         }
         else {
             button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
@@ -68,7 +74,6 @@ class MPButton: UIView {
         }
 
         self.layer.shadowRadius = 8
-        self.layer.shadowOffset = CGSize( width: 0, height: 3 )
         self.layer.shadowOpacity = 0.382
 
         self.effectView.layer.masksToBounds = true

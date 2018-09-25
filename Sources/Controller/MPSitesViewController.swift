@@ -127,21 +127,25 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSiteViewOb
     // MARK: - MPSiteViewObserver
 
     func siteWasActivated(activatedSite: MPSite) {
-        self.present( MPSiteDetailsViewController( site: activatedSite ), animated: true )
+        PearlMainQueue {
+            self.present( MPSiteDetailsViewController( site: activatedSite ), animated: true )
+        }
     }
 
     // MARK: - MPSitesViewObserver
 
     func siteWasSelected(selectedSite: MPSite?) {
-        if let selectedSite = selectedSite {
-            self.siteView.site = selectedSite
-        }
-        UIView.animate( withDuration: 1, animations: {
-            self.siteViewConfiguration.activated = selectedSite != nil;
-        }, completion: { finished in
-            if selectedSite == nil {
-                self.siteView.site = nil
+        PearlMainQueue {
+            if let selectedSite = selectedSite {
+                self.siteView.site = selectedSite
             }
-        } )
+            UIView.animate( withDuration: 1, animations: {
+                self.siteViewConfiguration.activated = selectedSite != nil;
+            }, completion: { finished in
+                if selectedSite == nil {
+                    self.siteView.site = nil
+                }
+            } )
+        }
     }
 }
