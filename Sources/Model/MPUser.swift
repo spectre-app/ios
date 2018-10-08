@@ -46,6 +46,11 @@ class MPUser {
             self.observers.notify { $0.userDidUpdateSites() }
         }
     }
+    var sortedSites : [ MPSite ] {
+        get {
+            return self.sites.sorted()
+        }
+    }
 
     // MARK: - Life
 

@@ -15,12 +15,18 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
         }
         didSet {
             self.user?.observers.register( self )
-            self.userDidUpdateSites()
+            self.query = nil
         }
     }
+    let data = NSMutableArray()
     var selectedSite: MPSite? {
         didSet {
             self.observers.notify { $0.siteWasSelected( selectedSite: self.selectedSite ) }
+        }
+    }
+    var query: String? {
+        didSet {
+            self.updateSites()
         }
     }
 
@@ -39,6 +45,24 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    // MARK: - Internal
+
+    func dataSection(section: Int) -> NSArray {
+        return self.data.object( at: section ) as! NSArray
+    }
+
+    func dataRow(section: Int, row: Int) -> MPQuery.Result<MPSite> {
+        return self.dataSection( section: section ).object( at: row ) as! MPQuery.Result<MPSite>
+    }
+
+    func updateSites() {
+        let newSites = [ MPQuery( self.query ?? "" ).find( self.user?.sortedSites ?? [] ) { $0.siteName } ]
+
+        PearlMainQueue {
+            self.updateDataSource( self.data, toSections: newSites as NSArray, reloadItems: self.data, with: .automatic )
+        }
     }
 
     // MARK: - UITableViewDelegate
@@ -60,7 +84,7 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.selectedSite = self.user?.sites[indexPath.row]
+        self.selectedSite = self.dataRow( section: indexPath.section, row: indexPath.row ).value
         self.isSelecting = false
     }
 
@@ -68,13 +92,13 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int)
                     -> Int {
-        return self.user?.sites.count ?? 0
+        return self.dataSection( section: section ).count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
                     -> UITableViewCell {
         let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
-        cell.site = self.user?.sites[indexPath.row]
+        cell.result = self.dataRow( section: indexPath.section, row: indexPath.row )
 
         return cell
     }
@@ -82,30 +106,29 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
     // MARK: - MPUserObserver
 
     func userDidLogin() {
-        PearlMainQueue {
-            self.reloadData()
-        }
+        self.updateSites()
     }
 
     func userDidLogout() {
-        PearlMainQueue {
-            self.reloadData()
-        }
+        self.updateSites()
     }
 
     func userDidChange() {
     }
 
     func userDidUpdateSites() {
-        PearlMainQueue {
-            self.reloadData()
-        }
+        self.updateSites()
     }
 
     // MARK: - Types
 
     class SiteCell: UITableViewCell, MPSiteObserver {
-        var site: MPSite? {
+        var result: MPQuery.Result<MPSite>? {
+            didSet {
+                self.site = self.result?.value
+            }
+        }
+        var site:   MPSite? {
             willSet {
                 self.site?.observers.unregister( self )
             }
@@ -227,7 +250,14 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
 
         func siteDidChange() {
             PearlMainQueue {
-                self.nameLabel.text = self.site?.siteName
+                var name: NSAttributedString = NSAttributedString( string: self.site?.siteName ?? "" )
+                if let result = self.result {
+                    for match in result.keyMatched {
+                        name = strra( name, NSRange( location: match.encodedOffset, length: 1 ),
+                                      [ NSAttributedStringKey.backgroundColor: UIColor.red ] )
+                    }
+                }
+                self.nameLabel.attributedText = name
                 self.indicatorView.backgroundColor = self.site?.color.withAlphaComponent( 0.85 )
             }
             PearlNotMainQueue {

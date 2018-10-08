@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPSite: NSObject {
+class MPSite: NSObject, Comparable {
     var observers = Observers<MPSiteObserver>()
 
     let user:     MPUser
@@ -97,6 +97,14 @@ class MPSite: NSObject {
                 self.color = color
             }
         } )
+    }
+
+    static func <(lhs: MPSite, rhs: MPSite) -> Bool {
+        if lhs.lastUsed != rhs.lastUsed {
+            return lhs.lastUsed < rhs.lastUsed
+        }
+
+        return lhs.siteName < rhs.siteName
     }
 
     // MARK: - mpw

@@ -6,7 +6,7 @@
 import UIKit
 import pop
 
-class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSiteViewObserver, MPSitesViewObserver {
+class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteViewObserver, MPSitesViewObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
     private let searchField = UITextField()
     private let userButton  = UIButton( type: .custom )
@@ -15,7 +15,7 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSiteViewOb
 
     private let siteViewConfiguration = ViewConfiguration()
 
-    var user: MPUser? {
+    var         user: MPUser? {
         didSet {
             self.sitesView.user = self.user
 
@@ -51,11 +51,13 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSiteViewOb
         self.searchField.rightViewMode = .unlessEditing
         self.searchField.keyboardAppearance = .dark
         self.searchField.keyboardType = .URL
-        self.searchField.autocapitalizationType = .none
-        self.searchField.autocorrectionType = .no
         if #available( iOS 10.0, * ) {
             self.searchField.textContentType = .URL
         }
+        self.searchField.autocapitalizationType = .none
+        self.searchField.autocorrectionType = .no
+        self.searchField.delegate = self
+        self.searchField.addTarget( self, action: #selector( textFieldEditingChanged ), for: .editingChanged )
 
         self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
         self.userButton.sizeToFit()
@@ -147,5 +149,11 @@ class MPSitesViewController: UIViewController, UISearchBarDelegate, MPSiteViewOb
                 }
             } )
         }
+    }
+
+    // MARK: - UITextFieldDelegate
+    @objc
+    func textFieldEditingChanged(_ textField: UITextField) {
+        self.sitesView.query = self.searchField.text
     }
 }
