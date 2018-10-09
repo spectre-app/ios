@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
+class MPSiteDetailsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, MPSiteObserver {
     var site: MPSite? {
         willSet {
             self.site?.observers.unregister( self )
@@ -17,7 +17,6 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    let effectView              = UIVisualEffectView( effect: UIBlurEffect( style: .light ) )
     let closeButton             = MPButton( title: "╳" )
     let headingImageView        = MPImageView( image: UIImage( named: "icon_sliders" ) )
     let headingLabel            = UILabel()
@@ -42,13 +41,14 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
     override func viewDidLoad() {
 
         // - View
-        self.effectView.contentView.layoutMargins = UIEdgeInsetsMake( 12, 12, 12, 12 )
+        self.view.backgroundColor = .black
+        self.contentView.backgroundColor = UIColor( white: 0.9, alpha: 1 )
 
         self.closeButton.button.addTarget( self, action: #selector( close ), for: .touchUpInside )
 
+        self.headingImageView.preservesImageRatio = true
         self.headingLabel.textColor = .white
         self.headingLabel.shadowColor = .black
-        self.headingImageView.preservesImageRatio = true
         if #available( iOS 11.0, * ) {
             self.headingLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
         }
@@ -57,24 +57,22 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
         }
         self.headingLabel.font = UIFont.preferredFont( forTextStyle: .headline )
 
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+        self.tableView.separatorStyle = .none
+        self.tableView.layer.cornerRadius = 8
         let tableViewEffect = UIView( containing: self.tableView, withLayoutMargins: .zero )!
         tableViewEffect.layer.shadowRadius = 8
         tableViewEffect.layer.shadowOpacity = 0.382
-        self.tableView.layer.cornerRadius = 8
-        self.contentView.backgroundColor = UIColor( white: 0.9, alpha: 1 )
-        self.contentView.layer.shadowOpacity = 1
-        self.contentView.layer.shadowRadius = 80
 
         // - Hierarchy
-        self.view.addSubview( self.effectView )
-        self.effectView.contentView.addSubview( self.contentView )
-        self.effectView.contentView.addSubview( self.closeButton )
+        self.view.addSubview( self.contentView )
+        self.view.addSubview( self.closeButton )
         self.contentView.addSubview( self.headingImageView )
         self.contentView.addSubview( self.headingLabel )
         self.contentView.addSubview( tableViewEffect )
 
         // - Layout
-        ViewConfiguration( view: self.effectView ).constrainToSuperview().activate()
         ViewConfiguration( view: self.contentView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
@@ -108,12 +106,24 @@ class MPSiteDetailsViewController: UIViewController, MPSiteObserver {
         self.dismiss( animated: true )
     }
 
+    // MARK: - UITableViewDelegate
+
+    // MARK: - UITableViewDataSource
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 0
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        fatalError( "tableView(tableView:indexPath:) has not been implemented" )
+    }
+
     // MARK: - MPSiteObserver
 
     func siteDidChange() {
         PearlMainQueue {
             self.headingLabel.text = self.site?.siteName
-            self.contentView.layer.shadowColor = self.site?.color.cgColor
+            self.view.backgroundColor = self.site?.color
         }
     }
 }

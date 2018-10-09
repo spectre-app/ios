@@ -53,15 +53,19 @@ class MPQuery {
     class Result<V> : NSObject where V: Hashable {
         let value: V
         let key:   String
+        let attributedKey : NSMutableAttributedString
         var keyMatched = Set<String.Index>()
 
         init(value: V, key: String) {
             self.value = value
             self.key = key
+            self.attributedKey = NSMutableAttributedString( string: self.key )
         }
 
         func keyMatched(at k: String.Index) {
             self.keyMatched.insert( k )
+            self.attributedKey.addAttribute( NSAttributedStringKey.backgroundColor, value: UIColor.red,
+                                             range: NSRange( location: k.encodedOffset, length: 1 ) )
         }
 
         override func isEqual(_ object: Any?) -> Bool {

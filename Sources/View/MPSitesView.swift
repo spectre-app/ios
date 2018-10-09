@@ -7,6 +7,7 @@ import UIKit
 
 class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver {
     var observers   = Observers<MPSitesViewObserver>()
+    let data        = NSMutableArray()
     var isSelecting = false
 
     var user: MPUser? {
@@ -18,7 +19,6 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
             self.query = nil
         }
     }
-    let data = NSMutableArray()
     var selectedSite: MPSite? {
         didSet {
             self.observers.notify { $0.siteWasSelected( selectedSite: self.selectedSite ) }
@@ -58,10 +58,10 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
     }
 
     func updateSites() {
-        let newSites = [ MPQuery( self.query ?? "" ).find( self.user?.sortedSites ?? [] ) { $0.siteName } ]
+        let newSites = NSArray( object: MPQuery( self.query ?? "" ).find( self.user?.sortedSites ?? [] ) { $0.siteName } )
 
         PearlMainQueue {
-            self.updateDataSource( self.data, toSections: newSites as NSArray, reloadItems: self.data, with: .automatic )
+            self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )
         }
     }
 
@@ -138,18 +138,11 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
                 }
             }
         }
-        override var isHighlighted: Bool {
-            didSet {
-                self.highlightedConfiguration.activated = self.isHighlighted
-            }
-        }
 
         let indicatorView = UIView()
         let passwordLabel = UILabel()
         let nameLabel     = UILabel()
         let copyButton    = MPButton( image: nil, title: "copy" )
-
-        let highlightedConfiguration = ViewConfiguration()
 
         // MARK: - Life
 
@@ -212,12 +205,6 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
                     .activate()
         }
 
-        override func updateConstraints() {
-            super.updateConstraints()
-
-            self.highlightedConfiguration.activated = self.isHighlighted
-        }
-
         @objc
         func copySite() {
             PearlNotMainQueue {
@@ -250,14 +237,7 @@ class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUs
 
         func siteDidChange() {
             PearlMainQueue {
-                var name: NSAttributedString = NSAttributedString( string: self.site?.siteName ?? "" )
-                if let result = self.result {
-                    for match in result.keyMatched {
-                        name = strra( name, NSRange( location: match.encodedOffset, length: 1 ),
-                                      [ NSAttributedStringKey.backgroundColor: UIColor.red ] )
-                    }
-                }
-                self.nameLabel.attributedText = name
+                self.nameLabel.attributedText = self.result?.attributedKey
                 self.indicatorView.backgroundColor = self.site?.color.withAlphaComponent( 0.85 )
             }
             PearlNotMainQueue {
