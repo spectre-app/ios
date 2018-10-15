@@ -16,6 +16,8 @@ DerivedData/
 # Generated
 /platform-darwin/Podfile.lock
 /platform-darwin/Pods/
+/platform-darwin/Resources/Media/Images.xcassets/AppIcon.appiconset
+/platform-darwin/Resources/Media/Images.xcassets/LaunchImage.launchimage
 
 # Gradle
 build
