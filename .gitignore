@@ -14,7 +14,6 @@ xcuserdata/
 DerivedData/
 
 # Generated
-/platform-darwin/Resources/Media/Images.xcassets/
 /platform-darwin/Podfile.lock
 /platform-darwin/Pods/
 
