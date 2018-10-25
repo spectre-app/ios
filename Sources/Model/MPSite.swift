@@ -6,7 +6,7 @@
 import Foundation
 
 class MPSite: NSObject, Comparable {
-    var observers = Observers<MPSiteObserver>()
+    let observers = Observers<MPSiteObserver>()
 
     let user:     MPUser
     let siteName: String

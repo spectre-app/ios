@@ -6,18 +6,22 @@
 import UIKit
 import pop
 
-class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteViewObserver, MPSitesViewObserver {
+class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeaderObserver, MPSiteDetailObserver, MPSitesViewObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
-    private let searchField = UITextField()
-    private let userButton  = UIButton( type: .custom )
-    private let sitesView   = MPSitesView()
-    private let siteView    = MPSiteView()
+    private let searchField    = UITextField()
+    private let userButton     = UIButton( type: .custom )
+    private let sitesTableView = MPSitesTableView()
+    private let siteHeaderView = MPSiteHeaderView()
+    private let siteDetailView = UIView()
 
-    private let siteViewConfiguration = ViewConfiguration()
+    private let siteHeaderConfiguration = ViewConfiguration()
+    private let siteDetailConfiguration = ViewConfiguration()
 
-    var         user: MPUser? {
+    private var siteDetailController: MPSiteDetailViewController?
+
+    var user: MPUser? {
         didSet {
-            self.sitesView.user = self.user
+            self.sitesTableView.user = self.user
 
             var userButtonTitle = ""
             self.user?.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
@@ -62,55 +66,62 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteViewOb
         self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
         self.userButton.sizeToFit()
 
-        self.siteView.observers.register( self )
+        self.siteHeaderView.observers.register( self )
 
-        self.sitesView.observers.register( self )
-        self.sitesView.keyboardDismissMode = .onDrag
+        self.sitesTableView.observers.register( self )
+        self.sitesTableView.keyboardDismissMode = .onDrag
 
         if #available( iOS 11.0, * ) {
-            self.sitesView.contentInsetAdjustmentBehavior = .never
+            self.sitesTableView.contentInsetAdjustmentBehavior = .never
         }
 
         // - Hierarchy
-        self.view.addSubview( self.sitesView )
-        self.view.addSubview( self.siteView )
+        self.view.addSubview( self.sitesTableView )
+        self.view.addSubview( self.siteHeaderView )
+        self.view.addSubview( self.siteDetailView )
         self.view.addSubview( self.topContainer )
 
         // - Layout
-        ViewConfiguration( view: self.siteView )
+        ViewConfiguration( view: self.siteHeaderView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.sitesView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: self.siteView.bottomAnchor ) }
+        ViewConfiguration( view: self.sitesTableView )
+                .constrainTo { $1.topAnchor.constraint( equalTo: self.siteHeaderView.bottomAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
-        siteViewConfiguration
-                .apply( ViewConfiguration( view: self.siteView )
-                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: true )
-                .apply( ViewConfiguration( view: self.sitesView )
-                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
-
-        ViewConfiguration( view: self.sitesView )
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+        ViewConfiguration( view: self.siteDetailView )
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: self.sitesTableView.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: self.sitesTableView.trailingAnchor ) }
+                .constrainTo { $1.heightAnchor.constraint( equalTo: self.sitesTableView.heightAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.topContainer )
                 .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ) }
-                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteView.layoutMarginsGuide.bottomAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteHeaderView.layoutMarginsGuide.bottomAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ) }
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 50 ) }
                 .activate()
 
+        self.siteHeaderConfiguration
+                .apply( ViewConfiguration( view: self.siteHeaderView )
+                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: true )
+                .apply( ViewConfiguration( view: self.sitesTableView )
+                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
+
+        self.siteDetailConfiguration
+                .apply( ViewConfiguration( view: self.siteDetailView )
+                                .constrainTo { $1.topAnchor.constraint( equalTo: self.sitesTableView.topAnchor ) }, active: true )
+                .apply( ViewConfiguration( view: self.siteDetailView )
+                                .constrainTo { $1.topAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: false )
+
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
-            [ $0.topAnchor.constraint( greaterThanOrEqualTo: self.sitesView.bottomAnchor ) ]
+            [ $0.topAnchor.constraint( greaterThanOrEqualTo: self.sitesTableView.bottomAnchor ) ]
         }
     }
 
@@ -118,19 +129,80 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteViewOb
         super.viewDidLayoutSubviews()
 
         // Offset sites content's top margin to make space for the top container.
-        let top = self.sitesView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y
-        self.sitesView.contentInset = UIEdgeInsetsMake( max( 0, top - self.sitesView.bounds.origin.y ), 0, 0, 0 )
+        let top = self.sitesTableView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y
+        self.sitesTableView.contentInset = UIEdgeInsets(
+                top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
+
+        // Offset detail view's top margin to make space for the top container.
+        self.siteDetailController?.tableView.contentInset = UIEdgeInsets(
+                top: CGRectGetBottom( self.siteDetailView.convert( self.topContainer.bounds, from: self.topContainer ) ).y,
+                left: 0, bottom: 0, right: 0 )
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
 
-    // MARK: - MPSiteViewObserver
+    // MARK: - Private
+
+    func showSiteDetail(site: MPSite) {
+        hideSiteDetail {
+            self.siteDetailController = MPSiteDetailViewController( site: site )
+            if let siteDetailController = self.siteDetailController {
+                siteDetailController.observers.register( self )
+                self.addChildViewController( siteDetailController )
+                siteDetailController.beginAppearanceTransition( false, animated: true )
+                self.siteDetailView.addSubview( siteDetailController.view )
+                ViewConfiguration( view: siteDetailController.view ).constrainToMarginsOfSuperview().activate()
+                UIView.animate( withDuration: 0, animations: {
+                    self.siteDetailConfiguration.activate()
+                }, completion: { finished in
+                    siteDetailController.endAppearanceTransition()
+                    siteDetailController.removeFromParentViewController()
+                } )
+            }
+        }
+    }
+
+    func hideSiteDetail(completion: (() -> Void)? = nil) {
+        if let siteDetailController = self.siteDetailController {
+            siteDetailController.willMove( toParentViewController: nil )
+            siteDetailController.beginAppearanceTransition( false, animated: true )
+            UIView.animate( withDuration: 0, animations: {
+                self.siteDetailConfiguration.deactivate()
+            }, completion: { finished in
+                siteDetailController.view.removeFromSuperview()
+                siteDetailController.endAppearanceTransition()
+                siteDetailController.removeFromParentViewController()
+                siteDetailController.observers.unregister( self )
+                self.siteDetailController = nil
+                completion?()
+            } )
+        }
+        else {
+            completion?()
+        }
+    }
+
+    // MARK: - MPSiteHeaderObserver
 
     func siteWasActivated(activatedSite: MPSite) {
         PearlMainQueue {
-            self.present( MPSiteDetailsViewController( site: activatedSite ), animated: true )
+            UIView.animate( withDuration: 0.382 ) {
+                self.showSiteDetail( site: activatedSite )
+                self.searchField.resignFirstResponder()
+            }
+        }
+    }
+
+    // MARK: - MPSiteDetailObserver
+
+    func siteDetailShouldDismiss() {
+        PearlMainQueue {
+            UIView.animate( withDuration: 0.382 ) {
+                self.hideSiteDetail()
+                self.siteDetailConfiguration.deactivate()
+            }
         }
     }
 
@@ -138,22 +210,32 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteViewOb
 
     func siteWasSelected(selectedSite: MPSite?) {
         PearlMainQueue {
-            if let selectedSite = selectedSite {
-                self.siteView.site = selectedSite
-            }
             UIView.animate( withDuration: 1, animations: {
-                self.siteViewConfiguration.activated = selectedSite != nil;
+                if let selectedSite = selectedSite {
+                    self.siteHeaderView.site = selectedSite
+                    self.showSiteDetail( site: selectedSite )
+                }
+                else {
+                    self.hideSiteDetail()
+                }
+
+                self.siteHeaderConfiguration.activated = selectedSite != nil;
             }, completion: { finished in
                 if selectedSite == nil {
-                    self.siteView.site = nil
+                    self.siteHeaderView.site = nil
                 }
             } )
         }
     }
 
     // MARK: - UITextFieldDelegate
+
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        self.siteDetailShouldDismiss()
+    }
+
     @objc
     func textFieldEditingChanged(_ textField: UITextField) {
-        self.sitesView.query = self.searchField.text
+        self.sitesTableView.query = self.searchField.text
     }
 }

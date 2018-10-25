@@ -15,7 +15,8 @@
 		93D39262A8A97DB748213309 /* PearlEMail.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D393BB973253D4BAAC84AA /* PearlEMail.m */; };
 		93D3926D54D9CAB45F0772BB /* Observers.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39846D00AB207950BC99F /* Observers.m */; };
 		93D3928D629EA563F9EC4909 /* NSPersistentStore+PearlMigration.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D399C2F3D48E57C4803BDC /* NSPersistentStore+PearlMigration.m */; };
-		93D392937A9E6664CA09124D /* MPSiteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSiteView.swift */; };
+		93D392937A9E6664CA09124D /* MPSiteHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSiteHeaderView.swift */; };
+		93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */; };
 		93D392A33CCE85431E910C7B /* NSOrderedSetOrArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39789AAF49338F8AC8B02 /* NSOrderedSetOrArray.m */; };
 		93D392A8777DC30C11361647 /* UITextView+PearlAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39AA10CD00D05937671B1 /* UITextView+PearlAttributes.h */; };
 		93D392EC39DA43C46C692C12 /* NSDictionary+Indexing.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D393B97158D7BE9332EA53 /* NSDictionary+Indexing.h */; };
@@ -23,7 +24,7 @@
 		93D39359B0DF9823F6C56A05 /* PearlHangDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39D8508BF868907E9732E /* PearlHangDetector.h */; };
 		93D3935F05DB41DFB75D907C /* AutoLayoutCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D399AC72BBE25033B26BF0 /* AutoLayoutCollectionViewCell.m */; };
 		93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPURLUtils.swift */; };
-		93D393C161EB8FA55FA5174F /* MPSitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesView.swift */; };
+		93D393C161EB8FA55FA5174F /* MPSitesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */; };
 		93D393DB5325820241BA90A7 /* PearlSizedTextView.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39A4759186F6D2D34AA6B /* PearlSizedTextView.h */; };
 		93D3942C1B117EE4851AA7B6 /* UIView+Visible.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3952910EDB8E0EBC94BA9 /* UIView+Visible.m */; };
 		93D39470EC1F954780E354CB /* MPImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396EF81F724F74A21AFA9 /* MPImageView.swift */; };
@@ -58,7 +59,6 @@
 		93D39BFB5F5F9337F6565DE3 /* UIView+Visible.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39B7B765546B1F1900CB7 /* UIView+Visible.h */; };
 		93D39C34FE35830EF5BE1D2A /* NSArray+Indexing.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D396D04E57792A54D437AC /* NSArray+Indexing.h */; };
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
-		93D39CB424D9186B39E9AD81 /* MPSiteDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F43E0A5324C1497BA88 /* MPSiteDetailsViewController.swift */; };
 		93D39D45180726A9C2484030 /* MPStarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39633973C6D2EAB335D68 /* MPStarView.swift */; };
 		93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */; };
 		93D39E281E3658B30550CB55 /* NSDictionary+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39AA1EE2E1E7B81372240 /* NSDictionary+Indexing.m */; };
@@ -323,7 +323,7 @@
 		1BD89466760B83CE30B9ECED /* Pods_Pearl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pearl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F5740BEFF88DA7457A3AE61 /* Pods-MasterPassword.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.debug.xcconfig"; sourceTree = "<group>"; };
 		8673E273737E67D2A774177F /* Pods-MasterPassword.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.release.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.release.xcconfig"; sourceTree = "<group>"; };
-		93D3903B1B32B494FBD792EC /* MPSitesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesView.swift; sourceTree = "<group>"; };
+		93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesTableView.swift; sourceTree = "<group>"; };
 		93D39067C0AFDC581794E2B8 /* NSArray+Indexing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+Indexing.m"; sourceTree = "<group>"; };
 		93D3908853D4BE6569DCC64F /* UIUtils+MP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIUtils+MP.h"; sourceTree = "<group>"; };
 		93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UICollectionView+PearlReloadItems.m"; sourceTree = "<group>"; };
@@ -384,6 +384,7 @@
 		93D39BDA5DB85FCDE4E6450A /* PearlHangDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlHangDetector.m; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUsersViewController.swift; sourceTree = "<group>"; };
 		93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILabel+MPFontSize.m"; sourceTree = "<group>"; };
+		93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteDetailViewController.swift; sourceTree = "<group>"; };
 		93D39CF7DB942C69D1C5D6BE /* mpw-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-util.h"; sourceTree = "<group>"; };
 		93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesViewController.swift; sourceTree = "<group>"; };
 		93D39D251169E42F0AAC451F /* MPURLUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPURLUtils.swift; sourceTree = "<group>"; };
@@ -393,11 +394,10 @@
 		93D39DE2CB351D4E3789462B /* UIScrollView+PearlAdjustInsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+PearlAdjustInsets.h"; sourceTree = "<group>"; };
 		93D39E1D19BCA02E43657384 /* MPUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUtils.swift; sourceTree = "<group>"; };
 		93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPNavigationController.swift; sourceTree = "<group>"; };
-		93D39F43E0A5324C1497BA88 /* MPSiteDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteDetailsViewController.swift; sourceTree = "<group>"; };
 		93D39F718C1C38C46D9D5078 /* MPSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSite.swift; sourceTree = "<group>"; };
 		93D39F7C9F47BF6387FBC5C3 /* PearlEMail.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlEMail.h; sourceTree = "<group>"; };
 		93D39F9106F2CCFB94283188 /* NSError+PearlFullDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError+PearlFullDescription.m"; sourceTree = "<group>"; };
-		93D39F997E40F20C5B75ADAD /* MPSiteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteView.swift; sourceTree = "<group>"; };
+		93D39F997E40F20C5B75ADAD /* MPSiteHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteHeaderView.swift; sourceTree = "<group>"; };
 		93D39FBF8FCEB4C106272334 /* NSOrderedSetOrArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSOrderedSetOrArray.h; sourceTree = "<group>"; };
 		A374698F63075B77FCACEE84 /* Pods-MasterPassword.test.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.test.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.test.xcconfig"; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
@@ -811,13 +811,13 @@
 			isa = PBXGroup;
 			children = (
 				93D397615F791F856B7814B9 /* MPLoginView.swift */,
-				93D3903B1B32B494FBD792EC /* MPSitesView.swift */,
+				93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */,
 				93D39424D508440582DC7FD0 /* MPSpinnerView.swift */,
 				93D39633973C6D2EAB335D68 /* MPStarView.swift */,
 				93D399AC72BBE25033B26BF0 /* AutoLayoutCollectionViewCell.m */,
 				93D39A199BE0BC2D2EDBCC34 /* AutoLayoutCollectionViewCell.h */,
 				93D39564D6408073D59CDB6A /* MPButton.swift */,
-				93D39F997E40F20C5B75ADAD /* MPSiteView.swift */,
+				93D39F997E40F20C5B75ADAD /* MPSiteHeaderView.swift */,
 				93D3990C92C01413465156FF /* MPAlertView.swift */,
 				93D396EF81F724F74A21AFA9 /* MPImageView.swift */,
 			);
@@ -876,7 +876,7 @@
 				93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */,
 				93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */,
 				93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */,
-				93D39F43E0A5324C1497BA88 /* MPSiteDetailsViewController.swift */,
+				93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -2026,18 +2026,18 @@
 				93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */,
 				93D39A2954B245FC0D925312 /* MPSite.swift in Sources */,
 				DA9BA096215025A9006406F6 /* PearlProfiler.swift in Sources */,
-				93D393C161EB8FA55FA5174F /* MPSitesView.swift in Sources */,
+				93D393C161EB8FA55FA5174F /* MPSitesTableView.swift in Sources */,
 				93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */,
 				93D3926D54D9CAB45F0772BB /* Observers.m in Sources */,
 				93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */,
 				93D3935F05DB41DFB75D907C /* AutoLayoutCollectionViewCell.m in Sources */,
 				93D39139805FC516B6C2C181 /* MPButton.swift in Sources */,
-				93D392937A9E6664CA09124D /* MPSiteView.swift in Sources */,
+				93D392937A9E6664CA09124D /* MPSiteHeaderView.swift in Sources */,
 				93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */,
 				93D398854968B51F6B8DB031 /* MPAlertView.swift in Sources */,
-				93D39CB424D9186B39E9AD81 /* MPSiteDetailsViewController.swift in Sources */,
 				93D39470EC1F954780E354CB /* MPImageView.swift in Sources */,
 				93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */,
+				93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

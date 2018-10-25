@@ -6,7 +6,7 @@
 import Foundation
 
 class MPUser {
-    var observers = Observers<MPUserObserver>()
+    let observers = Observers<MPUserObserver>()
 
     let fullName: String
     var avatar: MPUserAvatar {

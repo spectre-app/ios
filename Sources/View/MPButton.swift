@@ -34,6 +34,12 @@ class MPButton: UIView {
         }
     }
 
+    // MARK: - Life
+
+    static func closeButton() -> MPButton {
+        return MPButton( title: "╳" )
+    }
+
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }

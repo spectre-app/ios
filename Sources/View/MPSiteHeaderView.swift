@@ -5,8 +5,8 @@
 
 import Foundation
 
-class MPSiteView: UIView, MPSiteObserver {
-    var observers = Observers<MPSiteViewObserver>()
+class MPSiteHeaderView: UIView, MPSiteObserver {
+    let observers = Observers<MPSiteHeaderObserver>()
 
     var site: MPSite? {
         willSet {
@@ -30,7 +30,7 @@ class MPSiteView: UIView, MPSiteObserver {
         super.init( frame: .zero )
 
         // - View
-        self.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 20, right: 12)
+        self.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
         self.layer.shadowOpacity = 1
         self.layer.shadowOffset = .zero
         self.layer.shadowRadius = 40
@@ -124,6 +124,6 @@ class MPSiteView: UIView, MPSiteObserver {
 }
 
 @objc
-protocol MPSiteViewObserver {
+protocol MPSiteHeaderObserver {
     func siteWasActivated(activatedSite: MPSite)
 }

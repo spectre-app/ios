@@ -5,8 +5,8 @@
 
 import UIKit
 
-class MPSitesView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver {
-    var observers   = Observers<MPSitesViewObserver>()
+class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver {
+    let observers   = Observers<MPSitesViewObserver>()
     let data        = NSMutableArray()
     var isSelecting = false
 
