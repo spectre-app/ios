@@ -81,7 +81,7 @@ class MPURLUtils {
                                 var score = 0
                                 score += Int( pow( alpha, 2 ) * 400 )
                                 score += Int( saturation * 200 )
-                                score += Int( MPUtils.mirror( ratio: brightness, center: 0.85 ) * 100 )
+                                score += Int( mirror( ratio: brightness, center: 0.85 ) * 100 )
 
                                 scoresByColor[color] = score
                             }

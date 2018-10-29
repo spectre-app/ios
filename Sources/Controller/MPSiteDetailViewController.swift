@@ -11,10 +11,13 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
 
     let closeButton = MPButton.closeButton()
     let tableView   = UITableView( frame: .zero, style: .plain )
-    let items       = [ Item( title: "Counter" ),
-                        Item( title: "Password Type" ),
-                        Item( title: "Login Type" ),
-                        Item( title: "Algorithm" ) ]
+    let items = [ Item( title: "Counter", valueProvider: { "\($0.counter.rawValue)" } ),
+                  Item( title: "Password Type", valueProvider: { String( cString: mpw_longNameForType( $0.resultType ) ) } ),
+                  Item( title: "Login Type", valueProvider: { String( cString: mpw_longNameForType( $0.loginType ) ) } ),
+                  Item( title: "Algorithm", valueProvider: { "V\($0.algorithm.rawValue)" } ),
+                  Item( title: "URL", valueProvider: { $0.url } ),
+                  Item( title: "Last Used", valueProvider: { $0.lastUsed.format() } ),
+                  Item( title: "Total Uses", valueProvider: { "\($0.uses)" } ) ]
 
     // MARK: - Life
 
@@ -74,9 +77,11 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = Cell.dequeue( from: tableView, indexPath: indexPath )
-        cell.site = site
-        cell.item = self.items[indexPath.item]
+        let cell = Cell.dequeue( from: tableView, indexPath: indexPath ),
+            item = self.items[indexPath.item]
+
+        item.site = self.site
+        cell.item = item
 
         return cell
     }
@@ -87,7 +92,7 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
         PearlMainQueue {
             for cell in self.tableView.visibleCells {
                 if let cell = cell as? Cell {
-                    cell.site = self.site
+                    cell.item?.site = self.site
                 }
             }
         }
@@ -96,19 +101,40 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
     // MARK: - Types
 
     class Cell: UITableViewCell {
-        var site: MPSite?
         var item: Item? {
             didSet {
                 self.textLabel?.text = self.item?.title
+                self.detailTextLabel?.text = self.item?.value
             }
+        }
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(style: CellStyle, reuseIdentifier: String?) {
+            super.init( style: .value1, reuseIdentifier: reuseIdentifier )
         }
     }
 
     class Item {
-        var title: String
+        var site:          MPSite?
+        var title:         String
+        var valueProvider: (MPSite) -> String?
+        var value:         String? {
+            get {
+                if let site = self.site {
+                    return self.valueProvider( site )
+                }
+                else {
+                    return nil
+                }
+            }
+        }
 
-        init(title: String) {
+        init(title: String, valueProvider: @escaping (MPSite) -> String?) {
             self.title = title
+            self.valueProvider = valueProvider
         }
     }
 }

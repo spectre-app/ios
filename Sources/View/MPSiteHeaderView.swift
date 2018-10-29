@@ -106,7 +106,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
                 self.siteButton.setImage( self.site?.image, for: .normal )
                 self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
 
-                if let brightness = self.site?.color.brightness(), brightness < 0.1 {
+                if let brightness = self.site?.color?.brightness(), brightness < 0.1 {
                     self.siteButton.layer.shadowColor = UIColor.white.cgColor
                     self.settingsButton.darkBackground = true
                     self.recoveryButton.darkBackground = true

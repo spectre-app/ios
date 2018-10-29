@@ -58,7 +58,7 @@ class MPSite: NSObject, Comparable {
             self.observers.notify { $0.siteDidChange() }
         }
     }
-    var color: UIColor {
+    var color: UIColor? {
         didSet {
             self.observers.notify { $0.siteDidChange() }
         }
@@ -85,7 +85,7 @@ class MPSite: NSObject, Comparable {
         self.url = url
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
-        self.color = MPUtils.color( message: self.siteName )
+        self.color = self.siteName.color()
         super.init()
 
         MPURLUtils.preview( url: self.siteName, imageResult: { image in

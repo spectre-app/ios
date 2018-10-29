@@ -5,43 +5,18 @@
 
 import Foundation
 
-class MPUtils {
-    static func sha256(message: String) -> Data {
-        return sha256( message: message.data( using: .utf8 )! )
+func ratio(of value: UInt8, from: Double, to: Double) -> Double {
+    return from + (to - from) * (Double( value ) / Double( UInt8.max ))
+}
+
+// Map a 0-1 value such that it mirrors around a center point.
+// 0 -> 0, center -> 1, 1 -> 0
+func mirror(ratio: CGFloat, center: CGFloat) -> CGFloat {
+    if ratio < center {
+        return ratio / center
     }
-
-    static func sha256(message: Data) -> Data {
-        var hash = Data( count: Int( CC_SHA256_DIGEST_LENGTH ) )
-        message.withUnsafeBytes { messageBytes in
-            hash.withUnsafeMutableBytes { hashBytes in
-                _ = CC_SHA256( messageBytes, CC_LONG( message.count ), hashBytes )
-            }
-        }
-
-        return hash
-    }
-
-    static func ratio(of value: UInt8, from: Double, to: Double) -> Double {
-        return from + (to - from) * (Double( value ) / Double( UInt8.max ))
-    }
-
-    // Map a 0-1 value such that it mirrors around a center point.
-    // 0 -> 0, center -> 1, 1 -> 0
-    static func mirror(ratio: CGFloat, center: CGFloat) -> CGFloat {
-        if ratio < center {
-            return ratio / center
-        } else {
-            return 1 - (ratio - center) / (1 - center)
-        }
-    }
-
-    static func color(message: String) -> UIColor {
-        let sha256     = MPUtils.sha256( message: message )
-        let hue        = CGFloat( self.ratio( of: sha256[0], from: 0, to: 1 ) )
-        let saturation = CGFloat( self.ratio( of: sha256[1], from: 0.3, to: 1 ) )
-        let brightness = CGFloat( self.ratio( of: sha256[2], from: 0.5, to: 0.7 ) )
-
-        return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: 1 )
+    else {
+        return 1 - (ratio - center) / (1 - center)
     }
 }
 
@@ -79,5 +54,47 @@ extension UIColor {
         self.getHue( nil, saturation: nil, brightness: &brightness, alpha: nil )
 
         return brightness;
+    }
+}
+
+extension Data {
+    func sha256() -> Data {
+        var hash = Data( count: Int( CC_SHA256_DIGEST_LENGTH ) )
+        self.withUnsafeBytes { messageBytes in
+            hash.withUnsafeMutableBytes { hashBytes in
+                _ = CC_SHA256( messageBytes, CC_LONG( self.count ), hashBytes )
+            }
+        }
+
+        return hash
+    }
+}
+
+extension String {
+    func sha256() -> Data? {
+        return self.data( using: .utf8 )?.sha256()
+    }
+
+    func color() -> UIColor? {
+        guard let sha = self.sha256()
+        else {
+            return nil
+        }
+
+        let hue        = CGFloat( ratio( of: sha[0], from: 0, to: 1 ) )
+        let saturation = CGFloat( ratio( of: sha[1], from: 0.3, to: 1 ) )
+        let brightness = CGFloat( ratio( of: sha[2], from: 0.5, to: 0.7 ) )
+
+        return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: 1 )
+    }
+}
+
+extension Date {
+    func format(date dateStyle: DateFormatter.Style = .medium, time timeStyle: DateFormatter.Style = .medium)
+                    -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = dateStyle
+        dateFormatter.timeStyle = timeStyle
+        return dateFormatter.string( from: self )
     }
 }

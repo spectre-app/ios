@@ -238,7 +238,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         func siteDidChange() {
             PearlMainQueue {
                 self.nameLabel.attributedText = self.result?.attributedKey
-                self.indicatorView.backgroundColor = self.site?.color.withAlphaComponent( 0.85 )
+                self.indicatorView.backgroundColor = self.site?.color?.withAlphaComponent( 0.85 )
             }
             PearlNotMainQueue {
                 let password = self.site?.result()
