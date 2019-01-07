@@ -154,11 +154,12 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
                 siteDetailController.beginAppearanceTransition( false, animated: true )
                 self.siteDetailView.addSubview( siteDetailController.view )
                 ViewConfiguration( view: siteDetailController.view ).constrainToMarginsOfSuperview().activate()
-                UIView.animate( withDuration: 0, animations: {
+                UIView.animate( withDuration: 0.382, animations: {
+                    self.searchField.resignFirstResponder() // TODO: Move to somewhere more generic
                     self.siteDetailConfiguration.activate()
                 }, completion: { finished in
                     siteDetailController.endAppearanceTransition()
-                    siteDetailController.removeFromParentViewController()
+                    siteDetailController.didMove( toParentViewController: self )
                 } )
             }
         }
@@ -168,7 +169,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
         if let siteDetailController = self.siteDetailController {
             siteDetailController.willMove( toParentViewController: nil )
             siteDetailController.beginAppearanceTransition( false, animated: true )
-            UIView.animate( withDuration: 0, animations: {
+            UIView.animate( withDuration: 0.382, animations: {
                 self.siteDetailConfiguration.deactivate()
             }, completion: { finished in
                 siteDetailController.view.removeFromSuperview()
@@ -188,10 +189,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
 
     func siteWasActivated(activatedSite: MPSite) {
         PearlMainQueue {
-            UIView.animate( withDuration: 0.382 ) {
-                self.showSiteDetail( site: activatedSite )
-                self.searchField.resignFirstResponder()
-            }
+            self.showSiteDetail( site: activatedSite )
         }
     }
 
@@ -199,10 +197,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
 
     func siteDetailShouldDismiss() {
         PearlMainQueue {
-            UIView.animate( withDuration: 0.382 ) {
-                self.hideSiteDetail()
-                self.siteDetailConfiguration.deactivate()
-            }
+            self.hideSiteDetail()
         }
     }
 
@@ -213,7 +208,6 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
             UIView.animate( withDuration: 1, animations: {
                 if let selectedSite = selectedSite {
                     self.siteHeaderView.site = selectedSite
-                    self.showSiteDetail( site: selectedSite )
                 }
                 else {
                     self.hideSiteDetail()
