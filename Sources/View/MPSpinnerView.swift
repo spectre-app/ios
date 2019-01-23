@@ -43,13 +43,15 @@ class MPSpinnerView: UIView {
     }
     public var activatedItem: Int? {
         willSet {
-            if let delegate = self.delegate, let activatedItem = self.activatedItem, activatedItem != newValue {
+            if let delegate = self.delegate,
+               let activatedItem = self.activatedItem, activatedItem != newValue {
                 delegate.spinner( self, didDeactivateItem: activatedItem )
             }
         }
         didSet {
             self.selectedItem = self.activatedItem
-            if let delegate = self.delegate, let activatedItem = self.activatedItem {
+            if let delegate = self.delegate,
+               let activatedItem = self.activatedItem {
                 delegate.spinner( self, didActivateItem: activatedItem )
                 self.setNeedsLayout()
             }

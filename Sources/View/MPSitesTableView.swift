@@ -208,7 +208,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         @objc
         func copySite() {
             PearlNotMainQueue {
-                if let site = self.site, let password = site.result() {
+                if let site = self.site,
+                   let password = site.result() {
 
                     if #available( iOS 10.0, * ) {
                         UIPasteboard.general.setItems(

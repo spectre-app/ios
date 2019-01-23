@@ -47,28 +47,28 @@ class MPButton: UIView {
     convenience init(image: UIImage? = nil, title: String? = nil) {
         let button = UIButton( type: .custom )
         self.init( content: button )
+        self.button = button
 
-        button.setImage( image, for: .normal )
-        button.setTitle( title, for: .normal )
-        button.setTitleColor( .lightText, for: .normal )
-        button.setTitleShadowColor( .black, for: .normal )
-        button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
-        button.titleLabel?.shadowOffset = CGSize( width: 0, height: -1 )
-        button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
+        self.button.setImage( image, for: .normal )
+        self.button.setTitle( title, for: .normal )
+        self.button.setTitleColor( .lightText, for: .normal )
+        self.button.setTitleShadowColor( .black, for: .normal )
+        self.button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
+        self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: -1 )
+        self.button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
 
         if let title = title, title.count > 1 {
-            button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+            self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
         }
         else if let title = title, title.count == 1 {
-            button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
-            button.widthAnchor.constraint( equalTo: button.heightAnchor ).isActive = true
+            self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+            self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor ).isActive = true
         }
         else {
-            button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
+            self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
         }
 
         self.layoutMargins = .zero
-        self.button = button
         self.round = true
     }
 

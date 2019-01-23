@@ -54,7 +54,8 @@ class MPURLUtils {
                 URLSession.shared.dataTask( with: iconURL ) {
                     (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
                     processQueue.addOperation {
-                        if let responseData = responseData, let ciImage = CIImage( data: responseData ),
+                        if let responseData = responseData,
+                           let ciImage = CIImage( data: responseData ),
                            let cgImage = CIContext().createCGImage( ciImage, from: ciImage.extent ),
                            let cgContext = CGContext( data: nil, width: Int( cgImage.width ), height: Int( cgImage.height ),
                                                       bitsPerComponent: 8, bytesPerRow: 0,

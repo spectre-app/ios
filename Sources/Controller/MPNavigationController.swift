@@ -31,8 +31,10 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     }
 
     override func viewDidLoad() {
+        // - Hierarchy
         self.view.insertSubview( self.starsView, at: 0 )
 
+        // - Layout
         ViewConfiguration( view: self.starsView )
                 .constrainToSuperview()
                 .activate()

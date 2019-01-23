@@ -57,6 +57,16 @@ extension UIColor {
     }
 }
 
+extension UIFont {
+    func withSymbolicTraits(_ symbolicTraits: UIFontDescriptor.SymbolicTraits) -> UIFont {
+        if let descriptor = self.fontDescriptor.withSymbolicTraits( symbolicTraits ) {
+            return UIFont( descriptor: descriptor, size: self.pointSize )
+        }
+
+        return self;
+    }
+}
+
 extension Data {
     func sha256() -> Data {
         var hash = Data( count: Int( CC_SHA256_DIGEST_LENGTH ) )

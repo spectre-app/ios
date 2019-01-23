@@ -45,7 +45,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
             self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .largeTitle )
         }
         else {
-            self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .title1 )
+            self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
         }
         self.siteButton.addTarget( self, action: #selector( openSiteDetails ), for: .touchUpInside )
 

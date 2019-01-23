@@ -11,13 +11,13 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
 
     let closeButton = MPButton.closeButton()
     let tableView   = UITableView( frame: .zero, style: .plain )
-    let items = [ Item( title: "Counter", valueProvider: { "\($0.counter.rawValue)" } ),
-                  Item( title: "Password Type", valueProvider: { String( cString: mpw_longNameForType( $0.resultType ) ) } ),
-                  Item( title: "Login Type", valueProvider: { String( cString: mpw_longNameForType( $0.loginType ) ) } ),
-                  Item( title: "Algorithm", valueProvider: { "V\($0.algorithm.rawValue)" } ),
-                  Item( title: "URL", valueProvider: { $0.url } ),
-                  Item( title: "Last Used", valueProvider: { $0.lastUsed.format() } ),
-                  Item( title: "Total Uses", valueProvider: { "\($0.uses)" } ) ]
+    let items       = [ PasswordCounterItem(),
+                        PasswordTypeItem(),
+                        SeparatorItem(),
+                        LoginTypeItem(),
+                        URLItem(),
+                        SeparatorItem(),
+                        InfoItem() ]
 
     // MARK: - Life
 
@@ -91,11 +91,7 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
 
     func siteDidChange() {
         PearlMainQueue {
-            for cell in self.tableView.visibleCells {
-                if let cell = cell as? Cell {
-                    cell.item?.site = self.site
-                }
-            }
+            self.tableView.backgroundColor = self.site.color
         }
     }
 
@@ -103,9 +99,19 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
 
     class Cell: UITableViewCell {
         var item: Item? {
+            willSet {
+                if let item = self.item {
+                    item.view.removeFromSuperview()
+                }
+            }
             didSet {
-                self.textLabel?.text = self.item?.title
-                self.detailTextLabel?.text = self.item?.value
+                if let item = self.item {
+                    self.contentView.addSubview( item.view )
+
+                    ViewConfiguration( view: item.view )
+                            .constrainToSuperview()
+                            .activate()
+                }
             }
         }
 
@@ -114,28 +120,198 @@ class MPSiteDetailViewController: UIViewController, UITableViewDelegate, UITable
         }
 
         override init(style: CellStyle, reuseIdentifier: String?) {
-            super.init( style: .value1, reuseIdentifier: reuseIdentifier )
+            super.init( style: style, reuseIdentifier: reuseIdentifier )
+
+            self.backgroundColor = .clear
         }
     }
 
-    class Item {
-        var site:          MPSite?
-        var title:         String
-        var valueProvider: (MPSite) -> String?
+    class Item: MPSiteObserver {
+        let title: String?
+        var subitems = [ Item ]()
+        let view     = createItemView()
+
+        var valueProvider: ((MPSite) -> String?)?
         var value:         String? {
             get {
                 if let site = self.site {
-                    return self.valueProvider( site )
+                    return self.valueProvider?( site )
                 }
                 else {
                     return nil
                 }
             }
         }
+        var site: MPSite? {
+            willSet {
+                self.site?.observers.unregister( self )
+            }
+            didSet {
+                self.site?.observers.register( self ).siteDidChange()
+                ({
+                     for subitem in self.subitems {
+                         subitem.site = self.site
+                     }
+                 }()) // this is a hack to get around Swift silently skipping recursive didSet on properties.
+            }
+        }
 
-        init(title: String, valueProvider: @escaping (MPSite) -> String?) {
+        init(title: String? = nil, subitems: [Item] = [ Item ](), valueProvider: @escaping (MPSite) -> String? = { _ in nil }) {
             self.title = title
+            self.subitems = subitems
             self.valueProvider = valueProvider
+        }
+
+        class func createItemView() -> ItemView {
+            return TextItemView()
+        }
+
+        func siteDidChange() {
+            PearlMainQueue {
+                self.view.updateState( item: self )
+            }
+        }
+    }
+
+    class ItemView: UIView {
+        let titleLabel   = UILabel()
+        let contentView  = UIStackView()
+        let subitemsView = UIStackView()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        init() {
+            super.init( frame: .zero )
+
+            // - View
+            self.contentView.axis = .vertical
+            self.contentView.spacing = 8
+
+            self.titleLabel.textColor = .white
+            self.titleLabel.textAlignment = .center
+            self.titleLabel.font = UIFont.preferredFont( forTextStyle: .headline )
+            self.contentView.addArrangedSubview( self.titleLabel )
+
+            if let valueView = initValueView() {
+                self.contentView.addArrangedSubview( valueView )
+            }
+
+            self.subitemsView.axis = .horizontal
+            self.subitemsView.spacing = 20
+            self.contentView.addArrangedSubview( self.subitemsView )
+
+            // - Hierarchy
+            self.addSubview( self.contentView )
+
+            // - Layout
+            ViewConfiguration( view: self.contentView )
+                    .constrainToSuperview()
+                    .activate()
+        }
+
+        func initValueView() -> UIView? {
+            return nil
+        }
+
+        func updateState(item: Item) {
+            self.titleLabel.text = item.title
+            self.titleLabel.isHidden = item.title == nil
+
+            for i in 0..<max( item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
+                let subitemView     = i < item.subitems.count ? item.subitems[i].view: nil
+                let arrangedSubview = i < self.subitemsView.arrangedSubviews.count ? self.subitemsView.arrangedSubviews[i]: nil
+
+                if arrangedSubview != subitemView {
+                    arrangedSubview?.removeFromSuperview()
+
+                    if let subitemView = subitemView {
+                        self.subitemsView.insertArrangedSubview( subitemView, at: i )
+                    }
+                }
+            }
+            self.subitemsView.isHidden = self.subitemsView.arrangedSubviews.count == 0
+        }
+    }
+
+    class TextItemView: ItemView {
+        let valueView = UILabel()
+
+        override func initValueView() -> UIView? {
+            self.valueView.textColor = .white
+            self.valueView.textAlignment = .center
+            if #available( iOS 11.0, * ) {
+                self.valueView.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+            }
+            else {
+                self.valueView.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
+            }
+            return self.valueView
+        }
+
+        override func updateState(item: Item) {
+            super.updateState( item: item )
+
+            self.valueView.text = item.value
+        }
+    }
+
+    class PasswordCounterItem: Item {
+        init() {
+            super.init( title: "Password Counter" ) { "\($0.counter.rawValue)" }
+        }
+    }
+
+    class PasswordTypeItem: Item {
+        init() {
+            super.init( title: "Password Type" ) { String( cString: mpw_longNameForType( $0.resultType ) ) }
+        }
+    }
+
+    class LoginTypeItem: Item {
+        init() {
+            super.init( title: "Login Type" ) { String( cString: mpw_longNameForType( $0.loginType ) ) }
+        }
+    }
+
+    class URLItem: Item {
+        init() {
+            super.init( title: "URL" ) { $0.url }
+        }
+    }
+
+    class InfoItem: Item {
+        init() {
+            super.init( title: nil, subitems: [
+                UsesItem(),
+                UsedItem(),
+                AlgorithmItem(),
+            ] )
+        }
+    }
+
+    class UsesItem: Item {
+        init() {
+            super.init( title: "Total Uses" ) { "\($0.uses)" }
+        }
+    }
+
+    class UsedItem: Item {
+        init() {
+            super.init( title: "Last Used" ) { $0.lastUsed.format() }
+        }
+    }
+
+    class AlgorithmItem: Item {
+        init() {
+            super.init( title: "Algorithm" ) { "v\($0.algorithm.rawValue)" }
+        }
+    }
+
+    class SeparatorItem: Item {
+        init() {
+            super.init()
         }
     }
 }
