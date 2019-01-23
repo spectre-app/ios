@@ -346,6 +346,14 @@
     return [self constrainTo:constraintBlock( self.view.superview, self.view )];
 }
 
+- (instancetype)constrainToAllUsing:(NSArray<NSLayoutConstraint *> *( ^ )(UIView *superview, UIView *view))constraintBlock {
+
+    for (NSLayoutConstraint *constraint in constraintBlock( self.view.superview, self.view ))
+        [self constrainTo:constraint];
+
+    return self;
+}
+
 - (instancetype)constrainToView:(UIView *__nullable)view {
 
     return [self constrainToView:view withMargins:NO forAttributes:

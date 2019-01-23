@@ -72,6 +72,7 @@ CF_IMPLICIT_BRIDGING_ENABLED
  * @param constraintBlock \c $0 superview; \c $1 configuration view
  */
 - (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock;
+- (instancetype)constrainToAllUsing:(NSArray<NSLayoutConstraint *> *( ^ )(UIView *superview, UIView *view))constraintBlock;
 - (instancetype)constrainToView:(UIView *__nullable)view;
 - (instancetype)constrainToMarginsOfView:(UIView *__nullable)view;
 - (instancetype)constrainToView:(UIView *__nullable)view withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;

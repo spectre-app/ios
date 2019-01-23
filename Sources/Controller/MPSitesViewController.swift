@@ -97,15 +97,23 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
         ViewConfiguration( view: self.siteDetailView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: self.sitesTableView.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: self.sitesTableView.trailingAnchor ) }
-                .constrainTo { $1.heightAnchor.constraint( equalTo: self.sitesTableView.heightAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.topContainer )
-                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ) }
-                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteHeaderView.layoutMarginsGuide.bottomAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ) }
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 50 ) }
+                .constrainToAll {
+                    [
+                        $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
+                        $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )
+                                    .updatePriority( UILayoutPriority( 500 ) ),
+                        $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteHeaderView.layoutMarginsGuide.bottomAnchor )
+                                    .updatePriority( UILayoutPriority( 510 ) ),
+                        $1.bottomAnchor.constraint( lessThanOrEqualTo: self.siteDetailView.topAnchor )
+                                       .updatePriority( UILayoutPriority( 520 ) ),
+                        $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
+                        $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
+                        $1.heightAnchor.constraint( equalToConstant: 50 ),
+                    ]
+                }
                 .activate()
 
         self.siteHeaderConfiguration
@@ -116,7 +124,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
 
         self.siteDetailConfiguration
                 .apply( ViewConfiguration( view: self.siteDetailView )
-                                .constrainTo { $1.topAnchor.constraint( equalTo: self.sitesTableView.topAnchor ) }, active: true )
+                                .constrainTo { $1.bottomAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: true )
                 .apply( ViewConfiguration( view: self.siteDetailView )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: false )
 
@@ -134,9 +142,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 
         // Offset detail view's top margin to make space for the top container.
-        self.siteDetailController?.tableView.contentInset = UIEdgeInsets(
-                top: CGRectGetBottom( self.siteDetailView.convert( self.topContainer.bounds, from: self.topContainer ) ).y,
-                left: 0, bottom: 0, right: 0 )
+//        self.siteDetailController?.tableView.contentInset = UIEdgeInsets(
+//                top: CGRectGetBottom( self.siteDetailView.convert( self.topContainer.bounds, from: self.topContainer ) ).y,
+//                left: 0, bottom: 0, right: 0 )
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
