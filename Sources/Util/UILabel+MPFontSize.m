@@ -19,7 +19,7 @@ PearlAssociatedObjectProperty( UIFont*, OriginalFont_mpFontSize, originalFont_mp
 
 - (void)setFontSize:(CGFloat)fontSize {
 
-    PearlSwizzleTR( [UILabel class], @selector( intrinsicContentSize ), ^CGSize(UILabel *self), {
+    PearlSwizzleTR( [UILabel class], @selector( intrinsicContentSize ), ^CGSize, (UILabel *self), {
         @try {
             if (self.targetFont_mpFontSize)
                 self.font = self.targetFont_mpFontSize;
