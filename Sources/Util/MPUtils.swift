@@ -67,6 +67,17 @@ extension UIFont {
     }
 }
 
+extension UIView {
+    convenience init(constraining subview: UIView, withMargins margins: Bool = true) {
+        self.init()
+        self.addSubview( subview )
+
+        ViewConfiguration( view: subview )
+                .constrainToSuperview( withMargins: margins )
+                .activate()
+    }
+}
+
 extension Data {
     func sha256() -> Data {
         var hash = Data( count: Int( CC_SHA256_DIGEST_LENGTH ) )

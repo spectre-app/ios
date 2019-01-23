@@ -78,6 +78,7 @@ CF_IMPLICIT_BRIDGING_ENABLED
 - (instancetype)constrainToView:(UIView *__nullable)view withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
 - (instancetype)constrainToSuperview;
 - (instancetype)constrainToMarginsOfSuperview;
+- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins;
 - (instancetype)constrainToSuperviewWithMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
 
 - (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key;

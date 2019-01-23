@@ -63,7 +63,8 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
         ViewConfiguration( view: self.itemsView )
-                .constrainToSuperview()
+                .constrainToSuperview( withMargins: true, forAttributes: [ .alignAllTop, .alignAllBottom ] )
+                .constrainToSuperview( withMargins: false, forAttributes: [ .alignAllLeading, .alignAllTrailing ] )
                 .activate()
         ViewConfiguration( view: self.closeButton )
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: self.backgroundView.centerXAnchor ) }
@@ -149,6 +150,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
             // - View
             self.contentView.axis = .vertical
             self.contentView.spacing = 8
+            self.contentView.preservesSuperviewLayoutMargins = true
 
             self.titleLabel.textColor = .white
             self.titleLabel.textAlignment = .center
@@ -160,7 +162,10 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
             }
 
             self.subitemsView.axis = .horizontal
+            self.subitemsView.distribution = .fillEqually
             self.subitemsView.spacing = 20
+            self.subitemsView.preservesSuperviewLayoutMargins = true
+            self.subitemsView.isLayoutMarginsRelativeArrangement = true
             self.contentView.addArrangedSubview( self.subitemsView )
 
             // - Hierarchy

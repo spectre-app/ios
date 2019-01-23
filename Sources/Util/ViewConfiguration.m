@@ -407,7 +407,12 @@
 
 - (instancetype)constrainToMarginsOfSuperview {
 
-    return [self constrainToSuperviewWithMargins:YES forAttributes:
+    return [self constrainToSuperviewWithMargins:YES];
+}
+
+- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins {
+
+    return [self constrainToSuperviewWithMargins:margins forAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
