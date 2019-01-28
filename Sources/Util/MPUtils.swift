@@ -119,3 +119,82 @@ extension Date {
         return dateFormatter.string( from: self )
     }
 }
+
+// Useful for making Swift Arrays from C arrays (which are imported as tuples).
+extension Array {
+    init(_ tuple: (Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1 )
+    }
+
+    init(_ tuple: (Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+
+    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+    }
+}

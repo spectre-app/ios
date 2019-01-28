@@ -89,21 +89,11 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     // MARK: - Types
 
     class Item: MPSiteObserver {
-        let title: String?
-        var subitems = [ Item ]()
-        let view     = createItemView()
+        let title:    String?
+        let subitems: [Item]
+        lazy var view = createItemView()
+        var updateOperation: Operation?
 
-        var valueProvider: ((MPSite) -> String?)?
-        var value:         String? {
-            get {
-                if let site = self.site {
-                    return self.valueProvider?( site )
-                }
-                else {
-                    return nil
-                }
-            }
-        }
         var site: MPSite? {
             willSet {
                 self.site?.observers.unregister( self )
@@ -118,136 +108,239 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
             }
         }
 
-        init(title: String? = nil, subitems: [Item] = [ Item ](), valueProvider: @escaping (MPSite) -> String? = { _ in nil }) {
+        init(title: String? = nil, subitems: [Item] = [ Item ]()) {
             self.title = title
             self.subitems = subitems
-            self.valueProvider = valueProvider
         }
 
-        class func createItemView() -> ItemView {
-            return TextItemView()
+        func createItemView() -> ItemView {
+            fatalError( "createItemView must be overridden" )
         }
 
         func siteDidChange() {
-            PearlMainQueue {
-                self.view.updateState( item: self )
+            self.setNeedsUpdate()
+        }
+
+        func setNeedsUpdate() {
+            guard self.updateOperation == nil
+            else { return }
+
+            self.updateOperation = PearlMainQueueOperation {
+                self.view.update()
+                self.updateOperation = nil
             }
         }
-    }
 
-    class ItemView: UIView {
-        let titleLabel   = UILabel()
-        let contentView  = UIStackView()
-        let subitemsView = UIStackView()
+        class ItemView: UIView {
+            let titleLabel   = UILabel()
+            let contentView  = UIStackView()
+            let subitemsView = UIStackView()
+            private let item: Item
 
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        init() {
-            super.init( frame: .zero )
-
-            // - View
-            self.contentView.axis = .vertical
-            self.contentView.spacing = 8
-            self.contentView.preservesSuperviewLayoutMargins = true
-
-            self.titleLabel.textColor = .white
-            self.titleLabel.textAlignment = .center
-            self.titleLabel.font = UIFont.preferredFont( forTextStyle: .headline )
-            self.contentView.addArrangedSubview( self.titleLabel )
-
-            if let valueView = initValueView() {
-                self.contentView.addArrangedSubview( valueView )
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
             }
 
-            self.subitemsView.axis = .horizontal
-            self.subitemsView.distribution = .fillEqually
-            self.subitemsView.spacing = 20
-            self.subitemsView.preservesSuperviewLayoutMargins = true
-            self.subitemsView.isLayoutMarginsRelativeArrangement = true
-            self.contentView.addArrangedSubview( self.subitemsView )
+            init(withItem item: Item) {
+                self.item = item
+                super.init( frame: .zero )
 
-            // - Hierarchy
-            self.addSubview( self.contentView )
+                // - View
+                self.contentView.axis = .vertical
+                self.contentView.spacing = 8
+                self.contentView.preservesSuperviewLayoutMargins = true
 
-            // - Layout
-            ViewConfiguration( view: self.contentView )
-                    .constrainToSuperview()
-                    .activate()
-        }
+                self.titleLabel.textColor = .white
+                self.titleLabel.textAlignment = .center
+                self.titleLabel.font = UIFont.preferredFont( forTextStyle: .headline )
+                self.contentView.addArrangedSubview( self.titleLabel )
 
-        func initValueView() -> UIView? {
-            return nil
-        }
+                if let valueView = createValueView() {
+                    self.contentView.addArrangedSubview( valueView )
+                }
 
-        func updateState(item: Item) {
-            self.titleLabel.text = item.title
-            self.titleLabel.isHidden = item.title == nil
+                self.subitemsView.axis = .horizontal
+                self.subitemsView.distribution = .fillEqually
+                self.subitemsView.spacing = 20
+                self.subitemsView.preservesSuperviewLayoutMargins = true
+                self.subitemsView.isLayoutMarginsRelativeArrangement = true
+                self.contentView.addArrangedSubview( self.subitemsView )
 
-            for i in 0..<max( item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
-                let subitemView     = i < item.subitems.count ? item.subitems[i].view: nil
-                let arrangedSubview = i < self.subitemsView.arrangedSubviews.count ? self.subitemsView.arrangedSubviews[i]: nil
+                // - Hierarchy
+                self.addSubview( self.contentView )
 
-                if arrangedSubview != subitemView {
-                    arrangedSubview?.removeFromSuperview()
+                // - Layout
+                ViewConfiguration( view: self.contentView )
+                        .constrainToSuperview()
+                        .activate()
+            }
 
-                    if let subitemView = subitemView {
-                        self.subitemsView.insertArrangedSubview( subitemView, at: i )
+            func createValueView() -> UIView? {
+                return nil
+            }
+
+            func update() {
+                self.titleLabel.text = self.item.title
+                self.titleLabel.isHidden = self.item.title == nil
+
+                for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
+                    let subitemView     = i < self.item.subitems.count ? self.item.subitems[i].view: nil
+                    let arrangedSubview = i < self.subitemsView.arrangedSubviews.count ? self.subitemsView.arrangedSubviews[i]: nil
+
+                    if arrangedSubview != subitemView {
+                        arrangedSubview?.removeFromSuperview()
+
+                        if let subitemView = subitemView {
+                            self.subitemsView.insertArrangedSubview( subitemView, at: i )
+                        }
                     }
                 }
+                self.subitemsView.isHidden = self.subitemsView.arrangedSubviews.count == 0
             }
-            self.subitemsView.isHidden = self.subitemsView.arrangedSubviews.count == 0
         }
     }
 
-    class TextItemView: ItemView {
-        let valueView = UILabel()
-
-        override func initValueView() -> UIView? {
-            self.valueView.textColor = .white
-            self.valueView.textAlignment = .center
-            if #available( iOS 11.0, * ) {
-                self.valueView.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+    class ValueItem<V>: Item {
+        let valueProvider: ((MPSite) -> V?)?
+        var value:         V? {
+            get {
+                if let site = self.site {
+                    return self.valueProvider?( site )
+                }
+                else {
+                    return nil
+                }
             }
-            else {
-                self.valueView.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
-            }
-            return self.valueView
         }
 
-        override func updateState(item: Item) {
-            super.updateState( item: item )
-
-            self.valueView.text = item.value
+        init(title: String? = nil, subitems: [Item] = [ Item ](), valueProvider: @escaping (MPSite) -> V? = { _ in nil }) {
+            self.valueProvider = valueProvider
+            super.init( title: title, subitems: subitems )
         }
     }
 
-    class PasswordCounterItem: Item {
+    class TextItem: ValueItem<String> {
+        override func createItemView() -> TextItemView {
+            return TextItemView( withItem: self )
+        }
+
+        class TextItemView: ItemView {
+            let item: TextItem
+            let valueView = UILabel()
+
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            override init(withItem item: Item) {
+                self.item = item as! TextItem
+                super.init( withItem: item )
+            }
+
+            override func createValueView() -> UIView? {
+                self.valueView.textColor = .white
+                self.valueView.textAlignment = .center
+                if #available( iOS 11.0, * ) {
+                    self.valueView.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+                }
+                else {
+                    self.valueView.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
+                }
+                return self.valueView
+            }
+
+            override func update() {
+                super.update()
+
+                self.valueView.text = self.item.value
+            }
+        }
+    }
+
+    class PickerItem<V>: ValueItem<V> {
+        let options:       [V]
+        let valueRenderer: (V) -> String
+
+        init(title: String?, options: [V], subitems: [ValueItem<Any>] = [ ValueItem ](), valueProvider: @escaping (MPSite) -> V?, valueRenderer: @escaping (V) -> String) {
+            self.options = options
+            self.valueRenderer = valueRenderer
+            super.init( title: title, subitems: subitems, valueProvider: valueProvider )
+        }
+
+        override func createItemView() -> PickerItemView {
+            return PickerItemView( withItem: self )
+        }
+
+        class PickerItemView: ItemView, UIPickerViewDelegate, UIPickerViewDataSource {
+            let item: PickerItem<V>
+            let valueView = UIPickerView()
+
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            override init(withItem item: Item) {
+                self.item = item as! PickerItem<V>
+                super.init( withItem: item )
+            }
+
+            override func createValueView() -> UIView? {
+                self.valueView.delegate = self
+                self.valueView.dataSource = self
+                return self.valueView
+            }
+
+            override func update() {
+                super.update()
+
+                self.valueView.reloadAllComponents()
+            }
+
+            // MARK: - UIPickerViewDelegate
+            func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+                return self.item.valueRenderer( self.item.options[row] )
+            }
+
+            // MARK: - UIPickerViewDataSource
+            func numberOfComponents(in pickerView: UIPickerView) -> Int {
+                return 1
+            }
+
+            func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+                return self.item.options.count
+            }
+        }
+    }
+
+    class PasswordCounterItem: TextItem {
         init() {
             super.init( title: "Password Counter" ) { "\($0.counter.rawValue)" }
         }
     }
 
-    class PasswordTypeItem: Item {
+    class PasswordTypeItem: PickerItem<MPResultType> {
         init() {
-            super.init( title: "Password Type" ) { String( cString: mpw_longNameForType( $0.resultType ) ) }
+            super.init( title: "Password Type", options: [ MPResultType ]( MPResultTypes ),
+                        valueProvider: { $0.resultType },
+                        valueRenderer: { String( cString: mpw_longNameForType( $0 ) ) } )
         }
     }
 
-    class LoginTypeItem: Item {
+    class LoginTypeItem: PickerItem<MPResultType> {
         init() {
-            super.init( title: "Login Type" ) { String( cString: mpw_longNameForType( $0.loginType ) ) }
+            super.init( title: "Login Type", options: [ MPResultType ]( MPResultTypes ),
+                        valueProvider: { $0.loginType },
+                        valueRenderer: { String( cString: mpw_longNameForType( $0 ) ) } )
         }
     }
 
-    class URLItem: Item {
+    class URLItem: TextItem {
         init() {
             super.init( title: "URL" ) { $0.url }
         }
     }
 
-    class InfoItem: Item {
+    class InfoItem: TextItem {
         init() {
             super.init( title: nil, subitems: [
                 UsesItem(),
@@ -257,25 +350,25 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class UsesItem: Item {
+    class UsesItem: TextItem {
         init() {
             super.init( title: "Total Uses" ) { "\($0.uses)" }
         }
     }
 
-    class UsedItem: Item {
+    class UsedItem: TextItem {
         init() {
             super.init( title: "Last Used" ) { $0.lastUsed.format() }
         }
     }
 
-    class AlgorithmItem: Item {
+    class AlgorithmItem: TextItem {
         init() {
             super.init( title: "Algorithm" ) { "v\($0.algorithm.rawValue)" }
         }
     }
 
-    class SeparatorItem: Item {
+    class SeparatorItem: TextItem {
         init() {
             super.init()
         }
