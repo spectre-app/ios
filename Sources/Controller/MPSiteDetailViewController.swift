@@ -258,12 +258,12 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     }
 
     class PickerItem<V>: ValueItem<V> {
-        let options:       [V]
-        let valueRenderer: (V) -> String
+        let options:   [V]
+        let valueCell: (UICollectionView, IndexPath, V) -> String
 
-        init(title: String?, options: [V], subitems: [ValueItem<Any>] = [ ValueItem ](), valueProvider: @escaping (MPSite) -> V?, valueRenderer: @escaping (V) -> String) {
+        init(title: String?, options: [V], subitems: [ValueItem<Any>] = [ ValueItem ](), valueProvider: @escaping (MPSite) -> V?, valueCell: @escaping (V) -> String) {
             self.options = options
-            self.valueRenderer = valueRenderer
+            self.valueCell = valueCell
             super.init( title: title, subitems: subitems, valueProvider: valueProvider )
         }
 
@@ -271,9 +271,9 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
             return PickerItemView( withItem: self )
         }
 
-        class PickerItemView: ItemView, UIPickerViewDelegate, UIPickerViewDataSource {
+        class PickerItemView: ItemView, UICollectionViewDelegate, UICollectionViewDataSource {
             let item: PickerItem<V>
-            let valueView = UIPickerView()
+            let valueView = UICollectionView( frame: .zero, collectionViewLayout: UICollectionViewFlowLayout() )
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
@@ -296,18 +296,15 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                 self.valueView.reloadAllComponents()
             }
 
-            // MARK: - UIPickerViewDelegate
-            func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-                return self.item.valueRenderer( self.item.options[row] )
-            }
+            // MARK: - UICollectionViewDelegate
 
-            // MARK: - UIPickerViewDataSource
-            func numberOfComponents(in pickerView: UIPickerView) -> Int {
-                return 1
-            }
-
-            func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+            // MARK: - UICollectionViewDataSource
+            func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
                 return self.item.options.count
+            }
+
+            func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+                return self.item.valueCell( collectionView, indexPath, self.item.options[indexPath.item] )
             }
         }
     }
@@ -322,7 +319,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         init() {
             super.init( title: "Password Type", options: [ MPResultType ]( MPResultTypes ),
                         valueProvider: { $0.resultType },
-                        valueRenderer: { String( cString: mpw_longNameForType( $0 ) ) } )
+                        valueCell: { type in } )
         }
     }
 
@@ -347,6 +344,30 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                 UsedItem(),
                 AlgorithmItem(),
             ] )
+        }
+    }
+
+    class DebugItem: Item {
+        init() {
+            super.init( title: "Debug Item" )
+        }
+
+        override func createItemView() -> ItemView {
+            return DebugItemView( withItem: self )
+        }
+
+        class DebugItemView: ItemView {
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            override init(withItem item: Item) {
+                super.init( withItem: item )
+            }
+
+            override func createValueView() -> UIView? {
+                return nil
+            }
         }
     }
 
