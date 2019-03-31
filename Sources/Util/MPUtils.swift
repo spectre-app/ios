@@ -131,70 +131,70 @@ extension Array {
     }
 
     init(_ tuple: (Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16, tuple.17 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16, tuple.17, tuple.18 )
     }
 
     init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
+        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16, tuple.17, tuple.18, tuple.19 )
     }
 }
