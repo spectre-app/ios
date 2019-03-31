@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import UIKit
 
 class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     let observers = Observers<MPSiteDetailObserver>()
@@ -184,8 +185,8 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                 self.titleLabel.isHidden = self.item.title == nil
 
                 for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
-                    let subitemView     = i < self.item.subitems.count ? self.item.subitems[i].view: nil
-                    let arrangedSubview = i < self.subitemsView.arrangedSubviews.count ? self.subitemsView.arrangedSubviews[i]: nil
+                    let subitemView     = i < self.item.subitems.count ? self.item.subitems[i].view : nil
+                    let arrangedSubview = i < self.subitemsView.arrangedSubviews.count ? self.subitemsView.arrangedSubviews[i] : nil
 
                     if arrangedSubview != subitemView {
                         arrangedSubview?.removeFromSuperview()

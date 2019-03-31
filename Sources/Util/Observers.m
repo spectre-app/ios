@@ -5,7 +5,8 @@
 
 #import "Observers.h"
 
-@interface WeakReference<__covariant ObjectType> : NSObject
+
+@interface WeakReference<__covariant ObjectType>: NSObject
 
 @property(atomic, weak) ObjectType reference;
 

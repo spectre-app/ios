@@ -5,10 +5,11 @@
 
 #import <Foundation/Foundation.h>
 
+
 CF_IMPLICIT_BRIDGING_ENABLED
 #pragma clang assume_nonnull begin
 
-@interface Observers<__covariant ObjectType> : NSObject
+@interface Observers<__covariant ObjectType>: NSObject
 
 /**
  * Register an observer to receive notification actions.

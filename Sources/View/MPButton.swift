@@ -23,12 +23,12 @@ class MPButton: UIView {
     }
     var effectBackground = true {
         didSet {
-            self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark: .light ): nil
+            self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark : .light ) : nil
         }
     }
     var darkBackground   = false {
         didSet {
-            self.tintColor = self.darkBackground ? .white: .black
+            self.tintColor = self.darkBackground ? .white : .black
             self.effectBackground = self.effectBackground || self.effectBackground
 //            self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
         }

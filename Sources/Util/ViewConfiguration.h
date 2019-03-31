@@ -5,18 +5,21 @@
 
 #import <UIKit/UIKit.h>
 
+
 CF_IMPLICIT_BRIDGING_ENABLED
 #pragma clang assume_nonnull begin
+
+typedef void ( ^ViewAction )(UIView *view);
 
 /**
  * A view configuration holds a set of operations that will be performed on the view when the configuration's active state changes.
  */
-@interface ViewConfiguration : NSObject
+@interface ViewConfiguration: NSObject
 
 //! The view upon which this configuration's operations operate.
-@property(nonatomic, readonly, strong) UIView *view;
+@property(nonatomic, readonly, strong) UIView                              *view;
 //! Whether this configuration has last been activated or deactivated.
-@property(nonatomic, readwrite, assign) BOOL activated;
+@property(nonatomic, readwrite, assign) BOOL                               activated;
 //! Child configurations which will be activated when this configuration is activated and deactivated when this configuration is deactivated.
 @property(nonatomic, readonly, strong) NSMutableArray<ViewConfiguration *> *activeConfigurations;
 //! Child configurations which will be deactivated when this configuration is activated and activated when this configuration is deactivated.
@@ -51,7 +54,7 @@ CF_IMPLICIT_BRIDGING_ENABLED
 //! Mark this configuration's view as needing a redraw after activating the configuration.  Useful if you have custom draw code.
 - (instancetype)needsDisplay:(UIView *)layoutView;
 //! Run this action when the configuration becomes active.
-- (instancetype)doAction:(void ( ^ )(UIView *view))action;
+- (instancetype)doAction:(ViewAction)action;
 //! Request that this configuration's view become the first responder when the configuration becomes active.
 - (instancetype)becomeFirstResponder;
 //! Request that this configuration's view resigns first responder when the configuration becomes active.
@@ -73,9 +76,9 @@ CF_IMPLICIT_BRIDGING_ENABLED
  */
 - (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock;
 - (instancetype)constrainToAllUsing:(NSArray<NSLayoutConstraint *> *( ^ )(UIView *superview, UIView *view))constraintBlock;
-- (instancetype)constrainToView:(UIView *__nullable)view;
-- (instancetype)constrainToMarginsOfView:(UIView *__nullable)view;
-- (instancetype)constrainToView:(UIView *__nullable)view withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)constrainToView:(nullable UIView *)view;
+- (instancetype)constrainToMarginsOfView:(nullable UIView *)view;
+- (instancetype)constrainToView:(nullable UIView *)view withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
 - (instancetype)constrainToSuperview;
 - (instancetype)constrainToMarginsOfSuperview;
 - (instancetype)constrainToSuperviewWithMargins:(BOOL)margins;

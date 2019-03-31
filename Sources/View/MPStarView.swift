@@ -133,7 +133,8 @@ class MPStarView: UIView {
 
         public func animate(seconds: TimeInterval) {
             if self.speedDelta != 0 {
-                let speedAdvance = copysign( min( abs( self.speedDelta ), abs( self.speedAcceleration * seconds ) ), self.speedDelta );
+                let speedAdvance = copysign( min( abs( self.speedDelta ), abs( self.speedAcceleration * seconds ) ),
+                                             self.speedDelta );
                 self.speed += speedAdvance;
                 self.speedDelta -= speedAdvance;
             }
@@ -265,7 +266,7 @@ class MPStarView: UIView {
                     x: bounds.origin.x + self.location.x * bounds.size.width + padding.width * CGFloat( self.distance * rolled ),
                     y: bounds.origin.y + self.location.y * bounds.size.height + padding.height * CGFloat( self.distance * pitched ) )
             if center.x - CGFloat( 2 * self.radius ) < bounds.minX || center.x + CGFloat( 2 * self.radius ) > bounds.maxX ||
-                       center.y - CGFloat( 2 * self.radius ) < bounds.minY || center.y + CGFloat( 2 * self.radius ) > bounds.maxY {
+               center.y - CGFloat( 2 * self.radius ) < bounds.minY || center.y + CGFloat( 2 * self.radius ) > bounds.maxY {
                 return
             }
 

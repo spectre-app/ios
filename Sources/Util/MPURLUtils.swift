@@ -112,10 +112,9 @@ class MPURLUtils {
     }
 
     private class func validImageURL(_ string: String?) -> URL? {
-        if let string = string, !string.isEmpty, string.lowercased().hasSuffix( "png" ) ||
-                string.lowercased().hasSuffix( "jpg" ) ||
-                string.lowercased().hasSuffix( "jpeg" ) ||
-                string.lowercased().hasSuffix( "gif" ),
+        if let string = string, !string.isEmpty,
+           string.lowercased().hasSuffix( "png" ) || string.lowercased().hasSuffix( "jpg" ) ||
+           string.lowercased().hasSuffix( "jpeg" ) || string.lowercased().hasSuffix( "gif" ),
            let url = URL( string: string ) {
             return url
         }

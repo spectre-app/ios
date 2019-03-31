@@ -11,13 +11,13 @@ class MPAlertView: MPButton {
     }
 
     init(title: String?, message: String?) {
-        let titleLabel = UILabel(), messageLabel = UILabel()
-        let contentStack = UIStackView(arrangedSubviews: [titleLabel, messageLabel])
+        let titleLabel   = UILabel(), messageLabel = UILabel()
+        let contentStack = UIStackView( arrangedSubviews: [ titleLabel, messageLabel ] )
         super.init( content: contentStack )
 
         // - View
         self.darkBackground = true
-        if #available(iOS 11.0, *) {
+        if #available( iOS 11.0, * ) {
             self.insetsLayoutMarginsFromSafeArea = true
         }
 

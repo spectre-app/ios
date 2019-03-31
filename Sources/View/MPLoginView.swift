@@ -70,11 +70,11 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         public var active: Bool = false {
             didSet {
                 let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
-                anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
+                anim.toValue = UIFont.labelFontSize * (self.active ? 2 : 1)
                 self.nameLabel.pop_add( anim, forKey: "pop.font" )
 
-                UIView.animate( withDuration: self.superview == nil ? 0.0: 0.6 ) {
-                    self.passwordField.alpha = self.active ? 1: 0
+                UIView.animate( withDuration: self.superview == nil ? 0.0 : 0.6 ) {
+                    self.passwordField.alpha = self.active ? 1 : 0
 
                     if self.active {
                         self.passwordConfiguration.activate()

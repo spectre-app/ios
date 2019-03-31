@@ -6,26 +6,27 @@
 #import <Foundation/Foundation.h>
 #import <pop/POP.h>
 
-@interface POPPropertyAnimation(MP)
 
-+ (__nonnull instancetype)animationWithProperty:(POPAnimatableProperty *__nonnull)prop;
+@interface POPPropertyAnimation (MP)
 
-+ (__nonnull instancetype)animationWithFloatAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass;
-+ (__nonnull instancetype)animationWithFloatAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass
-                                            threshold:(CGFloat)threshold;
++ (nonnull instancetype)animationWithProperty:(nonnull POPAnimatableProperty *)prop;
 
-+ (__nonnull instancetype)animationWithPointAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass;
-+ (__nonnull instancetype)animationWithPointAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass
-                                            threshold:(CGFloat)threshold;
++ (nonnull instancetype)animationWithFloatAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass;
++ (nonnull instancetype)animationWithFloatAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass
+                                          threshold:(CGFloat)threshold;
 
-+ (__nonnull instancetype)animationWithSizeAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass;
-+ (__nonnull instancetype)animationWithSizeAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass
-                                           threshold:(CGFloat)threshold;
++ (nonnull instancetype)animationWithPointAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass;
++ (nonnull instancetype)animationWithPointAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass
+                                          threshold:(CGFloat)threshold;
 
-+ (__nonnull instancetype)animationWithRectAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass;
-+ (__nonnull instancetype)animationWithRectAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass
-                                           threshold:(CGFloat)threshold;
++ (nonnull instancetype)animationWithSizeAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass;
++ (nonnull instancetype)animationWithSizeAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass
+                                         threshold:(CGFloat)threshold;
 
-+ (__nonnull instancetype)animationWithSizeOfFontAtKeyPath:(NSString *__nonnull)aKeyPath onClass:(__nonnull Class)aClass;
++ (nonnull instancetype)animationWithRectAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass;
++ (nonnull instancetype)animationWithRectAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass
+                                         threshold:(CGFloat)threshold;
+
++ (nonnull instancetype)animationWithSizeOfFontAtKeyPath:(nonnull NSString *)aKeyPath onClass:(nonnull Class)aClass;
 
 @end

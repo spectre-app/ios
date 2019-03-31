@@ -5,12 +5,13 @@
 
 #import <Foundation/Foundation.h>
 
+
 /**
  * Automatically size the layout attributes for this cell to its auto-layout size.
  *
  * Note: to enable auto-layout, set your layout's \c estimatedItemSize to non-zero (eg. \c UICollectionViewFlowLayoutAutomaticSize).
  */
-@interface AutoLayoutCollectionViewCell : UICollectionViewCell
+@interface AutoLayoutCollectionViewCell: UICollectionViewCell
 
 /**
  * Set to \c YES to automatically fill the layout's available width.

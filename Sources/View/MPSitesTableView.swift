@@ -58,7 +58,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func updateSites() {
-        let newSites = NSArray( object: MPQuery( self.query ?? "" ).find( self.user?.sortedSites ?? [] ) { $0.siteName } )
+        let newSites = [ MPQuery( self.query ?? "" ).find( self.user?.sortedSites ?? [] ) { $0.siteName } ]
 
         PearlMainQueue {
             self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )

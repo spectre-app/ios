@@ -5,21 +5,22 @@
 
 #import "UILabel+MPFontSize.h"
 
-@interface UILabel(MPFontSize_Private)
+
+@interface UILabel (MPFontSize_Private)
 
 @property(nonatomic) UIFont *targetFont_mpFontSize;
 @property(nonatomic) UIFont *originalFont_mpFontSize;
 
 @end
 
-@implementation UILabel(MPFontSize)
+@implementation UILabel (MPFontSize)
 
 PearlAssociatedObjectProperty( UIFont*, TargetFont_mpFontSize, targetFont_mpFontSize );
 PearlAssociatedObjectProperty( UIFont*, OriginalFont_mpFontSize, originalFont_mpFontSize );
 
 - (void)setFontSize:(CGFloat)fontSize {
 
-    PearlSwizzleTR( [UILabel class], @selector( intrinsicContentSize ), ^CGSize, (UILabel *self), {
+    PearlSwizzleTR( [UILabel class], @selector( intrinsicContentSize ), ^CGSize, (UILabel * self), {
         @try {
             if (self.targetFont_mpFontSize)
                 self.font = self.targetFont_mpFontSize;
@@ -33,11 +34,12 @@ PearlAssociatedObjectProperty( UIFont*, OriginalFont_mpFontSize, originalFont_mp
 
     CGAffineTransform originalTransform = self.transform;
     self.originalFont_mpFontSize = self.font;
-    self.targetFont_mpFontSize = [self.font fontWithSize:fontSize];
+    self.targetFont_mpFontSize   = [self.font fontWithSize:fontSize];
     [self invalidateIntrinsicContentSize];
 
     [UIView animateWithDuration:0 delay:0 options:0 animations:^{
-        self.transform = CGAffineTransformScale( originalTransform, fontSize / self.fontSize, fontSize / self.fontSize );
+        CGFloat scale = fontSize / self.fontSize;
+        self.transform = CGAffineTransformScale( originalTransform, scale, scale );
     }                completion:^(BOOL finished) {
         self.transform = originalTransform;
 

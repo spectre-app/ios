@@ -149,7 +149,8 @@ class MPSpinnerView: UIView {
     // MARK: - Interface
 
     public func scan(toItem item: CGFloat, animated: Bool = true) {
-        guard self.scannedItem != item else {
+        guard self.scannedItem != item
+        else {
             return
         }
 
@@ -168,7 +169,8 @@ class MPSpinnerView: UIView {
     // MARK: - Private
 
     @objc private func didPan(recognizer: UIPanGestureRecognizer) {
-        guard self.items > 0 else {
+        guard self.items > 0
+        else {
             return
         }
         let itemDistance = (self.bounds.height * 2 / 3) / CGFloat( self.items )
@@ -225,7 +227,7 @@ class MPSpinnerView: UIView {
 
             case .ended:
                 let scannedItem = self.findScannedItem()
-                self.activatedItem = self.activatedItem == scannedItem ? nil: scannedItem
+                self.activatedItem = self.activatedItem == scannedItem ? nil : scannedItem
         }
     }
 

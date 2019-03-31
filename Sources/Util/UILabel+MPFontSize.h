@@ -5,7 +5,8 @@
 
 #import <Foundation/Foundation.h>
 
-@interface UILabel(MPFontSize)
+
+@interface UILabel (MPFontSize)
 
 @property(nonatomic) CGFloat fontSize;
 

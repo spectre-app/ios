@@ -36,7 +36,7 @@ class MPQuery {
         }
 
         // If the match against the query broke before the end of the query, it failed.
-        return (q < self.query.endIndex) ? nil: result
+        return (q < self.query.endIndex) ? nil : result
     }
 
     func find<V>(_ values: [V], valueToKey: (V) -> String) -> [Result<V>] {
@@ -50,10 +50,10 @@ class MPQuery {
         return results
     }
 
-    class Result<V> : NSObject where V: Hashable {
-        let value: V
-        let key:   String
-        let attributedKey : NSMutableAttributedString
+    class Result<V>: NSObject where V: Hashable {
+        let value:         V
+        let key:           String
+        let attributedKey: NSMutableAttributedString
         var keyMatched = Set<String.Index>()
 
         init(value: V, key: String) {
@@ -71,7 +71,8 @@ class MPQuery {
         override func isEqual(_ object: Any?) -> Bool {
             if let object = object as? Result<V> {
                 return self.value == object.value && self.key == object.key && self.keyMatched == object.keyMatched
-            } else {
+            }
+            else {
                 return false
             }
         }

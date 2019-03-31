@@ -5,19 +5,20 @@
 
 #import "ViewConfiguration.h"
 
-@interface ViewConfiguration()
 
-@property(nonatomic, readwrite, strong) UIView *view;
+@interface ViewConfiguration ()
+
+@property(nonatomic, readwrite, strong) UIView                               *view;
 @property(nonatomic, readwrite, strong) NSMutableArray<NSLayoutConstraint *> *constraints;
-@property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *> *activeConfigurations;
-@property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *> *inactiveConfigurations;
-@property(nonatomic, readwrite, strong) NSMutableArray<UIView *> *layoutViews;
-@property(nonatomic, readwrite, strong) NSMutableArray<UIView *> *displayViews;
+@property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *>  *activeConfigurations;
+@property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *>  *inactiveConfigurations;
+@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>             *layoutViews;
+@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>             *displayViews;
 @property(nonatomic, readwrite, strong) NSMutableArray<void ( ^ )(UIView *)> *actions;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *activeValues;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *inactiveValues;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *activeProperties;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *inactiveProperties;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *activeValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *inactiveValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *activeProperties;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *inactiveProperties;
 
 @end
 
@@ -42,7 +43,7 @@
     ViewConfiguration *configuration = [self configurationWithView:view];
 
     if (configurationBlocks) {
-        ViewConfiguration *active = [self configurationWithView:view];
+        ViewConfiguration *active   = [self configurationWithView:view];
         ViewConfiguration *inactive = [self configurationWithView:view];
         configurationBlocks( active, inactive );
         [configuration applyViewConfiguration:active active:YES];
@@ -57,15 +58,15 @@
     if (!(self = [super init]))
         return nil;
 
-    self.constraints = [NSMutableArray new];
-    self.activeConfigurations = [NSMutableArray new];
+    self.constraints            = [NSMutableArray new];
+    self.activeConfigurations   = [NSMutableArray new];
     self.inactiveConfigurations = [NSMutableArray new];
-    self.layoutViews = [NSMutableArray new];
-    self.displayViews = [NSMutableArray new];
-    self.actions = [NSMutableArray new];
-    self.activeValues = [NSMutableDictionary new];
-    self.inactiveValues = [NSMutableDictionary new];
-    self.activeProperties = [NSMutableDictionary new];
+    self.layoutViews            = [NSMutableArray new];
+    self.displayViews           = [NSMutableArray new];
+    self.actions                = [NSMutableArray new];
+    self.activeValues           = [NSMutableDictionary new];
+    self.inactiveValues         = [NSMutableDictionary new];
+    self.activeProperties       = [NSMutableDictionary new];
 
     return self;
 }
@@ -84,7 +85,7 @@
 - (instancetype)compressionResistancePriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical {
 
     self.activeProperties[@"compressionResistance.horizontal"] = @(horizontal);
-    self.activeProperties[@"compressionResistance.vertical"] = @(vertical);
+    self.activeProperties[@"compressionResistance.vertical"]   = @(vertical);
     return self;
 }
 
@@ -96,7 +97,7 @@
 - (instancetype)huggingPriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical {
 
     self.activeProperties[@"hugging.horizontal"] = @(horizontal);
-    self.activeProperties[@"hugging.vertical"] = @(vertical);
+    self.activeProperties[@"hugging.vertical"]   = @(vertical);
     return self;
 }
 
@@ -144,7 +145,7 @@
     return self;
 }
 
-- (instancetype)doAction:(void ( ^ )(UIView *view))action {
+- (instancetype)doAction:(ViewAction)action {
 
     [self.actions addObject:[action copy]];
     return self;
@@ -250,7 +251,7 @@
             [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 
-        for (void(^action)(UIView *) in self.actions)
+        for (ViewAction action in self.actions)
             action( self.view );
 
         for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
@@ -354,19 +355,19 @@
     return self;
 }
 
-- (instancetype)constrainToView:(UIView *__nullable)view {
+- (instancetype)constrainToView:(nullable UIView *)view {
 
     return [self constrainToView:view withMargins:NO forAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)constrainToMarginsOfView:(UIView *__nullable)view {
+- (instancetype)constrainToMarginsOfView:(nullable UIView *)view {
 
     return [self constrainToView:view withMargins:YES forAttributes:
             NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
 }
 
-- (instancetype)constrainToView:(UIView *__nullable)host withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
 
     if (attributes & NSLayoutFormatAlignAllTop)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {

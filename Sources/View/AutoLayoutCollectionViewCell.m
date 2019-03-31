@@ -5,8 +5,9 @@
 
 #import "AutoLayoutCollectionViewCell.h"
 
+
 @implementation AutoLayoutCollectionViewCell {
-    BOOL needsLayoutInvalidation;
+    BOOL               needsLayoutInvalidation;
     NSLayoutConstraint *widthConstraint;
 }
 
@@ -15,7 +16,7 @@
     if ((_fullWidth = fullWidth)) {
         if (!widthConstraint)
             widthConstraint = [[self.contentView.widthAnchor constraintEqualToConstant:
-                    UIScreen.mainScreen.bounds.size.width] activate];
+                                                                     UIScreen.mainScreen.bounds.size.width] activate];
     }
     else if (widthConstraint) {
         [widthConstraint deactivate];
@@ -45,14 +46,14 @@
 
     // Fit the cell width to collection view's space.
     if (widthConstraint) {
-        UICollectionView *collectionView = [UICollectionView findAsSuperviewOf:self];
-        UICollectionViewFlowLayout *flowLayout =
-                [collectionView.collectionViewLayout isKindOfClass:[UICollectionViewFlowLayout class]]?
-                (UICollectionViewFlowLayout *)collectionView.collectionViewLayout: nil;
+        UICollectionView           *collectionView = [UICollectionView findAsSuperviewOf:self];
+        UICollectionViewFlowLayout *flowLayout     =
+                                           [collectionView.collectionViewLayout isKindOfClass:[UICollectionViewFlowLayout class]]?
+                                                   (UICollectionViewFlowLayout *) collectionView.collectionViewLayout: nil;
         if (collectionView)
             // collectionView.collectionViewLayout.collectionViewContentSize.width triggers some kind of strange side-effect.
             widthConstraint.constant = collectionView.bounds.size.width
-                    - flowLayout.sectionInset.left - flowLayout.sectionInset.right;
+                                       - flowLayout.sectionInset.left - flowLayout.sectionInset.right;
     }
 
     // The layout's size is used as a minimum for auto-layout, preventing it from shrinking.

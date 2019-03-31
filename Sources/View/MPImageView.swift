@@ -28,7 +28,8 @@ class MPImageView: UIImageView {
                 self.ratioPreservingConstraint = self.widthAnchor.constraint( equalTo: self.heightAnchor, multiplier: ratio )
                 self.ratioPreservingConstraint?.isActive = true
             }
-        } else {
+        }
+        else {
             self.ratioPreservingConstraint?.isActive = false
             self.ratioPreservingConstraint = nil
         }
