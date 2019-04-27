@@ -170,7 +170,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
         self.hideSiteDetail()
     }
 
-    func showSiteDetail(site: MPSite) {
+    func showSiteDetail(for site: MPSite) {
         hideSiteDetail {
             self.siteDetailController = MPSiteDetailViewController( site: site )
             if let siteDetailController = self.siteDetailController {
@@ -212,9 +212,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
 
     // MARK: - MPSiteHeaderObserver
 
-    func siteWasActivated(activatedSite: MPSite) {
+    func siteOpenDetails(for site: MPSite) {
         PearlMainQueue {
-            self.showSiteDetail( site: activatedSite )
+            self.showSiteDetail( for: site )
         }
     }
 

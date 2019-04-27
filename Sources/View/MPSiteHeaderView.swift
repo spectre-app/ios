@@ -46,7 +46,6 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         else {
             self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
         }
-        self.siteButton.addTarget( self, action: #selector( openSiteDetails ), for: .touchUpInside )
 
         let leadingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton ] )
         leadingToolBar.axis = .vertical
@@ -55,6 +54,12 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         let trailingToolBar = UIStackView( arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
         trailingToolBar.axis = .vertical
         trailingToolBar.spacing = 12
+
+        self.settingsButton.button.addTargetBlock( { _, _ in
+                                                       if let site = self.site {
+                                                           self.observers.notify { $0.siteOpenDetails( for: site ) }
+                                                       }
+                                                   }, for: .touchUpInside )
 
         // - Hierarchy
         self.addSubview( self.siteButton )
@@ -89,13 +94,6 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    @objc
-    func openSiteDetails() {
-        if let site = self.site {
-            self.observers.notify { $0.siteWasActivated( activatedSite: site ) }
-        }
-    }
-
     // MARK: - MPSiteObserver
 
     func siteDidChange() {
@@ -103,7 +101,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
             self.unanimated {
                 self.backgroundColor = self.site?.color
                 self.siteButton.setImage( self.site?.image, for: .normal )
-                self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName : nil, for: .normal )
+                self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
 
                 if let brightness = self.site?.color?.brightness(), brightness < 0.1 {
                     self.siteButton.layer.shadowColor = UIColor.white.cgColor
@@ -124,5 +122,5 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
 
 @objc
 protocol MPSiteHeaderObserver {
-    func siteWasActivated(activatedSite: MPSite)
+    func siteOpenDetails(for site: MPSite)
 }
