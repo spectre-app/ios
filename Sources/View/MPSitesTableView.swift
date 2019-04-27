@@ -6,11 +6,8 @@
 import UIKit
 
 class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver {
-    let observers   = Observers<MPSitesViewObserver>()
-    let data        = NSMutableArray()
-    var isSelecting = false
-
-    var user: MPUser? {
+    public let observers   = Observers<MPSitesViewObserver>()
+    public var user: MPUser? {
         willSet {
             self.user?.observers.unregister( self )
         }
@@ -19,16 +16,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.query = nil
         }
     }
-    var selectedSite: MPSite? {
+    public var selectedSite: MPSite? {
         didSet {
             self.observers.notify { $0.siteWasSelected( selectedSite: self.selectedSite ) }
         }
     }
-    var query: String? {
+    public var query: String? {
         didSet {
             self.updateSites()
         }
     }
+
+    private let data        = NSMutableArray()
+    private var isSelecting = false
 
     // MARK: - Life
 

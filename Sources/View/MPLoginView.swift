@@ -7,7 +7,7 @@ import UIKit
 import pop
 
 class MPLoginView: UIView, MPSpinnerDelegate {
-    var users = [ MPUser ]() {
+    public var users = [ MPUser ]() {
         willSet {
             for user in self.users {
                 for subview in self.usersSpinner.subviews {
@@ -26,8 +26,8 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         }
     }
 
-    let usersSpinner = MPSpinnerView()
-    let nameLabel    = UILabel()
+    private let usersSpinner = MPSpinnerView()
+    private let nameLabel    = UILabel()
 
     // MARK: - Life
 

@@ -6,31 +6,31 @@
 import Foundation
 
 class MPButton: UIView {
-    let effectView = UIVisualEffectView()
-    var button: UIButton!
-
-    override var bounds: CGRect {
-        didSet {
-            if self.round {
-                self.effectView.layer.cornerRadius = self.bounds.size.height / 2
-            }
-        }
-    }
-    var round            = false {
+    public var round            = false {
         didSet {
             self.bounds = self.bounds.standardized
         }
     }
-    var effectBackground = true {
+    public var effectBackground = true {
         didSet {
-            self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark : .light ) : nil
+            self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark: .light ): nil
         }
     }
-    var darkBackground   = false {
+    public var darkBackground   = false {
         didSet {
-            self.tintColor = self.darkBackground ? .white : .black
+            self.tintColor = self.darkBackground ? .white: .black
             self.effectBackground = self.effectBackground || self.effectBackground
 //            self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
+        }
+    }
+
+    private let      effectView = UIVisualEffectView()
+    private(set) var button: UIButton!
+    override var     bounds: CGRect {
+        didSet {
+            if self.round {
+                self.effectView.layer.cornerRadius = self.bounds.size.height / 2
+            }
         }
     }
 

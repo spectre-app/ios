@@ -6,9 +6,8 @@
 import Foundation
 
 class MPSiteHeaderView: UIView, MPSiteObserver {
-    let observers = Observers<MPSiteHeaderObserver>()
-
-    var site: MPSite? {
+    public let observers = Observers<MPSiteHeaderObserver>()
+    public var site: MPSite? {
         willSet {
             self.site?.observers.unregister( self )
         }
@@ -19,10 +18,10 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         }
     }
 
-    let siteButton     = UIButton( type: .custom )
-    let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
-    let recoveryButton = MPButton( image: UIImage( named: "icon_btn_question" ) )
-    let keysButton     = MPButton( image: UIImage( named: "icon_key" ) )
+    private let siteButton     = UIButton( type: .custom )
+    private let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
+    private let recoveryButton = MPButton( image: UIImage( named: "icon_btn_question" ) )
+    private let keysButton     = MPButton( image: UIImage( named: "icon_key" ) )
 
     // MARK: - Life
 

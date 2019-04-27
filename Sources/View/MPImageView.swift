@@ -6,13 +6,14 @@
 import Foundation
 
 class MPImageView: UIImageView {
-    var ratioPreservingConstraint: NSLayoutConstraint?
-    var preservesImageRatio = false {
+    public var preservesImageRatio = false {
         didSet {
             self.needsUpdateConstraints()
         }
     }
-    override var image: UIImage? {
+
+    private var  ratioPreservingConstraint: NSLayoutConstraint?
+    override var image:                     UIImage? {
         didSet {
             self.needsUpdateConstraints()
         }

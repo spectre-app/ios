@@ -14,21 +14,6 @@ protocol MPSpinnerDelegate {
 }
 
 class MPSpinnerView: UIView {
-
-    private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
-    private lazy var tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTap(recognizer:) ) )
-
-    @objc
-    private var scannedItem: CGFloat = 0 {
-        didSet {
-            self.setNeedsLayout()
-            if let delegate = self.delegate {
-                delegate.spinner( self, didScanItem: self.scannedItem )
-            }
-        }
-    }
-    private var startedItem: CGFloat = 0
-
     public var delegate:      MPSpinnerDelegate?
     public var selectedItem:  Int? {
         didSet {
@@ -60,6 +45,19 @@ class MPSpinnerView: UIView {
     public var items:         Int {
         get {
             return self.subviews.count
+        }
+    }
+
+    private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
+    private lazy var tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTap(recognizer:) ) )
+    private var startedItem: CGFloat = 0
+    @objc
+    private var scannedItem: CGFloat = 0 {
+        didSet {
+            self.setNeedsLayout()
+            if let delegate = self.delegate {
+                delegate.spinner( self, didScanItem: self.scannedItem )
+            }
         }
     }
 

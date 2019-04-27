@@ -6,10 +6,7 @@
 import Foundation
 
 class MPResultTypeCell: UICollectionViewCell {
-    let separatorView = UIView()
-    let nameLabel     = UILabel()
-    let classLabel    = UILabel()
-    var resultType: MPResultType? {
+    public var resultType: MPResultType? {
         didSet {
             if let resultType = self.resultType {
                 self.nameLabel.text = String( utf8String: mpw_abbreviationForType( resultType ) )
@@ -33,6 +30,10 @@ class MPResultTypeCell: UICollectionViewCell {
             }
         }
     }
+
+    private let separatorView = UIView()
+    private let nameLabel     = UILabel()
+    private let classLabel    = UILabel()
     override var isSelected: Bool {
         didSet {
             UIView.animate( withDuration: 0.382 ) {

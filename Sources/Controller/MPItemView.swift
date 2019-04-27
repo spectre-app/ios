@@ -132,7 +132,7 @@ class SeparatorItem: Item {
 
     class SeparatorItemView: ItemView {
         let item: SeparatorItem
-        let valueView = UIView()
+        let separatorView = UIView()
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -144,9 +144,9 @@ class SeparatorItem: Item {
         }
 
         override func createValueView() -> UIView? {
-            self.valueView.backgroundColor = .white
-            self.valueView.heightAnchor.constraint( equalToConstant: 1 ).activate()
-            return self.valueView
+            self.separatorView.backgroundColor = .white
+            self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).activate()
+            return self.separatorView
         }
     }
 }
@@ -177,7 +177,7 @@ class LabelItem: ValueItem<String> {
 
     class LabelItemView: ItemView {
         let item: LabelItem
-        let valueView = UILabel()
+        let valueLabel = UILabel()
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -189,21 +189,62 @@ class LabelItem: ValueItem<String> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueView.textColor = .white
-            self.valueView.textAlignment = .center
+            self.valueLabel.textColor = .white
+            self.valueLabel.textAlignment = .center
             if #available( iOS 11.0, * ) {
-                self.valueView.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
             }
             else {
-                self.valueView.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
+                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
             }
+            return self.valueLabel
+        }
+
+        override func update() {
+            super.update()
+
+            self.valueLabel.text = self.item.value
+        }
+    }
+}
+
+class DateItem: ValueItem<Date> {
+    override func createItemView() -> DateItemView {
+        return DateItemView( withItem: self )
+    }
+
+    class DateItemView: ItemView {
+        let item: DateItem
+        let valueView = UIView()
+        let dateView  = MPDateView()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item) {
+            self.item = item as! DateItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.valueView.addSubview( self.dateView )
+
+            ViewConfiguration( view: self.dateView )
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                    .constrainTo { $1.centerXAnchor.constraint( lessThanOrEqualTo: $0.centerXAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .activate()
+
             return self.valueView
         }
 
         override func update() {
             super.update()
 
-            self.valueView.text = self.item.value
+            self.dateView.date = self.item.value
         }
     }
 }
@@ -226,7 +267,7 @@ class TextItem: ValueItem<String> {
 
     class TextItemView: ItemView {
         let item: TextItem
-        let valueView = UITextField()
+        let valueField = UITextField()
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -238,22 +279,22 @@ class TextItem: ValueItem<String> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueView.textColor = .white
-            self.valueView.textAlignment = .center
-            self.valueView.addTargetBlock( { _, _ in
-                                               if let site = self.item.site,
-                                                  let text = self.valueView.text {
-                                                   self.item.itemUpdate( site, text )
-                                               }
-                                           }, for: .editingChanged )
-            return self.valueView
+            self.valueField.textColor = .white
+            self.valueField.textAlignment = .center
+            self.valueField.addTargetBlock( { _, _ in
+                                                if let site = self.item.site,
+                                                   let text = self.valueField.text {
+                                                    self.item.itemUpdate( site, text )
+                                                }
+                                            }, for: .editingChanged )
+            return self.valueField
         }
 
         override func update() {
             super.update()
 
-            self.valueView.placeholder = self.item.placeholder
-            self.valueView.text = self.item.value
+            self.valueField.placeholder = self.item.placeholder
+            self.valueField.text = self.item.value
         }
     }
 }
@@ -385,7 +426,7 @@ class PickerItem<V: Equatable>: ValueItem<V> {
 
     class PickerItemView: ItemView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
         let item: PickerItem<V>
-        let valueView = CollectionView()
+        let collectionView = CollectionView()
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -397,25 +438,25 @@ class PickerItem<V: Equatable>: ValueItem<V> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueView.delegate = self
-            self.valueView.dataSource = self
-            self.item.viewInit( self.valueView )
-            return self.valueView
+            self.collectionView.delegate = self
+            self.collectionView.dataSource = self
+            self.item.viewInit( self.collectionView )
+            return self.collectionView
         }
 
         override func update() {
             super.update()
 
             // TODO: reload items non-destructively
-            //self.valueView.reloadData()
+            //self.collectionView.reloadData()
 
             if let site = self.item.site,
                let selectedValue = self.item.itemValue( site ),
                let selectedIndex = self.item.values.firstIndex( of: selectedValue ) {
                 let selectedIndexPath = IndexPath( item: selectedIndex, section: 0 )
-                if let selectedIndexPaths = self.valueView.indexPathsForSelectedItems,
+                if let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems,
                    !selectedIndexPaths.elementsEqual( [ selectedIndexPath ] ) {
-                    self.valueView.selectItem( at: selectedIndexPath, animated: false, scrollPosition: .centeredHorizontally )
+                    self.collectionView.selectItem( at: selectedIndexPath, animated: false, scrollPosition: .centeredHorizontally )
                 }
             }
         }

@@ -131,6 +131,14 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                         itemValue: { $0.url },
                         itemUpdate: { $0.url = $1 } )
         }
+
+        override func createItemView() -> TextItemView {
+            let itemView = super.createItemView()
+            itemView.valueField.autocapitalizationType = .none
+            itemView.valueField.autocorrectionType = .no
+            itemView.valueField.keyboardType = .URL
+            return itemView
+        }
     }
 
     class InfoItem: Item {
@@ -149,9 +157,9 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class UsedItem: LabelItem {
+    class UsedItem: DateItem {
         init() {
-            super.init( title: "Last Used" ) { $0.lastUsed.format() }
+            super.init( title: "Last Used" ) { $0.lastUsed }
         }
     }
 
