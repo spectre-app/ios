@@ -8,11 +8,12 @@ import pop
 
 class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeaderObserver, MPSiteDetailObserver, MPSitesViewObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
-    private let searchField    = UITextField()
-    private let userButton     = UIButton( type: .custom )
-    private let sitesTableView = MPSitesTableView()
-    private let siteHeaderView = MPSiteHeaderView()
-    private let siteDetailView = UIView()
+    private let searchField         = UITextField()
+    private let userButton          = UIButton( type: .custom )
+    private let sitesTableView      = MPSitesTableView()
+    private let siteHeaderView      = MPSiteHeaderView()
+    private let siteDetailShade     = UIButton()
+    private let siteDetailContainer = UIView()
 
     private let siteHeaderConfiguration = ViewConfiguration()
     private let siteDetailConfiguration = ViewConfiguration()
@@ -75,10 +76,14 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
             self.sitesTableView.contentInsetAdjustmentBehavior = .never
         }
 
+        self.siteDetailShade.backgroundColor = UIColor( white: 0, alpha: 0.382 )
+        self.siteDetailShade.addTargetBlock( { _, _ in self.hideSiteDetail() }, for: .touchUpInside )
+
         // - Hierarchy
+        self.siteDetailShade.addSubview( self.siteDetailContainer )
         self.view.addSubview( self.sitesTableView )
         self.view.addSubview( self.siteHeaderView )
-        self.view.addSubview( self.siteDetailView )
+        self.view.addSubview( self.siteDetailShade )
         self.view.addSubview( self.topContainer )
 
         // - Layout
@@ -94,9 +99,16 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.siteDetailView )
+        ViewConfiguration( view: self.siteDetailShade )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: self.sitesTableView.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: self.sitesTableView.trailingAnchor ) }
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
+                .activate()
+
+        ViewConfiguration( view: self.siteDetailContainer )
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.topContainer )
@@ -104,11 +116,11 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
                     [
                         $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
                         $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )
-                                    .updatePriority( UILayoutPriority( 500 ) ),
+                                    .withPriority( UILayoutPriority( 500 ) ),
                         $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteHeaderView.layoutMarginsGuide.bottomAnchor )
-                                    .updatePriority( UILayoutPriority( 510 ) ),
-                        $1.bottomAnchor.constraint( lessThanOrEqualTo: self.siteDetailView.topAnchor )
-                                       .updatePriority( UILayoutPriority( 520 ) ),
+                                    .withPriority( UILayoutPriority( 510 ) ),
+                        $1.bottomAnchor.constraint( lessThanOrEqualTo: self.siteDetailContainer.topAnchor )
+                                       .withPriority( UILayoutPriority( 520 ) ),
                         $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
                         $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
                         $1.heightAnchor.constraint( equalToConstant: 50 ),
@@ -123,9 +135,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
 
         self.siteDetailConfiguration
-                .apply( ViewConfiguration( view: self.siteDetailView )
+                .apply( ViewConfiguration( view: self.siteDetailShade )
                                 .constrainTo { $1.bottomAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: true )
-                .apply( ViewConfiguration( view: self.siteDetailView )
+                .apply( ViewConfiguration( view: self.siteDetailShade )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: false )
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
@@ -153,6 +165,11 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
 
     // MARK: - Private
 
+    @objc
+    func didTapDismiss() {
+        self.hideSiteDetail()
+    }
+
     func showSiteDetail(site: MPSite) {
         hideSiteDetail {
             self.siteDetailController = MPSiteDetailViewController( site: site )
@@ -160,7 +177,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
                 siteDetailController.observers.register( self )
                 self.addChildViewController( siteDetailController )
                 siteDetailController.beginAppearanceTransition( false, animated: true )
-                self.siteDetailView.addSubview( siteDetailController.view )
+                self.siteDetailContainer.addSubview( siteDetailController.view )
                 ViewConfiguration( view: siteDetailController.view ).constrainToMarginsOfSuperview().activate()
                 UIView.animate( withDuration: 0.382, animations: {
                     self.searchField.resignFirstResponder() // TODO: Move to somewhere more generic

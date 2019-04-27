@@ -1,0 +1,500 @@
+//
+// Created by Maarten Billemont on 2019-04-26.
+// Copyright (c) 2019 Lyndir. All rights reserved.
+//
+
+import UIKit
+
+class Item: MPSiteObserver {
+    let title:    String?
+    let subitems: [Item]
+    lazy var view = createItemView()
+    var updateOperation: Operation?
+
+    var site: MPSite? {
+        willSet {
+            self.site?.observers.unregister( self )
+        }
+        didSet {
+            self.site?.observers.register( self ).siteDidChange()
+            ({
+                 for subitem in self.subitems {
+                     subitem.site = self.site
+                 }
+             }()) // this is a hack to get around Swift silently skipping recursive didSet on properties.
+        }
+    }
+
+    init(title: String? = nil, subitems: [Item] = [ Item ]()) {
+        self.title = title
+        self.subitems = subitems
+    }
+
+    func createItemView() -> ItemView {
+        return ItemView( withItem: self )
+    }
+
+    func siteDidChange() {
+        self.setNeedsUpdate()
+    }
+
+    func setNeedsUpdate() {
+        guard self.updateOperation == nil
+        else { return }
+
+        self.updateOperation = PearlMainQueueOperation {
+            self.view.update()
+            self.updateOperation = nil
+        }
+    }
+
+    class ItemView: UIView {
+        let titleLabel   = UILabel()
+        let contentView  = UIStackView()
+        let subitemsView = UIStackView()
+        private let item: Item
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        init(withItem item: Item) {
+            self.item = item
+            super.init( frame: .zero )
+
+            // - View
+            self.contentView.axis = .vertical
+            self.contentView.spacing = 8
+            self.contentView.preservesSuperviewLayoutMargins = true
+
+            self.titleLabel.textColor = .white
+            self.titleLabel.textAlignment = .center
+            self.titleLabel.font = UIFont.preferredFont( forTextStyle: .headline )
+            self.contentView.addArrangedSubview( self.titleLabel )
+
+            if let valueView = createValueView() {
+                self.contentView.addArrangedSubview( valueView )
+            }
+
+            self.subitemsView.axis = .horizontal
+            self.subitemsView.distribution = .fillEqually
+            self.subitemsView.spacing = 20
+            self.subitemsView.preservesSuperviewLayoutMargins = true
+            self.subitemsView.isLayoutMarginsRelativeArrangement = true
+
+            // - Hierarchy
+            self.addSubview( self.contentView )
+            self.addSubview( self.subitemsView )
+
+            // - Layout
+            ViewConfiguration( view: self.contentView )
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.subitemsView.topAnchor ) }
+                    .activate()
+            ViewConfiguration( view: self.subitemsView )
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .activate()
+        }
+
+        func createValueView() -> UIView? {
+            return nil
+        }
+
+        func update() {
+            self.titleLabel.text = self.item.title
+            self.titleLabel.isHidden = self.item.title == nil
+
+            for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
+                let subitemView     = i < self.item.subitems.count ? self.item.subitems[i].view: nil
+                let arrangedSubview = i < self.subitemsView.arrangedSubviews.count ? self.subitemsView.arrangedSubviews[i]: nil
+
+                if arrangedSubview != subitemView {
+                    arrangedSubview?.removeFromSuperview()
+
+                    if let subitemView = subitemView {
+                        self.subitemsView.insertArrangedSubview( subitemView, at: i )
+                    }
+                }
+            }
+            self.subitemsView.isHidden = self.subitemsView.arrangedSubviews.count == 0
+        }
+    }
+}
+
+class SeparatorItem: Item {
+    override func createItemView() -> ItemView {
+        return SeparatorItemView( withItem: self )
+    }
+
+    class SeparatorItemView: ItemView {
+        let item: SeparatorItem
+        let valueView = UIView()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item) {
+            self.item = item as! SeparatorItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.valueView.backgroundColor = .white
+            self.valueView.heightAnchor.constraint( equalToConstant: 1 ).activate()
+            return self.valueView
+        }
+    }
+}
+
+class ValueItem<V: Equatable>: Item {
+    let itemValue: (MPSite) -> V?
+    var value:     V? {
+        get {
+            if let site = self.site {
+                return self.itemValue( site )
+            }
+            else {
+                return nil
+            }
+        }
+    }
+
+    init(title: String? = nil, subitems: [Item] = [ Item ](), itemValue: @escaping (MPSite) -> V? = { _ in nil }) {
+        self.itemValue = itemValue
+        super.init( title: title, subitems: subitems )
+    }
+}
+
+class LabelItem: ValueItem<String> {
+    override func createItemView() -> LabelItemView {
+        return LabelItemView( withItem: self )
+    }
+
+    class LabelItemView: ItemView {
+        let item: LabelItem
+        let valueView = UILabel()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item) {
+            self.item = item as! LabelItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.valueView.textColor = .white
+            self.valueView.textAlignment = .center
+            if #available( iOS 11.0, * ) {
+                self.valueView.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+            }
+            else {
+                self.valueView.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
+            }
+            return self.valueView
+        }
+
+        override func update() {
+            super.update()
+
+            self.valueView.text = self.item.value
+        }
+    }
+}
+
+class TextItem: ValueItem<String> {
+    let placeholder: String?
+    let itemUpdate:  (MPSite, String) -> Void
+
+    init(title: String?, placeholder: String?, subitems: [Item] = [ Item ](),
+         itemValue: @escaping (MPSite) -> String? = { _ in nil },
+         itemUpdate: @escaping (MPSite, String) -> Void = { _, _ in }) {
+        self.placeholder = placeholder
+        self.itemUpdate = itemUpdate
+        super.init( title: title, subitems: subitems, itemValue: itemValue )
+    }
+
+    override func createItemView() -> TextItemView {
+        return TextItemView( withItem: self )
+    }
+
+    class TextItemView: ItemView {
+        let item: TextItem
+        let valueView = UITextField()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item) {
+            self.item = item as! TextItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.valueView.textColor = .white
+            self.valueView.textAlignment = .center
+            self.valueView.addTargetBlock( { _, _ in
+                                               if let site = self.item.site,
+                                                  let text = self.valueView.text {
+                                                   self.item.itemUpdate( site, text )
+                                               }
+                                           }, for: .editingChanged )
+            return self.valueView
+        }
+
+        override func update() {
+            super.update()
+
+            self.valueView.placeholder = self.item.placeholder
+            self.valueView.text = self.item.value
+        }
+    }
+}
+
+class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
+    let itemUpdate: (MPSite, V) -> Void
+    let step:       V, min: V, max: V
+
+    init(title: String? = nil, subitems: [Item] = [ Item ](),
+         itemValue: @escaping (MPSite) -> V? = { _ in nil },
+         itemUpdate: @escaping (MPSite, V) -> Void = { _, _ in },
+         step: V, min: V, max: V) {
+        self.itemUpdate = itemUpdate
+        self.step = step
+        self.min = min
+        self.max = max
+        super.init( title: title, subitems: subitems, itemValue: itemValue )
+    }
+
+    override func createItemView() -> StepperItemView {
+        return StepperItemView( withItem: self )
+    }
+
+    class StepperItemView: ItemView {
+        let item: StepperItem
+        let valueView  = UIView()
+        let valueLabel = UILabel()
+        let downButton = MPButton( title: "-" )
+        let upButton   = MPButton( title: "+" )
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item) {
+            self.item = item as! StepperItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.downButton.effectBackground = false
+            self.downButton.button.addTargetBlock( { _, _ in
+                                                       if let site = self.item.site,
+                                                          let value = self.item.value,
+                                                          value > self.item.min {
+                                                           self.item.itemUpdate( site, value - self.item.step )
+                                                       }
+                                                   },
+                                                   for: .touchUpInside )
+
+            self.upButton.effectBackground = false
+            self.upButton.button.addTargetBlock( { _, _ in
+                                                     if let site = self.item.site,
+                                                        let value = self.item.value,
+                                                        value < self.item.max {
+                                                         self.item.itemUpdate( site, value + self.item.step )
+                                                     }
+                                                 },
+                                                 for: .touchUpInside )
+
+            self.valueLabel.textColor = .white
+            self.valueLabel.textAlignment = .center
+            if #available( iOS 11.0, * ) {
+                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+            }
+            else {
+                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
+            }
+
+            self.valueView.addSubview( self.valueLabel )
+            self.valueView.addSubview( self.downButton )
+            self.valueView.addSubview( self.upButton )
+
+            ViewConfiguration( view: self.valueLabel )
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .activate()
+            ViewConfiguration( view: self.downButton )
+                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.valueLabel.leadingAnchor, constant: -20 ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .activate()
+            ViewConfiguration( view: self.upButton )
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.valueLabel.trailingAnchor, constant: 20 ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .activate()
+
+            return self.valueView
+        }
+
+        override func update() {
+            super.update()
+
+            if let value = self.item.value {
+                self.valueLabel.text = "\(value)"
+            }
+            else {
+                self.valueLabel.text = nil
+            }
+        }
+    }
+}
+
+class PickerItem<V: Equatable>: ValueItem<V> {
+    let values:     [V]
+    let itemUpdate: (MPSite, V) -> Void
+    let itemCell:   (UICollectionView, IndexPath, V) -> UICollectionViewCell
+    let viewInit:   (UICollectionView) -> Void
+
+    init(title: String?, values: [V], subitems: [Item] = [ Item ](),
+         itemValue: @escaping (MPSite) -> V,
+         itemUpdate: @escaping (MPSite, V) -> Void = { _, _ in },
+         itemCell: @escaping (UICollectionView, IndexPath, V) -> UICollectionViewCell,
+         viewInit: @escaping (UICollectionView) -> Void) {
+        self.values = values
+        self.itemUpdate = itemUpdate
+        self.itemCell = itemCell
+        self.viewInit = viewInit
+
+        super.init( title: title, subitems: subitems, itemValue: itemValue )
+    }
+
+    override func createItemView() -> PickerItemView {
+        return PickerItemView( withItem: self )
+    }
+
+    class PickerItemView: ItemView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
+        let item: PickerItem<V>
+        let valueView = CollectionView()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item) {
+            self.item = item as! PickerItem<V>
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.valueView.delegate = self
+            self.valueView.dataSource = self
+            self.item.viewInit( self.valueView )
+            return self.valueView
+        }
+
+        override func update() {
+            super.update()
+
+            // TODO: reload items non-destructively
+            //self.valueView.reloadData()
+
+            if let site = self.item.site,
+               let selectedValue = self.item.itemValue( site ),
+               let selectedIndex = self.item.values.firstIndex( of: selectedValue ) {
+                let selectedIndexPath = IndexPath( item: selectedIndex, section: 0 )
+                if let selectedIndexPaths = self.valueView.indexPathsForSelectedItems,
+                   !selectedIndexPaths.elementsEqual( [ selectedIndexPath ] ) {
+                    self.valueView.selectItem( at: selectedIndexPath, animated: false, scrollPosition: .centeredHorizontally )
+                }
+            }
+        }
+
+        // MARK: - UICollectionViewDataSource
+
+        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+            return self.item.values.count
+        }
+
+        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            return self.item.itemCell( collectionView, indexPath, self.item.values[indexPath.item] )
+        }
+
+        // MARK: - UICollectionViewDelegateFlowLayout
+
+        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+            if let cell = collectionView.cellForItem( at: indexPath ) {
+                MPTapEffectView( for: cell ).animate()
+            }
+
+            if let site = self.item.site {
+                self.item.itemUpdate( site, self.item.values[indexPath.item] )
+            }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        }
+
+        class CollectionView: UICollectionView {
+            let layout = CollectionViewFlowLayout()
+
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            init() {
+                super.init( frame: .zero, collectionViewLayout: self.layout )
+                self.backgroundColor = .clear
+            }
+
+            override var intrinsicContentSize: CGSize {
+                var contentSize = self.collectionViewLayout.collectionViewContentSize
+                if let cell = self.visibleCells.first {
+                    contentSize = CGSizeUnion( contentSize, cell.systemLayoutSizeFitting( contentSize ) )
+                }
+                else {
+                    contentSize = CGSizeUnion( contentSize, CGSize( width: 1, height: 1 ) )
+                }
+
+                return contentSize
+            }
+
+            class CollectionViewFlowLayout: UICollectionViewFlowLayout {
+                required init?(coder aDecoder: NSCoder) {
+                    fatalError( "init(coder:) is not supported for this class" )
+                }
+
+                override init() {
+                    super.init()
+
+                    self.scrollDirection = .horizontal
+                    self.sectionInset = UIEdgeInsets( top: 0, left: 20, bottom: 0, right: 20 )
+                    self.minimumInteritemSpacing = 12
+                    self.minimumLineSpacing = 12
+
+                    if #available( iOS 10.0, * ) {
+                        self.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
+                    }
+                    else {
+                        self.estimatedItemSize = self.itemSize
+                    }
+                }
+
+                override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
+                    super.invalidateLayout( with: context )
+                    self.collectionView?.invalidateIntrinsicContentSize()
+                }
+            }
+        }
+    }
+}

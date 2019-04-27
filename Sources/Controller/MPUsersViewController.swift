@@ -23,7 +23,7 @@ class MPUsersViewController: UIViewController {
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).updatePriority( .defaultHigh ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).withPriority( .defaultHigh ) }
                 .activate()
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {

@@ -114,8 +114,8 @@ class MPSpinnerView: UIView {
                 subview.bottomAnchor.constraint( lessThanOrEqualTo: self.bottomAnchor ).activate()
                 subview.centerXAnchor.constraint( equalTo: self.centerXAnchor ).activate()
                 subview.centerYAnchor.constraint( equalTo: self.centerYAnchor ).activate()
-                subview.widthAnchor.constraint( equalToConstant: 0 ).updatePriority( .fittingSizeLevel ).activate()
-                subview.heightAnchor.constraint( equalToConstant: 0 ).updatePriority( .fittingSizeLevel ).activate()
+                subview.widthAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
+                subview.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
             }
         }
     }

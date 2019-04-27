@@ -30,20 +30,26 @@
 
 - (id)register:(id)observer {
 
-    [observers addObject:[WeakReference referenceWith:observer]];
+    @synchronized (observers) {
+        [observers addObject:[WeakReference referenceWith:observer]];
+    }
     return observer;
 }
 
 - (id)unregister:(id)observer {
 
-    [observers removeObject:observer];
+    @synchronized (observers) {
+        [observers removeObject:observer];
+    }
     return NULL;
 }
 
 - (void)notify:(void ( ^ )(id observer))action {
 
-    for (WeakReference *observer in observers)
-        action( observer.reference );
+    @synchronized (observers) {
+        for (WeakReference *observer in observers)
+            action( observer.reference );
+    }
 }
 
 @end
