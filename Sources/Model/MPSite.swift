@@ -9,8 +9,11 @@ class MPSite: NSObject, Comparable {
     let observers = Observers<MPSiteObserver>()
 
     let user:     MPUser
-    let siteName: String
-
+    var siteName: String {
+        didSet {
+            self.observers.notify { $0.siteDidChange() }
+        }
+    }
     var algorithm: MPAlgorithmVersion {
         didSet {
             self.observers.notify { $0.siteDidChange() }

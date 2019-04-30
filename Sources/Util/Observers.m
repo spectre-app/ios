@@ -47,8 +47,15 @@
 - (void)notify:(void ( ^ )(id observer))action {
 
     @synchronized (observers) {
-        for (WeakReference *observer in observers)
-            action( observer.reference );
+        NSMutableArray *obsolete = [NSMutableArray new];
+        for (WeakReference *observer in observers) {
+            id reference = observer.reference;
+            if (reference)
+                action( reference );
+            else
+                [obsolete addObject:observer];
+        }
+        [observers removeObjectsInArray:obsolete];
     }
 }
 

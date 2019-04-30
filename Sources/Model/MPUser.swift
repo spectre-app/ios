@@ -6,32 +6,32 @@
 import Foundation
 
 class MPUser {
-    let observers = Observers<MPUserObserver>()
+    public let observers = Observers<MPUserObserver>()
 
-    let fullName: String
-    var avatar: MPUserAvatar {
-        didSet {
-            self.observers.notify { $0.userDidChange() }
-        }
-    }
-
-    var algorithm: MPAlgorithmVersion {
-        didSet {
-            self.observers.notify { $0.userDidChange() }
-        }
-    }
-    var defaultType: MPResultType {
+    public let fullName: String
+    public var avatar: MPUserAvatar {
         didSet {
             self.observers.notify { $0.userDidChange() }
         }
     }
 
-    var masterKeyID: MPKeyID? {
+    public var algorithm: MPAlgorithmVersion {
         didSet {
             self.observers.notify { $0.userDidChange() }
         }
     }
-    var masterKey: MPMasterKey? {
+    public var defaultType: MPResultType {
+        didSet {
+            self.observers.notify { $0.userDidChange() }
+        }
+    }
+
+    public var masterKeyID: MPKeyID? {
+        didSet {
+            self.observers.notify { $0.userDidChange() }
+        }
+    }
+    public var masterKey: MPMasterKey? {
         didSet {
             if let _ = self.masterKey {
                 self.observers.notify { $0.userDidLogin() }
@@ -41,14 +41,9 @@ class MPUser {
             }
         }
     }
-    var sites = [ MPSite ]() {
+    public var sites = [ MPSite ]() {
         didSet {
             self.observers.notify { $0.userDidUpdateSites() }
-        }
-    }
-    var sortedSites : [ MPSite ] {
-        get {
-            return self.sites.sorted()
         }
     }
 

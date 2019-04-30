@@ -6,7 +6,7 @@
 import UIKit
 
 class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver {
-    public let observers   = Observers<MPSitesViewObserver>()
+    public let observers = Observers<MPSitesViewObserver>()
     public var user: MPUser? {
         willSet {
             self.user?.observers.unregister( self )
@@ -28,6 +28,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     private let data        = NSMutableArray()
+    private var newSiteResult: MPQuery.Result<MPSite>?
     private var isSelecting = false
 
     // MARK: - Life
@@ -58,7 +59,21 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func updateSites() {
-        let newSites: NSArray = [ MPQuery( self.query ?? "" ).find( self.user?.sortedSites ?? [] ) { $0.siteName } ]
+        let newSites: NSMutableArray = []
+        let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
+        newSites.add( results )
+
+        if let user = self.user,
+           let query = self.query,
+           (results.first { $0.exact }) == nil {
+            if let newSiteResult = self.newSiteResult {
+                newSiteResult.value.siteName = query
+                newSiteResult.matches(query: query)
+            } else {
+                self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, named: query ), keySupplier: { $0.siteName } )
+            }
+            newSites.add( [ self.newSiteResult ] )
+        }
 
         PearlMainQueue {
             self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )
@@ -89,6 +104,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     // MARK: - UITableViewDataSource
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return self.data.count
+    }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int)
                     -> Int {
