@@ -8,7 +8,7 @@ import Foundation
 class MPButton: UIView {
     public var round            = false {
         didSet {
-            self.bounds = self.bounds.standardized
+            self.setNeedsUpdateConstraints()
         }
     }
     public var effectBackground = true {
@@ -23,14 +23,18 @@ class MPButton: UIView {
 //            self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
         }
     }
+    public var title: String? {
+        didSet {
+            self.button.setTitle( self.title, for: .normal )
+            self.setNeedsUpdateConstraints()
+        }
+    }
 
     private let      effectView = UIVisualEffectView()
     private(set) var button: UIButton!
     override var     bounds: CGRect {
         didSet {
-            if self.round {
-                self.effectView.layer.cornerRadius = self.bounds.size.height / 2
-            }
+            self.setNeedsUpdateConstraints()
         }
     }
 
@@ -50,25 +54,16 @@ class MPButton: UIView {
         self.button = button
 
         self.button.setImage( image, for: .normal )
-        self.button.setTitle( title, for: .normal )
         self.button.setTitleShadowColor( .black, for: .normal )
         self.button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
         self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: -1 )
         self.button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
 
-        if let title = title, title.count > 1 {
-            self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+        defer {
+            self.layoutMargins = .zero
+            self.round = true
+            self.title = title
         }
-        else if let title = title, title.count == 1 {
-            self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
-            self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor ).isActive = true
-        }
-        else {
-            self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
-        }
-
-        self.layoutMargins = .zero
-        self.round = true
     }
 
     init(content: UIView) {
@@ -94,6 +89,25 @@ class MPButton: UIView {
             self.effectBackground = true
             self.darkBackground = false
         }
+    }
+
+    override func updateConstraints() {
+        self.effectView.layer.cornerRadius = self.round ? self.bounds.size.height / 2: 0
+
+        if let button = self.button {
+            if let title = title, title.count > 1 {
+                button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+            }
+            else if let title = title, title.count == 1 {
+                button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+                button.widthAnchor.constraint( equalTo: button.heightAnchor ).isActive = true
+            }
+            else {
+                button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
+            }
+        }
+
+        super.updateConstraints()
     }
 
     @objc

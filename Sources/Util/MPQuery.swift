@@ -33,6 +33,7 @@ class MPQuery {
             self.keySupplier = keySupplier
         }
 
+        @discardableResult
         public func matches(query: String?) -> Bool {
             let key = self.keySupplier( self.value )
             self.attributedKey.setAttributedString( NSAttributedString( string: key ) )

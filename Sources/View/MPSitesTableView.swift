@@ -59,20 +59,23 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func updateSites() {
-        let newSites: NSMutableArray = []
         let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
-        newSites.add( results )
+        let newSites: NSMutableArray = [ results ]
 
         if let user = self.user,
            let query = self.query,
            (results.first { $0.exact }) == nil {
             if let newSiteResult = self.newSiteResult {
                 newSiteResult.value.siteName = query
-                newSiteResult.matches(query: query)
-            } else {
+                newSiteResult.matches( query: query )
+            }
+            else {
                 self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, named: query ), keySupplier: { $0.siteName } )
             }
             newSites.add( [ self.newSiteResult ] )
+        }
+        else {
+            self.newSiteResult = nil
         }
 
         PearlMainQueue {
@@ -118,6 +121,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     -> UITableViewCell {
         let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
         cell.result = self.dataRow( section: indexPath.section, row: indexPath.row )
+        cell.new = cell.result == self.newSiteResult
 
         return cell
     }
@@ -155,6 +159,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 if let site = self.site {
                     site.observers.register( self ).siteDidChange()
                 }
+            }
+        }
+        var new = false {
+            didSet {
+                self.copyButton.title = self.new ? "add": "copy"
             }
         }
 
@@ -196,7 +205,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.nameLabel.shadowColor = .black
 
             self.copyButton.darkBackground = true
-            self.copyButton.button.addTarget( self, action: #selector( copySite ), for: .touchUpInside )
+            self.copyButton.button.addTarget( self, action: #selector( siteAction ), for: .touchUpInside )
 
             // - Hierarchy
             self.contentView.addSubview( self.passwordLabel )
@@ -225,10 +234,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         @objc
-        func copySite() {
+        func siteAction() {
             PearlNotMainQueue {
                 if let site = self.site,
                    let password = site.result() {
+                    if self.new {
+                        site.user.sites.append( site )
+                    }
 
                     if #available( iOS 10.0, * ) {
                         UIPasteboard.general.setItems(
