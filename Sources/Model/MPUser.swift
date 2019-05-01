@@ -5,47 +5,47 @@
 
 import Foundation
 
-class MPUser: MPSiteObserver {
+class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     public let observers = Observers<MPUserObserver>()
 
     public let fullName: String
     public var avatar: MPUserAvatar {
         didSet {
-            self.observers.notify { $0.userDidChange() }
+            self.observers.notify { $0.userDidChange( self ) }
         }
     }
 
     public var algorithm: MPAlgorithmVersion {
         didSet {
-            self.observers.notify { $0.userDidChange() }
+            self.observers.notify { $0.userDidChange( self ) }
         }
     }
     public var defaultType: MPResultType {
         didSet {
-            self.observers.notify { $0.userDidChange() }
+            self.observers.notify { $0.userDidChange( self ) }
         }
     }
 
     public var masterKeyID: MPKeyID? {
         didSet {
-            self.observers.notify { $0.userDidChange() }
+            self.observers.notify { $0.userDidChange( self ) }
         }
     }
     public var masterKey: MPMasterKey? {
         didSet {
             if let _ = self.masterKey {
-                self.observers.notify { $0.userDidLogin() }
+                self.observers.notify { $0.userDidLogin( self ) }
             }
             else {
-                self.observers.notify { $0.userDidLogout() }
+                self.observers.notify { $0.userDidLogout( self ) }
             }
         }
     }
     public var sites = [ MPSite ]() {
         didSet {
             self.sites.forEach { site in site.observers.register( self ) }
-            self.observers.notify { $0.userDidUpdateSites() }
-            self.observers.notify { $0.userDidChange() }
+            self.observers.notify { $0.userDidUpdateSites( self ) }
+            self.observers.notify { $0.userDidChange( self ) }
         }
     }
 
@@ -58,27 +58,9 @@ class MPUser: MPSiteObserver {
         self.algorithm = algorithm ?? .versionCurrent
         self.defaultType = defaultType ?? .default
         self.masterKeyID = masterKeyID
+        super.init()
 
-        self.sites.append( MPSite( user: self, named: "apple.com", uses: 5, lastUsed: Date().addingTimeInterval( -1000 ) ) )
-        self.sites.append( MPSite( user: self, named: "google.com", uses: 20, lastUsed: Date().addingTimeInterval( -2000 ) ) )
-        self.sites.append( MPSite( user: self, named: "twitter.com", uses: 3, lastUsed: Date().addingTimeInterval( -5000 ) ) )
-        self.sites.append( MPSite( user: self, named: "reddit.com", uses: 8, lastUsed: Date().addingTimeInterval( -10000 ) ) )
-        self.sites.append( MPSite( user: self, named: "pinterest.com", uses: 7, lastUsed: Date().addingTimeInterval( -12000 ) ) )
-        self.sites.append( MPSite( user: self, named: "whatsapp.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "ivpn.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "amazon.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "matrix.org", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "spotify.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "netflix.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "uber.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "battle.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "gandi.net", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "ebay.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-        self.sites.append( MPSite( user: self, named: "last.fm", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ) )
-
-        PearlNotMainQueue {
-            self.masterKey = mpw_masterKey( self.fullName, "test", self.algorithm )
-        }
+        self.observers.register( self )
     }
 
     // MARK: - MPSiteObserver
@@ -86,14 +68,44 @@ class MPUser: MPSiteObserver {
     func siteDidChange(_ site: MPSite) {
     }
 
+    // MARK: - MPUserObserver
+
+    func userDidLogin(_ user: MPUser) {
+    }
+
+    func userDidLogout(_ user: MPUser) {
+    }
+
+    func userDidChange(_ user: MPUser) {
+    }
+
+    func userDidUpdateSites(_ user: MPUser) {
+    }
+
     // MARK: - Interface
 
-    func authenticate(masterPassword: String) {
-        self.masterKey = masterPassword.withCString { masterPassword in
+    @discardableResult
+    func authenticate(masterPassword: String) -> Bool {
+        if let authKey = (masterPassword.withCString { masterPassword in
             fullName.withCString { fullName in
                 mpw_masterKey( fullName, masterPassword, .versionCurrent )
             }
+        }),
+           let authKeyID = mpw_id_buf( authKey, MPMasterKeySize ) {
+            if let masterKeyID = self.masterKeyID {
+                if masterKeyID != authKeyID {
+                    return false
+                }
+            }
+            else {
+                self.masterKeyID = authKeyID
+            }
+
+            self.masterKey = authKey
+            return true
         }
+
+        return false
     }
 
     enum MPUserAvatar: Int {
@@ -121,9 +133,9 @@ class MPUser: MPSiteObserver {
 
 @objc
 protocol MPUserObserver {
-    func userDidLogin()
-    func userDidLogout()
+    func userDidLogin(_ user: MPUser)
+    func userDidLogout(_ user: MPUser)
 
-    func userDidChange()
-    func userDidUpdateSites()
+    func userDidChange(_ user: MPUser)
+    func userDidUpdateSites(_ user: MPUser)
 }

@@ -148,19 +148,25 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     // MARK: - MPUserObserver
 
-    func userDidLogin() {
-        self.updateSites()
+    func userDidLogin(_ user: MPUser) {
+        PearlMainQueue {
+            self.updateSites()
+        }
     }
 
-    func userDidLogout() {
-        self.updateSites()
+    func userDidLogout(_ user: MPUser) {
+        PearlMainQueue {
+            self.updateSites()
+        }
     }
 
-    func userDidChange() {
+    func userDidChange(_ user: MPUser) {
     }
 
-    func userDidUpdateSites() {
-        self.updateSites()
+    func userDidUpdateSites(_ user: MPUser) {
+        PearlMainQueue {
+            self.updateSites()
+        }
     }
 
     // MARK: - Types

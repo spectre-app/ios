@@ -6,7 +6,8 @@
 import UIKit
 import pop
 
-class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeaderObserver, MPSiteDetailObserver, MPSitesViewObserver {
+class MPSitesViewController: UIViewController, UITextFieldDelegate,
+                             MPSiteHeaderObserver, MPSiteDetailObserver, MPSitesViewObserver, MPUserObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
     private let searchField         = UITextField()
     private let userButton          = UIButton( type: .custom )
@@ -21,7 +22,11 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
     private var siteDetailController: MPSiteDetailViewController?
 
     var user: MPUser? {
+        willSet {
+            self.user?.observers.unregister( self )
+        }
         didSet {
+            self.user?.observers.register( self )
             self.sitesTableView.user = self.user
 
             var userButtonTitle = ""
@@ -161,6 +166,23 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, MPSiteHeader
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
+    }
+
+    // MARK: - MPUserObserver
+
+    func userDidLogin(_ user: MPUser) {
+    }
+
+    func userDidLogout(_ user: MPUser) {
+        PearlMainQueue {
+            self.dismiss( animated: true )
+        }
+    }
+
+    func userDidChange(_ user: MPUser) {
+    }
+
+    func userDidUpdateSites(_ user: MPUser) {
     }
 
     // MARK: - Private

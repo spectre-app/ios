@@ -8,13 +8,21 @@
 
 import UIKit
 
-class MPUsersViewController: UIViewController {
-    private let users = [ MPUser( named: "Maarten Billemont", avatar: .avatar_3 ),
-                          MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 ) ]
-
+class MPUsersViewController: UIViewController, MPUserObserver {
     private let loginView = MPLoginView()
 
     // MARK: - Life
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    init(users: [MPUser]) {
+        super.init( nibName: nil, bundle: nil )
+
+        users.forEach { $0.observers.register( self ) }
+        self.loginView.users = users
+    }
 
     override func viewDidLoad() {
         self.view.addSubview( self.loginView )
@@ -31,10 +39,21 @@ class MPUsersViewController: UIViewController {
         }
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear( animated )
+    // MARK: - MPUserObserver
 
-        self.loginView.users = self.users
+    func userDidLogin(_ user: MPUser) {
+        PearlMainQueue {
+            self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+        }
+    }
+
+    func userDidLogout(_ user: MPUser) {
+    }
+
+    func userDidChange(_ user: MPUser) {
+    }
+
+    func userDidUpdateSites(_ user: MPUser) {
     }
 }
 
