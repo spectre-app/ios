@@ -96,7 +96,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        if !isSelecting {
+        if !self.isSelecting {
             self.selectedSite = nil
         }
     }
@@ -199,9 +199,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.passwordLabel.textColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 1 )
             self.passwordLabel.shadowColor = .black
 
-            self.nameLabel.font = UIFont.preferredFont( forTextStyle: .caption1 )
+            self.nameLabel.font = .preferredFont( forTextStyle: .caption1 )
             self.nameLabel.textAlignment = .natural
-            self.nameLabel.textColor = UIColor.lightText
+            self.nameLabel.textColor = .lightText
             self.nameLabel.shadowColor = .black
 
             self.copyButton.darkBackground = true
@@ -255,7 +255,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         }
                     }
                     else {
-                        UIPasteboard.general.string = password;
+                        UIPasteboard.general.string = password
 
                         PearlMainQueue {
                             MPAlertView( title: site.siteName, message: "Password Copied" ).show( in: self )
