@@ -16,7 +16,10 @@ class Item: MPSiteObserver {
             self.site?.observers.unregister( self )
         }
         didSet {
-            self.site?.observers.register( self ).siteDidChange()
+            if let site = self.site {
+                site.observers.register( self ).siteDidChange( site )
+            }
+
             ({
                  for subitem in self.subitems {
                      subitem.site = self.site
@@ -34,7 +37,7 @@ class Item: MPSiteObserver {
         return ItemView( withItem: self )
     }
 
-    func siteDidChange() {
+    func siteDidChange(_ site: MPSite) {
         self.setNeedsUpdate()
     }
 

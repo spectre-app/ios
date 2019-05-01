@@ -13,7 +13,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         }
         didSet {
             if let site = self.site {
-                site.observers.register( self ).siteDidChange()
+                site.observers.register( self ).siteDidChange( site )
             }
         }
     }
@@ -96,7 +96,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
 
     // MARK: - MPSiteObserver
 
-    func siteDidChange() {
+    func siteDidChange(_ site: MPSite) {
         PearlMainQueue {
             self.unanimated {
                 self.backgroundColor = self.site?.color

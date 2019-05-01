@@ -59,27 +59,47 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func updateSites() {
-        let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
-        let newSites: NSMutableArray = [ results ]
+        PearlNotMainQueue {
+            // Determine search state and filter user sites
+            var selectedResult = self.data.reduce( nil, { result, section in
+                result ?? (section as? Array<MPQuery.Result<MPSite>>)?.first { $0.value == self.selectedSite }
+            } )
+            let selectionFollowsQuery = selectedResult == self.newSiteResult || selectedResult?.exact ?? false
+            let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
+            let exactResult = results.first { $0.exact }
+            let newSites: NSMutableArray = [ results ]
 
-        if let user = self.user,
-           let query = self.query,
-           (results.first { $0.exact }) == nil {
-            if let newSiteResult = self.newSiteResult {
-                newSiteResult.value.siteName = query
-                newSiteResult.matches( query: query )
+            // Add "new site" result
+            if let user = self.user,
+               let query = self.query,
+               exactResult == nil {
+                if let newSiteResult = self.newSiteResult {
+                    newSiteResult.value.siteName = query
+                }
+                else {
+                    self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, named: query ), keySupplier: { $0.siteName } )
+                }
+                if let newSiteResult = self.newSiteResult {
+                    newSiteResult.matches( query: query )
+                    newSites.add( [ newSiteResult ] )
+                }
             }
             else {
-                self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, named: query ), keySupplier: { $0.siteName } )
+                self.newSiteResult = nil
             }
-            newSites.add( [ self.newSiteResult ] )
-        }
-        else {
-            self.newSiteResult = nil
-        }
 
-        PearlMainQueue {
-            self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )
+            // Special case for selected site: keep selection on the site result that matches the query
+            if selectionFollowsQuery {
+                selectedResult = exactResult ?? self.newSiteResult
+                self.selectedSite = selectedResult?.value
+            }
+
+            // Update the sites table to show the newly filtered sites
+            PearlMainQueue {
+                self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )
+                let path = self.find( inDataSource: self.data, item: selectedResult )
+                self.selectRow( at: path, animated: false, scrollPosition: .none )
+            }
         }
     }
 
@@ -157,7 +177,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
             didSet {
                 if let site = self.site {
-                    site.observers.register( self ).siteDidChange()
+                    site.observers.register( self ).siteDidChange( site )
                 }
             }
         }
@@ -267,7 +287,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         // MARK: - MPSiteObserver
 
-        func siteDidChange() {
+        func siteDidChange(_ site: MPSite) {
             PearlMainQueue {
                 self.nameLabel.attributedText = self.result?.attributedKey
                 self.indicatorView.backgroundColor = self.site?.color?.withAlphaComponent( 0.85 )

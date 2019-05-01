@@ -8,67 +8,67 @@ import Foundation
 class MPSite: NSObject, Comparable {
     let observers = Observers<MPSiteObserver>()
 
-    let user:     MPUser
+    let user: MPUser
     var siteName: String {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var algorithm: MPAlgorithmVersion {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var counter: MPCounterValue = .default {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var resultType: MPResultType {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var loginType: MPResultType {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
 
     var resultState: String? {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var loginState: String? {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
 
     var url: String? {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var uses: UInt = 0 {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var lastUsed: Date {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var color: UIColor? {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
     var image: UIImage? {
         didSet {
-            self.observers.notify { $0.siteDidChange() }
+            self.observers.notify { $0.siteDidChange( self ) }
         }
     }
 
@@ -126,5 +126,5 @@ class MPSite: NSObject, Comparable {
 
 @objc
 protocol MPSiteObserver {
-    func siteDidChange()
+    func siteDidChange(_ site: MPSite)
 }

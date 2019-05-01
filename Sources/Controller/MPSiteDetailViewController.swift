@@ -10,14 +10,10 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     let observers = Observers<MPSiteDetailObserver>()
     let site: MPSite
 
-    let items = [ PasswordCounterItem(),
-                  SeparatorItem(),
-                  PasswordTypeItem(),
-                  SeparatorItem(),
-                  LoginTypeItem(),
-                  SeparatorItem(),
-                  URLItem(),
-                  SeparatorItem(),
+    let items = [ PasswordCounterItem(), SeparatorItem(),
+                  PasswordTypeItem(), SeparatorItem(),
+                  LoginTypeItem(), SeparatorItem(),
+                  URLItem(), SeparatorItem(),
                   InfoItem() ]
 
     let backgroundView = UIView()
@@ -34,7 +30,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         self.site = site
         super.init( nibName: nil, bundle: nil )
 
-        site.observers.register( self ).siteDidChange()
+        self.site.observers.register( self ).siteDidChange( self.site )
     }
 
     override func viewDidLoad() {
@@ -78,7 +74,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
 
     // MARK: - MPSiteObserver
 
-    func siteDidChange() {
+    func siteDidChange(_ site: MPSite) {
         PearlMainQueue {
             self.backgroundView.backgroundColor = self.site.color
         }

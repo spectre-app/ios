@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPUser {
+class MPUser: MPSiteObserver {
     public let observers = Observers<MPUserObserver>()
 
     public let fullName: String
@@ -43,7 +43,9 @@ class MPUser {
     }
     public var sites = [ MPSite ]() {
         didSet {
+            self.sites.forEach { site in site.observers.register( self ) }
             self.observers.notify { $0.userDidUpdateSites() }
+            self.observers.notify { $0.userDidChange() }
         }
     }
 
@@ -77,6 +79,11 @@ class MPUser {
         PearlNotMainQueue {
             self.masterKey = mpw_masterKey( self.fullName, "test", self.algorithm )
         }
+    }
+
+    // MARK: - MPSiteObserver
+
+    func siteDidChange(_ site: MPSite) {
     }
 
     // MARK: - Interface
