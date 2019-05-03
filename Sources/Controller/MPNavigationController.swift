@@ -11,6 +11,7 @@ import pop
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
     private let starsView  = MPStarView()
+    private let transition = MPNavigationTransition()
 
     // MARK: - Life
 
@@ -42,12 +43,33 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     // MARK: - UINavigationControllerDelegate
 
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        // rootViewController animation
         if self.viewControllers.first == viewController,
            let animation = POPSpringAnimation( propertyNamed: kPOPViewScaleXY ) {
             animation.fromValue = CGPoint( x: 0, y: 0 )
             animation.toValue = CGPoint( x: 1, y: 1 )
             animation.springSpeed = 1
             viewController.view.pop_add( animation, forKey: "pop.scale" )
+        }
+    }
+
+    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+    }
+
+    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController)
+                    -> UIViewControllerAnimatedTransitioning? {
+        return self.transition
+    }
+
+    class MPNavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
+
+        // MARK: - Life
+
+        func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+            return 1;
+        }
+
+        func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         }
     }
 }
