@@ -29,7 +29,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     private let data        = NSMutableArray()
     private var newSiteResult: MPQuery.Result<MPSite>?
-    private var isSelecting = false
+    private var isSelecting = false, isInitial = true
 
     // MARK: --- Life ---
 
@@ -96,9 +96,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             // Update the sites table to show the newly filtered sites
             DispatchQueue.main.perform {
-                self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )
-                let path = self.find( inDataSource: self.data, item: selectedResult )
-                self.selectRow( at: path, animated: false, scrollPosition: .none )
+                self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: self.isInitial ? .none: .automatic )
+                let selectedPath = self.find( inDataSource: self.data, item: selectedResult )
+                self.selectRow( at: selectedPath, animated: false, scrollPosition: .none )
+                self.isInitial = false
             }
         }
     }

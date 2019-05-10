@@ -227,7 +227,8 @@ class MPSpinnerView: UIView {
         }
     }
 
-    @objc private func didTap(recognizer: UITapGestureRecognizer) {
+    @objc
+    private func didTap(recognizer: UITapGestureRecognizer) {
         switch recognizer.state {
 
             case .possible, .began, .changed, .cancelled, .failed:

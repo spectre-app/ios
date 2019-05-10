@@ -42,11 +42,19 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         self.usersSpinner.addSubview( UserView( user: nil ) )
         self.usersSpinner.delegate = self
 
-        self.usersSpinner.setFrameFrom( "|[]|" )
+        ViewConfiguration( view: self.usersSpinner ).constrainToSuperview().activate()
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    override func willMove(toWindow newWindow: UIWindow?) {
+        super.willMove( toWindow: newWindow )
+
+        if newWindow == nil {
+            self.usersSpinner.activatedItem = nil
+        }
     }
 
     // MARK: --- MPSpinnerDelegate ---
@@ -80,7 +88,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                     anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
                     self.nameLabel.pop_add( anim, forKey: "pop.font" )
 
-                    UIView.animate( withDuration: self.superview == nil ? 0.0: 0.6 ) {
+                    UIView.animate( withDuration: 0.6 ) {
                         self.passwordField.alpha = self.active ? 1: 0
 
                         if self.active {
@@ -90,9 +98,9 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                             self.passwordConfiguration.deactivate()
                         }
                     }
-
-                    self.setNeedsDisplay()
                 }
+
+                self.setNeedsDisplay()
             }
         }
         public var user: MPUser? {
@@ -222,7 +230,6 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                         .needsLayout( self )
 
                 self.user = user
-                self.active = false;
 
                 NotificationCenter.default.addObserver( forName: .UITextFieldTextDidChange, object: self.passwordField, queue: nil ) { notification in
                     self.setNeedsIdenticon()
@@ -290,7 +297,6 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
                     DispatchQueue.main.perform {
                         self.passwordIndicator.stopAnimating()
-                        self.active = false
                     }
                 }
                 return true

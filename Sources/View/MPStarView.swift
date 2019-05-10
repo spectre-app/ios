@@ -35,12 +35,17 @@ class MPStarView: UIView {
         self.isOpaque = false
         self.backgroundColor = UIColor.black
 
-        self.addSubview( self.debugLabel )
         self.debugLabel.text = " "
         self.debugLabel.textColor = UIColor.white
         self.debugLabel.font = .monospacedDigitSystemFont( ofSize: 12, weight: .thin )
-        self.debugLabel.setFrameFrom( "-|>[]20|-" )
         self.debugLabel.isHidden = true
+
+        self.addSubview( self.debugLabel )
+        ViewConfiguration( view: self.debugLabel )
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .activate()
     }
 
     required init?(coder aDecoder: NSCoder) {
