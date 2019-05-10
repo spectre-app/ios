@@ -23,7 +23,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
     private let recoveryButton = MPButton( image: UIImage( named: "icon_btn_question" ) )
     private let keysButton     = MPButton( image: UIImage( named: "icon_key" ) )
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     init() {
         super.init( frame: .zero )
@@ -55,11 +55,11 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         trailingToolBar.axis = .vertical
         trailingToolBar.spacing = 12
 
-        self.settingsButton.button.addTargetBlock( { _, _ in
-                                                       if let site = self.site {
-                                                           self.observers.notify { $0.siteOpenDetails( for: site ) }
-                                                       }
-                                                   }, for: .touchUpInside )
+        self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
+            if let site = self.site {
+                self.observers.notify { $0.siteOpenDetails( for: site ) }
+            }
+        }
 
         // - Hierarchy
         self.addSubview( self.siteButton )
@@ -94,10 +94,10 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    // MARK: - MPSiteObserver
+    // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.unanimated {
                 self.backgroundColor = self.site?.color
                 self.siteButton.setImage( self.site?.image, for: .normal )

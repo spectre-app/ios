@@ -8,25 +8,27 @@ import Foundation
 class MPResultTypeCell: UICollectionViewCell {
     public var resultType: MPResultType? {
         didSet {
-            if let resultType = self.resultType {
-                self.nameLabel.text = String( utf8String: mpw_abbreviationForType( resultType ) )
+            DispatchQueue.main.async {
+                if let resultType = self.resultType {
+                    self.nameLabel.text = String( utf8String: mpw_abbreviationForType( resultType ) )
 
-                if 0 != resultType.rawValue & UInt32( MPResultTypeClass.template.rawValue ) {
-                    self.classLabel.text = "Template"
-                }
-                else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.stateful.rawValue ) {
-                    self.classLabel.text = "Stateful"
-                }
-                else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.derive.rawValue ) {
-                    self.classLabel.text = "Derive"
+                    if 0 != resultType.rawValue & UInt32( MPResultTypeClass.template.rawValue ) {
+                        self.classLabel.text = "Template"
+                    }
+                    else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.stateful.rawValue ) {
+                        self.classLabel.text = "Stateful"
+                    }
+                    else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.derive.rawValue ) {
+                        self.classLabel.text = "Derive"
+                    }
+                    else {
+                        self.classLabel.text = ""
+                    }
                 }
                 else {
+                    self.nameLabel.text = ""
                     self.classLabel.text = ""
                 }
-            }
-            else {
-                self.nameLabel.text = ""
-                self.classLabel.text = ""
             }
         }
     }
@@ -36,8 +38,10 @@ class MPResultTypeCell: UICollectionViewCell {
     private let classLabel    = UILabel()
     override var isSelected: Bool {
         didSet {
-            UIView.animate( withDuration: 0.382 ) {
-                self.contentView.alpha = self.isSelected ? 1: 0.382
+            DispatchQueue.main.async {
+                UIView.animate( withDuration: 0.382 ) {
+                    self.contentView.alpha = self.isSelected ? 1: 0.382
+                }
             }
         }
     }

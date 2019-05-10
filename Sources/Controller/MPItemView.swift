@@ -6,12 +6,7 @@
 import UIKit
 
 class Item: MPSiteObserver {
-    let title:    String?
-    let subitems: [Item]
-    lazy var view = createItemView()
-    var updateOperation: Operation?
-
-    var site: MPSite? {
+    public var site: MPSite? {
         willSet {
             self.site?.observers.unregister( self )
         }
@@ -28,6 +23,11 @@ class Item: MPSiteObserver {
         }
     }
 
+    private let title:    String?
+    private let subitems: [Item]
+    private (set) lazy var view = createItemView()
+    private let updateGroup = DispatchGroup()
+
     init(title: String? = nil, subitems: [Item] = [ Item ]()) {
         self.title = title
         self.subitems = subitems
@@ -42,12 +42,10 @@ class Item: MPSiteObserver {
     }
 
     func setNeedsUpdate() {
-        guard self.updateOperation == nil
-        else { return }
-
-        self.updateOperation = PearlMainQueueOperation {
-            self.view.update()
-            self.updateOperation = nil
+        if self.updateGroup.wait(timeout: .now()) == .success {
+            DispatchQueue.main.async( group: self.updateGroup ) {
+                self.view.update()
+            }
         }
     }
 
@@ -284,12 +282,12 @@ class TextItem: ValueItem<String> {
         override func createValueView() -> UIView? {
             self.valueField.textColor = .white
             self.valueField.textAlignment = .center
-            self.valueField.addTargetBlock( { _, _ in
-                                                if let site = self.item.site,
-                                                   let text = self.valueField.text {
-                                                    self.item.itemUpdate( site, text )
-                                                }
-                                            }, for: .editingChanged )
+            self.valueField.addAction( for: .editingChanged ) { _, _ in
+                if let site = self.item.site,
+                   let text = self.valueField.text {
+                    self.item.itemUpdate( site, text )
+                }
+            }
             return self.valueField
         }
 
@@ -339,24 +337,22 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
 
         override func createValueView() -> UIView? {
             self.downButton.effectBackground = false
-            self.downButton.button.addTargetBlock( { _, _ in
-                                                       if let site = self.item.site,
-                                                          let value = self.item.value,
-                                                          value > self.item.min {
-                                                           self.item.itemUpdate( site, value - self.item.step )
-                                                       }
-                                                   },
-                                                   for: .touchUpInside )
+            self.downButton.button.addAction( for: .touchUpInside ) { _, _ in
+                if let site = self.item.site,
+                   let value = self.item.value,
+                   value > self.item.min {
+                    self.item.itemUpdate( site, value - self.item.step )
+                }
+            }
 
             self.upButton.effectBackground = false
-            self.upButton.button.addTargetBlock( { _, _ in
-                                                     if let site = self.item.site,
-                                                        let value = self.item.value,
-                                                        value < self.item.max {
-                                                         self.item.itemUpdate( site, value + self.item.step )
-                                                     }
-                                                 },
-                                                 for: .touchUpInside )
+            self.upButton.button.addAction( for: .touchUpInside ) { _, _ in
+                if let site = self.item.site,
+                   let value = self.item.value,
+                   value < self.item.max {
+                    self.item.itemUpdate( site, value + self.item.step )
+                }
+            }
 
             self.valueLabel.textColor = .white
             self.valueLabel.textAlignment = .center
@@ -464,7 +460,7 @@ class PickerItem<V: Equatable>: ValueItem<V> {
             }
         }
 
-        // MARK: - UICollectionViewDataSource
+        // MARK: --- UICollectionViewDataSource ---
 
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
             return self.item.values.count
@@ -474,11 +470,11 @@ class PickerItem<V: Equatable>: ValueItem<V> {
             return self.item.itemCell( collectionView, indexPath, self.item.values[indexPath.item] )
         }
 
-        // MARK: - UICollectionViewDelegateFlowLayout
+        // MARK: --- UICollectionViewDelegateFlowLayout ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             if let cell = collectionView.cellForItem( at: indexPath ) {
-                MPTapEffectView( for: cell ).animate()
+                MPTapEffectView( for: cell ).run()
             }
 
             if let site = self.item.site {

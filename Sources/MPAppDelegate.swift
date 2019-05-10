@@ -37,7 +37,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
             MPSite( user: robert, named: "ebay.com", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ),
             MPSite( user: robert, named: "last.fm", uses: 5, lastUsed: Date().addingTimeInterval( -13000 ) ),
         ] )
-        robert.masterKey = mpw_masterKey( robert.fullName, "test", robert.algorithm )
+        //robert.masterKey = mpw_masterKey( robert.fullName, "test", robert.algorithm )
 
         // Start UI
         self.window.rootViewController = MPNavigationController(

@@ -49,7 +49,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
         }
     }
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     init(named name: String, avatar: MPUserAvatar = .avatar_0,
          algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, masterKeyID: MPKeyID? = nil) {
@@ -63,12 +63,12 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
         self.observers.register( self )
     }
 
-    // MARK: - MPSiteObserver
+    // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
     }
 
-    // MARK: - MPUserObserver
+    // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
     }
@@ -82,7 +82,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     func userDidUpdateSites(_ user: MPUser) {
     }
 
-    // MARK: - Interface
+    // MARK: --- Interface ---
 
     @discardableResult
     func authenticate(masterPassword: String) -> Bool {

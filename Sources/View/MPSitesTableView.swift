@@ -31,7 +31,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     private var newSiteResult: MPQuery.Result<MPSite>?
     private var isSelecting = false
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     init() {
         super.init( frame: .zero, style: .plain )
@@ -48,7 +48,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    // MARK: - Internal
+    // MARK: --- Internal ---
 
     func dataSection(section: Int) -> NSArray {
         return self.data.object( at: section ) as! NSArray
@@ -59,7 +59,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func updateSites() {
-        PearlNotMainQueue {
+        DispatchQueue.global().async {
             // Determine search state and filter user sites
             var selectedResult = self.data.reduce( nil, { result, section in
                 result ?? (section as? Array<MPQuery.Result<MPSite>>)?.first { $0.value == self.selectedSite }
@@ -95,7 +95,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
 
             // Update the sites table to show the newly filtered sites
-            PearlMainQueue {
+            DispatchQueue.main.async {
                 self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )
                 let path = self.find( inDataSource: self.data, item: selectedResult )
                 self.selectRow( at: path, animated: false, scrollPosition: .none )
@@ -103,7 +103,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
     }
 
-    // MARK: - UITableViewDelegate
+    // MARK: --- UITableViewDelegate ---
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.selectRow( at: nil, animated: true, scrollPosition: .none )
@@ -126,7 +126,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         self.isSelecting = false
     }
 
-    // MARK: - UITableViewDataSource
+    // MARK: --- UITableViewDataSource ---
 
     func numberOfSections(in tableView: UITableView) -> Int {
         return self.data.count
@@ -146,16 +146,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         return cell
     }
 
-    // MARK: - MPUserObserver
+    // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.updateSites()
         }
     }
 
     func userDidLogout(_ user: MPUser) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.updateSites()
         }
     }
@@ -164,12 +164,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func userDidUpdateSites(_ user: MPUser) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.updateSites()
         }
     }
 
-    // MARK: - Types
+    // MARK: --- Types ---
 
     class SiteCell: UITableViewCell, MPSiteObserver {
         var result: MPQuery.Result<MPSite>? {
@@ -189,7 +189,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         var new = false {
             didSet {
-                self.copyButton.title = self.new ? "add": "copy"
+                DispatchQueue.main.async {
+                    self.copyButton.title = self.new ? "add": "copy"
+                }
             }
         }
 
@@ -198,7 +200,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         let nameLabel     = UILabel()
         let copyButton    = MPButton( image: nil, title: "copy" )
 
-        // MARK: - Life
+        // MARK: --- Life ---
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -261,7 +263,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         @objc
         func siteAction() {
-            PearlNotMainQueue {
+            DispatchQueue.global().async {
                 if let site = self.site,
                    let password = site.result() {
                     if self.new {
@@ -276,14 +278,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                                     UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
                                 ] )
 
-                        PearlMainQueue {
+                        DispatchQueue.main.async {
                             MPAlertView( title: site.siteName, message: "Password Copied (3 min)" ).show( in: self )
                         }
                     }
                     else {
                         UIPasteboard.general.string = password
 
-                        PearlMainQueue {
+                        DispatchQueue.main.async {
                             MPAlertView( title: site.siteName, message: "Password Copied" ).show( in: self )
                         }
                     }
@@ -291,17 +293,17 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
 
-        // MARK: - MPSiteObserver
+        // MARK: --- MPSiteObserver ---
 
         func siteDidChange(_ site: MPSite) {
-            PearlMainQueue {
+            DispatchQueue.main.async {
                 self.nameLabel.attributedText = self.result?.attributedKey
                 self.indicatorView.backgroundColor = self.site?.color?.withAlphaComponent( 0.85 )
             }
-            PearlNotMainQueue {
+            DispatchQueue.global().async {
                 let password = self.site?.result()
 
-                PearlMainQueue {
+                DispatchQueue.main.async {
                     self.passwordLabel.text = password ?? " "
                 }
             }

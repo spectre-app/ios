@@ -7,13 +7,13 @@
 //
 
 import UIKit
+import Stellar
 import pop
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
-    private let starsView  = MPStarView()
     private let transition = MPNavigationTransition()
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     override init(rootViewController: UIViewController) {
         super.init( rootViewController: rootViewController )
@@ -32,29 +32,28 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
     override func viewDidLoad() {
         // - Hierarchy
-        self.view.insertSubview( self.starsView, at: 0 )
+        self.view.insertSubview( self.transition.starsView, at: 0 )
 
         // - Layout
-        ViewConfiguration( view: self.starsView )
+        ViewConfiguration( view: self.transition.starsView )
                 .constrainToSuperview()
                 .activate()
     }
 
-    // MARK: - UINavigationControllerDelegate
+    override func viewWillAppear(_ animated: Bool) {
+        self.visibleViewController?.view.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0 ).then()
+                                        .scaleXY( 1000, 1000 ).makeAlpha( 1 ).easing( .easeOut ).duration( 1 ).animate()
 
-    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
-        // rootViewController animation
-        if self.viewControllers.first == viewController,
-           let animation = POPSpringAnimation( propertyNamed: kPOPViewScaleXY ) {
-            animation.fromValue = CGPoint( x: 0, y: 0 )
-            animation.toValue = CGPoint( x: 1, y: 1 )
-            animation.springSpeed = 1
-            viewController.view.pop_add( animation, forKey: "pop.scale" )
-        }
+        super.viewWillAppear( animated )
     }
 
-    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
+        self.visibleViewController?.view?.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0.382 ).animate()
+
+        super.viewWillDisappear( animated )
     }
+
+    // MARK: --- UINavigationControllerDelegate ---
 
     func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController)
                     -> UIViewControllerAnimatedTransitioning? {
@@ -62,14 +61,49 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     }
 
     class MPNavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
+        fileprivate let starsView = MPStarView()
 
-        // MARK: - Life
+        // MARK: --- Life ---
 
         func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-            return 1;
+            return 0.618;
         }
 
         func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+
+            guard let fromView = transitionContext.view( forKey: .from ),
+                  let toView = transitionContext.view( forKey: .to )
+            else {
+                transitionContext.completeTransition( false )
+                return
+            }
+
+            if transitionContext.isAnimated {
+                toView.alpha = 0
+                toView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
+                transitionContext.containerView.addSubview( toView )
+
+                UIView.animate( withDuration: 1, delay: 0, usingSpringWithDamping: 0.618, initialSpringVelocity: 0,
+                                options: .curveEaseOut, animations: {
+                    fromView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
+                    fromView.alpha = 0
+                }, completion: { finished in
+                    fromView.transform = .identity
+                } )
+                UIView.animate( withDuration: 2, delay: 0, usingSpringWithDamping: 0.618, initialSpringVelocity: 0,
+                                options: .curveEaseOut, animations: {
+                    toView.alpha = 1
+                    toView.transform = .identity
+                }, completion: { finished in
+                    transitionContext.completeTransition( finished )
+                } )
+                self.starsView.warp()
+            }
+
+            else {
+                transitionContext.containerView.addSubview( toView )
+                transitionContext.completeTransition( true )
+            }
         }
     }
 }

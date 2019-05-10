@@ -9,33 +9,37 @@ import pop
 class MPLoginView: UIView, MPSpinnerDelegate {
     public var users = [ MPUser ]() {
         willSet {
-            for user in self.users {
-                for subview in self.usersSpinner.subviews {
-                    if let avatarView = subview as? MPUserView, user === avatarView.user {
-                        avatarView.removeFromSuperview()
+            DispatchQueue.main.async {
+                for user in self.users {
+                    for subview in self.usersSpinner.subviews {
+                        if let avatarView = subview as? UserView, user === avatarView.user {
+                            avatarView.removeFromSuperview()
+                        }
                     }
                 }
             }
         }
         didSet {
-            for user in self.users {
-                self.usersSpinner.addSubview( MPUserView( user: user ) )
-            }
+            DispatchQueue.main.async {
+                for user in self.users {
+                    self.usersSpinner.addSubview( UserView( user: user ) )
+                }
 
-            self.usersSpinner.selectedItem = self.usersSpinner.items - 1
+                self.usersSpinner.selectedItem = self.usersSpinner.items - 1
+            }
         }
     }
 
     private let usersSpinner = MPSpinnerView()
     private let nameLabel    = UILabel()
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     override init(frame: CGRect) {
         super.init( frame: frame )
 
         self.addSubview( self.usersSpinner )
-        self.usersSpinner.addSubview( MPUserView( user: nil ) )
+        self.usersSpinner.addSubview( UserView( user: nil ) )
         self.usersSpinner.delegate = self
 
         self.usersSpinner.setFrameFrom( "|[]|" )
@@ -45,7 +49,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    // MARK: - MPSpinnerDelegate
+    // MARK: --- MPSpinnerDelegate ---
 
     func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat) {
     }
@@ -54,43 +58,49 @@ class MPLoginView: UIView, MPSpinnerDelegate {
     }
 
     func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int) {
-        if let userView = spinner.subviews[activatedItem] as? MPUserView {
+        if let userView = spinner.subviews[activatedItem] as? UserView {
             userView.active = true
         }
     }
 
     func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int) {
-        if let userView = spinner.subviews[deactivatedItem] as? MPUserView {
+        if let userView = spinner.subviews[deactivatedItem] as? UserView {
             userView.active = false
         }
     }
 
-    class MPUserView: UIView, UITextFieldDelegate {
+    // MARK: --- Types ---
+
+    class UserView: UIView, UITextFieldDelegate {
 
         public var active: Bool = false {
             didSet {
-                let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
-                anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
-                self.nameLabel.pop_add( anim, forKey: "pop.font" )
+                DispatchQueue.main.async {
+                    let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
+                    anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
+                    self.nameLabel.pop_add( anim, forKey: "pop.font" )
 
-                UIView.animate( withDuration: self.superview == nil ? 0.0: 0.6 ) {
-                    self.passwordField.alpha = self.active ? 1: 0
+                    UIView.animate( withDuration: self.superview == nil ? 0.0: 0.6 ) {
+                        self.passwordField.alpha = self.active ? 1: 0
 
-                    if self.active {
-                        self.passwordConfiguration.activate()
+                        if self.active {
+                            self.passwordConfiguration.activate()
+                        }
+                        else {
+                            self.passwordConfiguration.deactivate()
+                        }
                     }
-                    else {
-                        self.passwordConfiguration.deactivate()
-                    }
+
+                    self.setNeedsDisplay()
                 }
-
-                self.setNeedsDisplay()
             }
         }
         public var user: MPUser? {
             didSet {
-                self.avatarView.image = (self.user?.avatar ?? MPUser.MPUserAvatar.avatar_add).image()
-                self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
+                DispatchQueue.main.async {
+                    self.avatarView.image = (self.user?.avatar ?? MPUser.MPUserAvatar.avatar_add).image()
+                    self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
+                }
             }
         }
 
@@ -98,13 +108,15 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         private let avatarView         = UIImageView()
         private let passwordField      = UITextField()
         private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
+        private var identiconItem:         DispatchWorkItem?
         private let identiconLabel     = UILabel()
-        private var identiconTimer:        Timer?
         private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
         private let idBadgeView        = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
         private var passwordConfiguration: ViewConfiguration!
         private var path               = CGMutablePath()
+
+        // MARK: --- Life ---
 
         init(user: MPUser?) {
             super.init( frame: CGRect() )
@@ -243,9 +255,11 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             super.willMove( toWindow: newWindow )
 
             if newWindow == nil {
-                self.identiconTimer?.invalidate()
+                self.identiconItem?.cancel()
             }
         }
+
+        // MARK: --- UITextFieldDelegate ---
 
         func textFieldDidBeginEditing(_ textField: UITextField) {
             if textField == self.passwordField {
@@ -267,15 +281,12 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.passwordIndicator.startAnimating()
                 self.passwordField.isEnabled = false
 
-                PearlNotMainQueue {
+                DispatchQueue.global().async {
                     self.user!.authenticate( masterPassword: masterPassword )
 
-                    PearlMainQueue {
+                    DispatchQueue.main.async {
                         self.passwordIndicator.stopAnimating()
-
-                        UIView.animate( withDuration: 0.6 ) {
-                            self.passwordConfiguration.deactivate()
-                        }
+                        self.active = false
                     }
                 }
                 return true
@@ -284,46 +295,46 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             return true
         }
 
-        func setNeedsIdenticon() {
-            self.identiconTimer?.invalidate()
-            self.identiconTimer = Timer.scheduledTimer(
-                    timeInterval: 0.3 + drand48() * 0.2,
-                    target: self, selector: #selector( MPUserView.updateIdenticon ),
-                    userInfo: nil, repeats: false )
-        }
+        // MARK: --- Private ---
 
-        @objc
-        func updateIdenticon() {
-            if let userName = self.user?.fullName {
-                userName.withCString { userName in
-                    if let masterPassword = self.passwordField.text {
-                        masterPassword.withCString { masterPassword in
-                            let identicon = mpw_identicon( userName, masterPassword )
-                            self.identiconLabel.text = [
-                                String( cString: identicon.leftArm ),
-                                String( cString: identicon.body ),
-                                String( cString: identicon.rightArm ),
-                                String( cString: identicon.accessory ) ].joined()
-                            switch identicon.color {
-                                case .red:
-                                    self.identiconLabel.textColor = .red
-                                case .green:
-                                    self.identiconLabel.textColor = .green
-                                case .yellow:
-                                    self.identiconLabel.textColor = .yellow
-                                case .blue:
-                                    self.identiconLabel.textColor = .blue
-                                case .magenta:
-                                    self.identiconLabel.textColor = .magenta
-                                case .cyan:
-                                    self.identiconLabel.textColor = .cyan
-                                case .white:
-                                    self.identiconLabel.textColor = .white
+        func setNeedsIdenticon() {
+            self.identiconItem?.cancel()
+            self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
+                if let userName = self.user?.fullName {
+                    userName.withCString { userName in
+                        if let masterPassword = self.passwordField.text {
+                            masterPassword.withCString { masterPassword in
+                                let identicon = mpw_identicon( userName, masterPassword )
+                                self.identiconLabel.text = [
+                                    String( cString: identicon.leftArm ),
+                                    String( cString: identicon.body ),
+                                    String( cString: identicon.rightArm ),
+                                    String( cString: identicon.accessory ) ].joined()
+                                switch identicon.color {
+                                    case .black:
+                                        self.identiconLabel.textColor = .black
+                                    case .red:
+                                        self.identiconLabel.textColor = .red
+                                    case .green:
+                                        self.identiconLabel.textColor = .green
+                                    case .yellow:
+                                        self.identiconLabel.textColor = .yellow
+                                    case .blue:
+                                        self.identiconLabel.textColor = .blue
+                                    case .magenta:
+                                        self.identiconLabel.textColor = .magenta
+                                    case .cyan:
+                                        self.identiconLabel.textColor = .cyan
+                                    case .white:
+                                        self.identiconLabel.textColor = .white
+                                }
                             }
                         }
                     }
                 }
             }
+
+            DispatchQueue.main.asyncAfter( wallDeadline: .now() + .milliseconds( .random( in: 300..<500 ) ), execute: self.identiconItem! )
         }
     }
 }

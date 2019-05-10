@@ -20,7 +20,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     let itemsView      = UIStackView()
     let closeButton    = MPButton.closeButton()
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -47,7 +47,9 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
             self.itemsView.addArrangedSubview( item.view )
         }
 
-        self.closeButton.button.addTargetBlock( { _, _ in self.observers.notify { $0.siteDetailShouldDismiss() } }, for: .touchUpInside )
+        self.closeButton.button.addAction( for: .touchUpInside ) { _, _ in
+            self.observers.notify { $0.siteDetailShouldDismiss() }
+        }
 
         // - Hierarchy
         self.backgroundView.addSubview( self.itemsView )
@@ -72,15 +74,15 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                 .activate()
     }
 
-    // MARK: - MPSiteObserver
+    // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.backgroundView.backgroundColor = self.site.color
         }
     }
 
-    // MARK: - Types
+    // MARK: --- Types ---
 
     class PasswordCounterItem: StepperItem<UInt32> {
         init() {

@@ -9,16 +9,14 @@ import pop
 class MPSitesViewController: UIViewController, UITextFieldDelegate,
                              MPSiteHeaderObserver, MPSiteDetailObserver, MPSitesViewObserver, MPUserObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
-    private let searchField         = UITextField()
-    private let userButton          = UIButton( type: .custom )
-    private let sitesTableView      = MPSitesTableView()
-    private let siteHeaderView      = MPSiteHeaderView()
-    private let siteDetailShade     = UIButton()
-    private let siteDetailContainer = UIView()
-
+    private let searchField             = UITextField()
+    private let userButton              = UIButton( type: .custom )
+    private let sitesTableView          = MPSitesTableView()
+    private let siteHeaderView          = MPSiteHeaderView()
+    private let siteDetailShade         = UIButton()
+    private let siteDetailContainer     = UIView()
     private let siteHeaderConfiguration = ViewConfiguration()
     private let siteDetailConfiguration = ViewConfiguration()
-
     private var siteDetailController: MPSiteDetailViewController?
 
     var user: MPUser? {
@@ -31,12 +29,15 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
 
             var userButtonTitle = ""
             self.user?.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
-            self.userButton.setTitle( userButtonTitle.uppercased(), for: .normal )
-            self.userButton.sizeToFit()
+
+            DispatchQueue.main.async {
+                self.userButton.setTitle( userButtonTitle.uppercased(), for: .normal )
+                self.userButton.sizeToFit()
+            }
         }
     }
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -67,8 +68,13 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
         self.searchField.autocapitalizationType = .none
         self.searchField.autocorrectionType = .no
         self.searchField.delegate = self
-        self.searchField.addTarget( self, action: #selector( textFieldEditingChanged ), for: .editingChanged )
+        self.searchField.addAction( for: .editingChanged ) { _, _ in
+            self.sitesTableView.query = self.searchField.text
+        }
 
+        self.userButton.addAction( for: .touchUpInside ) { _, _ in
+            self.user?.masterKey = nil
+        }
         self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
         self.userButton.sizeToFit()
 
@@ -82,7 +88,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
         }
 
         self.siteDetailShade.backgroundColor = UIColor( white: 0, alpha: 0.382 )
-        self.siteDetailShade.addTargetBlock( { _, _ in self.hideSiteDetail() }, for: .touchUpInside )
+        self.siteDetailShade.addAction( for: .touchUpInside ) { _, _ in
+            self.hideSiteDetail()
+        }
 
         // - Hierarchy
         self.siteDetailShade.addSubview( self.siteDetailContainer )
@@ -168,15 +176,12 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
         return .lightContent
     }
 
-    // MARK: - MPUserObserver
+    // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
     }
 
     func userDidLogout(_ user: MPUser) {
-        PearlMainQueue {
-            self.dismiss( animated: true )
-        }
     }
 
     func userDidChange(_ user: MPUser) {
@@ -185,7 +190,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
     func userDidUpdateSites(_ user: MPUser) {
     }
 
-    // MARK: - Private
+    // MARK: --- Private ---
 
     @objc
     func didTapDismiss() {
@@ -232,26 +237,26 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
         }
     }
 
-    // MARK: - MPSiteHeaderObserver
+    // MARK: --- MPSiteHeaderObserver ---
 
     func siteOpenDetails(for site: MPSite) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.showSiteDetail( for: site )
         }
     }
 
-    // MARK: - MPSiteDetailObserver
+    // MARK: --- MPSiteDetailObserver ---
 
     func siteDetailShouldDismiss() {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.hideSiteDetail()
         }
     }
 
-    // MARK: - MPSitesViewObserver
+    // MARK: --- MPSitesViewObserver ---
 
     func siteWasSelected(selectedSite: MPSite?) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             UIView.animate( withDuration: 1, animations: {
                 if let selectedSite = selectedSite {
                     self.siteHeaderView.site = selectedSite
@@ -269,14 +274,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
         }
     }
 
-    // MARK: - UITextFieldDelegate
+    // MARK: --- UITextFieldDelegate ---
 
     func textFieldDidBeginEditing(_ textField: UITextField) {
         self.siteDetailShouldDismiss()
-    }
-
-    @objc
-    func textFieldEditingChanged(_ textField: UITextField) {
-        self.sitesTableView.query = self.searchField.text
     }
 }

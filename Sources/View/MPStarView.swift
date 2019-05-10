@@ -15,19 +15,19 @@ class MPStarView: UIView {
     private let motionParallax = 0.5
     private let motionQueue    = OperationQueue()
     private let motionManager  = CMMotionManager()
-    private let field          = MPStarField( layout: .bang )
+    private let field          = Field( layout: .bang )
     private let debugLabel     = UILabel()
     private var lastDrawTime   = CACurrentMediaTime()
     private var rolled         = 0.0, pitched = 0.0
     private var initialAttitude: CMAttitude?
     private var currentAttitude: CMAttitude? {
         didSet {
-            rolled = rate( radians: self.currentAttitude?.roll ?? 0 )
-            pitched = rate( radians: self.currentAttitude?.pitch ?? 0 )
+            self.rolled = rate( radians: self.currentAttitude?.roll ?? 0 )
+            self.pitched = rate( radians: self.currentAttitude?.pitch ?? 0 )
         }
     }
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     override init(frame: CGRect) {
         super.init( frame: frame )
@@ -36,15 +36,19 @@ class MPStarView: UIView {
         self.backgroundColor = UIColor.black
 
         self.addSubview( self.debugLabel )
-        self.debugLabel.text = " ";
-        self.debugLabel.textColor = UIColor.white;
-        self.debugLabel.font = .monospacedDigitSystemFont( ofSize: 12, weight: .thin );
+        self.debugLabel.text = " "
+        self.debugLabel.textColor = UIColor.white
+        self.debugLabel.font = .monospacedDigitSystemFont( ofSize: 12, weight: .thin )
         self.debugLabel.setFrameFrom( "-|>[]20|-" )
         self.debugLabel.isHidden = true
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    public func warp() {
+        // TODO: Rewrite the whole travel logic to make warping possible
     }
 
     override func willMove(toWindow newWindow: UIWindow?) {
@@ -89,28 +93,28 @@ class MPStarView: UIView {
                                    height: self.bounds.size.height * CGFloat( self.motionParallax ) )
         let spaceBounds  = self.bounds.insetBy( dx: -spacePadding.width, dy: -spacePadding.height )
 
-        let context  = UIGraphicsGetCurrentContext()!
-        let drawTime = CACurrentMediaTime(), dt = drawTime - self.lastDrawTime
-        self.lastDrawTime = drawTime;
+        if let context = UIGraphicsGetCurrentContext() {
+            let drawTime = CACurrentMediaTime(), dt = drawTime - self.lastDrawTime
+            self.lastDrawTime = drawTime
 
-        self.field.animate( seconds: dt )
+            self.field.animate( seconds: dt )
+            self.field.draw( bounds: spaceBounds, padding: spacePadding, context: context, rolled: self.rolled, pitched: self.pitched )
 
-        if !self.debugLabel.isHidden {
-            self.debugLabel.text = String( format: "fps: %02.1f, speed: %01.1f (%+01.1f @ %01.1f/s)", 1 / dt,
-                                           self.field.speed, self.field.speedDelta, self.field.speedAcceleration )
+            if !self.debugLabel.isHidden {
+                self.debugLabel.text = String( format: "fps: %02.1f, speed: %01.1f (%+01.1f @ %01.1f/s)", 1 / dt,
+                                               self.field.speed, self.field.speedDelta, self.field.speedAcceleration )
+            }
         }
-
-        self.field.draw( bounds: spaceBounds, padding: spacePadding, context: context, rolled: self.rolled, pitched: self.pitched )
     }
 
-    class MPStarField {
-        var stars             = [ MPBackgroundStar ]()
+    class Field {
+        var stars             = [ Star ]()
         var speed             = 100.0
         var speedDelta        = 0.0
         var speedAcceleration = 9.0
         let speedQueue        = OperationQueue()
 
-        // MARK: - Life
+        // MARK: --- Life ---
 
         init(layout: MPStarFieldLayout) {
             for _ in 1...1000 {
@@ -119,29 +123,28 @@ class MPStarView: UIView {
 
             switch layout {
                 case .bang:
-                    self.speedQueue.addOperation( MPStarFieldDistanceSpeedOperation( field: self, distance: 50, time: 1.5 ) )
+                    self.perform( operation: WarpOperation( field: self, distance: 50, time: 1.5 ) )
                 default:
                     ()
             }
         }
 
-        // MARK: - Interface
+        // MARK: --- Interface ---
 
-        public func speed(operation: MPStarFieldSpeedOperation) {
+        public func perform(operation: Operation) {
             self.speedQueue.addOperation( operation )
         }
 
-        public func animate(seconds: TimeInterval) {
+        func animate(seconds: TimeInterval) {
             if self.speedDelta != 0 {
-                let speedAdvance = copysign( min( abs( self.speedDelta ), abs( self.speedAcceleration * seconds ) ),
-                                             self.speedDelta );
-                self.speed += speedAdvance;
-                self.speedDelta -= speedAdvance;
+                let speedAdvance = copysign( min( abs( self.speedDelta ), abs( self.speedAcceleration * seconds ) ), self.speedDelta )
+                self.speed += speedAdvance
+                self.speedDelta -= speedAdvance
             }
             let speedTime = self.speed * seconds
 
             for operation in self.speedQueue.operations {
-                if let speedOperation = operation as? MPStarFieldSpeedOperation {
+                if let speedOperation = operation as? Operation {
                     speedOperation.animate( seconds: speedTime )
                 }
             }
@@ -151,7 +154,7 @@ class MPStarView: UIView {
             }
         }
 
-        public func draw(bounds: CGRect, padding: CGSize, context: CGContext, rolled: Double, pitched: Double) {
+        fileprivate func draw(bounds: CGRect, padding: CGSize, context: CGContext, rolled: Double, pitched: Double) {
             for star in self.stars {
                 star.draw( bounds: bounds, padding: padding, context: context, rolled: rolled, pitched: pitched )
             }
@@ -162,31 +165,29 @@ class MPStarView: UIView {
             case bang
         }
 
-        class MPStarFieldSpeedOperation: Operation {
+        class Operation: Foundation.Operation {
 
-            // MARK: - Interface
+            // MARK: --- Interface ---
 
-            public func animate(seconds: TimeInterval) {
+            func animate(seconds: TimeInterval) {
             }
         }
 
-        class MPStarFieldDistanceSpeedOperation: MPStarFieldSpeedOperation {
-            let field:          MPStarField
+        class WarpOperation: Operation {
+            let field:          Field
             let distanceNeeded: Double
             let time:           TimeInterval
             var distanceTravelled = 0.0
 
-            // MARK: - Life
+            // MARK: --- Life ---
 
-            init(field: MPStarField, distance: Double = 10, time: TimeInterval = 3) {
+            init(field: Field, distance: Double = 10, time: TimeInterval = 3) {
                 self.field = field
-                self.distanceNeeded = distance;
-                self.time = time;
+                self.distanceNeeded = distance
+                self.time = time
             }
 
             override func main() {
-                super.main()
-
                 self.field.speedDelta = 1 - self.field.speed
                 self.field.speedAcceleration = self.field.speedDelta / self.time
             }
@@ -200,13 +201,15 @@ class MPStarView: UIView {
             }
 
             override var isReady: Bool {
-                return super.isReady && self.distanceTravelled > self.distanceNeeded
+                let isReady = super.isReady && self.distanceTravelled > self.distanceNeeded
+                dbg( "\(self) isReady: \(isReady), distanceTravelled: \(self.distanceTravelled) / \(self.distanceNeeded)" )
+                return isReady
             }
         }
     }
 
-    class MPBackgroundStar {
-        private let field: MPStarField
+    class Star {
+        private let field: Field
         private let radius       = 1.5
         private let starGradient = CGGradient( colorsSpace: nil,
                                                colors: [ UIColor.white.cgColor,
@@ -219,15 +222,15 @@ class MPStarView: UIView {
                                                colors: [ UIColor.blue.cgColor,
                                                          UIColor.blue.withAlphaComponent( 0 ).cgColor ] as CFArray,
                                                locations: nil )!
-        private var actions      = [ MPBackgroundStarAction ]()
+        private var actions      = [ Action ]()
 
         var halo = 0.0
         var distance: Double
         var location: CGPoint
 
-        // MARK: - Life
+        // MARK: --- Life ---
 
-        init(field: MPStarField, layout: MPStarField.MPStarFieldLayout) {
+        init(field: Field, layout: Field.MPStarFieldLayout) {
             self.field = field
 
             switch layout {
@@ -235,22 +238,22 @@ class MPStarView: UIView {
                     self.distance = drand48()
                     self.location = CGPoint( x: drand48(), y: drand48() )
                 case .bang:
-                    let bangSpace = 0.3;
-                    var dx = drand48(), dy = drand48()
+                    let bangSpace = 0.3
+                    var dx        = drand48(), dy = drand48()
                     dx = 0.5 - dx
                     dy = 0.5 - dy
                     self.location = CGPoint( x: 0.5 + bangSpace * dx, y: 0.5 + bangSpace * dy )
                     self.distance = drand48() * sqrt( (0.5 - abs( dx )) * (0.5 - abs( dy )) )
             }
 
-            self.actions.append( MPBackgroundStarTravelAction( star: self ) )
+            self.actions.append( TravelAction( star: self ) )
         }
 
-        // MARK: - Interface
+        // MARK: --- Interface ---
 
         public func animate(seconds: TimeInterval) {
             if (drand48() < seconds / 100) {
-                self.actions.append( MPBackgroundStarFlickerAction( star: self ) )
+                self.actions.append( FlickerAction( star: self ) )
             }
 
             for a in (self.actions.startIndex..<self.actions.endIndex).reversed() {
@@ -266,7 +269,7 @@ class MPStarView: UIView {
                     x: bounds.origin.x + self.location.x * bounds.size.width + padding.width * CGFloat( self.distance * rolled ),
                     y: bounds.origin.y + self.location.y * bounds.size.height + padding.height * CGFloat( self.distance * pitched ) )
             if center.x - CGFloat( 2 * self.radius ) < bounds.minX || center.x + CGFloat( 2 * self.radius ) > bounds.maxX ||
-               center.y - CGFloat( 2 * self.radius ) < bounds.minY || center.y + CGFloat( 2 * self.radius ) > bounds.maxY {
+                       center.y - CGFloat( 2 * self.radius ) < bounds.minY || center.y + CGFloat( 2 * self.radius ) > bounds.maxY {
                 return
             }
 
@@ -283,19 +286,19 @@ class MPStarView: UIView {
             }
         }
 
-        class MPBackgroundStarAction {
-            let star:     MPBackgroundStar
+        class Action {
+            let star:     Star
             let duration: TimeInterval
             var elapsed:  TimeInterval = 0
 
-            // MARK: - Life
+            // MARK: --- Life ---
 
-            init(star: MPBackgroundStar, duration: TimeInterval) {
+            init(star: Star, duration: TimeInterval) {
                 self.star = star
                 self.duration = duration
             }
 
-            // MARK: - Interface
+            // MARK: --- Interface ---
 
             public func animate(seconds: TimeInterval) -> Bool {
                 self.step( progress: self.elapsed / self.duration, increment: seconds / self.duration )
@@ -312,11 +315,11 @@ class MPStarView: UIView {
             }
         }
 
-        class MPBackgroundStarTravelAction: MPBackgroundStarAction {
+        class TravelAction: Action {
 
-            // MARK: - Life
+            // MARK: --- Life ---
 
-            init(star: MPBackgroundStar) {
+            init(star: Star) {
                 super.init( star: star, duration: 50 )
             }
 
@@ -340,11 +343,11 @@ class MPStarView: UIView {
             }
         }
 
-        class MPBackgroundStarFlickerAction: MPBackgroundStarAction {
+        class FlickerAction: Action {
 
-            // MARK: - Life
+            // MARK: --- Life ---
 
-            init(star: MPBackgroundStar) {
+            init(star: Star) {
                 super.init( star: star, duration: 8 )
             }
 

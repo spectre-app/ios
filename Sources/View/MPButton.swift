@@ -13,20 +13,26 @@ class MPButton: UIView {
     }
     public var effectBackground = true {
         didSet {
-            self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark: .light ): nil
+            DispatchQueue.main.async {
+                self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark: .light ): nil
+            }
         }
     }
     public var darkBackground   = false {
         didSet {
-            self.tintColor = self.darkBackground ? .white: .black
-            self.effectBackground = self.effectBackground || self.effectBackground
-//            self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
+            DispatchQueue.main.async {
+                self.tintColor = self.darkBackground ? .white: .black
+                self.effectBackground = self.effectBackground || self.effectBackground
+//                self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
+            }
         }
     }
     public var title: String? {
         didSet {
-            self.button.setTitle( self.title, for: .normal )
-            self.setNeedsUpdateConstraints()
+            DispatchQueue.main.async {
+                self.button.setTitle( self.title, for: .normal )
+                self.setNeedsUpdateConstraints()
+            }
         }
     }
 
@@ -38,7 +44,7 @@ class MPButton: UIView {
         }
     }
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     static func closeButton() -> MPButton {
         return MPButton( title: "╳" )
@@ -112,6 +118,6 @@ class MPButton: UIView {
 
     @objc
     func buttonAction() {
-        MPTapEffectView( for: self.effectView ).animate()
+        MPTapEffectView( for: self.effectView ).run()
     }
 }

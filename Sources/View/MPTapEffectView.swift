@@ -40,7 +40,7 @@ class MPTapEffectView: UIView {
                 .activate()
     }
 
-    func animate() {
+    public func run() {
         if let hostSnapshot = self.host.snapshotView( afterScreenUpdates: false ) {
             self.addSubview( hostSnapshot )
             hostSnapshot.center = CGRectGetCenter( self.bounds )

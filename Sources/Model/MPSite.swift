@@ -72,7 +72,7 @@ class MPSite: NSObject, Comparable {
         }
     }
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     init(user: MPUser, named name: String,
          algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
@@ -110,7 +110,7 @@ class MPSite: NSObject, Comparable {
         return lhs.siteName < rhs.siteName
     }
 
-    // MARK: - mpw
+    // MARK: --- mpw ---
 
     func result(keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil, resultParam: String? = nil)
                     -> String? {

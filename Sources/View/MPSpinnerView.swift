@@ -17,28 +17,35 @@ class MPSpinnerView: UIView {
     public var delegate:      MPSpinnerDelegate?
     public var selectedItem:  Int? {
         didSet {
-            if let selectedItem = self.selectedItem {
-                self.scan( toItem: CGFloat( selectedItem ) )
-            }
-            if let delegate = self.delegate {
-                delegate.spinner( self, didSelectItem: self.selectedItem )
-                self.setNeedsLayout()
+            DispatchQueue.main.async {
+                if let selectedItem = self.selectedItem {
+                    self.scan( toItem: CGFloat( selectedItem ) )
+                }
+                if let delegate = self.delegate {
+                    delegate.spinner( self, didSelectItem: self.selectedItem )
+                    self.setNeedsLayout()
+                }
             }
         }
     }
     public var activatedItem: Int? {
         willSet {
-            if let delegate = self.delegate,
-               let activatedItem = self.activatedItem, activatedItem != newValue {
-                delegate.spinner( self, didDeactivateItem: activatedItem )
+            DispatchQueue.main.async {
+                if let delegate = self.delegate,
+                   let activatedItem = self.activatedItem, activatedItem != newValue {
+                    delegate.spinner( self, didDeactivateItem: activatedItem )
+                }
             }
         }
         didSet {
             self.selectedItem = self.activatedItem
-            if let delegate = self.delegate,
-               let activatedItem = self.activatedItem {
-                delegate.spinner( self, didActivateItem: activatedItem )
-                self.setNeedsLayout()
+
+            DispatchQueue.main.async {
+                if let delegate = self.delegate,
+                   let activatedItem = self.activatedItem {
+                    delegate.spinner( self, didActivateItem: activatedItem )
+                    self.setNeedsLayout()
+                }
             }
         }
     }
@@ -54,14 +61,17 @@ class MPSpinnerView: UIView {
     @objc
     private var scannedItem: CGFloat = 0 {
         didSet {
-            self.setNeedsLayout()
-            if let delegate = self.delegate {
-                delegate.spinner( self, didScanItem: self.scannedItem )
+            DispatchQueue.main.async {
+                if let delegate = self.delegate {
+                    delegate.spinner( self, didScanItem: self.scannedItem )
+                }
+
+                self.setNeedsLayout()
             }
         }
     }
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     override init(frame: CGRect) {
         super.init( frame: frame )
@@ -144,7 +154,7 @@ class MPSpinnerView: UIView {
         }
     }
 
-    // MARK: - Interface
+    // MARK: --- Interface ---
 
     public func scan(toItem item: CGFloat, animated: Bool = true) {
         guard self.scannedItem != item
@@ -164,7 +174,7 @@ class MPSpinnerView: UIView {
         }
     }
 
-    // MARK: - Private
+    // MARK: --- Private ---
 
     @objc private func didPan(recognizer: UIPanGestureRecognizer) {
         guard self.items > 0

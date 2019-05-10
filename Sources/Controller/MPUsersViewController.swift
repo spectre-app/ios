@@ -11,7 +11,7 @@ import UIKit
 class MPUsersViewController: UIViewController, MPUserObserver {
     private let loginView = MPLoginView()
 
-    // MARK: - Life
+    // MARK: --- Life ---
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -39,15 +39,24 @@ class MPUsersViewController: UIViewController, MPUserObserver {
         }
     }
 
-    // MARK: - MPUserObserver
+    // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
-        PearlMainQueue {
+        DispatchQueue.main.async {
             self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
         }
     }
 
     func userDidLogout(_ user: MPUser) {
+        DispatchQueue.main.async {
+            // Remove any SitesVC's from the stack that are for this user.
+            if let navigationController = self.navigationController {
+                navigationController.setViewControllers(
+                        navigationController.viewControllers.filter {
+                            ($0 as? MPSitesViewController)?.user != user
+                        }, animated: true )
+            }
+        }
     }
 
     func userDidChange(_ user: MPUser) {
