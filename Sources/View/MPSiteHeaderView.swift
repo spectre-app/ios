@@ -97,7 +97,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.unanimated {
                 self.backgroundColor = self.site?.color
                 self.siteButton.setImage( self.site?.image, for: .normal )

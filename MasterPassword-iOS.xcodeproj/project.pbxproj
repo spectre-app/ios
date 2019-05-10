@@ -68,6 +68,7 @@
 		93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
 		93D39E501250468B10790F5F /* UIUtils+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B2EC0C429BBBF90463B /* UIUtils+MP.m */; };
 		93D39E8BDD5453B48B424B1D /* MPItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B69E4852AFB51AF6EC /* MPItemView.swift */; };
+		93D39EAA842D58A3306E6EFB /* DispatchQueue+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3940575E4CC62A8F6CE04 /* DispatchQueue+MP.swift */; };
 		93D39EBD5353FE65B8F5EDF7 /* ViewConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3984BB76CF8DB86D9D2C6 /* ViewConfiguration.m */; };
 		93D39EDADBB0A8211D8CF2A5 /* MPLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397615F791F856B7814B9 /* MPLoginView.swift */; };
 		93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */; };
@@ -346,6 +347,7 @@
 		93D39352DCB3AD8CB34A38B0 /* ViewConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewConfiguration.h; sourceTree = "<group>"; };
 		93D393B97158D7BE9332EA53 /* NSDictionary+Indexing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+Indexing.h"; sourceTree = "<group>"; };
 		93D393BB973253D4BAAC84AA /* PearlEMail.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlEMail.m; sourceTree = "<group>"; };
+		93D3940575E4CC62A8F6CE04 /* DispatchQueue+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DispatchQueue+MP.swift"; sourceTree = "<group>"; };
 		93D394077F8FAB8167647187 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		93D3940D5C3196FC1B248C34 /* POPAnimation+MP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "POPAnimation+MP.h"; sourceTree = "<group>"; };
 		93D39424D508440582DC7FD0 /* MPSpinnerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSpinnerView.swift; sourceTree = "<group>"; };
@@ -851,6 +853,7 @@
 				93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */,
 				93D39D251169E42F0AAC451F /* MPURLUtils.swift */,
 				93D3915A208E1B01BDD05A3E /* MPQuery.swift */,
+				93D3940575E4CC62A8F6CE04 /* DispatchQueue+MP.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -2056,6 +2059,7 @@
 				93D39E8BDD5453B48B424B1D /* MPItemView.swift in Sources */,
 				93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */,
 				93D3949F5F5BFEDA9E2B86CE /* MPDateView.swift in Sources */,
+				93D39EAA842D58A3306E6EFB /* DispatchQueue+MP.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

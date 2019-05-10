@@ -17,7 +17,7 @@ class MPSpinnerView: UIView {
     public var delegate:      MPSpinnerDelegate?
     public var selectedItem:  Int? {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 if let selectedItem = self.selectedItem {
                     self.scan( toItem: CGFloat( selectedItem ) )
                 }
@@ -30,7 +30,7 @@ class MPSpinnerView: UIView {
     }
     public var activatedItem: Int? {
         willSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 if let delegate = self.delegate,
                    let activatedItem = self.activatedItem, activatedItem != newValue {
                     delegate.spinner( self, didDeactivateItem: activatedItem )
@@ -40,7 +40,7 @@ class MPSpinnerView: UIView {
         didSet {
             self.selectedItem = self.activatedItem
 
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 if let delegate = self.delegate,
                    let activatedItem = self.activatedItem {
                     delegate.spinner( self, didActivateItem: activatedItem )
@@ -61,7 +61,7 @@ class MPSpinnerView: UIView {
     @objc
     private var scannedItem: CGFloat = 0 {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 if let delegate = self.delegate {
                     delegate.spinner( self, didScanItem: self.scannedItem )
                 }

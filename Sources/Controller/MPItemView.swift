@@ -43,7 +43,7 @@ class Item: MPSiteObserver {
 
     func setNeedsUpdate() {
         if self.updateGroup.wait(timeout: .now()) == .success {
-            DispatchQueue.main.async( group: self.updateGroup ) {
+            DispatchQueue.main.perform( group: self.updateGroup ) {
                 self.view.update()
             }
         }

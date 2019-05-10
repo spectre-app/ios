@@ -95,7 +95,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
 
             // Update the sites table to show the newly filtered sites
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: .automatic )
                 let path = self.find( inDataSource: self.data, item: selectedResult )
                 self.selectRow( at: path, animated: false, scrollPosition: .none )
@@ -149,13 +149,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.updateSites()
         }
     }
 
     func userDidLogout(_ user: MPUser) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.updateSites()
         }
     }
@@ -164,7 +164,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func userDidUpdateSites(_ user: MPUser) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.updateSites()
         }
     }
@@ -189,7 +189,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         var new = false {
             didSet {
-                DispatchQueue.main.async {
+                DispatchQueue.main.perform {
                     self.copyButton.title = self.new ? "add": "copy"
                 }
             }
@@ -278,14 +278,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                                     UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
                                 ] )
 
-                        DispatchQueue.main.async {
+                        DispatchQueue.main.perform {
                             MPAlertView( title: site.siteName, message: "Password Copied (3 min)" ).show( in: self )
                         }
                     }
                     else {
                         UIPasteboard.general.string = password
 
-                        DispatchQueue.main.async {
+                        DispatchQueue.main.perform {
                             MPAlertView( title: site.siteName, message: "Password Copied" ).show( in: self )
                         }
                     }
@@ -296,14 +296,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- MPSiteObserver ---
 
         func siteDidChange(_ site: MPSite) {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 self.nameLabel.attributedText = self.result?.attributedKey
                 self.indicatorView.backgroundColor = self.site?.color?.withAlphaComponent( 0.85 )
             }
             DispatchQueue.global().async {
                 let password = self.site?.result()
 
-                DispatchQueue.main.async {
+                DispatchQueue.main.perform {
                     self.passwordLabel.text = password ?? " "
                 }
             }

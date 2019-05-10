@@ -13,14 +13,14 @@ class MPButton: UIView {
     }
     public var effectBackground = true {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark: .light ): nil
             }
         }
     }
     public var darkBackground   = false {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 self.tintColor = self.darkBackground ? .white: .black
                 self.effectBackground = self.effectBackground || self.effectBackground
 //                self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
@@ -29,7 +29,7 @@ class MPButton: UIView {
     }
     public var title: String? {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 self.button.setTitle( self.title, for: .normal )
                 self.setNeedsUpdateConstraints()
             }

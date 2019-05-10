@@ -9,7 +9,7 @@ import pop
 class MPLoginView: UIView, MPSpinnerDelegate {
     public var users = [ MPUser ]() {
         willSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 for user in self.users {
                     for subview in self.usersSpinner.subviews {
                         if let avatarView = subview as? UserView, user === avatarView.user {
@@ -20,7 +20,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             }
         }
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 for user in self.users {
                     self.usersSpinner.addSubview( UserView( user: user ) )
                 }
@@ -75,7 +75,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
         public var active: Bool = false {
             didSet {
-                DispatchQueue.main.async {
+                DispatchQueue.main.perform {
                     let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
                     anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
                     self.nameLabel.pop_add( anim, forKey: "pop.font" )
@@ -97,7 +97,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         }
         public var user: MPUser? {
             didSet {
-                DispatchQueue.main.async {
+                DispatchQueue.main.perform {
                     self.avatarView.image = (self.user?.avatar ?? MPUser.MPUserAvatar.avatar_add).image()
                     self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
                 }
@@ -114,7 +114,11 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         private let idBadgeView        = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
         private var passwordConfiguration: ViewConfiguration!
-        private var path               = CGMutablePath()
+        private var path               = CGMutablePath() {
+            didSet {
+                self.setNeedsDisplay()
+            }
+        }
 
         // MARK: --- Life ---
 
@@ -233,12 +237,12 @@ class MPLoginView: UIView, MPSpinnerDelegate {
         override func layoutSubviews() {
             super.layoutSubviews()
 
-            path = CGMutablePath()
+            let path = CGMutablePath()
             if self.passwordConfiguration.activated {
                 path.addPath( CGPathCreateBetween( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
                 path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
             }
-            self.setNeedsDisplay()
+            self.path = path
         }
 
         override func draw(_ rect: CGRect) {
@@ -246,7 +250,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
             if self.active, let context = UIGraphicsGetCurrentContext() {
                 UIColor.white.withAlphaComponent( 0.618 ).setStroke()
-                context.addPath( path )
+                context.addPath( self.path )
                 context.strokePath()
             }
         }
@@ -284,7 +288,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 DispatchQueue.global().async {
                     self.user!.authenticate( masterPassword: masterPassword )
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.perform {
                         self.passwordIndicator.stopAnimating()
                         self.active = false
                     }

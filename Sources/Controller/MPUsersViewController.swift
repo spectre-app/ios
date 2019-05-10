@@ -42,13 +42,13 @@ class MPUsersViewController: UIViewController, MPUserObserver {
     // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
         }
     }
 
     func userDidLogout(_ user: MPUser) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             // Remove any SitesVC's from the stack that are for this user.
             if let navigationController = self.navigationController {
                 navigationController.setViewControllers(

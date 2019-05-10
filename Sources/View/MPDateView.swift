@@ -8,7 +8,7 @@ import UIKit
 class MPDateView: UIView {
     public var date: Date? {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 if let date = self.date {
                     self.monthLabel.text = self.monthFormatter.string( from: date )
                     self.dayLabel.text = self.dayFormatter.string( from: date )

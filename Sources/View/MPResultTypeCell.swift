@@ -8,7 +8,7 @@ import Foundation
 class MPResultTypeCell: UICollectionViewCell {
     public var resultType: MPResultType? {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 if let resultType = self.resultType {
                     self.nameLabel.text = String( utf8String: mpw_abbreviationForType( resultType ) )
 
@@ -38,7 +38,7 @@ class MPResultTypeCell: UICollectionViewCell {
     private let classLabel    = UILabel()
     override var isSelected: Bool {
         didSet {
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.382 ) {
                     self.contentView.alpha = self.isSelected ? 1: 0.382
                 }

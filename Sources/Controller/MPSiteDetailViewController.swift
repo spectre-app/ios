@@ -77,7 +77,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.backgroundView.backgroundColor = self.site.color
         }
     }

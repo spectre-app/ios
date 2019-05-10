@@ -30,7 +30,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
             var userButtonTitle = ""
             self.user?.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
 
-            DispatchQueue.main.async {
+            DispatchQueue.main.perform {
                 self.userButton.setTitle( userButtonTitle.uppercased(), for: .normal )
                 self.userButton.sizeToFit()
             }
@@ -240,7 +240,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
     // MARK: --- MPSiteHeaderObserver ---
 
     func siteOpenDetails(for site: MPSite) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.showSiteDetail( for: site )
         }
     }
@@ -248,7 +248,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
     // MARK: --- MPSiteDetailObserver ---
 
     func siteDetailShouldDismiss() {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             self.hideSiteDetail()
         }
     }
@@ -256,7 +256,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
     // MARK: --- MPSitesViewObserver ---
 
     func siteWasSelected(selectedSite: MPSite?) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.perform {
             UIView.animate( withDuration: 1, animations: {
                 if let selectedSite = selectedSite {
                     self.siteHeaderView.site = selectedSite
