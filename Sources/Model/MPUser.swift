@@ -9,7 +9,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     public let observers = Observers<MPUserObserver>()
 
     public let fullName: String
-    public var avatar: MPUserAvatar {
+    public var avatar: Avatar {
         didSet {
             self.observers.notify { $0.userDidChange( self ) }
         }
@@ -51,7 +51,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Life ---
 
-    init(named name: String, avatar: MPUserAvatar = .avatar_0,
+    init(named name: String, avatar: Avatar = .avatar_0,
          algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, masterKeyID: String? = nil) {
         self.fullName = name
         self.avatar = avatar
@@ -110,13 +110,10 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Types ---
 
-    enum MPUserAvatar: Int {
-        static let userAvatars = [
-            MPUserAvatar.avatar_0, MPUserAvatar.avatar_1, MPUserAvatar.avatar_2, MPUserAvatar.avatar_3,
-            MPUserAvatar.avatar_4, MPUserAvatar.avatar_5, MPUserAvatar.avatar_6, MPUserAvatar.avatar_7,
-            MPUserAvatar.avatar_8, MPUserAvatar.avatar_9, MPUserAvatar.avatar_10, MPUserAvatar.avatar_11,
-            MPUserAvatar.avatar_12, MPUserAvatar.avatar_13, MPUserAvatar.avatar_14, MPUserAvatar.avatar_15,
-            MPUserAvatar.avatar_16, MPUserAvatar.avatar_17, MPUserAvatar.avatar_18 ]
+    enum Avatar: Int {
+        static let userAvatars : [Avatar] = [
+            .avatar_0, .avatar_1, .avatar_2, .avatar_3,.avatar_4, .avatar_5, .avatar_6, .avatar_7, .avatar_8, .avatar_9,
+            .avatar_10, .avatar_11, .avatar_12, .avatar_13, .avatar_14, .avatar_15, .avatar_16, .avatar_17, .avatar_18 ]
 
         case avatar_0, avatar_1, avatar_2, avatar_3, avatar_4, avatar_5, avatar_6, avatar_7, avatar_8, avatar_9,
              avatar_10, avatar_11, avatar_12, avatar_13, avatar_14, avatar_15, avatar_16, avatar_17, avatar_18,

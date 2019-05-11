@@ -7,7 +7,7 @@ import UIKit
 import pop
 
 class MPLoginView: UIView, MPSpinnerDelegate {
-    public var users = [ MPUser ]() {
+    public var users = [ MPMarshal.UserInfo ]() {
         willSet {
             DispatchQueue.main.perform {
                 for user in self.users {
@@ -103,10 +103,10 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.setNeedsDisplay()
             }
         }
-        public var user: MPUser? {
+        public var user: MPMarshal.UserInfo? {
             didSet {
                 DispatchQueue.main.perform {
-                    self.avatarView.image = (self.user?.avatar ?? MPUser.MPUserAvatar.avatar_add).image()
+                    self.avatarView.image = (self.user?.avatar ?? MPUser.Avatar.avatar_add).image()
                     self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
                 }
             }
@@ -130,7 +130,7 @@ class MPLoginView: UIView, MPSpinnerDelegate {
 
         // MARK: --- Life ---
 
-        init(user: MPUser?) {
+        init(user: MPMarshal.UserInfo?) {
             super.init( frame: CGRect() )
 
             defer {
@@ -292,13 +292,13 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.passwordIndicator.startAnimating()
                 self.passwordField.isEnabled = false
 
-                DispatchQueue.mpw.perform {
-                    let success = self.user?.mpw_authenticate( masterPassword: masterPassword ) ?? false
+                self.user?.authenticate( masterPassword: masterPassword ) {
+                    (user: MPUser?, error: MPMarshalError) in
 
                     DispatchQueue.main.perform {
                         self.passwordIndicator.stopAnimating()
 
-                        if !success {
+                        if error.type != .success {
                             UIView.animateKeyframes( withDuration: 0.618, delay: 0, animations: {
                                 UIView.addKeyframe( withRelativeStartTime: 0, relativeDuration: 0.25 ) {
                                     self.passwordField.transform = CGAffineTransform( translationX: -8, y: 0 )

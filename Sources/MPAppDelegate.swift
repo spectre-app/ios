@@ -44,7 +44,8 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
         // Start UI
         self.window.rootViewController = MPNavigationController(
-                rootViewController: MPUsersViewController( users: [ maarten, robert ] )
+                rootViewController: MPUsersViewController()
+//                rootViewController: MPUsersViewController( users: [ maarten, robert ] )
 //                rootViewController: MPSitesViewController( user: robert )
         )
         self.window.makeKeyAndVisible()

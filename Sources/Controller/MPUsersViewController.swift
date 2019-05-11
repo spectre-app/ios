@@ -17,11 +17,10 @@ class MPUsersViewController: UIViewController, MPUserObserver {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(users: [MPUser]) {
+    init() {
         super.init( nibName: nil, bundle: nil )
 
-        users.forEach { $0.observers.register( self ) }
-        self.loginView.users = users
+        MPMarshal.shared.loadFiles { self.loginView.users = $0 ?? [] }
     }
 
     override func viewDidLoad() {
