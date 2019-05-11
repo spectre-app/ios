@@ -46,36 +46,32 @@ class MPMarshal {
     public func saveToFile(user: MPUser) {
         DispatchQueue.mpw.perform {
             do {
-                let marshalledSites = UnsafeMutablePointer<MPMarshalledSite>.allocate( capacity: user.sites.count )
-                for (s, site) in user.sites.enumerated() {
-                    (marshalledSites + s).initialize( to: MPMarshalledSite(
-                            name: site.siteName,
-                            content: site.resultState,
-                            type: site.resultType,
-                            counter: site.counter,
-                            algorithm: site.algorithm,
-                            loginContent: site.loginState,
-                            loginType: site.loginType,
-                            url: site.url,
-                            uses: UInt32( site.uses ),
-                            lastUsed: time_t( site.lastUsed.timeIntervalSince1970 ),
-                            questions_count: 0,
-                            questions: nil
-                    ) )
+                guard let marshalledUser = provideMasterKeyWith( key: user.masterKey, { masterKeyProvider in
+                    return mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
+                } )
+                else {
+                    err( "couldn't marshal user: \(user)" )
+                    return
                 }
 
-                let marshalledUser = UnsafeMutablePointer<MPMarshalledUser>.allocate( capacity: 1 )
-                marshalledUser.initialize( to: MPMarshalledUser(
-                        fullName: user.fullName,
-                        masterPassword: nil,
-                        algorithm: user.algorithm,
-                        redacted: true,
-                        avatar: UInt32( user.avatar.rawValue ),
-                        defaultType: user.defaultType,
-                        lastUsed: time_t( user.lastUsed.timeIntervalSince1970 ),
-                        sites_count: user.sites.count,
-                        sites: marshalledSites
-                ) )
+                marshalledUser.pointee.avatar = UInt32( user.avatar.rawValue )
+                marshalledUser.pointee.defaultType = user.defaultType
+                marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
+
+                for site in user.sites {
+                    guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+                    else {
+                        err( "couldn't marshal site: \(site)" )
+                        return
+                    }
+
+                    site.resultState?.withCString { marshalledSite.pointee.content = $0 }
+                    site.loginState?.withCString { marshalledSite.pointee.loginContent = $0 }
+                    marshalledSite.pointee.loginType = site.loginType
+                    site.url?.withCString { marshalledSite.pointee.url = $0 }
+                    marshalledSite.pointee.uses = UInt32( site.uses )
+                    marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+                }
 
                 let format  = MPMarshalFormat.default
                 let error   = UnsafeMutablePointer<MPMarshalError>.allocate( capacity: 1 )
@@ -102,6 +98,8 @@ class MPMarshal {
         }
     }
 
+    // MARK: --- Interface ---
+
     class UserInfo {
         public let document:  String
         public let format:    MPMarshalFormat
@@ -127,7 +125,9 @@ class MPMarshal {
         public func authenticate(masterPassword: String, _ completion: @escaping (MPUser?, MPMarshalError) -> Void) {
             DispatchQueue.mpw.perform {
                 let error = UnsafeMutablePointer<MPMarshalError>.allocate( capacity: 1 )
-                if let marshalledUser = mpw_marshal_read( self.document, self.format, masterPassword, error )?.pointee {
+                if let marshalledUser = provideMasterKeyWith( password: masterPassword, { masterKeyProvider in
+                    return mpw_marshal_read( self.document, self.format, masterKeyProvider, error )?.pointee
+                } ) {
                     let user = MPUser(
                             named: String( utf8String: marshalledUser.fullName ) ?? self.fullName,
                             avatar: MPUser.Avatar( rawValue: Int( marshalledUser.avatar ) ) ?? .avatar_0,
@@ -161,4 +161,31 @@ class MPMarshal {
             }
         }
     }
+}
+
+private var currentMasterKey:      MPMasterKey?
+private var currentMasterPassword: String?
+
+private func __masterKeyObjectProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
+    return currentMasterKey
+}
+
+private func __masterKeyPasswordProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
+    return mpw_masterKey( fullName, currentMasterPassword, algorithm )
+}
+
+private func provideMasterKeyWith<R>(key: MPMasterKey?, _ perform: (@escaping MPMasterKeyProvider) -> R) -> R {
+    currentMasterKey = key
+    let result = perform( __masterKeyObjectProvider )
+    currentMasterKey = nil
+
+    return result
+}
+
+private func provideMasterKeyWith<R>(password: String?, _ perform: (@escaping MPMasterKeyProvider) -> R) -> R {
+    currentMasterPassword = password
+    let result = perform( __masterKeyPasswordProvider )
+    currentMasterPassword = nil
+
+    return result
 }
