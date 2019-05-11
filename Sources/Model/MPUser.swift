@@ -85,7 +85,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     // MARK: --- Interface ---
 
     @discardableResult
-    func authenticate(masterPassword: String) -> Bool {
+    func mpw_authenticate(masterPassword: String) -> Bool {
         if let authKey = (masterPassword.withCString { masterPassword in
             fullName.withCString { fullName in
                 mpw_masterKey( fullName, masterPassword, .versionCurrent )
@@ -107,6 +107,8 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
         return false
     }
+
+    // MARK: --- Types ---
 
     enum MPUserAvatar: Int {
         static let userAvatars = [

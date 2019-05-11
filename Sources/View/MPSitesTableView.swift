@@ -272,9 +272,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         func siteAction() {
-            DispatchQueue.global().async {
+            DispatchQueue.mpw.perform {
                 if let site = self.site,
-                   let password = site.result() {
+                   let password = site.mpw_result() {
                     if self.new {
                         site.user.sites.append( site )
                     }
@@ -309,8 +309,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.nameLabel.attributedText = self.result?.attributedKey
                 self.indicatorView.backgroundColor = self.site?.color?.withAlphaComponent( 0.85 )
             }
-            DispatchQueue.global().async {
-                let password = self.site?.result()
+            DispatchQueue.mpw.perform {
+                let password = self.site?.mpw_result()
 
                 DispatchQueue.main.perform {
                     self.passwordLabel.text = password ?? " "

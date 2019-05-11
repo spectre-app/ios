@@ -112,7 +112,7 @@ class MPSite: NSObject, Comparable {
 
     // MARK: --- mpw ---
 
-    func result(keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil, resultParam: String? = nil)
+    func mpw_result(keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil, resultParam: String? = nil)
                     -> String? {
         if let masterKey = self.user.masterKey,
            let result = mpw_siteResult( masterKey, self.siteName, self.counter,
