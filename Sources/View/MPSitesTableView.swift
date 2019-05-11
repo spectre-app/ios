@@ -72,7 +72,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             // Add "new site" result
             if let user = self.user,
                let query = self.query,
-               exactResult == nil {
+               !query.isEmpty, exactResult == nil {
                 if let newSiteResult = self.newSiteResult {
                     newSiteResult.value.siteName = query
                 }
@@ -107,8 +107,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
 
                 // Select the most appropriate row according to the query.
-                let selectedPath = self.find( inDataSource: self.data, item: selectedResult )
-                self.selectRow( at: selectedPath, animated: false, scrollPosition: .none )
+                if let selectedPath = self.find( inDataSource: self.data, item: selectedResult ) {
+                    self.selectRow( at: selectedPath, animated: true, scrollPosition: .middle )
+                }
             }
         }
     }
