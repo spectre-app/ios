@@ -162,7 +162,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
         super.viewDidLayoutSubviews()
 
         // Offset sites content's top margin to make space for the top container.
-        let top = self.sitesTableView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y
+        let top = self.sitesTableView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y - 8
         self.sitesTableView.contentInset = UIEdgeInsets(
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 
