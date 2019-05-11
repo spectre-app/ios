@@ -328,36 +328,32 @@ class MPLoginView: UIView, MPSpinnerDelegate {
             self.identiconItem?.cancel()
             self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
                 if let userName = self.user?.fullName {
-                    userName.withCString { userName in
-                        if let masterPassword = self.passwordField.text {
-                            masterPassword.withCString { masterPassword in
-                                let identicon = mpw_identicon( userName, masterPassword )
+                    if let masterPassword = self.passwordField.text {
+                        let identicon = mpw_identicon( userName, masterPassword )
 
-                                DispatchQueue.main.perform {
-                                    self.identiconLabel.text = [
-                                        String( cString: identicon.leftArm ),
-                                        String( cString: identicon.body ),
-                                        String( cString: identicon.rightArm ),
-                                        String( cString: identicon.accessory ) ].joined()
-                                    switch identicon.color {
-                                        case .black:
-                                            self.identiconLabel.textColor = .black
-                                        case .red:
-                                            self.identiconLabel.textColor = .red
-                                        case .green:
-                                            self.identiconLabel.textColor = .green
-                                        case .yellow:
-                                            self.identiconLabel.textColor = .yellow
-                                        case .blue:
-                                            self.identiconLabel.textColor = .blue
-                                        case .magenta:
-                                            self.identiconLabel.textColor = .magenta
-                                        case .cyan:
-                                            self.identiconLabel.textColor = .cyan
-                                        case .white:
-                                            self.identiconLabel.textColor = .white
-                                    }
-                                }
+                        DispatchQueue.main.perform {
+                            self.identiconLabel.text = [
+                                String( cString: identicon.leftArm ),
+                                String( cString: identicon.body ),
+                                String( cString: identicon.rightArm ),
+                                String( cString: identicon.accessory ) ].joined()
+                            switch identicon.color {
+                                case .black:
+                                    self.identiconLabel.textColor = .black
+                                case .red:
+                                    self.identiconLabel.textColor = .red
+                                case .green:
+                                    self.identiconLabel.textColor = .green
+                                case .yellow:
+                                    self.identiconLabel.textColor = .yellow
+                                case .blue:
+                                    self.identiconLabel.textColor = .blue
+                                case .magenta:
+                                    self.identiconLabel.textColor = .magenta
+                                case .cyan:
+                                    self.identiconLabel.textColor = .cyan
+                                case .white:
+                                    self.identiconLabel.textColor = .white
                             }
                         }
                     }

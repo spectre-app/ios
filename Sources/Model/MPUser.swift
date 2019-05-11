@@ -25,6 +25,11 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
             self.observers.notify { $0.userDidChange( self ) }
         }
     }
+    public var lastUsed: Date {
+        didSet {
+            self.observers.notify { $0.userDidChange( self ) }
+        }
+    }
 
     public var masterKeyID: String? {
         didSet {
@@ -52,11 +57,12 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     // MARK: --- Life ---
 
     init(named name: String, avatar: Avatar = .avatar_0,
-         algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, masterKeyID: String? = nil) {
+         algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, lastUsed: Date = Date(), masterKeyID: String? = nil) {
         self.fullName = name
         self.avatar = avatar
         self.algorithm = algorithm ?? .versionCurrent
         self.defaultType = defaultType ?? .default
+        self.lastUsed = lastUsed
         self.masterKeyID = masterKeyID
         super.init()
 
@@ -77,6 +83,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     }
 
     func userDidChange(_ user: MPUser) {
+        MPMarshal.shared.saveToFile( user: self )
     }
 
     func userDidUpdateSites(_ user: MPUser) {
@@ -86,11 +93,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
     @discardableResult
     func mpw_authenticate(masterPassword: String) -> Bool {
-        if let authKey = (masterPassword.withCString { masterPassword in
-            fullName.withCString { fullName in
-                mpw_masterKey( fullName, masterPassword, .versionCurrent )
-            }
-        }),
+        if let authKey = mpw_masterKey( self.fullName, masterPassword, .versionCurrent ),
            let authKeyID = String( utf8String: mpw_id_buf( authKey, MPMasterKeySize ) ) {
             if let masterKeyID = self.masterKeyID {
                 if masterKeyID != authKeyID {
@@ -111,8 +114,8 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     // MARK: --- Types ---
 
     enum Avatar: Int {
-        static let userAvatars : [Avatar] = [
-            .avatar_0, .avatar_1, .avatar_2, .avatar_3,.avatar_4, .avatar_5, .avatar_6, .avatar_7, .avatar_8, .avatar_9,
+        static let userAvatars: [Avatar] = [
+            .avatar_0, .avatar_1, .avatar_2, .avatar_3, .avatar_4, .avatar_5, .avatar_6, .avatar_7, .avatar_8, .avatar_9,
             .avatar_10, .avatar_11, .avatar_12, .avatar_13, .avatar_14, .avatar_15, .avatar_16, .avatar_17, .avatar_18 ]
 
         case avatar_0, avatar_1, avatar_2, avatar_3, avatar_4, avatar_5, avatar_6, avatar_7, avatar_8, avatar_9,
