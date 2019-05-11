@@ -14,7 +14,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     let window: UIWindow = UIWindow()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        PearlLogger.get().printLevel = .trace
+        PearlLogger.get().printLevel = .debug
 
         // Dummy user
         let maarten = MPUser( named: "Maarten Billemont", avatar: .avatar_3 )

@@ -293,10 +293,27 @@ class MPLoginView: UIView, MPSpinnerDelegate {
                 self.passwordField.isEnabled = false
 
                 DispatchQueue.global().async {
-                    self.user!.authenticate( masterPassword: masterPassword )
+                    let success = self.user?.authenticate( masterPassword: masterPassword ) ?? false
 
                     DispatchQueue.main.perform {
                         self.passwordIndicator.stopAnimating()
+
+                        if !success {
+                            UIView.animateKeyframes( withDuration: 0.618, delay: 0, animations: {
+                                UIView.addKeyframe( withRelativeStartTime: 0, relativeDuration: 0.25 ) {
+                                    self.passwordField.transform = CGAffineTransform( translationX: -8, y: 0 )
+                                }
+                                UIView.addKeyframe( withRelativeStartTime: 0.25, relativeDuration: 0.5 ) {
+                                    self.passwordField.transform = CGAffineTransform( translationX: 8, y: 0 )
+                                }
+                                UIView.addKeyframe( withRelativeStartTime: 0.5, relativeDuration: 0.75 ) {
+                                    self.passwordField.transform = CGAffineTransform( translationX: -8, y: 0 )
+                                }
+                                UIView.addKeyframe( withRelativeStartTime: 0.75, relativeDuration: 1 ) {
+                                    self.passwordField.transform = .identity
+                                }
+                            } )
+                        }
                     }
                 }
                 return true

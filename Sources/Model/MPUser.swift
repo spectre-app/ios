@@ -26,7 +26,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
         }
     }
 
-    public var masterKeyID: MPKeyID? {
+    public var masterKeyID: String? {
         didSet {
             self.observers.notify { $0.userDidChange( self ) }
         }
@@ -52,7 +52,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     // MARK: --- Life ---
 
     init(named name: String, avatar: MPUserAvatar = .avatar_0,
-         algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, masterKeyID: MPKeyID? = nil) {
+         algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, masterKeyID: String? = nil) {
         self.fullName = name
         self.avatar = avatar
         self.algorithm = algorithm ?? .versionCurrent
@@ -91,7 +91,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
                 mpw_masterKey( fullName, masterPassword, .versionCurrent )
             }
         }),
-           let authKeyID = mpw_id_buf( authKey, MPMasterKeySize ) {
+           let authKeyID = String( utf8String: mpw_id_buf( authKey, MPMasterKeySize ) ) {
             if let masterKeyID = self.masterKeyID {
                 if masterKeyID != authKeyID {
                     return false
