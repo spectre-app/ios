@@ -18,6 +18,9 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
         // Dummy user
         let maarten = MPUser( named: "Maarten Billemont", avatar: .avatar_3 )
+        maarten.sites.append( contentsOf: [
+            MPSite( user: maarten, named: "apple.com", uses: 5, lastUsed: Date().addingTimeInterval( -1000 ) ),
+        ] )
         let robert  = MPUser( named: "Robert Lee Mitchell", avatar: .avatar_5 )
         robert.sites.append( contentsOf: [
             MPSite( user: robert, named: "apple.com", uses: 5, lastUsed: Date().addingTimeInterval( -1000 ) ),

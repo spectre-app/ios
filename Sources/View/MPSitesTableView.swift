@@ -62,7 +62,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         DispatchQueue.global().async {
             // Determine search state and filter user sites
             var selectedResult = self.data.reduce( nil, { result, section in
-                result ?? (section as? Array<MPQuery.Result<MPSite>>)?.first { $0.value == self.selectedSite }
+                result ?? (section as? [MPQuery.Result<MPSite>])?.first { $0.value == self.selectedSite }
             } )
             let selectionFollowsQuery = selectedResult == self.newSiteResult || selectedResult?.exact ?? false
             let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
@@ -96,10 +96,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             // Update the sites table to show the newly filtered sites
             DispatchQueue.main.perform {
-                self.updateDataSource( self.data, toSections: newSites, reloadItems: self.data, with: self.isInitial ? .none: .automatic )
+                self.updateDataSource( self.data, toSections: newSites, reloadItems: nil, with: self.isInitial ? .none: .automatic )
+                self.isInitial = false
+
+                // Light-weight reload the cell content without fully reloading the cell rows.
+                for (s, section) in (self.data as? [[MPQuery.Result<MPSite>]] ?? []).enumerated() {
+                    for (r, row) in section.enumerated() {
+                        (self.cellForRow( at: IndexPath( row: r, section: s ) ) as? SiteCell)?.result = row
+                    }
+                }
+
+                // Select the most appropriate row according to the query.
                 let selectedPath = self.find( inDataSource: self.data, item: selectedResult )
                 self.selectRow( at: selectedPath, animated: false, scrollPosition: .none )
-                self.isInitial = false
             }
         }
     }
@@ -173,12 +182,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- Types ---
 
     class SiteCell: UITableViewCell, MPSiteObserver {
-        var result: MPQuery.Result<MPSite>? {
+        public var result: MPQuery.Result<MPSite>? {
             didSet {
                 self.site = self.result?.value
             }
         }
-        var site:   MPSite? {
+        public var site:   MPSite? {
             willSet {
                 self.site?.observers.unregister( self )
             }
@@ -188,7 +197,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
             }
         }
-        var new = false {
+        public var new = false {
             didSet {
                 DispatchQueue.main.perform {
                     self.copyButton.title = self.new ? "add": "copy"
@@ -196,10 +205,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
 
-        let indicatorView = UIView()
-        let passwordLabel = UILabel()
-        let nameLabel     = UILabel()
-        let copyButton    = MPButton( image: nil, title: "copy" )
+        private let indicatorView = UIView()
+        private let passwordLabel = UILabel()
+        private let nameLabel     = UILabel()
+        private let copyButton    = MPButton( image: nil, title: "copy" )
 
         // MARK: --- Life ---
 
@@ -234,7 +243,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.nameLabel.shadowColor = .black
 
             self.copyButton.darkBackground = true
-            self.copyButton.button.addTarget( self, action: #selector( siteAction ), for: .touchUpInside )
+            self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in self.siteAction() }
 
             // - Hierarchy
             self.contentView.addSubview( self.passwordLabel )
@@ -262,7 +271,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .activate()
         }
 
-        @objc
         func siteAction() {
             DispatchQueue.global().async {
                 if let site = self.site,
