@@ -17,7 +17,8 @@ class MPMarshal {
                 let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
                                                              appropriateFor: nil, create: true )
                 for documentPath in try FileManager.default.contentsOfDirectory( atPath: documents.path ) {
-                    if let document = FileManager.default.contents( atPath: documentPath ), !document.isEmpty,
+                    if let document = FileManager.default.contents( atPath: documents.appendingPathComponent( documentPath ).path ),
+                       !document.isEmpty,
                        let userDocument = String( data: document, encoding: .utf8 ),
                        let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
                        let fullName = String( utf8String: userInfo.fullName ) {
@@ -45,55 +46,56 @@ class MPMarshal {
 
     public func saveToFile(user: MPUser) {
         DispatchQueue.mpw.perform {
-            do {
-                guard let marshalledUser = provideMasterKeyWith( key: user.masterKey, { masterKeyProvider in
-                    return mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
-                } )
-                else {
-                    err( "couldn't marshal user: \(user)" )
-                    return
-                }
-
-                marshalledUser.pointee.avatar = UInt32( user.avatar.rawValue )
-                marshalledUser.pointee.defaultType = user.defaultType
-                marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
-
-                for site in user.sites {
-                    guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+            provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
+                do {
+                    guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
                     else {
-                        err( "couldn't marshal site: \(site)" )
+                        err( "couldn't marshal user: \(user)" )
                         return
                     }
 
-                    site.resultState?.withCString { marshalledSite.pointee.content = $0 }
-                    site.loginState?.withCString { marshalledSite.pointee.loginContent = $0 }
-                    marshalledSite.pointee.loginType = site.loginType
-                    site.url?.withCString { marshalledSite.pointee.url = $0 }
-                    marshalledSite.pointee.uses = UInt32( site.uses )
-                    marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
-                }
+                    marshalledUser.pointee.avatar = UInt32( user.avatar.rawValue )
+                    marshalledUser.pointee.defaultType = user.defaultType
+                    marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
-                let format  = MPMarshalFormat.default
-                let error   = UnsafeMutablePointer<MPMarshalError>.allocate( capacity: 1 )
-                var document: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
-                let success = mpw_marshal_write( document, format, marshalledUser, error )
-                inf( "saveToFile(\(user.fullName)): \(success), \(String( utf8String: error.pointee.description ) ?? "n/a")" )
+                    for site in user.sites {
+                        guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+                        else {
+                            err( "couldn't marshal site: \(site)" )
+                            return
+                        }
 
-                if success,
-                   let formatExtension = String( utf8String: mpw_marshal_format_extension( format ) ),
-                   let document = document?.pointee,
-                   let userDocument = String( utf8String: document ) {
-                    let documentPath = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
-                                                                    appropriateFor: nil, create: true )
-                                                              .appendingPathComponent( user.fullName, isDirectory: false )
-                                                              .appendingPathExtension( formatExtension ).path
-                    if FileManager.default.createFile( atPath: documentPath, contents: userDocument.data( using: .utf8 ) ) {
-                        inf( "written to: \(documentPath)" )
+                        site.resultState?.withCString { marshalledSite.pointee.content = $0 }
+                        site.loginState?.withCString { marshalledSite.pointee.loginContent = $0 }
+                        marshalledSite.pointee.loginType = site.loginType
+                        site.url?.withCString { marshalledSite.pointee.url = $0 }
+                        marshalledSite.pointee.uses = UInt32( site.uses )
+                        marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+                    }
+
+                    let format   = MPMarshalFormat.default
+                    var error    = MPMarshalError( type: .success, description: nil )
+                    let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
+                    document.initialize( to: UnsafeMutablePointer<CChar>.allocate( capacity: 0 ) )
+                    let success = mpw_marshal_write( document, format, marshalledUser, &error )
+                    inf( "saveToFile(\(user.fullName)): \(success), \((error.description != nil ? String( utf8String: error.description ): nil) ?? "n/a")" )
+
+                    if success,
+                       let formatExtension = String( utf8String: mpw_marshal_format_extension( format ) ),
+                       let document = document.pointee,
+                       let userDocument = String( utf8String: document ) {
+                        let documentPath = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
+                                                                        appropriateFor: nil, create: true )
+                                                                  .appendingPathComponent( user.fullName, isDirectory: false )
+                                                                  .appendingPathExtension( formatExtension ).path
+                        if FileManager.default.createFile( atPath: documentPath, contents: userDocument.data( using: .utf8 ) ) {
+                            inf( "written to: \(documentPath)" )
+                        }
                     }
                 }
-            }
-            catch let e {
-                err( "caught: \(e)" )
+                catch let e {
+                    err( "caught: \(e)" )
+                }
             }
         }
     }
@@ -124,39 +126,44 @@ class MPMarshal {
 
         public func authenticate(masterPassword: String, _ completion: @escaping (MPUser?, MPMarshalError) -> Void) {
             DispatchQueue.mpw.perform {
-                let error = UnsafeMutablePointer<MPMarshalError>.allocate( capacity: 1 )
-                if let marshalledUser = provideMasterKeyWith( password: masterPassword, { masterKeyProvider in
-                    return mpw_marshal_read( self.document, self.format, masterKeyProvider, error )?.pointee
-                } ) {
-                    let user = MPUser(
-                            named: String( utf8String: marshalledUser.fullName ) ?? self.fullName,
-                            avatar: MPUser.Avatar( rawValue: Int( marshalledUser.avatar ) ) ?? .avatar_0,
-                            algorithm: marshalledUser.algorithm,
-                            defaultType: marshalledUser.defaultType,
-                            lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                            masterKeyID: self.keyID
-                    )
-                    for s in 0..<marshalledUser.sites_count {
-                        let site = (marshalledUser.sites + s).pointee
-                        if let siteName = String( utf8String: site.name ) {
-                            user.sites.append( MPSite(
-                                    user: user,
-                                    named: siteName,
-                                    algorithm: site.algorithm,
-                                    counter: site.counter,
-                                    resultType: site.type,
-                                    loginType: site.loginType,
-                                    loginState: String( utf8String: site.loginContent ),
-                                    url: String( utf8String: site.url ),
-                                    uses: UInt( site.uses ),
-                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
-                            ) )
+                provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
+                    var error = MPMarshalError( type: .success, description: nil )
+                    if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee {
+                        let user = MPUser(
+                                named: String( utf8String: marshalledUser.fullName ) ?? self.fullName,
+                                avatar: MPUser.Avatar( rawValue: Int( marshalledUser.avatar ) ) ?? .avatar_0,
+                                algorithm: marshalledUser.algorithm,
+                                defaultType: marshalledUser.defaultType,
+                                lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
+                                masterKeyID: self.keyID
+                        )
+                        guard user.mpw_authenticate( masterPassword: masterPassword )
+                        else {
+                            return completion( nil, error )
                         }
+
+                        for s in 0..<marshalledUser.sites_count {
+                            let site = (marshalledUser.sites + s).pointee
+                            if let siteName = String( utf8String: site.name ) {
+                                user.sites.append( MPSite(
+                                        user: user,
+                                        named: siteName,
+                                        algorithm: site.algorithm,
+                                        counter: site.counter,
+                                        resultType: site.type,
+                                        loginType: site.loginType,
+                                        loginState: String( utf8String: site.loginContent ),
+                                        url: String( utf8String: site.url ),
+                                        uses: UInt( site.uses ),
+                                        lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
+                                ) )
+                            }
+                        }
+                        return completion( user, error )
                     }
-                    completion( user, error.pointee )
-                }
-                else {
-                    completion( nil, error.pointee )
+                    else {
+                        return completion( nil, error )
+                    }
                 }
             }
         }
@@ -167,7 +174,13 @@ private var currentMasterKey:      MPMasterKey?
 private var currentMasterPassword: String?
 
 private func __masterKeyObjectProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
-    return currentMasterKey
+    if let currentMasterKey = currentMasterKey {
+        let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
+        providedMasterKey.initialize( from: currentMasterKey, count: MPMasterKeySize )
+        return UnsafePointer<UInt8>( providedMasterKey )
+    }
+
+    return nil
 }
 
 private func __masterKeyPasswordProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {

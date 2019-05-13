@@ -182,6 +182,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
     }
 
     func userDidLogout(_ user: MPUser) {
+        if user == self.user, let navigationController = self.navigationController {
+            navigationController.setViewControllers( navigationController.viewControllers.filter { $0 != self }, animated: true )
+        }
     }
 
     func userDidChange(_ user: MPUser) {
