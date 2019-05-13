@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		85CD8F96F4AF2E32ECC42FA9 /* Pods_MasterPassword.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B187A357B4ACE4B9C8631D9 /* Pods_MasterPassword.framework */; };
+		93D39115154987BD8118FEA9 /* String+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396E97202CBB3030B99EA /* String+MP.swift */; };
 		93D39139805FC516B6C2C181 /* MPButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39564D6408073D59CDB6A /* MPButton.swift */; };
 		93D391D6972E170A5056A9BF /* UILayoutGuide+Pearl.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39AAF25A004C87766DCA8 /* UILayoutGuide+Pearl.h */; };
 		93D391ECBD9BD2C64115B5DD /* PearlSizedTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39156E806BB78E04F78B9 /* PearlSizedTextView.m */; };
@@ -362,6 +363,7 @@
 		93D3969393A3A46BD27D7078 /* mpw-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm.c"; sourceTree = "<group>"; };
 		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
 		93D396D04E57792A54D437AC /* NSArray+Indexing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+Indexing.h"; sourceTree = "<group>"; };
+		93D396E97202CBB3030B99EA /* String+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+MP.swift"; sourceTree = "<group>"; };
 		93D396EF81F724F74A21AFA9 /* MPImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPImageView.swift; sourceTree = "<group>"; };
 		93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v1.c"; sourceTree = "<group>"; };
 		93D397615F791F856B7814B9 /* MPLoginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPLoginView.swift; sourceTree = "<group>"; };
@@ -858,6 +860,7 @@
 				93D39D251169E42F0AAC451F /* MPURLUtils.swift */,
 				93D3915A208E1B01BDD05A3E /* MPQuery.swift */,
 				93D3940575E4CC62A8F6CE04 /* DispatchQueue+MP.swift */,
+				93D396E97202CBB3030B99EA /* String+MP.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -2085,6 +2088,7 @@
 				93D39EAA842D58A3306E6EFB /* DispatchQueue+MP.swift in Sources */,
 				93D39E4BA0810541D1A91953 /* MPMarshal.swift in Sources */,
 				93D395ABA8A82780C5192EDE /* MPAnimations.swift in Sources */,
+				93D39115154987BD8118FEA9 /* String+MP.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

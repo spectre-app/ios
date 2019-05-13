@@ -21,14 +21,14 @@ class MPMarshal {
                        !document.isEmpty,
                        let userDocument = String( data: document, encoding: .utf8 ),
                        let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
-                       let fullName = String( utf8String: userInfo.fullName ) {
+                       let fullName = String( safeUtf8String: userInfo.fullName ) {
                         users.append( UserInfo(
                                 document: userDocument,
                                 format: userInfo.format,
                                 algorithm: userInfo.algorithm,
                                 fullName: fullName,
                                 avatar: .avatar_0,
-                                keyID: String( utf8String: userInfo.keyID ),
+                                keyID: String( safeUtf8String: userInfo.keyID ),
                                 redacted: userInfo.redacted,
                                 date: Date( timeIntervalSince1970: TimeInterval( userInfo.date ) )
                         ) )
@@ -76,14 +76,14 @@ class MPMarshal {
                     let format   = MPMarshalFormat.default
                     var error    = MPMarshalError( type: .success, description: nil )
                     let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
-                    document.initialize( to: UnsafeMutablePointer<CChar>.allocate( capacity: 0 ) )
+                    document.initialize( to: nil )
                     let success = mpw_marshal_write( document, format, marshalledUser, &error )
-                    inf( "saveToFile(\(user.fullName)): \(success), \((error.description != nil ? String( utf8String: error.description ): nil) ?? "n/a")" )
+                    inf( "saveToFile(\(user.fullName)): \(success), \(String( safeUtf8String: error.description ) ?? "n/a")" )
 
                     if success,
-                       let formatExtension = String( utf8String: mpw_marshal_format_extension( format ) ),
+                       let formatExtension = String( safeUtf8String: mpw_marshal_format_extension( format ) ),
                        let document = document.pointee,
-                       let userDocument = String( utf8String: document ) {
+                       let userDocument = String( safeUtf8String: document ) {
                         let documentPath = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
                                                                         appropriateFor: nil, create: true )
                                                                   .appendingPathComponent( user.fullName, isDirectory: false )
@@ -130,7 +130,7 @@ class MPMarshal {
                     var error = MPMarshalError( type: .success, description: nil )
                     if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee {
                         let user = MPUser(
-                                named: String( utf8String: marshalledUser.fullName ) ?? self.fullName,
+                                named: String( safeUtf8String: marshalledUser.fullName ) ?? self.fullName,
                                 avatar: MPUser.Avatar( rawValue: Int( marshalledUser.avatar ) ) ?? .avatar_0,
                                 algorithm: marshalledUser.algorithm,
                                 defaultType: marshalledUser.defaultType,
@@ -144,7 +144,7 @@ class MPMarshal {
 
                         for s in 0..<marshalledUser.sites_count {
                             let site = (marshalledUser.sites + s).pointee
-                            if let siteName = String( utf8String: site.name ) {
+                            if let siteName = String( safeUtf8String: site.name ) {
                                 user.sites.append( MPSite(
                                         user: user,
                                         named: siteName,
@@ -152,8 +152,8 @@ class MPMarshal {
                                         counter: site.counter,
                                         resultType: site.type,
                                         loginType: site.loginType,
-                                        loginState: String( utf8String: site.loginContent ),
-                                        url: String( utf8String: site.url ),
+                                        loginState: String( safeUtf8String: site.loginContent ),
+                                        url: String( safeUtf8String: site.url ),
                                         uses: UInt( site.uses ),
                                         lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
                                 ) )
