@@ -83,7 +83,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     }
 
     func userDidChange(_ user: MPUser) {
-        MPMarshal.shared.saveToFile( user: self )
+        MPMarshal.shared.save( user: self )
     }
 
     func userDidUpdateSites(_ user: MPUser) {

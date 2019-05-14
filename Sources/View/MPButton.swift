@@ -63,7 +63,7 @@ class MPButton: UIView {
         self.button.setTitleShadowColor( .black, for: .normal )
         self.button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
         self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: -1 )
-        self.button.addTarget( self, action: #selector( buttonAction ), for: .touchUpInside )
+        self.button.addAction( for: .touchUpInside ) { _, _ in MPTapEffectView( for: self.effectView ).run() }
 
         defer {
             self.layoutMargins = .zero
@@ -114,10 +114,5 @@ class MPButton: UIView {
         }
 
         super.updateConstraints()
-    }
-
-    @objc
-    func buttonAction() {
-        MPTapEffectView( for: self.effectView ).run()
     }
 }

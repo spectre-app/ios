@@ -14,8 +14,8 @@ protocol MPSpinnerDelegate {
 }
 
 class MPSpinnerView: UIView {
-    public var delegate:      MPSpinnerDelegate?
-    public var selectedItem:  Int? {
+    public var delegate: MPSpinnerDelegate?
+    public var selectedItem: Int? {
         didSet {
             DispatchQueue.main.perform {
                 if let selectedItem = self.selectedItem {
@@ -49,7 +49,7 @@ class MPSpinnerView: UIView {
             }
         }
     }
-    public var items:         Int {
+    public var items: Int {
         get {
             return self.subviews.count
         }
@@ -176,7 +176,8 @@ class MPSpinnerView: UIView {
 
     // MARK: --- Private ---
 
-    @objc private func didPan(recognizer: UIPanGestureRecognizer) {
+    @objc
+    private func didPan(recognizer: UIPanGestureRecognizer) {
         guard self.items > 0
         else {
             return
@@ -236,7 +237,7 @@ class MPSpinnerView: UIView {
 
             case .ended:
                 let scannedItem = self.findScannedItem()
-                self.activatedItem = self.activatedItem == scannedItem ? nil : scannedItem
+                self.activatedItem = self.activatedItem == scannedItem ? nil: scannedItem
         }
     }
 

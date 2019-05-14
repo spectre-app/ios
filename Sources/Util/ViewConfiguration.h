@@ -5,21 +5,40 @@
 
 #import <UIKit/UIKit.h>
 
-
 CF_IMPLICIT_BRIDGING_ENABLED
 #pragma clang assume_nonnull begin
 
 typedef void ( ^ViewAction )(UIView *view);
 
+typedef NS_OPTIONS( NSUInteger, Anchor ) {
+    AnchorNone = 0,
+    AnchorLeading = 1 << 0,
+    AnchorTrailing = 1 << 1,
+    AnchorLeft = 1 << 2,
+    AnchorRight = 1 << 3,
+    AnchorTop = 1 << 4,
+    AnchorBottom = 1 << 5,
+    AnchorWidth = 1 << 6,
+    AnchorHeight = 1 << 7,
+    AnchorCenterX = 1 << 8,
+    AnchorCenterY = 1 << 9,
+    AnchorBox = AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom,
+    AnchorTopBox = AnchorTop | AnchorLeading | AnchorTrailing,
+    AnchorBottomBox = AnchorLeading | AnchorTrailing | AnchorBottom,
+    AnchorHorizontally = AnchorLeading | AnchorTrailing,
+    AnchorVertically = AnchorTop | AnchorBottom,
+    AnchorCenter = AnchorCenterX | AnchorCenterY,
+};
+
 /**
  * A view configuration holds a set of operations that will be performed on the view when the configuration's active state changes.
  */
-@interface ViewConfiguration: NSObject
+@interface ViewConfiguration : NSObject
 
 //! The view upon which this configuration's operations operate.
-@property(nonatomic, readonly, strong) UIView                              *view;
+@property(nonatomic, readonly, strong) UIView *view;
 //! Whether this configuration has last been activated or deactivated.
-@property(nonatomic, readwrite, assign) BOOL                               activated;
+@property(nonatomic, readwrite, assign) BOOL activated;
 //! Child configurations which will be activated when this configuration is activated and deactivated when this configuration is deactivated.
 @property(nonatomic, readonly, strong) NSMutableArray<ViewConfiguration *> *activeConfigurations;
 //! Child configurations which will be deactivated when this configuration is activated and activated when this configuration is deactivated.
@@ -78,11 +97,11 @@ typedef void ( ^ViewAction )(UIView *view);
 - (instancetype)constrainToAllUsing:(NSArray<NSLayoutConstraint *> *( ^ )(UIView *superview, UIView *view))constraintBlock;
 - (instancetype)constrainToView:(nullable UIView *)view;
 - (instancetype)constrainToMarginsOfView:(nullable UIView *)view;
-- (instancetype)constrainToView:(nullable UIView *)view withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins anchor:(Anchor)anchor;
 - (instancetype)constrainToSuperview;
 - (instancetype)constrainToMarginsOfSuperview;
 - (instancetype)constrainToSuperviewWithMargins:(BOOL)margins;
-- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes;
+- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins anchor:(Anchor)anchor;
 
 - (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key;
 - (instancetype)setPoint:(CGPoint)value forKey:(NSString *)key;

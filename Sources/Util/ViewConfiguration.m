@@ -357,45 +357,87 @@
 
 - (instancetype)constrainToView:(nullable UIView *)view {
 
-    return [self constrainToView:view withMargins:NO forAttributes:
-            NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
+    return [self constrainToView:view withMargins:NO anchor:
+            AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom];
 }
 
 - (instancetype)constrainToMarginsOfView:(nullable UIView *)view {
 
-    return [self constrainToView:view withMargins:YES forAttributes:
-            NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
+    return [self constrainToView:view withMargins:YES anchor:
+            AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom];
 }
 
-- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins anchor:(Anchor)anchor {
 
-    if (attributes & NSLayoutFormatAlignAllTop)
+    if (anchor & AnchorTop)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             if (margins)
                 return [(host?: superview).layoutMarginsGuide.topAnchor constraintEqualToAnchor:view.topAnchor];
             else
                 return [(host?: superview).topAnchor constraintEqualToAnchor:view.topAnchor];
         }];
-    if (attributes & NSLayoutFormatAlignAllLeading)
+    if (anchor & AnchorLeading)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             if (margins)
                 return [(host?: superview).layoutMarginsGuide.leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
             else
                 return [(host?: superview).leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
         }];
-    if (attributes & NSLayoutFormatAlignAllTrailing)
+    if (anchor & AnchorTrailing)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             if (margins)
                 return [(host?: superview).layoutMarginsGuide.trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
             else
                 return [(host?: superview).trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
         }];
-    if (attributes & NSLayoutFormatAlignAllBottom)
+    if (anchor & AnchorBottom)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
             if (margins)
                 return [(host?: superview).layoutMarginsGuide.bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
             else
                 return [(host?: superview).bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
+        }];
+    if (anchor & AnchorLeft)
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.leftAnchor constraintEqualToAnchor:view.leftAnchor];
+            else
+                return [(host?: superview).leftAnchor constraintEqualToAnchor:view.leftAnchor];
+        }];
+    if (anchor & AnchorRight)
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.rightAnchor constraintEqualToAnchor:view.rightAnchor];
+            else
+                return [(host?: superview).rightAnchor constraintEqualToAnchor:view.rightAnchor];
+        }];
+    if (anchor & AnchorWidth)
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.widthAnchor constraintEqualToAnchor:view.widthAnchor];
+            else
+                return [(host?: superview).widthAnchor constraintEqualToAnchor:view.widthAnchor];
+        }];
+    if (anchor & AnchorHeight)
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.heightAnchor constraintEqualToAnchor:view.heightAnchor];
+            else
+                return [(host?: superview).heightAnchor constraintEqualToAnchor:view.heightAnchor];
+        }];
+    if (anchor & AnchorCenterX)
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.centerXAnchor constraintEqualToAnchor:view.centerXAnchor];
+            else
+                return [(host?: superview).centerXAnchor constraintEqualToAnchor:view.centerXAnchor];
+        }];
+    if (anchor & AnchorCenterY)
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+            if (margins)
+                return [(host?: superview).layoutMarginsGuide.centerYAnchor constraintEqualToAnchor:view.centerYAnchor];
+            else
+                return [(host?: superview).centerYAnchor constraintEqualToAnchor:view.centerYAnchor];
         }];
 
     return self;
@@ -413,13 +455,13 @@
 
 - (instancetype)constrainToSuperviewWithMargins:(BOOL)margins {
 
-    return [self constrainToSuperviewWithMargins:margins forAttributes:
-            NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllLeading | NSLayoutFormatAlignAllTrailing | NSLayoutFormatAlignAllBottom];
+    return [self constrainToSuperviewWithMargins:margins anchor:
+            AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom];
 }
 
-- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins forAttributes:(NSLayoutFormatOptions)attributes {
+- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins anchor:(Anchor)anchor {
 
-    return [self constrainToView:nil withMargins:margins forAttributes:attributes];
+    return [self constrainToView:nil withMargins:margins anchor:anchor];
 }
 
 - (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key {

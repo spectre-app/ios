@@ -33,7 +33,9 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
     }
 
     private let usersSpinner = MPSpinnerView()
+    private let userToolbar  = UIToolbar()
     private let nameLabel    = UILabel()
+    private var toolbarConfiguration: ViewConfiguration!
 
     // MARK: --- Life ---
 
@@ -44,18 +46,41 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
     init() {
         super.init( nibName: nil, bundle: nil )
 
-        MPMarshal.shared.loadFiles { self.users = $0 ?? [] }
+        MPMarshal.shared.load { self.users = $0 ?? [] }
     }
 
     override func viewDidLoad() {
-        self.view.addSubview( self.usersSpinner )
         self.usersSpinner.addSubview( UserView( user: nil, navigateWith: self.navigationController ) )
         self.usersSpinner.delegate = self
 
-        ViewConfiguration( view: self.usersSpinner ).constrainToSuperview().activate()
+        self.userToolbar.barStyle = .black
+        self.userToolbar.items = [
+            UIBarButtonItem( barButtonSystemItem: .trash, target: self, action: #selector( didTrashUser ) ),
+            UIBarButtonItem( barButtonSystemItem: .edit, target: self, action: #selector( didEditUser ) )
+        ]
 
-        UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
-            [ $0.topAnchor.constraint( greaterThanOrEqualTo: self.view.bottomAnchor ) ]
+        self.view.addSubview( self.usersSpinner )
+        self.view.addSubview( self.userToolbar )
+
+        ViewConfiguration( view: self.usersSpinner )
+                .constrainToSuperview( withMargins: false, anchor: .topBox )
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).withPriority( .defaultHigh ) }
+                .activate()
+        ViewConfiguration( view: self.userToolbar )
+                .constrainToSuperview( withMargins: false, anchor: .horizontally ).activate()
+
+        self.toolbarConfiguration = ViewConfiguration( view: self.userToolbar ) { active, inactive in
+            active.constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+            active.set( 1, forKey: "alpha" )
+            inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
+            inactive.set( 0, forKey: "alpha" )
+        }
+
+        UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
+            [
+                self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
+                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor )
+            ]
         }
     }
 
@@ -63,6 +88,25 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
         super.viewWillDisappear( animated )
 
         self.usersSpinner.activatedItem = nil
+    }
+
+    // MARK: --- Private ---
+
+    @objc
+    private func didTrashUser() {
+        if let activatedItem = self.usersSpinner.activatedItem,
+           let user = (self.usersSpinner.subviews[activatedItem] as? UserView)?.user {
+            if MPMarshal.shared.delete( userInfo: user ) {
+                self.users.removeAll { $0 == user }
+            }
+        }
+    }
+
+    @objc
+    private func didEditUser() {
+        if let activatedItem = self.usersSpinner.activatedItem,
+           let user = (self.usersSpinner.subviews[activatedItem] as? UserView)?.user {
+        }
     }
 
     // MARK: --- MPSpinnerDelegate ---
@@ -76,12 +120,20 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
     func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int) {
         if let userView = spinner.subviews[activatedItem] as? UserView {
             userView.active = true
+
+            UIView.animate( withDuration: 0.382 ) {
+                self.toolbarConfiguration.activate()
+            }
         }
     }
 
     func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int) {
         if let userView = spinner.subviews[deactivatedItem] as? UserView {
             userView.active = false
+
+            UIView.animate( withDuration: 0.382 ) {
+                self.toolbarConfiguration.deactivate()
+            }
         }
     }
 
@@ -104,13 +156,18 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
 
                         if self.active {
                             self.passwordConfiguration.activate()
+
+                            if self.nameField.alpha != 0 {
+                                self.nameField.becomeFirstResponder()
+                            } else {
+                                self.passwordField.becomeFirstResponder()
+                            }
                         }
                         else {
                             self.passwordConfiguration.deactivate()
+                            self.passwordField.resignFirstResponder()
+                            self.nameField.resignFirstResponder()
                         }
-
-                        self.passwordField.becomeFirstResponder()
-                        self.nameField.becomeFirstResponder()
                     }
                 }
                 self.setNeedsDisplay()

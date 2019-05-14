@@ -10,7 +10,7 @@ class MPMarshal {
 
     // MARK: --- Interface ---
 
-    public func loadFiles(_ completion: @escaping ([UserInfo]?) -> Void) {
+    public func load(_ completion: @escaping ([UserInfo]?) -> Void) {
         DispatchQueue.mpw.perform {
             do {
                 var users     = [ UserInfo ]()
@@ -44,7 +44,26 @@ class MPMarshal {
         }
     }
 
-    public func saveToFile(user: MPUser) {
+    public func delete(userInfo: UserInfo) -> Bool {
+        do {
+            let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
+                                                         appropriateFor: nil, create: true )
+            for documentPath in try FileManager.default.contentsOfDirectory( atPath: documents.path ) {
+                let path = documents.appendingPathComponent( documentPath ).path
+                if FileManager.default.fileExists( atPath: path ) {
+                    try FileManager.default.removeItem( atPath: path )
+                    return true
+                }
+            }
+        }
+        catch let e {
+            err( "caught: \(e)" )
+        }
+
+        return false
+    }
+
+    public func save(user: MPUser) {
         DispatchQueue.mpw.perform {
             provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
                 do {
@@ -102,7 +121,7 @@ class MPMarshal {
 
     // MARK: --- Interface ---
 
-    class UserInfo {
+    class UserInfo : Equatable {
         public let document:  String
         public let format:    MPMarshalFormat
         public let algorithm: MPAlgorithmVersion
@@ -166,6 +185,12 @@ class MPMarshal {
                     }
                 }
             }
+        }
+
+        // MARK: --- Equatable ---
+
+        static func ==(lhs: UserInfo, rhs: UserInfo) -> Bool {
+            return lhs.fullName == rhs.fullName
         }
     }
 }

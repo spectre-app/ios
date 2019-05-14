@@ -64,8 +64,8 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
         ViewConfiguration( view: self.itemsView )
-                .constrainToSuperview( withMargins: true, forAttributes: [ .alignAllTop, .alignAllBottom ] )
-                .constrainToSuperview( withMargins: false, forAttributes: [ .alignAllLeading, .alignAllTrailing ] )
+                .constrainToSuperview( withMargins: true, anchor: .vertically )
+                .constrainToSuperview( withMargins: false, anchor: .horizontally )
                 .activate()
         ViewConfiguration( view: self.closeButton )
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: self.backgroundView.centerXAnchor ) }
