@@ -140,52 +140,41 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
     // MARK: --- Types ---
 
     class UserView: UIView, UITextFieldDelegate {
-        public var new: Bool = false
-        public var active: Bool = false {
+        public var  new:    Bool = false
+        public var  active: Bool = false {
             didSet {
-                DispatchQueue.main.perform {
-                    let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
-                    anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
-                    self.nameLabel.pop_add( anim, forKey: "pop.font" )
-                    self.nameField.pop_add( anim, forKey: "pop.font" )
-
-                    UIView.animate( withDuration: 0.6 ) {
-                        self.passwordField.alpha = self.active ? 1: 0
-                        self.nameLabel.alpha = self.active && self.user == nil ? 0: 1
-                        self.nameField.alpha = 1 - self.nameLabel.alpha
-
-                        if self.active {
-                            self.passwordConfiguration.activate()
-
-                            if self.nameField.alpha != 0 {
-                                self.nameField.becomeFirstResponder()
-                            } else {
-                                self.passwordField.becomeFirstResponder()
-                            }
-                        }
-                        else {
-                            self.passwordConfiguration.deactivate()
-                            self.passwordField.resignFirstResponder()
-                            self.nameField.resignFirstResponder()
-                        }
-                    }
+                if self.active && self.user == nil {
+                    self.avatar = MPUser.Avatar.userAvatars.randomElement() ?? .avatar_0
                 }
+                else if !self.active && self.user == nil {
+                    self.avatar = .avatar_add
+                }
+
+                if !self.active {
+                    self.nameField.text = nil
+                    self.passwordField.text = nil
+                }
+
+                self.update()
                 self.setNeedsDisplay()
             }
         }
-        public var user: MPMarshal.UserInfo? {
+        public var  user:   MPMarshal.UserInfo? {
             didSet {
-                DispatchQueue.main.perform {
-                    self.avatarView.image = (self.user?.avatar ?? MPUser.Avatar.avatar_add).image()
-                    self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
-                }
+                self.avatar = self.user?.avatar ?? .avatar_add
+                self.update()
+            }
+        }
+        private var avatar       = MPUser.Avatar.avatar_add {
+            didSet {
+                self.update()
             }
         }
 
         private let navigationController:  UINavigationController?
         private let nameLabel          = UILabel()
         private let nameField          = UITextField()
-        private let avatarView         = UIImageView()
+        private let avatarButton       = UIButton()
         private let passwordField      = UITextField()
         private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
         private var identiconItem:         DispatchWorkItem?
@@ -223,12 +212,14 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
             self.nameField.attributedPlaceholder = stra( "Your Full Name", [
                 NSAttributedString.Key.foregroundColor: UIColor.white.withAlphaComponent( 0.382 )
             ] )
+            self.nameField.autocapitalizationType = .words
             self.nameField.returnKeyType = .next
             self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.delegate = self
             self.nameField.alpha = 0
 
-            self.avatarView.contentMode = .center
+            self.avatarButton.contentMode = .center
+            self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
 
             self.identiconLabel.font = UIFont( name: "SourceCodePro-Regular", size: UIFont.labelFontSize )
             self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
@@ -267,7 +258,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
 
             self.addSubview( self.idBadgeView )
             self.addSubview( self.authBadgeView )
-            self.addSubview( self.avatarView )
+            self.addSubview( self.avatarButton )
             self.addSubview( self.nameLabel )
             self.addSubview( self.nameField )
             self.addSubview( self.passwordField )
@@ -276,19 +267,19 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -20 ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
                     .activate()
             ViewConfiguration( view: self.nameField )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarView.topAnchor, constant: -20 ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
                     .activate()
-            ViewConfiguration( view: self.avatarView )
+            ViewConfiguration( view: self.avatarButton )
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .activate()
             ViewConfiguration( view: self.passwordField )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: self.avatarView.bottomAnchor, constant: 20 ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
@@ -302,19 +293,19 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
                 inactive.set( nil, forKey: "text" )
             }
                     .apply( ViewConfiguration( view: self.idBadgeView ) { active, inactive in
-                        active.constrainTo { $1.trailingAnchor.constraint( equalTo: self.avatarView.leadingAnchor ) }
-                        active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                        active.constrainTo { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
+                        active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         active.set( 1, forKey: "alpha" )
-                        inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
-                        inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                        inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
+                        inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         inactive.set( 0, forKey: "alpha" )
                     } )
                     .apply( ViewConfiguration( view: self.authBadgeView ) { active, inactive in
-                        active.constrainTo { $1.leadingAnchor.constraint( equalTo: self.avatarView.trailingAnchor ) }
-                        active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                        active.constrainTo { $1.leadingAnchor.constraint( equalTo: self.avatarButton.trailingAnchor ) }
+                        active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         active.set( 1, forKey: "alpha" )
-                        inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarView.centerXAnchor ) }
-                        inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarView.centerYAnchor ) }
+                        inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
+                        inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         inactive.set( 0, forKey: "alpha" )
                     } )
                     .needsLayout( self )
@@ -358,6 +349,43 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
 
             if newWindow == nil {
                 self.identiconItem?.cancel()
+            }
+        }
+
+        // MARK: --- Private ---
+
+        private func update() {
+            DispatchQueue.main.perform {
+                let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
+                anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
+                self.nameLabel.pop_add( anim, forKey: "pop.font" )
+                self.nameField.pop_add( anim, forKey: "pop.font" )
+
+                UIView.animate( withDuration: 0.618 ) {
+                    self.passwordField.alpha = self.active ? 1: 0
+                    self.nameLabel.alpha = self.active && self.user == nil ? 0: 1
+                    self.nameField.alpha = 1 - self.nameLabel.alpha
+
+                    self.avatarButton.isUserInteractionEnabled = self.active
+                    self.avatarButton.setImage( self.avatar.image(), for: .normal )
+                    self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
+
+                    if self.active {
+                        self.passwordConfiguration.activate()
+
+                        if self.nameField.alpha != 0 {
+                            self.nameField.becomeFirstResponder()
+                        }
+                        else {
+                            self.passwordField.becomeFirstResponder()
+                        }
+                    }
+                    else {
+                        self.passwordConfiguration.deactivate()
+                        self.passwordField.resignFirstResponder()
+                        self.nameField.resignFirstResponder()
+                    }
+                }
             }
         }
 

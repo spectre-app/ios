@@ -105,6 +105,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
             }
 
             self.masterKey = authKey
+            self.lastUsed = Date()
             return true
         }
 
@@ -113,7 +114,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Types ---
 
-    enum Avatar: Int {
+    enum Avatar: Int, CaseIterable {
         static let userAvatars: [Avatar] = [
             .avatar_0, .avatar_1, .avatar_2, .avatar_3, .avatar_4, .avatar_5, .avatar_6, .avatar_7, .avatar_8, .avatar_9,
             .avatar_10, .avatar_11, .avatar_12, .avatar_13, .avatar_14, .avatar_15, .avatar_16, .avatar_17, .avatar_18 ]
@@ -129,6 +130,10 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
                 default:
                     return UIImage.init( named: "avatar-\(self.rawValue)" )
             }
+        }
+
+        mutating func next() {
+            self = Avatar.userAvatars[((Avatar.userAvatars.firstIndex( of: self ) ?? -1) + 1) % Avatar.userAvatars.count]
         }
     }
 }
