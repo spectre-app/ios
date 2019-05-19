@@ -8,21 +8,17 @@
 
 import UIKit
 
-class MPUsersViewController: UIViewController, MPSpinnerDelegate {
+class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObserver {
     public var users = [ MPMarshal.UserInfo ]() {
-        willSet {
+        didSet {
             DispatchQueue.main.perform {
-                for user in self.users {
+                for user in oldValue {
                     for subview in self.usersSpinner.subviews {
                         if let avatarView = subview as? UserView, user === avatarView.user {
                             avatarView.removeFromSuperview()
                         }
                     }
                 }
-            }
-        }
-        didSet {
-            DispatchQueue.main.perform {
                 for user in self.users {
                     self.usersSpinner.addSubview( UserView( user: user, navigateWith: self.navigationController ) )
                 }
@@ -46,7 +42,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
     init() {
         super.init( nibName: nil, bundle: nil )
 
-        MPMarshal.shared.load { self.users = $0 ?? [] }
+        MPMarshal.shared.observers.register( self )
     }
 
     override func viewDidLoad() {
@@ -82,6 +78,12 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
                 self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor )
             ]
         }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        MPMarshal.shared.reloadUsers()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -135,6 +137,12 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate {
                 self.toolbarConfiguration.deactivate()
             }
         }
+    }
+
+    // MARK: --- MPMarshalObserver ---
+
+    func usersDidChange(_ users: [MPMarshal.UserInfo]?) {
+        self.users = users ?? []
     }
 
     // MARK: --- Types ---

@@ -7,28 +7,30 @@ import Foundation
 
 class MPMarshal {
     public static let shared = MPMarshal()
-
-    // MARK: --- Interface ---
-
-    public func load(_ completion: @escaping ([UserInfo]?) -> Void) {
-        DispatchQueue.mpw.perform {
-            completion( self.loadNow() )
+    public let observers = Observers<MPMarshalObserver>()
+    public var users: [UserInfo]? {
+        didSet {
+            self.observers.notify { $0.usersDidChange( self.users ) }
         }
     }
 
-    private func loadNow() -> [UserInfo]? {
-        return DispatchQueue.mpw.await {
+    // MARK: --- Interface ---
+
+    public func reloadUsers(_ completion: (([UserInfo]?) -> Void)? = nil) {
+        DispatchQueue.mpw.perform {
             do {
                 var users     = [ UserInfo ]()
                 let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
                                                              appropriateFor: nil, create: true )
-                for documentPath in try FileManager.default.contentsOfDirectory( atPath: documents.path ) {
-                    if let document = FileManager.default.contents( atPath: documents.appendingPathComponent( documentPath ).path ),
+                for documentName in try FileManager.default.contentsOfDirectory( atPath: documents.path ) {
+                    let documentPath = documents.appendingPathComponent( documentName ).path
+                    if let document = FileManager.default.contents( atPath: documentPath ),
                        !document.isEmpty,
                        let userDocument = String( data: document, encoding: .utf8 ),
                        let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
                        let fullName = String( safeUtf8String: userInfo.fullName ) {
                         users.append( UserInfo(
+                                path: documentPath,
                                 document: userDocument,
                                 format: userInfo.format,
                                 algorithm: userInfo.algorithm,
@@ -41,12 +43,14 @@ class MPMarshal {
                     }
                 }
 
-                return users
+                self.users = users
             }
             catch let e {
                 err( "caught: \(e)" )
-                return nil
+                self.users = nil
             }
+
+            completion?( self.users )
         }
     }
 
@@ -58,6 +62,7 @@ class MPMarshal {
                 let path = documents.appendingPathComponent( documentPath ).path
                 if FileManager.default.fileExists( atPath: path ) {
                     try FileManager.default.removeItem( atPath: path )
+                    self.users?.removeAll { $0 == userInfo }
                     return true
                 }
             }
@@ -115,6 +120,10 @@ class MPMarshal {
                                                                   .appendingPathExtension( formatExtension ).path
                         if FileManager.default.createFile( atPath: documentPath, contents: userDocument.data( using: .utf8 ) ) {
                             inf( "written to: \(documentPath)" )
+
+                            if !(self.users?.contains { $0.path == documentPath } ?? false) {
+                                self.reloadUsers()
+                            }
                         }
                     }
                 }
@@ -127,7 +136,8 @@ class MPMarshal {
 
     // MARK: --- Interface ---
 
-    class UserInfo: Equatable {
+    class UserInfo: NSObject {
+        public let path:      String
         public let document:  String
         public let format:    MPMarshalFormat
         public let algorithm: MPAlgorithmVersion
@@ -137,8 +147,9 @@ class MPMarshal {
         public let redacted:  Bool
         public let date:      Date
 
-        init(document: String, format: MPMarshalFormat, algorithm: MPAlgorithmVersion, fullName: String, avatar: MPUser.Avatar,
+        init(path: String, document: String, format: MPMarshalFormat, algorithm: MPAlgorithmVersion, fullName: String, avatar: MPUser.Avatar,
              keyID: String?, redacted: Bool, date: Date) {
+            self.path = path
             self.document = document
             self.format = format
             self.algorithm = algorithm
@@ -199,6 +210,11 @@ class MPMarshal {
             return lhs.fullName == rhs.fullName
         }
     }
+}
+
+@objc
+protocol MPMarshalObserver {
+    func usersDidChange(_ users: [MPMarshal.UserInfo]?)
 }
 
 private var currentMasterKey:      MPMasterKey?

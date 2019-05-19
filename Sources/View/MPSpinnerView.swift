@@ -30,23 +30,24 @@ class MPSpinnerView: UIView {
     }
     public var activatedItem: Int? {
         willSet {
-            DispatchQueue.main.perform {
-                if let delegate = self.delegate,
-                   let activatedItem = self.activatedItem, activatedItem != newValue {
-                    delegate.spinner( self, didDeactivateItem: activatedItem )
-                }
+            DispatchQueue.main.await {
             }
         }
         didSet {
-            self.selectedItem = self.activatedItem
-
             DispatchQueue.main.perform {
-                if let delegate = self.delegate,
-                   let activatedItem = self.activatedItem {
-                    delegate.spinner( self, didActivateItem: activatedItem )
-                    self.setNeedsLayout()
+                if let delegate = self.delegate {
+                    if let oldValue = oldValue, oldValue != self.activatedItem {
+                        delegate.spinner( self, didDeactivateItem: oldValue )
+                        self.setNeedsLayout()
+                    }
+                    if let newValue = self.activatedItem, newValue != oldValue {
+                        delegate.spinner( self, didActivateItem: newValue )
+                        self.setNeedsLayout()
+                    }
                 }
             }
+
+            self.selectedItem = self.activatedItem
         }
     }
     public var items: Int {
