@@ -12,7 +12,7 @@ extension DispatchQueue {
     public func perform(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping @convention(block) () -> Void) {
         if (self == .main && Thread.isMainThread) ||
-                   self.label == String( safeUtf8String: __dispatch_queue_get_label( nil ) ) {
+                   self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
             group?.enter()
             DispatchWorkItem( qos: qos, flags: flags, block: work ).perform()
             group?.leave()
@@ -25,7 +25,7 @@ extension DispatchQueue {
     /** Performs the work synchronously, returning the work's result. */
     public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows -> T {
         if (self == .main && Thread.isMainThread) ||
-                   self.label == String( safeUtf8String: __dispatch_queue_get_label( nil ) ) {
+                   self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
             return try work()
         }
         else {

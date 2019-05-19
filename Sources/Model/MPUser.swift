@@ -94,7 +94,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     @discardableResult
     func mpw_authenticate(masterPassword: String) -> Bool {
         if let authKey = mpw_masterKey( self.fullName, masterPassword, .versionCurrent ),
-           let authKeyID = String( safeUtf8String: mpw_id_buf( authKey, MPMasterKeySize ) ) {
+           let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
             if let masterKeyID = self.masterKeyID {
                 if masterKeyID != authKeyID {
                     return false

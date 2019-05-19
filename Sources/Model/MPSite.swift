@@ -117,7 +117,7 @@ class MPSite: NSObject, Comparable {
         if let masterKey = self.user.masterKey,
            let result = mpw_siteResult( masterKey, self.siteName, self.counter,
                                         keyPurpose, keyContext, self.resultType, resultParam, self.algorithm ) {
-            return String( safeUtf8String: result )
+            return String( safeUTF8: result )
         }
 
         return nil

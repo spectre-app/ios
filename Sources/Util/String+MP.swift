@@ -6,12 +6,12 @@
 import Foundation
 
 extension String {
-    init?(safeUtf8String string: UnsafePointer<CChar>?) {
+    init?(safeUTF8 string: UnsafePointer<CChar>?) {
         guard let string = string
         else {
             return nil
         }
 
-        self.init( utf8String: string )
+        self.init( validatingUTF8: string )
     }
 }
