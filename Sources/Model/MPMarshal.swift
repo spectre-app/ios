@@ -12,6 +12,12 @@ class MPMarshal {
 
     public func load(_ completion: @escaping ([UserInfo]?) -> Void) {
         DispatchQueue.mpw.perform {
+            completion( self.loadNow() )
+        }
+    }
+
+    private func loadNow() -> [UserInfo]? {
+        return DispatchQueue.mpw.await {
             do {
                 var users     = [ UserInfo ]()
                 let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
@@ -35,11 +41,11 @@ class MPMarshal {
                     }
                 }
 
-                completion( users )
+                return users
             }
             catch let e {
                 err( "caught: \(e)" )
-                completion( nil )
+                return nil
             }
         }
     }
@@ -121,7 +127,7 @@ class MPMarshal {
 
     // MARK: --- Interface ---
 
-    class UserInfo : Equatable {
+    class UserInfo: Equatable {
         public let document:  String
         public let format:    MPMarshalFormat
         public let algorithm: MPAlgorithmVersion

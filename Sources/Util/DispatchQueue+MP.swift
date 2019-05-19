@@ -11,13 +11,25 @@ extension DispatchQueue {
     /** Performs the work asynchronously, unless queue is main and already on the main thread, then perform synchronously. */
     public func perform(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping @convention(block) () -> Void) {
-        if (self == DispatchQueue.main) && Thread.isMainThread {
+        if (self == .main && Thread.isMainThread) ||
+                   self.label == String( safeUtf8String: __dispatch_queue_get_label( nil ) ) {
             group?.enter()
             DispatchWorkItem( qos: qos, flags: flags, block: work ).perform()
             group?.leave()
         }
         else {
             self.async( group: group, qos: qos, flags: flags, execute: work )
+        }
+    }
+
+    /** Performs the work synchronously, returning the work's result. */
+    public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows -> T {
+        if (self == .main && Thread.isMainThread) ||
+                   self.label == String( safeUtf8String: __dispatch_queue_get_label( nil ) ) {
+            return try work()
+        }
+        else {
+            return try self.sync( flags: flags, execute: work )
         }
     }
 }
