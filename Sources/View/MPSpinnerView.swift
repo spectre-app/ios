@@ -58,6 +58,7 @@ class MPSpinnerView: UIView {
 
     private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
     private lazy var tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTap(recognizer:) ) )
+    private var configurations       = [ UIView: ViewConfiguration ]()
     private var startedItem: CGFloat = 0
     @objc
     private var scannedItem: CGFloat = 0 {
@@ -91,17 +92,17 @@ class MPSpinnerView: UIView {
     override func didAddSubview(_ subview: UIView) {
         super.didAddSubview( subview )
 
-        if subview.translatesAutoresizingMaskIntoConstraints {
-            subview.translatesAutoresizingMaskIntoConstraints = false
-            subview.topAnchor.constraint( greaterThanOrEqualTo: self.topAnchor ).activate()
-            subview.leadingAnchor.constraint( greaterThanOrEqualTo: self.leadingAnchor ).activate()
-            subview.trailingAnchor.constraint( lessThanOrEqualTo: self.trailingAnchor ).activate()
-            subview.bottomAnchor.constraint( lessThanOrEqualTo: self.bottomAnchor ).activate()
-            subview.centerXAnchor.constraint( equalTo: self.centerXAnchor ).activate()
-            subview.centerYAnchor.constraint( equalTo: self.centerYAnchor ).activate()
-            subview.widthAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
-            subview.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
-        }
+        self.configurations[subview] =
+                ViewConfiguration( view: subview )
+                        .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
+                        .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                        .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                        .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                        .constrainTo { $1.widthAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
+                        .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
+                        .activate()
 
         self.panRecognizer.isEnabled = self.items > 0
     }
@@ -110,6 +111,9 @@ class MPSpinnerView: UIView {
         super.willRemoveSubview( subview )
 
         self.panRecognizer.isEnabled = self.items > 0
+
+        self.configurations[subview]?.deactivate()
+        self.configurations[subview] = nil
     }
 
     override func sizeThatFits(_ size: CGSize) -> CGSize {
