@@ -210,6 +210,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.nameLabel.textAlignment = .center
             self.nameLabel.textColor = .white
             self.nameLabel.numberOfLines = 0
+            self.nameLabel.preferredMaxLayoutWidth = .infinity
             self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
             self.nameField.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )

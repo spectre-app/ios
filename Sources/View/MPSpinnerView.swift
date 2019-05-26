@@ -91,6 +91,18 @@ class MPSpinnerView: UIView {
     override func didAddSubview(_ subview: UIView) {
         super.didAddSubview( subview )
 
+        if subview.translatesAutoresizingMaskIntoConstraints {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            subview.topAnchor.constraint( greaterThanOrEqualTo: self.topAnchor ).activate()
+            subview.leadingAnchor.constraint( greaterThanOrEqualTo: self.leadingAnchor ).activate()
+            subview.trailingAnchor.constraint( lessThanOrEqualTo: self.trailingAnchor ).activate()
+            subview.bottomAnchor.constraint( lessThanOrEqualTo: self.bottomAnchor ).activate()
+            subview.centerXAnchor.constraint( equalTo: self.centerXAnchor ).activate()
+            subview.centerYAnchor.constraint( equalTo: self.centerYAnchor ).activate()
+            subview.widthAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
+            subview.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
+        }
+
         self.panRecognizer.isEnabled = self.items > 0
     }
 
@@ -108,25 +120,6 @@ class MPSpinnerView: UIView {
 
         fittingSize.height *= 3
         return fittingSize
-    }
-
-    override func updateConstraints() {
-        super.updateConstraints()
-
-        for subview in self.subviews {
-            if subview.tag != 1 {
-                subview.tag = 1
-                subview.translatesAutoresizingMaskIntoConstraints = false
-                subview.topAnchor.constraint( greaterThanOrEqualTo: self.topAnchor ).activate()
-                subview.leadingAnchor.constraint( greaterThanOrEqualTo: self.leadingAnchor ).activate()
-                subview.trailingAnchor.constraint( lessThanOrEqualTo: self.trailingAnchor ).activate()
-                subview.bottomAnchor.constraint( lessThanOrEqualTo: self.bottomAnchor ).activate()
-                subview.centerXAnchor.constraint( equalTo: self.centerXAnchor ).activate()
-                subview.centerYAnchor.constraint( equalTo: self.centerYAnchor ).activate()
-                subview.widthAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
-                subview.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ).activate()
-            }
-        }
     }
 
     override func layoutSubviews() {
