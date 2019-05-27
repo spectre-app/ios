@@ -42,7 +42,7 @@ class Item: MPSiteObserver {
     }
 
     func setNeedsUpdate() {
-        if self.updateGroup.wait(timeout: .now()) == .success {
+        if self.updateGroup.wait( timeout: .now() ) == .success {
             DispatchQueue.main.perform( group: self.updateGroup ) {
                 self.view.update()
             }
@@ -498,13 +498,23 @@ class PickerItem<V: Equatable>: ValueItem<V> {
             }
 
             override var intrinsicContentSize: CGSize {
-                var contentSize = self.collectionViewLayout.collectionViewContentSize
+                var contentSize = self.collectionViewLayout.collectionViewContentSize, itemSize = self.layout.itemSize
                 if let cell = self.visibleCells.first {
-                    contentSize = CGSizeUnion( contentSize, cell.systemLayoutSizeFitting( contentSize ) )
+                    itemSize = cell.systemLayoutSizeFitting( contentSize )
                 }
-                else {
-                    contentSize = CGSizeUnion( contentSize, CGSize( width: 1, height: 1 ) )
+                else if self.numberOfSections > 0, self.numberOfItems( inSection: 0 ) > 0 {
+                    let first = IndexPath( item: 0, section: 0 )
+                    if let size = (self.delegate as? UICollectionViewDelegateFlowLayout)?
+                            .collectionView?( self, layout: self.layout, sizeForItemAt: first ) {
+                        itemSize = size
+                    }
+                    else if let cell = self.dataSource?.collectionView( self, cellForItemAt: first ) {
+                        itemSize = cell.systemLayoutSizeFitting( contentSize )
+                    }
                 }
+                itemSize.width += self.layout.sectionInset.left + self.layout.sectionInset.right
+                itemSize.height += self.layout.sectionInset.top + self.layout.sectionInset.bottom
+                contentSize = CGSizeUnion( contentSize, itemSize )
 
                 return contentSize
             }
