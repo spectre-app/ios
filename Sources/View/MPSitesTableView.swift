@@ -234,6 +234,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             self.passwordLabel.text = " "
             self.passwordLabel.font = UIFont( name: "SourceCodePro-Black", size: 28 )
+            self.passwordLabel.adjustsFontSizeToFitWidth = true
             self.passwordLabel.textAlignment = .natural
             self.passwordLabel.textColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 1 )
             self.passwordLabel.shadowColor = .black
@@ -245,6 +246,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             self.copyButton.darkBackground = true
             self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in self.siteAction() }
+            self.copyButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
             // - Hierarchy
             self.contentView.addSubview( self.passwordLabel )
