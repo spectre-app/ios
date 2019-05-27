@@ -60,7 +60,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
         ViewConfiguration( view: self.usersSpinner )
                 .constrainToSuperview( withMargins: false, anchor: .topBox )
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).withPriority( .defaultHigh ) }
+                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
         ViewConfiguration( view: self.userToolbar )
                 .constrainToSuperview( withMargins: false, anchor: .horizontally ).activate()
@@ -75,7 +75,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
             [
                 self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
-                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor )
+                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).withPriority( .defaultHigh )
             ]
         }
     }
