@@ -47,7 +47,7 @@
 
     @synchronized (observers) {
         NSMutableArray *obsolete = [NSMutableArray new];
-        for (WeakReference *observer in observers) {
+        for (WeakReference *observer in [observers copy]) {
             id reference = observer.reference;
             if (reference)
                 action( reference );
