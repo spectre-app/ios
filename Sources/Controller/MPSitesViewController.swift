@@ -15,7 +15,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
     private let sitesTableView          = MPSitesTableView()
     private let siteHeaderView          = MPSiteHeaderView()
     private let siteDetailContainer     = UIScrollView()
-    private let siteDetailContentView   = UIView()
+    private let siteDetailContentView   = MPUntouchableView()
     private let siteHeaderConfiguration = ViewConfiguration()
     private let siteDetailConfiguration = ViewConfiguration()
     private var siteDetailController: MPSiteDetailViewController?

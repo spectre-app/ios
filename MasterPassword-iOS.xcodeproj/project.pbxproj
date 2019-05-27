@@ -65,6 +65,7 @@
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
 		93D39D45180726A9C2484030 /* MPStarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39633973C6D2EAB335D68 /* MPStarView.swift */; };
 		93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */; };
+		93D39D8B9142B6F4077CFBD2 /* MPUntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */; };
 		93D39E281E3658B30550CB55 /* NSDictionary+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39AA1EE2E1E7B81372240 /* NSDictionary+Indexing.m */; };
 		93D39E34FD28D24FE3442C48 /* UITextView+PearlAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3977321EB249981821AB0 /* UITextView+PearlAttributes.m */; };
 		93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
@@ -380,6 +381,7 @@
 		93D399146F2E9498E71C2B0A /* Observers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Observers.h; sourceTree = "<group>"; };
 		93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UILabel+MPFontSize.h"; sourceTree = "<group>"; };
 		93D399AC72BBE25033B26BF0 /* AutoLayoutCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AutoLayoutCollectionViewCell.m; sourceTree = "<group>"; };
+		93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUntouchableView.swift; sourceTree = "<group>"; };
 		93D399B69E4852AFB51AF6EC /* MPItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPItemView.swift; sourceTree = "<group>"; };
 		93D399C2F3D48E57C4803BDC /* NSPersistentStore+PearlMigration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPersistentStore+PearlMigration.m"; sourceTree = "<group>"; };
 		93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTapEffectView.swift; sourceTree = "<group>"; };
@@ -839,6 +841,7 @@
 				93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */,
 				93D398A0CC7A860ADA1315EF /* MPDateView.swift */,
 				93D39477D638F3147366C029 /* MPAnimations.swift */,
+				93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2089,6 +2092,7 @@
 				93D39E4BA0810541D1A91953 /* MPMarshal.swift in Sources */,
 				93D395ABA8A82780C5192EDE /* MPAnimations.swift in Sources */,
 				93D39115154987BD8118FEA9 /* String+MP.swift in Sources */,
+				93D39D8B9142B6F4077CFBD2 /* MPUntouchableView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

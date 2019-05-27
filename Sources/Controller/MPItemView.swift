@@ -236,7 +236,7 @@ class DateItem: ValueItem<Date> {
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.centerXAnchor.constraint( lessThanOrEqualTo: $0.centerXAnchor ) }
+                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
 
