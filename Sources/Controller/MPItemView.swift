@@ -98,6 +98,7 @@ class Item: MPSiteObserver {
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                     .activate()
         }
 
@@ -462,7 +463,8 @@ class PickerItem<V: Equatable>: ValueItem<V> {
                 if !selectedIndexPaths.elementsEqual( [ selectedIndexPath ] ) {
                     if self.collectionView.visibleCells.count > 0 {
                         self.collectionView.selectItem( at: selectedIndexPath, animated: false, scrollPosition: .centeredHorizontally )
-                    } else {
+                    }
+                    else {
                         DispatchQueue.main.async {
                             if self.window != nil {
                                 self.updateSelection()
