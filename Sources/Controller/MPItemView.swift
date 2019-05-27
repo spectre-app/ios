@@ -448,14 +448,27 @@ class PickerItem<V: Equatable>: ValueItem<V> {
 
             // TODO: reload items non-destructively
             //self.collectionView.reloadData()
+            self.updateSelection()
+        }
 
+        // MARK: --- Private ---
+
+        private func updateSelection() {
             if let site = self.item.site,
                let selectedValue = self.item.itemValue( site ),
-               let selectedIndex = self.item.values.firstIndex( of: selectedValue ) {
+               let selectedIndex = self.item.values.firstIndex( of: selectedValue ),
+               let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems {
                 let selectedIndexPath = IndexPath( item: selectedIndex, section: 0 )
-                if let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems,
-                   !selectedIndexPaths.elementsEqual( [ selectedIndexPath ] ) {
-                    self.collectionView.selectItem( at: selectedIndexPath, animated: false, scrollPosition: .centeredHorizontally )
+                if !selectedIndexPaths.elementsEqual( [ selectedIndexPath ] ) {
+                    if self.collectionView.visibleCells.count > 0 {
+                        self.collectionView.selectItem( at: selectedIndexPath, animated: false, scrollPosition: .centeredHorizontally )
+                    } else {
+                        DispatchQueue.main.async {
+                            if self.window != nil {
+                                self.updateSelection()
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -473,10 +486,6 @@ class PickerItem<V: Equatable>: ValueItem<V> {
         // MARK: --- UICollectionViewDelegateFlowLayout ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            if let cell = collectionView.cellForItem( at: indexPath ) {
-                MPTapEffectView( for: cell ).run()
-            }
-
             if let site = self.item.site {
                 self.item.itemUpdate( site, self.item.values[indexPath.item] )
             }

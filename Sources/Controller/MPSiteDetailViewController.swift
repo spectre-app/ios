@@ -43,7 +43,6 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         self.itemsView.axis = .vertical
         self.itemsView.spacing = 20
         for item in self.items {
-            item.site = self.site
             self.itemsView.addArrangedSubview( item.view )
         }
 
@@ -79,6 +78,10 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
             self.backgroundView.backgroundColor = self.site.color
+
+            for item in self.items {
+                item.site = self.site
+            }
         }
     }
 
