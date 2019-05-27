@@ -6,15 +6,16 @@
 import UIKit
 import pop
 
-class MPSitesViewController: UIViewController, UITextFieldDelegate,
+class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate,
                              MPSiteHeaderObserver, MPSiteDetailObserver, MPSitesViewObserver, MPUserObserver {
-    private lazy var topContainer = MPButton( content: self.searchField )
+    private lazy var topContainer         = MPButton( content: self.searchField )
+    private lazy var siteDetailRecognizer = UITapGestureRecognizer( target: self, action: #selector( didDismissSiteDetail ) )
     private let searchField             = UITextField()
     private let userButton              = UIButton( type: .custom )
     private let sitesTableView          = MPSitesTableView()
     private let siteHeaderView          = MPSiteHeaderView()
-    private let siteDetailShade         = UIButton()
-    private let siteDetailContainer     = UIView()
+    private let siteDetailContainer     = UIScrollView()
+    private let siteDetailContentView   = UIView()
     private let siteHeaderConfiguration = ViewConfiguration()
     private let siteDetailConfiguration = ViewConfiguration()
     private var siteDetailController: MPSiteDetailViewController?
@@ -87,16 +88,15 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
             self.sitesTableView.contentInsetAdjustmentBehavior = .never
         }
 
-        self.siteDetailShade.backgroundColor = UIColor( white: 0, alpha: 0.382 )
-        self.siteDetailShade.addAction( for: .touchUpInside ) { _, _ in
-            self.hideSiteDetail()
-        }
+        self.siteDetailContainer.backgroundColor = UIColor( white: 0, alpha: 0.382 )
+        self.siteDetailContainer.addGestureRecognizer( self.siteDetailRecognizer )
+        self.siteDetailRecognizer.delegate = self
 
         // - Hierarchy
-        self.siteDetailShade.addSubview( self.siteDetailContainer )
+        self.siteDetailContainer.addSubview( self.siteDetailContentView )
         self.view.addSubview( self.sitesTableView )
         self.view.addSubview( self.siteHeaderView )
-        self.view.addSubview( self.siteDetailShade )
+        self.view.addSubview( self.siteDetailContainer )
         self.view.addSubview( self.topContainer )
 
         // - Layout
@@ -112,16 +112,18 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.siteDetailShade )
+        ViewConfiguration( view: self.siteDetailContainer )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: self.sitesTableView.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: self.sitesTableView.trailingAnchor ) }
                 .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.siteDetailContainer )
+        ViewConfiguration( view: self.siteDetailContentView )
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
                 .activate()
 
         ViewConfiguration( view: self.topContainer )
@@ -132,7 +134,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
                                     .withPriority( UILayoutPriority( 500 ) ),
                         $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteHeaderView.layoutMarginsGuide.bottomAnchor )
                                     .withPriority( UILayoutPriority( 510 ) ),
-                        $1.bottomAnchor.constraint( lessThanOrEqualTo: self.siteDetailContainer.topAnchor )
+                        $1.bottomAnchor.constraint( lessThanOrEqualTo: self.siteDetailContentView.topAnchor )
                                        .withPriority( UILayoutPriority( 520 ) ),
                         $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
                         $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
@@ -148,9 +150,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
 
         self.siteDetailConfiguration
-                .apply( ViewConfiguration( view: self.siteDetailShade )
+                .apply( ViewConfiguration( view: self.siteDetailContainer )
                                 .constrainTo { $1.bottomAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: true )
-                .apply( ViewConfiguration( view: self.siteDetailShade )
+                .apply( ViewConfiguration( view: self.siteDetailContainer )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: false )
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
@@ -161,15 +163,16 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        // Offset sites content's top margin to make space for the top container.
+        // Offset sites content's top inset to make space for the top container.
         let top = self.sitesTableView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y - 8
         self.sitesTableView.contentInset = UIEdgeInsets(
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 
-        // Offset detail view's top margin to make space for the top container.
-//        self.siteDetailController?.tableView.contentInset = UIEdgeInsets(
-//                top: CGRectGetBottom( self.siteDetailView.convert( self.topContainer.bounds, from: self.topContainer ) ).y,
-//                left: 0, bottom: 0, right: 0 )
+        // Offset detail view's top inset to make space for the top container.
+        self.siteDetailContainer.contentInset = UIEdgeInsets(
+                top: max( CGRectGetBottom( self.topContainer.bounds ).y + 8,
+                          self.siteDetailContainer.bounds.size.height - self.siteDetailContentView.frame.size.height ),
+                left: 0, bottom: 0, right: 0 )
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -201,13 +204,13 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
     }
 
     func showSiteDetail(for site: MPSite) {
-        hideSiteDetail {
+        self.hideSiteDetail {
             self.siteDetailController = MPSiteDetailViewController( site: site )
             if let siteDetailController = self.siteDetailController {
                 siteDetailController.observers.register( self )
                 self.addChildViewController( siteDetailController )
                 siteDetailController.beginAppearanceTransition( false, animated: true )
-                self.siteDetailContainer.addSubview( siteDetailController.view )
+                self.siteDetailContentView.addSubview( siteDetailController.view )
                 ViewConfiguration( view: siteDetailController.view ).constrainToMarginsOfSuperview().activate()
                 UIView.animate( withDuration: 0.382, animations: {
                     self.searchField.resignFirstResponder() // TODO: Move to somewhere more generic
@@ -218,6 +221,11 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
                 } )
             }
         }
+    }
+
+    @objc
+    func didDismissSiteDetail() {
+        self.hideSiteDetail( completion: nil )
     }
 
     func hideSiteDetail(completion: (() -> Void)? = nil) {
@@ -275,6 +283,17 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate,
                 }
             } )
         }
+    }
+
+    // MARK: --- UIGestureRecognizerDelegate ---
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        // siteDetailRecognizer shouldn't trigger on subviews
+        if gestureRecognizer == self.siteDetailRecognizer {
+            return touch.view == gestureRecognizer.view
+        }
+
+        return true
     }
 
     // MARK: --- UITextFieldDelegate ---
