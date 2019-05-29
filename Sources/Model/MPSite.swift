@@ -112,15 +112,18 @@ class MPSite: NSObject, Comparable {
 
     // MARK: --- mpw ---
 
-    func mpw_result(keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil, resultParam: String? = nil)
+    func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                    resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> String? {
-        if let masterKey = self.user.masterKey,
-           let result = mpw_siteResult( masterKey, self.siteName, self.counter,
-                                        keyPurpose, keyContext, self.resultType, resultParam, self.algorithm ) {
-            return String( safeUTF8: result )
+        guard let masterKey = self.user.masterKey
+        else {
+            return nil
         }
 
-        return nil
+        return DispatchQueue.mpw.await {
+            String( safeUTF8: mpw_siteResult( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+                                              resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ) )
+        }
     }
 }
 

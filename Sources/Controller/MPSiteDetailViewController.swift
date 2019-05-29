@@ -10,7 +10,8 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     let observers = Observers<MPSiteDetailObserver>()
     let site: MPSite
 
-    let items = [ PasswordCounterItem(), SeparatorItem(),
+    let items = [ ResultItem(), SeparatorItem(),
+                  PasswordCounterItem(), SeparatorItem(),
                   PasswordTypeItem(), SeparatorItem(),
                   LoginTypeItem(), SeparatorItem(),
                   URLItem(), SeparatorItem(),
@@ -87,6 +88,19 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     }
 
     // MARK: --- Types ---
+
+    class ResultItem: SubLabelItem {
+        init() {
+            super.init( title: "Password" ) {
+                if let result = $0.mpw_result(),
+                   let name = $0.mpw_result( keyPurpose: .identification ) {
+                    return (result, name)
+                }
+
+                return nil
+            }
+        }
+    }
 
     class PasswordCounterItem: StepperItem<UInt32> {
         init() {

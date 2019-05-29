@@ -93,23 +93,25 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
     @discardableResult
     func mpw_authenticate(masterPassword: String) -> Bool {
-        if let authKey = mpw_masterKey( self.fullName, masterPassword, .versionCurrent ),
-           let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
-            if let masterKeyID = self.masterKeyID {
-                if masterKeyID != authKeyID {
-                    return false
+        return DispatchQueue.mpw.await {
+            if let authKey = mpw_masterKey( self.fullName, masterPassword, .versionCurrent ),
+               let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
+                if let masterKeyID = self.masterKeyID {
+                    if masterKeyID != authKeyID {
+                        return false
+                    }
                 }
-            }
-            else {
-                self.masterKeyID = authKeyID
+                else {
+                    self.masterKeyID = authKeyID
+                }
+
+                self.masterKey = authKey
+                self.lastUsed = Date()
+                return true
             }
 
-            self.masterKey = authKey
-            self.lastUsed = Date()
-            return true
+            return false
         }
-
-        return false
     }
 
     // MARK: --- Types ---

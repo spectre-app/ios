@@ -153,7 +153,7 @@ class SeparatorItem: Item {
     }
 }
 
-class ValueItem<V: Equatable>: Item {
+class ValueItem<V>: Item {
     let itemValue: (MPSite) -> V?
     var value:     V? {
         get {
@@ -206,6 +206,53 @@ class LabelItem: ValueItem<String> {
             super.update()
 
             self.valueLabel.text = self.item.value
+        }
+    }
+}
+
+class SubLabelItem: ValueItem<(String, String)> {
+    override func createItemView() -> SubLabelItemView {
+        return SubLabelItemView( withItem: self )
+    }
+
+    class SubLabelItemView: ItemView {
+        let item: SubLabelItem
+        let primaryLabel   = UILabel()
+        let secondaryLabel = UILabel()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item) {
+            self.item = item as! SubLabelItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.primaryLabel.textColor = .white
+            self.primaryLabel.textAlignment = .center
+            if #available( iOS 11.0, * ) {
+                self.primaryLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
+            }
+            else {
+                self.primaryLabel.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
+            }
+
+            self.secondaryLabel.textColor = .white
+            self.secondaryLabel.textAlignment = .center
+            self.secondaryLabel.font = UIFont.preferredFont( forTextStyle: .caption1 )
+
+            let valueView = UIStackView( arrangedSubviews: [ self.primaryLabel, self.secondaryLabel ] )
+            valueView.axis = .vertical
+            return valueView
+        }
+
+        override func update() {
+            super.update()
+
+            self.primaryLabel.text = self.item.value?.0
+            self.secondaryLabel.text = self.item.value?.1
         }
     }
 }

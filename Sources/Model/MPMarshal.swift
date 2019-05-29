@@ -95,8 +95,8 @@ class MPMarshal {
                             return
                         }
 
-                        site.resultState?.withCString { marshalledSite.pointee.content = $0 }
-                        site.loginState?.withCString { marshalledSite.pointee.loginContent = $0 }
+                        site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
+                        site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
                         marshalledSite.pointee.loginType = site.loginType
                         site.url?.withCString { marshalledSite.pointee.url = $0 }
                         marshalledSite.pointee.uses = UInt32( site.uses )
@@ -186,9 +186,9 @@ class MPMarshal {
                                         named: siteName,
                                         algorithm: site.algorithm,
                                         counter: site.counter,
-                                        resultType: site.type,
+                                        resultType: site.resultType,
                                         loginType: site.loginType,
-                                        loginState: String( safeUTF8: site.loginContent ),
+                                        loginState: String( safeUTF8: site.loginState ),
                                         url: String( safeUTF8: site.url ),
                                         uses: UInt( site.uses ),
                                         lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
