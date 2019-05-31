@@ -233,7 +233,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.indicatorView.layer.borderColor = UIColor( white: 0, alpha: 1 ).cgColor
 
             self.passwordLabel.text = " "
-            self.passwordLabel.font = UIFont( name: "SourceCodePro-Black", size: 28 )
+            self.passwordLabel.font = UIFont.passwordFont
             self.passwordLabel.adjustsFontSizeToFitWidth = true
             self.passwordLabel.textAlignment = .natural
             self.passwordLabel.textColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 1 )

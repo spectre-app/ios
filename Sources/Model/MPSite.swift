@@ -122,7 +122,21 @@ class MPSite: NSObject, Comparable {
 
         return DispatchQueue.mpw.await {
             String( safeUTF8: mpw_siteResult( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                              resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ) )
+                                              resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ) )
+        }
+    }
+
+    func mpw_login(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .identification, keyContext: String? = nil,
+                   resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                    -> String? {
+        guard let masterKey = self.user.masterKey
+        else {
+            return nil
+        }
+
+        return DispatchQueue.mpw.await {
+            String( safeUTF8: mpw_siteResult( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                              resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ) )
         }
     }
 }

@@ -58,6 +58,8 @@ extension UIColor {
 }
 
 extension UIFont {
+    static let passwordFont = UIFont( name: "SourceCodePro-Black", size: 28 )
+
     func withSymbolicTraits(_ symbolicTraits: UIFontDescriptor.SymbolicTraits) -> UIFont {
         if let descriptor = self.fontDescriptor.withSymbolicTraits( symbolicTraits ) {
             return UIFont( descriptor: descriptor, size: self.pointSize )

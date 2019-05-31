@@ -91,13 +91,22 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
 
     class ResultItem: SubLabelItem {
         init() {
-            super.init( title: "Password" ) {
-                if let result = $0.mpw_result(),
-                   let name = $0.mpw_result( keyPurpose: .identification ) {
-                    return (result, name)
+            super.init( title: "Password & Login" ) {
+                ($0.mpw_result() ?? "", $0.mpw_login() ?? "")
+            }
+        }
+
+        override func createItemView() -> ResultItemView {
+            return ResultItemView( withItem: self )
+        }
+
+        class ResultItemView: SubLabelItemView {
+            override func createValueView() -> UIView? {
+                defer {
+                    self.primaryLabel.font = UIFont.passwordFont
                 }
 
-                return nil
+                return super.createValueView()
             }
         }
     }
