@@ -16,8 +16,8 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
     private let siteHeaderView          = MPSiteHeaderView()
     private let siteDetailContainer     = UIScrollView()
     private let siteDetailContentView   = MPUntouchableView()
-    private let siteHeaderConfiguration = ViewConfiguration()
-    private let siteDetailConfiguration = ViewConfiguration()
+    private let siteHeaderConfiguration = LayoutConfiguration()
+    private let siteDetailConfiguration = LayoutConfiguration()
     private var siteDetailController: MPSiteDetailViewController?
 
     var user: MPUser? {
@@ -100,25 +100,25 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
         self.view.addSubview( self.topContainer )
 
         // - Layout
-        ViewConfiguration( view: self.siteHeaderView )
+        LayoutConfiguration( view: self.siteHeaderView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.sitesTableView )
+        LayoutConfiguration( view: self.sitesTableView )
                 .constrainTo { $1.topAnchor.constraint( equalTo: self.siteHeaderView.bottomAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.siteDetailContainer )
+        LayoutConfiguration( view: self.siteDetailContainer )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: self.sitesTableView.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: self.sitesTableView.trailingAnchor ) }
                 .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.siteDetailContentView )
+        LayoutConfiguration( view: self.siteDetailContentView )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
@@ -126,7 +126,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
                 .activate()
 
-        ViewConfiguration( view: self.topContainer )
+        LayoutConfiguration( view: self.topContainer )
                 .constrainToAll {
                     [
                         $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
@@ -144,15 +144,15 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
                 .activate()
 
         self.siteHeaderConfiguration
-                .apply( ViewConfiguration( view: self.siteHeaderView )
+                .apply( LayoutConfiguration( view: self.siteHeaderView )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: true )
-                .apply( ViewConfiguration( view: self.sitesTableView )
+                .apply( LayoutConfiguration( view: self.sitesTableView )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
 
         self.siteDetailConfiguration
-                .apply( ViewConfiguration( view: self.siteDetailContainer )
+                .apply( LayoutConfiguration( view: self.siteDetailContainer )
                                 .constrainTo { $1.bottomAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: true )
-                .apply( ViewConfiguration( view: self.siteDetailContainer )
+                .apply( LayoutConfiguration( view: self.siteDetailContainer )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: self.sitesTableView.bottomAnchor ) }, active: false )
 
         UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
@@ -211,7 +211,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
                 self.addChildViewController( siteDetailController )
                 siteDetailController.beginAppearanceTransition( false, animated: true )
                 self.siteDetailContentView.addSubview( siteDetailController.view )
-                ViewConfiguration( view: siteDetailController.view ).constrainToMarginsOfSuperview().activate()
+                LayoutConfiguration( view: siteDetailController.view ).constrainToMarginsOfOwner().activate()
                 UIView.animate( withDuration: 0.382, animations: {
                     self.searchField.resignFirstResponder() // TODO: Move to somewhere more generic
                     self.siteDetailConfiguration.activate()

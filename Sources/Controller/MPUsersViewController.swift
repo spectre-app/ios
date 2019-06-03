@@ -31,7 +31,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     private let usersSpinner = MPSpinnerView()
     private let userToolbar  = UIToolbar()
     private let nameLabel    = UILabel()
-    private var toolbarConfiguration: ViewConfiguration!
+    private var toolbarConfiguration: LayoutConfiguration!
 
     // MARK: --- Life ---
 
@@ -58,14 +58,14 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         self.view.addSubview( self.usersSpinner )
         self.view.addSubview( self.userToolbar )
 
-        ViewConfiguration( view: self.usersSpinner )
-                .constrainToSuperview( withMargins: false, anchor: .topBox )
+        LayoutConfiguration( view: self.usersSpinner )
+                .constrainToOwner( withMargins: false, anchor: .topBox )
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
-        ViewConfiguration( view: self.userToolbar )
-                .constrainToSuperview( withMargins: false, anchor: .horizontally ).activate()
+        LayoutConfiguration( view: self.userToolbar )
+                .constrainToOwner( withMargins: false, anchor: .horizontally ).activate()
 
-        self.toolbarConfiguration = ViewConfiguration( view: self.userToolbar ) { active, inactive in
+        self.toolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
             active.constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
             active.set( 1, forKey: "alpha" )
             inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -190,7 +190,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
         private let idBadgeView        = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
-        private var passwordConfiguration: ViewConfiguration!
+        private var passwordConfiguration: LayoutConfiguration!
         private var path               = CGMutablePath() {
             didSet {
                 self.setNeedsDisplay()
@@ -239,7 +239,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.identiconAccessory.allowsSelfSizing = true
             self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
             self.identiconAccessory.addSubview( self.identiconLabel )
-            ViewConfiguration( view: self.identiconLabel )
+            LayoutConfiguration( view: self.identiconLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
@@ -273,36 +273,36 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.addSubview( self.nameField )
             self.addSubview( self.passwordField )
 
-            ViewConfiguration( view: self.nameLabel )
+            LayoutConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
                     .activate()
-            ViewConfiguration( view: self.nameField )
+            LayoutConfiguration( view: self.nameField )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
                     .activate()
-            ViewConfiguration( view: self.avatarButton )
+            LayoutConfiguration( view: self.avatarButton )
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .activate()
-            ViewConfiguration( view: self.passwordField )
+            LayoutConfiguration( view: self.passwordField )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
-            self.passwordConfiguration = ViewConfiguration( view: self.passwordField ) { active, inactive in
+            self.passwordConfiguration = LayoutConfiguration( view: self.passwordField ) { active, inactive in
                 active.set( 1, forKey: "alpha" )
                 active.set( true, forKey: "enabled" )
                 inactive.set( 0, forKey: "alpha" )
                 inactive.set( false, forKey: "enabled" )
                 inactive.set( nil, forKey: "text" )
             }
-                    .apply( ViewConfiguration( view: self.idBadgeView ) { active, inactive in
+                    .apply( LayoutConfiguration( view: self.idBadgeView ) { active, inactive in
                         active.constrainTo { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
                         active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         active.set( 1, forKey: "alpha" )
@@ -310,7 +310,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                         inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         inactive.set( 0, forKey: "alpha" )
                     } )
-                    .apply( ViewConfiguration( view: self.authBadgeView ) { active, inactive in
+                    .apply( LayoutConfiguration( view: self.authBadgeView ) { active, inactive in
                         active.constrainTo { $1.leadingAnchor.constraint( equalTo: self.avatarButton.trailingAnchor ) }
                         active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         active.set( 1, forKey: "alpha" )

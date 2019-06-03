@@ -67,7 +67,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         self.addSubview( trailingToolBar )
 
         // - Layout
-        ViewConfiguration( view: self.siteButton )
+        LayoutConfiguration( view: self.siteButton )
                 .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
@@ -75,17 +75,17 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
                 .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                 .activate()
-        ViewConfiguration( view: leadingToolBar )
+        LayoutConfiguration( view: leadingToolBar )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                 .activate()
-        ViewConfiguration( view: trailingToolBar )
+        LayoutConfiguration( view: trailingToolBar )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                 .activate()
-        ViewConfiguration( view: self )
+        LayoutConfiguration( view: self )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor, multiplier: 1.618 ) }
                 .activate()
     }

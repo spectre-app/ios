@@ -7,7 +7,7 @@
 
 
 CF_IMPLICIT_BRIDGING_ENABLED
-#pragma clang assume_nonnull begin
+NS_ASSUME_NONNULL_BEGIN
 
 @interface Observers<__covariant ObjectType>: NSObject
 
@@ -28,5 +28,5 @@ CF_IMPLICIT_BRIDGING_ENABLED
 
 @end
 
-#pragma clang assume_nonnull end
+NS_ASSUME_NONNULL_END
 CF_IMPLICIT_BRIDGING_DISABLED

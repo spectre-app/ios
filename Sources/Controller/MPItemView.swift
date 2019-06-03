@@ -88,13 +88,13 @@ class Item: MPSiteObserver {
             self.addSubview( self.subitemsView )
 
             // - Layout
-            ViewConfiguration( view: self.contentView )
+            LayoutConfiguration( view: self.contentView )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: self.subitemsView.topAnchor ) }
                     .activate()
-            ViewConfiguration( view: self.subitemsView )
+            LayoutConfiguration( view: self.subitemsView )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -279,7 +279,7 @@ class DateItem: ValueItem<Date> {
         override func createValueView() -> UIView? {
             self.valueView.addSubview( self.dateView )
 
-            ViewConfiguration( view: self.dateView )
+            LayoutConfiguration( view: self.dateView )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
@@ -415,18 +415,18 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
             self.valueView.addSubview( self.downButton )
             self.valueView.addSubview( self.upButton )
 
-            ViewConfiguration( view: self.valueLabel )
+            LayoutConfiguration( view: self.valueLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
                     .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                     .activate()
-            ViewConfiguration( view: self.downButton )
+            LayoutConfiguration( view: self.downButton )
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: self.valueLabel.leadingAnchor, constant: -20 ) }
                     .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                     .activate()
-            ViewConfiguration( view: self.upButton )
+            LayoutConfiguration( view: self.upButton )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.valueLabel.trailingAnchor, constant: 20 ) }
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
                     .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }

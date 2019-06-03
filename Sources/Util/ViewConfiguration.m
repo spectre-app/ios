@@ -3,26 +3,36 @@
 // Copyright (c) 2018 Lyndir. All rights reserved.
 //
 
-#import "ViewConfiguration.h"
+#import "LayoutConfiguration.h"
 
 
-@interface ViewConfiguration ()
+@interface LayoutTarget()
 
-@property(nonatomic, readwrite, strong) UIView                               *view;
-@property(nonatomic, readwrite, strong) NSMutableArray<NSLayoutConstraint *> *constraints;
-@property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *>  *activeConfigurations;
-@property(nonatomic, readwrite, strong) NSMutableArray<ViewConfiguration *>  *inactiveConfigurations;
-@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>             *layoutViews;
-@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>             *displayViews;
-@property(nonatomic, readwrite, strong) NSMutableArray<void ( ^ )(UIView *)> *actions;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *activeValues;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *inactiveValues;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *activeProperties;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>  *inactiveProperties;
+@property(nonatomic, readwrite, nullable) UIView *view;
+@property(nonatomic, readwrite, nullable) UILayoutGuide *layoutGuide;
+
++ (instancetype)layoutTargetWithView:(UIView *)view;
++ (instancetype)layoutTargetWithLayoutGuide:(UILayoutGuide *)layoutGuide;
 
 @end
 
-@implementation ViewConfiguration {
+@interface LayoutConfiguration ()
+
+@property(nonatomic, readwrite, strong) LayoutTarget                          *target;
+@property(nonatomic, readwrite, strong) NSMutableArray<NSLayoutConstraint *>  *constraints;
+@property(nonatomic, readwrite, strong) NSMutableArray<LayoutConfiguration *> *activeConfigurations;
+@property(nonatomic, readwrite, strong) NSMutableArray<LayoutConfiguration *> *inactiveConfigurations;
+@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>              *layoutViews;
+@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>              *displayViews;
+@property(nonatomic, readwrite, strong) NSMutableArray<void ( ^ )(UIView *)>  *actions;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *activeValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *inactiveValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *activeProperties;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *inactiveProperties;
+
+@end
+
+@implementation LayoutConfiguration {
 }
 
 + (instancetype)configuration {
@@ -30,24 +40,52 @@
     return [[self new] deactivate];
 }
 
-+ (instancetype)configurationWithView:(UIView *)view {
++ (instancetype)configurationWithTarget:(LayoutTarget *)layoutTarget {
 
-    ViewConfiguration *configuration = [self configuration];
-    configuration.view = view;
+    LayoutConfiguration *configuration = [self configuration];
+    configuration.target = layoutTarget;
     return configuration;
 }
 
-+ (instancetype)configurationWithView:(UIView *)view
-                       configurations:(nullable void ( ^ )(ViewConfiguration *active, ViewConfiguration *inactive))configurationBlocks {
++ (instancetype)configurationWithView:(UIView *)view {
 
-    ViewConfiguration *configuration = [self configurationWithView:view];
+    return [self configurationWithTarget:[LayoutTarget layoutTargetWithView:view]];
+}
+
++ (instancetype)configurationWithView:(UIView *)view
+                       configurations:(nullable void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks {
+
+    LayoutConfiguration *configuration = [self configurationWithView:view];
 
     if (configurationBlocks) {
-        ViewConfiguration *active   = [self configurationWithView:view];
-        ViewConfiguration *inactive = [self configurationWithView:view];
+        LayoutConfiguration *active   = [self configurationWithView:view];
+        LayoutConfiguration *inactive = [self configurationWithView:view];
         configurationBlocks( active, inactive );
-        [configuration applyViewConfiguration:active active:YES];
-        [configuration applyViewConfiguration:inactive active:NO];
+        [configuration applyLayoutConfiguration:active active:YES];
+        [configuration applyLayoutConfiguration:inactive active:NO];
+    }
+
+    return configuration;
+}
+
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing*)layoutGuide inView:(UIView *)ownerView {
+
+    *layoutGuide = [UILayoutGuide new];
+    [ownerView addLayoutGuide:*layoutGuide];
+    return [self configurationWithTarget:[LayoutTarget layoutTargetWithLayoutGuide:*layoutGuide]];
+}
+
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing*)layoutGuide inView:(UIView *)ownerView
+                              configurations:(nullable void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks {
+
+    LayoutConfiguration *configuration = [self configurationWithLayoutGuide:layoutGuide inView:ownerView];
+
+    if (configurationBlocks) {
+        LayoutConfiguration *active   = [self configurationWithTarget:configuration.target];
+        LayoutConfiguration *inactive = [self configurationWithTarget:configuration.target];
+        configurationBlocks( active, inactive );
+        [configuration applyLayoutConfiguration:active active:YES];
+        [configuration applyLayoutConfiguration:inactive active:NO];
     }
 
     return configuration;
@@ -111,17 +149,17 @@
     self.activeValues[key] = value?: [NSNull null];
 
     if (reverses)
-        self.inactiveValues[key] = [self.view valueForKeyPath:key]?: [NSNull null];
+        self.inactiveValues[key] = [self.target valueForKeyPath:key]?: [NSNull null];
 
     return self;
 }
 
-- (instancetype)applyViewConfiguration:(ViewConfiguration *)configuration {
+- (instancetype)applyLayoutConfiguration:(LayoutConfiguration *)configuration {
 
-    return [self applyViewConfiguration:configuration active:YES];
+    return [self applyLayoutConfiguration:configuration active:YES];
 }
 
-- (instancetype)applyViewConfiguration:(ViewConfiguration *)configuration active:(BOOL)active {
+- (instancetype)applyLayoutConfiguration:(LayoutConfiguration *)configuration active:(BOOL)active {
 
     [(active? self.activeConfigurations: self.inactiveConfigurations) addObject:configuration];
 
@@ -139,9 +177,9 @@
     return self;
 }
 
-- (instancetype)needsDisplay:(UIView *)layoutView {
+- (instancetype)needsDisplay:(UIView *)view {
 
-    [self.displayViews addObject:layoutView];
+    [self.displayViews addObject:view];
     return self;
 }
 
@@ -195,42 +233,42 @@
             [self activate];
         }];
     else
-        [self.view unanimated:^{
+        [UIView performWithoutAnimation:^{
             [self activate];
         }];
 
     return self;
 }
 
-- (instancetype)activateFromParent:(ViewConfiguration *)parent {
+- (instancetype)activateFromParent:(LayoutConfiguration *)parent {
 
     PearlMainQueue( ^{
-        for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
+        for (LayoutConfiguration *inactiveConfiguration in self.inactiveConfigurations)
             [inactiveConfiguration deactivateFromParent:self];
 
         if (self.constraints)
-            self.view.translatesAutoresizingMaskIntoConstraints = NO;
+            self.target.view.translatesAutoresizingMaskIntoConstraints = NO;
 
         UILayoutPriority oldPriority, newPriority;
         if ((newPriority = [self.activeProperties[@"compressionResistance.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
+            if ((oldPriority = [self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
                 self.inactiveProperties[@"compressionResistance.horizontal"] = @(oldPriority);
-                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
             }
         if ((newPriority = [self.activeProperties[@"compressionResistance.vertical"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
+            if ((oldPriority = [self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
                 self.inactiveProperties[@"compressionResistance.vertical"] = @(oldPriority);
-                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
             }
         if ((newPriority = [self.activeProperties[@"hugging.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
+            if ((oldPriority = [self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
                 self.inactiveProperties[@"hugging.horizontal"] = @(oldPriority);
-                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
             }
         if ((newPriority = [self.activeProperties[@"hugging.vertical"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
+            if ((oldPriority = [self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
                 self.inactiveProperties[@"hugging.vertical"] = @(oldPriority);
-                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
             }
 
         for (NSLayoutConstraint *constraint in self.constraints)
@@ -240,7 +278,7 @@
             }
 
         [self.activeValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
-            id oldValue = [self.view valueForKeyPath:key]?: [NSNull null];
+            id oldValue = [self.target.view valueForKeyPath:key]?: [NSNull null];
             if ([newValue isEqual:oldValue])
                 return;
 
@@ -248,13 +286,13 @@
                 self.inactiveValues[key] = oldValue;
 
             //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
-            [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
+            [self.target.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 
         for (ViewAction action in self.actions)
-            action( self.view );
+            action( self.target.view?: self.target.owningView );
 
-        for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
+        for (LayoutConfiguration *activeConfiguration in self.activeConfigurations)
             [activeConfiguration activateFromParent:self];
 
         self->_activated = YES;
@@ -264,8 +302,8 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-        if (!parent.view.window)
-            [self.view.window layoutIfNeeded];
+//        if (!parent.target.owningView)
+//            [self.target.owningView layoutIfNeeded];
     } );
 
     return self;
@@ -283,32 +321,32 @@
             [self activate];
         }];
     else
-        [self.view unanimated:^{
+        [UIView performWithoutAnimation:^{
             [self activate];
         }];
 
     return self;
 }
 
-- (instancetype)deactivateFromParent:(ViewConfiguration *)parent {
+- (instancetype)deactivateFromParent:(LayoutConfiguration *)parent {
 
     PearlMainQueue( ^{
-        for (ViewConfiguration *activeConfiguration in self.activeConfigurations)
+        for (LayoutConfiguration *activeConfiguration in self.activeConfigurations)
             [activeConfiguration deactivateFromParent:self];
 
         UILayoutPriority newPriority;
         if ((newPriority = [self.inactiveProperties[@"compressionResistance.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ([self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
-                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+            if ([self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
+                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
         if ((newPriority = [self.inactiveProperties[@"compressionResistance.vertical"]?: @(-1) floatValue]) >= 0)
-            if ([self.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
-                [self.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+            if ([self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
+                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
         if ((newPriority = [self.inactiveProperties[@"hugging.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ([self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
-                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+            if ([self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
+                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
         if ((newPriority = [self.inactiveProperties[@"hugging.vertical"]?: @(-1) floatValue]) >= 0)
-            if ([self.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
-                [self.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+            if ([self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
+                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
 
         for (NSLayoutConstraint *constraint in self.constraints)
             if (constraint.active) {
@@ -317,15 +355,15 @@
             }
 
         [self.inactiveValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
-            id oldValue = [self.view valueForKeyPath:key]?: [NSNull null];
+            id oldValue = [self.target.view valueForKeyPath:key]?: [NSNull null];
             if ([newValue isEqual:oldValue])
                 return;
 
             //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
-            [self.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
+            [self.target.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 
-        for (ViewConfiguration *inactiveConfiguration in self.inactiveConfigurations)
+        for (LayoutConfiguration *inactiveConfiguration in self.inactiveConfigurations)
             [inactiveConfiguration activateFromParent:self];
 
         self->_activated = NO;
@@ -335,21 +373,21 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-        if (!parent.view.window)
-            [self.view.window layoutIfNeeded];
+//        if (!parent.target.owningView)
+//            [self.target.owningView layoutIfNeeded];
     } );
 
     return self;
 }
 
-- (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *superview, UIView *view))constraintBlock {
+- (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *owningView, LayoutTarget *target))constraintBlock {
 
-    return [self constrainTo:constraintBlock( self.view.superview, self.view )];
+    return [self constrainTo:constraintBlock( self.target.owningView, self.target )];
 }
 
-- (instancetype)constrainToAllUsing:(NSArray<NSLayoutConstraint *> *( ^ )(UIView *superview, UIView *view))constraintBlock {
+- (instancetype)constrainToAllUsing:(NSArray<NSLayoutConstraint *> *( ^ )(UIView *owningView, LayoutTarget *target))constraintBlock {
 
-    for (NSLayoutConstraint *constraint in constraintBlock( self.view.superview, self.view ))
+    for (NSLayoutConstraint *constraint in constraintBlock( self.target.owningView, self.target ))
         [self constrainTo:constraint];
 
     return self;
@@ -370,96 +408,96 @@
 - (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins anchor:(Anchor)anchor {
 
     if (anchor & AnchorTop)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.topAnchor constraintEqualToAnchor:view.topAnchor];
+                return [(host?: owningView).layoutMarginsGuide.topAnchor constraintEqualToAnchor:target.topAnchor];
             else
-                return [(host?: superview).topAnchor constraintEqualToAnchor:view.topAnchor];
+                return [(host?: owningView).topAnchor constraintEqualToAnchor:target.topAnchor];
         }];
     if (anchor & AnchorLeading)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
+                return [(host?: owningView).layoutMarginsGuide.leadingAnchor constraintEqualToAnchor:target.leadingAnchor];
             else
-                return [(host?: superview).leadingAnchor constraintEqualToAnchor:view.leadingAnchor];
+                return [(host?: owningView).leadingAnchor constraintEqualToAnchor:target.leadingAnchor];
         }];
     if (anchor & AnchorTrailing)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
+                return [(host?: owningView).layoutMarginsGuide.trailingAnchor constraintEqualToAnchor:target.trailingAnchor];
             else
-                return [(host?: superview).trailingAnchor constraintEqualToAnchor:view.trailingAnchor];
+                return [(host?: owningView).trailingAnchor constraintEqualToAnchor:target.trailingAnchor];
         }];
     if (anchor & AnchorBottom)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
+                return [(host?: owningView).layoutMarginsGuide.bottomAnchor constraintEqualToAnchor:target.bottomAnchor];
             else
-                return [(host?: superview).bottomAnchor constraintEqualToAnchor:view.bottomAnchor];
+                return [(host?: owningView).bottomAnchor constraintEqualToAnchor:target.bottomAnchor];
         }];
     if (anchor & AnchorLeft)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.leftAnchor constraintEqualToAnchor:view.leftAnchor];
+                return [(host?: owningView).layoutMarginsGuide.leftAnchor constraintEqualToAnchor:target.leftAnchor];
             else
-                return [(host?: superview).leftAnchor constraintEqualToAnchor:view.leftAnchor];
+                return [(host?: owningView).leftAnchor constraintEqualToAnchor:target.leftAnchor];
         }];
     if (anchor & AnchorRight)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.rightAnchor constraintEqualToAnchor:view.rightAnchor];
+                return [(host?: owningView).layoutMarginsGuide.rightAnchor constraintEqualToAnchor:target.rightAnchor];
             else
-                return [(host?: superview).rightAnchor constraintEqualToAnchor:view.rightAnchor];
+                return [(host?: owningView).rightAnchor constraintEqualToAnchor:target.rightAnchor];
         }];
     if (anchor & AnchorWidth)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.widthAnchor constraintEqualToAnchor:view.widthAnchor];
+                return [(host?: owningView).layoutMarginsGuide.widthAnchor constraintEqualToAnchor:target.widthAnchor];
             else
-                return [(host?: superview).widthAnchor constraintEqualToAnchor:view.widthAnchor];
+                return [(host?: owningView).widthAnchor constraintEqualToAnchor:target.widthAnchor];
         }];
     if (anchor & AnchorHeight)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.heightAnchor constraintEqualToAnchor:view.heightAnchor];
+                return [(host?: owningView).layoutMarginsGuide.heightAnchor constraintEqualToAnchor:target.heightAnchor];
             else
-                return [(host?: superview).heightAnchor constraintEqualToAnchor:view.heightAnchor];
+                return [(host?: owningView).heightAnchor constraintEqualToAnchor:target.heightAnchor];
         }];
     if (anchor & AnchorCenterX)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.centerXAnchor constraintEqualToAnchor:view.centerXAnchor];
+                return [(host?: owningView).layoutMarginsGuide.centerXAnchor constraintEqualToAnchor:target.centerXAnchor];
             else
-                return [(host?: superview).centerXAnchor constraintEqualToAnchor:view.centerXAnchor];
+                return [(host?: owningView).centerXAnchor constraintEqualToAnchor:target.centerXAnchor];
         }];
     if (anchor & AnchorCenterY)
-        [self constrainToUsing:^NSLayoutConstraint *(UIView *superview, UIView *view) {
+        [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
             if (margins)
-                return [(host?: superview).layoutMarginsGuide.centerYAnchor constraintEqualToAnchor:view.centerYAnchor];
+                return [(host?: owningView).layoutMarginsGuide.centerYAnchor constraintEqualToAnchor:target.centerYAnchor];
             else
-                return [(host?: superview).centerYAnchor constraintEqualToAnchor:view.centerYAnchor];
+                return [(host?: owningView).centerYAnchor constraintEqualToAnchor:target.centerYAnchor];
         }];
 
     return self;
 }
 
-- (instancetype)constrainToSuperview {
+- (instancetype)constrainToOwner {
 
     return [self constrainToView:nil];
 }
 
-- (instancetype)constrainToMarginsOfSuperview {
+- (instancetype)constrainToMarginsOfOwner {
 
-    return [self constrainToSuperviewWithMargins:YES];
+    return [self constrainToOwnerWithMargins:YES];
 }
 
-- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins {
+- (instancetype)constrainToOwnerWithMargins:(BOOL)margins {
 
-    return [self constrainToSuperviewWithMargins:margins anchor:
+    return [self constrainToOwnerWithMargins:margins anchor:
             AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom];
 }
 
-- (instancetype)constrainToSuperviewWithMargins:(BOOL)margins anchor:(Anchor)anchor {
+- (instancetype)constrainToOwnerWithMargins:(BOOL)margins anchor:(Anchor)anchor {
 
     return [self constrainToView:nil withMargins:margins anchor:anchor];
 }
@@ -497,6 +535,87 @@
 - (instancetype)setOffset:(UIOffset)value forKey:(NSString *)key {
 
     return [self set:[NSValue valueWithUIOffset:value] forKey:key];
+}
+
+@end
+
+@implementation LayoutTarget
+
++ (instancetype)layoutTargetWithView:(UIView *)view {
+    LayoutTarget *target = [self new];
+    target.view = view;
+    return target;
+}
+
++ (instancetype)layoutTargetWithLayoutGuide:(UILayoutGuide *)layoutGuide {
+    LayoutTarget *target = [self new];
+    target.layoutGuide = layoutGuide;
+    return target;
+}
+
+- (UIView *)owningView {
+
+    return self.view.superview?: self.layoutGuide.owningView;
+}
+
+- (NSLayoutXAxisAnchor *)leadingAnchor {
+
+    return self.view.leadingAnchor?: self.layoutGuide.leadingAnchor;
+}
+
+- (NSLayoutXAxisAnchor *)trailingAnchor {
+
+    return self.view.trailingAnchor?: self.layoutGuide.trailingAnchor;
+}
+
+- (NSLayoutXAxisAnchor *)leftAnchor {
+
+    return self.view.leftAnchor?: self.layoutGuide.leftAnchor;
+}
+
+- (NSLayoutXAxisAnchor *)rightAnchor {
+
+    return self.view.rightAnchor?: self.layoutGuide.rightAnchor;
+}
+
+- (NSLayoutYAxisAnchor *)topAnchor {
+
+    return self.view.topAnchor?: self.layoutGuide.topAnchor;
+}
+
+- (NSLayoutYAxisAnchor *)bottomAnchor {
+
+    return self.view.bottomAnchor?: self.layoutGuide.bottomAnchor;
+}
+
+- (NSLayoutDimension *)widthAnchor {
+
+    return self.view.widthAnchor?: self.layoutGuide.widthAnchor;
+}
+
+- (NSLayoutDimension *)heightAnchor {
+
+    return self.view.heightAnchor?: self.layoutGuide.heightAnchor;
+}
+
+- (NSLayoutXAxisAnchor *)centerXAnchor {
+
+    return self.view.centerXAnchor?: self.layoutGuide.centerXAnchor;
+}
+
+- (NSLayoutYAxisAnchor *)centerYAnchor {
+
+    return self.view.centerYAnchor?: self.layoutGuide.centerYAnchor;
+}
+
+- (NSLayoutYAxisAnchor *)firstBaselineAnchor {
+
+    return self.view.firstBaselineAnchor;
+}
+
+- (NSLayoutYAxisAnchor *)lastBaselineAnchor {
+
+    return self.view.lastBaselineAnchor;
 }
 
 @end

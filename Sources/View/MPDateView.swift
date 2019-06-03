@@ -63,24 +63,24 @@ class MPDateView: UIView {
         self.addSubview( self.monthLabel )
         self.addSubview( self.dayLabel )
 
-        ViewConfiguration( view: self.monthLabel )
+        LayoutConfiguration( view: self.monthLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: self.separatorView.topAnchor ) }
                 .activate()
-        ViewConfiguration( view: self.separatorView )
+        LayoutConfiguration( view: self.separatorView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 1 ) }
                 .activate()
-        ViewConfiguration( view: self.dayLabel )
+        LayoutConfiguration( view: self.dayLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: self.separatorView.bottomAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                 .activate()
-        ViewConfiguration( view: self )
+        LayoutConfiguration( view: self )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor, constant: 0.618 ) }
                 .activate()
     }

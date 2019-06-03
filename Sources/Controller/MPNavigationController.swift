@@ -35,8 +35,8 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
         self.view.insertSubview( self.transition.starsView, at: 0 )
 
         // - Layout
-        ViewConfiguration( view: self.transition.starsView )
-                .constrainToSuperview()
+        LayoutConfiguration( view: self.transition.starsView )
+                .constrainToOwner()
                 .activate()
     }
 

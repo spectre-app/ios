@@ -39,12 +39,12 @@ class MPAlertView: MPButton {
         if let root = view.window?.rootViewController?.view {
             root.addSubview( self )
 
-            ViewConfiguration( view: self )
+            LayoutConfiguration( view: self )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .activate()
 
-            let alertConfiguration = ViewConfiguration( view: self ) { active, inactive in
+            let alertConfiguration = LayoutConfiguration( view: self ) { active, inactive in
                 active.constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                 inactive.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.topAnchor ) }
             }

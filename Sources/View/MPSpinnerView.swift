@@ -58,7 +58,7 @@ class MPSpinnerView: UIView {
 
     private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
     private lazy var tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTap(recognizer:) ) )
-    private var configurations       = [ UIView: ViewConfiguration ]()
+    private var configurations       = [ UIView: LayoutConfiguration ]()
     private var startedItem: CGFloat = 0
     @objc
     private var scannedItem: CGFloat = 0 {
@@ -93,7 +93,7 @@ class MPSpinnerView: UIView {
         super.didAddSubview( subview )
 
         self.configurations[subview] =
-                ViewConfiguration( view: subview )
+                LayoutConfiguration( view: subview )
                         .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
                         .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
                         .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }

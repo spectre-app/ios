@@ -209,6 +209,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         private let indicatorView = UIView()
         private let passwordLabel = UILabel()
         private let nameLabel     = UILabel()
+        private let scrollView    = UIScrollView()
+        private let cellGuide     = UIView()
+        private let loginButton   = MPButton( image: nil, title: "login" )
         private let copyButton    = MPButton( image: nil, title: "copy" )
 
         // MARK: --- Life ---
@@ -244,37 +247,65 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.nameLabel.textColor = .lightText
             self.nameLabel.shadowColor = .black
 
+            self.loginButton.darkBackground = true
+            self.loginButton.button.addAction( for: .touchUpInside ) { _, _ in self.loginAction() }
+            self.loginButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
+
             self.copyButton.darkBackground = true
-            self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in self.siteAction() }
+            self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in self.copyAction() }
             self.copyButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
             // - Hierarchy
-            self.contentView.addSubview( self.passwordLabel )
-            self.contentView.addSubview( self.nameLabel )
-            self.contentView.addSubview( self.copyButton )
+            self.contentView.addSubview( self.scrollView )
+            self.scrollView.addSubview( self.cellGuide )
+            self.scrollView.addSubview( self.passwordLabel )
+            self.scrollView.addSubview( self.nameLabel )
+            self.scrollView.addSubview( self.copyButton )
+            self.scrollView.addSubview( self.loginButton )
 
             // - Layout
-            ViewConfiguration( view: self.passwordLabel )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+            LayoutConfiguration( view: self.scrollView )
+                    .constrainToOwner()
+                    .activate()
+
+            LayoutConfiguration( view: self.cellGuide )
+                    .constrain( to: self.contentView, withMargins: true, anchor: .vertically )
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: 20 /* contentView.layoutMargins.leading */ ) }
+                    .constrainTo { $1.widthAnchor.constraint( equalTo: self.contentView.layoutMarginsGuide.widthAnchor ) }
+                    .activate()
+
+            LayoutConfiguration( view: self.passwordLabel )
+                    .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: self.cellGuide.topAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.cellGuide.leadingAnchor ) }
                     .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .fittingSizeLevel )
                     .activate()
 
-            ViewConfiguration( view: self.nameLabel )
+            LayoutConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.passwordLabel.bottomAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.passwordLabel.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.passwordLabel.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.cellGuide.bottomAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                     .activate()
 
-            ViewConfiguration( view: self.copyButton )
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+            LayoutConfiguration( view: self.copyButton )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.passwordLabel.trailingAnchor, constant: 20 ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.cellGuide.trailingAnchor ) }
+                    .activate()
+
+            LayoutConfiguration( view: self.loginButton )
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.copyButton.trailingAnchor, constant: 4 ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .activate()
         }
 
-        func siteAction() {
+        func loginAction() {
+        }
+
+        func copyAction() {
             DispatchQueue.mpw.perform {
                 if let site = self.site,
                    let password = site.mpw_result() {

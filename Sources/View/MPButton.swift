@@ -88,8 +88,8 @@ class MPButton: UIView {
         self.addSubview( self.effectView )
         self.effectView.contentView.addSubview( content )
 
-        ViewConfiguration( view: self.effectView ).constrainToSuperview().activate()
-        ViewConfiguration( view: content ).constrain( toMarginsOf: self ).activate()
+        LayoutConfiguration( view: self.effectView ).constrainToOwner().activate()
+        LayoutConfiguration( view: content ).constrain( toMarginsOf: self ).activate()
 
         defer {
             self.effectBackground = true

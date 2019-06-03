@@ -70,26 +70,26 @@ class MPResultTypeCell: UICollectionViewCell {
         self.contentView.addSubview( self.nameLabel )
         self.contentView.addSubview( self.classLabel )
 
-        ViewConfiguration( view: self.separatorView )
+        LayoutConfiguration( view: self.separatorView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 1 ) }
                 .activate()
-        ViewConfiguration( view: self.nameLabel )
+        LayoutConfiguration( view: self.nameLabel )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                 .activate()
-        ViewConfiguration( view: self.classLabel )
+        LayoutConfiguration( view: self.classLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .activate()
-        ViewConfiguration( view: self.contentView )
+        LayoutConfiguration( view: self.contentView )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                 .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).withPriority( .defaultHigh ) }
-                .constrainToSuperview()
+                .constrainToOwner()
                 .activate()
 
         defer {

@@ -8,7 +8,7 @@
 
 #import "POPAnimation+MP.h"
 #import "UIUtils+MP.h"
-#import "ViewConfiguration.h"
+#import "LayoutConfiguration.h"
 #import "AutoLayoutCollectionViewCell.h"
 #import "Observers.h"
 

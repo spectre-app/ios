@@ -41,7 +41,7 @@ class MPStarView: UIView {
         self.debugLabel.isHidden = true
 
         self.addSubview( self.debugLabel )
-        ViewConfiguration( view: self.debugLabel )
+        LayoutConfiguration( view: self.debugLabel )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }

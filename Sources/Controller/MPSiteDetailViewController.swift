@@ -57,18 +57,18 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         self.view.addSubview( self.closeButton )
 
         // - Layout
-        ViewConfiguration( view: self.backgroundView )
+        LayoutConfiguration( view: self.backgroundView )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
-        ViewConfiguration( view: self.itemsView )
-                .constrainToSuperview( withMargins: true, anchor: .vertically )
-                .constrainToSuperview( withMargins: false, anchor: .horizontally )
+        LayoutConfiguration( view: self.itemsView )
+                .constrainToOwner( withMargins: true, anchor: .vertically )
+                .constrainToOwner( withMargins: false, anchor: .horizontally )
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                 .activate()
-        ViewConfiguration( view: self.closeButton )
+        LayoutConfiguration( view: self.closeButton )
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: self.backgroundView.centerXAnchor ) }
                 .constrainTo { $1.centerYAnchor.constraint( equalTo: self.backgroundView.bottomAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }

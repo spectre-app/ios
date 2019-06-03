@@ -31,7 +31,7 @@ class MPTapEffectView: UIView {
         }
 
         effectContainer.insertSubview( self, aboveSubview: hostContainer )
-        ViewConfiguration( view: self )
+        LayoutConfiguration( view: self )
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: self.host.centerXAnchor ) }
                 .constrainTo { $1.centerYAnchor.constraint( equalTo: self.host.centerYAnchor ) }
                 .constrainTo { $1.widthAnchor.constraint( greaterThanOrEqualTo: $0.widthAnchor, multiplier: 1 / 2 ) }

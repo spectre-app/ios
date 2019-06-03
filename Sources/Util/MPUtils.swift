@@ -74,8 +74,8 @@ extension UIView {
         self.init()
         self.addSubview( subview )
 
-        ViewConfiguration( view: subview )
-                .constrainToSuperview( withMargins: margins )
+        LayoutConfiguration( view: subview )
+                .constrainToOwner( withMargins: margins )
                 .activate()
     }
 }
