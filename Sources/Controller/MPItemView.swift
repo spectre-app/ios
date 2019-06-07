@@ -8,11 +8,11 @@ import UIKit
 class Item: MPSiteObserver {
     public var site: MPSite? {
         willSet {
-            self.site?.observers.unregister( self )
+            self.site?.observers.unregister( observer: self )
         }
         didSet {
             if let site = self.site {
-                site.observers.register( self ).siteDidChange( site )
+                site.observers.register( observer: self ).siteDidChange( site )
             }
 
             ({
@@ -44,9 +44,13 @@ class Item: MPSiteObserver {
     func setNeedsUpdate() {
         if self.updateGroup.wait( timeout: .now() ) == .success {
             DispatchQueue.main.perform( group: self.updateGroup ) {
-                self.view.update()
+                self.doUpdate()
             }
         }
+    }
+
+    func doUpdate() {
+        self.view.update()
     }
 
     class ItemView: UIView {
@@ -68,7 +72,7 @@ class Item: MPSiteObserver {
             self.contentView.spacing = 8
             self.contentView.preservesSuperviewLayoutMargins = true
 
-            self.titleLabel.textColor = MPTheme.global.color.body.get()
+            self.titleLabel.textColor = MPTheme.global.color.glow.get()
             self.titleLabel.textAlignment = .center
             self.titleLabel.font = MPTheme.global.font.headline.get()
             self.contentView.addArrangedSubview( self.titleLabel )
@@ -191,7 +195,7 @@ class LabelItem: ValueItem<String> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueLabel.textColor = MPTheme.global.color.body.get()
+            self.valueLabel.textColor = MPTheme.global.color.glow.get()
             self.valueLabel.textAlignment = .center
             self.valueLabel.font = MPTheme.global.font.largeTitle.get()
             return self.valueLabel
@@ -225,7 +229,7 @@ class SubLabelItem: ValueItem<(String, String)> {
         }
 
         override func createValueView() -> UIView? {
-            self.primaryLabel.textColor = MPTheme.global.color.body.get()
+            self.primaryLabel.textColor = MPTheme.global.color.glow.get()
             self.primaryLabel.textAlignment = .center
             self.primaryLabel.font = MPTheme.global.font.largeTitle.get()
 
@@ -318,7 +322,7 @@ class TextItem: ValueItem<String> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueField.textColor = MPTheme.global.color.body.get()
+            self.valueField.textColor = MPTheme.global.color.glow.get()
             self.valueField.textAlignment = .center
             self.valueField.addAction( for: .editingChanged ) { _, _ in
                 if let site = self.item.site,
@@ -392,7 +396,7 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
                 }
             }
 
-            self.valueLabel.textColor = MPTheme.global.color.body.get()
+            self.valueLabel.textColor = MPTheme.global.color.glow.get()
             self.valueLabel.textAlignment = .center
             self.valueLabel.font = MPTheme.global.font.largeTitle.get()
 

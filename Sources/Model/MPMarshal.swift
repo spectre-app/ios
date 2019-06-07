@@ -10,9 +10,13 @@ class MPMarshal {
     public let observers = Observers<MPMarshalObserver>()
     public var users: [UserInfo]? {
         didSet {
-            self.observers.notify { $0.usersDidChange( self.users ) }
+            if oldValue != self.users {
+                self.observers.notify { $0.usersDidChange( self.users ) }
+            }
         }
     }
+    private var saving    = [ MPUser ]()
+    private let saveQueue = DispatchQueue( label: "marshal" )
 
     // MARK: --- Interface ---
 
@@ -75,62 +79,74 @@ class MPMarshal {
     }
 
     public func save(user: MPUser) {
-        DispatchQueue.mpw.perform {
-            provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
-                do {
-                    guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
-                    else {
-                        err( "couldn't marshal user: \(user)" )
-                        return
-                    }
+        guard !self.saving.contains( user )
+        else {
+            return
+        }
 
-                    marshalledUser.pointee.avatar = UInt32( user.avatar.rawValue )
-                    marshalledUser.pointee.defaultType = user.defaultType
-                    marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
-
-                    for site in user.sites {
-                        guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+        print("Start saving \(user.fullName)")
+        self.saving.append( user )
+        self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
+            DispatchQueue.mpw.await {
+                provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
+                    do {
+                        guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
                         else {
-                            err( "couldn't marshal site: \(site)" )
+                            err( "couldn't marshal user: \(user)" )
                             return
                         }
 
-                        site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
-                        site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
-                        marshalledSite.pointee.loginType = site.loginType
-                        site.url?.withCString { marshalledSite.pointee.url = $0 }
-                        marshalledSite.pointee.uses = UInt32( site.uses )
-                        marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
-                    }
+                        marshalledUser.pointee.avatar = UInt32( user.avatar.rawValue )
+                        marshalledUser.pointee.defaultType = user.defaultType
+                        marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
-                    let format   = MPMarshalFormat.default
-                    var error    = MPMarshalError( type: .success, description: nil )
-                    let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
-                    document.initialize( to: nil )
-                    let success = mpw_marshal_write( document, format, marshalledUser, &error )
-                    inf( "saveToFile(\(user.fullName)): \(success), \(String( safeUTF8: error.description ) ?? "n/a")" )
+                        for site in user.sites {
+                            guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+                            else {
+                                err( "couldn't marshal site: \(site)" )
+                                return
+                            }
 
-                    if success,
-                       let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
-                       let document = document.pointee,
-                       let userDocument = String( safeUTF8: document ) {
-                        let documentPath = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
-                                                                        appropriateFor: nil, create: true )
-                                                                  .appendingPathComponent( user.fullName, isDirectory: false )
-                                                                  .appendingPathExtension( formatExtension ).path
-                        if FileManager.default.createFile( atPath: documentPath, contents: userDocument.data( using: .utf8 ) ) {
-                            inf( "written to: \(documentPath)" )
+                            site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
+                            site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
+                            marshalledSite.pointee.loginType = site.loginType
+                            site.url?.withCString { marshalledSite.pointee.url = $0 }
+                            marshalledSite.pointee.uses = UInt32( site.uses )
+                            marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+                        }
 
-                            if !(self.users?.contains { $0.path == documentPath } ?? false) {
-                                self.reloadUsers()
+                        let format   = MPMarshalFormat.default
+                        var error    = MPMarshalError( type: .success, description: nil )
+                        let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
+                        document.initialize( to: nil )
+                        let success = mpw_marshal_write( document, format, marshalledUser, &error )
+                        inf( "saveToFile(\(user.fullName)): \(success), \(String( safeUTF8: error.description ) ?? "n/a")" )
+
+                        if success,
+                           let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
+                           let document = document.pointee,
+                           let userDocument = String( safeUTF8: document ) {
+                            let documentPath = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
+                                                                            appropriateFor: nil, create: true )
+                                                                      .appendingPathComponent( user.fullName, isDirectory: false )
+                                                                      .appendingPathExtension( formatExtension ).path
+                            if FileManager.default.createFile( atPath: documentPath, contents: userDocument.data( using: .utf8 ) ) {
+                                inf( "written to: \(documentPath)" )
+
+                                if !(self.users?.contains { $0.path == documentPath } ?? false) {
+                                    self.reloadUsers()
+                                }
                             }
                         }
                     }
-                }
-                catch let e {
-                    err( "caught: \(e)" )
+                    catch let e {
+                        err( "caught: \(e)" )
+                    }
                 }
             }
+
+            print( "Done saving \(user.fullName)" )
+            self.saving.removeAll { $0 == user }
         }
     }
 

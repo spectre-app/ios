@@ -10,7 +10,6 @@
 #import "UIUtils+MP.h"
 #import "LayoutConfiguration.h"
 #import "AutoLayoutCollectionViewCell.h"
-#import "Observers.h"
 
 #import "mpw-algorithm.h"
 #import "mpw-util.h"

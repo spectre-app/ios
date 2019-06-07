@@ -21,14 +21,14 @@ func mirror(ratio: CGFloat, center: CGFloat) -> CGFloat {
 }
 
 extension MPKeyPurpose {
-    func icon() -> String {
+    func button() -> String {
         switch self {
             case .authentication:
-                return "𐬽"
+                return "p:"
             case .identification:
-                return "💁"
+                return "u:"
             case .recovery:
-                return "⁈"
+                return "a:"
         }
     }
 
@@ -44,6 +44,16 @@ extension MPKeyPurpose {
         }
 
         return self
+    }
+}
+
+extension MPResultType {
+    func `in`(class c: MPResultTypeClass) -> Bool {
+        return self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
+    }
+
+    func has(feature f: MPSiteFeature) -> Bool {
+        return self.rawValue & UInt32( f.rawValue ) == UInt32( f.rawValue )
     }
 }
 

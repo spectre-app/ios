@@ -11,46 +11,59 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
     public let fullName: String
     public var avatar: Avatar {
         didSet {
-            self.observers.notify { $0.userDidChange( self ) }
+            if oldValue != self.avatar {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
         }
     }
-
     public var algorithm: MPAlgorithmVersion {
         didSet {
-            self.observers.notify { $0.userDidChange( self ) }
+            if oldValue != self.algorithm {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
         }
     }
     public var defaultType: MPResultType {
         didSet {
-            self.observers.notify { $0.userDidChange( self ) }
+            if oldValue != self.defaultType {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
         }
     }
     public var lastUsed: Date {
         didSet {
-            self.observers.notify { $0.userDidChange( self ) }
+            if oldValue != self.lastUsed {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
         }
     }
 
     public var masterKeyID: String? {
         didSet {
-            self.observers.notify { $0.userDidChange( self ) }
+            if oldValue != self.masterKeyID {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
         }
     }
     public var masterKey: MPMasterKey? {
         didSet {
-            if let _ = self.masterKey {
-                self.observers.notify { $0.userDidLogin( self ) }
-            }
-            else {
-                self.observers.notify { $0.userDidLogout( self ) }
+            if oldValue != self.masterKey {
+                if let _ = self.masterKey {
+                    self.observers.notify { $0.userDidLogin( self ) }
+                }
+                else {
+                    self.observers.notify { $0.userDidLogout( self ) }
+                }
             }
         }
     }
     public var sites = [ MPSite ]() {
         didSet {
-            self.sites.forEach { site in site.observers.register( self ) }
-            self.observers.notify { $0.userDidUpdateSites( self ) }
-            self.observers.notify { $0.userDidChange( self ) }
+            if oldValue != self.sites {
+                self.sites.forEach { site in site.observers.register( observer: self ) }
+                self.observers.notify { $0.userDidUpdateSites( self ) }
+                self.observers.notify { $0.userDidChange( self ) }
+            }
         }
     }
 
@@ -66,12 +79,13 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
         self.masterKeyID = masterKeyID
         super.init()
 
-        self.observers.register( self )
+        self.observers.register( observer: self )
     }
 
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
+        MPMarshal.shared.save( user: self )
     }
 
     // MARK: --- MPUserObserver ---
@@ -91,6 +105,12 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Interface ---
 
+    func use() {
+        self.lastUsed = Date()
+    }
+
+    // MARK: --- mpw ---
+
     @discardableResult
     func mpw_authenticate(masterPassword: String) -> Bool {
         return DispatchQueue.mpw.await {
@@ -106,7 +126,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
                 }
 
                 self.masterKey = authKey
-                self.lastUsed = Date()
+                self.use()
                 return true
             }
 

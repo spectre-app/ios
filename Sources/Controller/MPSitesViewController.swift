@@ -22,10 +22,10 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
 
     var user: MPUser? {
         willSet {
-            self.user?.observers.unregister( self )
+            self.user?.observers.unregister( observer: self )
         }
         didSet {
-            self.user?.observers.register( self )
+            self.user?.observers.register( observer: self )
             self.sitesTableView.user = self.user
 
             var userButtonTitle = ""
@@ -79,9 +79,9 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
         self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
         self.userButton.sizeToFit()
 
-        self.siteHeaderView.observers.register( self )
+        self.siteHeaderView.observers.register( observer: self )
 
-        self.sitesTableView.observers.register( self )
+        self.sitesTableView.observers.register( observer: self )
         self.sitesTableView.keyboardDismissMode = .onDrag
 
         if #available( iOS 11.0, * ) {
@@ -207,7 +207,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
         self.hideSiteDetail {
             self.siteDetailController = MPSiteDetailViewController( site: site )
             if let siteDetailController = self.siteDetailController {
-                siteDetailController.observers.register( self )
+                siteDetailController.observers.register( observer: self )
                 self.addChildViewController( siteDetailController )
                 siteDetailController.beginAppearanceTransition( false, animated: true )
                 self.siteDetailContentView.addSubview( siteDetailController.view )
@@ -238,7 +238,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
                 siteDetailController.view.removeFromSuperview()
                 siteDetailController.endAppearanceTransition()
                 siteDetailController.removeFromParentViewController()
-                siteDetailController.observers.unregister( self )
+                siteDetailController.observers.unregister( observer: self )
                 self.siteDetailController = nil
                 completion?()
             } )

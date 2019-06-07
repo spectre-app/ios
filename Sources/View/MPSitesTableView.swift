@@ -9,10 +9,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     public let observers = Observers<MPSitesViewObserver>()
     public var user: MPUser? {
         willSet {
-            self.user?.observers.unregister( self )
+            self.user?.observers.unregister( observer: self )
         }
         didSet {
-            self.user?.observers.register( self )
+            self.user?.observers.register( observer: self )
             self.query = nil
         }
     }
@@ -190,11 +190,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         public var site:   MPSite? {
             willSet {
-                self.site?.observers.unregister( self )
+                self.site?.observers.unregister( observer: self )
             }
             didSet {
                 if let site = self.site {
-                    site.observers.register( self ).siteDidChange( site )
+                    site.observers.register( observer: self ).siteDidChange( site )
                 }
             }
         }
@@ -208,7 +208,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         private var mode        = MPKeyPurpose.authentication {
             didSet {
-                self.modeButton.title = self.mode.icon()
+                self.modeButton.title = self.mode.button()
                 self.modeButton.size = .small
                 self.updateResult()
             }
@@ -249,6 +249,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.nameLabel.textColor = MPTheme.global.color.body.get()
             self.nameLabel.shadowColor = MPTheme.global.color.shadow.get()
 
+            self.modeButton.tapEffect = false
             self.modeButton.darkBackground = true
             self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
             self.modeButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
@@ -308,12 +309,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         kind = "Password"
                     case .identification:
                         result = site.mpw_login() ?? ""
-                        kind = "Login"
+                        kind = "User name"
                     case .recovery:
                         result = site.mpw_answer() ?? ""
-                        kind = "Security Answer"
+                        kind = "Security answer"
                 }
 
+                site.use()
                 if self.new {
                     site.user.sites.append( site )
                 }
@@ -327,14 +329,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                             ] )
 
                     DispatchQueue.main.perform {
-                        MPAlertView( title: site.siteName, message: "\(self.mode.icon()) – \(kind) Copied (3 min)" ).show( in: self )
+                        MPAlertView( title: site.siteName, message: "\(kind) Copied (3 min)" ).show( in: self )
                     }
                 }
                 else {
                     UIPasteboard.general.string = result
 
                     DispatchQueue.main.perform {
-                        MPAlertView( title: site.siteName, message: "\(self.mode.icon()) – \(kind) Copied" ).show( in: self )
+                        MPAlertView( title: site.siteName, message: "\(kind) Copied" ).show( in: self )
                     }
                 }
             }

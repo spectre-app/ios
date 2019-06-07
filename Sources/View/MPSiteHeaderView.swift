@@ -9,11 +9,11 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
     public let observers = Observers<MPSiteHeaderObserver>()
     public var site: MPSite? {
         willSet {
-            self.site?.observers.unregister( self )
+            self.site?.observers.unregister( observer: self )
         }
         didSet {
             if let site = self.site {
-                site.observers.register( self ).siteDidChange( site )
+                site.observers.register( observer: self ).siteDidChange( site )
             }
         }
     }
@@ -102,7 +102,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
                 self.siteButton.setImage( self.site?.image, for: .normal )
                 self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
 
-                if let brightness = self.site?.color?.brightness(), brightness < 0.1 {
+                if let brightness = self.site?.color?.brightness(), brightness > 0.8 {
                     self.siteButton.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
                     self.settingsButton.darkBackground = true
                     self.trashButton.darkBackground = true

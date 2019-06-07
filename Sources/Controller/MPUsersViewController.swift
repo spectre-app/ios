@@ -42,7 +42,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     init() {
         super.init( nibName: nil, bundle: nil )
 
-        MPMarshal.shared.observers.register( self )
+        MPMarshal.shared.observers.register( observer: self )
     }
 
     override func viewDidLoad() {

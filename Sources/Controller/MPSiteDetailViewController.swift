@@ -10,10 +10,9 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
     let observers = Observers<MPSiteDetailObserver>()
     let site: MPSite
 
-    let items = [ ResultItem(), SeparatorItem(),
-                  PasswordCounterItem(), SeparatorItem(),
-                  PasswordTypeItem(), SeparatorItem(),
-                  LoginTypeItem(), SeparatorItem(),
+    let items = [ PasswordCounterItem(), SeparatorItem(),
+                  PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
+                  LoginTypeItem(), LoginResultItem(), SeparatorItem(),
                   URLItem(), SeparatorItem(),
                   InfoItem() ]
 
@@ -31,7 +30,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         self.site = site
         super.init( nibName: nil, bundle: nil )
 
-        self.site.observers.register( self ).siteDidChange( self.site )
+        self.site.observers.register( observer: self ).siteDidChange( self.site )
     }
 
     override func viewDidLoad() {
@@ -135,9 +134,29 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
+    class PasswordResultItem: TextItem {
+        init() {
+            super.init( title: nil, placeholder: "enter your own password",
+                        itemValue: { $0.mpw_result() },
+                        itemUpdate: { $0.mpw_result_save( resultParam: $1 ) } )
+        }
+
+        override func createItemView() -> TextItemView {
+            let view = super.createItemView()
+            view.valueField.font = MPTheme.global.font.password.get()
+            return view
+        }
+
+        override func doUpdate() {
+            super.doUpdate()
+
+            (self.view as? TextItemView)?.valueField.isEnabled = self.site?.resultType.in( class: .stateful ) ?? false
+        }
+    }
+
     class LoginTypeItem: PickerItem<MPResultType> {
         init() {
-            super.init( title: "Login Type", values: [ MPResultType ]( MPResultTypes ),
+            super.init( title: "User Name Type", values: [ MPResultType ]( MPResultTypes ),
                         itemValue: { $0.loginType },
                         itemUpdate: { $0.loginType = $1 },
                         itemCell: { collectionView, indexPath, type in
@@ -147,6 +166,26 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
                         } ) {
                 $0.registerCell( MPResultTypeCell.self )
             }
+        }
+    }
+
+    class LoginResultItem: TextItem {
+        init() {
+            super.init( title: nil, placeholder: "enter your own user name",
+                        itemValue: { $0.mpw_login() },
+                        itemUpdate: { $0.mpw_login_save( resultParam: $1 ) } )
+        }
+
+        override func createItemView() -> TextItemView {
+            let view = super.createItemView()
+            view.valueField.font = MPTheme.global.font.mono.get()
+            return view
+        }
+
+        override func doUpdate() {
+            super.doUpdate()
+
+            (self.view as? TextItemView)?.valueField.isEnabled = self.site?.resultType.in( class: .stateful ) ?? false
         }
     }
 
