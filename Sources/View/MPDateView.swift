@@ -34,30 +34,25 @@ class MPDateView: UIView {
     init() {
         super.init( frame: .zero )
 
-        monthFormatter.dateFormat = "MMM"
-        dayFormatter.dateFormat = "dd"
+        self.monthFormatter.dateFormat = "MMM"
+        self.dayFormatter.dateFormat = "dd"
 
-        self.backgroundColor = UIColor.white.withAlphaComponent( 0.12 )
+        self.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.12 )
         self.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
         self.layer.cornerRadius = 8
         self.layer.borderWidth = 3
-        self.layer.borderColor = UIColor.white.cgColor
+        self.layer.borderColor = MPTheme.global.color.glow.get()?.cgColor
         self.layer.masksToBounds = true
 
-        self.separatorView.backgroundColor = .white
+        self.separatorView.backgroundColor = MPTheme.global.color.glow.get()
 
-        self.monthLabel.textColor = .white
+        self.monthLabel.textColor = MPTheme.global.color.body.get()
         self.monthLabel.textAlignment = .center
-        self.monthLabel.font = UIFont.preferredFont( forTextStyle: .caption1 )
+        self.monthLabel.font = MPTheme.global.font.caption1.get()
 
-        self.dayLabel.textColor = .white
+        self.dayLabel.textColor = MPTheme.global.color.body.get()
         self.dayLabel.textAlignment = .center
-        if #available( iOS 11.0, * ) {
-            self.dayLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
-        }
-        else {
-            self.dayLabel.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
-        }
+        self.dayLabel.font = MPTheme.global.font.largeTitle.get()
 
         self.addSubview( self.separatorView )
         self.addSubview( self.monthLabel )

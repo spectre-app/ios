@@ -139,6 +139,20 @@ class MPSite: NSObject, Comparable {
                                               resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ) )
         }
     }
+
+    func mpw_answer(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+                   resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                    -> String? {
+        guard let masterKey = self.user.masterKey
+        else {
+            return nil
+        }
+
+        return DispatchQueue.mpw.await {
+            String( safeUTF8: mpw_siteResult( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                              resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ) )
+        }
+    }
 }
 
 @objc

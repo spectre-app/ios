@@ -103,7 +103,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         class ResultItemView: SubLabelItemView {
             override func createValueView() -> UIView? {
                 defer {
-                    self.primaryLabel.font = UIFont.passwordFont
+                    self.primaryLabel.font = MPTheme.global.font.password.get()
                 }
 
                 return super.createValueView()

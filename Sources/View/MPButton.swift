@@ -6,7 +6,7 @@
 import Foundation
 
 class MPButton: UIView {
-    public var round            = false {
+    public var round = false {
         didSet {
             self.setNeedsUpdateConstraints()
         }
@@ -18,20 +18,44 @@ class MPButton: UIView {
             }
         }
     }
-    public var darkBackground   = false {
+    public var darkBackground = false {
         didSet {
             DispatchQueue.main.perform {
-                self.tintColor = self.darkBackground ? .white: .black
+                self.tintColor = self.darkBackground ? MPTheme.global.color.secondary.get(): MPTheme.global.color.backdrop.get()
                 self.effectBackground = self.effectBackground || self.effectBackground
-//                self.layer.shadowColor = self.darkBackground ? UIColor.black.cgColor: UIColor.white.cgColor
+                //self.layer.shadowColor = (self.darkBackground ? MPTheme.global.color.shadow.get(): MPTheme.global.color.glow.get())?.cgColor
             }
         }
     }
     public var title: String? {
         didSet {
             DispatchQueue.main.perform {
+                if let title = self.title, title.count > 1 {
+                    self.size = .text
+                }
+                else if let title = self.title, title.count == 1 {
+                    self.size = .icon
+                }
+                else {
+                    self.size = .small
+                }
+
                 self.button.setTitle( self.title, for: .normal )
-                self.setNeedsUpdateConstraints()
+            }
+        }
+    }
+    public var size = Size.icon {
+        didSet {
+            DispatchQueue.main.perform {
+                switch self.size {
+                    case .text:
+                        self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+                    case .icon:
+                        self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+                        self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor ).isActive = true
+                    case .small:
+                        self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
+                }
             }
         }
     }
@@ -61,7 +85,7 @@ class MPButton: UIView {
 
         self.button.setImage( image, for: .normal )
         self.button.setTitleShadowColor( .black, for: .normal )
-        self.button.titleLabel?.font = UIFont.preferredFont( forTextStyle: .headline )
+        self.button.titleLabel?.font = MPTheme.global.font.headline.get()
         self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: -1 )
         self.button.addAction( for: .touchUpInside ) { _, _ in MPTapEffectView( for: self.effectView ).run() }
 
@@ -99,20 +123,10 @@ class MPButton: UIView {
 
     override func updateConstraints() {
         self.effectView.layer.cornerRadius = self.round ? self.bounds.size.height / 2: 0
-
-        if let button = self.button {
-            if let title = title, title.count > 1 {
-                button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
-            }
-            else if let title = title, title.count == 1 {
-                button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
-                button.widthAnchor.constraint( equalTo: button.heightAnchor ).isActive = true
-            }
-            else {
-                button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
-            }
-        }
-
         super.updateConstraints()
+    }
+
+    enum Size {
+        case text, icon, small
     }
 }

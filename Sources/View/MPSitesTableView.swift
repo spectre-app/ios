@@ -206,13 +206,17 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
 
-        private let indicatorView = UIView()
-        private let passwordLabel = UILabel()
-        private let nameLabel     = UILabel()
-        private let scrollView    = UIScrollView()
-        private let cellGuide     = UIView()
-        private let loginButton   = MPButton( image: nil, title: "login" )
-        private let copyButton    = MPButton( image: nil, title: "copy" )
+        private var mode        = MPKeyPurpose.authentication {
+            didSet {
+                self.modeButton.title = self.mode.icon()
+                self.modeButton.size = .small
+                self.updateResult()
+            }
+        }
+        private let resultLabel = UILabel()
+        private let nameLabel   = UILabel()
+        private let modeButton  = MPButton( image: nil, title: "" )
+        private let copyButton  = MPButton( image: nil, title: "" )
 
         // MARK: --- Life ---
 
@@ -221,6 +225,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+            defer {
+                self.mode = { self.mode }()
+            }
             super.init( style: style, reuseIdentifier: reuseIdentifier )
 
             // - View
@@ -228,109 +235,106 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.clipsToBounds = true
             self.backgroundColor = .clear
             self.selectedBackgroundView = UIView()
-            self.selectedBackgroundView?.backgroundColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.3 )
+            self.selectedBackgroundView?.backgroundColor = MPTheme.global.color.selection.get()
 
-            self.indicatorView.backgroundColor = UIColor( white: 0, alpha: 0.6 )
-            self.indicatorView.layer.cornerRadius = 4
-            self.indicatorView.layer.borderWidth = 1
-            self.indicatorView.layer.borderColor = UIColor( white: 0, alpha: 1 ).cgColor
+            self.resultLabel.text = " "
+            self.resultLabel.font = MPTheme.global.font.password.get()
+            self.resultLabel.adjustsFontSizeToFitWidth = true
+            self.resultLabel.textAlignment = .natural
+            self.resultLabel.textColor = MPTheme.global.color.password.get()
+            self.resultLabel.shadowColor = MPTheme.global.color.shadow.get()
 
-            self.passwordLabel.text = " "
-            self.passwordLabel.font = UIFont.passwordFont
-            self.passwordLabel.adjustsFontSizeToFitWidth = true
-            self.passwordLabel.textAlignment = .natural
-            self.passwordLabel.textColor = UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 1 )
-            self.passwordLabel.shadowColor = .black
-
-            self.nameLabel.font = .preferredFont( forTextStyle: .caption1 )
+            self.nameLabel.font = MPTheme.global.font.caption1.get()
             self.nameLabel.textAlignment = .natural
-            self.nameLabel.textColor = .lightText
-            self.nameLabel.shadowColor = .black
+            self.nameLabel.textColor = MPTheme.global.color.body.get()
+            self.nameLabel.shadowColor = MPTheme.global.color.shadow.get()
 
-            self.loginButton.darkBackground = true
-            self.loginButton.button.addAction( for: .touchUpInside ) { _, _ in self.loginAction() }
-            self.loginButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
+            self.modeButton.darkBackground = true
+            self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
+            self.modeButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
             self.copyButton.darkBackground = true
             self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in self.copyAction() }
             self.copyButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
             // - Hierarchy
-            self.contentView.addSubview( self.scrollView )
-            self.scrollView.addSubview( self.cellGuide )
-            self.scrollView.addSubview( self.passwordLabel )
-            self.scrollView.addSubview( self.nameLabel )
-            self.scrollView.addSubview( self.copyButton )
-            self.scrollView.addSubview( self.loginButton )
+            self.contentView.addSubview( self.resultLabel )
+            self.contentView.addSubview( self.nameLabel )
+            self.contentView.addSubview( self.modeButton )
+            self.contentView.addSubview( self.copyButton )
 
             // - Layout
-            LayoutConfiguration( view: self.scrollView )
-                    .constrainToOwner()
+            LayoutConfiguration( view: self.modeButton )
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
                     .activate()
 
-            LayoutConfiguration( view: self.cellGuide )
-                    .constrain( to: self.contentView, withMargins: true, anchor: .vertically )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: 20 /* contentView.layoutMargins.leading */ ) }
-                    .constrainTo { $1.widthAnchor.constraint( equalTo: self.contentView.layoutMarginsGuide.widthAnchor ) }
-                    .activate()
-
-            LayoutConfiguration( view: self.passwordLabel )
-                    .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
-                    .constrainTo { $1.topAnchor.constraint( equalTo: self.cellGuide.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.cellGuide.leadingAnchor ) }
+            LayoutConfiguration( view: self.resultLabel )
+                    .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.modeButton.trailingAnchor, constant: 4 ) }
                     .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .fittingSizeLevel )
                     .activate()
 
             LayoutConfiguration( view: self.nameLabel )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: self.passwordLabel.bottomAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.passwordLabel.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.passwordLabel.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.cellGuide.bottomAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.resultLabel.trailingAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.copyButton )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.passwordLabel.trailingAnchor, constant: 20 ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.cellGuide.trailingAnchor ) }
-                    .activate()
-
-            LayoutConfiguration( view: self.loginButton )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.copyButton.trailingAnchor, constant: 4 ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor, constant: 20 ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .activate()
         }
 
-        func loginAction() {
+        func modeAction() {
+            self.mode.next()
         }
 
         func copyAction() {
             DispatchQueue.mpw.perform {
-                if let site = self.site,
-                   let password = site.mpw_result() {
-                    if self.new {
-                        site.user.sites.append( site )
+                guard let site = self.site
+                else {
+                    return
+                }
+                var result = "", kind = ""
+                switch self.mode {
+                    case .authentication:
+                        result = site.mpw_result() ?? ""
+                        kind = "Password"
+                    case .identification:
+                        result = site.mpw_login() ?? ""
+                        kind = "Login"
+                    case .recovery:
+                        result = site.mpw_answer() ?? ""
+                        kind = "Security Answer"
+                }
+
+                if self.new {
+                    site.user.sites.append( site )
+                }
+
+                if #available( iOS 10.0, * ) {
+                    UIPasteboard.general.setItems(
+                            [ [ UIPasteboardTypeAutomatic: result ] ],
+                            options: [
+                                UIPasteboard.OptionsKey.localOnly: true,
+                                UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
+                            ] )
+
+                    DispatchQueue.main.perform {
+                        MPAlertView( title: site.siteName, message: "\(self.mode.icon()) – \(kind) Copied (3 min)" ).show( in: self )
                     }
+                }
+                else {
+                    UIPasteboard.general.string = result
 
-                    if #available( iOS 10.0, * ) {
-                        UIPasteboard.general.setItems(
-                                [ [ UIPasteboardTypeAutomatic: password ] ],
-                                options: [
-                                    UIPasteboard.OptionsKey.localOnly: true,
-                                    UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                                ] )
-
-                        DispatchQueue.main.perform {
-                            MPAlertView( title: site.siteName, message: "Password Copied (3 min)" ).show( in: self )
-                        }
-                    }
-                    else {
-                        UIPasteboard.general.string = password
-
-                        DispatchQueue.main.perform {
-                            MPAlertView( title: site.siteName, message: "Password Copied" ).show( in: self )
-                        }
+                    DispatchQueue.main.perform {
+                        MPAlertView( title: site.siteName, message: "\(self.mode.icon()) – \(kind) Copied" ).show( in: self )
                     }
                 }
             }
@@ -341,13 +345,24 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         func siteDidChange(_ site: MPSite) {
             DispatchQueue.main.perform {
                 self.nameLabel.attributedText = self.result?.attributedKey
-                self.indicatorView.backgroundColor = self.site?.color?.withAlphaComponent( 0.85 )
             }
+            self.updateResult()
+        }
+
+        private func updateResult() {
             DispatchQueue.mpw.perform {
-                let password = self.site?.mpw_result()
+                var result: String?
+                switch self.mode {
+                    case .authentication:
+                        result = self.site?.mpw_result()
+                    case .identification:
+                        result = self.site?.mpw_login()
+                    case .recovery:
+                        result = self.site?.mpw_answer()
+                }
 
                 DispatchQueue.main.perform {
-                    self.passwordLabel.text = password ?? " "
+                    self.resultLabel.text = result ?? " "
                 }
             }
         }

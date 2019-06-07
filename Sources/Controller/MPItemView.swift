@@ -68,9 +68,9 @@ class Item: MPSiteObserver {
             self.contentView.spacing = 8
             self.contentView.preservesSuperviewLayoutMargins = true
 
-            self.titleLabel.textColor = .white
+            self.titleLabel.textColor = MPTheme.global.color.body.get()
             self.titleLabel.textAlignment = .center
-            self.titleLabel.font = UIFont.preferredFont( forTextStyle: .headline )
+            self.titleLabel.font = MPTheme.global.font.headline.get()
             self.contentView.addArrangedSubview( self.titleLabel )
 
             if let valueView = createValueView() {
@@ -146,7 +146,7 @@ class SeparatorItem: Item {
         }
 
         override func createValueView() -> UIView? {
-            self.separatorView.backgroundColor = .white
+            self.separatorView.backgroundColor = MPTheme.global.color.glow.get()
             self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).activate()
             return self.separatorView
         }
@@ -191,14 +191,9 @@ class LabelItem: ValueItem<String> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueLabel.textColor = .white
+            self.valueLabel.textColor = MPTheme.global.color.body.get()
             self.valueLabel.textAlignment = .center
-            if #available( iOS 11.0, * ) {
-                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
-            }
-            else {
-                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
-            }
+            self.valueLabel.font = MPTheme.global.font.largeTitle.get()
             return self.valueLabel
         }
 
@@ -230,18 +225,13 @@ class SubLabelItem: ValueItem<(String, String)> {
         }
 
         override func createValueView() -> UIView? {
-            self.primaryLabel.textColor = .white
+            self.primaryLabel.textColor = MPTheme.global.color.body.get()
             self.primaryLabel.textAlignment = .center
-            if #available( iOS 11.0, * ) {
-                self.primaryLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
-            }
-            else {
-                self.primaryLabel.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
-            }
+            self.primaryLabel.font = MPTheme.global.font.largeTitle.get()
 
-            self.secondaryLabel.textColor = .white
+            self.secondaryLabel.textColor = MPTheme.global.color.secondary.get()
             self.secondaryLabel.textAlignment = .center
-            self.secondaryLabel.font = UIFont.preferredFont( forTextStyle: .caption1 )
+            self.secondaryLabel.font = MPTheme.global.font.caption1.get()
 
             let valueView = UIStackView( arrangedSubviews: [ self.primaryLabel, self.secondaryLabel ] )
             valueView.axis = .vertical
@@ -328,7 +318,7 @@ class TextItem: ValueItem<String> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueField.textColor = .white
+            self.valueField.textColor = MPTheme.global.color.body.get()
             self.valueField.textAlignment = .center
             self.valueField.addAction( for: .editingChanged ) { _, _ in
                 if let site = self.item.site,
@@ -402,14 +392,9 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
                 }
             }
 
-            self.valueLabel.textColor = .white
+            self.valueLabel.textColor = MPTheme.global.color.body.get()
             self.valueLabel.textAlignment = .center
-            if #available( iOS 11.0, * ) {
-                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .largeTitle )
-            }
-            else {
-                self.valueLabel.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
-            }
+            self.valueLabel.font = MPTheme.global.font.largeTitle.get()
 
             self.valueView.addSubview( self.valueLabel )
             self.valueView.addSubview( self.downButton )

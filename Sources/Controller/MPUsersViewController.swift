@@ -206,22 +206,22 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.isOpaque = false
             self.layoutMargins = UIEdgeInsets( top: 20, left: 20, bottom: 20, right: 20 )
 
-            self.nameLabel.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )
+            self.nameLabel.font = MPTheme.global.font.callout.get()
             self.nameLabel.adjustsFontSizeToFitWidth = true
             self.nameLabel.textAlignment = .center
-            self.nameLabel.textColor = .white
+            self.nameLabel.textColor = MPTheme.global.color.body.get()
             self.nameLabel.numberOfLines = 0
             self.nameLabel.preferredMaxLayoutWidth = .infinity
             self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
-            self.nameField.font = UIFont( name: "Exo2.0-Regular", size: UIFont.labelFontSize )
+            self.nameField.font = MPTheme.global.font.callout.get()
             self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.textAlignment = .center
-            self.nameField.textColor = .white
+            self.nameField.textColor = MPTheme.global.color.body.get()
             self.nameField.borderStyle = .none
             self.nameField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.nameField.attributedPlaceholder = stra( "Your Full Name", [
-                NSAttributedString.Key.foregroundColor: UIColor.white.withAlphaComponent( 0.382 )
+                NSAttributedString.Key.foregroundColor: MPTheme.global.color.body.get()?.withAlphaComponent( 0.382 )
             ] )
             self.nameField.autocapitalizationType = .words
             self.nameField.returnKeyType = .next
@@ -231,10 +231,10 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.avatarButton.contentMode = .center
             self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
 
-            self.identiconLabel.font = UIFont( name: "SourceCodePro-Regular", size: UIFont.labelFontSize )
+            self.identiconLabel.font = MPTheme.global.font.password.get()?.withSize( UIFont.labelFontSize )
             self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
-            self.identiconLabel.shadowColor = .darkGray
-            self.identiconLabel.textColor = .lightText
+            self.identiconLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.identiconLabel.textColor = MPTheme.global.color.body.get()
 
             self.identiconAccessory.allowsSelfSizing = true
             self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
@@ -249,7 +249,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
             self.passwordField.placeholder = "Your master password"
             self.passwordField.borderStyle = .roundedRect
-            self.passwordField.font = UIFont( name: "SourceCodePro-Regular", size: UIFont.systemFontSize )
+            self.passwordField.font = MPTheme.global.font.callout.get()
             self.passwordField.textAlignment = .center
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.passwordField.inputAccessoryView = self.identiconAccessory

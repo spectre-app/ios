@@ -20,6 +20,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
 
     private let siteButton     = UIButton( type: .custom )
     private let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
+    private let trashButton    = MPButton( image: UIImage( named: "icon_delete" ) )
     private let recoveryButton = MPButton( image: UIImage( named: "icon_btn_question" ) )
     private let keysButton     = MPButton( image: UIImage( named: "icon_key" ) )
 
@@ -40,14 +41,9 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         self.siteButton.layer.shadowRadius = 20
         self.siteButton.layer.shadowOffset = .zero
         self.siteButton.layer.shadowOpacity = 0.382
-        if #available( iOS 11.0, * ) {
-            self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .largeTitle )
-        }
-        else {
-            self.siteButton.titleLabel?.font = UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
-        }
+        self.siteButton.titleLabel?.font = MPTheme.global.font.largeTitle.get()
 
-        let leadingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton ] )
+        let leadingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton, self.trashButton ] )
         leadingToolBar.axis = .vertical
         leadingToolBar.spacing = 12
 
@@ -59,6 +55,9 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
             if let site = self.site {
                 self.observers.notify { $0.siteOpenDetails( for: site ) }
             }
+        }
+        self.trashButton.button.addAction( for: .touchUpInside ) { _, _ in
+            self.site?.user.sites.removeAll { $0 == self.site }
         }
 
         // - Hierarchy
@@ -104,14 +103,16 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
                 self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
 
                 if let brightness = self.site?.color?.brightness(), brightness < 0.1 {
-                    self.siteButton.layer.shadowColor = UIColor.white.cgColor
+                    self.siteButton.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
                     self.settingsButton.darkBackground = true
+                    self.trashButton.darkBackground = true
                     self.recoveryButton.darkBackground = true
                     self.keysButton.darkBackground = true
                 }
                 else {
-                    self.siteButton.layer.shadowColor = UIColor.black.cgColor
+                    self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
                     self.settingsButton.darkBackground = false
+                    self.trashButton.darkBackground = false
                     self.recoveryButton.darkBackground = false
                     self.keysButton.darkBackground = false
                 }

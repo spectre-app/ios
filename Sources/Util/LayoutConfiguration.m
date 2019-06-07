@@ -68,14 +68,14 @@
     return configuration;
 }
 
-+ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing*)layoutGuide inView:(UIView *)ownerView {
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing *)layoutGuide inView:(UIView *)ownerView {
 
     *layoutGuide = [UILayoutGuide new];
     [ownerView addLayoutGuide:*layoutGuide];
     return [self configurationWithTarget:[LayoutTarget layoutTargetWithLayoutGuide:*layoutGuide]];
 }
 
-+ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing*)layoutGuide inView:(UIView *)ownerView
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing *)layoutGuide inView:(UIView *)ownerView
                               configurations:(nullable void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks {
 
     LayoutConfiguration *configuration = [self configurationWithLayoutGuide:layoutGuide inView:ownerView];
@@ -302,8 +302,8 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-//        if (!parent.target.owningView)
-//            [self.target.owningView layoutIfNeeded];
+        if (!parent.target && self.target.owningView.window)
+            [self.target.owningView layoutIfNeeded];
     } );
 
     return self;
@@ -373,8 +373,8 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-//        if (!parent.target.owningView)
-//            [self.target.owningView layoutIfNeeded];
+        if (!parent.target && self.target.owningView.window)
+            [self.target.owningView layoutIfNeeded];
     } );
 
     return self;

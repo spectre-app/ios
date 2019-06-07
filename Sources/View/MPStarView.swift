@@ -33,11 +33,11 @@ class MPStarView: UIView {
         super.init( frame: frame )
 
         self.isOpaque = false
-        self.backgroundColor = UIColor.black
+        self.backgroundColor = .black
 
         self.debugLabel.text = " "
-        self.debugLabel.textColor = UIColor.white
-        self.debugLabel.font = .monospacedDigitSystemFont( ofSize: 12, weight: .thin )
+        self.debugLabel.textColor = MPTheme.global.color.body.get()
+        self.debugLabel.font = MPTheme.global.font.mono.get()
         self.debugLabel.isHidden = true
 
         self.addSubview( self.debugLabel )

@@ -57,7 +57,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
         // - View
         self.topContainer.darkBackground = true
 
-        self.searchField.textColor = .white
+        self.searchField.textColor = MPTheme.global.color.body.get()
         self.searchField.rightView = self.userButton
         self.searchField.clearButtonMode = .whileEditing
         self.searchField.rightViewMode = .unlessEditing
@@ -88,7 +88,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
             self.sitesTableView.contentInsetAdjustmentBehavior = .never
         }
 
-        self.siteDetailContainer.backgroundColor = UIColor( white: 0, alpha: 0.382 )
+        self.siteDetailContainer.backgroundColor = MPTheme.global.color.shade.get()
         self.siteDetailContainer.addGestureRecognizer( self.siteDetailRecognizer )
         self.siteDetailRecognizer.delegate = self
 

@@ -22,14 +22,14 @@ class MPAlertView: MPButton {
         }
 
         titleLabel.text = title
-        titleLabel.textColor = .white
+        titleLabel.textColor = MPTheme.global.color.body.get()
         titleLabel.textAlignment = .center
-        titleLabel.font = UIFont.preferredFont( forTextStyle: .headline )
+        titleLabel.font = MPTheme.global.font.headline.get()
 
         messageLabel.text = message
-        messageLabel.textColor = .lightText
+        messageLabel.textColor = MPTheme.global.color.secondary.get()
         messageLabel.textAlignment = .center
-        messageLabel.font = UIFont.preferredFont( forTextStyle: .callout )
+        messageLabel.font = MPTheme.global.font.callout.get()
 
         contentStack.axis = .vertical
         contentStack.spacing = 8

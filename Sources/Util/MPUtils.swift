@@ -20,6 +20,33 @@ func mirror(ratio: CGFloat, center: CGFloat) -> CGFloat {
     }
 }
 
+extension MPKeyPurpose {
+    func icon() -> String {
+        switch self {
+            case .authentication:
+                return "𐬽"
+            case .identification:
+                return "💁"
+            case .recovery:
+                return "⁈"
+        }
+    }
+
+    @discardableResult
+    mutating func next() -> MPKeyPurpose {
+        switch self {
+            case .authentication:
+                self = .identification
+            case .identification:
+                self = .recovery
+            case .recovery:
+                self = .authentication
+        }
+
+        return self
+    }
+}
+
 extension UIColor {
     // Determine how common a color is in a list of colors.
     // Compares the color to the other colors only by average hue distance.
@@ -58,8 +85,6 @@ extension UIColor {
 }
 
 extension UIFont {
-    static let passwordFont = UIFont( name: "SourceCodePro-Black", size: 28 )
-
     func withSymbolicTraits(_ symbolicTraits: UIFontDescriptor.SymbolicTraits) -> UIFont {
         if let descriptor = self.fontDescriptor.withSymbolicTraits( symbolicTraits ) {
             return UIFont( descriptor: descriptor, size: self.pointSize )
