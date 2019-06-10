@@ -24,8 +24,7 @@ class MPMarshal {
         DispatchQueue.mpw.perform {
             do {
                 var users     = [ UserInfo ]()
-                let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
-                                                             appropriateFor: nil, create: true )
+                let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
                 for documentName in try FileManager.default.contentsOfDirectory( atPath: documents.path ) {
                     let documentPath = documents.appendingPathComponent( documentName ).path
                     if let document = FileManager.default.contents( atPath: documentPath ),
@@ -49,8 +48,9 @@ class MPMarshal {
 
                 self.users = users
             }
-            catch let e {
-                err( "caught: \(e)" )
+            catch {
+                // TODO: handle error
+                err( "\(error)" )
                 self.users = nil
             }
 
@@ -84,7 +84,6 @@ class MPMarshal {
             return
         }
 
-        print("Start saving \(user.fullName)")
         self.saving.append( user )
         self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
             DispatchQueue.mpw.await {
@@ -132,10 +131,7 @@ class MPMarshal {
                                                                       .appendingPathExtension( formatExtension ).path
                             if FileManager.default.createFile( atPath: documentPath, contents: userDocument.data( using: .utf8 ) ) {
                                 inf( "written to: \(documentPath)" )
-
-                                if !(self.users?.contains { $0.path == documentPath } ?? false) {
-                                    self.reloadUsers()
-                                }
+                                self.reloadUsers()
                             }
                         }
                     }
@@ -145,7 +141,6 @@ class MPMarshal {
                 }
             }
 
-            print( "Done saving \(user.fullName)" )
             self.saving.removeAll { $0 == user }
         }
     }

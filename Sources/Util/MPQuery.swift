@@ -17,7 +17,7 @@ class MPQuery {
                      .filter { result in result.matches( query: self.query ) }
     }
 
-    class Result<V>: NSObject where V: Hashable {
+    class Result<V>: Hashable where V: Hashable {
         public let value:       V
         public let keySupplier: (V) -> String
         public let attributedKey = NSMutableAttributedString()
@@ -70,17 +70,12 @@ class MPQuery {
                                              range: NSRange( at..<next, in: self.attributedKey.string ) )
         }
 
-        override func isEqual(_ object: Any?) -> Bool {
-            if let object = object as? Result<V> {
-                return self.value == object.value
-            }
-            else {
-                return false
-            }
+        static func ==(lhs: Result<V>, rhs: Result<V>) -> Bool {
+            return lhs.value == rhs.value
         }
 
-        override var hash: Int {
-            return self.value.hashValue
+        func hash(into hasher: inout Hasher) {
+            self.value.hash( into: &hasher )
         }
 
         func debugDescription() -> String {

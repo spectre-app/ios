@@ -12,35 +12,35 @@ class MPSite: NSObject, Comparable {
     var siteName: String {
         didSet {
             if oldValue != self.siteName {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
     var algorithm: MPAlgorithmVersion {
         didSet {
             if oldValue != self.algorithm {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
     var counter: MPCounterValue = .default {
         didSet {
             if oldValue != self.counter {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
     var resultType: MPResultType {
         didSet {
             if oldValue != self.resultType {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
     var loginType: MPResultType {
         didSet {
             if oldValue != self.loginType {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
@@ -48,14 +48,14 @@ class MPSite: NSObject, Comparable {
     var resultState: String? {
         didSet {
             if oldValue != self.resultState {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
     var loginState: String? {
         didSet {
             if oldValue != self.loginState {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
@@ -63,21 +63,21 @@ class MPSite: NSObject, Comparable {
     var url: String? {
         didSet {
             if oldValue != self.url {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
     var uses: UInt = 0 {
         didSet {
             if oldValue != self.uses {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
     var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
-                 self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
@@ -115,14 +115,9 @@ class MPSite: NSObject, Comparable {
         self.color = self.siteName.color()
         super.init()
 
-        MPURLUtils.preview( url: self.siteName, imageResult: { image in
-            if let image = image {
-                self.image = image
-            }
-        }, colorResult: { color in
-            if let color = color {
-                self.color = color
-            }
+        MPURLUtils.preview( url: self.siteName, result: { info in
+            self.image = info.imageData.flatMap { UIImage( data: $0 ) }
+            self.color = info.color?.uiColor
         } )
     }
 

@@ -9,14 +9,14 @@ func ratio(of value: UInt8, from: Double, to: Double) -> Double {
     return from + (to - from) * (Double( value ) / Double( UInt8.max ))
 }
 
-// Map a 0-1 value such that it mirrors around a center point.
-// 0 -> 0, center -> 1, 1 -> 0
-func mirror(ratio: CGFloat, center: CGFloat) -> CGFloat {
+// Map a 0-max value such that it mirrors around a center point.
+// 0 -> 0, center -> max, max -> 0
+func mirror(ratio: Int, center: Int, max: Int) -> Int {
     if ratio < center {
-        return ratio / center
+        return max * ratio / center
     }
     else {
-        return 1 - (ratio - center) / (1 - center)
+        return max - max * (ratio - center) / (max - center)
     }
 }
 

@@ -64,7 +64,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             var selectedResult = self.data.reduce( nil, { result, section in
                 result ?? (section as? [MPQuery.Result<MPSite>])?.first { $0.value == self.selectedSite }
             } )
-            let selectionFollowsQuery = selectedResult == self.newSiteResult || selectedResult?.exact ?? false
+            let selectionFollowsQuery = self.newSiteResult == selectedResult || selectedResult?.exact ?? false
             let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
             let exactResult = results.first { $0.exact }
             let newSites: NSMutableArray = [ results ]

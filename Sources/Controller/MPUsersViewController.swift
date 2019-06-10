@@ -151,11 +151,13 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         public var  new:    Bool = false
         public var  active: Bool = false {
             didSet {
-                if self.active && self.user == nil {
-                    self.avatar = MPUser.Avatar.userAvatars.randomElement() ?? .avatar_0
-                }
-                else if !self.active && self.user == nil {
-                    self.avatar = .avatar_add
+                if self.user == nil {
+                    if self.active {
+                        self.avatar = MPUser.Avatar.userAvatars.randomElement() ?? .avatar_0
+                    }
+                    else {
+                        self.avatar = .avatar_add
+                    }
                 }
 
                 if !self.active {
@@ -423,6 +425,9 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                         if let user = self.user {
                             user.authenticate( masterPassword: masterPassword ) {
                                 (user: MPUser?, error: MPMarshalError) in
+
+                                // Update user.
+                                user?.avatar = self.avatar
 
                                 DispatchQueue.main.perform {
                                     self.passwordIndicator.stopAnimating()
