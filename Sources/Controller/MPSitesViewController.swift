@@ -6,7 +6,7 @@
 import UIKit
 import pop
 
-class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate,
+class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate, UIScrollViewDelegate,
                              MPSiteHeaderObserver, MPSiteDetailObserver, MPSitesViewObserver, MPUserObserver {
     private lazy var topContainer         = MPButton( content: self.searchField )
     private lazy var siteDetailRecognizer = UITapGestureRecognizer( target: self, action: #selector( didDismissSiteDetail ) )
@@ -90,6 +90,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
 
         self.siteDetailContainer.backgroundColor = MPTheme.global.color.shade.get()
         self.siteDetailContainer.addGestureRecognizer( self.siteDetailRecognizer )
+        self.siteDetailContainer.delegate = self
         self.siteDetailRecognizer.delegate = self
 
         // - Hierarchy
@@ -294,6 +295,15 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
         }
 
         return true
+    }
+
+    // MARK: --- UIScrollViewDelegate ---
+
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        if scrollView == self.siteDetailContainer,
+           scrollView.contentInset.top + scrollView.contentOffset.y < -80 {
+            self.siteDetailShouldDismiss()
+        }
     }
 
     // MARK: --- UITextFieldDelegate ---
