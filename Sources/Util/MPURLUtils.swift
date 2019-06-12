@@ -22,7 +22,7 @@ class MPURLUtils {
             }
             catch {
                 // TODO: handle error
-                print( error )
+                err( "\(error)" )
             }
         }
     }
@@ -36,7 +36,7 @@ class MPURLUtils {
         }
         catch {
             // TODO: handle error
-            print( error )
+            err( "\(error)" )
         }
 
         return [:]
@@ -96,7 +96,7 @@ class MPURLUtils {
                     break
                 default:
                     // TODO: handle error
-                    print( error )
+                    err( "\(error)" )
             }
         } )
     }
