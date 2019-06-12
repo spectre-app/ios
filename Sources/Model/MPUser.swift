@@ -145,6 +145,14 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
              avatar_10, avatar_11, avatar_12, avatar_13, avatar_14, avatar_15, avatar_16, avatar_17, avatar_18,
              avatar_add
 
+        static func decode(avatar: UInt32) -> Avatar {
+            return Avatar.userAvatars.indices.contains( Int( avatar ) ) ? Avatar.userAvatars[Int( avatar )]: .avatar_0
+        }
+
+        func encode() -> UInt32 {
+            return UInt32( Avatar.userAvatars.firstIndex( of: self ) ?? 0 )
+        }
+
         func image() -> UIImage? {
             switch self {
                 case .avatar_add:

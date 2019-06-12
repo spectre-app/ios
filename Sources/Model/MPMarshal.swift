@@ -36,12 +36,13 @@ class MPMarshal {
                                 path: documentPath,
                                 document: userDocument,
                                 format: userInfo.format,
-                                algorithm: userInfo.algorithm,
-                                fullName: fullName,
-                                avatar: .avatar_0,
-                                keyID: String( safeUTF8: userInfo.keyID ),
+                                exportDate: Date( timeIntervalSince1970: TimeInterval( userInfo.exportDate ) ),
                                 redacted: userInfo.redacted,
-                                date: Date( timeIntervalSince1970: TimeInterval( userInfo.date ) )
+                                algorithm: userInfo.algorithm,
+                                avatar: MPUser.Avatar.decode( avatar: userInfo.avatar ),
+                                fullName: fullName,
+                                keyID: String( safeUTF8: userInfo.keyID ),
+                                lastUsed: Date( timeIntervalSince1970: TimeInterval( userInfo.lastUsed ) )
                         ) )
                     }
                 }
@@ -95,7 +96,8 @@ class MPMarshal {
                             return
                         }
 
-                        marshalledUser.pointee.avatar = UInt32( user.avatar.rawValue )
+                        marshalledUser.pointee.redacted = true // TODO
+                        marshalledUser.pointee.avatar = user.avatar.encode()
                         marshalledUser.pointee.defaultType = user.defaultType
                         marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
@@ -148,27 +150,30 @@ class MPMarshal {
     // MARK: --- Interface ---
 
     class UserInfo: NSObject {
-        public let path:      String
-        public let document:  String
-        public let format:    MPMarshalFormat
-        public let algorithm: MPAlgorithmVersion
-        public let fullName:  String
-        public let avatar:    MPUser.Avatar
-        public let keyID:     String?
-        public let redacted:  Bool
-        public let date:      Date
+        public let path:       String
+        public let document:   String
+        public let format:     MPMarshalFormat
+        public let exportDate: Date
+        public let redacted:   Bool
 
-        init(path: String, document: String, format: MPMarshalFormat, algorithm: MPAlgorithmVersion, fullName: String, avatar: MPUser.Avatar,
-             keyID: String?, redacted: Bool, date: Date) {
+        public let algorithm: MPAlgorithmVersion
+        public let avatar:    MPUser.Avatar
+        public let fullName:  String
+        public let keyID:     String?
+        public let lastUsed:  Date
+
+        init(path: String, document: String, format: MPMarshalFormat, exportDate: Date, redacted: Bool,
+             algorithm: MPAlgorithmVersion, avatar: MPUser.Avatar, fullName: String, keyID: String?, lastUsed: Date) {
             self.path = path
             self.document = document
             self.format = format
-            self.algorithm = algorithm
-            self.fullName = fullName
-            self.avatar = avatar
-            self.keyID = keyID
+            self.exportDate = exportDate
             self.redacted = redacted
-            self.date = date
+            self.algorithm = algorithm
+            self.avatar = avatar
+            self.fullName = fullName
+            self.keyID = keyID
+            self.lastUsed = lastUsed
         }
 
         public func authenticate(masterPassword: String, _ completion: @escaping (MPUser?, MPMarshalError) -> Void) {
@@ -178,7 +183,7 @@ class MPMarshal {
                     if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee {
                         let user = MPUser(
                                 named: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
-                                avatar: MPUser.Avatar( rawValue: Int( marshalledUser.avatar ) ) ?? .avatar_0,
+                                avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
                                 algorithm: marshalledUser.algorithm,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
