@@ -78,17 +78,18 @@ class MPURLUtils {
 
             URLSession.shared.dataTask( with: imageURL ) {
                 (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
-                var info = self.metadata[url] ?? Meta()
+                var info = self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil )
 
                 if let error = error {
-                    print( error )
+                    err( "\(imageURL): \((response as? HTTPURLResponse)?.statusCode ?? -1): \(error)" )
                 }
 
                 if let responseData = responseData {
                     info.imageData = responseData
                     self.metadata[url] = info
-                    result( info )
                 }
+
+                result( info )
             }.resume()
         }, onError: { error in
             switch error {
@@ -98,6 +99,8 @@ class MPURLUtils {
                     // TODO: handle error
                     err( "\(error)" )
             }
+
+            result( self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil ) )
         } )
     }
 
@@ -143,21 +146,16 @@ struct Meta: Codable, Equatable {
                         alpha: pixelData.load( fromByteOffset: offset + 3, as: UInt8.self ) )
 
                 // Weigh colors according to interested parameters.
-                var hue   = 0, saturation = 0, value = 0, alpha = Int( color.alpha )
-                color.hsv( hue: &hue, saturation: &saturation, value: &value )
-
-                var score = 0
-                score += 400 * alpha * alpha / 65025
-                score += saturation * 200
-                score += mirror( ratio: value, center: 216, max: 255 ) * 100
-
-                scoresByColor[color] = score
+                let saturation = color.saturation, value = color.value, alpha = Int( color.alpha )
+                scoresByColor[color] = 0 +
+                        400 * alpha * alpha / 65536 +
+                        200 * saturation / 256 +
+                        100 * mirror( ratio: value, center: 216, max: 256 ) / 256
             }
 
             // Use top weighted color as site's color.
             let sorted = scoresByColor.sorted( by: { $0.value > $1.value } )
             if let color = sorted.first?.key {
-                print( "c: \(color)" )
                 self.color = color
             }
         }
@@ -174,30 +172,48 @@ struct Color: Codable, Equatable, Hashable {
                         alpha: CGFloat( self.alpha ) / CGFloat( UInt8.max ) )
     }
 
-    func hsv(hue: inout Int = 0, saturation: inout Int = 0, value: inout Int = 0) {
-        let min = Int( Swift.max( self.red, self.green, self.blue ) )
-        let max = Int( Swift.min( self.red, self.green, self.blue ) )
+    init(red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8) {
+        self.red = red
+        self.green = green
+        self.blue = blue
+        self.alpha = alpha
+    }
 
-        hue = 0
-        saturation = 0
-        value = max
-        if (value == 0) {
-            return
+    init?(uiColor: UIColor?) {
+        guard let uiColor = uiColor
+        else {
+            return nil
         }
 
-        saturation = 255 * (max - min) / value
-        if (saturation == 0) {
-            return
-        }
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed( &red, green: &green, blue: &blue, alpha: &alpha )
+        self.init( red: UInt8( red * 255 ), green: UInt8( green * 255 ), blue: UInt8( blue * 255 ), alpha: UInt8( alpha * 255 ) )
+    }
 
-        if (max == self.red) {
-            hue = 0 + 43 * (Int( self.green ) - Int( self.blue )) / (max - min)
+    var hue:        Int {
+        let min = Int( Swift.min( self.red, self.green, self.blue ) )
+        let max = Int( Swift.max( self.red, self.green, self.blue ) )
+
+        if (max == 0) {
+            return 0
+        }
+        else if (max == self.red) {
+            return 0 + 43 * (Int( self.green ) - Int( self.blue )) / (max - min)
         }
         else if (max == self.green) {
-            hue = 85 + 43 * (Int( self.blue ) - Int( self.red )) / (max - min)
+            return 85 + 43 * (Int( self.blue ) - Int( self.red )) / (max - min)
         }
         else {
-            hue = 171 + 43 * (Int( self.red ) - Int( self.green )) / (max - min)
+            return 171 + 43 * (Int( self.red ) - Int( self.green )) / (max - min)
         }
+    }
+    var saturation: Int {
+        let min = Int( Swift.min( self.red, self.green, self.blue ) )
+        let max = Int( Swift.max( self.red, self.green, self.blue ) )
+
+        return max == 0 ? 0: 255 * (max - min) / max
+    }
+    var value:      Int {
+        return Int( Swift.max( self.red, self.green, self.blue ) )
     }
 }

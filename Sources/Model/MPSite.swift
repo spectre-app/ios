@@ -13,6 +13,11 @@ class MPSite: NSObject, Comparable {
         didSet {
             if oldValue != self.siteName {
                 self.observers.notify { $0.siteDidChange( self ) }
+
+                MPURLUtils.preview( url: self.siteName, result: { info in
+                    self.color = info.color?.uiColor
+                    self.image = info.imageData.flatMap { UIImage( data: $0 ) }
+                } )
             }
         }
     }
@@ -104,7 +109,7 @@ class MPSite: NSObject, Comparable {
          loginType: MPResultType? = nil, loginState: String? = nil,
          url: String? = nil, uses: UInt = 0, lastUsed: Date? = nil) {
         self.user = user
-        self.siteName = name
+        self.siteName = ""
         self.algorithm = algorithm ?? user.algorithm
         self.counter = counter ?? MPCounterValue.default
         self.resultType = resultType ?? user.defaultType
@@ -112,13 +117,12 @@ class MPSite: NSObject, Comparable {
         self.url = url
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
-        self.color = self.siteName.color()
+        self.color = name.color()
         super.init()
 
-        MPURLUtils.preview( url: self.siteName, result: { info in
-            self.image = info.imageData.flatMap { UIImage( data: $0 ) }
-            self.color = info.color?.uiColor
-        } )
+        defer {
+            self.siteName = name
+        }
     }
 
     static func <(lhs: MPSite, rhs: MPSite) -> Bool {

@@ -121,7 +121,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
 
     class PasswordTypeItem: PickerItem<MPResultType> {
         init() {
-            super.init( title: "Password Type", values: [ MPResultType ]( MPResultTypes ),
+            super.init( title: "Password Type", values: [ MPResultType ]( MPResultTypes ).filter { !$0.has( feature: .alternative ) },
                         itemValue: { $0.resultType },
                         itemUpdate: { $0.resultType = $1 },
                         itemCell: { collectionView, indexPath, type in
@@ -136,7 +136,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
 
     class PasswordResultItem: TextItem {
         init() {
-            super.init( title: nil, placeholder: "enter your own password",
+            super.init( title: nil, placeholder: "set a password",
                         itemValue: { $0.mpw_result() },
                         itemUpdate: { $0.mpw_result_save( resultParam: $1 ) } )
         }
@@ -144,6 +144,8 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         override func createItemView() -> TextItemView {
             let view = super.createItemView()
             view.valueField.font = MPTheme.global.font.password.get()
+            view.valueField.autocapitalizationType = .none
+            view.valueField.autocorrectionType = .no
             return view
         }
 
@@ -156,7 +158,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
 
     class LoginTypeItem: PickerItem<MPResultType> {
         init() {
-            super.init( title: "User Name Type", values: [ MPResultType ]( MPResultTypes ),
+            super.init( title: "User Name Type", values: [ MPResultType ]( MPResultTypes ).filter { !$0.has( feature: .alternative ) },
                         itemValue: { $0.loginType },
                         itemUpdate: { $0.loginType = $1 },
                         itemCell: { collectionView, indexPath, type in
@@ -171,7 +173,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
 
     class LoginResultItem: TextItem {
         init() {
-            super.init( title: nil, placeholder: "enter your own user name",
+            super.init( title: nil, placeholder: "set a user name",
                         itemValue: { $0.mpw_login() },
                         itemUpdate: { $0.mpw_login_save( resultParam: $1 ) } )
         }
@@ -179,6 +181,8 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         override func createItemView() -> TextItemView {
             let view = super.createItemView()
             view.valueField.font = MPTheme.global.font.mono.get()
+            view.valueField.autocapitalizationType = .none
+            view.valueField.autocorrectionType = .no
             return view
         }
 

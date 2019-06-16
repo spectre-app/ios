@@ -40,7 +40,7 @@ class MPResultTypeCell: UICollectionViewCell {
         didSet {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.382 ) {
-                    self.contentView.alpha = self.isSelected ? 1: 0.382
+                    self.contentView.alpha = self.isSelected ? 1: 0.618
                 }
             }
         }
@@ -54,14 +54,14 @@ class MPResultTypeCell: UICollectionViewCell {
         super.init( frame: frame )
 
         self.separatorView.backgroundColor = MPTheme.global.color.glow.get()
-        self.nameLabel.textColor = MPTheme.global.color.body.get()
+        self.nameLabel.textColor = MPTheme.global.color.glow.get()
         self.nameLabel.textAlignment = .center
         self.nameLabel.font = MPTheme.global.font.headline.get()
-        self.classLabel.textColor = MPTheme.global.color.body.get()
+        self.classLabel.textColor = MPTheme.global.color.glow.get()
         self.classLabel.textAlignment = .center
         self.classLabel.font = MPTheme.global.font.caption1.get()
 
-        self.contentView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.12 )
+        self.contentView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 )
         self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
         self.contentView.layer.borderWidth = 2
         self.contentView.layer.borderColor = MPTheme.global.color.glow.get()?.cgColor

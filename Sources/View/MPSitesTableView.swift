@@ -18,12 +18,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
     public var selectedSite: MPSite? {
         didSet {
-            self.observers.notify { $0.siteWasSelected( selectedSite: self.selectedSite ) }
+            if self.selectedSite != oldValue {
+                self.observers.notify { $0.siteWasSelected( selectedSite: self.selectedSite ) }
+            }
         }
     }
     public var query: String? {
         didSet {
-            self.updateSites()
+            if self.query != oldValue || self.data.count == 0 {
+                self.updateSites()
+            }
         }
     }
 
@@ -69,7 +73,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             let exactResult = results.first { $0.exact }
             let newSites: NSMutableArray = [ results ]
 
-            // Add "new site" result
+            // Add "new site" result if there is a query and no exact result
             if let user = self.user,
                let query = self.query,
                !query.isEmpty, exactResult == nil {
@@ -91,7 +95,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             // Special case for selected site: keep selection on the site result that matches the query
             if selectionFollowsQuery {
                 selectedResult = exactResult ?? self.newSiteResult
-                self.selectedSite = selectedResult?.value
+            }
+            if self.newSiteResult != selectedResult,
+               let selectedResult_ = selectedResult,
+               !results.contains( selectedResult_ ) {
+                selectedResult = nil
             }
 
             // Update the sites table to show the newly filtered sites
@@ -107,9 +115,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
 
                 // Select the most appropriate row according to the query.
-                if let selectedPath = self.find( inDataSource: self.data, item: selectedResult ) {
-                    self.selectRow( at: selectedPath, animated: true, scrollPosition: .middle )
-                }
+                self.selectRow( at: self.find( inDataSource: self.data, item: selectedResult ), animated: true, scrollPosition: .middle )
+                self.selectedSite = selectedResult?.value
             }
         }
     }

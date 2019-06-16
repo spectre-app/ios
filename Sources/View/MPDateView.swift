@@ -46,17 +46,17 @@ class MPDateView: UIView {
 
         self.separatorView.backgroundColor = MPTheme.global.color.glow.get()
 
-        self.monthLabel.textColor = MPTheme.global.color.body.get()
+        self.monthLabel.textColor = MPTheme.global.color.glow.get()
         self.monthLabel.textAlignment = .center
         self.monthLabel.font = MPTheme.global.font.caption1.get()
 
-        self.dayLabel.textColor = MPTheme.global.color.body.get()
+        self.dayLabel.textColor = MPTheme.global.color.glow.get()
         self.dayLabel.textAlignment = .center
         self.dayLabel.font = MPTheme.global.font.largeTitle.get()
 
         self.addSubview( self.separatorView )
         self.addSubview( self.monthLabel )
-        self.addSubview( self.dayLabel )
+        self.addSubview( self.dayLabel ) 
 
         LayoutConfiguration( view: self.monthLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }

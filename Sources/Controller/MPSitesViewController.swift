@@ -275,6 +275,8 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
                 }
                 else {
                     self.hideSiteDetail()
+                    self.searchField.text = nil
+                    self.sitesTableView.query = nil
                 }
 
                 self.siteHeaderConfiguration.activated = selectedSite != nil;

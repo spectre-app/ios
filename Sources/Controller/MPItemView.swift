@@ -5,7 +5,7 @@
 
 import UIKit
 
-class Item: MPSiteObserver {
+class Item: NSObject, MPSiteObserver {
     public var site: MPSite? {
         willSet {
             self.site?.observers.unregister( observer: self )
@@ -292,7 +292,7 @@ class DateItem: ValueItem<Date> {
     }
 }
 
-class TextItem: ValueItem<String> {
+class TextItem: ValueItem<String>, UITextFieldDelegate {
     let placeholder: String?
     let itemUpdate:  (MPSite, String) -> Void
 
@@ -306,6 +306,13 @@ class TextItem: ValueItem<String> {
 
     override func createItemView() -> TextItemView {
         return TextItemView( withItem: self )
+    }
+
+    // MARK: UITextFieldDelegate
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.endEditing( false )
+        return true
     }
 
     class TextItemView: ItemView {
@@ -322,6 +329,7 @@ class TextItem: ValueItem<String> {
         }
 
         override func createValueView() -> UIView? {
+            self.valueField.delegate = self.item
             self.valueField.textColor = MPTheme.global.color.glow.get()
             self.valueField.textAlignment = .center
             self.valueField.addAction( for: .editingChanged ) { _, _ in
