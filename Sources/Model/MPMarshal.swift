@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPMarshal {
+class MPMarshal : Observable {
     public static let shared = MPMarshal()
     public let observers = Observers<MPMarshalObserver>()
     public var users: [UserInfo]? {

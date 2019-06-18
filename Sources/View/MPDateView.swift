@@ -56,7 +56,7 @@ class MPDateView: UIView {
 
         self.addSubview( self.separatorView )
         self.addSubview( self.monthLabel )
-        self.addSubview( self.dayLabel ) 
+        self.addSubview( self.dayLabel )
 
         LayoutConfiguration( view: self.monthLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }

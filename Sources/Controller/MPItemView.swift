@@ -5,21 +5,16 @@
 
 import UIKit
 
-class Item: NSObject, MPSiteObserver {
-    public var site: MPSite? {
-        willSet {
-            self.site?.observers.unregister( observer: self )
-        }
+class Item<M>: NSObject {
+    public var model: M? {
         didSet {
-            if let site = self.site {
-                site.observers.register( observer: self ).siteDidChange( site )
-            }
-
             ({
                  for subitem in self.subitems {
-                     subitem.site = self.site
+                     subitem.model = self.model
                  }
              }()) // this is a hack to get around Swift silently skipping recursive didSet on properties.
+
+            self.setNeedsUpdate()
         }
     }
 
@@ -33,17 +28,15 @@ class Item: NSObject, MPSiteObserver {
         self.subitems = subitems
     }
 
-    func createItemView() -> ItemView {
-        return ItemView( withItem: self )
-    }
-
-    func siteDidChange(_ site: MPSite) {
-        self.setNeedsUpdate()
+    func createItemView() -> ItemView<M> {
+        return ItemView<M>( withItem: self )
     }
 
     func setNeedsUpdate() {
+        self.subitems.forEach { $0.setNeedsUpdate() }
+
         if self.updateGroup.wait( timeout: .now() ) == .success {
-            DispatchQueue.main.perform( group: self.updateGroup ) {
+            DispatchQueue.main.async( group: self.updateGroup ) {
                 self.doUpdate()
             }
         }
@@ -53,17 +46,17 @@ class Item: NSObject, MPSiteObserver {
         self.view.update()
     }
 
-    class ItemView: UIView {
+    class ItemView<M>: UIView {
         let titleLabel   = UILabel()
         let contentView  = UIStackView()
         let subitemsView = UIStackView()
-        private let item: Item
+        private let item: Item<M>
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        init(withItem item: Item) {
+        init(withItem item: Item<M>) {
             self.item = item
             super.init( frame: .zero )
 
@@ -131,12 +124,12 @@ class Item: NSObject, MPSiteObserver {
     }
 }
 
-class SeparatorItem: Item {
-    override func createItemView() -> ItemView {
-        return SeparatorItemView( withItem: self )
+class SeparatorItem<M>: Item<M> {
+    override func createItemView() -> ItemView<M> {
+        return SeparatorItemView<M>( withItem: self )
     }
 
-    class SeparatorItemView: ItemView {
+    class SeparatorItemView<M>: ItemView<M> {
         let item: SeparatorItem
         let separatorView = UIView()
 
@@ -144,7 +137,7 @@ class SeparatorItem: Item {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(withItem item: Item) {
+        override init(withItem item: Item<M>) {
             self.item = item as! SeparatorItem
             super.init( withItem: item )
         }
@@ -157,12 +150,12 @@ class SeparatorItem: Item {
     }
 }
 
-class ValueItem<V>: Item {
-    let itemValue: (MPSite) -> V?
+class ValueItem<M, V>: Item<M> {
+    let itemValue: (M) -> V?
     var value:     V? {
         get {
-            if let site = self.site {
-                return self.itemValue( site )
+            if let model = self.model {
+                return self.itemValue( model )
             }
             else {
                 return nil
@@ -170,52 +163,19 @@ class ValueItem<V>: Item {
         }
     }
 
-    init(title: String? = nil, subitems: [Item] = [ Item ](), itemValue: @escaping (MPSite) -> V? = { _ in nil }) {
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), itemValue: @escaping (M) -> V? = { _ in nil }) {
         self.itemValue = itemValue
         super.init( title: title, subitems: subitems )
     }
 }
 
-class LabelItem: ValueItem<String> {
-    override func createItemView() -> LabelItemView {
-        return LabelItemView( withItem: self )
+class LabelItem<M>: ValueItem<M, (Any?, Any?)> {
+    override func createItemView() -> LabelItemView<M> {
+        return LabelItemView<M>( withItem: self )
     }
 
-    class LabelItemView: ItemView {
+    class LabelItemView<M>: ItemView<M> {
         let item: LabelItem
-        let valueLabel = UILabel()
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item) {
-            self.item = item as! LabelItem
-            super.init( withItem: item )
-        }
-
-        override func createValueView() -> UIView? {
-            self.valueLabel.textColor = MPTheme.global.color.glow.get()
-            self.valueLabel.textAlignment = .center
-            self.valueLabel.font = MPTheme.global.font.largeTitle.get()
-            return self.valueLabel
-        }
-
-        override func update() {
-            super.update()
-
-            self.valueLabel.text = self.item.value
-        }
-    }
-}
-
-class SubLabelItem: ValueItem<(String, String)> {
-    override func createItemView() -> SubLabelItemView {
-        return SubLabelItemView( withItem: self )
-    }
-
-    class SubLabelItemView: ItemView {
-        let item: SubLabelItem
         let primaryLabel   = UILabel()
         let secondaryLabel = UILabel()
 
@@ -223,8 +183,8 @@ class SubLabelItem: ValueItem<(String, String)> {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(withItem item: Item) {
-            self.item = item as! SubLabelItem
+        override init(withItem item: Item<M>) {
+            self.item = item as! LabelItem
             super.init( withItem: item )
         }
 
@@ -245,18 +205,40 @@ class SubLabelItem: ValueItem<(String, String)> {
         override func update() {
             super.update()
 
-            self.primaryLabel.text = self.item.value?.0
-            self.secondaryLabel.text = self.item.value?.1
+            if let primary = self.item.value?.0 {
+                if let primary = primary as? NSAttributedString {
+                    self.primaryLabel.attributedText = primary
+                }
+                else {
+                    self.primaryLabel.text = String( describing: primary )
+                }
+                self.primaryLabel.isHidden = false
+            }
+            else {
+                self.primaryLabel.isHidden = true
+            }
+            if let secondary = self.item.value?.1 {
+                if let secondary = secondary as? NSAttributedString {
+                    self.secondaryLabel.attributedText = secondary
+                }
+                else {
+                    self.secondaryLabel.text = String( describing: secondary )
+                }
+                self.secondaryLabel.isHidden = false
+            }
+            else {
+                self.secondaryLabel.isHidden = true
+            }
         }
     }
 }
 
-class DateItem: ValueItem<Date> {
-    override func createItemView() -> DateItemView {
-        return DateItemView( withItem: self )
+class DateItem<M>: ValueItem<M, Date> {
+    override func createItemView() -> DateItemView<M> {
+        return DateItemView<M>( withItem: self )
     }
 
-    class DateItemView: ItemView {
+    class DateItemView<M>: ItemView<M> {
         let item: DateItem
         let valueView = UIView()
         let dateView  = MPDateView()
@@ -265,7 +247,7 @@ class DateItem: ValueItem<Date> {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(withItem item: Item) {
+        override init(withItem item: Item<M>) {
             self.item = item as! DateItem
             super.init( withItem: item )
         }
@@ -292,20 +274,20 @@ class DateItem: ValueItem<Date> {
     }
 }
 
-class TextItem: ValueItem<String>, UITextFieldDelegate {
+class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     let placeholder: String?
-    let itemUpdate:  (MPSite, String) -> Void
+    let itemUpdate:  (M, String) -> Void
 
-    init(title: String?, placeholder: String?, subitems: [Item] = [ Item ](),
-         itemValue: @escaping (MPSite) -> String? = { _ in nil },
-         itemUpdate: @escaping (MPSite, String) -> Void = { _, _ in }) {
+    init(title: String?, placeholder: String?, subitems: [Item<M>] = [],
+         itemValue: @escaping (M) -> String? = { _ in nil },
+         itemUpdate: @escaping (M, String) -> Void = { _, _ in }) {
         self.placeholder = placeholder
         self.itemUpdate = itemUpdate
         super.init( title: title, subitems: subitems, itemValue: itemValue )
     }
 
-    override func createItemView() -> TextItemView {
-        return TextItemView( withItem: self )
+    override func createItemView() -> TextItemView<M> {
+        return TextItemView<M>( withItem: self )
     }
 
     // MARK: UITextFieldDelegate
@@ -315,7 +297,7 @@ class TextItem: ValueItem<String>, UITextFieldDelegate {
         return true
     }
 
-    class TextItemView: ItemView {
+    class TextItemView<M>: ItemView<M> {
         let item: TextItem
         let valueField = UITextField()
 
@@ -323,7 +305,7 @@ class TextItem: ValueItem<String>, UITextFieldDelegate {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(withItem item: Item) {
+        override init(withItem item: Item<M>) {
             self.item = item as! TextItem
             super.init( withItem: item )
         }
@@ -333,9 +315,9 @@ class TextItem: ValueItem<String>, UITextFieldDelegate {
             self.valueField.textColor = MPTheme.global.color.glow.get()
             self.valueField.textAlignment = .center
             self.valueField.addAction( for: .editingChanged ) { _, _ in
-                if let site = self.item.site,
+                if let model = self.item.model,
                    let text = self.valueField.text {
-                    self.item.itemUpdate( site, text )
+                    self.item.itemUpdate( model, text )
                 }
             }
             return self.valueField
@@ -350,13 +332,13 @@ class TextItem: ValueItem<String>, UITextFieldDelegate {
     }
 }
 
-class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
-    let itemUpdate: (MPSite, V) -> Void
+class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
+    let itemUpdate: (M, V) -> Void
     let step:       V, min: V, max: V
 
-    init(title: String? = nil, subitems: [Item] = [ Item ](),
-         itemValue: @escaping (MPSite) -> V? = { _ in nil },
-         itemUpdate: @escaping (MPSite, V) -> Void = { _, _ in },
+    init(title: String? = nil, subitems: [Item<M>] = [],
+         itemValue: @escaping (M) -> V? = { _ in nil },
+         itemUpdate: @escaping (M, V) -> Void = { _, _ in },
          step: V, min: V, max: V) {
         self.itemUpdate = itemUpdate
         self.step = step
@@ -365,11 +347,11 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
         super.init( title: title, subitems: subitems, itemValue: itemValue )
     }
 
-    override func createItemView() -> StepperItemView {
-        return StepperItemView( withItem: self )
+    override func createItemView() -> StepperItemView<M> {
+        return StepperItemView<M>( withItem: self )
     }
 
-    class StepperItemView: ItemView {
+    class StepperItemView<M>: ItemView<M> {
         let item: StepperItem
         let valueView  = UIView()
         let valueLabel = UILabel()
@@ -380,7 +362,7 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(withItem item: Item) {
+        override init(withItem item: Item<M>) {
             self.item = item as! StepperItem
             super.init( withItem: item )
         }
@@ -388,19 +370,19 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
         override func createValueView() -> UIView? {
             self.downButton.effectBackground = false
             self.downButton.button.addAction( for: .touchUpInside ) { _, _ in
-                if let site = self.item.site,
+                if let model = self.item.model,
                    let value = self.item.value,
                    value > self.item.min {
-                    self.item.itemUpdate( site, value - self.item.step )
+                    self.item.itemUpdate( model, value - self.item.step )
                 }
             }
 
             self.upButton.effectBackground = false
             self.upButton.button.addAction( for: .touchUpInside ) { _, _ in
-                if let site = self.item.site,
+                if let model = self.item.model,
                    let value = self.item.value,
                    value < self.item.max {
-                    self.item.itemUpdate( site, value + self.item.step )
+                    self.item.itemUpdate( model, value + self.item.step )
                 }
             }
 
@@ -445,15 +427,15 @@ class StepperItem<V: AdditiveArithmetic & Comparable>: ValueItem<V> {
     }
 }
 
-class PickerItem<V: Equatable>: ValueItem<V> {
+class PickerItem<M, V: Equatable>: ValueItem<M, V> {
     let values:     [V]
-    let itemUpdate: (MPSite, V) -> Void
+    let itemUpdate: (M, V) -> Void
     let itemCell:   (UICollectionView, IndexPath, V) -> UICollectionViewCell
     let viewInit:   (UICollectionView) -> Void
 
-    init(title: String?, values: [V], subitems: [Item] = [ Item ](),
-         itemValue: @escaping (MPSite) -> V,
-         itemUpdate: @escaping (MPSite, V) -> Void = { _, _ in },
+    init(title: String?, values: [V], subitems: [Item<M>] = [],
+         itemValue: @escaping (M) -> V,
+         itemUpdate: @escaping (M, V) -> Void = { _, _ in },
          itemCell: @escaping (UICollectionView, IndexPath, V) -> UICollectionViewCell,
          viewInit: @escaping (UICollectionView) -> Void) {
         self.values = values
@@ -464,20 +446,20 @@ class PickerItem<V: Equatable>: ValueItem<V> {
         super.init( title: title, subitems: subitems, itemValue: itemValue )
     }
 
-    override func createItemView() -> PickerItemView {
-        return PickerItemView( withItem: self )
+    override func createItemView() -> PickerItemView<M> {
+        return PickerItemView<M>( withItem: self )
     }
 
-    class PickerItemView: ItemView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
-        let item: PickerItem<V>
+    class PickerItemView<M>: ItemView<M>, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
+        let item: PickerItem<M, V>
         let collectionView = CollectionView()
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(withItem item: Item) {
-            self.item = item as! PickerItem<V>
+        override init(withItem item: Item<M>) {
+            self.item = item as! PickerItem<M, V>
             super.init( withItem: item )
         }
 
@@ -499,8 +481,8 @@ class PickerItem<V: Equatable>: ValueItem<V> {
         // MARK: --- Private ---
 
         private func updateSelection() {
-            if let site = self.item.site,
-               let selectedValue = self.item.itemValue( site ),
+            if let model = self.item.model,
+               let selectedValue = self.item.itemValue( model ),
                let selectedIndex = self.item.values.firstIndex( of: selectedValue ),
                let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems {
                 let selectedIndexPath = IndexPath( item: selectedIndex, section: 0 )
@@ -532,8 +514,8 @@ class PickerItem<V: Equatable>: ValueItem<V> {
         // MARK: --- UICollectionViewDelegateFlowLayout ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            if let site = self.item.site {
-                self.item.itemUpdate( site, self.item.values[indexPath.item] )
+            if let model = self.item.model {
+                self.item.itemUpdate( model, self.item.values[indexPath.item] )
             }
         }
 

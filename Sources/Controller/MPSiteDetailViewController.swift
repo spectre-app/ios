@@ -6,89 +6,40 @@
 import Foundation
 import UIKit
 
-class MPSiteDetailViewController: UIViewController, MPSiteObserver {
-    let observers = Observers<MPSiteDetailObserver>()
-    let site: MPSite
-
-    let items = [ PasswordCounterItem(), SeparatorItem(),
-                  PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
-                  LoginTypeItem(), LoginResultItem(), SeparatorItem(),
-                  URLItem(), SeparatorItem(),
-                  InfoItem() ]
-
-    let backgroundView = UIView()
-    let itemsView      = UIStackView()
-    let closeButton    = MPButton.closeButton()
+class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver {
 
     // MARK: --- Life ---
+
+    override func loadItems() -> [Item<MPSite>] {
+        return [ PasswordCounterItem(), SeparatorItem(),
+                 PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
+                 LoginTypeItem(), LoginResultItem(), SeparatorItem(),
+                 URLItem(), SeparatorItem(),
+                 InfoItem() ]
+    }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(site: MPSite) {
-        self.site = site
-        super.init( nibName: nil, bundle: nil )
+    override init(model: MPSite) {
+        super.init( model: model )
 
-        self.site.observers.register( observer: self ).siteDidChange( self.site )
-    }
-
-    override func viewDidLoad() {
-
-        // - View
-        self.backgroundView.layer.cornerRadius = 8
-        self.backgroundView.layer.shadowRadius = 8
-        self.backgroundView.layer.shadowOpacity = 0.382
-
-        self.itemsView.axis = .vertical
-        self.itemsView.spacing = 20
-        for item in self.items {
-            self.itemsView.addArrangedSubview( item.view )
-        }
-
-        self.closeButton.button.addAction( for: .touchUpInside ) { _, _ in
-            self.observers.notify { $0.siteDetailShouldDismiss() }
-        }
-
-        // - Hierarchy
-        self.backgroundView.addSubview( self.itemsView )
-        self.view.addSubview( self.backgroundView )
-        self.view.addSubview( self.closeButton )
-
-        // - Layout
-        LayoutConfiguration( view: self.backgroundView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                .activate()
-        LayoutConfiguration( view: self.itemsView )
-                .constrainToOwner( withMargins: true, anchor: .vertically )
-                .constrainToOwner( withMargins: false, anchor: .horizontally )
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
-                .activate()
-        LayoutConfiguration( view: self.closeButton )
-                .constrainTo { $1.centerXAnchor.constraint( equalTo: self.backgroundView.centerXAnchor ) }
-                .constrainTo { $1.centerYAnchor.constraint( equalTo: self.backgroundView.bottomAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                .activate()
+        self.model.observers.register( observer: self ).siteDidChange( self.model )
     }
 
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
-            self.backgroundView.backgroundColor = self.site.color
-
-            for item in self.items {
-                item.site = self.site
-            }
+            self.backgroundView.backgroundColor = self.model.color
+            self.setNeedsUpdate()
         }
     }
 
     // MARK: --- Types ---
 
-    class ResultItem: SubLabelItem {
+    class ResultItem: LabelItem<MPSite> {
         init() {
             super.init( title: "Password & Login" ) {
                 ($0.mpw_result() ?? "", $0.mpw_login() ?? "")
@@ -99,7 +50,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
             return ResultItemView( withItem: self )
         }
 
-        class ResultItemView: SubLabelItemView {
+        class ResultItemView: LabelItemView<MPSite> {
             override func createValueView() -> UIView? {
                 defer {
                     self.primaryLabel.font = MPTheme.global.font.password.get()
@@ -110,7 +61,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class PasswordCounterItem: StepperItem<UInt32> {
+    class PasswordCounterItem: StepperItem<MPSite, UInt32> {
         init() {
             super.init( title: "Password Counter",
                         itemValue: { $0.counter.rawValue },
@@ -119,14 +70,14 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class PasswordTypeItem: PickerItem<MPResultType> {
+    class PasswordTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
             super.init( title: "Password Type", values: [ MPResultType ]( MPResultTypes ).filter { !$0.has( feature: .alternative ) },
                         itemValue: { $0.resultType },
                         itemUpdate: { $0.resultType = $1 },
                         itemCell: { collectionView, indexPath, type in
                             return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                                ($0 as! MPResultTypeCell).resultType = type
+                                ($0 as? MPResultTypeCell)?.resultType = type
                             }
                         } ) {
                 $0.registerCell( MPResultTypeCell.self )
@@ -134,14 +85,14 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class PasswordResultItem: TextItem {
+    class PasswordResultItem: TextItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a password",
                         itemValue: { $0.mpw_result() },
                         itemUpdate: { $0.mpw_result_save( resultParam: $1 ) } )
         }
 
-        override func createItemView() -> TextItemView {
+        override func createItemView() -> TextItemView<MPSite> {
             let view = super.createItemView()
             view.valueField.font = MPTheme.global.font.password.get()
             view.valueField.autocapitalizationType = .none
@@ -152,18 +103,18 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         override func doUpdate() {
             super.doUpdate()
 
-            (self.view as? TextItemView)?.valueField.isEnabled = self.site?.resultType.in( class: .stateful ) ?? false
+            (self.view as? TextItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
     }
 
-    class LoginTypeItem: PickerItem<MPResultType> {
+    class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
             super.init( title: "User Name Type", values: [ MPResultType ]( MPResultTypes ).filter { !$0.has( feature: .alternative ) },
                         itemValue: { $0.loginType },
                         itemUpdate: { $0.loginType = $1 },
                         itemCell: { collectionView, indexPath, type in
                             return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                                ($0 as! MPResultTypeCell).resultType = type
+                                ($0 as? MPResultTypeCell)?.resultType = type
                             }
                         } ) {
                 $0.registerCell( MPResultTypeCell.self )
@@ -171,14 +122,14 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class LoginResultItem: TextItem {
+    class LoginResultItem: TextItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a user name",
                         itemValue: { $0.mpw_login() },
                         itemUpdate: { $0.mpw_login_save( resultParam: $1 ) } )
         }
 
-        override func createItemView() -> TextItemView {
+        override func createItemView() -> TextItemView<MPSite> {
             let view = super.createItemView()
             view.valueField.font = MPTheme.global.font.mono.get()
             view.valueField.autocapitalizationType = .none
@@ -189,18 +140,18 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         override func doUpdate() {
             super.doUpdate()
 
-            (self.view as? TextItemView)?.valueField.isEnabled = self.site?.resultType.in( class: .stateful ) ?? false
+            (self.view as? TextItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
     }
 
-    class URLItem: TextItem {
+    class URLItem: TextItem<MPSite> {
         init() {
             super.init( title: "URL", placeholder: "eg. https://www.apple.com",
                         itemValue: { $0.url },
                         itemUpdate: { $0.url = $1 } )
         }
 
-        override func createItemView() -> TextItemView {
+        override func createItemView() -> TextItemView<MPSite> {
             let itemView = super.createItemView()
             itemView.valueField.autocapitalizationType = .none
             itemView.valueField.autocorrectionType = .no
@@ -209,7 +160,7 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class InfoItem: Item {
+    class InfoItem: Item<MPSite> {
         init() {
             super.init( title: nil, subitems: [
                 UsesItem(),
@@ -219,26 +170,21 @@ class MPSiteDetailViewController: UIViewController, MPSiteObserver {
         }
     }
 
-    class UsesItem: LabelItem {
+    class UsesItem: LabelItem<MPSite> {
         init() {
-            super.init( title: "Total Uses" ) { "\($0.uses)" }
+            super.init( title: "Total Uses" ) { ("\($0.uses)", nil) }
         }
     }
 
-    class UsedItem: DateItem {
+    class UsedItem: DateItem<MPSite> {
         init() {
             super.init( title: "Last Used" ) { $0.lastUsed }
         }
     }
 
-    class AlgorithmItem: LabelItem {
+    class AlgorithmItem: LabelItem<MPSite> {
         init() {
-            super.init( title: "Algorithm" ) { "v\($0.algorithm.rawValue)" }
+            super.init( title: "Algorithm" ) { ("v\($0.algorithm.rawValue)", nil) }
         }
     }
-}
-
-@objc
-protocol MPSiteDetailObserver {
-    func siteDetailShouldDismiss()
 }

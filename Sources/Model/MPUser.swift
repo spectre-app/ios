@@ -5,10 +5,17 @@
 
 import Foundation
 
-class MPUser: NSObject, MPSiteObserver, MPUserObserver {
+class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     public let observers = Observers<MPUserObserver>()
 
     public let fullName: String
+    public var identicon: MPIdenticon? {
+        didSet {
+            if oldValue != self.identicon {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
     public var avatar: Avatar {
         didSet {
             if oldValue != self.avatar {
@@ -105,17 +112,20 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Interface ---
 
-    func use() {
+    public func use() {
         self.lastUsed = Date()
     }
 
     // MARK: --- mpw ---
 
     @discardableResult
-    func mpw_authenticate(masterPassword: String) -> Bool {
+    public func mpw_authenticate(masterPassword: String) -> Bool {
         return DispatchQueue.mpw.await {
+            self.identicon = mpw_identicon( self.fullName, masterPassword )
+
             if let authKey = mpw_masterKey( self.fullName, masterPassword, .versionCurrent ),
                let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
+
                 if let masterKeyID = self.masterKeyID {
                     if masterKeyID != authKeyID {
                         return false
@@ -145,15 +155,15 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
              avatar_10, avatar_11, avatar_12, avatar_13, avatar_14, avatar_15, avatar_16, avatar_17, avatar_18,
              avatar_add
 
-        static func decode(avatar: UInt32) -> Avatar {
+        public static func decode(avatar: UInt32) -> Avatar {
             return Avatar.userAvatars.indices.contains( Int( avatar ) ) ? Avatar.userAvatars[Int( avatar )]: .avatar_0
         }
 
-        func encode() -> UInt32 {
+        public func encode() -> UInt32 {
             return UInt32( Avatar.userAvatars.firstIndex( of: self ) ?? 0 )
         }
 
-        func image() -> UIImage? {
+        public func image() -> UIImage? {
             switch self {
                 case .avatar_add:
                     return UIImage.init( named: "avatar-add" )
@@ -162,7 +172,7 @@ class MPUser: NSObject, MPSiteObserver, MPUserObserver {
             }
         }
 
-        mutating func next() {
+        public mutating func next() {
             self = Avatar.userAvatars[((Avatar.userAvatars.firstIndex( of: self ) ?? -1) + 1) % Avatar.userAvatars.count]
         }
     }

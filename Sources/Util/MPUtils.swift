@@ -57,6 +57,51 @@ extension MPResultType {
     }
 }
 
+extension MPIdenticon: Equatable {
+    public static func ==(lhs: MPIdenticon, rhs: MPIdenticon) -> Bool {
+        return lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
+                lhs.accessory == rhs.accessory && lhs.color == rhs.color
+    }
+
+    public func text() -> String {
+        return [ String( cString: self.leftArm ),
+                 String( cString: self.body ),
+                 String( cString: self.rightArm ),
+                 String( cString: self.accessory ) ].joined()
+    }
+
+    public func attributedText() -> NSAttributedString {
+        let shadow = NSShadow()
+        shadow.shadowColor = MPTheme.global.color.shadow.get()
+        shadow.shadowOffset = CGSize(width: 0, height: 1)
+        return stra( self.text(), [
+            NSAttributedStringKey.foregroundColor: self.uiColor(),
+            NSAttributedStringKey.shadow: shadow,
+        ] )
+    }
+
+    public func uiColor() -> UIColor {
+        switch self.color {
+            case .black:
+                return .black
+            case .red:
+                return .red
+            case .green:
+                return .green
+            case .yellow:
+                return .yellow
+            case .blue:
+                return .blue
+            case .magenta:
+                return .magenta
+            case .cyan:
+                return .cyan
+            case .white:
+                return .white
+        }
+    }
+}
+
 extension UIColor {
     // Determine how common a color is in a list of colors.
     // Compares the color to the other colors only by average hue distance.

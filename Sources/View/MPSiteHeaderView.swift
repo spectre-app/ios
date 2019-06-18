@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPSiteHeaderView: UIView, MPSiteObserver {
+class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
     public let observers = Observers<MPSiteHeaderObserver>()
     public var site: MPSite? {
         willSet {
@@ -53,7 +53,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
 
         self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
             if let site = self.site {
-                self.observers.notify { $0.siteOpenDetails( for: site ) }
+                self.observers.notify { $0.shouldOpenDetails( forSite: site ) }
             }
         }
         self.trashButton.button.addAction( for: .touchUpInside ) { _, _ in
@@ -123,5 +123,5 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
 
 @objc
 protocol MPSiteHeaderObserver {
-    func siteOpenDetails(for site: MPSite)
+    func shouldOpenDetails(forSite site: MPSite)
 }

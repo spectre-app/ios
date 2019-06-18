@@ -450,6 +450,11 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                                 DispatchQueue.main.perform {
                                     self.passwordIndicator.stopAnimating()
 
+                                    if let identicon = user.identicon {
+                                        self.identiconItem?.cancel()
+                                        self.identiconLabel.attributedText = identicon.attributedText()
+                                    }
+
                                     if success {
                                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
                                     }
@@ -487,29 +492,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                         let identicon = mpw_identicon( userName, masterPassword )
 
                         DispatchQueue.main.perform {
-                            self.identiconLabel.text = [
-                                String( cString: identicon.leftArm ),
-                                String( cString: identicon.body ),
-                                String( cString: identicon.rightArm ),
-                                String( cString: identicon.accessory ) ].joined()
-                            switch identicon.color {
-                                case .black:
-                                    self.identiconLabel.textColor = .black
-                                case .red:
-                                    self.identiconLabel.textColor = .red
-                                case .green:
-                                    self.identiconLabel.textColor = .green
-                                case .yellow:
-                                    self.identiconLabel.textColor = .yellow
-                                case .blue:
-                                    self.identiconLabel.textColor = .blue
-                                case .magenta:
-                                    self.identiconLabel.textColor = .magenta
-                                case .cyan:
-                                    self.identiconLabel.textColor = .cyan
-                                case .white:
-                                    self.identiconLabel.textColor = .white
-                            }
+                            self.identiconLabel.attributedText = identicon.attributedText()
                         }
                     }
                 }

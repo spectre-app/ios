@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPResultTypeCell: UICollectionViewCell {
+class MPResultTypeCell: MPItemCell {
     public var resultType: MPResultType? {
         didSet {
             DispatchQueue.main.perform {
@@ -36,15 +36,6 @@ class MPResultTypeCell: UICollectionViewCell {
     private let separatorView = UIView()
     private let nameLabel     = UILabel()
     private let classLabel    = UILabel()
-    override var isSelected: Bool {
-        didSet {
-            DispatchQueue.main.perform {
-                UIView.animate( withDuration: 0.382 ) {
-                    self.contentView.alpha = self.isSelected ? 1: 0.618
-                }
-            }
-        }
-    }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -61,11 +52,6 @@ class MPResultTypeCell: UICollectionViewCell {
         self.classLabel.textAlignment = .center
         self.classLabel.font = MPTheme.global.font.caption1.get()
 
-        self.contentView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 )
-        self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
-        self.contentView.layer.borderWidth = 2
-        self.contentView.layer.borderColor = MPTheme.global.color.glow.get()?.cgColor
-        self.contentView.layer.masksToBounds = true
         self.contentView.addSubview( self.separatorView )
         self.contentView.addSubview( self.nameLabel )
         self.contentView.addSubview( self.classLabel )
@@ -86,20 +72,5 @@ class MPResultTypeCell: UICollectionViewCell {
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .activate()
-        LayoutConfiguration( view: self.contentView )
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).withPriority( .defaultHigh ) }
-                .constrainToOwner()
-                .activate()
-
-        defer {
-            self.isSelected = false
-        }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        self.contentView.layer.cornerRadius = self.contentView.bounds.size.height / 2
     }
 }

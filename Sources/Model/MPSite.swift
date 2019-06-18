@@ -5,11 +5,11 @@
 
 import Foundation
 
-class MPSite: NSObject, Comparable {
-    let observers = Observers<MPSiteObserver>()
+class MPSite: NSObject, Observable, Comparable {
+    public let observers = Observers<MPSiteObserver>()
 
-    let user: MPUser
-    var siteName: String {
+    public let user: MPUser
+    public var siteName: String {
         didSet {
             if oldValue != self.siteName {
                 self.observers.notify { $0.siteDidChange( self ) }
@@ -21,28 +21,28 @@ class MPSite: NSObject, Comparable {
             }
         }
     }
-    var algorithm: MPAlgorithmVersion {
+    public var algorithm: MPAlgorithmVersion {
         didSet {
             if oldValue != self.algorithm {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var counter: MPCounterValue = .default {
+    public var counter: MPCounterValue = .default {
         didSet {
             if oldValue != self.counter {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var resultType: MPResultType {
+    public var resultType: MPResultType {
         didSet {
             if oldValue != self.resultType {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var loginType: MPResultType {
+    public var loginType: MPResultType {
         didSet {
             if oldValue != self.loginType {
                 self.observers.notify { $0.siteDidChange( self ) }
@@ -50,14 +50,14 @@ class MPSite: NSObject, Comparable {
         }
     }
 
-    var resultState: String? {
+    public var resultState: String? {
         didSet {
             if oldValue != self.resultState {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var loginState: String? {
+    public var loginState: String? {
         didSet {
             if oldValue != self.loginState {
                 self.observers.notify { $0.siteDidChange( self ) }
@@ -65,35 +65,35 @@ class MPSite: NSObject, Comparable {
         }
     }
 
-    var url: String? {
+    public var url: String? {
         didSet {
             if oldValue != self.url {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var uses: UInt = 0 {
+    public var uses: UInt = 0 {
         didSet {
             if oldValue != self.uses {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var lastUsed: Date {
+    public var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var color: UIColor? {
+    public var color: UIColor? {
         didSet {
             if oldValue != self.color {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
     }
-    var image: UIImage? {
+    public var image: UIImage? {
         didSet {
             if oldValue != self.image {
                 self.observers.notify { $0.siteDidChange( self ) }
@@ -125,7 +125,7 @@ class MPSite: NSObject, Comparable {
         }
     }
 
-    static func <(lhs: MPSite, rhs: MPSite) -> Bool {
+    public static func <(lhs: MPSite, rhs: MPSite) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
             return lhs.lastUsed < rhs.lastUsed
         }
@@ -135,7 +135,7 @@ class MPSite: NSObject, Comparable {
 
     // MARK: --- Interface ---
 
-    func use() {
+    public func use() {
         self.lastUsed = Date()
         self.uses += 1
         self.user.use()
@@ -143,7 +143,7 @@ class MPSite: NSObject, Comparable {
 
     // MARK: --- mpw ---
 
-    func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+    public func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> String? {
         guard let masterKey = self.user.masterKey
@@ -158,7 +158,7 @@ class MPSite: NSObject, Comparable {
     }
 
     @discardableResult
-    func mpw_result_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+    public func mpw_result_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                          resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Bool {
         guard let masterKey = self.user.masterKey
@@ -177,7 +177,7 @@ class MPSite: NSObject, Comparable {
         }
     }
 
-    func mpw_login(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .identification, keyContext: String? = nil,
+    public func mpw_login(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .identification, keyContext: String? = nil,
                    resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> String? {
         guard let masterKey = self.user.masterKey
@@ -192,7 +192,7 @@ class MPSite: NSObject, Comparable {
     }
 
     @discardableResult
-    func mpw_login_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+    public func mpw_login_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                         resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Bool {
         guard let masterKey = self.user.masterKey
@@ -211,7 +211,7 @@ class MPSite: NSObject, Comparable {
         }
     }
 
-    func mpw_answer(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+    public func mpw_answer(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> String? {
         guard let masterKey = self.user.masterKey

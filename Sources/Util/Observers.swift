@@ -5,6 +5,11 @@
 
 import Foundation
 
+protocol Observable {
+    associatedtype O: AnyObject
+    var observers : Observers<O> { get }
+}
+
 public class Observers<O: AnyObject> {
     private var observers: [WeakBox<O>] = []
 

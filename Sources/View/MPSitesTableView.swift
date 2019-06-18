@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver {
+class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, Observable, MPUserObserver {
     public let observers = Observers<MPSitesViewObserver>()
     public var user: MPUser? {
         willSet {
@@ -68,7 +68,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             var selectedResult = self.data.reduce( nil, { result, section in
                 result ?? (section as? [MPQuery.Result<MPSite>])?.first { $0.value == self.selectedSite }
             } )
-            let selectionFollowsQuery = self.newSiteResult == selectedResult || selectedResult?.exact ?? false
+            let selectionFollowsQuery = self.newSiteResult === selectedResult || selectedResult?.exact ?? false
             let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
             let exactResult = results.first { $0.exact }
             let newSites: NSMutableArray = [ results ]
@@ -157,10 +157,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
                     -> UITableViewCell {
-        let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
-        cell.result = self.dataRow( section: indexPath.section, row: indexPath.row )
-        cell.new = cell.result == self.newSiteResult
+        let result = self.dataRow( section: indexPath.section, row: indexPath.row )
+        if AvCell.is( result: result ) {
+            return AvCell.dequeue( from: tableView, indexPath: indexPath )
+        }
 
+        let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
+        cell.result = result
+        cell.new = cell.result == self.newSiteResult
         return cell
     }
 
@@ -374,6 +378,43 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     self.resultLabel.text = result ?? " "
                 }
             }
+        }
+    }
+
+    class AvCell: UITableViewCell {
+        private let propLabel = UILabel()
+
+        class func `is`(result: MPQuery.Result<MPSite>) -> Bool {
+            return result.value.siteName == "avonlea"
+        }
+
+        // MARK: --- Life ---
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+            super.init( style: style, reuseIdentifier: reuseIdentifier )
+
+            // - View
+            self.isOpaque = false
+            self.clipsToBounds = true
+            self.backgroundColor = .clear
+            self.selectedBackgroundView = UIView()
+            self.selectedBackgroundView?.backgroundColor = MPTheme.global.color.selection.get()
+            self.contentView.layoutMargins = UIEdgeInsets( top: 80, left: 80, bottom: 80, right: 80 )
+
+            self.propLabel.font = MPTheme.global.font.largeTitle.get()
+            self.propLabel.text = "💁"
+
+            // - Hierarchy
+            self.contentView.addSubview( self.propLabel )
+
+            // - Layout
+            LayoutConfiguration( view: self.propLabel )
+                    .constrainToMarginsOfOwner()
+                    .activate()
         }
     }
 }
