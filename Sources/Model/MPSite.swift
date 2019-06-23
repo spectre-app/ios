@@ -152,7 +152,7 @@ class MPSite: NSObject, Observable, Comparable {
         }
 
         return DispatchQueue.mpw.await {
-            String( safeUTF8: mpw_siteResult( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+            String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
                                               resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ) )
         }
     }
@@ -167,7 +167,7 @@ class MPSite: NSObject, Observable, Comparable {
         }
 
         return DispatchQueue.mpw.await {
-            if let resultState = String( safeUTF8: mpw_siteState( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+            if let resultState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
                                                                   resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ) ) {
                 self.resultState = resultState
                 return true
@@ -186,7 +186,7 @@ class MPSite: NSObject, Observable, Comparable {
         }
 
         return DispatchQueue.mpw.await {
-            String( safeUTF8: mpw_siteResult( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+            String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
                                               resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ) )
         }
     }
@@ -201,7 +201,7 @@ class MPSite: NSObject, Observable, Comparable {
         }
 
         return DispatchQueue.mpw.await {
-            if let loginState = String( safeUTF8: mpw_siteState( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+            if let loginState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
                                                                  resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ) ) {
                 self.loginState = loginState
                 return true
@@ -220,7 +220,7 @@ class MPSite: NSObject, Observable, Comparable {
         }
 
         return DispatchQueue.mpw.await {
-            String( safeUTF8: mpw_siteResult( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+            String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
                                               resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ) )
         }
     }

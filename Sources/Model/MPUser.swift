@@ -44,6 +44,13 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
+    public var format: MPMarshalFormat {
+        didSet {
+            if oldValue != self.format {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
 
     public var masterKeyID: String? {
         didSet {
@@ -76,10 +83,11 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Life ---
 
-    init(named name: String, avatar: Avatar = .avatar_0,
+    init(named name: String, avatar: Avatar = .avatar_0, format: MPMarshalFormat = .default,
          algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, lastUsed: Date = Date(), masterKeyID: String? = nil) {
         self.fullName = name
         self.avatar = avatar
+        self.format = format
         self.algorithm = algorithm ?? .versionCurrent
         self.defaultType = defaultType ?? .default
         self.lastUsed = lastUsed
@@ -92,7 +100,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
-        MPMarshal.shared.save( user: self )
+        MPMarshal.shared.setNeedsSave( user: self )
     }
 
     // MARK: --- MPUserObserver ---
@@ -104,7 +112,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     }
 
     func userDidChange(_ user: MPUser) {
-        MPMarshal.shared.save( user: self )
+        MPMarshal.shared.setNeedsSave( user: self )
     }
 
     func userDidUpdateSites(_ user: MPUser) {
@@ -123,7 +131,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         return DispatchQueue.mpw.await {
             self.identicon = mpw_identicon( self.fullName, masterPassword )
 
-            if let authKey = mpw_masterKey( self.fullName, masterPassword, .versionCurrent ),
+            if let authKey = mpw_master_key( self.fullName, masterPassword, .versionCurrent ),
                let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
 
                 if let masterKeyID = self.masterKeyID {
@@ -141,6 +149,23 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
 
             return false
+        }
+    }
+
+    public func mpw_file(in directory: URL? = nil) -> URL? {
+        return self.mpw_file( in: directory, format: self.format )
+    }
+
+    public func mpw_file(in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
+        return DispatchQueue.mpw.await {
+            if let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
+               let directory = directory ?? (try? FileManager.default.url(
+                       for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true )) {
+                return directory.appendingPathComponent( self.fullName, isDirectory: false )
+                                .appendingPathExtension( formatExtension )
+            }
+
+            return nil
         }
     }
 
@@ -179,6 +204,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
 }
 
 @objc
+
 protocol MPUserObserver {
     func userDidLogin(_ user: MPUser)
     func userDidLogout(_ user: MPUser)

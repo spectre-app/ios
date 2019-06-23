@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPMarshal : Observable {
+class MPMarshal: Observable {
     public static let shared = MPMarshal()
     public let observers = Observers<MPMarshalObserver>()
     public var users: [UserInfo]? {
@@ -79,7 +79,7 @@ class MPMarshal : Observable {
         return false
     }
 
-    public func save(user: MPUser) {
+    public func setNeedsSave(user: MPUser) {
         guard !self.saving.contains( user )
         else {
             return
@@ -87,67 +87,136 @@ class MPMarshal : Observable {
 
         self.saving.append( user )
         self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
-            DispatchQueue.mpw.await {
-                provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
-                    do {
-                        guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
-                        else {
-                            err( "couldn't marshal user: \(user)" )
-                            return
-                        }
-
-                        marshalledUser.pointee.redacted = true // TODO
-                        marshalledUser.pointee.avatar = user.avatar.encode()
-                        marshalledUser.pointee.defaultType = user.defaultType
-                        marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
-
-                        for site in user.sites {
-                            guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
-                            else {
-                                err( "couldn't marshal site: \(site)" )
-                                return
-                            }
-
-                            site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
-                            site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
-                            marshalledSite.pointee.loginType = site.loginType
-                            site.url?.withCString { marshalledSite.pointee.url = $0 }
-                            marshalledSite.pointee.uses = UInt32( site.uses )
-                            marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
-                        }
-
-                        let format   = MPMarshalFormat.default
-                        var error    = MPMarshalError( type: .success, description: nil )
-                        let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
-                        document.initialize( to: nil )
-                        let success = mpw_marshal_write( document, format, marshalledUser, &error )
-                        inf( "saveToFile(\(user.fullName)): \(success), \(String( safeUTF8: error.description ) ?? "n/a")" )
-
-                        if success,
-                           let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
-                           let document = document.pointee,
-                           let userDocument = String( safeUTF8: document ) {
-                            let documentPath = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
-                                                                            appropriateFor: nil, create: true )
-                                                                      .appendingPathComponent( user.fullName, isDirectory: false )
-                                                                      .appendingPathExtension( formatExtension ).path
-                            if FileManager.default.createFile( atPath: documentPath, contents: userDocument.data( using: .utf8 ) ) {
-                                inf( "written to: \(documentPath)" )
-                                self.reloadUsers()
-                            }
-                        }
-                    }
-                    catch let e {
-                        err( "caught: \(e)" )
-                    }
-                }
-            }
-
+            self.save( user: user )
             self.saving.removeAll { $0 == user }
         }
     }
 
-    // MARK: --- Interface ---
+    public func save(user: MPUser, redacted: Bool = true, format: MPMarshalFormat? = nil, to documentFile: URL? = nil) {
+        self.saveQueue.await {
+            DispatchQueue.mpw.await {
+                if let documentFile = documentFile ?? user.mpw_file(),
+                   let documentContents = self.export( user: user, redacted: redacted, format: format ),
+                   FileManager.default.createFile( atPath: documentFile.path, contents: documentContents.data( using: .utf8 ) ) {
+                    self.reloadUsers()
+                }
+            }
+        }
+    }
+
+    public func export(user: MPUser, redacted: Bool, format: MPMarshalFormat? = nil) -> String? {
+        return DispatchQueue.mpw.await {
+            provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
+                guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
+                else {
+                    err( "couldn't marshal user: \(user)" )
+                    return nil
+                }
+
+                marshalledUser.pointee.redacted = redacted
+                marshalledUser.pointee.avatar = user.avatar.encode()
+                marshalledUser.pointee.defaultType = user.defaultType
+                marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
+
+                for site in user.sites {
+                    guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+                    else {
+                        err( "couldn't marshal site: \(site)" )
+                        return nil
+                    }
+
+                    site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
+                    site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
+                    marshalledSite.pointee.loginType = site.loginType
+                    site.url?.withCString { marshalledSite.pointee.url = $0 }
+                    marshalledSite.pointee.uses = UInt32( site.uses )
+                    marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+                }
+
+                var error    = MPMarshalError( type: .success, description: nil )
+                let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
+                document.initialize( to: nil )
+                let success = mpw_marshal_write( document, format ?? user.format, marshalledUser, &error )
+                dbg( "export(\(user.fullName)): \(success), \(String( safeUTF8: error.description ) ?? "n/a")" )
+
+                if success, let document = document.pointee {
+                    return String( safeUTF8: document )
+                }
+
+                return nil
+            }
+        }
+    }
+
+    // MARK: --- Types ---
+
+    class ActivityItem: NSObject, UIActivityItemSource {
+        let user:     MPUser
+        let redacted: Bool
+        var cleanup = [ URL ]()
+
+        init(user: MPUser, redacted: Bool) {
+            self.user = user
+            self.redacted = redacted
+        }
+
+        func description() -> String {
+            if self.redacted {
+                return """
+                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") export file for \(user.fullName): \(user.identicon?.text() ?? "")
+                       NOTE: This is a SECURE export; access to the file does not expose its secrets.
+                       ---
+                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") v\(PearlInfoPlist.get().cfBundleShortVersionString ?? "") (\(PearlInfoPlist.get().cfBundleVersion ?? ""))
+                       """
+            }
+            else {
+                return """
+                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") export for \(user.fullName): \(user.identicon?.text() ?? "")
+                       NOTE: This export file's passwords are REVEALED.  Keep it safe!
+                       ---
+                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") v\(PearlInfoPlist.get().cfBundleShortVersionString ?? "") (\(PearlInfoPlist.get().cfBundleVersion ?? ""))
+                       """
+            }
+        }
+
+        func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+            if let identicon = self.user.identicon {
+                return "\(self.user.fullName): \(identicon.text())"
+            }
+            else if let keyID = self.user.masterKeyID {
+                return "\(self.user.fullName): \(keyID)"
+            }
+            else {
+                return "\(self.user.fullName)"
+            }
+        }
+
+        func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+            if let exportFile = self.user.mpw_file( in: URL( fileURLWithPath: NSTemporaryDirectory() ) ) {
+                self.cleanup.append( exportFile )
+                MPMarshal.shared.save( user: self.user, redacted: self.redacted, to: exportFile )
+                return exportFile
+            }
+
+            return nil
+        }
+
+        func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
+            return self.user.format.uti() ?? ""
+        }
+
+        func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+            return "\(PearlInfoPlist.get().cfBundleDisplayName ?? "") Export: \(self.user.fullName)"
+        }
+
+        func activityViewController(_ activityViewController: UIActivityViewController, thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize) -> UIImage? {
+            return self.user.avatar.image()
+        }
+
+        func activityViewController(_ activityViewController: UIActivityViewController, completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?, activityError error: Error?) {
+            self.cleanup.removeAll { nil != (try? FileManager.default.removeItem( at: $0 )) }
+        }
+    }
 
     class UserInfo: NSObject {
         public let path:       String
@@ -184,6 +253,7 @@ class MPMarshal : Observable {
                         let user = MPUser(
                                 named: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
                                 avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
+                                format: self.format,
                                 algorithm: marshalledUser.algorithm,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
@@ -247,21 +317,23 @@ private func __masterKeyObjectProvider(_ algorithm: MPAlgorithmVersion, _ fullNa
 }
 
 private func __masterKeyPasswordProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
-    return mpw_masterKey( fullName, currentMasterPassword, algorithm )
+    return mpw_master_key( fullName, currentMasterPassword, algorithm )
 }
 
 private func provideMasterKeyWith<R>(key: MPMasterKey?, _ perform: (@escaping MPMasterKeyProvider) -> R) -> R {
     currentMasterKey = key
-    let result = perform( __masterKeyObjectProvider )
-    currentMasterKey = nil
+    defer {
+        currentMasterKey = nil
+    }
 
-    return result
+    return perform( __masterKeyObjectProvider )
 }
 
 private func provideMasterKeyWith<R>(password: String?, _ perform: (@escaping MPMasterKeyProvider) -> R) -> R {
     currentMasterPassword = password
-    let result = perform( __masterKeyPasswordProvider )
-    currentMasterPassword = nil
+    defer {
+        currentMasterPassword = nil
+    }
 
-    return result
+    return perform( __masterKeyPasswordProvider )
 }

@@ -48,7 +48,7 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        self.visibleViewController?.view?.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0.382 ).animate()
+        //self.visibleViewController?.view?.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0.382 ).animate()
 
         super.viewWillDisappear( animated )
     }

@@ -6,13 +6,14 @@
 import UIKit
 
 class Item<M>: NSObject {
+    public var viewController: UIViewController? {
+        didSet {
+            ({ self.subitems.forEach { $0.viewController = self.viewController } }())
+        }
+    }
     public var model: M? {
         didSet {
-            ({
-                 for subitem in self.subitems {
-                     subitem.model = self.model
-                 }
-             }()) // this is a hack to get around Swift silently skipping recursive didSet on properties.
+            ({ self.subitems.forEach { $0.model = self.model } }())
 
             self.setNeedsUpdate()
         }
@@ -229,6 +230,53 @@ class LabelItem<M>: ValueItem<M, (Any?, Any?)> {
             else {
                 self.secondaryLabel.isHidden = true
             }
+        }
+    }
+}
+
+class ButtonItem<M>: ValueItem<M, (String?, UIImage?)> {
+    let itemAction: (ButtonItem<M>) -> Void
+
+    init(title: String? = nil, subitems: [Item<M>] = [],
+         itemValue: @escaping (M) -> (String?, UIImage?),
+         itemAction: @escaping (ButtonItem<M>) -> Void = { _ in }) {
+        self.itemAction = itemAction
+
+        super.init( title: title, subitems: subitems, itemValue: itemValue )
+    }
+
+    override func createItemView() -> ButtonItemView<M> {
+        return ButtonItemView<M>( withItem: self )
+    }
+
+    class ButtonItemView<M>: ItemView<M> {
+        let item: ButtonItem
+        let button = MPButton()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item<M>) {
+            self.item = item as! ButtonItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+//            self.button.textColor = MPTheme.global.color.glow.get()
+//            self.button.textAlignment = .center
+//            self.button.font = MPTheme.global.font.largeTitle.get()
+            self.button.button.addAction( for: .touchUpInside ) { _, _ in
+                self.item.itemAction( self.item )
+            }
+            return self.button
+        }
+
+        override func update() {
+            super.update()
+
+            self.button.title = self.item.value?.0
+            self.button.image = self.item.value?.1
         }
     }
 }

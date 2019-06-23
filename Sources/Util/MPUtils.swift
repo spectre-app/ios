@@ -73,7 +73,7 @@ extension MPIdenticon: Equatable {
     public func attributedText() -> NSAttributedString {
         let shadow = NSShadow()
         shadow.shadowColor = MPTheme.global.color.shadow.get()
-        shadow.shadowOffset = CGSize(width: 0, height: 1)
+        shadow.shadowOffset = CGSize( width: 0, height: 1 )
         return stra( self.text(), [
             NSAttributedStringKey.foregroundColor: self.uiColor(),
             NSAttributedStringKey.shadow: shadow,
@@ -98,6 +98,19 @@ extension MPIdenticon: Equatable {
                 return .cyan
             case .white:
                 return .white
+        }
+    }
+}
+
+extension MPMarshalFormat {
+    public func uti() -> String? {
+        switch self {
+            case .none:
+                return nil
+            case .flat:
+                return "com.lyndir.masterpassword.sites"
+            case .JSON:
+                return "com.lyndir.masterpassword.json"
         }
     }
 }

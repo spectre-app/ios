@@ -7,7 +7,7 @@ import Foundation
 
 class MPButton: UIView {
     public var tapEffect = true
-    public var round = false {
+    public var round     = false {
         didSet {
             self.setNeedsUpdateConstraints()
         }
@@ -25,6 +25,13 @@ class MPButton: UIView {
                 self.tintColor = self.darkBackground ? MPTheme.global.color.secondary.get(): MPTheme.global.color.backdrop.get()
                 self.effectBackground = self.effectBackground || self.effectBackground
                 //self.layer.shadowColor = (self.darkBackground ? MPTheme.global.color.shadow.get(): MPTheme.global.color.glow.get())?.cgColor
+            }
+        }
+    }
+    public var image: UIImage? {
+        didSet {
+            DispatchQueue.main.perform {
+                self.button.setImage( self.image, for: .normal )
             }
         }
     }
@@ -84,7 +91,6 @@ class MPButton: UIView {
         self.init( content: button )
         self.button = button
 
-        self.button.setImage( image, for: .normal )
         self.button.setTitleShadowColor( .black, for: .normal )
         self.button.titleLabel?.font = MPTheme.global.font.headline.get()
         self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: -1 )
@@ -97,6 +103,7 @@ class MPButton: UIView {
         defer {
             self.layoutMargins = .zero
             self.round = true
+            self.image = image
             self.title = title
         }
     }

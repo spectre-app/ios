@@ -39,6 +39,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         super.init( nibName: nil, bundle: nil )
 
         for item in self.items {
+            item.viewController = self
             item.model = self.model
         }
     }
