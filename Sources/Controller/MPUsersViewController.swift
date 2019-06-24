@@ -189,12 +189,21 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         private let avatarButton       = UIButton()
         private let passwordField      = UITextField()
         private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
-        private var identiconItem:         DispatchWorkItem?
         private let identiconLabel     = UILabel()
         private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
         private let idBadgeView        = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
         private var passwordConfiguration: LayoutConfiguration!
+        private var identiconItem:         DispatchWorkItem? {
+            willSet {
+                self.identiconItem?.cancel()
+            }
+            didSet {
+                if let identiconItem = self.identiconItem {
+                    DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( .random( in: 300..<500 ) ), execute: identiconItem )
+                }
+            }
+        }
         private var path               = CGMutablePath() {
             didSet {
                 self.setNeedsDisplay()
@@ -362,7 +371,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             super.willMove( toWindow: newWindow )
 
             if newWindow == nil {
-                self.identiconItem?.cancel()
+                self.identiconItem = nil
             }
         }
 
@@ -453,7 +462,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                                     self.passwordIndicator.stopAnimating()
 
                                     if let identicon = user.identicon {
-                                        self.identiconItem?.cancel()
+                                        self.identiconItem = nil
                                         self.identiconLabel.attributedText = identicon.attributedText()
                                     }
 
@@ -487,7 +496,6 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         // MARK: --- Private ---
 
         func setNeedsIdenticon() {
-            self.identiconItem?.cancel()
             self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
                 if let userName = self.user?.fullName {
                     if let masterPassword = self.passwordField.text {
@@ -499,8 +507,6 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                     }
                 }
             }
-
-            DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( .random( in: 300..<500 ) ), execute: self.identiconItem! )
         }
     }
 }
