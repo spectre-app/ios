@@ -317,13 +317,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 switch self.mode {
                     case .authentication:
                         result = site.mpw_result() ?? ""
-                        kind = "Password"
+                        kind = "password"
                     case .identification:
                         result = site.mpw_login() ?? ""
-                        kind = "User name"
+                        kind = "user name"
                     case .recovery:
                         result = site.mpw_answer() ?? ""
-                        kind = "Security answer"
+                        kind = "security answer"
                 }
 
                 site.use()
@@ -340,14 +340,28 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                             ] )
 
                     DispatchQueue.main.perform {
-                        MPAlertView( title: site.siteName, message: "\(kind) Copied (3 min)" ).show( in: self )
+                        MPAlertView( title: site.siteName, message: "Copied \(kind) (3 min)", details:
+                        """
+                        Your \(kind) for \(site.siteName) is:
+                        \(result)
+
+                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
+
+                        Note that after 3 minutes, the \(kind) will be removed from the pasteboard for security reasons.
+                        """ ).show( in: self )
                     }
                 }
                 else {
                     UIPasteboard.general.string = result
 
                     DispatchQueue.main.perform {
-                        MPAlertView( title: site.siteName, message: "\(kind) Copied" ).show( in: self )
+                        MPAlertView( title: site.siteName, message: "Copied \(kind)", details:
+                        """
+                        Your \(kind) for \(site.siteName) is:
+                        \(result)
+
+                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
+                        """ ).show( in: self )
                     }
                 }
             }
