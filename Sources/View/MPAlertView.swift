@@ -63,8 +63,10 @@ class MPAlertView: MPButton {
         self.detailLabel.numberOfLines = 0
         self.detailLabel.font = MPTheme.global.font.footnote.get()
 
+        let swipeRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( didSwipe ) )
+        swipeRecognizer.direction = .up
+        self.addGestureRecognizer( swipeRecognizer )
         self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
-        self.addGestureRecognizer( UISwipeGestureRecognizer( target: self, action: #selector( didSwipe ) ) )
 
         contentStack.axis = .vertical
         contentStack.spacing = 8
