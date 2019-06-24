@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreServices
 
 @UIApplicationMain
 class MPAppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,5 +22,28 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         self.window.makeKeyAndVisible()
 
         return true
+    }
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
+        if let utisValue = UTTypeCreateAllIdentifiersForTag(
+                kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
+           let utis = utisValue as? Array<String> {
+            for format in MPMarshalFormat.allCases {
+                if let uti = format.uti, utis.contains( uti ) {
+                    URLSession.shared.dataTask( with: url, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
+                        if let data = data, error == nil {
+                            MPMarshal.shared.import( data: data )
+                        }
+                        else {
+                            // TODO: error handling
+                            err( "open url: \(url): \(error)" )
+                        }
+                    } ).resume()
+                    return true
+                }
+            }
+        }
+
+        return false
     }
 }

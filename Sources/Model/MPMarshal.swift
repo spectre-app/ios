@@ -7,7 +7,9 @@ import Foundation
 
 class MPMarshal: Observable {
     public static let shared = MPMarshal()
-    public let observers = Observers<MPMarshalObserver>()
+    public let documentDirectory = (try? FileManager.default.url(
+            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true ))
+    public let observers         = Observers<MPMarshalObserver>()
     public var users: [UserInfo]? {
         didSet {
             if oldValue != self.users {
@@ -51,7 +53,7 @@ class MPMarshal: Observable {
             }
             catch {
                 // TODO: handle error
-                err( "\(error)" )
+                err( "reloadUsers: \(error)" )
                 self.users = nil
             }
 
@@ -72,8 +74,9 @@ class MPMarshal: Observable {
                 }
             }
         }
-        catch let e {
-            err( "caught: \(e)" )
+        catch {
+            // TODO: handle error
+            err( "delete: \(error)" )
         }
 
         return false
@@ -87,28 +90,33 @@ class MPMarshal: Observable {
 
         self.saving.append( user )
         self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
-            self.save( user: user )
+            self.save( user: user ) // TODO: handle error?
             self.saving.removeAll { $0 == user }
         }
     }
 
-    public func save(user: MPUser, redacted: Bool = true, format: MPMarshalFormat? = nil, to documentFile: URL? = nil) {
-        self.saveQueue.await {
-            DispatchQueue.mpw.await {
-                if let documentFile = documentFile ?? user.mpw_file(),
-                   let documentContents = self.export( user: user, redacted: redacted, format: format ),
-                   FileManager.default.createFile( atPath: documentFile.path, contents: documentContents.data( using: .utf8 ) ) {
+    @discardableResult
+    public func save(user: MPUser, redacted: Bool = true, format: MPMarshalFormat? = nil, in directory: URL? = nil) -> URL? {
+        return self.saveQueue.await {
+            return DispatchQueue.mpw.await {
+                if let documentFile = self.file( for: user, in: directory ?? self.documentDirectory ),
+                   let documentData = self.export( user: user, redacted: redacted, format: format ),
+                   FileManager.default.createFile( atPath: documentFile.path, contents: documentData ) {
                     self.reloadUsers()
+                    return documentFile
                 }
+
+                return nil
             }
         }
     }
 
-    public func export(user: MPUser, redacted: Bool, format: MPMarshalFormat? = nil) -> String? {
+    public func export(user: MPUser, redacted: Bool, format: MPMarshalFormat? = nil) -> Data? {
         return DispatchQueue.mpw.await {
             provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
                 guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
                 else {
+                    // TODO: handle error
                     err( "couldn't marshal user: \(user)" )
                     return nil
                 }
@@ -121,6 +129,7 @@ class MPMarshal: Observable {
                 for site in user.sites {
                     guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                     else {
+                        // TODO: handle error
                         err( "couldn't marshal site: \(site)" )
                         return nil
                     }
@@ -136,15 +145,44 @@ class MPMarshal: Observable {
                 var error    = MPMarshalError( type: .success, description: nil )
                 let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
                 document.initialize( to: nil )
-                let success = mpw_marshal_write( document, format ?? user.format, marshalledUser, &error )
-                dbg( "export(\(user.fullName)): \(success), \(String( safeUTF8: error.description ) ?? "n/a")" )
-
-                if success, let document = document.pointee {
-                    return String( safeUTF8: document )
+                if mpw_marshal_write( document, format ?? user.format, marshalledUser, &error ), error.type == .success,
+                   let documentData = String( safeUTF8: document.pointee )?.data( using: .utf8 ) {
+                    return documentData
                 }
 
+                // TODO: handle error
+                err( "marshal error: \(error)" )
                 return nil
             }
+        }
+    }
+
+    public func `import`(data: Data) {
+        return DispatchQueue.mpw.perform {
+            if let document = String( data: data, encoding: .utf8 ),
+               let documentUser = mpw_marshal_read_info( document )?.pointee,
+               let documentName = String( safeUTF8: documentUser.fullName ),
+               let documentFile = self.file( named: documentName, format: documentUser.format ),
+               FileManager.default.createFile( atPath: documentFile.path, contents: data ) {
+                self.reloadUsers()
+            }
+            // TODO: handle error
+        }
+    }
+
+    private func file(for user: MPUser, in directory: URL? = nil, format: MPMarshalFormat? = nil) -> URL? {
+        return self.file( named: user.fullName, in: directory, format: format ?? user.format )
+    }
+
+    private func file(named name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
+        return DispatchQueue.mpw.await {
+            if let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
+               let directory = directory ?? self.documentDirectory {
+                return directory.appendingPathComponent( name, isDirectory: false )
+                                .appendingPathExtension( formatExtension )
+            }
+
+            return nil
         }
     }
 
@@ -192,9 +230,8 @@ class MPMarshal: Observable {
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-            if let exportFile = self.user.mpw_file( in: URL( fileURLWithPath: NSTemporaryDirectory() ) ) {
+            if let exportFile = MPMarshal.shared.save( user: self.user, redacted: self.redacted, in: URL( fileURLWithPath: NSTemporaryDirectory() ) ) {
                 self.cleanup.append( exportFile )
-                MPMarshal.shared.save( user: self.user, redacted: self.redacted, to: exportFile )
                 return exportFile
             }
 
@@ -202,7 +239,7 @@ class MPMarshal: Observable {
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
-            return self.user.format.uti() ?? ""
+            return self.user.format.uti ?? ""
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {

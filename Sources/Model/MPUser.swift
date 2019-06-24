@@ -152,23 +152,6 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         }
     }
 
-    public func mpw_file(in directory: URL? = nil) -> URL? {
-        return self.mpw_file( in: directory, format: self.format )
-    }
-
-    public func mpw_file(in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
-        return DispatchQueue.mpw.await {
-            if let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
-               let directory = directory ?? (try? FileManager.default.url(
-                       for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true )) {
-                return directory.appendingPathComponent( self.fullName, isDirectory: false )
-                                .appendingPathExtension( formatExtension )
-            }
-
-            return nil
-        }
-    }
-
     // MARK: --- Types ---
 
     enum Avatar: Int, CaseIterable {

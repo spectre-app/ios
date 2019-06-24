@@ -102,8 +102,18 @@ extension MPIdenticon: Equatable {
     }
 }
 
-extension MPMarshalFormat {
-    public func uti() -> String? {
+extension MPMarshalFormat: Strideable, CaseIterable {
+    public private(set) static var allCases = [ MPMarshalFormat ]( (.first)...(.last) )
+
+    public func distance(to other: MPMarshalFormat) -> Int32 {
+        return Int32( other.rawValue ) - Int32( self.rawValue )
+    }
+
+    public func advanced(by n: Int32) -> MPMarshalFormat {
+        return MPMarshalFormat( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
+    }
+
+    public var uti: String? {
         switch self {
             case .none:
                 return nil
@@ -113,6 +123,9 @@ extension MPMarshalFormat {
                 return "com.lyndir.masterpassword.json"
         }
     }
+}
+
+extension MPMarshalError: Error {
 }
 
 extension UIColor {
