@@ -120,22 +120,24 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     }
 
     func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int) {
-        if let userView = spinner.subviews[activatedItem] as? UserView {
+        if spinner.subviews.indices.contains( activatedItem ),
+           let userView = spinner.subviews[activatedItem] as? UserView {
             userView.active = true
+        }
 
-            UIView.animate( withDuration: 0.382 ) {
-                self.toolbarConfiguration.activate()
-            }
+        UIView.animate( withDuration: 0.382 ) {
+            self.toolbarConfiguration.updateActivated( spinner.activatedItem != nil )
         }
     }
 
     func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int) {
-        if let userView = spinner.subviews[deactivatedItem] as? UserView {
+        if spinner.subviews.indices.contains(deactivatedItem),
+           let userView = spinner.subviews[deactivatedItem] as? UserView {
             userView.active = false
+        }
 
-            UIView.animate( withDuration: 0.382 ) {
-                self.toolbarConfiguration.deactivate()
-            }
+        UIView.animate( withDuration: 0.382 ) {
+            self.toolbarConfiguration.updateActivated( spinner.activatedItem != nil )
         }
     }
 

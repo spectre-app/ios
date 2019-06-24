@@ -29,10 +29,6 @@ class MPSpinnerView: UIView {
         }
     }
     public var activatedItem: Int? {
-        willSet {
-            DispatchQueue.main.await {
-            }
-        }
         didSet {
             DispatchQueue.main.perform {
                 if let delegate = self.delegate {
