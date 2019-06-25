@@ -37,7 +37,7 @@ class MPAlertView: MPButton {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(title: String?, message: String?, details: String? = nil) {
+    init(title: String?, message: String? = nil, details: String? = nil) {
         let contentStack = UIStackView( arrangedSubviews: [ self.titleLabel, self.messageLabel, self.detailLabel ] )
         super.init( content: contentStack )
 
@@ -105,5 +105,15 @@ class MPAlertView: MPButton {
     @objc
     func didSwipe(_ recognizer: UISwipeGestureRecognizer) {
         self.dismiss()
+    }
+}
+
+func mperror(title: String, context: String? = nil, error: Error? = nil) {
+    err( "\(title) (\(context)): \(error)" )
+
+    if let window = UIApplication.shared.keyWindow {
+        DispatchQueue.main.perform {
+            MPAlertView( title: title, message: context, details: error?.localizedDescription ).show( in: window )
+        }
     }
 }

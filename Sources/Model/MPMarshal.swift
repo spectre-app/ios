@@ -22,61 +22,44 @@ class MPMarshal: Observable {
 
     // MARK: --- Interface ---
 
-    public func reloadUsers(_ completion: (([UserInfo]?) -> Void)? = nil) {
+    public func setNeedsReload(_ completion: (([UserInfo]?) -> Void)? = nil) {
         DispatchQueue.mpw.perform {
-            do {
-                var users     = [ UserInfo ]()
-                let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
-                for documentName in try FileManager.default.contentsOfDirectory( atPath: documents.path ) {
-                    let documentPath = documents.appendingPathComponent( documentName ).path
-                    if let document = FileManager.default.contents( atPath: documentPath ),
-                       !document.isEmpty,
-                       let userDocument = String( data: document, encoding: .utf8 ),
-                       let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
-                       let fullName = String( safeUTF8: userInfo.fullName ) {
-                        users.append( UserInfo(
-                                path: documentPath,
-                                document: userDocument,
-                                format: userInfo.format,
-                                exportDate: Date( timeIntervalSince1970: TimeInterval( userInfo.exportDate ) ),
-                                redacted: userInfo.redacted,
-                                algorithm: userInfo.algorithm,
-                                avatar: MPUser.Avatar.decode( avatar: userInfo.avatar ),
-                                fullName: fullName,
-                                keyID: String( safeUTF8: userInfo.keyID ),
-                                lastUsed: Date( timeIntervalSince1970: TimeInterval( userInfo.lastUsed ) )
-                        ) )
-                    }
+            var users = [ UserInfo ]()
+            for documentFile in self.userDocuments() {
+                if let document = FileManager.default.contents( atPath: documentFile.path ),
+                   !document.isEmpty,
+                   let userDocument = String( data: document, encoding: .utf8 ),
+                   let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
+                   let fullName = String( safeUTF8: userInfo.fullName ) {
+                    users.append( UserInfo(
+                            url: documentFile,
+                            document: userDocument,
+                            format: userInfo.format,
+                            exportDate: Date( timeIntervalSince1970: TimeInterval( userInfo.exportDate ) ),
+                            redacted: userInfo.redacted,
+                            algorithm: userInfo.algorithm,
+                            avatar: MPUser.Avatar.decode( avatar: userInfo.avatar ),
+                            fullName: fullName,
+                            keyID: String( safeUTF8: userInfo.keyID ),
+                            lastUsed: Date( timeIntervalSince1970: TimeInterval( userInfo.lastUsed ) )
+                    ) )
                 }
-
-                self.users = users
-            }
-            catch {
-                // TODO: handle error
-                err( "reloadUsers: \(error)" )
-                self.users = nil
             }
 
+            self.users = users
             completion?( self.users )
         }
     }
 
     public func delete(userInfo: UserInfo) -> Bool {
         do {
-            let documents = try FileManager.default.url( for: .documentDirectory, in: .userDomainMask,
-                                                         appropriateFor: nil, create: true )
-            for documentPath in try FileManager.default.contentsOfDirectory( atPath: documents.path ) {
-                let path = documents.appendingPathComponent( documentPath ).path
-                if FileManager.default.fileExists( atPath: path ) {
-                    try FileManager.default.removeItem( atPath: path )
-                    self.users?.removeAll { $0 == userInfo }
-                    return true
-                }
-            }
+            try FileManager.default.removeItem( at: userInfo.url )
+            self.users?.removeAll { $0 == userInfo }
+            return true
         }
         catch {
             // TODO: handle error
-            err( "delete: \(error)" )
+            mperror( title: "Couldn't remove user document", context: userInfo.url.lastPathComponent, error: error )
         }
 
         return false
@@ -90,35 +73,42 @@ class MPMarshal: Observable {
 
         self.saving.append( user )
         self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
-            self.save( user: user ) // TODO: handle error?
+            do {
+                try self.save( user: user )
+            }
+            catch {
+                // TODO: handle error
+                mperror( title: "Issue saving", context: user.fullName, error: error )
+            }
             self.saving.removeAll { $0 == user }
         }
     }
 
     @discardableResult
-    public func save(user: MPUser, redacted: Bool = true, format: MPMarshalFormat? = nil, in directory: URL? = nil) -> URL? {
-        return self.saveQueue.await {
-            return DispatchQueue.mpw.await {
-                if let documentFile = self.file( for: user, in: directory ?? self.documentDirectory ),
-                   let documentData = self.export( user: user, redacted: redacted, format: format ),
-                   FileManager.default.createFile( atPath: documentFile.path, contents: documentData ) {
-                    self.reloadUsers()
-                    return documentFile
+    public func save(user: MPUser, redacted: Bool = true, format: MPMarshalFormat? = nil, in directory: URL? = nil) throws -> URL {
+        return try self.saveQueue.await {
+            return try DispatchQueue.mpw.await {
+                guard let documentFile = self.file( for: user, in: directory ?? self.documentDirectory )
+                else {
+                    throw Error.internal( details: "No path to marshal \(user)" )
+                }
+                if !FileManager.default.createFile( atPath: documentFile.path, contents:
+                try self.export( user: user, redacted: redacted, format: format ) ) {
+                    throw Error.internal( details: "Couldn't save \(documentFile)" )
                 }
 
-                return nil
+                self.setNeedsReload()
+                return documentFile
             }
         }
     }
 
-    public func export(user: MPUser, redacted: Bool, format: MPMarshalFormat? = nil) -> Data? {
-        return DispatchQueue.mpw.await {
-            provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
+    public func export(user: MPUser, redacted: Bool, format: MPMarshalFormat? = nil) throws -> Data {
+        return try DispatchQueue.mpw.await {
+            try provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
                 guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
                 else {
-                    // TODO: handle error
-                    err( "couldn't marshal user: \(user)" )
-                    return nil
+                    throw Error.internal( details: "Couldn't marshal \(user)" )
                 }
 
                 marshalledUser.pointee.redacted = redacted
@@ -129,9 +119,7 @@ class MPMarshal: Observable {
                 for site in user.sites {
                     guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                     else {
-                        // TODO: handle error
-                        err( "couldn't marshal site: \(site)" )
-                        return nil
+                        throw Error.internal( details: "Couldn't marshal \(user): \(site)" )
                     }
 
                     site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
@@ -150,23 +138,63 @@ class MPMarshal: Observable {
                     return documentData
                 }
 
-                // TODO: handle error
-                err( "marshal error: \(error)" )
-                return nil
+                if error.type != .success {
+                    throw Error.marshal( error: error )
+                }
+                else {
+                    throw Error.internal( details: "Missing marshal document" )
+                }
             }
         }
     }
 
     public func `import`(data: Data) {
         return DispatchQueue.mpw.perform {
-            if let document = String( data: data, encoding: .utf8 ),
-               let documentUser = mpw_marshal_read_info( document )?.pointee,
-               let documentName = String( safeUTF8: documentUser.fullName ),
-               let documentFile = self.file( named: documentName, format: documentUser.format ),
-               FileManager.default.createFile( atPath: documentFile.path, contents: data ) {
-                self.reloadUsers()
+            guard let document = String( data: data, encoding: .utf8 )
+            else {
+                mperror( title: "Issue importing", context: "Missing import data" )
+                return
             }
+            guard let documentUser = mpw_marshal_read_info( document )?.pointee
+            else {
+                mperror( title: "Issue importing", context: "Import data malformed" )
+                return
+            }
+            guard let documentName = String( safeUTF8: documentUser.fullName )
+            else {
+                mperror( title: "Issue importing", context: "Import missing fullName" )
+                return
+            }
+            guard let documentFile = self.file( named: documentName, format: documentUser.format )
+            else {
+                mperror( title: "Issue importing", context: "No path for \(documentName)" )
+                return
+            }
+            if !FileManager.default.createFile( atPath: documentFile.path, contents: data ) {
+                mperror( title: "Issue importing", context: "Couldn't save \(documentFile.lastPathComponent)" )
+                return
+            }
+
+            self.setNeedsReload()
+        }
+    }
+
+    private func userDocuments() -> [URL] {
+        guard let documentsDirectory = self.documentDirectory
+        else {
+            mperror( title: "Couldn't find user documents" )
+            return []
+        }
+
+        do {
+            return try FileManager.default.contentsOfDirectory( atPath: documentsDirectory.path ).compactMap {
+                documentsDirectory.appendingPathComponent( $0 )
+            }
+        }
+        catch {
             // TODO: handle error
+            mperror( title: "Couldn't access user documents", error: error )
+            return []
         }
     }
 
@@ -187,6 +215,11 @@ class MPMarshal: Observable {
     }
 
     // MARK: --- Types ---
+
+    enum Error: Swift.Error {
+        case `internal`(details: String)
+        case marshal(error: MPMarshalError)
+    }
 
     class ActivityItem: NSObject, UIActivityItemSource {
         let user:     MPUser
@@ -218,24 +251,20 @@ class MPMarshal: Observable {
         }
 
         func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-            if let identicon = self.user.identicon {
-                return "\(self.user.fullName): \(identicon.text())"
-            }
-            else if let keyID = self.user.masterKeyID {
-                return "\(self.user.fullName): \(keyID)"
-            }
-            else {
-                return "\(self.user.fullName)"
-            }
+            return self.user.description
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-            if let exportFile = MPMarshal.shared.save( user: self.user, redacted: self.redacted, in: URL( fileURLWithPath: NSTemporaryDirectory() ) ) {
+            do {
+                let exportFile = try MPMarshal.shared.save( user: self.user, redacted: self.redacted,
+                                                            in: URL( fileURLWithPath: NSTemporaryDirectory() ) )
                 self.cleanup.append( exportFile )
                 return exportFile
             }
-
-            return nil
+            catch {
+                mperror( title: "Issue exporting", context: self.user.fullName, error: error )
+                return nil
+            }
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
@@ -250,13 +279,13 @@ class MPMarshal: Observable {
             return self.user.avatar.image()
         }
 
-        func activityViewController(_ activityViewController: UIActivityViewController, completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?, activityError error: Error?) {
+        func activityViewController(_ activityViewController: UIActivityViewController, completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?, activityError error: Swift.Error?) {
             self.cleanup.removeAll { nil != (try? FileManager.default.removeItem( at: $0 )) }
         }
     }
 
     class UserInfo: NSObject {
-        public let path:       String
+        public let url:        URL
         public let document:   String
         public let format:     MPMarshalFormat
         public let exportDate: Date
@@ -268,9 +297,9 @@ class MPMarshal: Observable {
         public let keyID:     String?
         public let lastUsed:  Date
 
-        init(path: String, document: String, format: MPMarshalFormat, exportDate: Date, redacted: Bool,
+        init(url: URL, document: String, format: MPMarshalFormat, exportDate: Date, redacted: Bool,
              algorithm: MPAlgorithmVersion, avatar: MPUser.Avatar, fullName: String, keyID: String?, lastUsed: Date) {
-            self.path = path
+            self.url = url
             self.document = document
             self.format = format
             self.exportDate = exportDate
@@ -357,20 +386,20 @@ private func __masterKeyPasswordProvider(_ algorithm: MPAlgorithmVersion, _ full
     return mpw_master_key( fullName, currentMasterPassword, algorithm )
 }
 
-private func provideMasterKeyWith<R>(key: MPMasterKey?, _ perform: (@escaping MPMasterKeyProvider) -> R) -> R {
+private func provideMasterKeyWith<R>(key: MPMasterKey?, _ perform: (@escaping MPMasterKeyProvider) throws -> R) rethrows -> R {
     currentMasterKey = key
     defer {
         currentMasterKey = nil
     }
 
-    return perform( __masterKeyObjectProvider )
+    return try perform( __masterKeyObjectProvider )
 }
 
-private func provideMasterKeyWith<R>(password: String?, _ perform: (@escaping MPMasterKeyProvider) -> R) -> R {
+private func provideMasterKeyWith<R>(password: String?, _ perform: (@escaping MPMasterKeyProvider) throws -> R) rethrows -> R {
     currentMasterPassword = password
     defer {
         currentMasterPassword = nil
     }
 
-    return perform( __masterKeyPasswordProvider )
+    return try perform( __masterKeyPasswordProvider )
 }

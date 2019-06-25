@@ -36,7 +36,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
                         }
                         else {
                             // TODO: error handling
-                            err( "open url: \(url): \(error)" )
+                            mperror( title: "Couldn't open document", context: url.lastPathComponent, error: error )
                         }
                     } ).resume()
                     return true

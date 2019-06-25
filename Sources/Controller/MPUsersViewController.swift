@@ -83,7 +83,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        MPMarshal.shared.reloadUsers()
+        MPMarshal.shared.setNeedsReload()
     }
 
     override func viewWillDisappear(_ animated: Bool) {

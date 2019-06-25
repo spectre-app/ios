@@ -80,6 +80,17 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
+    override var description: String {
+        if let identicon = self.identicon {
+            return "\(self.fullName): \(identicon.text())"
+        }
+        else if let keyID = self.masterKeyID {
+            return "\(self.fullName): \(keyID)"
+        }
+        else {
+            return "\(self.fullName)"
+        }
+    }
 
     // MARK: --- Life ---
 

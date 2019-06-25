@@ -22,7 +22,7 @@ class MPURLUtils {
             }
             catch {
                 // TODO: handle error
-                err( "\(error)" )
+                mperror( title: "Couldn't save metadata", error: error )
             }
         }
     }
@@ -36,7 +36,7 @@ class MPURLUtils {
         }
         catch {
             // TODO: handle error
-            err( "\(error)" )
+            mperror( title: "Couldn't load metadata", error: error )
         }
 
         return [:]
@@ -97,7 +97,7 @@ class MPURLUtils {
                     break
                 default:
                     // TODO: handle error
-                    err( "\(error)" )
+                    mperror( title: "Couldn't load preview", context: url, error: error )
             }
 
             result( self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil ) )
@@ -139,7 +139,7 @@ struct Meta: Codable, Equatable {
             // Extract the colors from the image.
             var scoresByColor = [ Color: Int ]()
             for offset in stride( from: 0, to: cgContext.bytesPerRow * cgContext.height, by: cgContext.bitsPerPixel / 8 ) {
-                let color = Color(
+                let color      = Color(
                         red: pixelData.load( fromByteOffset: offset + 0, as: UInt8.self ),
                         green: pixelData.load( fromByteOffset: offset + 1, as: UInt8.self ),
                         blue: pixelData.load( fromByteOffset: offset + 2, as: UInt8.self ),
