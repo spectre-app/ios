@@ -63,14 +63,28 @@ extension MPIdenticon: Equatable {
                 lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
 
-    public func text() -> String {
+    public func encoded() -> String? {
+        return self.color == .unset ? nil: String( safeUTF8: mpw_identicon_encode( self ) )
+    }
+
+    public func text() -> String? {
+        guard self.color == .unset
+        else {
+            return nil
+        }
+
         return [ String( cString: self.leftArm ),
                  String( cString: self.body ),
                  String( cString: self.rightArm ),
                  String( cString: self.accessory ) ].joined()
     }
 
-    public func attributedText() -> NSAttributedString {
+    public func attributedText() -> NSAttributedString? {
+        guard self.color == .unset
+        else {
+            return nil
+        }
+
         let shadow = NSShadow()
         shadow.shadowColor = MPTheme.global.color.shadow.get()
         shadow.shadowOffset = CGSize( width: 0, height: 1 )
@@ -111,6 +125,10 @@ extension MPMarshalFormat: Strideable, CaseIterable {
 
     public func advanced(by n: Int32) -> MPMarshalFormat {
         return MPMarshalFormat( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
+    }
+
+    public var name: String? {
+        return String( safeUTF8: mpw_format_name( self ) )
     }
 
     public var uti: String? {

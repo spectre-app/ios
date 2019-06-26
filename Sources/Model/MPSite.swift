@@ -95,7 +95,13 @@ class MPSite: NSObject, Observable, Comparable {
     }
     public var image: UIImage? {
         didSet {
-            if oldValue != self.image {
+            if (oldValue == nil) != (self.image == nil) {
+                self.observers.notify { $0.siteDidChange( self ) }
+            }
+            else if oldValue !== self.image,
+                    let oldValue = oldValue,
+                    let image = self.image,
+                    UIImagePNGRepresentation( oldValue ) == UIImagePNGRepresentation( image ) {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }

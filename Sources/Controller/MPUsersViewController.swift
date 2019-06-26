@@ -459,12 +459,9 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                                 let success = user.mpw_authenticate( masterPassword: masterPassword )
 
                                 DispatchQueue.main.perform {
+                                    self.identiconItem = nil
+                                    self.identiconLabel.attributedText = user.identicon.attributedText()
                                     self.passwordIndicator.stopAnimating()
-
-                                    if let identicon = user.identicon {
-                                        self.identiconItem = nil
-                                        self.identiconLabel.attributedText = identicon.attributedText()
-                                    }
 
                                     if success {
                                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )

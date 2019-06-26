@@ -50,7 +50,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, MPUserObserv
 
     class IdenticonItem: LabelItem<MPUser> {
         init() {
-            super.init( itemValue: { ($0.identicon?.attributedText(), $0.fullName) } )
+            super.init( itemValue: { ($0.identicon.attributedText(), $0.fullName) } )
         }
     }
 
@@ -99,10 +99,12 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, MPUserObserv
                         """, preferredStyle: .alert )
                         alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
                         alert.addAction( UIAlertAction( title: "Reveal", style: .default ) { _ in
-                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, redacted: false ), in: item.viewController )
+                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: false ),
+                                               in: item.viewController )
                         } )
                         alert.addAction( UIAlertAction( title: "Secure", style: .default ) { _ in
-                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, redacted: true ), in: item.viewController )
+                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: true ),
+                                               in: item.viewController )
                         } )
                         item.viewController?.present( alert, animated: true )
                     }

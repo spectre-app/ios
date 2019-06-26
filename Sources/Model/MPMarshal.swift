@@ -75,8 +75,7 @@ class MPMarshal: Observable {
         self.saving.append( user )
         self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
             do {
-                user.format = .default
-                let destination = try self.save( user: user )
+                let destination = try self.save( user: user, format: .default )
                 if let origin = user.origin, origin != destination,
                    FileManager.default.fileExists( atPath: origin.path ) {
                     do {
@@ -98,15 +97,15 @@ class MPMarshal: Observable {
     }
 
     @discardableResult
-    public func save(user: MPUser, redacted: Bool = true, format: MPMarshalFormat? = nil, in directory: URL? = nil) throws -> URL {
+    public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) throws -> URL {
         return try self.saveQueue.await {
             return try DispatchQueue.mpw.await {
-                guard let documentFile = self.file( for: user, in: directory ?? self.documentDirectory )
+                guard let documentFile = self.file( for: user, in: directory ?? self.documentDirectory, format: format )
                 else {
                     throw Error.internal( details: "No path to marshal \(user)" )
                 }
                 if !FileManager.default.createFile( atPath: documentFile.path, contents:
-                try self.export( user: user, redacted: redacted, format: format ) ) {
+                try self.export( user: user, format: format, redacted: redacted ) ) {
                     throw Error.internal( details: "Couldn't save \(documentFile)" )
                 }
 
@@ -116,7 +115,7 @@ class MPMarshal: Observable {
         }
     }
 
-    public func export(user: MPUser, redacted: Bool, format: MPMarshalFormat? = nil) throws -> Data {
+    public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) throws -> Data {
         return try DispatchQueue.mpw.await {
             try provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
                 guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
@@ -126,6 +125,7 @@ class MPMarshal: Observable {
 
                 marshalledUser.pointee.redacted = redacted
                 marshalledUser.pointee.avatar = user.avatar.encode()
+                marshalledUser.pointee.identicon = user.identicon
                 marshalledUser.pointee.defaultType = user.defaultType
                 marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
@@ -136,8 +136,8 @@ class MPMarshal: Observable {
                     }
 
                     site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
-                    site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
                     marshalledSite.pointee.loginType = site.loginType
+                    site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
                     site.url?.withCString { marshalledSite.pointee.url = $0 }
                     marshalledSite.pointee.uses = UInt32( site.uses )
                     marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
@@ -146,7 +146,7 @@ class MPMarshal: Observable {
                 var error    = MPMarshalError( type: .success, description: nil )
                 let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
                 document.initialize( to: nil )
-                if mpw_marshal_write( document, format ?? user.format, marshalledUser, &error ), error.type == .success,
+                if mpw_marshal_write( document, format, marshalledUser, &error ), error.type == .success,
                    let documentData = String( safeUTF8: document.pointee )?.data( using: .utf8 ) {
                     return documentData
                 }
@@ -211,8 +211,8 @@ class MPMarshal: Observable {
         }
     }
 
-    private func file(for user: MPUser, in directory: URL? = nil, format: MPMarshalFormat? = nil) -> URL? {
-        return self.file( named: user.fullName, in: directory, format: format ?? user.format )
+    private func file(for user: MPUser, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
+        return self.file( named: user.fullName, in: directory, format: format )
     }
 
     private func file(named name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
@@ -236,29 +236,35 @@ class MPMarshal: Observable {
 
     class ActivityItem: NSObject, UIActivityItemSource {
         let user:     MPUser
+        let format:   MPMarshalFormat
         let redacted: Bool
         var cleanup = [ URL ]()
 
-        init(user: MPUser, redacted: Bool) {
+        init(user: MPUser, format: MPMarshalFormat, redacted: Bool) {
             self.user = user
+            self.format = format
             self.redacted = redacted
         }
 
         func description() -> String {
+            let appName = PearlInfoPlist.get().cfBundleDisplayName ?? ""
+            let appVersion = PearlInfoPlist.get().cfBundleShortVersionString ?? ""
+            let appBuild = PearlInfoPlist.get().cfBundleVersion ?? ""
+
             if self.redacted {
                 return """
-                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") export file for \(user.fullName): \(user.identicon?.text() ?? "")
+                       \(appName) export file (\(self.format.name)) for \(self.user.fullName): \(self.user.identicon.text() ?? "")
                        NOTE: This is a SECURE export; access to the file does not expose its secrets.
                        ---
-                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") v\(PearlInfoPlist.get().cfBundleShortVersionString ?? "") (\(PearlInfoPlist.get().cfBundleVersion ?? ""))
+                       \(appName) v\(appVersion) (\(appBuild))
                        """
             }
             else {
                 return """
-                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") export for \(user.fullName): \(user.identicon?.text() ?? "")
+                       \(appName) export (\(self.format.name)) for \(self.user.fullName): \(self.user.identicon.text() ?? "")
                        NOTE: This export file's passwords are REVEALED.  Keep it safe!
                        ---
-                       \(PearlInfoPlist.get().cfBundleDisplayName ?? "") v\(PearlInfoPlist.get().cfBundleShortVersionString ?? "") (\(PearlInfoPlist.get().cfBundleVersion ?? ""))
+                       \(appName) v\(appVersion) (\(appBuild))
                        """
             }
         }
@@ -269,7 +275,7 @@ class MPMarshal: Observable {
 
         func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
             do {
-                let exportFile = try MPMarshal.shared.save( user: self.user, redacted: self.redacted,
+                let exportFile = try MPMarshal.shared.save( user: self.user, format: self.format, redacted: self.redacted,
                                                             in: URL( fileURLWithPath: NSTemporaryDirectory() ) )
                 self.cleanup.append( exportFile )
                 return exportFile
@@ -281,7 +287,7 @@ class MPMarshal: Observable {
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
-            return self.user.format.uti ?? ""
+            return self.format.uti ?? ""
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
@@ -340,7 +346,6 @@ class MPMarshal: Observable {
                                 masterKeyID: self.keyID,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                                format: self.format,
                                 origin: self.origin
                         )
                         guard user.mpw_authenticate( masterPassword: masterPassword )
@@ -350,7 +355,7 @@ class MPMarshal: Observable {
 
                         for s in 0..<marshalledUser.sites_count {
                             let site = (marshalledUser.sites + s).pointee
-                            if let siteName = String( safeUTF8: site.name ) {
+                            if let siteName = String( safeUTF8: site.siteName ) {
                                 user.sites.append( MPSite(
                                         user: user,
                                         siteName: siteName,

@@ -6,10 +6,11 @@
 import Foundation
 
 class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
+    // TODO: figure out how to batch updates or suspend changes until sites marshalling/authenticate fully complete.
     public let observers = Observers<MPUserObserver>()
 
     public let fullName: String
-    public var identicon: MPIdenticon? {
+    public var identicon: MPIdenticon {
         didSet {
             if oldValue != self.identicon {
                 self.observers.notify { $0.userDidChange( self ) }
@@ -40,13 +41,6 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     public var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
-                self.observers.notify { $0.userDidChange( self ) }
-            }
-        }
-    }
-    public var format: MPMarshalFormat {
-        didSet {
-            if oldValue != self.format {
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -82,8 +76,8 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         }
     }
     override var description: String {
-        if let identicon = self.identicon {
-            return "\(self.fullName): \(identicon.text())"
+        if let identicon = self.identicon.encoded() {
+            return "\(self.fullName): \(identicon)"
         }
         else if let keyID = self.masterKeyID {
             return "\(self.fullName): \(keyID)"
@@ -95,8 +89,9 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Life ---
 
-    init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String, identicon: MPIdenticon, masterKeyID: String? = nil,
-         defaultType: MPResultType? = nil, lastUsed: Date = Date(), format: MPMarshalFormat = .default, origin: URL? = nil) {
+    init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
+         identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
+         defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil) {
         self.algorithm = algorithm ?? .versionCurrent
         self.avatar = avatar
         self.fullName = fullName
@@ -104,7 +99,6 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         self.masterKeyID = masterKeyID
         self.defaultType = defaultType ?? .default
         self.lastUsed = lastUsed
-        self.format = format
         self.origin = origin
         super.init()
 
