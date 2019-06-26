@@ -32,7 +32,7 @@ class MPMarshal: Observable {
                    let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
                    let fullName = String( safeUTF8: userInfo.fullName ) {
                     users.append( UserInfo(
-                            url: documentFile,
+                            origin: documentFile,
                             document: userDocument,
                             format: userInfo.format,
                             exportDate: Date( timeIntervalSince1970: TimeInterval( userInfo.exportDate ) ),
@@ -40,6 +40,7 @@ class MPMarshal: Observable {
                             algorithm: userInfo.algorithm,
                             avatar: MPUser.Avatar.decode( avatar: userInfo.avatar ),
                             fullName: fullName,
+                            identicon: userInfo.identicon,
                             keyID: String( safeUTF8: userInfo.keyID ),
                             lastUsed: Date( timeIntervalSince1970: TimeInterval( userInfo.lastUsed ) )
                     ) )
@@ -53,13 +54,13 @@ class MPMarshal: Observable {
 
     public func delete(userInfo: UserInfo) -> Bool {
         do {
-            try FileManager.default.removeItem( at: userInfo.url )
+            try FileManager.default.removeItem( at: userInfo.origin )
             self.users?.removeAll { $0 == userInfo }
             return true
         }
         catch {
             // TODO: handle error
-            mperror( title: "Couldn't remove user document", context: userInfo.url.lastPathComponent, error: error )
+            mperror( title: "Couldn't remove user document", context: userInfo.origin.lastPathComponent, error: error )
         }
 
         return false
@@ -74,7 +75,19 @@ class MPMarshal: Observable {
         self.saving.append( user )
         self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
             do {
-                try self.save( user: user )
+                user.format = .default
+                let destination = try self.save( user: user )
+                if let origin = user.origin, origin != destination,
+                   FileManager.default.fileExists( atPath: origin.path ) {
+                    do {
+                        try FileManager.default.removeItem( at: origin )
+                    }
+                    catch {
+                        // TODO: handle error
+                        mperror( title: "Cleanup issue", context: origin.lastPathComponent, error: error )
+                    }
+                }
+                user.origin = destination
             }
             catch {
                 // TODO: handle error
@@ -285,8 +298,9 @@ class MPMarshal: Observable {
     }
 
     class UserInfo: NSObject {
-        public let url:        URL
-        public let document:   String
+        public let origin:   URL
+        public let document: String
+
         public let format:     MPMarshalFormat
         public let exportDate: Date
         public let redacted:   Bool
@@ -294,12 +308,13 @@ class MPMarshal: Observable {
         public let algorithm: MPAlgorithmVersion
         public let avatar:    MPUser.Avatar
         public let fullName:  String
+        public let identicon: MPIdenticon
         public let keyID:     String?
         public let lastUsed:  Date
 
-        init(url: URL, document: String, format: MPMarshalFormat, exportDate: Date, redacted: Bool,
-             algorithm: MPAlgorithmVersion, avatar: MPUser.Avatar, fullName: String, keyID: String?, lastUsed: Date) {
-            self.url = url
+        init(origin: URL, document: String, format: MPMarshalFormat, exportDate: Date, redacted: Bool,
+             algorithm: MPAlgorithmVersion, avatar: MPUser.Avatar, fullName: String, identicon: MPIdenticon, keyID: String?, lastUsed: Date) {
+            self.origin = origin
             self.document = document
             self.format = format
             self.exportDate = exportDate
@@ -307,6 +322,7 @@ class MPMarshal: Observable {
             self.algorithm = algorithm
             self.avatar = avatar
             self.fullName = fullName
+            self.identicon = identicon
             self.keyID = keyID
             self.lastUsed = lastUsed
         }
@@ -317,13 +333,15 @@ class MPMarshal: Observable {
                     var error = MPMarshalError( type: .success, description: nil )
                     if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee {
                         let user = MPUser(
-                                named: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
-                                avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
-                                format: self.format,
                                 algorithm: marshalledUser.algorithm,
+                                avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
+                                fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
+                                identicon: marshalledUser.identicon,
+                                masterKeyID: self.keyID,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                                masterKeyID: self.keyID
+                                format: self.format,
+                                origin: self.origin
                         )
                         guard user.mpw_authenticate( masterPassword: masterPassword )
                         else {
@@ -335,10 +353,11 @@ class MPMarshal: Observable {
                             if let siteName = String( safeUTF8: site.name ) {
                                 user.sites.append( MPSite(
                                         user: user,
-                                        named: siteName,
+                                        siteName: siteName,
                                         algorithm: site.algorithm,
                                         counter: site.counter,
                                         resultType: site.resultType,
+                                        resultState: String( safeUTF8: site.resultState ),
                                         loginType: site.loginType,
                                         loginState: String( safeUTF8: site.loginState ),
                                         url: String( safeUTF8: site.url ),

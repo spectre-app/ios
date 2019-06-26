@@ -81,7 +81,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     newSiteResult.value.siteName = query
                 }
                 else {
-                    self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, named: query ), keySupplier: { $0.siteName } )
+                    self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, siteName: query ), keySupplier: { $0.siteName } )
                 }
                 if let newSiteResult = self.newSiteResult {
                     newSiteResult.matches( query: query )

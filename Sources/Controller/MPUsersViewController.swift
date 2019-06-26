@@ -455,7 +455,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                         }
                         else {
                             DispatchQueue.mpw.perform {
-                                let user    = MPUser( named: fullName )
+                                let user    = MPUser( fullName: fullName )
                                 let success = user.mpw_authenticate( masterPassword: masterPassword )
 
                                 DispatchQueue.main.perform {

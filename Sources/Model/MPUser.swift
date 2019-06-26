@@ -51,6 +51,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
+    public var origin: URL?
 
     public var masterKeyID: String? {
         didSet {
@@ -94,15 +95,17 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
 
     // MARK: --- Life ---
 
-    init(named name: String, avatar: Avatar = .avatar_0, format: MPMarshalFormat = .default,
-         algorithm: MPAlgorithmVersion? = nil, defaultType: MPResultType? = nil, lastUsed: Date = Date(), masterKeyID: String? = nil) {
-        self.fullName = name
-        self.avatar = avatar
-        self.format = format
+    init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String, identicon: MPIdenticon, masterKeyID: String? = nil,
+         defaultType: MPResultType? = nil, lastUsed: Date = Date(), format: MPMarshalFormat = .default, origin: URL? = nil) {
         self.algorithm = algorithm ?? .versionCurrent
+        self.avatar = avatar
+        self.fullName = fullName
+        self.identicon = identicon
+        self.masterKeyID = masterKeyID
         self.defaultType = defaultType ?? .default
         self.lastUsed = lastUsed
-        self.masterKeyID = masterKeyID
+        self.format = format
+        self.origin = origin
         super.init()
 
         self.observers.register( observer: self )

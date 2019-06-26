@@ -103,8 +103,7 @@ class MPSite: NSObject, Observable, Comparable {
 
     // MARK: --- Life ---
 
-    init(user: MPUser, named name: String,
-         algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
+    init(user: MPUser, siteName: String, algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
          resultType: MPResultType? = nil, resultState: String? = nil,
          loginType: MPResultType? = nil, loginState: String? = nil,
          url: String? = nil, uses: UInt = 0, lastUsed: Date? = nil) {
@@ -117,11 +116,11 @@ class MPSite: NSObject, Observable, Comparable {
         self.url = url
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
-        self.color = name.color()
+        self.color = siteName.color()
         super.init()
 
         defer {
-            self.siteName = name
+            self.siteName = siteName
         }
     }
 
@@ -144,7 +143,7 @@ class MPSite: NSObject, Observable, Comparable {
     // MARK: --- mpw ---
 
     public func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                    resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                           resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> String? {
         guard let masterKey = self.user.masterKey
         else {
@@ -153,13 +152,13 @@ class MPSite: NSObject, Observable, Comparable {
 
         return DispatchQueue.mpw.await {
             String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                              resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ) )
+                                               resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ) )
         }
     }
 
     @discardableResult
     public func mpw_result_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                         resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                                resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Bool {
         guard let masterKey = self.user.masterKey
         else {
@@ -168,7 +167,7 @@ class MPSite: NSObject, Observable, Comparable {
 
         return DispatchQueue.mpw.await {
             if let resultState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                                                  resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ) ) {
+                                                                   resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ) ) {
                 self.resultState = resultState
                 return true
             }
@@ -178,7 +177,7 @@ class MPSite: NSObject, Observable, Comparable {
     }
 
     public func mpw_login(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .identification, keyContext: String? = nil,
-                   resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> String? {
         guard let masterKey = self.user.masterKey
         else {
@@ -187,13 +186,13 @@ class MPSite: NSObject, Observable, Comparable {
 
         return DispatchQueue.mpw.await {
             String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                              resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ) )
+                                               resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ) )
         }
     }
 
     @discardableResult
     public func mpw_login_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                        resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                               resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Bool {
         guard let masterKey = self.user.masterKey
         else {
@@ -202,7 +201,7 @@ class MPSite: NSObject, Observable, Comparable {
 
         return DispatchQueue.mpw.await {
             if let loginState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                                 resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ) ) {
+                                                                  resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ) ) {
                 self.loginState = loginState
                 return true
             }
@@ -212,7 +211,7 @@ class MPSite: NSObject, Observable, Comparable {
     }
 
     public func mpw_answer(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                    resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                           resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> String? {
         guard let masterKey = self.user.masterKey
         else {
@@ -221,7 +220,7 @@ class MPSite: NSObject, Observable, Comparable {
 
         return DispatchQueue.mpw.await {
             String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                              resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ) )
+                                               resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ) )
         }
     }
 }
