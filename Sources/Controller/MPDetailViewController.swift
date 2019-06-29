@@ -86,7 +86,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     }
 }
 
-@objc
 protocol MPDetailsObserver {
     func shouldDismissDetails()
 }

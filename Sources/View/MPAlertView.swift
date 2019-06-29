@@ -58,7 +58,7 @@ class MPAlertView: MPButton {
         self.messageLabel.numberOfLines = 0
 
         self.detailLabel.text = details
-        self.detailLabel.textColor = MPTheme.global.color.glow.get()
+        self.detailLabel.textColor = MPTheme.global.color.body.get()
         self.detailLabel.textAlignment = .center
         self.detailLabel.numberOfLines = 0
         self.detailLabel.font = MPTheme.global.font.footnote.get()

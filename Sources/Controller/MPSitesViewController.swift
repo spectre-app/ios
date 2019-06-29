@@ -6,8 +6,8 @@
 import UIKit
 import pop
 
-class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate, UIScrollViewDelegate,
-                             MPSiteHeaderObserver, MPDetailsObserver, MPSitesViewObserver, MPUserObserver {
+class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestureRecognizerDelegate, UIScrollViewDelegate,
+                             MPSiteHeaderObserver, MPDetailsObserver, MPSitesViewObserver {
     private lazy var topContainer     = MPButton( content: self.searchField )
     private lazy var detailRecognizer = UITapGestureRecognizer( target: self, action: #selector( shouldDismissDetails ) )
     private let searchField             = UITextField()
@@ -20,37 +20,20 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
     private let detailConfiguration     = LayoutConfiguration()
     private var detailController: AnyMPDetailsViewController?
 
-    var user: MPUser? {
-        willSet {
-            self.user?.observers.unregister( observer: self )
-        }
+    override var user: MPUser? {
         didSet {
-            self.user?.observers.register( observer: self )
-            self.sitesTableView.user = self.user
-
-            var userButtonTitle = ""
-            self.user?.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
-
             DispatchQueue.main.perform {
+                var userButtonTitle = ""
+                self.user?.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
                 self.userButton.setTitle( userButtonTitle.uppercased(), for: .normal )
                 self.userButton.sizeToFit()
+
+                self.sitesTableView.user = self.user
             }
         }
     }
 
     // MARK: --- Life ---
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    init(user: MPUser) {
-        super.init( nibName: nil, bundle: nil )
-
-        defer {
-            self.user = user
-        }
-    }
 
     override func viewDidLoad() {
 
@@ -182,23 +165,6 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
         return .lightContent
     }
 
-    // MARK: --- MPUserObserver ---
-
-    func userDidLogin(_ user: MPUser) {
-    }
-
-    func userDidLogout(_ user: MPUser) {
-        if user == self.user, let navigationController = self.navigationController {
-            navigationController.setViewControllers( navigationController.viewControllers.filter { $0 != self }, animated: true )
-        }
-    }
-
-    func userDidChange(_ user: MPUser) {
-    }
-
-    func userDidUpdateSites(_ user: MPUser) {
-    }
-
     // MARK: --- Private ---
 
     func showDetails(forSite site: MPSite) {
@@ -260,6 +226,7 @@ class MPSitesViewController: UIViewController, UITextFieldDelegate, UIGestureRec
 
     // MARK: --- MPSiteDetailObserver ---
 
+    @objc
     func shouldDismissDetails() {
         self.hideDetails()
     }

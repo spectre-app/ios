@@ -231,7 +231,6 @@ class MPSite: NSObject, Observable, Comparable {
     }
 }
 
-@objc
 protocol MPSiteObserver {
     func siteDidChange(_ site: MPSite)
 }

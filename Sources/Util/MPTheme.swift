@@ -31,7 +31,7 @@ public class MPTheme {
         public let caption2:    Value<UIFont>
         public let footnote:    Value<UIFont>
         public let password:    Value<UIFont>
-        public let mono:    Value<UIFont>
+        public let mono:        Value<UIFont>
     }
 
     public struct Colors {
@@ -42,7 +42,7 @@ public class MPTheme {
         public let panel:     Value<UIColor>
         public let shade:     Value<UIColor>
         public let shadow:    Value<UIColor>
-        public let glow:    Value<UIColor>
+        public let glow:      Value<UIColor>
         public let selection: Value<UIColor>
         public let password:  Value<UIColor>
     }
@@ -81,8 +81,8 @@ public class MPTheme {
                 password: Value( UIFont( name: "SourceCodePro-Black", size: 28 ) ),
                 mono: Value( .monospacedDigitSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) ) )
         self.color = Colors(
-                body: Value( UIColor.lightText ),
-                secondary: Value( UIColor.lightGray ),
+                body: Value( UIColor.white ),
+                secondary: Value( UIColor.lightText ),
                 backbody: Value( UIColor.darkText ),
                 backdrop: Value( UIColor.darkGray ),
                 panel: Value( UIColor.black ),
@@ -90,7 +90,7 @@ public class MPTheme {
                 shadow: Value( UIColor.black ),
                 glow: Value( UIColor.white ),
                 selection: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.382 ) ),
-                password: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 1 ) ) )
+                password: Value( UIColor( red: 0, green: 0.663, blue: 0.613, alpha: 1 ) ) )
     }
 
     private init(path: String) {
@@ -151,5 +151,11 @@ public class MPTheme {
         func clear() {
             self.value = nil
         }
+    }
+}
+
+extension MPTheme.Value where V == UIColor {
+    func tint(_ color: UIColor?) -> UIColor? {
+        return get()?.withHue( color )
     }
 }

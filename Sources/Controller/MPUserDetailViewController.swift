@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPUserDetailsViewController: MPDetailsViewController<MPUser>, MPUserObserver {
+class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserViewController*/MPUserObserver {
 
     // MARK: --- Life ---
 
@@ -28,22 +28,26 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, MPUserObserv
         self.model.observers.register( observer: self ).userDidChange( self.model )
     }
 
-    // MARK: --- MPUserObserver ---
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-    func userDidLogin(_ user: MPUser) {
+        self.view.tintColor = MPTheme.global.color.password.tint( self.model.identicon.uiColor() )
     }
 
+    // MARK: --- MPUserObserver ---
+
     func userDidLogout(_ user: MPUser) {
+        if user == self.model, let navigationController = self.navigationController {
+            navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
+        }
     }
 
     func userDidChange(_ user: MPUser) {
         DispatchQueue.main.perform {
-            self.backgroundView.backgroundColor = self.model.fullName.color()
+            self.backgroundView.backgroundColor = MPTheme.global.color.password.tint( self.model.identicon.uiColor() )
+            self.viewIfLoaded?.tintColor = MPTheme.global.color.password.tint( self.model.identicon.uiColor() )
             self.setNeedsUpdate()
         }
-    }
-
-    func userDidUpdateSites(_ user: MPUser) {
     }
 
     // MARK: --- Types ---
@@ -92,21 +96,24 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, MPUserObserv
             super.init( subitems: [
                 ButtonItem( itemValue: { _ in ("📤 Export", nil) } ) { item in
                     if let user = item.model {
-                        let alert = UIAlertController( title: "Reveal Passwords?", message:
-                        """
-                        A secure export contains everything necessary to fully restore your user history.
-                        Reveal passwords is useful for printing or as an independent backup file.
-                        """, preferredStyle: .alert )
-                        alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                        alert.addAction( UIAlertAction( title: "Reveal", style: .default ) { _ in
-                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: false ),
-                                               in: item.viewController )
-                        } )
-                        alert.addAction( UIAlertAction( title: "Secure", style: .default ) { _ in
-                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: true ),
-                                               in: item.viewController )
-                        } )
-                        item.viewController?.present( alert, animated: true )
+//                        let alert = UIAlertController( title: "Reveal Passwords?", message:
+//                        """
+//                        A secure export contains everything necessary to fully restore your user history.
+//                        Reveal passwords is useful for printing or as an independent backup file.
+//                        """, preferredStyle: .alert )
+//                        alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+//                        alert.addAction( UIAlertAction( title: "Reveal", style: .default ) { _ in
+//                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: false ),
+//                                               in: item.viewController )
+//                        } )
+//                        alert.addAction( UIAlertAction( title: "Secure", style: .default ) { _ in
+//                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: true ),
+//                                               in: item.viewController )
+//                        } )
+                        let controller = MPExportViewController( user: user )
+                        controller.popoverPresentationController?.sourceView = item.view
+                        controller.popoverPresentationController?.sourceRect = item.view.bounds
+                        item.viewController?.present( controller, animated: true )
                     }
                 },
                 ButtonItem( itemValue: { _ in ("⎋ Log out", nil) } ) { item in

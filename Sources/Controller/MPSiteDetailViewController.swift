@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver {
+class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver, /*MPUserViewController*/MPUserObserver {
 
     // MARK: --- Life ---
 
@@ -26,6 +26,13 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         super.init( model: model )
 
         self.model.observers.register( observer: self ).siteDidChange( self.model )
+        self.model.user.observers.register( observer: self )
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.view.tintColor = MPTheme.global.color.selection.get()?.withHueComponent( self.model.color?.hue() )
     }
 
     // MARK: --- MPSiteObserver ---
@@ -33,7 +40,16 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
             self.backgroundView.backgroundColor = self.model.color
+            self.viewIfLoaded?.tintColor = MPTheme.global.color.selection.get()?.withHueComponent( self.model.color?.hue() )
             self.setNeedsUpdate()
+        }
+    }
+
+    // MARK: --- MPUserObserver ---
+
+    func userDidLogout(_ user: MPUser) {
+        if user == self.model, let navigationController = self.navigationController {
+            navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
         }
     }
 

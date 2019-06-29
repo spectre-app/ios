@@ -6,22 +6,22 @@
 import Foundation
 
 protocol Observable {
-    associatedtype O: AnyObject
+    associatedtype O: Any
     var observers : Observers<O> { get }
 }
 
-public class Observers<O: AnyObject> {
-    private var observers: [WeakBox<O>] = []
+public class Observers<O> {
+    private var observers: [WeakBox] = []
 
     @discardableResult
     public func register(observer: O) -> O {
-        self.observers.append( WeakBox( observer ) )
+        self.observers.append( WeakBox( observer as AnyObject ) )
         return observer
     }
 
     @discardableResult
     public func unregister(observer: O) -> O {
-        self.observers.removeAll { $0.value === observer }
+        self.observers.removeAll { $0.value === observer as AnyObject }
         return observer
     }
 
@@ -30,7 +30,7 @@ public class Observers<O: AnyObject> {
         var notified = false
 
         for observer in self.observers {
-            if let value = observer.value {
+            if let value = observer.value as? O {
                 event( value )
                 notified = true
             }
@@ -40,10 +40,10 @@ public class Observers<O: AnyObject> {
     }
 }
 
-final class WeakBox<V: AnyObject> {
-    weak var value: V?
+final class WeakBox {
+    weak var value: AnyObject?
 
-    init(_ value: V) {
+    init(_ value: AnyObject) {
         self.value = value
     }
 }

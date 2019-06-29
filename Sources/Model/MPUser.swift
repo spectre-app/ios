@@ -113,17 +113,8 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
 
     // MARK: --- MPUserObserver ---
 
-    func userDidLogin(_ user: MPUser) {
-    }
-
-    func userDidLogout(_ user: MPUser) {
-    }
-
     func userDidChange(_ user: MPUser) {
         MPMarshal.shared.setNeedsSave( user: self )
-    }
-
-    func userDidUpdateSites(_ user: MPUser) {
     }
 
     // MARK: --- Interface ---
@@ -194,12 +185,24 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     }
 }
 
-@objc
-
 protocol MPUserObserver {
     func userDidLogin(_ user: MPUser)
     func userDidLogout(_ user: MPUser)
 
     func userDidChange(_ user: MPUser)
     func userDidUpdateSites(_ user: MPUser)
+}
+
+extension MPUserObserver {
+    func userDidLogin(_ user: MPUser) {
+    }
+
+    func userDidLogout(_ user: MPUser) {
+    }
+
+    func userDidChange(_ user: MPUser) {
+    }
+
+    func userDidUpdateSites(_ user: MPUser) {
+    }
 }

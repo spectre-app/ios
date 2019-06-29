@@ -144,18 +144,16 @@ class MPMarshal: Observable {
                 }
 
                 var error    = MPMarshalError( type: .success, description: nil )
-                let document = UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>.allocate( capacity: 0 )
-                document.initialize( to: nil )
-                if mpw_marshal_write( document, format, marshalledUser, &error ), error.type == .success,
-                   let documentData = String( safeUTF8: document.pointee )?.data( using: .utf8 ) {
-                    return documentData
-                }
+                let document = mpw_marshal_write( format, marshalledUser, &error )
+                if error.type == .success {
+                    if let document = String( safeUTF8: document )?.data( using: .utf8 ) {
+                        return document
+                    }
 
-                if error.type != .success {
-                    throw Error.marshal( error: error )
+                    throw Error.internal( details: "Missing marshal document" )
                 }
                 else {
-                    throw Error.internal( details: "Missing marshal document" )
+                    throw Error.marshal( error: error )
                 }
             }
         }
@@ -247,9 +245,9 @@ class MPMarshal: Observable {
         }
 
         func description() -> String {
-            let appName = PearlInfoPlist.get().cfBundleDisplayName ?? ""
+            let appName    = PearlInfoPlist.get().cfBundleDisplayName ?? ""
             let appVersion = PearlInfoPlist.get().cfBundleShortVersionString ?? ""
-            let appBuild = PearlInfoPlist.get().cfBundleVersion ?? ""
+            let appBuild   = PearlInfoPlist.get().cfBundleVersion ?? ""
 
             if self.redacted {
                 return """
@@ -388,7 +386,6 @@ class MPMarshal: Observable {
     }
 }
 
-@objc
 protocol MPMarshalObserver {
     func usersDidChange(_ users: [MPMarshal.UserInfo]?)
 }

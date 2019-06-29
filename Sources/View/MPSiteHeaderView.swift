@@ -121,7 +121,6 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
     }
 }
 
-@objc
 protocol MPSiteHeaderObserver {
     func shouldOpenDetails(forSite site: MPSite)
 }

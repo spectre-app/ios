@@ -182,9 +182,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
     }
 
-    func userDidChange(_ user: MPUser) {
-    }
-
     func userDidUpdateSites(_ user: MPUser) {
         DispatchQueue.main.perform {
             self.updateSites()
@@ -248,17 +245,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.selectedBackgroundView = UIView()
             self.selectedBackgroundView?.backgroundColor = MPTheme.global.color.selection.get()
 
-            self.resultLabel.text = " "
-            self.resultLabel.font = MPTheme.global.font.password.get()
             self.resultLabel.adjustsFontSizeToFitWidth = true
+            self.resultLabel.font = MPTheme.global.font.password.get()
+            self.resultLabel.text = " "
             self.resultLabel.textAlignment = .natural
             self.resultLabel.textColor = MPTheme.global.color.password.get()
             self.resultLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.resultLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.nameLabel.font = MPTheme.global.font.caption1.get()
             self.nameLabel.textAlignment = .natural
             self.nameLabel.textColor = MPTheme.global.color.body.get()
             self.nameLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.nameLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.modeButton.tapEffect = false
             self.modeButton.darkBackground = true
@@ -433,7 +432,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 }
 
-@objc
 protocol MPSitesViewObserver {
     func siteWasSelected(selectedSite: MPSite?)
 }

@@ -37,20 +37,23 @@ class MPDateView: UIView {
         self.monthFormatter.dateFormat = "MMM"
         self.dayFormatter.dateFormat = "dd"
 
-        self.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.12 )
+        self.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 )
         self.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
         self.layer.cornerRadius = 8
         self.layer.borderWidth = 3
-        self.layer.borderColor = MPTheme.global.color.glow.get()?.cgColor
+        self.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
+        self.layer.shadowOpacity = 1
+        self.layer.shadowRadius = 0
+        self.layer.shadowOffset = CGSize( width: 0, height: 1 )
         self.layer.masksToBounds = true
 
-        self.separatorView.backgroundColor = MPTheme.global.color.glow.get()
+        self.separatorView.backgroundColor = MPTheme.global.color.body.get()
 
-        self.monthLabel.textColor = MPTheme.global.color.glow.get()
+        self.monthLabel.textColor = MPTheme.global.color.body.get()
         self.monthLabel.textAlignment = .center
         self.monthLabel.font = MPTheme.global.font.caption1.get()
 
-        self.dayLabel.textColor = MPTheme.global.color.glow.get()
+        self.dayLabel.textColor = MPTheme.global.color.body.get()
         self.dayLabel.textAlignment = .center
         self.dayLabel.font = MPTheme.global.font.largeTitle.get()
 

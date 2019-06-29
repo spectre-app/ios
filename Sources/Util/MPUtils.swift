@@ -181,6 +181,48 @@ extension UIColor {
 
         return brightness;
     }
+
+    func withHueComponent(_ newHue: CGFloat?) -> UIColor {
+        var hue:        CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha:      CGFloat = 0
+        self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
+
+        return UIColor( hue: newHue ?? hue, saturation: saturation, brightness: brightness, alpha: alpha );
+    }
+
+    func withHue(_ color: UIColor?) -> UIColor {
+        return self.withHueComponent( color?.hue() );
+    }
+
+    func withSaturationComponent(_ newSaturation: CGFloat?) -> UIColor {
+        var hue:        CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha:      CGFloat = 0
+        self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
+
+        return UIColor( hue: hue, saturation: newSaturation ?? saturation, brightness: brightness, alpha: alpha );
+    }
+
+    func withSaturation(_ color: UIColor?) -> UIColor {
+        return self.withSaturationComponent( color?.saturation() );
+    }
+
+    func withBrightnessComponent(_ newBrightness: CGFloat?) -> UIColor {
+        var hue:        CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha:      CGFloat = 0
+        self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
+
+        return UIColor( hue: hue, saturation: saturation, brightness: newBrightness ?? brightness, alpha: alpha );
+    }
+
+    func withBrightness(_ color: UIColor?) -> UIColor {
+        return self.withBrightnessComponent( color?.brightness() );
+    }
 }
 
 extension UIFont {

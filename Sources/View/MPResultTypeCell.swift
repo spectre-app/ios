@@ -44,11 +44,11 @@ class MPResultTypeCell: MPItemCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.separatorView.backgroundColor = MPTheme.global.color.glow.get()
-        self.nameLabel.textColor = MPTheme.global.color.glow.get()
+        self.separatorView.backgroundColor = MPTheme.global.color.body.get()
+        self.nameLabel.textColor = MPTheme.global.color.body.get()
         self.nameLabel.textAlignment = .center
         self.nameLabel.font = MPTheme.global.font.headline.get()
-        self.classLabel.textColor = MPTheme.global.color.glow.get()
+        self.classLabel.textColor = MPTheme.global.color.body.get()
         self.classLabel.textAlignment = .center
         self.classLabel.font = MPTheme.global.font.caption1.get()
 

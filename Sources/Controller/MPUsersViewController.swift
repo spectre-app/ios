@@ -246,8 +246,9 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
             self.identiconLabel.font = MPTheme.global.font.password.get()?.withSize( UIFont.labelFontSize )
             self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
-            self.identiconLabel.shadowColor = MPTheme.global.color.shadow.get()
             self.identiconLabel.textColor = MPTheme.global.color.body.get()
+            self.identiconLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.identiconLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.identiconAccessory.allowsSelfSizing = true
             self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
