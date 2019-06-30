@@ -72,34 +72,42 @@ class MPAlertView: MPButton {
         contentStack.spacing = 8
     }
 
-    public func show(in view: UIView) {
-        if let root = view.window?.rootViewController?.view {
-            root.addSubview( self )
+    public func show(in view: UIView? = nil) {
+        DispatchQueue.main.perform {
+            if let root = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow {
+                root.addSubview( self )
 
-            LayoutConfiguration( view: self )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .activate()
+                LayoutConfiguration( view: self )
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                        .activate()
 
-            self.appearanceConfiguration.deactivate()
-            self.activationConfiguration.deactivate()
-            UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
-                self.dismissItem = DispatchWorkItem( qos: .utility ) { self.dismiss() }
-            } )
+                self.appearanceConfiguration.deactivate()
+                self.activationConfiguration.deactivate()
+                UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
+                    self.dismissItem = DispatchWorkItem( qos: .utility ) { self.dismiss() }
+                } )
+            }
         }
     }
 
     public func dismiss() {
         self.dismissItem = nil
-        UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
-            self.removeFromSuperview()
-        } )
+
+        DispatchQueue.main.perform {
+            UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
+                self.removeFromSuperview()
+            } )
+        }
     }
 
     @objc
     func didTap(_ recognizer: UITapGestureRecognizer) {
         self.dismissItem = nil
-        UIView.animate( withDuration: 0.618 ) { self.activationConfiguration.activate() }
+
+        DispatchQueue.main.perform {
+            UIView.animate( withDuration: 0.618 ) { self.activationConfiguration.activate() }
+        }
     }
 
     @objc
@@ -109,11 +117,14 @@ class MPAlertView: MPButton {
 }
 
 func mperror(title: String, context: String? = nil, error: Error? = nil) {
-    err( "\(title) (\(context)): \(error)" )
-
-    if let window = UIApplication.shared.keyWindow {
-        DispatchQueue.main.perform {
-            MPAlertView( title: title, message: context, details: error?.localizedDescription ).show( in: window )
-        }
+    var message = title
+    if let context = context {
+        message += " (\(context))"
     }
+    if let error = error {
+        message += ": \(error)"
+    }
+    err( message )
+
+    MPAlertView( title: title, message: context, details: error?.localizedDescription ).show()
 }

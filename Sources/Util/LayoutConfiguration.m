@@ -302,8 +302,8 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-        if (!parent.target && self.target.owningView.window)
-            [self.target.owningView layoutIfNeeded];
+        if (!parent.target)
+            [self layoutIfNeeded];
     } );
 
     return self;
@@ -373,11 +373,16 @@
         for (UIView *view in self.displayViews)
             [view setNeedsDisplay];
 
-        if (!parent.target && self.target.owningView.window)
-            [self.target.owningView layoutIfNeeded];
+        if (!parent.target)
+            [self layoutIfNeeded];
     } );
 
     return self;
+}
+
+- (void)layoutIfNeeded {
+    if ([self.target.owningView isKindOfClass:[UIWindow class]] || self.target.owningView.window)
+        [self.target.owningView layoutIfNeeded];
 }
 
 - (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *owningView, LayoutTarget *target))constraintBlock {
