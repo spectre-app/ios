@@ -146,6 +146,15 @@ class MPSite: NSObject, Observable, Comparable {
         self.user.use()
     }
 
+    public func copy(for user: MPUser) -> MPSite {
+        // TODO: copy questions
+        // TODO: do we need to re-encode state?
+        return MPSite( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
+                       resultType: self.resultType, resultState: self.resultState,
+                       loginType: self.loginType, loginState: self.loginState,
+                       url: self.url, uses: self.uses, lastUsed: self.lastUsed )
+    }
+
     // MARK: --- mpw ---
 
     public func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,

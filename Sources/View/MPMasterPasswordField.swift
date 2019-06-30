@@ -8,6 +8,34 @@ import Foundation
 class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     var user:      MPMarshal.UserInfo?
     var nameField: UITextField?
+    var passwordField: UITextField? {
+        willSet {
+            if let passwordField = self.passwordField {
+                passwordField.delegate = nil
+                passwordField.inputAccessoryView = nil
+                passwordField.rightView = nil
+                passwordField.leftView = nil
+                NotificationCenter.default.removeObserver( passwordField )
+            }
+        }
+        didSet {
+            if let passwordField = self.passwordField {
+                passwordField.delegate = self
+                passwordField.isSecureTextEntry = true
+                passwordField.placeholder = "Your master password"
+
+                passwordField.inputAccessoryView = self.identiconAccessory
+                passwordField.rightView = self.passwordIndicator
+                passwordField.leftView = UIView( frame: self.passwordIndicator.frame )
+                passwordField.leftViewMode = .always
+                passwordField.rightViewMode = .always
+
+                NotificationCenter.default.addObserver( forName: .UITextFieldTextDidChange, object: passwordField, queue: nil ) { notification in
+                    self.setNeedsIdenticon()
+                }
+            }
+        }
+    }
     override var text: String? {
         didSet {
             self.setNeedsIdenticon()
@@ -36,18 +64,12 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(user: MPUser? = nil) {
+    init(user: MPMarshal.UserInfo? = nil, nameField: UITextField? = nil) {
+        self.user = user
+        self.nameField = nameField
         super.init( frame: .zero )
 
-        self.delegate = self
-        self.isSecureTextEntry = true
-        self.placeholder = "Your master password"
-
         self.passwordIndicator.frame = self.passwordIndicator.frame.insetBy( dx: -8, dy: 0 )
-        self.rightView = self.passwordIndicator
-        self.leftView = UIView( frame: self.passwordIndicator.frame )
-        self.leftViewMode = .always
-        self.rightViewMode = .always
 
         self.identiconLabel.font = MPTheme.global.font.password.get()?.withSize( UIFont.labelFontSize )
         self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
@@ -58,7 +80,6 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         self.identiconAccessory.allowsSelfSizing = true
         self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
         self.identiconAccessory.addSubview( self.identiconLabel )
-        self.inputAccessoryView = self.identiconAccessory
 
         LayoutConfiguration( view: self.identiconLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
@@ -68,8 +89,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
-        NotificationCenter.default.addObserver( forName: .UITextFieldTextDidChange, object: self, queue: nil ) { notification in
-            self.setNeedsIdenticon()
+        defer {
+            self.passwordField = self
         }
     }
 
@@ -85,7 +106,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
 
     func setNeedsIdenticon() {
         if let userName = self.user?.fullName ?? self.nameField?.text,
-           let masterPassword = self.text {
+           let masterPassword = self.passwordField?.text {
             self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
                 let identicon = mpw_identicon( userName, masterPassword )
 
@@ -103,19 +124,19 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
     }
 
-    func mpw_process(handler: @escaping (String, String) -> MPUser?, completion: ((MPUser?) -> Void)? = nil) -> Bool {
+    func mpw_process<U>(handler: @escaping (String, String) -> U, completion: ((U) -> Void)? = nil) -> Bool {
         return DispatchQueue.main.await {
             if let fullName = self.user?.fullName ?? self.nameField?.text, fullName.count > 0,
-               let masterPassword = self.text, masterPassword.count > 0 {
-                self.isEnabled = false
+               let masterPassword = self.passwordField?.text, masterPassword.count > 0 {
+                self.passwordField?.isEnabled = false
                 self.passwordIndicator.startAnimating()
 
                 DispatchQueue.mpw.perform {
                     let user = handler( fullName, masterPassword )
 
                     DispatchQueue.main.perform {
-                        self.text = nil
-                        self.isEnabled = true
+                        self.passwordField?.text = nil
+                        self.passwordField?.isEnabled = true
                         self.passwordIndicator.stopAnimating()
 
                         completion?( user )
@@ -130,6 +151,9 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     }
 
     // MARK: --- UITextFieldDelegate ---
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        return true
+    }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if let actionHandler = self.actionHandler,
@@ -149,9 +173,9 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             return false
         }
 
-        if self.text?.count ?? 0 == 0 {
-            self.becomeFirstResponder()
-            self.shake()
+        if let passwordField = self.passwordField, passwordField.text?.count ?? 0 == 0 {
+            passwordField.becomeFirstResponder()
+            passwordField.shake()
             return false
         }
 
