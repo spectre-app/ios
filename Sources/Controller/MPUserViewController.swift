@@ -6,19 +6,19 @@
 import UIKit
 
 class MPUserViewController: UIViewController, MPUserObserver {
-    var user: MPUser? {
+    var user: MPUser {
         willSet {
             if (newValue !== self.user) {
-                self.user?.observers.unregister( observer: self )
+                self.user.observers.unregister( observer: self )
             }
         }
         didSet {
             if (oldValue !== self.user) {
-                self.user?.observers.register( observer: self )
+                self.user.observers.register( observer: self )
             }
 
             DispatchQueue.main.perform {
-                self.viewIfLoaded?.tintColor = MPTheme.global.color.password.tint( self.user?.identicon.uiColor() )
+                self.viewIfLoaded?.tintColor = MPTheme.global.color.password.tint( self.user.identicon.uiColor() )
             }
         }
     }
@@ -29,18 +29,20 @@ class MPUserViewController: UIViewController, MPUserObserver {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(user: MPUser?) {
-        super.init( nibName: nil, bundle: nil )
-
+    init(user: MPUser) {
+        self.user = user
         defer {
+            // didSet
+            self.user.observers.register( observer: self )
             self.user = user
         }
+        super.init( nibName: nil, bundle: nil )
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.tintColor = MPTheme.global.color.password.tint( self.user?.identicon.uiColor() )
+        self.view.tintColor = MPTheme.global.color.password.tint( self.user.identicon.uiColor() )
     }
 
     // MARK: --- MPUserObserver ---

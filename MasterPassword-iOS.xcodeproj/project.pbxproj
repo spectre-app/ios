@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		85CD8F96F4AF2E32ECC42FA9 /* Pods_MasterPassword.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B187A357B4ACE4B9C8631D9 /* Pods_MasterPassword.framework */; };
+		93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
 		93D39115154987BD8118FEA9 /* String+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396E97202CBB3030B99EA /* String+MP.swift */; };
 		93D391377514DB16467A3CDC /* MPUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */; };
 		93D39139805FC516B6C2C181 /* MPButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39564D6408073D59CDB6A /* MPButton.swift */; };
@@ -353,6 +354,7 @@
 		93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+PearlReloadItems.h"; sourceTree = "<group>"; };
 		93D3926035A7C671030D3C31 /* POPAnimation+MP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "POPAnimation+MP.m"; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
+		93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMasterPasswordField.swift; sourceTree = "<group>"; };
 		93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILayoutGuide+Pearl.m"; sourceTree = "<group>"; };
 		93D39352DCB3AD8CB34A38B0 /* LayoutConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayoutConfiguration.h; sourceTree = "<group>"; };
 		93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUserViewController.swift; sourceTree = "<group>"; };
@@ -857,6 +859,7 @@
 				93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */,
 				93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */,
 				93D39865ECFD34CF3ADF930D /* MPItemCell.swift */,
+				93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2119,6 +2122,7 @@
 				93D39AB0E8841E744F4B6F4C /* MPItemCell.swift in Sources */,
 				93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */,
 				93D391377514DB16467A3CDC /* MPUserViewController.swift in Sources */,
+				93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

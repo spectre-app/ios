@@ -96,20 +96,6 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
             super.init( subitems: [
                 ButtonItem( itemValue: { _ in ("📤 Export", nil) } ) { item in
                     if let user = item.model {
-//                        let alert = UIAlertController( title: "Reveal Passwords?", message:
-//                        """
-//                        A secure export contains everything necessary to fully restore your user history.
-//                        Reveal passwords is useful for printing or as an independent backup file.
-//                        """, preferredStyle: .alert )
-//                        alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-//                        alert.addAction( UIAlertAction( title: "Reveal", style: .default ) { _ in
-//                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: false ),
-//                                               in: item.viewController )
-//                        } )
-//                        alert.addAction( UIAlertAction( title: "Secure", style: .default ) { _ in
-//                            ActionsItem.share( item: MPMarshal.ActivityItem( user: user, format: .default, redacted: true ),
-//                                               in: item.viewController )
-//                        } )
                         let controller = MPExportViewController( user: user )
                         controller.popoverPresentationController?.sourceView = item.view
                         controller.popoverPresentationController?.sourceRect = item.view.bounds
@@ -120,17 +106,6 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                     item.model?.masterKey = nil
                 },
             ] )
-        }
-
-        static func share(item: MPMarshal.ActivityItem, in viewController: UIViewController?) {
-            if let viewController = viewController {
-                let controller = UIActivityViewController( activityItems: [ item, item.description() ], applicationActivities: nil )
-                controller.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
-                    item.activityViewController( controller, completed: completed, forActivityType: activityType,
-                                                 returnedItems: returnedItems, activityError: activityError )
-                }
-                viewController.present( controller, animated: true )
-            }
         }
     }
 

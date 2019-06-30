@@ -181,6 +181,16 @@ class MPMarshal: Observable {
                 mperror( title: "Issue importing", context: "No path for \(documentName)" )
                 return
             }
+            if FileManager.default.fileExists( atPath: documentFile.path ) {
+                let controller = UIAlertController( title: "Merge Sites", message:
+                """
+                \(documentName) already exists.
+
+                To merge the imported sites into your existing user, enter its master password. 
+                """, preferredStyle: .alert )
+                controller.addTextField { field in field.isSecureTextEntry = true }
+                // TODO
+            }
             if !FileManager.default.createFile( atPath: documentFile.path, contents: data ) {
                 mperror( title: "Issue importing", context: "Couldn't save \(documentFile.lastPathComponent)" )
                 return
@@ -331,8 +341,8 @@ class MPMarshal: Observable {
             self.lastUsed = lastUsed
         }
 
-        public func authenticate(masterPassword: String, _ completion: @escaping (MPUser?, MPMarshalError) -> Void) {
-            DispatchQueue.mpw.perform {
+        public func mpw_authenticate(masterPassword: String) -> (MPUser?, MPMarshalError) {
+            return DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
                     var error = MPMarshalError( type: .success, description: nil )
                     if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee {
@@ -348,7 +358,7 @@ class MPMarshal: Observable {
                         )
                         guard user.mpw_authenticate( masterPassword: masterPassword )
                         else {
-                            return completion( nil, error )
+                            return (nil, error)
                         }
 
                         for s in 0..<marshalledUser.sites_count {
@@ -369,10 +379,10 @@ class MPMarshal: Observable {
                                 ) )
                             }
                         }
-                        return completion( user, error )
+                        return (user, error)
                     }
                     else {
-                        return completion( nil, error )
+                        return (nil, error)
                     }
                 }
             }

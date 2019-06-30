@@ -64,12 +64,15 @@ extension MPIdenticon: Equatable {
     }
 
     public func encoded() -> String? {
-        return self.color == .unset ? nil: String( safeUTF8: mpw_identicon_encode( self ) )
+        if self.color == .unset {
+            return nil
+        }
+
+        return String( safeUTF8: mpw_identicon_encode( self ) )
     }
 
     public func text() -> String? {
-        guard self.color == .unset
-        else {
+        if self.color == .unset {
             return nil
         }
 
@@ -80,8 +83,7 @@ extension MPIdenticon: Equatable {
     }
 
     public func attributedText() -> NSAttributedString? {
-        guard self.color == .unset
-        else {
+        if self.color == .unset {
             return nil
         }
 
@@ -116,7 +118,7 @@ extension MPIdenticon: Equatable {
     }
 }
 
-extension MPMarshalFormat: Strideable, CaseIterable {
+extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     public private(set) static var allCases = [ MPMarshalFormat ]( (.first)...(.last) )
 
     public func distance(to other: MPMarshalFormat) -> Int32 {
@@ -131,7 +133,7 @@ extension MPMarshalFormat: Strideable, CaseIterable {
         return String( safeUTF8: mpw_format_name( self ) )
     }
 
-    public var uti: String? {
+    public var uti:         String? {
         switch self {
             case .none:
                 return nil
@@ -139,6 +141,16 @@ extension MPMarshalFormat: Strideable, CaseIterable {
                 return "com.lyndir.masterpassword.sites"
             case .JSON:
                 return "com.lyndir.masterpassword.json"
+        }
+    }
+    public var description: String {
+        switch self {
+            case .none:
+                return "No Output"
+            case .flat:
+                return "v1 (mpsites)"
+            case .JSON:
+                return "v2 (mpjson)"
         }
     }
 }

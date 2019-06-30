@@ -94,6 +94,7 @@ class MPButton: UIView {
         self.button.setTitleShadowColor( .black, for: .normal )
         self.button.titleLabel?.font = MPTheme.global.font.headline.get()
         self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
+        self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addAction( for: .touchUpInside ) { _, _ in
             if self.tapEffect {
                 MPTapEffectView( for: self.effectView ).run()

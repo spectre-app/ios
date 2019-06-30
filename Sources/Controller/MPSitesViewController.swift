@@ -20,11 +20,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestur
     private let detailConfiguration     = LayoutConfiguration()
     private var detailController: AnyMPDetailsViewController?
 
-    override var user: MPUser? {
+    override var user: MPUser {
         didSet {
             DispatchQueue.main.perform {
                 var userButtonTitle = ""
-                self.user?.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
+                self.user.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
                 self.userButton.setTitle( userButtonTitle.uppercased(), for: .normal )
                 self.userButton.sizeToFit()
 
@@ -57,9 +57,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestur
         }
 
         self.userButton.addAction( for: .touchUpInside ) { _, _ in
-            if let user = self.user {
-                self.showDetails( forUser: user )
-            }
+            self.showDetails( forUser: self.user )
         }
         self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
         self.userButton.sizeToFit()

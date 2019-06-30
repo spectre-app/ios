@@ -131,7 +131,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     }
 
     func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int) {
-        if spinner.subviews.indices.contains(deactivatedItem),
+        if spinner.subviews.indices.contains( deactivatedItem ),
            let userView = spinner.subviews[deactivatedItem] as? UserView {
             userView.active = false
         }
@@ -149,7 +149,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
     // MARK: --- Types ---
 
-    class UserView: UIView, UITextFieldDelegate {
+    class UserView: UIView {
         public var  new:    Bool = false
         public var  active: Bool = false {
             didSet {
@@ -173,6 +173,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         }
         public var  user:   MPMarshal.UserInfo? {
             didSet {
+                self.passwordField.user = self.user
                 self.avatar = self.user?.avatar ?? .avatar_add
                 self.update()
             }
@@ -184,27 +185,14 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         }
 
         private let navigationController:  UINavigationController?
-        private let nameLabel          = UILabel()
-        private let nameField          = UITextField()
-        private let avatarButton       = UIButton()
-        private let passwordField      = UITextField()
-        private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
-        private let identiconLabel     = UILabel()
-        private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
-        private let idBadgeView        = UIImageView( image: UIImage( named: "icon_user" ) )
-        private let authBadgeView      = UIImageView( image: UIImage( named: "icon_key" ) )
+        private let nameLabel     = UILabel()
+        private let nameField     = UITextField()
+        private let avatarButton  = UIButton()
+        private let passwordField = MPMasterPasswordField()
+        private let idBadgeView   = UIImageView( image: UIImage( named: "icon_user" ) )
+        private let authBadgeView = UIImageView( image: UIImage( named: "icon_key" ) )
         private var passwordConfiguration: LayoutConfiguration!
-        private var identiconItem:         DispatchWorkItem? {
-            willSet {
-                self.identiconItem?.cancel()
-            }
-            didSet {
-                if let identiconItem = self.identiconItem {
-                    DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( .random( in: 300..<500 ) ), execute: identiconItem )
-                }
-            }
-        }
-        private var path               = CGMutablePath() {
+        private var path          = CGMutablePath() {
             didSet {
                 self.setNeedsDisplay()
             }
@@ -238,44 +226,33 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             ] )
             self.nameField.autocapitalizationType = .words
             self.nameField.returnKeyType = .next
-            self.nameField.delegate = self
+            self.nameField.delegate = self.passwordField
             self.nameField.alpha = 0
 
             self.avatarButton.contentMode = .center
             self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
 
-            self.identiconLabel.font = MPTheme.global.font.password.get()?.withSize( UIFont.labelFontSize )
-            self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
-            self.identiconLabel.textColor = MPTheme.global.color.body.get()
-            self.identiconLabel.shadowColor = MPTheme.global.color.shadow.get()
-            self.identiconLabel.shadowOffset = CGSize( width: 0, height: 1 )
-
-            self.identiconAccessory.allowsSelfSizing = true
-            self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
-            self.identiconAccessory.addSubview( self.identiconLabel )
-            LayoutConfiguration( view: self.identiconLabel )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    .activate()
-
-            self.passwordField.placeholder = "Your master password"
             self.passwordField.borderStyle = .roundedRect
             self.passwordField.font = MPTheme.global.font.callout.get()
             self.passwordField.textAlignment = .center
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
-            self.passwordField.inputAccessoryView = self.identiconAccessory
-            self.passwordField.isSecureTextEntry = true
-            self.passwordField.delegate = self
-
-            self.passwordIndicator.hidesWhenStopped = true
-            self.passwordIndicator.frame = self.passwordIndicator.frame.insetBy( dx: -8, dy: 0 )
-            self.passwordField.rightView = self.passwordIndicator
-            self.passwordField.leftView = UIView( frame: self.passwordIndicator.frame )
-            self.passwordField.leftViewMode = .always
-            self.passwordField.rightViewMode = .always
+            self.passwordField.nameField = self.nameField
+            self.passwordField.actionHandler = { fullName, masterPassword -> MPUser? in
+                if let user = self.user {
+                    let (user, error) = user.mpw_authenticate( masterPassword: masterPassword )
+                    return error.type != .success ? nil: user
+                }
+                else {
+                    let user    = MPUser( fullName: fullName )
+                    let success = user.mpw_authenticate( masterPassword: masterPassword )
+                    return success ? user: nil
+                }
+            }
+            self.passwordField.actionCompletion = { user in
+                if let user = user {
+                    self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                }
+            }
 
             self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
             self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
@@ -334,10 +311,6 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                     } )
                     .needsLayout( self )
 
-            NotificationCenter.default.addObserver( forName: .UITextFieldTextDidChange, object: self.passwordField, queue: nil ) { notification in
-                self.setNeedsIdenticon()
-            }
-
             defer {
                 self.user = user
             }
@@ -365,14 +338,6 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                 UIColor.white.withAlphaComponent( 0.618 ).setStroke()
                 context.addPath( self.path )
                 context.strokePath()
-            }
-        }
-
-        override func willMove(toWindow newWindow: UIWindow?) {
-            super.willMove( toWindow: newWindow )
-
-            if newWindow == nil {
-                self.identiconItem = nil
             }
         }
 
@@ -408,100 +373,6 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                         self.passwordConfiguration.deactivate()
                         self.passwordField.resignFirstResponder()
                         self.nameField.resignFirstResponder()
-                    }
-                }
-            }
-        }
-
-        // MARK: --- UITextFieldDelegate ---
-
-        func textFieldDidBeginEditing(_ textField: UITextField) {
-            if textField == self.passwordField {
-                self.identiconLabel.text = nil
-            }
-        }
-
-        func textFieldDidEndEditing(_ textField: UITextField) {
-            if textField == self.passwordField {
-                self.identiconLabel.text = nil
-            }
-        }
-
-        func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-            if textField == self.nameField || textField == self.passwordField {
-                if let fullName = self.user?.fullName ?? self.nameField.text, fullName.count > 0 {
-                    if let masterPassword = self.passwordField.text, masterPassword.count > 0 {
-                        textField.resignFirstResponder()
-                        self.passwordIndicator.startAnimating()
-
-                        if let user = self.user {
-                            user.authenticate( masterPassword: masterPassword ) {
-                                (user: MPUser?, error: MPMarshalError) in
-
-                                // Update user.
-                                user?.avatar = self.avatar
-
-                                DispatchQueue.main.perform {
-                                    self.passwordIndicator.stopAnimating()
-
-                                    if let user = user, error.type == .success {
-                                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-                                    }
-                                    else {
-                                        self.passwordField.becomeFirstResponder()
-                                        self.passwordField.shake()
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            DispatchQueue.mpw.perform {
-                                let user    = MPUser( fullName: fullName )
-                                let success = user.mpw_authenticate( masterPassword: masterPassword )
-
-                                DispatchQueue.main.perform {
-                                    self.identiconItem = nil
-                                    self.identiconLabel.attributedText = user.identicon.attributedText()
-                                    self.passwordIndicator.stopAnimating()
-
-                                    if success {
-                                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-                                    }
-                                    else {
-                                        self.passwordField.becomeFirstResponder()
-                                        self.passwordField.shake()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        self.passwordField.becomeFirstResponder()
-                        self.passwordField.shake()
-                        return false
-                    }
-                }
-                else {
-                    self.nameField.becomeFirstResponder()
-                    self.nameField.shake()
-                    return false
-                }
-            }
-
-            return true
-        }
-
-        // MARK: --- Private ---
-
-        func setNeedsIdenticon() {
-            self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
-                if let userName = self.user?.fullName {
-                    if let masterPassword = self.passwordField.text {
-                        let identicon = mpw_identicon( userName, masterPassword )
-
-                        DispatchQueue.main.perform {
-                            self.identiconLabel.attributedText = identicon.attributedText()
-                        }
                     }
                 }
             }
