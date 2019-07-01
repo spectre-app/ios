@@ -9,10 +9,9 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     // TODO: figure out how to batch updates or suspend changes until sites marshalling/authenticate fully complete.
     public let observers = Observers<MPUserObserver>()
 
-    public let fullName: String
-    public var identicon: MPIdenticon {
+    public var algorithm: MPAlgorithmVersion {
         didSet {
-            if oldValue != self.identicon {
+            if oldValue != self.algorithm {
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -24,9 +23,17 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
-    public var algorithm: MPAlgorithmVersion {
+    public let fullName: String
+    public var identicon: MPIdenticon {
         didSet {
-            if oldValue != self.algorithm {
+            if oldValue != self.identicon {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
+    public var masterKeyID: String? {
+        didSet {
+            if oldValue != self.masterKeyID {
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -47,13 +54,6 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     }
     public var origin: URL?
 
-    public var masterKeyID: String? {
-        didSet {
-            if oldValue != self.masterKeyID {
-                self.observers.notify { $0.userDidChange( self ) }
-            }
-        }
-    }
     public var masterKey: MPMasterKey? {
         didSet {
             if oldValue != self.masterKey {
@@ -79,8 +79,8 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         if let identicon = self.identicon.encoded() {
             return "\(self.fullName): \(identicon)"
         }
-        else if let keyID = self.masterKeyID {
-            return "\(self.fullName): \(keyID)"
+        else if let masterKeyID = self.masterKeyID {
+            return "\(self.fullName): \(masterKeyID)"
         }
         else {
             return "\(self.fullName)"

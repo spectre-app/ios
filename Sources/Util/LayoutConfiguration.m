@@ -5,7 +5,6 @@
 
 #import "LayoutConfiguration.h"
 
-
 @interface LayoutTarget()
 
 @property(nonatomic, readwrite, nullable) UIView *view;
@@ -16,19 +15,20 @@
 
 @end
 
-@interface LayoutConfiguration ()
+@interface LayoutConfiguration()
 
-@property(nonatomic, readwrite, strong) LayoutTarget                          *target;
-@property(nonatomic, readwrite, strong) NSMutableArray<NSLayoutConstraint *>  *constraints;
+@property(nonatomic, readwrite, strong) LayoutTarget *target;
+@property(nonatomic, readwrite, strong) NSMutableArray<LayoutConstrainers> *constrainers;
+@property(nonatomic, readwrite, strong) NSMutableSet<NSLayoutConstraint *> *activeConstraints;
 @property(nonatomic, readwrite, strong) NSMutableArray<LayoutConfiguration *> *activeConfigurations;
 @property(nonatomic, readwrite, strong) NSMutableArray<LayoutConfiguration *> *inactiveConfigurations;
-@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>              *layoutViews;
-@property(nonatomic, readwrite, strong) NSMutableArray<UIView *>              *displayViews;
-@property(nonatomic, readwrite, strong) NSMutableArray<void ( ^ )(UIView *)>  *actions;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *activeValues;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *inactiveValues;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *activeProperties;
-@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id>   *inactiveProperties;
+@property(nonatomic, readwrite, strong) NSMutableArray<UIView *> *layoutViews;
+@property(nonatomic, readwrite, strong) NSMutableArray<UIView *> *displayViews;
+@property(nonatomic, readwrite, strong) NSMutableArray<void ( ^ )(UIView *)> *actions;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *activeValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *inactiveValues;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *activeProperties;
+@property(nonatomic, readwrite, strong) NSMutableDictionary<NSString *, id> *inactiveProperties;
 
 @end
 
@@ -58,7 +58,7 @@
     LayoutConfiguration *configuration = [self configurationWithView:view];
 
     if (configurationBlocks) {
-        LayoutConfiguration *active   = [self configurationWithView:view];
+        LayoutConfiguration *active = [self configurationWithView:view];
         LayoutConfiguration *inactive = [self configurationWithView:view];
         configurationBlocks( active, inactive );
         [configuration applyLayoutConfiguration:active active:YES];
@@ -81,7 +81,7 @@
     LayoutConfiguration *configuration = [self configurationWithLayoutGuide:layoutGuide inView:ownerView];
 
     if (configurationBlocks) {
-        LayoutConfiguration *active   = [self configurationWithTarget:configuration.target];
+        LayoutConfiguration *active = [self configurationWithTarget:configuration.target];
         LayoutConfiguration *inactive = [self configurationWithTarget:configuration.target];
         configurationBlocks( active, inactive );
         [configuration applyLayoutConfiguration:active active:YES];
@@ -96,23 +96,25 @@
     if (!(self = [super init]))
         return nil;
 
-    self.constraints            = [NSMutableArray new];
-    self.activeConfigurations   = [NSMutableArray new];
+    self.constrainers = [NSMutableArray new];
+    self.activeConstraints = [NSMutableSet new];
+    self.activeConfigurations = [NSMutableArray new];
     self.inactiveConfigurations = [NSMutableArray new];
-    self.layoutViews            = [NSMutableArray new];
-    self.displayViews           = [NSMutableArray new];
-    self.actions                = [NSMutableArray new];
-    self.activeValues           = [NSMutableDictionary new];
-    self.inactiveValues         = [NSMutableDictionary new];
-    self.activeProperties       = [NSMutableDictionary new];
+    self.layoutViews = [NSMutableArray new];
+    self.displayViews = [NSMutableArray new];
+    self.actions = [NSMutableArray new];
+    self.activeValues = [NSMutableDictionary new];
+    self.inactiveValues = [NSMutableDictionary new];
+    self.activeProperties = [NSMutableDictionary new];
 
     return self;
 }
 
 - (instancetype)constrainTo:(NSLayoutConstraint *)constraint {
 
-    [self.constraints addObject:constraint];
-    return self;
+    return [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
+        return constraint;
+    }];
 }
 
 - (instancetype)compressionResistancePriority {
@@ -123,7 +125,7 @@
 - (instancetype)compressionResistancePriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical {
 
     self.activeProperties[@"compressionResistance.horizontal"] = @(horizontal);
-    self.activeProperties[@"compressionResistance.vertical"]   = @(vertical);
+    self.activeProperties[@"compressionResistance.vertical"] = @(vertical);
     return self;
 }
 
@@ -135,7 +137,7 @@
 - (instancetype)huggingPriorityHorizontal:(UILayoutPriority)horizontal vertical:(UILayoutPriority)vertical {
 
     self.activeProperties[@"hugging.horizontal"] = @(horizontal);
-    self.activeProperties[@"hugging.vertical"]   = @(vertical);
+    self.activeProperties[@"hugging.vertical"] = @(vertical);
     return self;
 }
 
@@ -243,42 +245,47 @@
 - (instancetype)activateFromParent:(LayoutConfiguration *)parent {
 
     PearlMainQueue( ^{
+        UIView *owningView = self.target.owningView;
+        UIView *targetView = self.target.view?: owningView;
+
         for (LayoutConfiguration *inactiveConfiguration in self.inactiveConfigurations)
             [inactiveConfiguration deactivateFromParent:self];
 
-        if (self.constraints)
+        if (self.constrainers)
             self.target.view.translatesAutoresizingMaskIntoConstraints = NO;
 
         UILayoutPriority oldPriority, newPriority;
         if ((newPriority = [self.activeProperties[@"compressionResistance.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
+            if ((oldPriority = [targetView contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
                 self.inactiveProperties[@"compressionResistance.horizontal"] = @(oldPriority);
-                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+                [targetView setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
             }
         if ((newPriority = [self.activeProperties[@"compressionResistance.vertical"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
+            if ((oldPriority = [targetView contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
                 self.inactiveProperties[@"compressionResistance.vertical"] = @(oldPriority);
-                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+                [targetView setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
             }
         if ((newPriority = [self.activeProperties[@"hugging.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
+            if ((oldPriority = [targetView contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal]) != newPriority) {
                 self.inactiveProperties[@"hugging.horizontal"] = @(oldPriority);
-                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+                [targetView setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
             }
         if ((newPriority = [self.activeProperties[@"hugging.vertical"]?: @(-1) floatValue]) >= 0)
-            if ((oldPriority = [self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
+            if ((oldPriority = [targetView contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical]) != newPriority) {
                 self.inactiveProperties[@"hugging.vertical"] = @(oldPriority);
-                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+                [targetView setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
             }
 
-        for (NSLayoutConstraint *constraint in self.constraints)
-            if (!constraint.active) {
-                //trc( @"%@: activating %@", [self.view infoPathName], constraint );
-                constraint.active = YES;
-            }
+        if (owningView)
+            for (LayoutConstrainers constrainer in self.constrainers)
+                for (NSLayoutConstraint *constraint in constrainer( owningView, self.target )) {
+                    //trc( @"%@: activating %@", [self.view infoPathName], constraint );
+                    constraint.active = YES;
+                    [self.activeConstraints addObject:constraint];
+                }
 
         [self.activeValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
-            id oldValue = [self.target.view valueForKeyPath:key]?: [NSNull null];
+            id oldValue = [targetView valueForKeyPath:key]?: [NSNull null];
             if ([newValue isEqual:oldValue])
                 return;
 
@@ -286,11 +293,11 @@
                 self.inactiveValues[key] = oldValue;
 
             //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
-            [self.target.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
+            [targetView setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 
         for (ViewAction action in self.actions)
-            action( self.target.view?: self.target.owningView );
+            action( targetView );
 
         for (LayoutConfiguration *activeConfiguration in self.activeConfigurations)
             [activeConfiguration activateFromParent:self];
@@ -331,36 +338,39 @@
 - (instancetype)deactivateFromParent:(LayoutConfiguration *)parent {
 
     PearlMainQueue( ^{
+        UIView *owningView = self.target.owningView;
+        UIView *targetView = self.target.view?: owningView;
+
         for (LayoutConfiguration *activeConfiguration in self.activeConfigurations)
             [activeConfiguration deactivateFromParent:self];
 
         UILayoutPriority newPriority;
         if ((newPriority = [self.inactiveProperties[@"compressionResistance.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ([self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
-                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+            if ([targetView contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
+                [targetView setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
         if ((newPriority = [self.inactiveProperties[@"compressionResistance.vertical"]?: @(-1) floatValue]) >= 0)
-            if ([self.target.view contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
-                [self.target.view setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+            if ([targetView contentCompressionResistancePriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
+                [targetView setContentCompressionResistancePriority:newPriority forAxis:UILayoutConstraintAxisVertical];
         if ((newPriority = [self.inactiveProperties[@"hugging.horizontal"]?: @(-1) floatValue]) >= 0)
-            if ([self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
-                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
+            if ([targetView contentHuggingPriorityForAxis:UILayoutConstraintAxisHorizontal] != newPriority)
+                [targetView setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisHorizontal];
         if ((newPriority = [self.inactiveProperties[@"hugging.vertical"]?: @(-1) floatValue]) >= 0)
-            if ([self.target.view contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
-                [self.target.view setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
+            if ([targetView contentHuggingPriorityForAxis:UILayoutConstraintAxisVertical] != newPriority)
+                [targetView setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
 
-        for (NSLayoutConstraint *constraint in self.constraints)
-            if (constraint.active) {
-                //trc( @"%@: deactivating %@", [self.view infoPathName], constraint );
-                constraint.active = NO;
-            }
+        for (NSLayoutConstraint *constraint in self.activeConstraints) {
+            //trc( @"%@: deactivating %@", [self.view infoPathName], constraint );
+            constraint.active = NO;
+        }
+        [self.activeConstraints removeAllObjects];
 
         [self.inactiveValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
-            id oldValue = [self.target.view valueForKeyPath:key]?: [NSNull null];
+            id oldValue = [targetView valueForKeyPath:key]?: [NSNull null];
             if ([newValue isEqual:oldValue])
                 return;
 
             //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
-            [self.target.view setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
+            [targetView setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 
         for (LayoutConfiguration *inactiveConfiguration in self.inactiveConfigurations)
@@ -381,20 +391,23 @@
 }
 
 - (void)layoutIfNeeded {
-    if ([self.target.owningView isKindOfClass:[UIWindow class]] || self.target.owningView.window)
-        [self.target.owningView layoutIfNeeded];
+
+    UIView *owningView = self.target.owningView;
+    if ([owningView isKindOfClass:[UIWindow class]] || owningView.window)
+        [owningView layoutIfNeeded];
 }
 
-- (instancetype)constrainToUsing:(NSLayoutConstraint *( ^ )(UIView *owningView, LayoutTarget *target))constraintBlock {
+- (instancetype)constrainToUsing:(LayoutConstrainer)constrainer {
 
-    return [self constrainTo:constraintBlock( self.target.owningView, self.target )];
+    return [self constrainToAllUsing:^NSArray<NSLayoutConstraint *> *(UIView *owningView, LayoutTarget *target) {
+        return @[ constrainer( owningView, target ) ];
+    }];
 }
 
-- (instancetype)constrainToAllUsing:(NSArray<NSLayoutConstraint *> *( ^ )(UIView *owningView, LayoutTarget *target))constraintBlock {
+- (instancetype)constrainToAllUsing:(LayoutConstrainers)constrainer {
 
-    for (NSLayoutConstraint *constraint in constraintBlock( self.target.owningView, self.target ))
-        [self constrainTo:constraint];
-
+    // TODO: activate if configuration is active?
+    [self.constrainers addObject:constrainer];
     return self;
 }
 
@@ -547,12 +560,14 @@
 @implementation LayoutTarget
 
 + (instancetype)layoutTargetWithView:(UIView *)view {
+
     LayoutTarget *target = [self new];
     target.view = view;
     return target;
 }
 
 + (instancetype)layoutTargetWithLayoutGuide:(UILayoutGuide *)layoutGuide {
+
     LayoutTarget *target = [self new];
     target.layoutGuide = layoutGuide;
     return target;

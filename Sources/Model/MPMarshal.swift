@@ -178,45 +178,40 @@ class MPMarshal: Observable {
 
     public func `import`(data: Data) {
         DispatchQueue.mpw.perform {
-            guard let document = String( data: data, encoding: .utf8 )
+            guard let importingUser = self.load( data: data )
             else {
-                mperror( title: "Issue importing", context: "Missing import data" )
+                mperror( title: "Issue importing", context: "Not an \(PearlInfoPlist.get().cfBundleDisplayName ?? "mPass") import document" )
                 return
             }
-            guard let documentUser = mpw_marshal_read_info( document )?.pointee
-            else {
-                mperror( title: "Issue importing", context: "Import data malformed" )
-                return
-            }
-            guard let documentName = String( safeUTF8: documentUser.fullName )
+            guard let importingName = String( safeUTF8: importingUser.fullName )
             else {
                 mperror( title: "Issue importing", context: "Import missing fullName" )
                 return
             }
-            guard let documentFile = self.file( named: documentName, format: documentUser.format )
+            guard let importingFile = self.file( named: importingName, format: importingUser.format )
             else {
-                mperror( title: "Issue importing", context: "No path for \(documentName)" )
+                mperror( title: "Issue importing", context: "No path for \(importingName)" )
                 return
             }
-            if FileManager.default.fileExists( atPath: documentFile.path ),
-               let importingUser = self.load( data: data ),
-               let existingUser = self.load( file: documentFile ) {
+
+            if FileManager.default.fileExists( atPath: importingFile.path ),
+               let existingUser = self.load( file: importingFile ) {
                 self.import( data: data, from: importingUser, into: existingUser )
             }
             else {
-                self.import( data: data, into: documentFile )
+                self.import( data: data, from: importingUser, into: importingFile )
             }
         }
     }
 
     private func `import`(data: Data, from importingUser: UserInfo, into existingUser: UserInfo) {
-        guard let viewController = UIApplication.shared.keyWindow?.rootViewController
-        else {
-            mperror( title: "Issue importing", context: "Could not present UI to handle import conflict." )
-            return
-        }
-
         DispatchQueue.main.perform {
+            guard let viewController = UIApplication.shared.keyWindow?.rootViewController
+            else {
+                mperror( title: "Issue importing", context: "Could not present UI to handle import conflict." )
+                return
+            }
+
             let passwordField = MPMasterPasswordField( user: existingUser )
             let controller    = UIAlertController( title: "Merge Sites", message:
             """
@@ -224,7 +219,7 @@ class MPMarshal: Observable {
 
             Replacing will delete the existing user and replace it with the imported user.
 
-            Merging will import the new information from the imported user into the existing user.
+            Merging will import only the new information from the import file into the existing user.
             """, preferredStyle: .alert )
             controller.addTextField { passwordField.passwordField = $0 }
             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
@@ -238,7 +233,7 @@ class MPMarshal: Observable {
                                 viewController.present( controller, animated: true )
                             }
                             else if let existingFile = existingUser.origin {
-                                self.import( data: data, into: existingFile )
+                                self.import( data: data, from: importingUser, into: existingFile )
                             }
                         } ) {
                     mperror( title: "Issue importing", context: "Missing master password" )
@@ -246,12 +241,18 @@ class MPMarshal: Observable {
                 }
             } )
             controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
+                let spinner = MPAlertView( title: "Unlocking", message: importingUser.description,
+                                           content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
+                        .show(dismissAutomatically: false)
+
                 if !passwordField.mpw_process(
                         handler: {
                             (importingUser.mpw_authenticate( masterPassword: $1 ).0,
                              existingUser.mpw_authenticate( masterPassword: $1 ).0)
                         },
                         completion: { users in
+                            spinner.dismiss()
+
                             let (importedUser, existedUser) = users
                             if let importedUser = importedUser,
                                let existedUser = existedUser {
@@ -273,13 +274,17 @@ class MPMarshal: Observable {
                                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
                                 controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                                     if let existingFile = existingUser.origin {
-                                        self.import( data: data, into: existingFile )
+                                        self.import( data: data, from: importingUser, into: existingFile )
                                     }
                                 } )
                                 controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
+                                    spinner.show( dismissAutomatically: false )
+
                                     if !passwordField.mpw_process(
                                             handler: { existingUser.mpw_authenticate( masterPassword: $1 ).0 },
                                             completion: { existedUser in
+                                                spinner.dismiss()
+
                                                 if let existedUser = existedUser {
                                                     self.import( from: importedUser, into: existedUser )
                                                 }
@@ -308,9 +313,13 @@ class MPMarshal: Observable {
                                 }
                                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
                                 controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
+                                    spinner.show( dismissAutomatically: false )
+
                                     if !passwordField.mpw_process(
                                             handler: { importingUser.mpw_authenticate( masterPassword: $1 ).0 },
                                             completion: { importedUser in
+                                                spinner.dismiss()
+
                                                 if let importedUser = importedUser {
                                                     self.import( from: importedUser, into: existedUser )
                                                 }
@@ -340,20 +349,60 @@ class MPMarshal: Observable {
     }
 
     private func `import`(from importedUser: MPUser, into existedUser: MPUser) {
-        for importedSite in importedUser.sites {
-            if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
-                if existedSite.lastUsed > importedSite.lastUsed {
-                    continue
+        let spinner = MPAlertView( title: "Merging", message: existedUser.description,
+                                   content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
+                .show( dismissAutomatically: false )
+
+        DispatchQueue.mpw.perform {
+            var replacedSites = 0, newSites = 0
+            for importedSite in importedUser.sites {
+                if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
+                    if existedSite.lastUsed >= importedSite.lastUsed {
+                        continue
+                    }
+
+                    existedUser.sites.removeAll { $0 === existedSite }
+                    replacedSites += 1
+                }
+                else {
+                    newSites += 1
                 }
 
-                existedUser.sites.removeAll { $0 === existedSite }
+                existedUser.sites.append( importedSite.copy( for: existedUser ) )
+            }
+            var updatedUser = false
+            if importedUser.lastUsed > existedUser.lastUsed {
+                existedUser.identicon = importedUser.identicon
+                existedUser.avatar = importedUser.avatar
+                existedUser.algorithm = importedUser.algorithm
+                existedUser.defaultType = importedUser.defaultType
+                existedUser.lastUsed = importedUser.lastUsed
+                existedUser.masterKeyID = importedUser.masterKeyID
+                updatedUser = true
             }
 
-            existedUser.sites.append( importedSite.copy( for: existedUser ) )
+            DispatchQueue.main.perform {
+                spinner.dismiss()
+
+                MPAlertView( title: "Import Complete", message: existedUser.description, details:
+                """
+                Completed the import of sites into \(existedUser).
+
+                This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
+                \(updatedUser ?
+                        "The user settings were updated from the import.":
+                        "The existing user's settings were more recent than the import.")
+                """ ).show()
+                self.setNeedsReload()
+            }
         }
     }
 
-    private func `import`(data: Data, into documentFile: URL) {
+    private func `import`(data: Data, from importingUser: UserInfo, into documentFile: URL) {
+        let spinner = MPAlertView( title: "Replacing", message: documentFile.lastPathComponent,
+                                   content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
+                .show( dismissAutomatically: false )
+
         DispatchQueue.mpw.perform {
             if FileManager.default.fileExists( atPath: documentFile.path ) {
                 do {
@@ -368,7 +417,18 @@ class MPMarshal: Observable {
                 return
             }
 
-            self.setNeedsReload()
+            DispatchQueue.main.perform {
+                spinner.dismiss()
+
+                MPAlertView( title: "Import Complete", message: documentFile.lastPathComponent, details:
+                """
+                Completed the import of \(importingUser) (\(importingUser.format)).
+                This export file was created on \(importingUser.exportDate).
+
+                This was a direct installation of the import data, not a merge import.
+                """ ).show()
+                self.setNeedsReload()
+            }
         }
     }
 
@@ -426,14 +486,14 @@ class MPMarshal: Observable {
             self.redacted = redacted
         }
 
-        func description() -> String {
-            let appName    = PearlInfoPlist.get().cfBundleDisplayName ?? ""
-            let appVersion = PearlInfoPlist.get().cfBundleShortVersionString ?? ""
-            let appBuild   = PearlInfoPlist.get().cfBundleVersion ?? ""
+        func text() -> String {
+            let appName    = PearlInfoPlist.get().cfBundleDisplayName ?? "mPass"
+            let appVersion = PearlInfoPlist.get().cfBundleShortVersionString ?? "-"
+            let appBuild   = PearlInfoPlist.get().cfBundleVersion ?? "-"
 
             if self.redacted {
                 return """
-                       \(appName) export file (\(self.format.name)) for \(self.user.fullName): \(self.user.identicon.text() ?? "")
+                       \(appName) export file (\(self.format)) for \(self.user)
                        NOTE: This is a SECURE export; access to the file does not expose its secrets.
                        ---
                        \(appName) v\(appVersion) (\(appBuild))
@@ -441,7 +501,7 @@ class MPMarshal: Observable {
             }
             else {
                 return """
-                       \(appName) export (\(self.format.name)) for \(self.user.fullName): \(self.user.identicon.text() ?? "")
+                       \(appName) export (\(self.format)) for \(self.user)
                        NOTE: This export file's passwords are REVEALED.  Keep it safe!
                        ---
                        \(appName) v\(appVersion) (\(appBuild))
@@ -485,7 +545,7 @@ class MPMarshal: Observable {
         }
     }
 
-    class UserInfo: NSObject {
+    class UserInfo: Equatable, CustomStringConvertible {
         public let origin:   URL?
         public let document: String
 
@@ -517,10 +577,10 @@ class MPMarshal: Observable {
 
         public func mpw_authenticate(masterPassword: String) -> (MPUser?, MPMarshalError) {
             return DispatchQueue.mpw.await {
-                provideMasterKeyWith( password: masterPassword ) {
-                    masterKeyProvider in
+                provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
                     var error = MPMarshalError( type: .success, description: nil )
-                    if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee {
+                    if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee,
+                       error.type == .success {
                         let user = MPUser(
                                 algorithm: marshalledUser.algorithm,
                                 avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
@@ -531,9 +591,10 @@ class MPMarshal: Observable {
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
                                 origin: self.origin
                         )
+
                         guard user.mpw_authenticate( masterPassword: masterPassword )
                         else {
-                            return (nil, error)
+                            return (nil, MPMarshalError( type: .errorMasterPassword, description: nil ))
                         }
 
                         for s in 0..<marshalledUser.sites_count {
@@ -556,9 +617,8 @@ class MPMarshal: Observable {
                         }
                         return (user, error)
                     }
-                    else {
-                        return (nil, error)
-                    }
+
+                    return (nil, error)
                 }
             }
         }
@@ -567,6 +627,22 @@ class MPMarshal: Observable {
 
         static func ==(lhs: UserInfo, rhs: UserInfo) -> Bool {
             return lhs.fullName == rhs.fullName
+        }
+
+        // MARK: --- CustomStringConvertible ---
+
+        var description: String {
+            get {
+                if let identicon = self.identicon.encoded() {
+                    return "\(self.fullName): \(identicon)"
+                }
+                else if let keyID = self.keyID {
+                    return "\(self.fullName): \(keyID)"
+                }
+                else {
+                    return "\(self.fullName)"
+                }
+            }
         }
     }
 }

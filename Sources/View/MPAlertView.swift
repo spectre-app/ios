@@ -22,12 +22,12 @@ class MPAlertView: MPButton {
         inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.subheadline.get(), forKey: "font" ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
-    private var dismissItem: DispatchWorkItem? {
+    private var automaticDismissalItem: DispatchWorkItem? {
         willSet {
-            self.dismissItem?.cancel()
+            self.automaticDismissalItem?.cancel()
         }
         didSet {
-            if let appearanceItem = self.dismissItem {
+            if let appearanceItem = self.automaticDismissalItem {
                 DispatchQueue.main.asyncAfter( wallDeadline: .now() + .seconds( 3 ), execute: appearanceItem )
             }
         }
@@ -37,8 +37,10 @@ class MPAlertView: MPButton {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(title: String?, message: String? = nil, details: String? = nil) {
-        let contentStack = UIStackView( arrangedSubviews: [ self.titleLabel, self.messageLabel, self.detailLabel ] )
+    init(title: String?, message: String? = nil, content: UIView? = nil, details: String? = nil) {
+        let contentStack = UIStackView( arrangedSubviews: [
+            self.titleLabel, self.messageLabel, content, self.detailLabel
+        ].compactMap { $0 } )
         super.init( content: contentStack )
 
         // - View
@@ -57,6 +59,10 @@ class MPAlertView: MPButton {
         self.messageLabel.textAlignment = .center
         self.messageLabel.numberOfLines = 0
 
+        if let spinner = content as? UIActivityIndicatorView {
+            spinner.startAnimating()
+        }
+
         self.detailLabel.text = details
         self.detailLabel.textColor = MPTheme.global.color.body.get()
         self.detailLabel.textAlignment = .center
@@ -72,7 +78,9 @@ class MPAlertView: MPButton {
         contentStack.spacing = 8
     }
 
-    public func show(in view: UIView? = nil) {
+    @discardableResult
+    public func show(in view: UIView? = nil, dismissAutomatically: Bool = true) -> Self {
+        // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
             if let root = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow {
                 root.addSubview( self )
@@ -85,14 +93,18 @@ class MPAlertView: MPButton {
                 self.appearanceConfiguration.deactivate()
                 self.activationConfiguration.deactivate()
                 UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
-                    self.dismissItem = DispatchWorkItem( qos: .utility ) { self.dismiss() }
+                    if dismissAutomatically {
+                        self.automaticDismissalItem = DispatchWorkItem( qos: .utility ) { self.dismiss() }
+                    }
                 } )
             }
         }
+
+        return self
     }
 
     public func dismiss() {
-        self.dismissItem = nil
+        self.automaticDismissalItem = nil
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
@@ -103,7 +115,7 @@ class MPAlertView: MPButton {
 
     @objc
     func didTap(_ recognizer: UITapGestureRecognizer) {
-        self.dismissItem = nil
+        self.automaticDismissalItem = nil
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 0.618 ) { self.activationConfiguration.activate() }

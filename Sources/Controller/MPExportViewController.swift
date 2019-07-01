@@ -76,7 +76,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
 
         self.exportButton.button.addAction( for: .touchUpInside ) { _, _ in
             let item       = MPMarshal.ActivityItem( user: self.user, format: self.format, redacted: self.redacted )
-            let controller = UIActivityViewController( activityItems: [ item, item.description() ], applicationActivities: nil )
+            let controller = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
             controller.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
                 item.activityViewController( controller, completed: completed, forActivityType: activityType,
                                              returnedItems: returnedItems, activityError: activityError )
