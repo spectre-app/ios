@@ -34,6 +34,7 @@ class MPDateView: UIView {
     init() {
         super.init( frame: .zero )
 
+        // - View
         self.monthFormatter.dateFormat = "MMM"
         self.dayFormatter.dateFormat = "dd"
 
@@ -57,10 +58,13 @@ class MPDateView: UIView {
         self.dayLabel.textAlignment = .center
         self.dayLabel.font = MPTheme.global.font.largeTitle.get()
 
+        // - Hierarchy
         self.addSubview( self.separatorView )
         self.addSubview( self.monthLabel )
         self.addSubview( self.dayLabel )
 
+        // - Layout
+        self.widthAnchor.constraint( equalTo: self.heightAnchor, constant: 0.618 ).activate()
         LayoutConfiguration( view: self.monthLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
@@ -77,9 +81,6 @@ class MPDateView: UIView {
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .activate()
-        LayoutConfiguration( view: self )
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor, constant: 0.618 ) }
                 .activate()
     }
 }

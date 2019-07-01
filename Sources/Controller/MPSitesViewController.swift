@@ -103,11 +103,12 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestur
                 .activate()
 
         LayoutConfiguration( view: self.detailContentView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: 8 ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: 8 ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: -8 ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -8 ) }
+                .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor, constant: -16 ) }
+                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                 .activate()
 
         LayoutConfiguration( view: self.topContainer )
@@ -118,7 +119,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestur
                                     .withPriority( UILayoutPriority( 500 ) ),
                         $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteHeaderView.layoutMarginsGuide.bottomAnchor )
                                     .withPriority( UILayoutPriority( 510 ) ),
-                        $1.bottomAnchor.constraint( lessThanOrEqualTo: self.detailContentView.topAnchor )
+                        $1.bottomAnchor.constraint( lessThanOrEqualTo: self.detailContentView.topAnchor, constant: 8 )
                                        .withPriority( UILayoutPriority( 520 ) ),
                         $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
                         $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
@@ -154,8 +155,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestur
 
         // Offset detail view's top inset to make space for the top container.
         self.detailContainer.contentInset = UIEdgeInsets(
-                top: max( CGRectGetBottom( self.topContainer.bounds ).y + 8,
-                          self.detailContainer.bounds.size.height - self.detailContentView.frame.size.height ),
+                top: self.siteHeaderView.frame.maxY,
                 left: 0, bottom: 0, right: 0 )
     }
 
@@ -182,7 +182,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestur
                 self.addChildViewController( detailController )
                 detailController.beginAppearanceTransition( false, animated: true )
                 self.detailContentView.addSubview( detailController.view )
-                LayoutConfiguration( view: detailController.view ).constrainToMarginsOfOwner().activate()
+                LayoutConfiguration( view: detailController.view ).constrainToOwner().activate()
                 UIView.animate( withDuration: 0.382, animations: {
                     self.searchField.resignFirstResponder() // TODO: Move to somewhere more generic
                     self.detailConfiguration.activate()

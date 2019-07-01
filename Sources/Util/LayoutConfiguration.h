@@ -96,6 +96,8 @@ typedef NSArray<NSLayoutConstraint *> *__nonnull( ^LayoutConstrainers )(UIView *
 - (instancetype)set:(nullable id)value forKey:(NSString *)key;
 //! Set a given value for the target at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.
 - (instancetype)set:(nullable id)value forKey:(NSString *)key reverses:(BOOL)reverses;
+//! Add child configurations that triggers when this configuration's activation changes.
+- (instancetype)applyLayoutConfigurations:(void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks;
 //! Add a child configuration that triggers when this configuration is activated.
 - (instancetype)applyLayoutConfiguration:(LayoutConfiguration *)configuration;
 //! Add a child configuration that triggers when this configuration is activated or deactivated.

@@ -156,6 +156,22 @@
     return self;
 }
 
+- (instancetype)applyLayoutConfigurations:(void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks {
+
+    LayoutConfiguration *active = [LayoutConfiguration configurationWithTarget:self.target];
+    LayoutConfiguration *inactive = [LayoutConfiguration configurationWithTarget:self.target];
+    configurationBlocks( active, inactive );
+    [self.activeConfigurations addObject:active];
+    [self.inactiveConfigurations addObject:inactive];
+
+    if (self.activated)
+        [active activate];
+    else
+        [inactive activate];
+
+    return nil;
+}
+
 - (instancetype)applyLayoutConfiguration:(LayoutConfiguration *)configuration {
 
     return [self applyLayoutConfiguration:configuration active:YES];
@@ -251,7 +267,7 @@
         for (LayoutConfiguration *inactiveConfiguration in self.inactiveConfigurations)
             [inactiveConfiguration deactivateFromParent:self];
 
-        if (self.constrainers)
+        if (self.constrainers.count)
             self.target.view.translatesAutoresizingMaskIntoConstraints = NO;
 
         UILayoutPriority oldPriority, newPriority;
@@ -283,6 +299,8 @@
                     constraint.active = YES;
                     [self.activeConstraints addObject:constraint];
                 }
+        else if (self.constrainers.count)
+            wrn( @"Skipping layout constraints since view has no owner: %@", (id)self.target.view?: self.target.layoutGuide );
 
         [self.activeValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
             id oldValue = [targetView valueForKeyPath:key]?: [NSNull null];

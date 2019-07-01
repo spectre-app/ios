@@ -281,10 +281,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .activate()
 
             LayoutConfiguration( view: self.resultLabel )
-                    .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.modeButton.trailingAnchor, constant: 4 ) }
                     .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .fittingSizeLevel )
+                    .compressionResistancePriorityHorizontal( .defaultHigh - 1, vertical: .defaultHigh + 1 )
                     .activate()
 
             LayoutConfiguration( view: self.nameLabel )
@@ -292,7 +292,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.resultLabel.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.copyButton )

@@ -66,6 +66,7 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
         self.addSubview( trailingToolBar )
 
         // - Layout
+        self.widthAnchor.constraint( equalTo: self.heightAnchor, multiplier: 1.618 ).activate()
         LayoutConfiguration( view: self.siteButton )
                 .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
@@ -83,9 +84,6 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .activate()
-        LayoutConfiguration( view: self )
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor, multiplier: 1.618 ) }
                 .activate()
     }
 
