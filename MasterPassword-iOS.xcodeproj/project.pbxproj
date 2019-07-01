@@ -2347,13 +2347,19 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "-";
-				EXCLUDED_SOURCE_FILE_NAMES = libDCIntrospect.a;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/External/iOS\"",
 				);
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"MPW_JSON=1",
+					"MPW_SODIUM=1",
+					"MPW_CPERCIVA=0",
+					"MPW_COLOR=0",
+				);
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2367,11 +2373,6 @@
 					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
-				);
-				OTHER_CFLAGS = (
-					"-DMPW_SODIUM=1",
-					"-DMPW_CPERCIVA=0",
-					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
 				SKIP_INSTALL = NO;
@@ -2628,6 +2629,13 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"MPW_JSON=1",
+					"MPW_SODIUM=1",
+					"MPW_CPERCIVA=0",
+					"MPW_COLOR=0",
+				);
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2641,11 +2649,6 @@
 					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
-				);
-				OTHER_CFLAGS = (
-					"-DMPW_SODIUM=1",
-					"-DMPW_CPERCIVA=0",
-					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
 				SKIP_INSTALL = NO;
@@ -2667,13 +2670,19 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				EXCLUDED_SOURCE_FILE_NAMES = libDCIntrospect.a;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/External/iOS\"",
 				);
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"MPW_JSON=1",
+					"MPW_SODIUM=1",
+					"MPW_CPERCIVA=0",
+					"MPW_COLOR=0",
+				);
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2687,11 +2696,6 @@
 					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
-				);
-				OTHER_CFLAGS = (
-					"-DMPW_SODIUM=1",
-					"-DMPW_CPERCIVA=0",
-					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
 				SKIP_INSTALL = NO;
