@@ -107,11 +107,15 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     func setNeedsIdenticon() {
         if let userName = self.user?.fullName ?? self.nameField?.text,
            let masterPassword = self.passwordField?.text {
-            self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
-                let identicon = mpw_identicon( userName, masterPassword )
+            if self.identiconItem == nil {
+                self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
+                    self.identiconItem = nil
 
-                DispatchQueue.main.perform {
-                    self.identiconLabel.attributedText = identicon.attributedText()
+                    let identicon = mpw_identicon( userName, masterPassword )
+
+                    DispatchQueue.main.perform {
+                        self.identiconLabel.attributedText = identicon.attributedText()
+                    }
                 }
             }
         }
