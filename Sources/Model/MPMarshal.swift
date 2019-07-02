@@ -38,18 +38,18 @@ class MPMarshal: Observable {
 
     private func load(file documentFile: URL) -> UserInfo? {
         if let document = FileManager.default.contents( atPath: documentFile.path ) {
-            return self.load( data: document )
+            return self.load( data: document, from: documentFile )
         }
 
         return nil
     }
 
-    private func load(data document: Data) -> UserInfo? {
+    private func load(data document: Data, from documentFile: URL? = nil) -> UserInfo? {
         if let userDocument = String( data: document, encoding: .utf8 ),
            let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
            let fullName = String( safeUTF8: userInfo.fullName ) {
             return UserInfo(
-                    origin: nil,
+                    origin: documentFile,
                     document: userDocument,
                     format: userInfo.format,
                     exportDate: Date( timeIntervalSince1970: TimeInterval( userInfo.exportDate ) ),
@@ -243,7 +243,7 @@ class MPMarshal: Observable {
             controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                 let spinner = MPAlertView( title: "Unlocking", message: importingUser.description,
                                            content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
-                        .show(dismissAutomatically: false)
+                        .show( dismissAutomatically: false )
 
                 if !passwordField.mpw_process(
                         handler: {
@@ -560,6 +560,8 @@ class MPMarshal: Observable {
         public let keyID:     String?
         public let lastUsed:  Date
 
+        public var resetKey = false
+
         init(origin: URL?, document: String, format: MPMarshalFormat, exportDate: Date, redacted: Bool,
              algorithm: MPAlgorithmVersion, avatar: MPUser.Avatar, fullName: String, identicon: MPIdenticon, keyID: String?, lastUsed: Date) {
             self.origin = origin
@@ -579,14 +581,15 @@ class MPMarshal: Observable {
             return DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
                     var error = MPMarshalError( type: .success, description: nil )
-                    if let marshalledUser = mpw_marshal_read( self.document, self.format, masterKeyProvider, &error )?.pointee,
+                    if let marshalledUser = mpw_marshal_read(
+                            self.document, self.format, self.resetKey ? nil: masterKeyProvider, &error )?.pointee,
                        error.type == .success {
                         let user = MPUser(
                                 algorithm: marshalledUser.algorithm,
                                 avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
                                 fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
                                 identicon: marshalledUser.identicon,
-                                masterKeyID: self.keyID,
+                                masterKeyID: self.resetKey ? nil : self.keyID,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
                                 origin: self.origin

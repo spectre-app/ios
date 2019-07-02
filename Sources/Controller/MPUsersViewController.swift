@@ -52,7 +52,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         self.userToolbar.barStyle = .black
         self.userToolbar.items = [
             UIBarButtonItem( barButtonSystemItem: .trash, target: self, action: #selector( didTrashUser ) ),
-            UIBarButtonItem( barButtonSystemItem: .edit, target: self, action: #selector( didEditUser ) )
+            UIBarButtonItem( barButtonSystemItem: .rewind, target: self, action: #selector( didResetUser ) )
         ]
 
         self.view.addSubview( self.usersSpinner )
@@ -98,16 +98,42 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     private func didTrashUser() {
         if let activatedItem = self.usersSpinner.activatedItem,
            let user = (self.usersSpinner.subviews[activatedItem] as? UserView)?.user {
-            if MPMarshal.shared.delete( userInfo: user ) {
-                self.users.removeAll { $0 == user }
-            }
+            let alert = UIAlertController( title: "Delete User?", message:
+            """
+            This will delete the user and all of its recorded state:
+            \(user)
+
+            Note: You can re-create the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
+            When re-creating the user, make sure to use the exact same name and master password.
+            The user's identicon (\(user.identicon.text() ?? "-")) is a good manual check that you got this right.
+            """, preferredStyle: .alert )
+            alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { _ in
+                if MPMarshal.shared.delete( userInfo: user ) {
+                    self.users.removeAll { $0 == user }
+                }
+            } )
+            self.present( alert, animated: true )
         }
     }
 
     @objc
-    private func didEditUser() {
+    private func didResetUser() {
         if let activatedItem = self.usersSpinner.activatedItem,
            let user = (self.usersSpinner.subviews[activatedItem] as? UserView)?.user {
+            let alert = UIAlertController( title: "Reset Master Password?", message:
+            """
+            This will allow you to change the master password for:
+            \(user)
+
+            Note: When the user's master password changes, its site passwords and other generated content will also change accordingly.
+            The master password can always be changed back to revert to the user's current site passwords and generated content.
+            """, preferredStyle: .alert )
+            alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+            alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { _ in
+                user.resetKey = true
+            } )
+            self.present( alert, animated: true )
         }
     }
 
