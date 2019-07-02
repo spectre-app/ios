@@ -206,9 +206,7 @@ class MPStarView: UIView {
             }
 
             override var isReady: Bool {
-                let isReady = super.isReady && self.distanceTravelled > self.distanceNeeded
-                dbg( "\(self) isReady: \(isReady), distanceTravelled: \(self.distanceTravelled) / \(self.distanceNeeded)" )
-                return isReady
+                return super.isReady && self.distanceTravelled > self.distanceNeeded
             }
         }
     }
