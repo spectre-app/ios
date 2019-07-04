@@ -18,52 +18,43 @@ class MPMarshal: Observable {
     }
 
     private var saving            = [ MPUser ]()
-    private let saveQueue         = DispatchQueue( label: "marshal" )
+    private var reloadCompleted: Date?
+    private let marshalQueue      = DispatchQueue( label: "marshal" )
     private let defaults          = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? "mPass").marshal" )
     private let documentDirectory = (try? FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true ))
-    private var reloadItem: DispatchWorkItem? {
-        willSet {
-            self.reloadItem?.cancel()
-        }
-        didSet {
-            if let reloadItem = self.reloadItem {
-                DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( 500 ) ) {
-                    DispatchQueue.mpw.perform {
-                        reloadItem.perform()
-                    }
-                }
-            }
-        }
-    }
 
     // MARK: --- Interface ---
 
     public func setNeedsReload(completion: (([UserInfo]?) -> Void)? = nil) {
-        guard self.reloadItem == nil
-        else {
-            return
-        }
-
-        self.reloadItem = DispatchWorkItem( qos: .userInitiated ) {
-            self.reloadItem = nil
-
-            // Import legacy users
-            self.importLegacy()
-
-            // Reload users
-            var users = [ UserInfo ]()
-            for documentFile in self.userDocuments() {
-                if let user = self.load( file: documentFile ) {
-                    users.append( user )
-                }
+        let reloadRequested = Date()
+        self.marshalQueue.asyncAfter( deadline: .now() + .milliseconds( 500 ) ) {
+            if let reloadCompleted = self.reloadCompleted, reloadRequested < reloadCompleted {
+                completion?( self.users )
             }
-            self.users = users
+            else {
+                self.doReload( completion: completion )
+            }
+        }
+    }
 
-            if let completion = completion {
-                DispatchQueue.main.perform {
-                    completion( self.users )
-                }
+    private func doReload(completion: (([UserInfo]?) -> Void)? = nil) {
+        // Import legacy users
+        self.importLegacy()
+
+        // Reload users
+        var users = [ UserInfo ]()
+        for documentFile in self.userDocuments() {
+            if let user = self.load( file: documentFile ) {
+                users.append( user )
+            }
+        }
+        self.reloadCompleted = Date()
+        self.users = users
+
+        if let completion = completion {
+            DispatchQueue.main.perform {
+                completion( self.users )
             }
         }
     }
@@ -124,7 +115,7 @@ class MPMarshal: Observable {
         }
 
         self.saving.append( user )
-        self.saveQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
+        self.marshalQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
             do {
                 let destination = try self.save( user: user, format: .default )
                 if let origin = user.origin, origin != destination,
@@ -147,7 +138,7 @@ class MPMarshal: Observable {
 
     @discardableResult
     public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) throws -> URL {
-        return try self.saveQueue.await {
+        return try self.marshalQueue.await {
             return try DispatchQueue.mpw.await {
                 guard let documentFile = self.file( for: user, in: directory, format: format )
                 else {

@@ -84,3 +84,56 @@ extension DispatchQueue {
         }
     }
 }
+
+class DispatchTask {
+    public var pending: Bool {
+        return self.item != nil
+    }
+
+    private let queue:    DispatchQueue
+    private let qos:      DispatchQoS
+    private let group:    DispatchGroup?
+    private let deadline: () -> DispatchTime
+    private let work:     () -> Void
+    private var item:     DispatchWorkItem? {
+        willSet {
+            self.item?.cancel()
+        }
+    }
+
+    init(queue: DispatchQueue, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified,
+         deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(),
+         execute work: @escaping @convention(block) () -> Void) {
+        self.queue = queue
+        self.group = group
+        self.qos = qos
+        self.deadline = deadline
+        self.work = work
+    }
+
+    @discardableResult
+    public func submit() -> Bool {
+        guard !self.pending
+        else {
+            return false
+        }
+
+        let item = DispatchWorkItem( qos: self.qos ) {
+            self.queue.perform( group: self.group, qos: self.qos ) {
+                self.cancel()
+                self.work()
+            }
+        }
+        self.item = item
+        self.queue.asyncAfter( deadline: self.deadline(), execute: item )
+        return true
+    }
+
+    @discardableResult
+    public func cancel() -> Bool {
+        defer {
+            self.item = nil
+        }
+        return self.pending
+    }
+}

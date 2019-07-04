@@ -47,19 +47,9 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
-    private var identiconItem: DispatchWorkItem? {
-        willSet {
-            self.identiconItem?.cancel()
-        }
-        didSet {
-            if let identiconItem = self.identiconItem {
-                DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( .random( in: 300..<500 ) ) ) {
-                    DispatchQueue.mpw.perform {
-                        identiconItem.perform()
-                    }
-                }
-            }
-        }
+    private lazy var identiconItem = DispatchTask( queue: DispatchQueue.mpw, qos: .userInitiated,
+                                                   deadline: .now() + .milliseconds( .random( in: 300..<500 ) ) ) {
+        self.doIdenticon()
     }
 
     // MARK: --- Life ---
@@ -102,37 +92,34 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         super.willMove( toWindow: newWindow )
 
         if newWindow == nil {
-            self.identiconItem = nil
+            self.identiconItem.cancel()
         }
     }
 
     // MARK: Interface
 
-    func setNeedsIdenticon() {
-        if let userName = self.user?.fullName ?? self.nameField?.text,
-           let masterPassword = self.passwordField?.text {
-            guard self.identiconItem == nil
-            else {
-                return
-            }
-
-            self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
-                self.identiconItem = nil
-
-                // Generate identicon
-                let identicon = mpw_identicon( userName, masterPassword )
-
-                DispatchQueue.main.perform {
-                    self.identiconLabel.attributedText = identicon.attributedText()
-                }
-            }
-        }
-        else {
-            self.identiconItem = nil
+    public func setNeedsIdenticon() {
+        if (self.user?.fullName ?? self.nameField?.text) == nil || self.passwordField?.text == nil {
+            self.identiconItem.cancel()
 
             DispatchQueue.main.perform {
                 self.identiconLabel.attributedText = nil
             }
+        }
+        else {
+            self.identiconItem.submit()
+        }
+    }
+
+    private func doIdenticon() {
+        var identicon: MPIdenticon?
+        if let userName = self.user?.fullName ?? self.nameField?.text,
+           let masterPassword = self.passwordField?.text {
+            identicon = mpw_identicon( userName, masterPassword )
+        }
+
+        DispatchQueue.main.perform {
+            self.identiconLabel.attributedText = identicon?.attributedText()
         }
     }
 

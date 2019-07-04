@@ -22,15 +22,8 @@ class MPAlertView: MPButton {
         inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.subheadline.get(), forKey: "font" ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
-    private var automaticDismissalItem: DispatchWorkItem? {
-        willSet {
-            self.automaticDismissalItem?.cancel()
-        }
-        didSet {
-            if let appearanceItem = self.automaticDismissalItem {
-                DispatchQueue.main.asyncAfter( wallDeadline: .now() + .seconds( 3 ), execute: appearanceItem )
-            }
-        }
+    private lazy var automaticDismissalItem = DispatchTask(queue: DispatchQueue.main, qos: .utility, deadline: .now() + .seconds( 3 )) {
+        self.dismiss()
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -94,7 +87,7 @@ class MPAlertView: MPButton {
                 self.activationConfiguration.deactivate()
                 UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
                     if dismissAutomatically {
-                        self.automaticDismissalItem = DispatchWorkItem( qos: .utility ) { self.dismiss() }
+                        self.automaticDismissalItem.submit()
                     }
                 } )
             }
@@ -104,7 +97,7 @@ class MPAlertView: MPButton {
     }
 
     public func dismiss() {
-        self.automaticDismissalItem = nil
+        self.automaticDismissalItem.cancel()
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
@@ -115,7 +108,7 @@ class MPAlertView: MPButton {
 
     @objc
     func didTap(_ recognizer: UITapGestureRecognizer) {
-        self.automaticDismissalItem = nil
+        self.automaticDismissalItem.cancel()
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 0.618 ) { self.activationConfiguration.activate() }
