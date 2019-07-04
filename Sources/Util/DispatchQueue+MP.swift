@@ -8,27 +8,78 @@ import Foundation
 extension DispatchQueue {
     public static var mpw = DispatchQueue( label: "mpw", qos: .utility )
 
+    private static let threadLabelsKey = "DispatchQueue+MP"
+    private var threadLabels: Set<String> {
+        get {
+            let threadLabels: Set<String>? = Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] as? Set<String>
+            if let threadLabels = threadLabels {
+                return threadLabels
+            }
+
+            let newThreadLabels = Set<String>()
+            self.threadLabels = newThreadLabels
+            return newThreadLabels
+        }
+        set {
+            Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] = newValue
+        }
+    }
+
     /** Performs the work asynchronously, unless queue is main and already on the main thread, then perform synchronously. */
     public func perform(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping @convention(block) () -> Void) {
-        if (self == .main && Thread.isMainThread) ||
+        if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                    self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
+            // Claim the queue with this thread.
             group?.enter()
+            var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+            defer {
+                if ownsThreadLabel {
+                    self.threadLabels.remove( self.label )
+                }
+                group?.leave()
+            }
+
             DispatchWorkItem( qos: qos, flags: flags, block: work ).perform()
-            group?.leave()
         }
         else {
-            self.async( group: group, qos: qos, flags: flags, execute: work )
+            self.async( group: group, qos: qos, flags: flags ) {
+                // Claim the queue with this thread.
+                var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+                defer {
+                    if ownsThreadLabel {
+                        self.threadLabels.remove( self.label )
+                    }
+                }
+
+                work()
+            }
         }
     }
 
     /** Performs the work synchronously, returning the work's result. */
     public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows -> T {
-        if (self == .main && Thread.isMainThread) ||
+        if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                    self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
+            // Claim the queue with this thread.
+            var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+            defer {
+                if ownsThreadLabel {
+                    self.threadLabels.remove( self.label )
+                }
+            }
+
             return try work()
         }
         else {
+            // Claim the queue with this thread.
+            var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+            defer {
+                if ownsThreadLabel {
+                    self.threadLabels.remove( self.label )
+                }
+            }
+
             return try self.sync( flags: flags, execute: work )
         }
     }

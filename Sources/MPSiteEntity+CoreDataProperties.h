@@ -8,29 +8,26 @@
 
 #import "MPSiteEntity+CoreDataClass.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPSiteEntity (CoreDataProperties)
+@protocol MPSiteEntity_CoreData
 
 + (NSFetchRequest<MPSiteEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSObject *content;
-@property (nullable, nonatomic, copy) NSDate *lastUsed;
-@property (nullable, nonatomic, copy) NSNumber *loginGenerated_;
-@property (nullable, nonatomic, copy) NSString *loginName;
-@property (nullable, nonatomic, copy) NSString *name;
-@property (nullable, nonatomic, copy) NSNumber *requiresExplicitMigration_;
-@property (nullable, nonatomic, copy) NSNumber *type_;
-@property (nullable, nonatomic, copy) NSNumber *uses_;
-@property (nullable, nonatomic, copy) NSNumber *version_;
-@property (nullable, nonatomic, copy) NSString *url;
-@property (nullable, nonatomic, retain) NSOrderedSet<MPSiteQuestionEntity *> *questions;
-@property (nullable, nonatomic, retain) MPUserEntity *user;
+@property(nullable, nonatomic, retain) NSObject *content;
+@property(nullable, nonatomic, copy) NSDate *lastUsed;
+@property(nullable, nonatomic, copy) NSNumber *loginGenerated_;
+@property(nullable, nonatomic, copy) NSString *loginName;
+@property(nullable, nonatomic, copy) NSString *name;
+@property(nullable, nonatomic, copy) NSNumber *requiresExplicitMigration_;
+@property(nullable, nonatomic, copy) NSNumber *type_;
+@property(nullable, nonatomic, copy) NSNumber *uses_;
+@property(nullable, nonatomic, copy) NSNumber *version_;
+@property(nullable, nonatomic, retain) NSOrderedSet<MPSiteQuestionEntity *> *questions;
+@property(nullable, nonatomic, retain) MPUserEntity *user;
 
-@end
-
-@interface MPSiteEntity (CoreDataGeneratedAccessors)
+@optional
+@property(nullable, nonatomic, copy) NSString *url;
 
 - (void)insertObject:(MPSiteQuestionEntity *)value inQuestionsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromQuestionsAtIndex:(NSUInteger)idx;
@@ -43,6 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addQuestions:(NSOrderedSet<MPSiteQuestionEntity *> *)values;
 - (void)removeQuestions:(NSOrderedSet<MPSiteQuestionEntity *> *)values;
 
+@end
+
+@interface MPSiteEntity(CoreData)<MPSiteEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

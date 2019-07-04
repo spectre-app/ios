@@ -96,8 +96,7 @@ class MPURLUtils {
                 case .noURLHasBeenFound:
                     break
                 default:
-                    // TODO: handle error
-                    mperror( title: "Couldn't load preview", context: url, error: error )
+                    wrn( "No preview for \(url): \(error)" )
             }
 
             result( self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil ) )

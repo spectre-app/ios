@@ -7,9 +7,8 @@ import Foundation
 
 class MPMarshal: Observable {
     public static let shared = MPMarshal()
-    public let documentDirectory = (try? FileManager.default.url(
-            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true ))
-    public let observers         = Observers<MPMarshalObserver>()
+
+    public let observers = Observers<MPMarshalObserver>()
     public var users: [UserInfo]? {
         didSet {
             if oldValue != self.users {
@@ -17,22 +16,55 @@ class MPMarshal: Observable {
             }
         }
     }
-    private var saving    = [ MPUser ]()
-    private let saveQueue = DispatchQueue( label: "marshal" )
+
+    private var saving            = [ MPUser ]()
+    private let saveQueue         = DispatchQueue( label: "marshal" )
+    private let defaults          = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? "mPass").marshal" )
+    private let documentDirectory = (try? FileManager.default.url(
+            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true ))
+    private var reloadItem: DispatchWorkItem? {
+        willSet {
+            self.reloadItem?.cancel()
+        }
+        didSet {
+            if let reloadItem = self.reloadItem {
+                DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( 500 ) ) {
+                    DispatchQueue.mpw.perform {
+                        reloadItem.perform()
+                    }
+                }
+            }
+        }
+    }
 
     // MARK: --- Interface ---
 
-    public func setNeedsReload(_ completion: (([UserInfo]?) -> Void)? = nil) {
-        DispatchQueue.mpw.perform {
+    public func setNeedsReload(completion: (([UserInfo]?) -> Void)? = nil) {
+        guard self.reloadItem == nil
+        else {
+            return
+        }
+
+        self.reloadItem = DispatchWorkItem( qos: .userInitiated ) {
+            self.reloadItem = nil
+
+            // Import legacy users
+            self.importLegacy()
+
+            // Reload users
             var users = [ UserInfo ]()
             for documentFile in self.userDocuments() {
                 if let user = self.load( file: documentFile ) {
                     users.append( user )
                 }
             }
-
             self.users = users
-            completion?( self.users )
+
+            if let completion = completion {
+                DispatchQueue.main.perform {
+                    completion( self.users )
+                }
+            }
         }
     }
 
@@ -117,7 +149,7 @@ class MPMarshal: Observable {
     public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) throws -> URL {
         return try self.saveQueue.await {
             return try DispatchQueue.mpw.await {
-                guard let documentFile = self.file( for: user, in: directory ?? self.documentDirectory, format: format )
+                guard let documentFile = self.file( for: user, in: directory, format: format )
                 else {
                     throw Error.internal( details: "No path to marshal \(user)" )
                 }
@@ -143,6 +175,7 @@ class MPMarshal: Observable {
                 marshalledUser.pointee.redacted = redacted
                 marshalledUser.pointee.avatar = user.avatar.encode()
                 marshalledUser.pointee.identicon = user.identicon
+                user.masterKeyID?.withCString { marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( $0 ) ) }
                 marshalledUser.pointee.defaultType = user.defaultType
                 marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
@@ -152,15 +185,15 @@ class MPMarshal: Observable {
                         throw Error.internal( details: "Couldn't marshal \(user): \(site)" )
                     }
 
-                    site.resultState?.withCString { marshalledSite.pointee.resultState = $0 }
+                    site.resultState?.withCString { marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( $0 ) ) }
                     marshalledSite.pointee.loginType = site.loginType
-                    site.loginState?.withCString { marshalledSite.pointee.loginState = $0 }
-                    site.url?.withCString { marshalledSite.pointee.url = $0 }
-                    marshalledSite.pointee.uses = UInt32( site.uses )
+                    site.loginState?.withCString { marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( $0 ) ) }
+                    site.url?.withCString { marshalledSite.pointee.url = UnsafePointer( mpw_strdup( $0 ) ) }
+                    marshalledSite.pointee.uses = site.uses
                     marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
                 }
 
-                var error    = MPMarshalError( type: .success, description: nil )
+                var error    = MPMarshalError( type: .success, message: nil )
                 let document = mpw_marshal_write( format, marshalledUser, &error )
                 if error.type == .success {
                     if let document = String( safeUTF8: document )?.data( using: .utf8 ) {
@@ -176,39 +209,43 @@ class MPMarshal: Observable {
         }
     }
 
-    public func `import`(data: Data) {
+    public func `import`(data: Data, completion: ((Bool) -> Void)? = nil) {
         DispatchQueue.mpw.perform {
             guard let importingUser = self.load( data: data )
             else {
                 mperror( title: "Issue importing", context: "Not an \(PearlInfoPlist.get().cfBundleDisplayName ?? "mPass") import document" )
+                completion?( false )
                 return
             }
             guard let importingName = String( safeUTF8: importingUser.fullName )
             else {
                 mperror( title: "Issue importing", context: "Import missing fullName" )
+                completion?( false )
                 return
             }
             guard let importingFile = self.file( named: importingName, format: importingUser.format )
             else {
                 mperror( title: "Issue importing", context: "No path for \(importingName)" )
+                completion?( false )
                 return
             }
 
             if FileManager.default.fileExists( atPath: importingFile.path ),
                let existingUser = self.load( file: importingFile ) {
-                self.import( data: data, from: importingUser, into: existingUser )
+                self.import( data: data, from: importingUser, into: existingUser, completion: completion )
             }
             else {
-                self.import( data: data, from: importingUser, into: importingFile )
+                self.import( data: data, from: importingUser, into: importingFile, completion: completion )
             }
         }
     }
 
-    private func `import`(data: Data, from importingUser: UserInfo, into existingUser: UserInfo) {
+    private func `import`(data: Data, from importingUser: UserInfo, into existingUser: UserInfo, completion: ((Bool) -> Void)?) {
         DispatchQueue.main.perform {
             guard let viewController = UIApplication.shared.keyWindow?.rootViewController
             else {
                 mperror( title: "Issue importing", context: "Could not present UI to handle import conflict." )
+                completion?( false )
                 return
             }
 
@@ -222,7 +259,9 @@ class MPMarshal: Observable {
             Merging will import only the new information from the import file into the existing user.
             """, preferredStyle: .alert )
             controller.addTextField { passwordField.passwordField = $0 }
-            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                completion?( false )
+            } )
             controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                 if !passwordField.mpw_process(
                         handler: { importingUser.mpw_authenticate( masterPassword: $1 ).0 },
@@ -233,7 +272,19 @@ class MPMarshal: Observable {
                                 viewController.present( controller, animated: true )
                             }
                             else if let existingFile = existingUser.origin {
-                                self.import( data: data, from: importingUser, into: existingFile )
+                                if FileManager.default.fileExists( atPath: existingFile.path ) {
+                                    do {
+                                        try FileManager.default.removeItem( at: existingFile )
+                                    }
+                                    catch {
+                                        mperror( title: "Issue replacing", context: "Couldn't remove \(existingFile.lastPathComponent)" )
+                                    }
+                                }
+
+                                self.import( data: data, from: importingUser, into: existingFile, completion: completion )
+                            }
+                            else {
+                                completion?( false )
                             }
                         } ) {
                     mperror( title: "Issue importing", context: "Missing master password" )
@@ -256,7 +307,7 @@ class MPMarshal: Observable {
                             let (importedUser, existedUser) = users
                             if let importedUser = importedUser,
                                let existedUser = existedUser {
-                                self.import( from: importedUser, into: existedUser )
+                                self.import( from: importedUser, into: existedUser, completion: completion )
                             }
                             else if let importedUser = importedUser {
                                 let passwordField = MPMasterPasswordField( user: existingUser )
@@ -271,10 +322,24 @@ class MPMarshal: Observable {
                                 controller.addTextField { field in
                                     passwordField.passwordField = field
                                 }
-                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                                    completion?( false )
+                                } )
                                 controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                                     if let existingFile = existingUser.origin {
-                                        self.import( data: data, from: importingUser, into: existingFile )
+                                        if FileManager.default.fileExists( atPath: existingFile.path ) {
+                                            do {
+                                                try FileManager.default.removeItem( at: existingFile )
+                                            }
+                                            catch {
+                                                mperror( title: "Issue replacing", context: "Couldn't remove \(existingFile.lastPathComponent)" )
+                                            }
+                                        }
+
+                                        self.import( data: data, from: importingUser, into: existingFile, completion: completion )
+                                    }
+                                    else {
+                                        completion?( false )
                                     }
                                 } )
                                 controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
@@ -286,7 +351,7 @@ class MPMarshal: Observable {
                                                 spinner.dismiss()
 
                                                 if let existedUser = existedUser {
-                                                    self.import( from: importedUser, into: existedUser )
+                                                    self.import( from: importedUser, into: existedUser, completion: completion )
                                                 }
                                                 else {
                                                     mperror( title: "Issue importing", context:
@@ -311,7 +376,9 @@ class MPMarshal: Observable {
                                 controller.addTextField { field in
                                     passwordField.passwordField = field
                                 }
-                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                                    completion?( false )
+                                } )
                                 controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                                     spinner.show( dismissAutomatically: false )
 
@@ -321,7 +388,7 @@ class MPMarshal: Observable {
                                                 spinner.dismiss()
 
                                                 if let importedUser = importedUser {
-                                                    self.import( from: importedUser, into: existedUser )
+                                                    self.import( from: importedUser, into: existedUser, completion: completion )
                                                 }
                                                 else {
                                                     mperror( title: "Issue importing", context:
@@ -348,7 +415,7 @@ class MPMarshal: Observable {
         }
     }
 
-    private func `import`(from importedUser: MPUser, into existedUser: MPUser) {
+    private func `import`(from importedUser: MPUser, into existedUser: MPUser, completion: ((Bool) -> Void)?) {
         let spinner = MPAlertView( title: "Merging", message: existedUser.description,
                                    content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
                 .show( dismissAutomatically: false )
@@ -357,7 +424,7 @@ class MPMarshal: Observable {
             var replacedSites = 0, newSites = 0
             for importedSite in importedUser.sites {
                 if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
-                    if existedSite.lastUsed >= importedSite.lastUsed {
+                    if importedSite.lastUsed <= existedSite.lastUsed {
                         continue
                     }
 
@@ -371,7 +438,7 @@ class MPMarshal: Observable {
                 existedUser.sites.append( importedSite.copy( for: existedUser ) )
             }
             var updatedUser = false
-            if importedUser.lastUsed > existedUser.lastUsed {
+            if importedUser.lastUsed >= existedUser.lastUsed {
                 existedUser.identicon = importedUser.identicon
                 existedUser.avatar = importedUser.avatar
                 existedUser.algorithm = importedUser.algorithm
@@ -382,42 +449,47 @@ class MPMarshal: Observable {
             }
 
             DispatchQueue.main.perform {
+                completion?( true )
                 spinner.dismiss()
 
-                MPAlertView( title: "Import Complete", message: existedUser.description, details:
-                """
-                Completed the import of sites into \(existedUser).
+                if !updatedUser && replacedSites + newSites == 0 {
+                    MPAlertView( title: "Import Skipped", message: existedUser.description, details:
+                    """
+                    The import into \(existedUser) was skipped.
 
-                This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
-                \(updatedUser ?
-                        "The user settings were updated from the import.":
-                        "The existing user's settings were more recent than the import.")
-                """ ).show()
+                    This merge import contained no information that was either new or missing for the existing user.
+                    """ ).show()
+                }
+                else {
+                    MPAlertView( title: "Import Complete", message: existedUser.description, details:
+                    """
+                    Completed the import of sites into \(existedUser).
+
+                    This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
+                    \(updatedUser ?
+                            "The user settings were updated from the import.":
+                            "The existing user's settings were more recent than the import.")
+                    """ ).show()
+                }
                 self.setNeedsReload()
             }
         }
     }
 
-    private func `import`(data: Data, from importingUser: UserInfo, into documentFile: URL) {
+    private func `import`(data: Data, from importingUser: UserInfo, into documentFile: URL, completion: ((Bool) -> Void)?) {
         let spinner = MPAlertView( title: "Replacing", message: documentFile.lastPathComponent,
                                    content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
                 .show( dismissAutomatically: false )
 
         DispatchQueue.mpw.perform {
-            if FileManager.default.fileExists( atPath: documentFile.path ) {
-                do {
-                    try FileManager.default.removeItem( at: documentFile )
-                }
-                catch {
-                    mperror( title: "Issue replacing", context: "Couldn't remove \(documentFile.lastPathComponent)" )
-                }
-            }
             if !FileManager.default.createFile( atPath: documentFile.path, contents: data ) {
                 mperror( title: "Issue importing", context: "Couldn't save \(documentFile.lastPathComponent)" )
+                completion?( false )
                 return
             }
 
             DispatchQueue.main.perform {
+                completion?( true )
                 spinner.dismiss()
 
                 MPAlertView( title: "Import Complete", message: documentFile.lastPathComponent, details:
@@ -428,6 +500,121 @@ class MPMarshal: Observable {
                 This was a direct installation of the import data, not a merge import.
                 """ ).show()
                 self.setNeedsReload()
+            }
+        }
+    }
+
+    @discardableResult
+    private func importLegacy() -> Bool {
+        return MPCoreData.shared.perform( async: false ) { context in
+            do {
+                for user: MPUserEntity_CoreData in try context.fetch( MPUserEntity.fetchRequest() ) {
+                    guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
+                    else {
+                        // Not a (saved) object.
+                        continue
+                    }
+                    guard !(self.defaults?.bool( forKey: objectID.uriRepresentation().absoluteString ) ?? false)
+                    else {
+                        // Already imported.
+                        continue
+                    }
+                    guard let fullName = user.name
+                    else {
+                        // Has no full name.
+                        continue
+                    }
+                    guard let documentFile = self.file( named: fullName, format: .default )
+                    else {
+                        // Cannot be saved.
+                        continue
+                    }
+                    try FileManager.default.createDirectory(
+                            at: documentFile.deletingLastPathComponent(), withIntermediateDirectories: true )
+
+                    var algorithm = MPAlgorithmVersion.versionCurrent
+                    if let userAlgorithm = user.version_??.uint32Value,
+                       let userAlgorithmValue = MPAlgorithmVersion( rawValue: userAlgorithm ) {
+                        algorithm = userAlgorithmValue
+                    }
+                    var defaultType = MPResultType.default
+                    if let userDefaultType = user.defaultType_?.uint32Value,
+                       let userDefaultTypeValue = MPResultType( rawValue: userDefaultType ) {
+                        defaultType = userDefaultTypeValue
+                    }
+
+                    guard let marshalledUser = mpw_marshal_user( fullName, nil, algorithm )
+                    else {
+                        throw Error.internal( details: "Couldn't allocate to marshal \(fullName)" )
+                    }
+                    marshalledUser.pointee.redacted = true
+                    marshalledUser.pointee.avatar = user.avatar_?.uint32Value ?? 0
+                    user.keyID?.hexEncodedString().withCString { marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( $0 ) ) }
+                    marshalledUser.pointee.defaultType = defaultType
+                    marshalledUser.pointee.lastUsed = Int( user.lastUsed?.timeIntervalSince1970 ?? 0 )
+
+                    for site: MPSiteEntity_CoreData in user.sites ?? [] {
+                        guard let siteName = site.name
+                        else {
+                            // Has no site name.
+                            continue
+                        }
+
+                        var counter = MPCounterValue.initial
+                        if let site = site as? MPGeneratedSiteEntity,
+                           let siteCounter = site.counter_?.uint32Value,
+                           let siteCounterValue = MPCounterValue( rawValue: siteCounter ) {
+                            counter = siteCounterValue
+                        }
+                        var type = defaultType
+                        if let siteType = site.type_?.uint32Value,
+                           let siteTypeValue = MPResultType( rawValue: siteType ) {
+                            type = siteTypeValue
+                        }
+                        var algorithm = algorithm
+                        if let siteAlgorithm = site.version_?.uint32Value,
+                           let siteAlgorithmValue = MPAlgorithmVersion( rawValue: siteAlgorithm ) {
+                            algorithm = siteAlgorithmValue
+                        }
+
+                        guard let marshalledSite = mpw_marshal_site( marshalledUser, siteName, type, counter, algorithm )
+                        else {
+                            throw Error.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" )
+                        }
+                        (site as? MPStoredSiteEntity)?.contentObject?.base64EncodedString().withCString {
+                            marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( $0 ) )
+                        }
+                        marshalledSite.pointee.loginType = (site.loginGenerated_?.boolValue ?? true) ? .templateName: .statefulPersonal
+                        site.loginName?.withCString { marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( $0 ) ) }
+                        site.url??.withCString { marshalledSite.pointee.url = UnsafePointer( mpw_strdup( $0 ) ) }
+                        marshalledSite.pointee.uses = site.uses_?.uint32Value ?? 0
+                        marshalledSite.pointee.lastUsed = Int( site.lastUsed?.timeIntervalSince1970 ?? 0 )
+
+                        for siteQuestion in site.questions?.seq( MPSiteQuestionEntity_CoreData.self ) ?? [] {
+                            guard mpw_marshal_question( marshalledSite, siteQuestion.keyword ) != nil
+                            else {
+                                throw Error.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
+                            }
+                        }
+                    }
+
+                    var error    = MPMarshalError( type: .success, message: nil )
+                    let document = mpw_marshal_write( .default, marshalledUser, &error )
+                    if error.type == .success,
+                       let document = String( safeUTF8: document )?.data( using: .utf8 ) {
+                        self.import( data: document ) { success in
+                            if success {
+                                self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
+                            }
+                        }
+                    }
+                    else {
+                        throw Error.marshal( error: error )
+                    }
+                }
+            }
+            catch {
+                mperror( title: "Couldn't load legacy users", error: error )
             }
         }
     }
@@ -580,7 +767,7 @@ class MPMarshal: Observable {
         public func mpw_authenticate(masterPassword: String) -> (MPUser?, MPMarshalError) {
             return DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
-                    var error = MPMarshalError( type: .success, description: nil )
+                    var error = MPMarshalError( type: .success, message: nil )
                     if let marshalledUser = mpw_marshal_read(
                             self.document, self.format, self.resetKey ? nil: masterKeyProvider, &error )?.pointee,
                        error.type == .success {
@@ -589,7 +776,7 @@ class MPMarshal: Observable {
                                 avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
                                 fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
                                 identicon: marshalledUser.identicon,
-                                masterKeyID: self.resetKey ? nil : self.keyID,
+                                masterKeyID: self.resetKey ? nil: self.keyID,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
                                 origin: self.origin
@@ -597,7 +784,7 @@ class MPMarshal: Observable {
 
                         guard user.mpw_authenticate( masterPassword: masterPassword )
                         else {
-                            return (nil, MPMarshalError( type: .errorMasterPassword, description: nil ))
+                            return (nil, MPMarshalError( type: .errorMasterPassword, message: nil ))
                         }
 
                         for s in 0..<marshalledUser.sites_count {
@@ -613,7 +800,7 @@ class MPMarshal: Observable {
                                         loginType: site.loginType,
                                         loginState: String( safeUTF8: site.loginState ),
                                         url: String( safeUTF8: site.url ),
-                                        uses: UInt( site.uses ),
+                                        uses: site.uses,
                                         lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
                                 ) )
                             }
@@ -647,6 +834,12 @@ class MPMarshal: Observable {
                 }
             }
         }
+    }
+}
+
+extension MPMarshalError: CustomStringConvertible {
+    public var description: String {
+        return "\(self.type.rawValue): \(String( safeUTF8: self.message ) ?? "-")"
     }
 }
 

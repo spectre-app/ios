@@ -269,6 +269,15 @@ extension Data {
 
         return hash
     }
+
+    func hexEncodedString() -> String {
+        let hex = NSMutableString( capacity: self.count * 2 )
+        for byte in self {
+            hex.appendFormat( "%02hhX", byte )
+        }
+
+        return hex as String
+    }
 }
 
 extension String {
@@ -287,6 +296,12 @@ extension String {
         let brightness = CGFloat( ratio( of: sha[2], from: 0.5, to: 0.7 ) )
 
         return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: 1 )
+    }
+}
+
+extension NSOrderedSet {
+    func seq<E>(_ type: E.Type) -> [E] {
+        return self.array as! [E]
     }
 }
 

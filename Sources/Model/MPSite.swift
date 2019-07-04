@@ -72,7 +72,7 @@ class MPSite: NSObject, Observable, Comparable {
             }
         }
     }
-    public var uses: UInt = 0 {
+    public var uses: UInt32 = 0 {
         didSet {
             if oldValue != self.uses {
                 self.observers.notify { $0.siteDidChange( self ) }
@@ -112,7 +112,7 @@ class MPSite: NSObject, Observable, Comparable {
     init(user: MPUser, siteName: String, algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
          resultType: MPResultType? = nil, resultState: String? = nil,
          loginType: MPResultType? = nil, loginState: String? = nil,
-         url: String? = nil, uses: UInt = 0, lastUsed: Date? = nil) {
+         url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil) {
         self.user = user
         self.siteName = ""
         self.algorithm = algorithm ?? user.algorithm

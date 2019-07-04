@@ -8,7 +8,7 @@
 
 #import "MPGeneratedSiteEntity+CoreDataProperties.h"
 
-@implementation MPGeneratedSiteEntity (CoreDataProperties)
+@implementation MPGeneratedSiteEntity (CoreData)
 
 + (NSFetchRequest<MPGeneratedSiteEntity *> *)fetchRequest {
 	return [[NSFetchRequest alloc] initWithEntityName:@"MPGeneratedSiteEntity"];

@@ -8,16 +8,18 @@
 
 #import "MPSiteQuestionEntity+CoreDataClass.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPSiteQuestionEntity (CoreDataProperties)
+@protocol MPSiteQuestionEntity_CoreData
 
 + (NSFetchRequest<MPSiteQuestionEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, copy) NSString *keyword;
-@property (nullable, nonatomic, retain) MPSiteEntity *site;
+@property(nullable, nonatomic, copy) NSString *keyword;
+@property(nullable, nonatomic, retain) MPSiteEntity *site;
 
+@end
+
+@interface MPSiteQuestionEntity(CoreData)<MPSiteQuestionEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

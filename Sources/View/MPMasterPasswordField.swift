@@ -53,7 +53,11 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
         didSet {
             if let identiconItem = self.identiconItem {
-                DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( .random( in: 300..<500 ) ), execute: identiconItem )
+                DispatchQueue.mpw.asyncAfter( wallDeadline: .now() + .milliseconds( .random( in: 300..<500 ) ) ) {
+                    DispatchQueue.mpw.perform {
+                        identiconItem.perform()
+                    }
+                }
             }
         }
     }
@@ -107,15 +111,19 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     func setNeedsIdenticon() {
         if let userName = self.user?.fullName ?? self.nameField?.text,
            let masterPassword = self.passwordField?.text {
-            if self.identiconItem == nil {
-                self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
-                    self.identiconItem = nil
+            guard self.identiconItem == nil
+            else {
+                return
+            }
 
-                    let identicon = mpw_identicon( userName, masterPassword )
+            self.identiconItem = DispatchWorkItem( qos: .userInitiated ) {
+                self.identiconItem = nil
 
-                    DispatchQueue.main.perform {
-                        self.identiconLabel.attributedText = identicon.attributedText()
-                    }
+                // Generate identicon
+                let identicon = mpw_identicon( userName, masterPassword )
+
+                DispatchQueue.main.perform {
+                    self.identiconLabel.attributedText = identicon.attributedText()
                 }
             }
         }

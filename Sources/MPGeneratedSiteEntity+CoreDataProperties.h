@@ -8,15 +8,17 @@
 
 #import "MPGeneratedSiteEntity+CoreDataClass.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPGeneratedSiteEntity (CoreDataProperties)
+@protocol MPGeneratedSiteEntity_CoreData<MPSiteEntity_CoreData>
 
 + (NSFetchRequest<MPGeneratedSiteEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, copy) NSNumber *counter_;
+@property(nullable, nonatomic, copy) NSNumber *counter_;
 
+@end
+
+@interface MPGeneratedSiteEntity(CoreData)<MPGeneratedSiteEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

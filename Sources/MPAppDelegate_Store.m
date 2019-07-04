@@ -596,7 +596,7 @@ PearlAssociatedObjectProperty( NSNumber*, StoreCorrupted, storeCorrupted );
         if (!importUser || importError.type != MPMarshalSuccess)
             return MPError( ([NSError errorWithDomain:MPErrorDomain code:MPErrorMarshalCode userInfo:@{
                     @"type"                  : @(importError.type),
-                    NSLocalizedDescriptionKey: @(importError.description),
+                    NSLocalizedDescriptionKey: @(importError.message),
             }]), @"While importing sites." );
 
         // Find an existing user to update.
@@ -744,7 +744,7 @@ PearlAssociatedObjectProperty( NSNumber*, StoreCorrupted, storeCorrupted );
         resultBlock( mpsites, exportError.type == MPMarshalSuccess? nil:
                               [NSError errorWithDomain:MPErrorDomain code:MPErrorMarshalCode userInfo:@{
                                       @"type"                  : @(exportError.type),
-                                      NSLocalizedDescriptionKey: @(exportError.description),
+                                      NSLocalizedDescriptionKey: @(exportError.message),
                               }] );
     }];
 }

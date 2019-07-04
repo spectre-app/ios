@@ -10,6 +10,11 @@
 #import "UIUtils+MP.h"
 #import "LayoutConfiguration.h"
 #import "AutoLayoutCollectionViewCell.h"
+#import "MPUserEntity+CoreDataClass.h"
+#import "MPSiteEntity+CoreDataClass.h"
+#import "MPStoredSiteEntity+CoreDataClass.h"
+#import "MPGeneratedSiteEntity+CoreDataClass.h"
+#import "MPSiteQuestionEntity+CoreDataClass.h"
 
 #import "mpw-algorithm.h"
 #import "mpw-util.h"

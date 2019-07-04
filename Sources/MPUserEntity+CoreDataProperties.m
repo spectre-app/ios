@@ -8,7 +8,7 @@
 
 #import "MPUserEntity+CoreDataProperties.h"
 
-@implementation MPUserEntity (CoreDataProperties)
+@implementation MPUserEntity (CoreData)
 
 + (NSFetchRequest<MPUserEntity *> *)fetchRequest {
 	return [[NSFetchRequest alloc] initWithEntityName:@"MPUserEntity"];

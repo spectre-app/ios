@@ -106,7 +106,9 @@ class MPSpinnerView: UIView {
     override func willRemoveSubview(_ subview: UIView) {
         super.willRemoveSubview( subview )
 
-        self.panRecognizer.isEnabled = self.items > 0
+        let items = self.items - 1
+        self.panRecognizer.isEnabled = items > 0
+        self.activatedItem = nil
 
         self.configurations[subview]?.deactivate()
         self.configurations[subview] = nil

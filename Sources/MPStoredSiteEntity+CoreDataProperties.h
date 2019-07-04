@@ -8,15 +8,17 @@
 
 #import "MPStoredSiteEntity+CoreDataClass.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPStoredSiteEntity (CoreDataProperties)
+@protocol MPStoredSiteEntity_CoreData<MPSiteEntity_CoreData>
 
 + (NSFetchRequest<MPStoredSiteEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *contentObject;
+@property(nullable, nonatomic, retain) NSData *contentObject;
 
+@end
+
+@interface MPStoredSiteEntity(CoreData)<MPStoredSiteEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

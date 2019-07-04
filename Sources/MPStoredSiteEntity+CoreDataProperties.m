@@ -8,10 +8,11 @@
 
 #import "MPStoredSiteEntity+CoreDataProperties.h"
 
-@implementation MPStoredSiteEntity (CoreDataProperties)
+@implementation MPStoredSiteEntity(CoreData)
 
 + (NSFetchRequest<MPStoredSiteEntity *> *)fetchRequest {
-	return [[NSFetchRequest alloc] initWithEntityName:@"MPStoredSiteEntity"];
+
+    return [[NSFetchRequest alloc] initWithEntityName:@"MPStoredSiteEntity"];
 }
 
 @dynamic contentObject;

@@ -8,7 +8,7 @@
 
 #import "MPSiteEntity+CoreDataProperties.h"
 
-@implementation MPSiteEntity (CoreDataProperties)
+@implementation MPSiteEntity (CoreData)
 
 + (NSFetchRequest<MPSiteEntity *> *)fetchRequest {
 	return [[NSFetchRequest alloc] initWithEntityName:@"MPSiteEntity"];
