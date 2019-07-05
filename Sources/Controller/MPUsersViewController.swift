@@ -276,7 +276,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.nameField.borderStyle = .none
             self.nameField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.nameField.attributedPlaceholder = stra( "Your Full Name", [
-                NSAttributedString.Key.foregroundColor: MPTheme.global.color.body.get()!.withAlphaComponent( 0.382 )
+                NSAttributedString.Key.foregroundColor: MPTheme.global.color.secondary.get()!.withAlphaComponent( 0.382 )
             ] )
             self.nameField.autocapitalizationType = .words
             self.nameField.returnKeyType = .next
