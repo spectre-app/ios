@@ -62,9 +62,12 @@ class MPAlertView: MPButton {
         self.detailLabel.numberOfLines = 0
         self.detailLabel.font = MPTheme.global.font.footnote.get()
 
-        let swipeRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( didSwipe ) )
-        swipeRecognizer.direction = .up
-        self.addGestureRecognizer( swipeRecognizer )
+        let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( didDismissSwipe ) )
+        dismissRecognizer.direction = .up
+        let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( didActivateSwipe ) )
+        activateRecognizer.direction = .down
+        self.addGestureRecognizer( dismissRecognizer )
+        self.addGestureRecognizer( activateRecognizer )
         self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
 
         contentStack.axis = .vertical
@@ -106,8 +109,7 @@ class MPAlertView: MPButton {
         }
     }
 
-    @objc
-    func didTap(_ recognizer: UITapGestureRecognizer) {
+    public func activate() {
         self.automaticDismissalItem.cancel()
 
         DispatchQueue.main.perform {
@@ -116,8 +118,18 @@ class MPAlertView: MPButton {
     }
 
     @objc
-    func didSwipe(_ recognizer: UISwipeGestureRecognizer) {
+    func didTap(_ recognizer: UITapGestureRecognizer) {
+        self.activate()
+    }
+
+    @objc
+    func didDismissSwipe(_ recognizer: UISwipeGestureRecognizer) {
         self.dismiss()
+    }
+
+    @objc
+    func didActivateSwipe(_ recognizer: UISwipeGestureRecognizer) {
+        self.activate()
     }
 }
 

@@ -32,17 +32,17 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.tintColor = MPTheme.global.color.selection.get()?.withHueComponent( self.model.color?.hue() )
+        self.view.tintColor = self.model.color
     }
 
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
-            self.backgroundView.backgroundColor = self.model.color
-            self.viewIfLoaded?.tintColor = MPTheme.global.color.selection.get()?.withHueComponent( self.model.color?.hue() )
-            self.setNeedsUpdate()
+            self.viewIfLoaded?.tintColor = self.model.color
         }
+
+        self.setNeedsUpdate()
     }
 
     // MARK: --- MPUserObserver ---

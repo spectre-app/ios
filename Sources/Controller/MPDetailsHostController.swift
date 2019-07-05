@@ -20,13 +20,19 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // - View
         self.detailRecognizer.delegate = self
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
         self.scrollView.delegate = self
+        if #available( iOS 11.0, * ) {
+            self.scrollView.contentInsetAdjustmentBehavior = .always
+        }
 
+        // - Hierarchy
         self.view.addSubview( self.scrollView )
         self.scrollView.addSubview( self.contentView )
 
+        // - Layout
         LayoutConfiguration( view: self.scrollView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }

@@ -13,7 +13,7 @@ class AnyMPDetailsViewController: UIViewController, Observable {
 class MPDetailsViewController<M>: AnyMPDetailsViewController {
     public let model: M
 
-    let backgroundView = UIView()
+    let backgroundView = MPTintView()
     let itemsView      = UIStackView()
     let closeButton    = MPButton.closeButton()
     lazy var items = self.loadItems()

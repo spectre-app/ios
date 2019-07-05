@@ -32,6 +32,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     private let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) )
     private let usersSpinner   = MPSpinnerView()
     private let userToolbar    = UIToolbar()
+    private let detailsHost    = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
 
     // MARK: --- Life ---
@@ -47,12 +48,17 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     }
 
     override func viewDidLoad() {
+
+        // - View
         self.view.layoutMargins = UIEdgeInsets( top: 8, left: 8, bottom: 8, right: 8 )
 
         self.usersSpinner.addSubview( UserView( user: nil, navigateWith: self.navigationController ) )
         self.usersSpinner.delegate = self
 
         self.settingsButton.darkBackground = true
+        self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
+            self.detailsHost.showDetails( MPAppDetailsViewController() )
+        }
 
         self.userToolbar.barStyle = .black
         self.userToolbar.items = [
@@ -60,19 +66,32 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             UIBarButtonItem( barButtonSystemItem: .rewind, target: self, action: #selector( didResetUser ) )
         ]
 
+        // - Hierarchy
+        self.addChildViewController( self.detailsHost )
+        defer {
+            self.detailsHost.didMove( toParentViewController: self )
+        }
         self.view.addSubview( self.usersSpinner )
         self.view.addSubview( self.settingsButton )
         self.view.addSubview( self.userToolbar )
+        self.view.addSubview( self.detailsHost.view )
 
+        // - Layout
         LayoutConfiguration( view: self.usersSpinner )
                 .constrainToOwner( withMargins: false, anchor: .topBox )
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
+
         LayoutConfiguration( view: self.settingsButton )
                 .constrainToOwner( withMargins: true, anchor: .bottomCenter )
                 .activate()
+
         LayoutConfiguration( view: self.userToolbar )
                 .constrainToOwner( withMargins: false, anchor: .horizontally ).activate()
+
+        LayoutConfiguration( view: self.detailsHost.view )
+                .constrainToOwner()
+                .activate()
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
             active.constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }

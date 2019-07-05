@@ -28,13 +28,6 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         self.model.observers.register( observer: self ).userDidChange( self.model )
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        self.backgroundView.backgroundColor = MPTheme.global.color.brand.get()
-        self.view.tintColor = MPTheme.global.color.brand.get()
-    }
-
     // MARK: --- MPUserObserver ---
 
     func userDidLogout(_ user: MPUser) {

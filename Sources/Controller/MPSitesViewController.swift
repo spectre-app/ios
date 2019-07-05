@@ -66,12 +66,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
             self.sitesTableView.contentInsetAdjustmentBehavior = .never
         }
 
+        // - Hierarchy
         self.addChildViewController( self.detailsHost )
         defer {
             self.detailsHost.didMove( toParentViewController: self )
         }
-
-        // - Hierarchy
         self.view.addSubview( self.sitesTableView )
         self.view.addSubview( self.siteHeaderView )
         self.view.addSubview( self.detailsHost.view )

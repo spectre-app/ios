@@ -20,11 +20,11 @@ class Item<M>: NSObject {
     }
 
     private let title:    String?
-    private let subitems: [Item]
+    private let subitems: [Item<M>]
     private (set) lazy var view = createItemView()
     private let updateGroup = DispatchGroup()
 
-    init(title: String? = nil, subitems: [Item] = [ Item ]()) {
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ]()) {
         self.title = title
         self.subitems = subitems
     }
@@ -92,6 +92,7 @@ class Item<M>: NSObject {
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: self.subitemsView.topAnchor ) }
                     .activate()
+
             LayoutConfiguration( view: self.subitemsView )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }

@@ -40,7 +40,7 @@ class MPMarshal: Observable {
 
     private func doReload(completion: (([UserInfo]?) -> Void)? = nil) {
         // Import legacy users
-        self.importLegacy()
+        self.importLegacy( async: false )
 
         // Reload users
         var users = [ UserInfo ]()
@@ -496,8 +496,8 @@ class MPMarshal: Observable {
     }
 
     @discardableResult
-    private func importLegacy() -> Bool {
-        return MPCoreData.shared.perform( async: false ) { context in
+    public func importLegacy(async: Bool = true, force: Bool = false) -> Bool {
+        return MPCoreData.shared.perform( async: async ) { context in
             do {
                 for user: MPUserEntity_CoreData in try context.fetch( MPUserEntity.fetchRequest() ) {
                     guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
@@ -505,7 +505,7 @@ class MPMarshal: Observable {
                         // Not a (saved) object.
                         continue
                     }
-                    guard !(self.defaults?.bool( forKey: objectID.uriRepresentation().absoluteString ) ?? false)
+                    guard force || !(self.defaults?.bool( forKey: objectID.uriRepresentation().absoluteString ) ?? false)
                     else {
                         // Already imported.
                         continue
@@ -594,11 +594,15 @@ class MPMarshal: Observable {
                     let document = mpw_marshal_write( .default, marshalledUser, &error )
                     if error.type == .success,
                        let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
+                        let importGroup = DispatchGroup()
+                        importGroup.enter()
                         self.import( data: document ) { success in
                             if success {
                                 self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
                             }
+                            importGroup.leave()
                         }
+                        importGroup.wait()
                     }
                     else {
                         throw Error.marshal( error: error )
