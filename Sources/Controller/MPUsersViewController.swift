@@ -29,10 +29,10 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         }
     }
 
-    private let usersSpinner = MPSpinnerView()
-    private let userToolbar  = UIToolbar()
-    private let nameLabel    = UILabel()
-    private var toolbarConfiguration: LayoutConfiguration!
+    private let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) )
+    private let usersSpinner   = MPSpinnerView()
+    private let userToolbar    = UIToolbar()
+    private var userToolbarConfiguration: LayoutConfiguration!
 
     // MARK: --- Life ---
 
@@ -47,8 +47,12 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     }
 
     override func viewDidLoad() {
+        self.view.layoutMargins = UIEdgeInsets( top: 8, left: 8, bottom: 8, right: 8 )
+
         self.usersSpinner.addSubview( UserView( user: nil, navigateWith: self.navigationController ) )
         self.usersSpinner.delegate = self
+
+        self.settingsButton.darkBackground = true
 
         self.userToolbar.barStyle = .black
         self.userToolbar.items = [
@@ -57,16 +61,20 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         ]
 
         self.view.addSubview( self.usersSpinner )
+        self.view.addSubview( self.settingsButton )
         self.view.addSubview( self.userToolbar )
 
         LayoutConfiguration( view: self.usersSpinner )
                 .constrainToOwner( withMargins: false, anchor: .topBox )
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
+        LayoutConfiguration( view: self.settingsButton )
+                .constrainToOwner( withMargins: true, anchor: .bottomCenter )
+                .activate()
         LayoutConfiguration( view: self.userToolbar )
                 .constrainToOwner( withMargins: false, anchor: .horizontally ).activate()
 
-        self.toolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
+        self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
             active.constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
             active.set( 1, forKey: "alpha" )
             inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -153,7 +161,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         }
 
         UIView.animate( withDuration: 0.382 ) {
-            self.toolbarConfiguration.updateActivated( spinner.activatedItem != nil )
+            self.userToolbarConfiguration.updateActivated( spinner.activatedItem != nil )
         }
     }
 
@@ -164,7 +172,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         }
 
         UIView.animate( withDuration: 0.382 ) {
-            self.toolbarConfiguration.updateActivated( spinner.activatedItem != nil )
+            self.userToolbarConfiguration.updateActivated( spinner.activatedItem != nil )
         }
     }
 

@@ -50,6 +50,7 @@
 		93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
 		93D397952F5635C793C24DF1 /* NSError+PearlFullDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F9106F2CCFB94283188 /* NSError+PearlFullDescription.m */; };
 		93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
+		93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
 		93D3980046016EFD05B35BC5 /* PearlUICollectionView.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39B1D8177A86C5B9EDDE3 /* PearlUICollectionView.h */; };
 		93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */; };
 		93D398854968B51F6B8DB031 /* MPAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlertView.swift */; };
@@ -384,6 +385,7 @@
 		93D39564D6408073D59CDB6A /* MPButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPButton.swift; sourceTree = "<group>"; };
 		93D3956915634581E737B38C /* PearlNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlNavigationController.m; sourceTree = "<group>"; };
 		93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPExportViewController.swift; sourceTree = "<group>"; };
+		93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailsHostController.swift; sourceTree = "<group>"; };
 		93D395C767C420C02F11C44D /* MPCoreData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCoreData.swift; sourceTree = "<group>"; };
 		93D39633973C6D2EAB335D68 /* MPStarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPStarView.swift; sourceTree = "<group>"; };
 		93D3969393A3A46BD27D7078 /* mpw-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm.c"; sourceTree = "<group>"; };
@@ -962,6 +964,7 @@
 				93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */,
 				93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */,
 				93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */,
+				93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -2172,6 +2175,7 @@
 				93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */,
 				93D39E689BAC56DC28A880CA /* MPCoreData.swift in Sources */,
 				93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */,
+				93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

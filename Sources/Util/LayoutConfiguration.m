@@ -169,7 +169,7 @@
     else
         [inactive activate];
 
-    return nil;
+    return self;
 }
 
 - (instancetype)applyLayoutConfiguration:(LayoutConfiguration *)configuration {

@@ -20,12 +20,14 @@ typedef NS_OPTIONS( NSUInteger, Anchor ) {
     AnchorHeight = 1 << 7,
     AnchorCenterX = 1 << 8,
     AnchorCenterY = 1 << 9,
-    AnchorBox = AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom,
-    AnchorTopBox = AnchorTop | AnchorLeading | AnchorTrailing,
-    AnchorBottomBox = AnchorLeading | AnchorTrailing | AnchorBottom,
+    AnchorCenter = AnchorCenterX | AnchorCenterY,
     AnchorHorizontally = AnchorLeading | AnchorTrailing,
     AnchorVertically = AnchorTop | AnchorBottom,
-    AnchorCenter = AnchorCenterX | AnchorCenterY,
+    AnchorBox = AnchorHorizontally | AnchorVertically,
+    AnchorTopBox = AnchorTop | AnchorHorizontally,
+    AnchorTopCenter = AnchorTop | AnchorCenterX,
+    AnchorBottomBox = AnchorBottom | AnchorHorizontally,
+    AnchorBottomCenter = AnchorBottom | AnchorCenterX,
 };
 
 @interface LayoutTarget : NSObject
