@@ -258,6 +258,15 @@ extension UIView {
     }
 }
 
+extension UnsafePointer where Pointee == CChar {
+    func toStringAndDeallocate() -> String? {
+        defer {
+            self.deallocate()
+        }
+        return String(safeUTF8: self)
+    }
+}
+
 extension Data {
     func sha256() -> Data {
         var hash = Data( count: Int( CC_SHA256_DIGEST_LENGTH ) )

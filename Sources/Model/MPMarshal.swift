@@ -187,7 +187,7 @@ class MPMarshal: Observable {
                 var error    = MPMarshalError( type: .success, message: nil )
                 let document = mpw_marshal_write( format, marshalledUser, &error )
                 if error.type == .success {
-                    if let document = String( safeUTF8: document )?.data( using: .utf8 ) {
+                    if let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         return document
                     }
 
@@ -592,7 +592,7 @@ class MPMarshal: Observable {
                     var error    = MPMarshalError( type: .success, message: nil )
                     let document = mpw_marshal_write( .default, marshalledUser, &error )
                     if error.type == .success,
-                       let document = String( safeUTF8: document )?.data( using: .utf8 ) {
+                       let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         self.import( data: document ) { success in
                             if success {
                                 self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
