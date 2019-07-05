@@ -22,7 +22,7 @@ class MPAlertView: MPButton {
         inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.subheadline.get(), forKey: "font" ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
-    private lazy var automaticDismissalItem = DispatchTask(queue: DispatchQueue.main, qos: .utility, deadline: .now() + .seconds( 3 )) {
+    private lazy var automaticDismissalItem = DispatchTask( queue: DispatchQueue.main, qos: .utility, deadline: .now() + .seconds( 3 ) ) {
         self.dismiss()
     }
 
@@ -121,15 +121,25 @@ class MPAlertView: MPButton {
     }
 }
 
-func mperror(title: String, context: String? = nil, error: Error? = nil) {
+func mperror(title: String, context: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil) {
+    var errorDetails = details?.description
+    if let error = error {
+        if let errorDetails_ = errorDetails {
+            errorDetails = "\(errorDetails_)\n\n\(error)"
+        }
+        else {
+            errorDetails = "\(error)"
+        }
+    }
+
     var message = title
     if let context = context {
         message += " (\(context))"
     }
-    if let error = error {
-        message += ": \(error)"
+    if let errorDetails = errorDetails {
+        message += ": \(errorDetails)"
     }
     err( message )
 
-    MPAlertView( title: title, message: context, details: error?.localizedDescription ).show()
+    MPAlertView( title: title, message: context?.description, details: errorDetails ).show()
 }

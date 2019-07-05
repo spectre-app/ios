@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Crashlytics
 
 class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObserver {
     public var users = [ MPMarshal.UserInfo ]() {

@@ -88,9 +88,6 @@
 		DA04E33E14B1E70400ECA4F3 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */; };
 		DA071BF3190187FE00179766 /* empty@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA071BF1190187FE00179766 /* empty@2x.png */; };
 		DA071BF4190187FE00179766 /* empty.png in Resources */ = {isa = PBXBuildFile; fileRef = DA071BF2190187FE00179766 /* empty.png */; };
-		DA0CC53B1EB57B5C009A8ED9 /* Fabric.plist in Resources */ = {isa = PBXBuildFile; fileRef = DA0CC53A1EB57B5C009A8ED9 /* Fabric.plist */; };
-		DA0CC5411EB57BD4009A8ED9 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA0CC53F1EB57B91009A8ED9 /* Fabric.framework */; };
-		DA0CC5421EB57BD4009A8ED9 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA141191922FED80032B392 /* Crashlytics.framework */; };
 		DA24EBE819DAD6DE00FF010B /* Icon-320.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBE619DAD6DE00FF010B /* Icon-320.png */; };
 		DA24EBE919DAD6DE00FF010B /* Icon-64.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBE719DAD6DE00FF010B /* Icon-64.png */; };
 		DA24EBEA19DAD6EE00FF010B /* Icon-Small.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBBA19DAD4D000FF010B /* Icon-Small.png */; };
@@ -259,6 +256,7 @@
 		DAEC85B818E3DD9A007FC0DF /* UIView+Touches.h in Headers */ = {isa = PBXBuildFile; fileRef = DAEC85B418E3DD9A007FC0DF /* UIView+Touches.h */; };
 		DAEFB01E19BCBD9E00525079 /* UIView+LayoutGone.m in Sources */ = {isa = PBXBuildFile; fileRef = DAEFB01C19BCBD9E00525079 /* UIView+LayoutGone.m */; };
 		DAEFB01F19BCBD9E00525079 /* UIView+LayoutGone.h in Headers */ = {isa = PBXBuildFile; fileRef = DAEFB01D19BCBD9E00525079 /* UIView+LayoutGone.h */; };
+		DAF4359A22CF73FD00889E85 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */; };
 		DAF4EF50190A81E400023C90 /* NSManagedObject+Pearl.m in Sources */ = {isa = PBXBuildFile; fileRef = DAF4EF4E190A81E400023C90 /* NSManagedObject+Pearl.m */; };
 		DAF4EF51190A81E400023C90 /* NSManagedObject+Pearl.h in Headers */ = {isa = PBXBuildFile; fileRef = DAF4EF4F190A81E400023C90 /* NSManagedObject+Pearl.h */; };
 		DAFE4A1315039824003ABA7C /* NSObject+PearlExport.h in Headers */ = {isa = PBXBuildFile; fileRef = DAFE45D815039823003ABA7C /* NSObject+PearlExport.h */; };
@@ -447,8 +445,6 @@
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		DA071BF1190187FE00179766 /* empty@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "empty@2x.png"; sourceTree = "<group>"; };
 		DA071BF2190187FE00179766 /* empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = empty.png; sourceTree = "<group>"; };
-		DA0CC53A1EB57B5C009A8ED9 /* Fabric.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Fabric.plist; sourceTree = "<group>"; };
-		DA0CC53F1EB57B91009A8ED9 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
 		DA24EBB219DAD4D000FF010B /* Icon-60.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-60.png"; sourceTree = "<group>"; };
 		DA24EBB319DAD4D000FF010B /* Icon-60@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-60@2x.png"; sourceTree = "<group>"; };
 		DA24EBB419DAD4D000FF010B /* Icon-60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-60@3x.png"; sourceTree = "<group>"; };
@@ -479,7 +475,6 @@
 		DA29992D19C86F5700AF7DF1 /* thumb_generated_login@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumb_generated_login@2x.png"; sourceTree = "<group>"; };
 		DA29992E19C86F5700AF7DF1 /* thumb_generated_login.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = thumb_generated_login.png; sourceTree = "<group>"; };
 		DA29993119C9132F00AF7DF1 /* thumb_generated_login@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumb_generated_login@3x.png"; sourceTree = "<group>"; };
-		DA2C3D601BD95EEE001137B3 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Fabric.framework; path = ../../../External/iOS/Fabric.framework; sourceTree = "<group>"; };
 		DA2C3D621BD96126001137B3 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		DA2C3D641BD9612F001137B3 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		DA2CA4D918D28859007798F8 /* NSArray+Pearl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+Pearl.m"; sourceTree = "<group>"; };
@@ -504,7 +499,6 @@
 		DA3509FC15F101A500C14A8E /* PearlQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlQueue.h; sourceTree = "<group>"; };
 		DA3509FD15F101A500C14A8E /* PearlQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlQueue.m; sourceTree = "<group>"; };
 		DA3954B32066D2B5004621DB /* MasterPassword-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MasterPassword-Prefix.pch"; sourceTree = "<group>"; };
-		DA3B844D190FC5DF00246EEA /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Crashlytics.framework; path = ../../../External/iOS/Crashlytics.framework; sourceTree = "<group>"; };
 		DA3BCFCA19BD09D5006B2681 /* SourceCodePro-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Regular.otf"; sourceTree = "<group>"; };
 		DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		DA4A0C1E201531B9004E2CE5 /* MasterPassword-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MasterPassword-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -536,7 +530,6 @@
 		DA95B50D1C4776F00067F5EF /* NSMutableSet+Pearl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableSet+Pearl.h"; sourceTree = "<group>"; };
 		DA95B50E1C4776F00067F5EF /* NSMutableSet+Pearl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableSet+Pearl.m"; sourceTree = "<group>"; };
 		DA95D5F014DF0B1E008D1B94 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		DAA141191922FED80032B392 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
 		DAA1411C1922FF020032B392 /* PearlTween.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlTween.m; sourceTree = "<group>"; };
 		DAA1411D1922FF020032B392 /* PearlTween.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlTween.h; sourceTree = "<group>"; };
 		DAA1411F1922FF020032B392 /* map-macro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "map-macro.h"; sourceTree = "<group>"; };
@@ -750,6 +743,7 @@
 		DAEC85B418E3DD9A007FC0DF /* UIView+Touches.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Touches.h"; sourceTree = "<group>"; };
 		DAEFB01C19BCBD9E00525079 /* UIView+LayoutGone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+LayoutGone.m"; sourceTree = "<group>"; };
 		DAEFB01D19BCBD9E00525079 /* UIView+LayoutGone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+LayoutGone.h"; sourceTree = "<group>"; };
+		DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		DAF4EF4E190A81E400023C90 /* NSManagedObject+Pearl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Pearl.m"; sourceTree = "<group>"; };
 		DAF4EF4F190A81E400023C90 /* NSManagedObject+Pearl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Pearl.h"; sourceTree = "<group>"; };
 		DAFE45D815039823003ABA7C /* NSObject+PearlExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+PearlExport.h"; sourceTree = "<group>"; };
@@ -831,7 +825,6 @@
 				DA95B50C1C476B6A0067F5EF /* LocalAuthentication.framework in Frameworks */,
 				DA2C3D651BD9612F001137B3 /* libz.tbd in Frameworks */,
 				DA2C3D631BD96126001137B3 /* libc++.tbd in Frameworks */,
-				DA0CC5421EB57BD4009A8ED9 /* Crashlytics.framework in Frameworks */,
 				DA04E33E14B1E70400ECA4F3 /* MobileCoreServices.framework in Frameworks */,
 				DAE2725A19C93B8E007C5262 /* StoreKit.framework in Frameworks */,
 				DA6701E016406BB400B61001 /* AdSupport.framework in Frameworks */,
@@ -846,7 +839,6 @@
 				DA5BFA4B147E415C00F98B1E /* Foundation.framework in Frameworks */,
 				DA5BFA4D147E415C00F98B1E /* CoreGraphics.framework in Frameworks */,
 				DA5BFA4F147E415C00F98B1E /* CoreData.framework in Frameworks */,
-				DA0CC5411EB57BD4009A8ED9 /* Fabric.framework in Frameworks */,
 				85CD8F96F4AF2E32ECC42FA9 /* Pods_MasterPassword.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -971,14 +963,6 @@
 			path = Controller;
 			sourceTree = "<group>";
 		};
-		DA0CC5391EB57B5C009A8ED9 /* Fabric */ = {
-			isa = PBXGroup;
-			children = (
-				DA0CC53A1EB57B5C009A8ED9 /* Fabric.plist */,
-			);
-			path = Fabric;
-			sourceTree = "<group>";
-		};
 		DA24EBB019DAD4D000FF010B /* ios */ = {
 			isa = PBXGroup;
 			children = (
@@ -1028,9 +1012,10 @@
 		DA4A0BDE201443F4004E2CE5 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				93D39472440F87F0B0FAD295 /* View */,
 				93D39E0C533C1943D2425F07 /* Controller */,
 				93D39760DAE73795CA63D02A /* Util */,
+				93D39472440F87F0B0FAD295 /* View */,
+				DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */,
 				DA4A0C1E201531B9004E2CE5 /* MasterPassword-Bridging-Header.h */,
 				DA4A0C1F201531B9004E2CE5 /* MasterPassword-Info.plist */,
 				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
@@ -1069,8 +1054,6 @@
 				DA5BFA4E147E415C00F98B1E /* CoreData.framework */,
 				DA5BFA4C147E415C00F98B1E /* CoreGraphics.framework */,
 				DAAC35DD156BD77D00C5FD93 /* CoreTelephony.framework */,
-				DA3B844D190FC5DF00246EEA /* Crashlytics.framework */,
-				DA2C3D601BD95EEE001137B3 /* Fabric.framework */,
 				DA5BFA4A147E415C00F98B1E /* Foundation.framework */,
 				DA2C3D621BD96126001137B3 /* libc++.tbd */,
 				DA2C3D641BD9612F001137B3 /* libz.tbd */,
@@ -1093,8 +1076,6 @@
 		DAA141181922FED80032B392 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				DA0CC53F1EB57B91009A8ED9 /* Fabric.framework */,
-				DAA141191922FED80032B392 /* Crashlytics.framework */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -1350,9 +1331,9 @@
 			isa = PBXGroup;
 			children = (
 				DA4A0BDE201443F4004E2CE5 /* iOS */,
+				93D392613DA65A3C5867A2B1 /* Model */,
 				DA3954B32066D2B5004621DB /* MasterPassword-Prefix.pch */,
 				DAE6E18C22CC3CE100DE0342 /* MasterPassword.xcdatamodeld */,
-				93D392613DA65A3C5867A2B1 /* Model */,
 				DAE6E19A22CC3D1B00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.h */,
 				DAE6E19922CC3D1B00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.m */,
 				DAE6E1A822CC3D1C00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.h */,
@@ -1402,7 +1383,6 @@
 		DACA23B41705DF7D002C6C22 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				DA0CC5391EB57B5C009A8ED9 /* Fabric */,
 				DACA29701705E1A8002C6C22 /* Data */,
 				DABD360D1711E29400CF925C /* Media */,
 				DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */,
@@ -1726,10 +1706,9 @@
 				DA5BFA40147E415C00F98B1E /* Sources */,
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
-				DABFF04622863A6D006DCE3C /* Run Script: Integrate Reveal Server */,
 				DA6556E314D55F3000841C99 /* Run Script: GIT version -> Info.plist */,
-				DAD3125D155288AA00A3F9ED /* Run Script: Fabric */,
 				F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */,
+				DAF4359B22CF927600889E85 /* Run Script: Fabric */,
 			);
 			buildRules = (
 			);
@@ -1917,7 +1896,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAFE4A5A1503982E003ABA7C /* Pearl.strings in Resources */,
-				DA0CC53B1EB57B5C009A8ED9 /* Fabric.plist in Resources */,
 				DA32D04F19D2F59B004F3F0E /* meter_fuel@2x.png in Resources */,
 				DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */,
 				DA854C8318D4CFBF00106317 /* avatar-add@2x.png in Resources */,
@@ -1981,6 +1959,7 @@
 				DAA1762519D89B610044227B /* thumb_touch_id.png in Resources */,
 				DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */,
 				DA32D04E19D2F59B004F3F0E /* meter_fuel@3x.png in Resources */,
+				DAF4359A22CF73FD00889E85 /* GoogleService-Info.plist in Resources */,
 				DABD39871711E29700CF925C /* SourceCodePro-Black.otf in Resources */,
 				DABD39881711E29700CF925C /* SourceCodePro-ExtraLight.otf in Resources */,
 				DA29993219C9132F00AF7DF1 /* thumb_generated_login@3x.png in Resources */,
@@ -2074,7 +2053,7 @@
 			shellPath = /bin/sh;
 			shellScript = "";
 		};
-		DABFF04622863A6D006DCE3C /* Run Script: Integrate Reveal Server */ = {
+		DAF4359B22CF927600889E85 /* Run Script: Fabric */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2082,30 +2061,16 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
 			);
-			name = "Run Script: Integrate Reveal Server";
+			name = "Run Script: Fabric";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = "/bin/bash -e";
-			shellScript = "REVEAL_APP_PATH=$(mdfind kMDItemCFBundleIdentifier=\"com.ittybittyapps.Reveal2\" | head -n 1)\nBUILD_SCRIPT_PATH=\"${REVEAL_APP_PATH}/Contents/SharedSupport/Scripts/reveal_server_build_phase.sh\"\nif [ \"${REVEAL_APP_PATH}\" -a -e \"${BUILD_SCRIPT_PATH}\" ]; then\n\"${BUILD_SCRIPT_PATH}\"\nelse\necho \"Reveal Server not loaded: Cannot find a compatible Reveal app.\"\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		DAD3125D155288AA00A3F9ED /* Run Script: Fabric */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script: Fabric";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = "/bin/bash -e";
-			shellScript = "[[ $DEPLOYMENT_LOCATION != YES ]] && exit\n\napiKey=$(/usr/libexec/PlistBuddy -c \"Print :'API Key'\" Resources/Fabric/Fabric.plist)\n[[ $apiKey ]] && External/iOS/Fabric.framework/run \"$apiKey\"";
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Fabric/run\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */ = {
@@ -2115,14 +2080,18 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/Stellar/Stellar.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftLinkPreview/SwiftLinkPreview.framework",
+				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 				"${BUILT_PRODUCTS_DIR}/pop/pop.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stellar.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftLinkPreview.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/pop.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2423,10 +2392,6 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "-";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/External/iOS\"",
-				);
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2519,7 +2484,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -2699,10 +2663,6 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/External/iOS\"",
-				);
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2746,10 +2706,6 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/External/iOS\"",
-				);
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
