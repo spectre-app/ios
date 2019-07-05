@@ -21,6 +21,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
         PearlLogger.get().printLevel = .debug
 
         // Start UI
+        self.window.tintColor = MPTheme.global.color.brand.get()
         self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window.makeKeyAndVisible()
 

@@ -31,7 +31,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.tintColor = MPTheme.global.color.password.tint( self.model.identicon.uiColor() )
+        self.backgroundView.backgroundColor = MPTheme.global.color.brand.get()
+        self.view.tintColor = MPTheme.global.color.brand.get()
     }
 
     // MARK: --- MPUserObserver ---
@@ -43,11 +44,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     }
 
     func userDidChange(_ user: MPUser) {
-        DispatchQueue.main.perform {
-            self.backgroundView.backgroundColor = MPTheme.global.color.password.tint( self.model.identicon.uiColor() )
-            self.viewIfLoaded?.tintColor = MPTheme.global.color.password.tint( self.model.identicon.uiColor() )
-            self.setNeedsUpdate()
-        }
+        self.setNeedsUpdate()
     }
 
     // MARK: --- Types ---

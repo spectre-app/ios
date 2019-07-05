@@ -44,7 +44,7 @@ public class MPTheme {
         public let shadow:    Value<UIColor>
         public let glow:      Value<UIColor>
         public let selection: Value<UIColor>
-        public let password:  Value<UIColor>
+        public let brand:     Value<UIColor>
     }
 
     // MARK: --- Internal ---
@@ -90,7 +90,7 @@ public class MPTheme {
                 shadow: Value( UIColor.black ),
                 glow: Value( UIColor.white ),
                 selection: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.382 ) ),
-                password: Value( UIColor( red: 0, green: 0.663, blue: 0.613, alpha: 1 ) ) )
+                brand: Value( UIColor( red: 0, green: 0.663, blue: 0.613, alpha: 1 ) ) )
     }
 
     private init(path: String) {
@@ -126,7 +126,7 @@ public class MPTheme {
                              shadow: Value( parent: self.parent?.color.shadow ),
                              glow: Value( parent: self.parent?.color.glow ),
                              selection: Value( parent: self.parent?.color.selection ),
-                             password: Value( parent: self.parent?.color.password ) )
+                             brand: Value( parent: self.parent?.color.brand ) )
 
         MPTheme.themes[path] = self
     }

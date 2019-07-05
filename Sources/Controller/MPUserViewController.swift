@@ -16,10 +16,6 @@ class MPUserViewController: UIViewController, MPUserObserver {
             if (oldValue !== self.user) {
                 self.user.observers.register( observer: self )
             }
-
-            DispatchQueue.main.perform {
-                self.viewIfLoaded?.tintColor = MPTheme.global.color.password.tint( self.user.identicon.uiColor() )
-            }
         }
     }
 
@@ -37,12 +33,6 @@ class MPUserViewController: UIViewController, MPUserObserver {
             self.user = user
         }
         super.init( nibName: nil, bundle: nil )
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        self.view.tintColor = MPTheme.global.color.password.tint( self.user.identicon.uiColor() )
     }
 
     // MARK: --- MPUserObserver ---

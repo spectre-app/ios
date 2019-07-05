@@ -73,6 +73,7 @@
 		93D39D45180726A9C2484030 /* MPStarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39633973C6D2EAB335D68 /* MPStarView.swift */; };
 		93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */; };
 		93D39D8B9142B6F4077CFBD2 /* MPUntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */; };
+		93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
 		93D39E281E3658B30550CB55 /* NSDictionary+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39AA1EE2E1E7B81372240 /* NSDictionary+Indexing.m */; };
 		93D39E34FD28D24FE3442C48 /* UITextView+PearlAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3977321EB249981821AB0 /* UITextView+PearlAttributes.m */; };
 		93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
@@ -420,6 +421,7 @@
 		93D39AFD17CBE324D745DAB0 /* mpw-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-types.h"; sourceTree = "<group>"; };
 		93D39B1D8177A86C5B9EDDE3 /* PearlUICollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlUICollectionView.h; sourceTree = "<group>"; };
 		93D39B2EC0C429BBBF90463B /* UIUtils+MP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIUtils+MP.m"; sourceTree = "<group>"; };
+		93D39B3112D0D128E6369596 /* MPTintLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintLabel.swift; sourceTree = "<group>"; };
 		93D39B7B765546B1F1900CB7 /* UIView+Visible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Visible.h"; sourceTree = "<group>"; };
 		93D39BDA5DB85FCDE4E6450A /* PearlHangDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlHangDetector.m; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUsersViewController.swift; sourceTree = "<group>"; };
@@ -895,6 +897,7 @@
 				93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */,
 				93D39865ECFD34CF3ADF930D /* MPItemCell.swift */,
 				93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */,
+				93D39B3112D0D128E6369596 /* MPTintLabel.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2168,6 +2171,7 @@
 				93D391377514DB16467A3CDC /* MPUserViewController.swift in Sources */,
 				93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */,
 				93D39E689BAC56DC28A880CA /* MPCoreData.swift in Sources */,
+				93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

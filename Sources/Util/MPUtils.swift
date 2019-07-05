@@ -91,13 +91,15 @@ extension MPIdenticon: Equatable {
         shadow.shadowColor = MPTheme.global.color.shadow.get()
         shadow.shadowOffset = CGSize( width: 0, height: 1 )
         return stra( self.text(), [
-            NSAttributedStringKey.foregroundColor: self.uiColor(),
+            NSAttributedStringKey.foregroundColor: self.color.ui(),
             NSAttributedStringKey.shadow: shadow,
         ] )
     }
+}
 
-    public func uiColor() -> UIColor {
-        switch self.color {
+extension MPIdenticonColor {
+    public func ui() -> UIColor {
+        switch self {
             case .black:
                 return .black
             case .red:

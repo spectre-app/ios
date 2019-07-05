@@ -221,7 +221,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.updateResult()
             }
         }
-        private let resultLabel = UILabel()
+        private let resultLabel = MPTintLabel()
         private let nameLabel   = UILabel()
         private let modeButton  = MPButton( image: nil, title: "" )
         private let copyButton  = MPButton( image: nil, title: "" )
@@ -249,7 +249,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.resultLabel.font = MPTheme.global.font.password.get()
             self.resultLabel.text = " "
             self.resultLabel.textAlignment = .natural
-            self.resultLabel.textColor = MPTheme.global.color.password.get()
             self.resultLabel.shadowColor = MPTheme.global.color.shadow.get()
             self.resultLabel.shadowOffset = CGSize( width: 0, height: 1 )
 

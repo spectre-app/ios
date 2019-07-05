@@ -155,7 +155,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, UIGestur
 
         // Offset detail view's top inset to make space for the top container.
         self.detailContainer.contentInset = UIEdgeInsets(
-                top: self.siteHeaderView.frame.maxY,
+                top: self.topContainer.frame.maxY,
                 left: 0, bottom: 0, right: 0 )
     }
 

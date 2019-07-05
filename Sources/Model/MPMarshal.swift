@@ -575,7 +575,8 @@ class MPMarshal: Observable {
                         (site as? MPStoredSiteEntity)?.contentObject?.base64EncodedString().withCString {
                             marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( $0 ) )
                         }
-                        marshalledSite.pointee.loginType = (site.loginGenerated_?.boolValue ?? true) ? .templateName: .statefulPersonal
+                        marshalledSite.pointee.loginType =
+                                (site.loginGenerated_?.boolValue ?? true || site.loginName == nil) ? .templateName: .statefulPersonal
                         site.loginName?.withCString { marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( $0 ) ) }
                         site.url??.withCString { marshalledSite.pointee.url = UnsafePointer( mpw_strdup( $0 ) ) }
                         marshalledSite.pointee.uses = site.uses_?.uint32Value ?? 0
