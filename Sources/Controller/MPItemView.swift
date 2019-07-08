@@ -163,6 +163,7 @@ class SeparatorItem<M>: Item<M> {
         override func createValueView() -> UIView? {
             self.separatorView.backgroundColor = MPTheme.global.color.body.get()
             self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).activate()
+            self.separatorView.widthAnchor.constraint( equalToConstant: 1000 ).withPriority( .fittingSizeLevel ).activate()
             return self.separatorView
         }
     }
