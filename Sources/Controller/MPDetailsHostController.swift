@@ -11,7 +11,8 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
 
     private lazy var detailRecognizer = UITapGestureRecognizer( target: self, action: #selector( shouldDismissDetails ) )
     private lazy var configuration    = LayoutConfiguration( view: self.view )
-    private var detailsController: AnyMPDetailsViewController?
+    private var detailsController:      AnyMPDetailsViewController?
+    private var contentSizeObservation: NSKeyValueObservation?
 
     override func loadView() {
         self.view = MPUntouchableView()
@@ -26,6 +27,13 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
         self.scrollView.delegate = self
         if #available( iOS 11.0, * ) {
             self.scrollView.contentInsetAdjustmentBehavior = .always
+        }
+
+        // Keep sufficient inset to keep content at the bottom of the host.
+        self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { _, _ in
+            self.scrollView.contentInset = UIEdgeInsets(
+                    top: max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height ),
+                    left: 0, bottom: 0, right: 0 )
         }
 
         // - Hierarchy
@@ -125,8 +133,10 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
     // MARK: --- UIScrollViewDelegate ---
 
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-        if scrollView == self.scrollView, scrollView.contentInset.top + scrollView.contentOffset.y < -80 {
-            self.shouldDismissDetails()
+        if #available( iOS 11, * ) {
+            if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -80 {
+                self.shouldDismissDetails()
+            }
         }
     }
 }

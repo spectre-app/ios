@@ -35,9 +35,9 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         // - View
         self.topContainer.darkBackground = true
 
-        self.searchField.attributedPlaceholder = stra("Site Name", [
+        self.searchField.attributedPlaceholder = stra( "Site Name", [
             NSAttributedString.Key.foregroundColor: MPTheme.global.color.secondary.get()!.withAlphaComponent( 0.382 )
-        ])
+        ] )
         self.searchField.textColor = MPTheme.global.color.body.get()
         self.searchField.rightView = self.userButton
         self.searchField.clearButtonMode = .whileEditing
@@ -133,9 +133,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 
         // Offset detail view's top inset to make space for the top container.
-        self.detailsHost.scrollView.contentInset = UIEdgeInsets(
-                top: self.topContainer.frame.maxY,
-                left: 0, bottom: 0, right: 0 )
+        if #available( iOS 11, * ) {
+            self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
+                    top: self.siteHeaderView.frame.maxY + self.topContainer.frame.size.height / 2
+                            - self.view.layoutMarginsGuide.layoutFrame.minY, left: 0, bottom: 0, right: 0 )
+        }
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {

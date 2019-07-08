@@ -495,6 +495,12 @@ class MPMarshal: Observable {
         }
     }
 
+    public func hasLegacy() -> Bool {
+        return MPCoreData.shared.await {
+            return (try? $0.count( for: MPUserEntity.fetchRequest() )) ?? -1 > 0
+        }
+    }
+
     @discardableResult
     public func importLegacy(async: Bool = true, force: Bool = false) -> Bool {
         return MPCoreData.shared.perform( async: async ) { context in

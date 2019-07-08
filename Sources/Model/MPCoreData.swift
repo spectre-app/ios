@@ -20,24 +20,39 @@ class MPCoreData {
             return false
         }
 
-        if main {
-            if async {
-                self.mainManagedObjectContext.perform { task( self.mainManagedObjectContext ) }
-            }
-            else {
-                self.mainManagedObjectContext.performAndWait { task( self.mainManagedObjectContext ) }
+        if !async {
+            return self.await {
+                task( $0 )
+                return true
             }
         }
         else {
-            if async {
-                self.privateManagedObjectContext.perform { task( self.privateManagedObjectContext ) }
+            if main {
+                self.mainManagedObjectContext.perform { task( self.mainManagedObjectContext ) }
             }
             else {
-                self.privateManagedObjectContext.performAndWait { task( self.privateManagedObjectContext ) }
+                self.privateManagedObjectContext.perform { task( self.privateManagedObjectContext ) }
             }
+            return true
+        }
+    }
+
+    @discardableResult
+    public func await(main: Bool = false, task: @escaping (NSManagedObjectContext) -> Bool) -> Bool {
+        guard self.loadStore()
+        else {
+            return false
         }
 
-        return true
+        var success = false
+        if main {
+            self.mainManagedObjectContext.performAndWait { success = task( self.mainManagedObjectContext ) }
+        }
+        else {
+            self.privateManagedObjectContext.performAndWait { success = task( self.privateManagedObjectContext ) }
+        }
+
+        return success
     }
 
     private func loadStore() -> Bool {

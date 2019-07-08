@@ -34,6 +34,10 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
     }
 
     class LegacyItem: ButtonItem<Void> {
+        override var hidden: Bool {
+            return !MPMarshal.shared.hasLegacy()
+        }
+
         init() {
             super.init( title: "Legacy Data", itemValue: { _ in
                 ("Re-Import Legacy Users", nil)

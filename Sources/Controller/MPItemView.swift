@@ -18,6 +18,7 @@ class Item<M>: NSObject {
             self.setNeedsUpdate()
         }
     }
+    private(set) var hidden = false
 
     private let title:    String?
     private let subitems: [Item<M>]
@@ -62,6 +63,8 @@ class Item<M>: NSObject {
             super.init( frame: .zero )
 
             // - View
+            self.isHidden = self.item.hidden
+
             self.contentView.axis = .vertical
             self.contentView.spacing = 8
             self.contentView.preservesSuperviewLayoutMargins = true
