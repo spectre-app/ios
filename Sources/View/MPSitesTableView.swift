@@ -368,9 +368,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         func siteDidChange(_ site: MPSite) {
             DispatchQueue.main.perform {
-                // FIXME: causes the app to lock up
-                //self.nameLabel.attributedText = self.result?.attributedKey
-                self.nameLabel.text = self.result?.attributedKey.string
+                self.nameLabel.attributedText = self.result?.attributedKey
             }
             self.updateResult()
         }
