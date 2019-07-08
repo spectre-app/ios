@@ -132,11 +132,18 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         self.sitesTableView.contentInset = UIEdgeInsets(
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 
-        // Offset detail view's top inset to make space for the top container.
+        // Add space consumed by header and top container to details safe area.
         if #available( iOS 11, * ) {
-            self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
-                    top: self.siteHeaderView.frame.maxY + self.topContainer.frame.size.height / 2
-                            - self.view.layoutMarginsGuide.layoutFrame.minY, left: 0, bottom: 0, right: 0 )
+            if self.siteHeaderView.frame.maxY <= 0 {
+                self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
+                        top: self.topContainer.frame.maxY
+                                - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
+            }
+            else {
+                self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
+                        top: self.siteHeaderView.frame.maxY + (self.topContainer.frame.size.height + 8) / 2
+                                - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
+            }
         }
     }
 
