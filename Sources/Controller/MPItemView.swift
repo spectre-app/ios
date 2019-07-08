@@ -21,12 +21,14 @@ class Item<M>: NSObject {
     private(set) var hidden = false
 
     private let title:    String?
+    private let caption:  String?
     private let subitems: [Item<M>]
     private (set) lazy var view = createItemView()
     private let updateGroup = DispatchGroup()
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ]()) {
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption: String? = nil) {
         self.title = title
+        self.caption = caption
         self.subitems = subitems
     }
 
@@ -50,6 +52,7 @@ class Item<M>: NSObject {
 
     class ItemView<M>: UIView {
         let titleLabel   = UILabel()
+        let captionLabel = UILabel()
         let contentView  = UIStackView()
         let subitemsView = UIStackView()
         private let item: Item<M>
@@ -66,6 +69,7 @@ class Item<M>: NSObject {
             self.isHidden = self.item.hidden
 
             self.contentView.axis = .vertical
+            self.contentView.alignment = .center
             self.contentView.spacing = 8
             self.contentView.preservesSuperviewLayoutMargins = true
 
@@ -83,6 +87,12 @@ class Item<M>: NSObject {
             self.subitemsView.spacing = 20
             self.subitemsView.preservesSuperviewLayoutMargins = true
             self.subitemsView.isLayoutMarginsRelativeArrangement = true
+
+            self.captionLabel.textColor = MPTheme.global.color.secondary.get()
+            self.captionLabel.textAlignment = .center
+            self.captionLabel.font = MPTheme.global.font.caption1.get()
+            self.captionLabel.numberOfLines = 0
+            self.contentView.addArrangedSubview( self.captionLabel )
 
             // - Hierarchy
             self.addSubview( self.contentView )
@@ -111,6 +121,9 @@ class Item<M>: NSObject {
         func update() {
             self.titleLabel.text = self.item.title
             self.titleLabel.isHidden = self.item.title == nil
+
+            self.captionLabel.text = self.item.caption
+            self.captionLabel.isHidden = self.item.caption == nil
 
             for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
                 let subitemView     = i < self.item.subitems.count ? self.item.subitems[i].view: nil
@@ -168,9 +181,9 @@ class ValueItem<M, V>: Item<M> {
         }
     }
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), itemValue: @escaping (M) -> V? = { _ in nil }) {
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption: String? = nil, itemValue: @escaping (M) -> V? = { _ in nil }) {
         self.itemValue = itemValue
-        super.init( title: title, subitems: subitems )
+        super.init( title: title, subitems: subitems, caption: caption )
     }
 }
 
@@ -242,7 +255,55 @@ class LabelItem<M>: ValueItem<M, (Any?, Any?)> {
     }
 }
 
-class ButtonItem<M>: ValueItem<M, (String?, UIImage?)> {
+class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
+    let itemUpdate: (M, Bool) -> Void
+
+    init(title: String? = nil, subitems: [Item<M>] = [], caption: String? = nil,
+         itemValue: @escaping (M) -> (selected: Bool, icon: UIImage?),
+         itemUpdate: @escaping (M, Bool) -> Void = { _, _ in }) {
+        self.itemUpdate = itemUpdate
+
+        super.init( title: title, subitems: subitems, caption: caption, itemValue: itemValue )
+    }
+
+    override func createItemView() -> ToggleItemView<M> {
+        return ToggleItemView<M>( withItem: self )
+    }
+
+    class ToggleItemView<M>: ItemView<M> {
+        let item: ToggleItem
+        let button = MPButton()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item<M>) {
+            self.item = item as! ToggleItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.button.button.addAction( for: .touchUpInside ) { _, _ in
+                if let model = self.item.model {
+                    self.button.button.isSelected = !self.button.button.isSelected
+                    self.item.itemUpdate( model, self.button.button.isSelected )
+                    self.item.setNeedsUpdate()
+                }
+            }
+            return self.button
+        }
+
+        override func update() {
+            super.update()
+
+            self.button.button.isSelected = self.item.value?.selected ?? false
+            self.button.image = self.item.value?.icon
+        }
+    }
+}
+
+class ButtonItem<M>: ValueItem<M, (title: String?, image: UIImage?)> {
     let itemAction: (ButtonItem<M>) -> Void
 
     init(title: String? = nil, subitems: [Item<M>] = [],
@@ -271,9 +332,6 @@ class ButtonItem<M>: ValueItem<M, (String?, UIImage?)> {
         }
 
         override func createValueView() -> UIView? {
-//            self.button.textColor = MPTheme.global.color.body.get()
-//            self.button.textAlignment = .center
-//            self.button.font = MPTheme.global.font.largeTitle.get()
             self.button.button.addAction( for: .touchUpInside ) { _, _ in
                 self.item.itemAction( self.item )
             }
@@ -283,8 +341,8 @@ class ButtonItem<M>: ValueItem<M, (String?, UIImage?)> {
         override func update() {
             super.update()
 
-            self.button.title = self.item.value?.0
-            self.button.image = self.item.value?.1
+            self.button.title = self.item.value?.title
+            self.button.image = self.item.value?.image
         }
     }
 }

@@ -19,7 +19,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
     override func loadItems() -> [Item<Void>] {
         return [ VersionItem(), SeparatorItem(),
-                 LegacyItem(), SeparatorItem(),
+                 DiagnisticsItem(), LegacyItem(), SeparatorItem(),
                  InfoItem() ]
     }
 
@@ -29,6 +29,19 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
         init() {
             super.init( title: "\(PearlInfoPlist.get().cfBundleDisplayName ?? "mPass")" ) { _ in
                 (PearlInfoPlist.get().cfBundleShortVersionString, PearlInfoPlist.get().cfBundleVersion)
+            }
+        }
+    }
+
+    class DiagnisticsItem: ToggleItem<Void> {
+        init() {
+            super.init( title: "Diagnostics", caption:
+            """
+            When application crashes or errors occur, share fully anonymized issue information to enable quick resolution.
+            """, itemValue: { _ in
+                (UserDefaults.standard.bool( forKey: "sendInfo" ), UIImage( named: "icon_bandage" ))
+            } ) { _, sendInfo in
+                UserDefaults.standard.set( sendInfo, forKey: "sendInfo" )
             }
         }
     }
