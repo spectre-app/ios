@@ -260,12 +260,43 @@ extension UIView {
     }
 }
 
+extension CGRect {
+    var top:         CGPoint {
+        return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY )
+    }
+    var topLeft:     CGPoint {
+        return CGPoint( x: self.minX, y: self.minY )
+    }
+    var topRight:    CGPoint {
+        return CGPoint( x: self.maxX, y: self.minY )
+    }
+    var left:        CGPoint {
+        return CGPoint( x: self.minX, y: self.minY + (self.maxY - self.minY) / 2 )
+    }
+    var right:       CGPoint {
+        return CGPoint( x: self.maxX, y: self.minY + (self.maxY - self.minY) / 2 )
+    }
+    var bottom:      CGPoint {
+        return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.maxY )
+    }
+    var bottomLeft:  CGPoint {
+        return CGPoint( x: self.minX, y: self.maxY )
+    }
+    var bottomRight: CGPoint {
+        return CGPoint( x: self.maxX, y: self.maxY )
+    }
+
+    init(center: CGPoint, radius: CGFloat) {
+        self.init( x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2 )
+    }
+}
+
 extension UnsafePointer where Pointee == CChar {
     func toStringAndDeallocate() -> String? {
         defer {
             self.deallocate()
         }
-        return String(safeUTF8: self)
+        return String( safeUTF8: self )
     }
 }
 

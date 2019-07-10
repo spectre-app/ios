@@ -78,8 +78,9 @@ class Item<M>: NSObject {
             self.titleLabel.font = MPTheme.global.font.headline.get()
             self.contentView.addArrangedSubview( self.titleLabel )
 
-            if let valueView = createValueView() {
+            if let valueView = self.createValueView() {
                 self.contentView.addArrangedSubview( valueView )
+                self.didLoad( valueView: valueView )
             }
 
             self.subitemsView.axis = .horizontal
@@ -116,6 +117,9 @@ class Item<M>: NSObject {
 
         func createValueView() -> UIView? {
             return nil
+        }
+
+        func didLoad(valueView: UIView) {
         }
 
         func update() {
@@ -161,10 +165,16 @@ class SeparatorItem<M>: Item<M> {
         }
 
         override func createValueView() -> UIView? {
-            self.separatorView.backgroundColor = MPTheme.global.color.body.get()
-            self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).activate()
-            self.separatorView.widthAnchor.constraint( equalToConstant: 1000 ).withPriority( .fittingSizeLevel ).activate()
             return self.separatorView
+        }
+
+        override func didLoad(valueView: UIView) {
+            self.separatorView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.318 )
+
+            LayoutConfiguration( view: self.separatorView )
+                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+                    .activate()
         }
     }
 }
@@ -273,7 +283,7 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
 
     class ToggleItemView<M>: ItemView<M> {
         let item: ToggleItem
-        let button = MPButton()
+        let button = MPToggleButton()
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -285,10 +295,10 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
         }
 
         override func createValueView() -> UIView? {
-            self.button.button.addAction( for: .touchUpInside ) { _, _ in
+            self.button.addAction( for: .touchUpInside ) { _, _ in
                 if let model = self.item.model {
-                    self.button.button.isSelected = !self.button.button.isSelected
-                    self.item.itemUpdate( model, self.button.button.isSelected )
+                    self.button.isSelected = !self.button.isSelected
+                    self.item.itemUpdate( model, self.button.isSelected )
                     self.item.setNeedsUpdate()
                 }
             }
@@ -298,8 +308,8 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
         override func update() {
             super.update()
 
-            self.button.button.isSelected = self.item.value?.selected ?? false
-            self.button.image = self.item.value?.icon
+            self.button.isSelected = self.item.value?.selected ?? false
+            self.button.setImage( self.item.value?.icon, for: .normal )
         }
     }
 }
@@ -583,8 +593,11 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         override func createValueView() -> UIView? {
             self.collectionView.delegate = self
             self.collectionView.dataSource = self
-            self.item.viewInit( self.collectionView )
             return self.collectionView
+        }
+
+        override func didLoad(valueView: UIView) {
+            self.item.viewInit( self.collectionView )
         }
 
         override func update() {
@@ -698,6 +711,85 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
                     super.invalidateLayout( with: context )
                     self.collectionView?.invalidateIntrinsicContentSize()
                 }
+            }
+        }
+    }
+}
+
+class ListItem<M, V>: Item<M> {
+    let values:   [V]
+    let itemCell: (UITableView, IndexPath, V) -> UITableViewCell
+    let viewInit: (UITableView) -> Void
+
+    init(title: String?, values: [V], subitems: [Item<M>] = [], caption: String? = nil,
+         itemCell: @escaping (UITableView, IndexPath, V) -> UITableViewCell,
+         viewInit: @escaping (UITableView) -> Void) {
+        self.values = values
+        self.itemCell = itemCell
+        self.viewInit = viewInit
+
+        super.init( title: title, subitems: subitems, caption: caption )
+    }
+
+    override func createItemView() -> ListItemView<M> {
+        return ListItemView<M>( withItem: self )
+    }
+
+    class ListItemView<M>: ItemView<M>, UITableViewDelegate, UITableViewDataSource {
+        let item: ListItem<M, V>
+        let tableView = TableView()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item<M>) {
+            self.item = item as! ListItem<M, V>
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.tableView.delegate = self
+            self.tableView.dataSource = self
+            return self.tableView
+        }
+
+        override func didLoad(valueView: UIView) {
+            LayoutConfiguration( view: self.tableView )
+                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+                    .activate()
+
+            self.item.viewInit( self.tableView )
+        }
+
+        override func update() {
+            super.update()
+
+            // TODO: reload items non-destructively
+            //self.tableView.reloadData()
+        }
+
+        // MARK: --- UITableViewDataSource ---
+
+        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return self.item.values.count
+        }
+
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            return self.item.itemCell( tableView, indexPath, self.item.values[indexPath.item] )
+        }
+
+        // MARK: --- UITableViewDelegate ---
+
+        class TableView: PearlFixedTableView {
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            init() {
+                super.init( frame: .zero, style: .plain )
+                self.backgroundColor = .clear
+                self.separatorStyle = .none
             }
         }
     }

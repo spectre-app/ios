@@ -39,7 +39,9 @@ class MPItemCell: UICollectionViewCell {
                 .activate()
 
         defer {
-            self.isSelected = false
+            UIView.performWithoutAnimation {
+                self.isSelected = false
+            }
         }
     }
 

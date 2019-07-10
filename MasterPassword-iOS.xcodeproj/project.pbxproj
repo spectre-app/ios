@@ -63,6 +63,7 @@
 		93D39A2954B245FC0D925312 /* MPSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPSite.swift */; };
 		93D39A53D76CA70786423458 /* UICollectionView+PearlReloadItems.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */; };
 		93D39A8EA1C49CE43B63F47B /* PearlUICollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D8A953779B35403AF6E /* PearlUICollectionView.m */; };
+		93D39AA18A00A587610444F4 /* MPToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */; };
 		93D39AA4A0BE66A872CCC02E /* NSPersistentStore+PearlMigration.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D397F4BAFFF7CF3F1B21A4 /* NSPersistentStore+PearlMigration.h */; };
 		93D39AB0E8841E744F4B6F4C /* MPItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39865ECFD34CF3ADF930D /* MPItemCell.swift */; };
 		93D39AC1059337C3B45E06CB /* POPAnimation+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926035A7C671030D3C31 /* POPAnimation+MP.m */; };
@@ -361,6 +362,7 @@
 		93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v0.c"; sourceTree = "<group>"; };
 		93D390FADEB325D8D54A957D /* PearlOverlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlOverlay.m; sourceTree = "<group>"; };
 		93D390FB3110DCCE68E600DC /* UIScrollView+PearlAdjustInsets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+PearlAdjustInsets.m"; sourceTree = "<group>"; };
+		93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPToggleButton.swift; sourceTree = "<group>"; };
 		93D39156E806BB78E04F78B9 /* PearlSizedTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlSizedTextView.m; sourceTree = "<group>"; };
 		93D3915A208E1B01BDD05A3E /* MPQuery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuery.swift; sourceTree = "<group>"; };
 		93D39169E1BADEFA0517D4D2 /* MPUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUser.swift; sourceTree = "<group>"; };
@@ -905,6 +907,7 @@
 				93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */,
 				93D39B3112D0D128E6369596 /* MPTintLabel.swift */,
 				93D3995755BB75535CC37A47 /* MPTintView.swift */,
+				93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2184,6 +2187,7 @@
 				93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */,
 				93D39B58BB6046893F274C8D /* MPAppDetailsViewController.swift in Sources */,
 				93D396CEFCFCA9BF0DB66DF8 /* MPTintView.swift in Sources */,
+				93D39AA18A00A587610444F4 /* MPToggleButton.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

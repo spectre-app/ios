@@ -57,8 +57,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             return MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPAvatarCell)?.avatar = avatar
                             }
-                        } ) {
-                $0.registerCell( MPAvatarCell.self )
+                        } ) { collectionView in
+                collectionView.registerCell( MPAvatarCell.self )
             }
         }
     }
@@ -72,8 +72,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as! MPResultTypeCell).resultType = type
                             }
-                        } ) {
-                $0.registerCell( MPResultTypeCell.self )
+                        } ) { collectionView in
+                collectionView.registerCell( MPResultTypeCell.self )
             }
         }
     }

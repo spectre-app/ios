@@ -67,12 +67,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         class ResultItemView: LabelItemView<MPSite> {
-            override func createValueView() -> UIView? {
-                defer {
-                    self.primaryLabel.font = MPTheme.global.font.password.get()
-                }
-
-                return super.createValueView()
+            override func didLoad(valueView: UIView) {
+                self.primaryLabel.font = MPTheme.global.font.password.get()
             }
         }
     }
@@ -95,8 +91,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPResultTypeCell)?.resultType = type
                             }
-                        } ) {
-                $0.registerCell( MPResultTypeCell.self )
+                        } ) { collectionView in
+                collectionView.registerCell( MPResultTypeCell.self )
             }
         }
     }
@@ -132,8 +128,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPResultTypeCell)?.resultType = type
                             }
-                        } ) {
-                $0.registerCell( MPResultTypeCell.self )
+                        } ) { collectionView in
+                collectionView.registerCell( MPResultTypeCell.self )
             }
         }
     }

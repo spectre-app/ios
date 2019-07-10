@@ -47,6 +47,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     override func viewDidLoad() {
 
         // - View
+        self.backgroundView.layoutMargins = UIEdgeInsets( top: 20, left: 8, bottom: 20, right: 8 )
         self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = 0.382

@@ -60,9 +60,63 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
         }
     }
 
-    class InfoItem: Item<Void> {
+    class InfoItem: ListItem<Void, (title: String, url: URL?)> {
+
         init() {
-            super.init( title: nil )
+            super.init( title: "Links", values: [
+                (title: "Home", url: URL( string: "https://masterpassword.app" )),
+                (title: "Support", url: URL( string: "http://help.masterpasswordapp.com" )),
+                (title: "White Paper", url: URL( string: "https://masterpassword.app/masterpassword-algorithm.pdf" )),
+                (title: "Source Portal", url: URL( string: "https://gitlab.com/MasterPassword/MasterPassword" )),
+            ], itemCell: { tableView, indexPath, value in
+                InfoCell.dequeue( from: tableView, indexPath: indexPath ) {
+                    ($0 as? InfoCell)?.set( title: value.title ) {
+                        if let url = value.url {
+                            UIApplication.shared.openURL( url )
+                        }
+                    }
+                }
+            } ) { tableView in
+                tableView.registerCell( InfoCell.self )
+            }
+        }
+
+        class InfoCell: UITableViewCell {
+            private let button = UIButton()
+            private var action: (() -> Void)?
+
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+                super.init( style: style, reuseIdentifier: reuseIdentifier )
+
+                // - View
+                self.isOpaque = false
+                self.backgroundColor = .clear
+
+                self.button.setTitleColor( MPTheme.global.color.body.get(), for: .normal )
+                self.button.setTitleShadowColor( MPTheme.global.color.shadow.get(), for: .normal )
+                self.button.titleLabel?.font = MPTheme.global.font.callout.get()
+                self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
+                self.button.addAction( for: .touchUpInside ) { _, _ in
+                    self.action?()
+                }
+
+                // - Hierarchy
+                self.contentView.addSubview( self.button )
+
+                // - Layout
+                LayoutConfiguration( view: self.button )
+                        .constrainToOwner()
+                        .activate()
+            }
+
+            func set(title: String?, action: @escaping () -> Void) {
+                self.action = action
+                self.button.setTitle( title, for: .normal )
+            }
         }
     }
 }
