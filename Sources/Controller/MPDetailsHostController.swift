@@ -75,7 +75,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
 
             if let detailsController = self.detailsController {
                 detailsController.observers.register( observer: self )
-                self.addChildViewController( detailsController )
+                self.addChild( detailsController )
                 detailsController.beginAppearanceTransition( false, animated: true )
                 self.contentView.addSubview( detailsController.view )
                 LayoutConfiguration( view: detailsController.view ).constrainToOwner().activate()
@@ -84,7 +84,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                     self.configuration.activate()
                 }, completion: { finished in
                     detailsController.endAppearanceTransition()
-                    detailsController.didMove( toParentViewController: self )
+                    detailsController.didMove( toParent: self )
                 } )
             }
         }
@@ -93,14 +93,14 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
     public func hideDetails(completion: (() -> Void)? = nil) {
         DispatchQueue.main.perform {
             if let detailsController = self.detailsController {
-                detailsController.willMove( toParentViewController: nil )
+                detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
                 UIView.animate( withDuration: 0.382, animations: {
                     self.configuration.deactivate()
                 }, completion: { finished in
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()
-                    detailsController.removeFromParentViewController()
+                    detailsController.removeFromParent()
                     detailsController.observers.unregister( observer: self )
                     self.detailsController = nil
                     completion?()

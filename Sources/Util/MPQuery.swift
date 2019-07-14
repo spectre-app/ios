@@ -66,7 +66,7 @@ class MPQuery {
 
         private func keyMatched(at: String.Index, next: String.Index) {
             self.matches.append( at )
-            self.attributedKey.addAttribute( NSAttributedStringKey.backgroundColor, value: UIColor.red,
+            self.attributedKey.addAttribute( NSAttributedString.Key.backgroundColor, value: UIColor.red,
                                              range: NSRange( at..<next, in: self.attributedKey.string ) )
         }
 

@@ -15,7 +15,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
 
     let window: UIWindow = UIWindow()
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         Crashlytics.sharedInstance().delegate = self
         FirebaseApp.configure()
         PearlLogger.get().printLevel = .debug

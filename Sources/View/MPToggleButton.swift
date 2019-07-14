@@ -66,7 +66,7 @@ class MPToggleButton: UIButton {
         if let context = UIGraphicsGetCurrentContext(),
            let background = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 ).cgColor,
            let border = MPTheme.global.color.body.get()?.cgColor {
-            let content = UIEdgeInsetsInsetRect( self.bounds, self.contentEdgeInsets )
+            let content = self.bounds.inset(by: self.contentEdgeInsets )
                     .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )
             let circle  = CGRect( center: content.bottom, radius: self.contentEdgeInsets.bottom )
             context.addRect( self.bounds )

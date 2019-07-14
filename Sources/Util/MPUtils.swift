@@ -91,8 +91,8 @@ extension MPIdenticon: Equatable {
         shadow.shadowColor = MPTheme.global.color.shadow.get()
         shadow.shadowOffset = CGSize( width: 0, height: 1 )
         return stra( self.text(), [
-            NSAttributedStringKey.foregroundColor: self.color.ui(),
-            NSAttributedStringKey.shadow: shadow,
+            NSAttributedString.Key.foregroundColor: self.color.ui(),
+            NSAttributedString.Key.shadow: shadow,
         ] )
     }
 }

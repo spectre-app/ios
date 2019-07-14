@@ -8,7 +8,6 @@
 
 import UIKit
 import Stellar
-import pop
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
     private let transition = MPNavigationTransition()
@@ -55,7 +54,7 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
     // MARK: --- UINavigationControllerDelegate ---
 
-    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController)
+    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController)
                     -> UIViewControllerAnimatedTransitioning? {
         return self.transition
     }

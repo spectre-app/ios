@@ -4,7 +4,6 @@
 //
 
 import UIKit
-import pop
 
 class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHeaderObserver, MPSitesViewObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
@@ -70,9 +69,9 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         }
 
         // - Hierarchy
-        self.addChildViewController( self.detailsHost )
+        self.addChild( self.detailsHost )
         defer {
-            self.detailsHost.didMove( toParentViewController: self )
+            self.detailsHost.didMove( toParent: self )
         }
         self.view.addSubview( self.sitesTableView )
         self.view.addSubview( self.siteHeaderView )

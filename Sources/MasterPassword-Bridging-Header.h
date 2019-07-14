@@ -6,7 +6,6 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
-#import "POPAnimation+MP.h"
 #import "UIUtils+MP.h"
 #import "LayoutConfiguration.h"
 #import "AutoLayoutCollectionViewCell.h"

@@ -30,7 +30,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
                 passwordField.leftViewMode = .always
                 passwordField.rightViewMode = .always
 
-                NotificationCenter.default.addObserver( forName: .UITextFieldTextDidChange, object: passwordField, queue: nil ) { notification in
+                NotificationCenter.default.addObserver( forName: UITextField.textDidChangeNotification, object: passwordField, queue: nil ) { notification in
                     self.setNeedsIdenticon()
                 }
             }
@@ -44,7 +44,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     var actionHandler:    ((String, String) -> MPUser?)?
     var actionCompletion: ((MPUser?) -> Void)?
 
-    private let passwordIndicator  = UIActivityIndicatorView( activityIndicatorStyle: .gray )
+    private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
     private lazy var identiconItem = DispatchTask( queue: DispatchQueue.mpw, qos: .userInitiated,

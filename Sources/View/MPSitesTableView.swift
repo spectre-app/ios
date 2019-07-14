@@ -232,7 +232,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
             defer {
                 self.mode = { self.mode }()
             }
@@ -330,7 +330,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
                 if #available( iOS 10.0, * ) {
                     UIPasteboard.general.setItems(
-                            [ [ UIPasteboardTypeAutomatic: result ] ],
+                            [ [ UIPasteboard.typeAutomatic: result ] ],
                             options: [
                                 UIPasteboard.OptionsKey.localOnly: true,
                                 UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
@@ -405,7 +405,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
             super.init( style: style, reuseIdentifier: reuseIdentifier )
 
             // - View

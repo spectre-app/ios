@@ -284,7 +284,7 @@ class MPMarshal: Observable {
             } )
             controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                 let spinner = MPAlertView( title: "Unlocking", message: importingUser.description,
-                                           content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
+                                           content: UIActivityIndicatorView( style: .whiteLarge ) )
                         .show( dismissAutomatically: false )
 
                 if !passwordField.mpw_process(
@@ -408,7 +408,7 @@ class MPMarshal: Observable {
 
     private func `import`(from importedUser: MPUser, into existedUser: MPUser, completion: ((Bool) -> Void)?) {
         let spinner = MPAlertView( title: "Merging", message: existedUser.description,
-                                   content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
+                                   content: UIActivityIndicatorView( style: .whiteLarge ) )
                 .show( dismissAutomatically: false )
 
         DispatchQueue.mpw.perform {
@@ -469,7 +469,7 @@ class MPMarshal: Observable {
 
     private func `import`(data: Data, from importingUser: UserInfo, into documentFile: URL, completion: ((Bool) -> Void)?) {
         let spinner = MPAlertView( title: "Replacing", message: documentFile.lastPathComponent,
-                                   content: UIActivityIndicatorView( activityIndicatorStyle: .whiteLarge ) )
+                                   content: UIActivityIndicatorView( style: .whiteLarge ) )
                 .show( dismissAutomatically: false )
 
         DispatchQueue.mpw.perform {

@@ -4,7 +4,6 @@
 //
 
 import UIKit
-import pop
 
 protocol MPSpinnerDelegate {
     func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat)
@@ -158,16 +157,16 @@ class MPSpinnerView: UIView {
             return
         }
 
-        if animated {
-            let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
-            anim.toValue = item
-            self.pop_removeAnimation( forKey: "pop.scannedItem" )
-            self.pop_add( anim, forKey: "pop.scannedItem" )
-        }
-        else {
-            self.pop_removeAnimation( forKey: "pop.scannedItem" )
+//        if animated {
+//            let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
+//            anim.toValue = item
+//            self.pop_removeAnimation( forKey: "pop.scannedItem" )
+//            self.pop_add( anim, forKey: "pop.scannedItem" )
+//        }
+//        else {
+//            self.pop_removeAnimation( forKey: "pop.scannedItem" )
             self.scannedItem = item
-        }
+//        }
     }
 
     // MARK: --- Private ---
@@ -193,30 +192,30 @@ class MPSpinnerView: UIView {
                 self.scan( toItem: self.startedItem + recognizer.translation( in: self ).y / itemDistance, animated: false )
 
             case .ended:
-                let anim = POPDecayAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
-                anim.velocity = recognizer.velocity( in: self ).y / itemDistance
-
-                // Enforce a limit on scannedItem when ending/decaying.
-                anim.animationDidApplyBlock = { animation in
-                    if self.scannedItem < 0 || self.scannedItem > CGFloat( self.items - 1 ) {
-                        let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
-                        anim.velocity = (animation as? POPDecayAnimation)?.velocity ?? 0
-                        anim.toValue = max( 0, min( self.items - 1, Int( self.scannedItem ) ) )
-                        anim.completionBlock = animation?.completionBlock
-                        self.pop_removeAnimation( forKey: "pop.scannedItem" )
-                        self.pop_add( anim, forKey: "pop.scannedItem" )
-                    }
-                }
-
-                // After decaying, select the item we land on.
-                anim.completionBlock = { animation, finished in
-                    if finished {
+//                let anim = POPDecayAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
+//                anim.velocity = recognizer.velocity( in: self ).y / itemDistance
+//
+//                // Enforce a limit on scannedItem when ending/decaying.
+//                anim.animationDidApplyBlock = { animation in
+//                    if self.scannedItem < 0 || self.scannedItem > CGFloat( self.items - 1 ) {
+//                        let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
+//                        anim.velocity = (animation as? POPDecayAnimation)?.velocity ?? 0
+//                        anim.toValue = max( 0, min( self.items - 1, Int( self.scannedItem ) ) )
+//                        anim.completionBlock = animation?.completionBlock
+//                        self.pop_removeAnimation( forKey: "pop.scannedItem" )
+//                        self.pop_add( anim, forKey: "pop.scannedItem" )
+//                    }
+//                }
+//
+//                // After decaying, select the item we land on.
+//                anim.completionBlock = { animation, finished in
+//                    if finished {
                         self.selectedItem = self.findScannedItem()
-                    }
-                }
-
-                self.pop_removeAnimation( forKey: "pop.scannedItem" )
-                self.pop_add( anim, forKey: "pop.scannedItem" )
+//                    }
+//                }
+//
+//                self.pop_removeAnimation( forKey: "pop.scannedItem" )
+//                self.pop_add( anim, forKey: "pop.scannedItem" )
 
             case .cancelled, .failed:
                 // Abort by resetting to the selected item.

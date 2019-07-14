@@ -700,7 +700,7 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
                     self.minimumLineSpacing = 12
 
                     if #available( iOS 10.0, * ) {
-                        self.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
+                        self.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
                     }
                     else {
                         self.estimatedItemSize = self.itemSize

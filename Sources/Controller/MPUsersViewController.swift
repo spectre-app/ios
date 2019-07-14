@@ -67,9 +67,9 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         ]
 
         // - Hierarchy
-        self.addChildViewController( self.detailsHost )
+        self.addChild( self.detailsHost )
         defer {
-            self.detailsHost.didMove( toParentViewController: self )
+            self.detailsHost.didMove( toParent: self )
         }
         self.view.addSubview( self.usersSpinner )
         self.view.addSubview( self.settingsButton )
@@ -399,12 +399,14 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
         private func update() {
             DispatchQueue.main.perform {
-                let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
-                anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
-                self.nameLabel.pop_add( anim, forKey: "pop.font" )
-                self.nameField.pop_add( anim, forKey: "pop.font" )
-
+//                let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
+//                anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
+//                self.nameLabel.pop_add( anim, forKey: "pop.font" )
+//                self.nameField.pop_add( anim, forKey: "pop.font" )
                 UIView.animate( withDuration: 0.618 ) {
+                    self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.active ? 2: 1) )
+                    self.nameField.font = self.nameField.font?.withSize( UIFont.labelFontSize * (self.active ? 2: 1) )
+
                     self.passwordField.alpha = self.active ? 1: 0
                     self.nameLabel.alpha = self.active && self.user == nil ? 0: 1
                     self.nameField.alpha = 1 - self.nameLabel.alpha
