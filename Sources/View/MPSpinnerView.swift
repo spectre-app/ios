@@ -4,239 +4,147 @@
 //
 
 import UIKit
+import Stellar
 
-protocol MPSpinnerDelegate {
-    func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat)
-    func spinner(_ spinner: MPSpinnerView, didSelectItem selectedItem: Int?)
-    func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int)
-    func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int)
-}
-
-class MPSpinnerView: UIView {
-    public var delegate: MPSpinnerDelegate?
-    public var selectedItem: Int? {
-        didSet {
-            DispatchQueue.main.perform {
-                if let selectedItem = self.selectedItem {
-                    self.scan( toItem: CGFloat( selectedItem ) )
-                }
-                if let delegate = self.delegate {
-                    delegate.spinner( self, didSelectItem: self.selectedItem )
-                    self.setNeedsLayout()
-                }
-            }
-        }
-    }
-    public var activatedItem: Int? {
-        didSet {
-            DispatchQueue.main.perform {
-                if let delegate = self.delegate {
-                    if let oldValue = oldValue, oldValue != self.activatedItem {
-                        delegate.spinner( self, didDeactivateItem: oldValue )
-                        self.setNeedsLayout()
-                    }
-                    if let newValue = self.activatedItem, newValue != oldValue {
-                        delegate.spinner( self, didActivateItem: newValue )
-                        self.setNeedsLayout()
-                    }
-                }
-            }
-
-            self.selectedItem = self.activatedItem
-        }
-    }
-    public var items: Int {
-        get {
-            return self.subviews.count
-        }
-    }
-
-    private lazy var panRecognizer = UIPanGestureRecognizer( target: self, action: #selector( didPan(recognizer:) ) )
-    private lazy var tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTap(recognizer:) ) )
-    private var configurations       = [ UIView: LayoutConfiguration ]()
-    private var startedItem: CGFloat = 0
-    @objc
-    private var scannedItem: CGFloat = 0 {
-        didSet {
-            DispatchQueue.main.perform {
-                if let delegate = self.delegate {
-                    delegate.spinner( self, didScanItem: self.scannedItem )
-                }
-
-                self.setNeedsLayout()
-            }
-        }
+public class MPSpinnerView: UICollectionView {
+    public var scrolledItem: Int {
+        let currentOffset = self.contentOffset.y
+        let maximumOffset = max( 0, self.contentSize.height - self.bounds.size.height )
+        let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset: 0
+        return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
     }
 
     // MARK: --- Life ---
 
-    override init(frame: CGRect) {
-        super.init( frame: frame )
+    public init() {
+        super.init( frame: .zero, collectionViewLayout: Layout() )
 
-        self.addGestureRecognizer( self.panRecognizer )
-        self.addGestureRecognizer( self.tapRecognizer )
-
-        self.autoresizesSubviews = false
-        self.isUserInteractionEnabled = true
+        self.isPagingEnabled = true
+        self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
     }
 
-    required init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    override func didAddSubview(_ subview: UIView) {
-        super.didAddSubview( subview )
-
-        self.configurations[subview] =
-                LayoutConfiguration( view: subview )
-                        .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
-                        .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
-                        .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
-                        .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                        .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                        .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
-                        .constrainTo { $1.widthAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
-                        .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
-                        .activate()
-
-        self.panRecognizer.isEnabled = self.items > 0
-    }
-
-    override func willRemoveSubview(_ subview: UIView) {
-        super.willRemoveSubview( subview )
-
-        let items = self.items - 1
-        self.panRecognizer.isEnabled = items > 0
-        self.activatedItem = nil
-
-        self.configurations[subview]?.deactivate()
-        self.configurations[subview] = nil
-    }
-
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
-        var fittingSize = CGSize( width: 0, height: 0 )
-        for subview in self.subviews {
-            fittingSize = CGSizeUnion( fittingSize, subview.sizeThatFits( size ) )
-        }
-
-        fittingSize.height *= 3
-        return fittingSize
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        for s in 0..<self.subviews.count {
-            let subview = self.subviews[s] as UIView
-
-            let ds = CGFloat( s ) - self.scannedItem
-            if ds > 0 {
-                // subview shows before scanned item.
-                let scale = pow( ds * 0.2 + 1, 2 )
-                subview.transform = CGAffineTransform.identity
-                        .translatedBy( x: 0, y: -100 * pow( ds, 2 ) )
-                        .scaledBy( x: scale, y: scale )
-                subview.alpha = max( 0, 1 - pow( ds, 2 ) )
-            }
-            else {
-                // subview shows behind scanned item.
-                let scale = 1 / pow( ds * 0.2 - 1, 2 )
-                subview.transform = CGAffineTransform.identity
-                        .translatedBy( x: 0, y: 100 * pow( ds * 0.5, 2 ) )
-                        .scaledBy( x: scale, y: scale )
-                subview.alpha = max( 0, 1 - pow( ds * 0.8, 2 ) )
-            }
-        }
-    }
-
-    // MARK: --- Interface ---
-
-    public func scan(toItem item: CGFloat, animated: Bool = true) {
-        guard self.scannedItem != item
-        else {
-            return
-        }
-
-//        if animated {
-//            let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
-//            anim.toValue = item
-//            self.pop_removeAnimation( forKey: "pop.scannedItem" )
-//            self.pop_add( anim, forKey: "pop.scannedItem" )
-//        }
-//        else {
-//            self.pop_removeAnimation( forKey: "pop.scannedItem" )
-            self.scannedItem = item
-//        }
     }
 
     // MARK: --- Private ---
 
     @objc
-    private func didPan(recognizer: UIPanGestureRecognizer) {
-        guard self.items > 0
-        else {
-            return
-        }
-        let itemDistance = (self.bounds.height * 2 / 3) / CGFloat( self.items )
-
-        switch recognizer.state {
-            case .possible:
-                ()
-
-            case .began:
-                self.startedItem = self.scannedItem
-                self.activatedItem = nil
-
-            case .changed:
-                // While panning, update scannedItem relative to startedItem.
-                self.scan( toItem: self.startedItem + recognizer.translation( in: self ).y / itemDistance, animated: false )
-
-            case .ended:
-//                let anim = POPDecayAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
-//                anim.velocity = recognizer.velocity( in: self ).y / itemDistance
-//
-//                // Enforce a limit on scannedItem when ending/decaying.
-//                anim.animationDidApplyBlock = { animation in
-//                    if self.scannedItem < 0 || self.scannedItem > CGFloat( self.items - 1 ) {
-//                        let anim = POPSpringAnimation( floatAtKeyPath: "scannedItem", on: MPSpinnerView.self )
-//                        anim.velocity = (animation as? POPDecayAnimation)?.velocity ?? 0
-//                        anim.toValue = max( 0, min( self.items - 1, Int( self.scannedItem ) ) )
-//                        anim.completionBlock = animation?.completionBlock
-//                        self.pop_removeAnimation( forKey: "pop.scannedItem" )
-//                        self.pop_add( anim, forKey: "pop.scannedItem" )
-//                    }
-//                }
-//
-//                // After decaying, select the item we land on.
-//                anim.completionBlock = { animation, finished in
-//                    if finished {
-                        self.selectedItem = self.findScannedItem()
-//                    }
-//                }
-//
-//                self.pop_removeAnimation( forKey: "pop.scannedItem" )
-//                self.pop_add( anim, forKey: "pop.scannedItem" )
-
-            case .cancelled, .failed:
-                // Abort by resetting to the selected item.
-                self.scan( toItem: CGFloat( self.selectedItem ?? 0 ) )
-        }
-    }
-
-    @objc
     private func didTap(recognizer: UITapGestureRecognizer) {
-        switch recognizer.state {
-
-            case .possible, .began, .changed, .cancelled, .failed:
-                ()
-
-            case .ended:
-                let scannedItem = self.findScannedItem()
-                self.activatedItem = self.activatedItem == scannedItem ? nil: scannedItem
+        if self.indexPathsForSelectedItems?.count ?? 0 > 0 {
+            self.selectItem( at: nil, animated: true, scrollPosition: .centeredVertically )
+        }
+        else {
+            self.selectItem( at: IndexPath( item: self.scrolledItem, section: 0 ), animated: true, scrollPosition: .centeredVertically )
         }
     }
 
-    private func findScannedItem() -> Int {
-        return max( 0, min( self.items - 1, Int( self.scannedItem.rounded( .toNearestOrAwayFromZero ) ) ) )
+    internal class Layout: UICollectionViewLayout {
+        internal var items       = [ Int: UICollectionViewLayoutAttributes ]()
+        internal var itemCount   = 0
+        internal var itemSize    = CGSize.zero
+        internal var contentSize = CGSize.zero
+        override var collectionViewContentSize: CGSize {
+            return self.contentSize
+        }
+
+        override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
+            super.invalidateLayout( with: context )
+
+            if context.invalidateEverything || context.invalidateDataSourceCounts {
+                self.items.removeAll()
+                self.contentSize = .zero
+            }
+            else {
+                context.invalidatedItemIndexPaths?.forEach { self.items.removeValue( forKey: $0.item ) }
+            }
+        }
+
+        override func prepare() {
+            super.prepare()
+
+            guard let collectionView = self.collectionView
+            else {
+                return
+            }
+
+            self.itemCount = collectionView.numberOfItems( inSection: 0 )
+            self.itemSize = CGSize( width: collectionView.bounds.size.width, height: collectionView.bounds.size.height )
+            self.contentSize = CGSize( width: self.itemSize.width, height: self.itemSize.height * CGFloat( self.itemCount ) )
+            guard self.itemCount > 0, self.itemCount != self.items.count, self.itemSize.height > 0
+            else {
+                return
+            }
+
+            let currentOffset = collectionView.contentOffset.y
+            let maximumOffset = self.contentSize.height - collectionView.bounds.size.height
+            let scrolledItem  = maximumOffset > 0 ? CGFloat(self.itemCount - 1) * currentOffset / maximumOffset: 0
+
+            for item in 0..<self.itemCount {
+                guard self.items[item] == nil
+                else {
+                    continue
+                }
+
+                var offset       = CGFloat.zero, scale = CGFloat.zero, alpha = CGFloat.zero
+                let itemDistance = scrolledItem - CGFloat( item )
+                if itemDistance > 0 {
+                    // subview shows before scanned item.
+                    scale = pow( itemDistance * 0.2 + 1, 2 )
+                    offset = -100 * pow( itemDistance, 2 )
+                    alpha = max( 0, 1 - pow( itemDistance, 2 ) )
+                }
+                else {
+                    // subview shows behind scanned item.
+                    scale = 1 / pow( itemDistance * 0.2 - 1, 2 )
+                    offset = 100 * pow( itemDistance * 0.5, 2 )
+                    alpha = max( 0, 1 - pow( itemDistance * 0.8, 2 ) )
+                }
+
+                let attributes = UICollectionViewLayoutAttributes( forCellWith: IndexPath( item: item, section: 0 ) )
+                attributes.size = self.itemSize
+                attributes.center = collectionView.bounds.center
+                attributes.zIndex = -item
+                attributes.alpha = alpha
+                attributes.isHidden = alpha == 0
+                attributes.transform = CGAffineTransform( translationX: 0, y: offset ).scaledBy( x: scale, y: scale )
+                self.items[item] = attributes
+            }
+        }
+
+        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+            guard self.itemSize.height > 0, self.itemCount > 0
+            else {
+                return nil
+            }
+
+            let fromItem = Int( rect.minY / self.itemSize.height ), toItem = Int( rect.maxY / self.itemSize.height )
+            return (fromItem...toItem).compactMap {
+                return $0 < 0 || $0 > self.itemCount - 1 ? nil: self.items[$0]
+            }
+        }
+
+        override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+            return self.items[indexPath.item]
+        }
+
+        override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+            return true
+        }
+
+        override func invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
+            self.contentSize = .zero
+            self.items.removeAll()
+            return UICollectionViewLayoutInvalidationContext()
+        }
+
+        override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+            return true
+        }
+
+        override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutInvalidationContext {
+            self.items[originalAttributes.indexPath.item] = preferredAttributes
+            return UICollectionViewLayoutInvalidationContext()
+        }
     }
 }

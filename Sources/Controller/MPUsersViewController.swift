@@ -8,23 +8,31 @@
 
 import UIKit
 import Crashlytics
+import Stellar
 
-class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObserver {
+class MPUsersViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
     public var users = [ MPMarshal.UserInfo ]() {
         didSet {
             DispatchQueue.main.perform {
-                for user in oldValue {
-                    for subview in self.usersSpinner.subviews {
-                        if let avatarView = subview as? UserView, user === avatarView.user {
-                            avatarView.removeFromSuperview()
-                        }
-                    }
-                }
-                for user in self.users {
-                    self.usersSpinner.addSubview( UserView( user: user, navigateWith: self.navigationController ) )
-                }
+                self.usersSpinner.reloadData()
+            }
+        }
+    }
+    public var selectedUser: MPMarshal.UserInfo? {
+        get {
+            if let selectedPath = self.usersSpinner.indexPathsForSelectedItems?.first {
+                return selectedPath.item < self.users.count ? self.users[selectedPath.item]: nil
+            }
 
-                self.usersSpinner.selectedItem = self.usersSpinner.items - 1
+            return nil
+        }
+        set {
+            if let newValue = newValue,
+               let item = self.users.firstIndex( of: newValue ) {
+                self.usersSpinner.selectItem( at: IndexPath( item: item, section: 0 ), animated: true, scrollPosition: .centeredVertically )
+            }
+            else {
+                self.usersSpinner.selectItem( at: nil, animated: true, scrollPosition: .centeredVertically )
             }
         }
     }
@@ -52,8 +60,10 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         // - View
         self.view.layoutMargins = UIEdgeInsets( top: 8, left: 8, bottom: 8, right: 8 )
 
-        self.usersSpinner.addSubview( UserView( user: nil, navigateWith: self.navigationController ) )
+        self.usersSpinner.registerCell( UserCell.self )
         self.usersSpinner.delegate = self
+        self.usersSpinner.dataSource = self
+        self.usersSpinner.backgroundColor = .clear
 
         self.settingsButton.darkBackground = true
         self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
@@ -79,7 +89,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         // - Layout
         LayoutConfiguration( view: self.usersSpinner )
                 .constrainToOwner( withMargins: false, anchor: .topBox )
-                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ).withPriority( .defaultHigh ) }
                 .activate()
 
         LayoutConfiguration( view: self.settingsButton )
@@ -117,15 +127,14 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear( animated )
 
-        self.usersSpinner.activatedItem = nil
+        self.selectedUser = nil
     }
 
     // MARK: --- Private ---
 
     @objc
     private func didTrashUser() {
-        if let activatedItem = self.usersSpinner.activatedItem,
-           let user = (self.usersSpinner.subviews[activatedItem] as? UserView)?.user {
+        if let user = self.selectedUser {
             let alert = UIAlertController( title: "Delete User?", message:
             """
             This will delete the user and all of its recorded state:
@@ -147,8 +156,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
     @objc
     private func didResetUser() {
-        if let activatedItem = self.usersSpinner.activatedItem,
-           let user = (self.usersSpinner.subviews[activatedItem] as? UserView)?.user {
+        if let user = self.selectedUser {
             let alert = UIAlertController( title: "Reset Master Password?", message:
             """
             This will allow you to change the master password for:
@@ -165,33 +173,30 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         }
     }
 
-    // MARK: --- MPSpinnerDelegate ---
+    // MARK: --- UICollectionViewDataSource ---
 
-    func spinner(_ spinner: MPSpinnerView, didScanItem scannedItem: CGFloat) {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return self.users.count + 1
     }
 
-    func spinner(_ spinner: MPSpinnerView, didSelectItem selectedItem: Int?) {
-    }
-
-    func spinner(_ spinner: MPSpinnerView, didActivateItem activatedItem: Int) {
-        if spinner.subviews.indices.contains( activatedItem ),
-           let userView = spinner.subviews[activatedItem] as? UserView {
-            userView.active = true
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        return UserCell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
+            (cell as? UserCell)?.navigationController = self.navigationController
+            (cell as? UserCell)?.user = indexPath.item < self.users.count ? self.users[indexPath.item]: nil
         }
+    }
 
+    // MARK: --- UICollectionViewDelegate ---
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         UIView.animate( withDuration: 0.382 ) {
-            self.userToolbarConfiguration.updateActivated( spinner.activatedItem != nil )
+            self.userToolbarConfiguration.updateActivated( self.usersSpinner.indexPathsForSelectedItems?.count ?? 0 > 0 )
         }
     }
 
-    func spinner(_ spinner: MPSpinnerView, didDeactivateItem deactivatedItem: Int) {
-        if spinner.subviews.indices.contains( deactivatedItem ),
-           let userView = spinner.subviews[deactivatedItem] as? UserView {
-            userView.active = false
-        }
-
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         UIView.animate( withDuration: 0.382 ) {
-            self.userToolbarConfiguration.updateActivated( spinner.activatedItem != nil )
+            self.userToolbarConfiguration.updateActivated( self.usersSpinner.indexPathsForSelectedItems?.count ?? 0 > 0 )
         }
     }
 
@@ -203,12 +208,12 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
     // MARK: --- Types ---
 
-    class UserView: UIView {
-        public var  new:    Bool = false
-        public var  active: Bool = false {
+    class UserCell: UICollectionViewCell {
+        public var new: Bool = false
+        public override var isSelected: Bool {
             didSet {
                 if self.user == nil {
-                    if self.active {
+                    if self.isSelected {
                         self.avatar = MPUser.Avatar.userAvatars.randomElement() ?? .avatar_0
                     }
                     else {
@@ -216,7 +221,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                     }
                 }
 
-                if !self.active {
+                if !self.isSelected {
                     self.nameField.text = nil
                     self.passwordField.text = nil
                 }
@@ -225,20 +230,20 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                 self.setNeedsDisplay()
             }
         }
-        public var  user:   MPMarshal.UserInfo? {
+        public var user:                 MPMarshal.UserInfo? {
             didSet {
                 self.passwordField.user = self.user
                 self.avatar = self.user?.avatar ?? .avatar_add
                 self.update()
             }
         }
-        private var avatar       = MPUser.Avatar.avatar_add {
+        public var navigationController: UINavigationController?
+
+        private var avatar        = MPUser.Avatar.avatar_add {
             didSet {
                 self.update()
             }
         }
-
-        private let navigationController:  UINavigationController?
         private let nameLabel     = UILabel()
         private let nameField     = UITextField()
         private let avatarButton  = UIButton()
@@ -254,12 +259,11 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
         // MARK: --- Life ---
 
-        init(user: MPMarshal.UserInfo?, navigateWith navigationController: UINavigationController?) {
-            self.navigationController = navigationController
+        override init(frame: CGRect) {
             super.init( frame: CGRect() )
 
             self.isOpaque = false
-            self.layoutMargins = UIEdgeInsets( top: 20, left: 20, bottom: 20, right: 20 )
+            self.contentView.layoutMargins = UIEdgeInsets( top: 20, left: 20, bottom: 20, right: 20 )
 
             self.nameLabel.font = MPTheme.global.font.callout.get()
             self.nameLabel.adjustsFontSizeToFitWidth = true
@@ -269,7 +273,7 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.nameLabel.preferredMaxLayoutWidth = .infinity
             self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
-            self.nameField.font = MPTheme.global.font.callout.get()
+            self.nameField.font = MPTheme.global.font.callout.get()?.withSize( UIFont.labelFontSize * 2 )
             self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.textAlignment = .center
             self.nameField.textColor = MPTheme.global.color.body.get()
@@ -311,13 +315,16 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
             self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
             self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
 
-            self.addSubview( self.idBadgeView )
-            self.addSubview( self.authBadgeView )
-            self.addSubview( self.avatarButton )
-            self.addSubview( self.nameLabel )
-            self.addSubview( self.nameField )
-            self.addSubview( self.passwordField )
+            self.contentView.addSubview( self.idBadgeView )
+            self.contentView.addSubview( self.authBadgeView )
+            self.contentView.addSubview( self.avatarButton )
+            self.contentView.addSubview( self.nameLabel )
+            self.contentView.addSubview( self.nameField )
+            self.contentView.addSubview( self.passwordField )
 
+            LayoutConfiguration( view: self.contentView )
+                    .constrainToOwner()
+                    .activate()
             LayoutConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
@@ -364,10 +371,6 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
                         inactive.set( 0, forKey: "alpha" )
                     } )
                     .needsLayout( self )
-
-            defer {
-                self.user = user
-            }
         }
 
         required init?(coder aDecoder: NSCoder) {
@@ -388,8 +391,8 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
         override func draw(_ rect: CGRect) {
             super.draw( rect )
 
-            if self.active, let context = UIGraphicsGetCurrentContext() {
-                UIColor.white.withAlphaComponent( 0.618 ).setStroke()
+            if self.isSelected, let context = UIGraphicsGetCurrentContext() {
+                MPTheme.global.color.glow.get()?.withAlphaComponent( 0.618 ).setStroke()
                 context.addPath( self.path )
                 context.strokePath()
             }
@@ -399,23 +402,19 @@ class MPUsersViewController: UIViewController, MPSpinnerDelegate, MPMarshalObser
 
         private func update() {
             DispatchQueue.main.perform {
-//                let anim = POPSpringAnimation( sizeOfFontAtKeyPath: "font", on: UILabel.self )
-//                anim.toValue = UIFont.labelFontSize * (self.active ? 2: 1)
-//                self.nameLabel.pop_add( anim, forKey: "pop.font" )
-//                self.nameField.pop_add( anim, forKey: "pop.font" )
+                self.nameLabel.font.pointSize.animate( to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: 0.618, render: { size in
+                    self.nameLabel.font = self.nameLabel.font.withSize( size )
+                } )
                 UIView.animate( withDuration: 0.618 ) {
-                    self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.active ? 2: 1) )
-                    self.nameField.font = self.nameField.font?.withSize( UIFont.labelFontSize * (self.active ? 2: 1) )
-
-                    self.passwordField.alpha = self.active ? 1: 0
-                    self.nameLabel.alpha = self.active && self.user == nil ? 0: 1
+                    self.passwordField.alpha = self.isSelected ? 1: 0
+                    self.nameLabel.alpha = self.isSelected && self.user == nil ? 0: 1
                     self.nameField.alpha = 1 - self.nameLabel.alpha
 
-                    self.avatarButton.isUserInteractionEnabled = self.active
+                    self.avatarButton.isUserInteractionEnabled = self.isSelected
                     self.avatarButton.setImage( self.avatar.image(), for: .normal )
                     self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
 
-                    if self.active {
+                    if self.isSelected {
                         self.passwordConfiguration.activate()
 
                         if self.nameField.alpha != 0 {

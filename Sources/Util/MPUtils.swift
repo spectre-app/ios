@@ -261,6 +261,9 @@ extension UIView {
 }
 
 extension CGRect {
+    var center:         CGPoint {
+        return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY + (self.maxY - self.minY) / 2 )
+    }
     var top:         CGPoint {
         return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY )
     }
