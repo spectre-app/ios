@@ -37,7 +37,9 @@
 
 + (instancetype)configuration {
 
-    return [[self new] deactivate];
+    LayoutConfiguration *configuration = [self new];
+    configuration->_activated = YES;
+    return [configuration deactivate];
 }
 
 + (instancetype)configurationWithTarget:(LayoutTarget *)layoutTarget {
@@ -259,6 +261,9 @@
 }
 
 - (instancetype)activateFromParent:(LayoutConfiguration *)parent {
+    
+    if (self.activated)
+        return self;
 
     PearlMainQueue( ^{
         UIView *owningView = self.target.owningView;
@@ -295,7 +300,7 @@
         if (owningView)
             for (LayoutConstrainers constrainer in self.constrainers)
                 for (NSLayoutConstraint *constraint in constrainer( owningView, self.target )) {
-                    //trc( @"%@: activating %@", [self.view infoPathName], constraint );
+                    //trc( @"%@: activating %@", [targetView infoPathName], constraint );
                     constraint.active = YES;
                     [self.activeConstraints addObject:constraint];
                 }
@@ -310,7 +315,7 @@
             if ([[self.inactiveValues allKeys] containsObject:key])
                 self.inactiveValues[key] = oldValue;
 
-            //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
+            //trc( @"%@: %@, %@ -> %@", [targetView infoPathName], key, oldValue, newValue );
             [targetView setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 
@@ -343,17 +348,20 @@
 
     if (animated)
         [UIView animateWithDuration:1 animations:^{
-            [self activate];
+            [self deactivate];
         }];
     else
         [UIView performWithoutAnimation:^{
-            [self activate];
+            [self deactivate];
         }];
 
     return self;
 }
 
 - (instancetype)deactivateFromParent:(LayoutConfiguration *)parent {
+
+    if (!self.activated)
+        return self;
 
     PearlMainQueue( ^{
         UIView *owningView = self.target.owningView;
@@ -377,7 +385,7 @@
                 [targetView setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
 
         for (NSLayoutConstraint *constraint in self.activeConstraints) {
-            //trc( @"%@: deactivating %@", [self.view infoPathName], constraint );
+            //trc( @"%@: deactivating %@", [targetView infoPathName], constraint );
             constraint.active = NO;
         }
         [self.activeConstraints removeAllObjects];
@@ -387,7 +395,7 @@
             if ([newValue isEqual:oldValue])
                 return;
 
-            //trc( @"%@: %@, %@ -> %@", [self.view infoPathName], key, oldValue, newValue );
+            //trc( @"%@: %@, %@ -> %@", [targetView infoPathName], key, oldValue, newValue );
             [targetView setValue:newValue == [NSNull null]? nil: newValue forKeyPath:key];
         }];
 

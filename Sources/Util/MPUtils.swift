@@ -160,6 +160,26 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
 extension MPMarshalError: Error {
 }
 
+extension String.StringInterpolation {
+    mutating func appendInterpolation(_ value: String, prePadToLength length: Int) {
+        appendLiteral( String( repeating: " ", count: max( 0, length - value.count ) ).appending( value ) )
+    }
+
+    mutating func appendInterpolation(_ value: String, postPadToLength length: Int) {
+        appendLiteral( value.appending( String( repeating: " ", count: max( 0, length - value.count ) ) ) )
+    }
+
+    mutating func appendInterpolation(_ value: Any?, sign: Bool) {
+        let formatter = NumberFormatter()
+        if sign {
+            formatter.positivePrefix = formatter.plusSign
+        }
+        if let string = formatter.string( for: value ) {
+            appendLiteral( string )
+        }
+    }
+}
+
 extension UIColor {
     // Determine how common a color is in a list of colors.
     // Compares the color to the other colors only by average hue distance.
@@ -260,8 +280,23 @@ extension UIView {
     }
 }
 
+extension CGSize {
+    func union(_ size: CGSize) -> CGSize {
+        return size.width <= self.width && size.height <= self.height ? self:
+                size.width >= self.width && size.height >= self.height ? size:
+                        CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
+    }
+
+    func grow(width: CGFloat = 0, height: CGFloat = 0, size: CGSize = .zero, point: CGPoint = .zero) -> CGSize {
+        let width  = width + size.width + point.x
+        let height = height + size.height + point.y
+        return width == 0 && height == 0 ? self:
+                CGSize( width: self.width + width, height: self.height + height )
+    }
+}
+
 extension CGRect {
-    var center:         CGPoint {
+    var center:      CGPoint {
         return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY + (self.maxY - self.minY) / 2 )
     }
     var top:         CGPoint {
