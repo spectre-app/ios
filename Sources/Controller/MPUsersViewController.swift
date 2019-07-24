@@ -11,25 +11,18 @@ import Crashlytics
 import Stellar
 
 class MPUsersViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
-    public var users = [ MPMarshal.UserInfo ]() {
-        didSet {
-            DispatchQueue.main.perform {
-                self.usersSpinner.reloadData()
-            }
-        }
-    }
+    public lazy var usersDataSource = DataSource<MPMarshal.UserInfo>( collectionView: self.usersSpinner )
     public var selectedUser: MPMarshal.UserInfo? {
         get {
             if let selectedPath = self.usersSpinner.indexPathsForSelectedItems?.first {
-                return selectedPath.item < self.users.count ? self.users[selectedPath.item]: nil
+                return self.usersDataSource.element( at: selectedPath )
             }
 
             return nil
         }
         set {
-            if let newValue = newValue,
-               let item = self.users.firstIndex( of: newValue ) {
-                self.usersSpinner.selectItem( at: IndexPath( item: item, section: 0 ), animated: true, scrollPosition: .centeredVertically )
+            if let newValue = newValue, let selectedPath = self.usersDataSource.indexPath( for: newValue ) {
+                self.usersSpinner.selectItem( at: selectedPath, animated: true, scrollPosition: .centeredVertically )
             }
             else {
                 self.usersSpinner.selectItem( at: nil, animated: true, scrollPosition: .centeredVertically )
@@ -64,10 +57,13 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         self.usersSpinner.delegate = self
         self.usersSpinner.dataSource = self
         self.usersSpinner.backgroundColor = .clear
+        self.usersSpinner.indicatorStyle = .white
 
         self.settingsButton.darkBackground = true
         self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
-            self.detailsHost.showDetails( MPAppDetailsViewController() )
+            if !self.detailsHost.hideDetails() {
+                self.detailsHost.showDetails( MPAppDetailsViewController() )
+            }
         }
 
         self.userToolbar.barStyle = .black
@@ -147,7 +143,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
             alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { _ in
                 if MPMarshal.shared.delete( userInfo: user ) {
-                    self.users.removeAll { $0 == user }
+                    self.usersDataSource.remove( user )
                 }
             } )
             self.present( alert, animated: true )
@@ -175,14 +171,18 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     // MARK: --- UICollectionViewDataSource ---
 
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return self.usersDataSource.numberOfSections
+    }
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.users.count + 1
+        return self.usersDataSource.numberOfItems( in: section )
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         return UserCell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
             (cell as? UserCell)?.navigationController = self.navigationController
-            (cell as? UserCell)?.user = indexPath.item < self.users.count ? self.users[indexPath.item]: nil
+            (cell as? UserCell)?.user = self.usersDataSource.element( at: indexPath )
         }
     }
 
@@ -203,7 +203,11 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     // MARK: --- MPMarshalObserver ---
 
     func usersDidChange(_ users: [MPMarshal.UserInfo]?) {
-        self.users = users ?? []
+        DispatchQueue.main.perform {
+            var data: [MPMarshal.UserInfo?] = users?.sorted { $0.lastUsed > $1.lastUsed } ?? []
+            data.append( nil )
+            self.usersDataSource.update( [ data ], reload: true )
+        }
     }
 
     // MARK: --- Types ---

@@ -734,7 +734,7 @@ class MPMarshal: Observable {
         }
     }
 
-    class UserInfo: Equatable, CustomStringConvertible {
+    class UserInfo: Hashable, CustomStringConvertible {
         public let origin:   URL?
         public let document: String
 
@@ -815,7 +815,11 @@ class MPMarshal: Observable {
             }
         }
 
-        // MARK: --- Equatable ---
+        // MARK: --- Hashable ---
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine( self.fullName )
+        }
 
         static func ==(lhs: UserInfo, rhs: UserInfo) -> Bool {
             return lhs.fullName == rhs.fullName

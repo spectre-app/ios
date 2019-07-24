@@ -67,7 +67,8 @@ public class MPSpinnerView: UICollectionView {
 
             if context.invalidateEverything || context.invalidateDataSourceCounts {
                 self.itemAttributes.removeAll()
-                self.itemCount = self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
+                self.itemCount = self.collectionView?.numberOfSections ?? 0 > 0 ?
+                        self.collectionView?.numberOfItems( inSection: 0 ) ?? 0 : 0
             }
             else if let invalidatedItemIndexPaths = context.invalidatedItemIndexPaths {
                 invalidatedItemIndexPaths.forEach { self.itemAttributes.removeValue( forKey: $0.item ) }
