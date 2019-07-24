@@ -407,90 +407,94 @@ class MPMarshal: Observable {
     }
 
     private func `import`(from importedUser: MPUser, into existedUser: MPUser, completion: ((Bool) -> Void)?) {
-        let spinner = MPAlertView( title: "Merging", message: existedUser.description,
-                                   content: UIActivityIndicatorView( style: .whiteLarge ) )
-                .show( dismissAutomatically: false )
+        DispatchQueue.main.perform {
+            let spinner = MPAlertView( title: "Merging", message: existedUser.description,
+                                       content: UIActivityIndicatorView( style: .whiteLarge ) )
+                    .show( dismissAutomatically: false )
 
-        DispatchQueue.mpw.perform {
-            var replacedSites = 0, newSites = 0
-            for importedSite in importedUser.sites {
-                if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
-                    if importedSite.lastUsed <= existedSite.lastUsed {
-                        continue
+            DispatchQueue.mpw.perform {
+                var replacedSites = 0, newSites = 0
+                for importedSite in importedUser.sites {
+                    if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
+                        if importedSite.lastUsed <= existedSite.lastUsed {
+                            continue
+                        }
+
+                        existedUser.sites.removeAll { $0 === existedSite }
+                        replacedSites += 1
+                    }
+                    else {
+                        newSites += 1
                     }
 
-                    existedUser.sites.removeAll { $0 === existedSite }
-                    replacedSites += 1
+                    existedUser.sites.append( importedSite.copy( for: existedUser ) )
                 }
-                else {
-                    newSites += 1
+                var updatedUser = false
+                if importedUser.lastUsed >= existedUser.lastUsed {
+                    existedUser.identicon = importedUser.identicon
+                    existedUser.avatar = importedUser.avatar
+                    existedUser.algorithm = importedUser.algorithm
+                    existedUser.defaultType = importedUser.defaultType
+                    existedUser.lastUsed = importedUser.lastUsed
+                    existedUser.masterKeyID = importedUser.masterKeyID
+                    updatedUser = true
                 }
 
-                existedUser.sites.append( importedSite.copy( for: existedUser ) )
-            }
-            var updatedUser = false
-            if importedUser.lastUsed >= existedUser.lastUsed {
-                existedUser.identicon = importedUser.identicon
-                existedUser.avatar = importedUser.avatar
-                existedUser.algorithm = importedUser.algorithm
-                existedUser.defaultType = importedUser.defaultType
-                existedUser.lastUsed = importedUser.lastUsed
-                existedUser.masterKeyID = importedUser.masterKeyID
-                updatedUser = true
-            }
+                DispatchQueue.main.perform {
+                    completion?( true )
+                    spinner.dismiss()
 
-            DispatchQueue.main.perform {
-                completion?( true )
-                spinner.dismiss()
+                    if !updatedUser && replacedSites + newSites == 0 {
+                        MPAlertView( title: "Import Skipped", message: existedUser.description, details:
+                        """
+                        The import into \(existedUser) was skipped.
 
-                if !updatedUser && replacedSites + newSites == 0 {
-                    MPAlertView( title: "Import Skipped", message: existedUser.description, details:
-                    """
-                    The import into \(existedUser) was skipped.
+                        This merge import contained no information that was either new or missing for the existing user.
+                        """ ).show()
+                    }
+                    else {
+                        MPAlertView( title: "Import Complete", message: existedUser.description, details:
+                        """
+                        Completed the import of sites into \(existedUser).
 
-                    This merge import contained no information that was either new or missing for the existing user.
-                    """ ).show()
+                        This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
+                        \(updatedUser ?
+                                "The user settings were updated from the import.":
+                                "The existing user's settings were more recent than the import.")
+                        """ ).show()
+                    }
+                    self.setNeedsReload()
                 }
-                else {
-                    MPAlertView( title: "Import Complete", message: existedUser.description, details:
-                    """
-                    Completed the import of sites into \(existedUser).
-
-                    This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
-                    \(updatedUser ?
-                            "The user settings were updated from the import.":
-                            "The existing user's settings were more recent than the import.")
-                    """ ).show()
-                }
-                self.setNeedsReload()
             }
         }
     }
 
     private func `import`(data: Data, from importingUser: UserInfo, into documentFile: URL, completion: ((Bool) -> Void)?) {
-        let spinner = MPAlertView( title: "Replacing", message: documentFile.lastPathComponent,
-                                   content: UIActivityIndicatorView( style: .whiteLarge ) )
-                .show( dismissAutomatically: false )
+        DispatchQueue.main.perform {
+            let spinner = MPAlertView( title: "Replacing", message: documentFile.lastPathComponent,
+                                       content: UIActivityIndicatorView( style: .whiteLarge ) )
+                    .show( dismissAutomatically: false )
 
-        DispatchQueue.mpw.perform {
-            if !FileManager.default.createFile( atPath: documentFile.path, contents: data ) {
-                mperror( title: "Issue importing", context: "Couldn't save \(documentFile.lastPathComponent)" )
-                completion?( false )
-                return
-            }
+            DispatchQueue.mpw.perform {
+                if !FileManager.default.createFile( atPath: documentFile.path, contents: data ) {
+                    mperror( title: "Issue importing", context: "Couldn't save \(documentFile.lastPathComponent)" )
+                    completion?( false )
+                    return
+                }
 
-            DispatchQueue.main.perform {
-                completion?( true )
-                spinner.dismiss()
+                DispatchQueue.main.perform {
+                    completion?( true )
+                    spinner.dismiss()
 
-                MPAlertView( title: "Import Complete", message: documentFile.lastPathComponent, details:
-                """
-                Completed the import of \(importingUser) (\(importingUser.format)).
-                This export file was created on \(importingUser.exportDate).
+                    MPAlertView( title: "Import Complete", message: documentFile.lastPathComponent, details:
+                    """
+                    Completed the import of \(importingUser) (\(importingUser.format)).
+                    This export file was created on \(importingUser.exportDate).
 
-                This was a direct installation of the import data, not a merge import.
-                """ ).show()
-                self.setNeedsReload()
+                    This was a direct installation of the import data, not a merge import.
+                    """ ).show()
+                    self.setNeedsReload()
+                }
             }
         }
     }

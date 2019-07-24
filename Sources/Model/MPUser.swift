@@ -52,6 +52,20 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
+    public var maskPasswords: Bool {
+        didSet {
+            if oldValue != self.maskPasswords {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
+    public var biometricLock: Bool {
+        didSet {
+            if oldValue != self.biometricLock {
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
     public var origin: URL?
 
     public var masterKey: MPMasterKey? {
@@ -91,7 +105,8 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
 
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
-         defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil) {
+         defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
+         hidePasswords: Bool = false, biometricLock: Bool = false) {
         self.algorithm = algorithm ?? .versionCurrent
         self.avatar = avatar
         self.fullName = fullName
@@ -100,6 +115,8 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         self.defaultType = defaultType ?? .default
         self.lastUsed = lastUsed
         self.origin = origin
+        self.maskPasswords = hidePasswords
+        self.biometricLock = biometricLock
         super.init()
 
         self.observers.register( observer: self )

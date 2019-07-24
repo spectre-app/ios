@@ -124,28 +124,34 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     }
 
     func mpw_process<U>(handler: @escaping (String, String) -> U, completion: ((U) -> Void)? = nil) -> Bool {
-        return DispatchQueue.main.await {
-            if let fullName = self.user?.fullName ?? self.nameField?.text, fullName.count > 0,
-               let masterPassword = self.passwordField?.text, masterPassword.count > 0 {
-                self.passwordField?.isEnabled = false
-                self.passwordIndicator.startAnimating()
+        return DispatchQueue.main.await { [weak self] in
+            guard let self = self,
+                  let fullName = self.user?.fullName ?? self.nameField?.text, fullName.count > 0,
+                  let masterPassword = self.passwordField?.text, masterPassword.count > 0
+            else { return false }
 
-                DispatchQueue.mpw.perform {
-                    let user = handler( fullName, masterPassword )
+            self.passwordField?.isEnabled = false
+            self.passwordIndicator.startAnimating()
 
-                    DispatchQueue.main.perform {
-                        self.passwordField?.text = nil
-                        self.passwordField?.isEnabled = true
-                        self.passwordIndicator.stopAnimating()
+            DispatchQueue.mpw.perform { [weak self] in
+                guard let self = self
+                else { return }
 
-                        completion?( user )
-                    }
+                let user = handler( fullName, masterPassword )
+
+                DispatchQueue.main.perform { [weak self] in
+                    guard let self = self
+                    else { return }
+
+                    self.passwordField?.text = nil
+                    self.passwordField?.isEnabled = true
+                    self.passwordIndicator.stopAnimating()
+
+                    completion?( user )
                 }
-
-                return true
             }
 
-            return false
+            return true
         }
     }
 

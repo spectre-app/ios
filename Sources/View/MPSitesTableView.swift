@@ -63,7 +63,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func updateSites() {
-        DispatchQueue.global().async {
+        DispatchQueue.global().async { [weak self] in
+            guard let self = self
+            else { return }
+
             // Determine search state and filter user sites
             var selectedResult = self.data.reduce( nil, { result, section in
                 result ?? (section as? [MPQuery.Result<MPSite>])?.first { $0.value == self.selectedSite }
@@ -103,7 +106,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
 
             // Update the sites table to show the newly filtered sites
-            DispatchQueue.main.perform {
+            DispatchQueue.main.perform { [weak self] in
+                guard let self = self
+                else { return }
+
                 self.updateDataSource( self.data, toSections: newSites, reloadItems: nil, with: self.isInitial ? .none: .automatic )
                 self.isInitial = false
 
@@ -190,7 +196,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     // MARK: --- Types ---
 
-    class SiteCell: UITableViewCell, MPSiteObserver {
+    class SiteCell: UITableViewCell, MPSiteObserver, MPUserObserver {
         public var result: MPQuery.Result<MPSite>? {
             didSet {
                 self.site = self.result?.value
@@ -199,10 +205,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         public var site:   MPSite? {
             willSet {
                 self.site?.observers.unregister( observer: self )
+                self.site?.user.observers.unregister( observer: self )
             }
             didSet {
                 if let site = self.site {
                     site.observers.register( observer: self ).siteDidChange( site )
+                    site.user.observers.register( observer: self ).userDidChange( site.user )
                 }
             }
         }
@@ -214,14 +222,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
 
-        private var mode        = MPKeyPurpose.authentication {
+        private var mode = MPKeyPurpose.authentication {
             didSet {
-                self.modeButton.title = self.mode.button()
-                self.modeButton.size = .small
+                DispatchQueue.main.perform {
+                    self.modeButton.title = self.mode.button()
+                    self.modeButton.size = .small
+                }
                 self.updateResult()
             }
         }
-        private let resultLabel = MPTintLabel()
+        private let resultLabel = MPTintField()
         private let nameLabel   = UILabel()
         private let modeButton  = MPButton( image: nil, title: "" )
         private let copyButton  = MPButton( image: nil, title: "" )
@@ -233,9 +243,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-            defer {
-                self.mode = { self.mode }()
-            }
             super.init( style: style, reuseIdentifier: reuseIdentifier )
 
             // - View
@@ -249,8 +256,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.resultLabel.font = MPTheme.global.font.password.get()
             self.resultLabel.text = " "
             self.resultLabel.textAlignment = .natural
-            self.resultLabel.shadowColor = MPTheme.global.color.shadow.get()
-            self.resultLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.nameLabel.font = MPTheme.global.font.caption1.get()
             self.nameLabel.textAlignment = .natural
@@ -300,16 +305,21 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .activate()
         }
 
+        override func prepareForReuse() {
+            super.prepareForReuse()
+
+            self.mode = .authentication
+        }
+
         func modeAction() {
             self.mode.next()
         }
 
         func copyAction() {
-            DispatchQueue.mpw.perform {
-                guard let site = self.site
-                else {
-                    return
-                }
+            DispatchQueue.mpw.perform { [weak self] in
+                guard let self = self, let site = self.site
+                else { return }
+
                 var result = "", kind = ""
                 switch self.mode {
                     case .authentication:
@@ -364,6 +374,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
 
+        // MARK: --- MPUserObserver ---
+
+        func userDidChange(_ user: MPUser) {
+            DispatchQueue.main.perform {
+                self.resultLabel.isSecureTextEntry = self.site?.user.maskPasswords ?? true
+            }
+        }
+
         // MARK: --- MPSiteObserver ---
 
         func siteDidChange(_ site: MPSite) {
@@ -373,8 +391,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.updateResult()
         }
 
+        // MARK: --- Private ---
+
         private func updateResult() {
-            DispatchQueue.mpw.perform {
+            DispatchQueue.mpw.perform { [weak self] in
+                guard let self = self
+                else { return }
+
                 var result: String?
                 switch self.mode {
                     case .authentication:
@@ -385,8 +408,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         result = self.site?.mpw_answer()
                 }
 
-                DispatchQueue.main.perform {
-                    self.resultLabel.text = result ?? " "
+                DispatchQueue.main.perform { [weak self] in
+                    guard let self = self
+                    else { return }
+
+                    self.resultLabel.text = result
                 }
             }
         }

@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPTintLabel: UILabel {
+class MPTintField: UITextField {
     override func tintColorDidChange() {
         super.tintColorDidChange()
 
