@@ -90,9 +90,10 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
         }
     }
 
-    public func hideDetails(completion: (() -> Void)? = nil) {
-        DispatchQueue.main.perform {
-            if let detailsController = self.detailsController {
+    @discardableResult
+    public func hideDetails(completion: (() -> Void)? = nil) -> Bool {
+        if let detailsController = self.detailsController {
+            DispatchQueue.main.perform {
                 detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
                 UIView.animate( withDuration: 0.382, animations: {
@@ -106,9 +107,11 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                     completion?()
                 } )
             }
-            else {
-                completion?()
-            }
+            return true
+        }
+        else {
+            completion?()
+            return false
         }
     }
 

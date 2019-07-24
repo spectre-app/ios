@@ -43,11 +43,11 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
         self.siteButton.layer.shadowOpacity = 0.382
         self.siteButton.titleLabel?.font = MPTheme.global.font.largeTitle.get()
 
-        let leadingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton, self.trashButton ] )
+        let leadingToolBar = UIStackView( arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
         leadingToolBar.axis = .vertical
         leadingToolBar.spacing = 12
 
-        let trailingToolBar = UIStackView( arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
+        let trailingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton, self.trashButton ] )
         trailingToolBar.axis = .vertical
         trailingToolBar.spacing = 12
 
@@ -66,7 +66,6 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
         self.addSubview( trailingToolBar )
 
         // - Layout
-        self.widthAnchor.constraint( equalTo: self.heightAnchor, multiplier: 1.618 ).activate()
         LayoutConfiguration( view: self.siteButton )
                 .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }

@@ -54,7 +54,9 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         }
 
         self.userButton.addAction( for: .touchUpInside ) { _, _ in
-            self.showDetails( forUser: self.user )
+            if !self.detailsHost.hideDetails() {
+                self.detailsHost.showDetails( MPUserDetailsViewController( model: self.user ) )
+            }
         }
         self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
         self.userButton.sizeToFit()
@@ -82,6 +84,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         LayoutConfiguration( view: self.siteHeaderView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor, multiplier: 0.382 ) }
                 .activate()
 
         LayoutConfiguration( view: self.sitesTableView )
@@ -150,20 +153,12 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         return .lightContent
     }
 
-    // MARK: --- Private ---
-
-    func showDetails(forSite site: MPSite) {
-        self.detailsHost.showDetails( MPSiteDetailsViewController( model: site ) )
-    }
-
-    func showDetails(forUser user: MPUser) {
-        self.detailsHost.showDetails( MPUserDetailsViewController( model: user ) )
-    }
-
     // MARK: --- MPSiteHeaderObserver ---
 
     func shouldOpenDetails(forSite site: MPSite) {
-        self.showDetails( forSite: site )
+        if !self.detailsHost.hideDetails() {
+            self.detailsHost.showDetails( MPSiteDetailsViewController( model: site ) )
+        }
     }
 
     // MARK: --- MPSitesViewObserver ---
