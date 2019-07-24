@@ -6,9 +6,10 @@
 import Foundation
 
 class MPAlertView: MPButton {
-    private let titleLabel   = UILabel()
-    private let messageLabel = UILabel()
-    private let detailLabel  = UILabel()
+    private let titleLabel    = UILabel()
+    private let messageLabel  = UILabel()
+    private let expandChevron = UILabel()
+    private let detailLabel   = UILabel()
 
     private lazy var appearanceConfiguration = LayoutConfiguration( view: self ) { active, inactive in
         active.constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
@@ -17,9 +18,11 @@ class MPAlertView: MPButton {
     private lazy var activationConfiguration = LayoutConfiguration( view: self ) { (active, inactive) in
         active.apply( LayoutConfiguration( view: self.titleLabel ).set( MPTheme.global.font.title1.get(), forKey: "font" ) )
         active.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.title2.get(), forKey: "font" ) )
+        active.apply( LayoutConfiguration( view: self.expandChevron ).set( true, forKey: "hidden" ) )
         active.apply( LayoutConfiguration( view: self.detailLabel ).set( false, forKey: "hidden" ) )
         inactive.apply( LayoutConfiguration( view: self.titleLabel ).set( MPTheme.global.font.headline.get(), forKey: "font" ) )
         inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.subheadline.get(), forKey: "font" ) )
+        inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, forKey: "hidden" ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
     private lazy var automaticDismissalItem = DispatchTask( queue: DispatchQueue.main, qos: .utility, deadline: .now() + .seconds( 3 ) ) {
@@ -32,7 +35,7 @@ class MPAlertView: MPButton {
 
     init(title: String?, message: String? = nil, content: UIView? = nil, details: String? = nil) {
         let contentStack = UIStackView( arrangedSubviews: [
-            self.titleLabel, self.messageLabel, content, self.detailLabel
+            self.titleLabel, self.messageLabel, content, self.expandChevron, self.detailLabel
         ].compactMap { $0 } )
         super.init( content: contentStack )
 
@@ -56,6 +59,12 @@ class MPAlertView: MPButton {
             spinner.startAnimating()
         }
 
+        self.expandChevron.text = "▾"
+        self.expandChevron.textColor = MPTheme.global.color.body.get()
+        self.expandChevron.textAlignment = .center
+        self.expandChevron.font = MPTheme.global.font.callout.get()
+        self.expandChevron.setAlignmentRectInsets( UIEdgeInsets( top: 0, left: 0, bottom: 8, right: 0 ) )
+
         self.detailLabel.text = details
         self.detailLabel.textColor = MPTheme.global.color.body.get()
         self.detailLabel.textAlignment = .center
@@ -71,6 +80,7 @@ class MPAlertView: MPButton {
         self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
 
         contentStack.axis = .vertical
+        contentStack.alignment = .center
         contentStack.spacing = 8
     }
 
@@ -153,5 +163,7 @@ func mperror(title: String, context: CustomStringConvertible? = nil, details: Cu
     }
     err( message )
 
-    MPAlertView( title: title, message: context?.description, details: errorDetails ).show()
+    DispatchQueue.main.perform {
+        MPAlertView( title: title, message: context?.description, details: errorDetails ).show()
+    }
 }
