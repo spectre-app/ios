@@ -55,19 +55,18 @@ class MPToggleButton: UIButton {
         }
     }
 
-    override func setImage(_ image: UIImage?, for state: State) {
-        super.setImage( image, for: state )
-        UIView.performWithoutAnimation {
-            self.isSelected = { self.isSelected }()
-        }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        self.imageView?.alpha = self.isSelected ? 1: 0.318
     }
 
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
            let background = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 ).cgColor,
            let border = MPTheme.global.color.body.get()?.cgColor {
-            let content = self.bounds.inset(by: self.contentEdgeInsets )
-                    .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )
+            let content = self.bounds.inset( by: self.contentEdgeInsets )
+                                     .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )
             let circle  = CGRect( center: content.bottom, radius: self.contentEdgeInsets.bottom )
             context.addRect( self.bounds )
             context.addPath( CGPath( ellipseIn: circle, transform: nil ) )
