@@ -66,6 +66,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
+    public var data: MPMarshalledData
     public var origin: URL?
 
     public var masterKey: MPMasterKey? {
@@ -114,9 +115,10 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         self.masterKeyID = masterKeyID
         self.defaultType = defaultType ?? .default
         self.lastUsed = lastUsed
-        self.origin = origin
         self.maskPasswords = hidePasswords
         self.biometricLock = biometricLock
+        self.origin = origin
+        self.data = MPMarshalledData()
         super.init()
 
         self.observers.register( observer: self )

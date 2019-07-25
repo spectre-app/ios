@@ -1084,13 +1084,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DAA141181922FED80032B392 /* iOS */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = iOS;
-			sourceTree = "<group>";
-		};
 		DAA1411E1922FF020032B392 /* include */ = {
 			isa = PBXGroup;
 			children = (
@@ -1385,7 +1378,6 @@
 			children = (
 				DAA7BB6D20C4C0C400101DC7 /* libjson-c-ios */,
 				DAA7BB8720C4C10F00101DC7 /* libsodium-ios */,
-				DAA141181922FED80032B392 /* iOS */,
 				DAC77CAF148291A600BCF976 /* Pearl */,
 			);
 			path = External;

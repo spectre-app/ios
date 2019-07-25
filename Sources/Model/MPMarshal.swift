@@ -185,7 +185,7 @@ class MPMarshal: Observable {
                 }
 
                 var error    = MPMarshalError( type: .success, message: nil )
-                let document = mpw_marshal_write( format, marshalledUser, &error )
+                let document = mpw_marshal_write( format, mpw_marshal_file( marshalledUser, &user.data ), &error )
                 if error.type == .success {
                     if let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         return document
@@ -601,7 +601,7 @@ class MPMarshal: Observable {
                     }
 
                     var error    = MPMarshalError( type: .success, message: nil )
-                    let document = mpw_marshal_write( .default, marshalledUser, &error )
+                    let document = mpw_marshal_write( .default, mpw_marshal_file( marshalledUser, nil ), &error )
                     if error.type == .success,
                        let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         let importGroup = DispatchGroup()
@@ -774,8 +774,9 @@ class MPMarshal: Observable {
             return DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
                     var error = MPMarshalError( type: .success, message: nil )
-                    if let marshalledUser = mpw_marshal_read(
-                            self.document, self.format, self.resetKey ? nil: masterKeyProvider, &error )?.pointee,
+                    if let marshalledFile = mpw_marshal_read(
+                            self.document, self.resetKey ? nil: masterKeyProvider, &error )?.pointee,
+                       let marshalledUser = marshalledFile.user?.pointee,
                        error.type == .success {
                         let user = MPUser(
                                 algorithm: marshalledUser.algorithm,

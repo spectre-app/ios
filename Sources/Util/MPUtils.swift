@@ -29,6 +29,8 @@ extension MPKeyPurpose {
                 return "u:"
             case .recovery:
                 return "a:"
+            default:
+                fatalError( "Unsupported purpose: \(self)" )
         }
     }
 
@@ -41,6 +43,8 @@ extension MPKeyPurpose {
                 self = .recovery
             case .recovery:
                 self = .authentication
+            default:
+                fatalError( "Unsupported purpose: \(self)" )
         }
 
         return self
@@ -60,7 +64,7 @@ extension MPResultType {
 extension MPIdenticon: Equatable {
     public static func ==(lhs: MPIdenticon, rhs: MPIdenticon) -> Bool {
         return lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
-                lhs.accessory == rhs.accessory && lhs.color == rhs.color
+        lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
 
     public func encoded() -> String? {
@@ -116,6 +120,8 @@ extension MPIdenticonColor {
                 return .cyan
             case .white:
                 return .white
+            default:
+                fatalError( "Unsupported color: \(self)" )
         }
     }
 }
@@ -143,6 +149,8 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
                 return "com.lyndir.masterpassword.sites"
             case .JSON:
                 return "com.lyndir.masterpassword.json"
+            default:
+                fatalError( "Unsupported format: \(self)" )
         }
     }
     public var description: String {
@@ -153,6 +161,8 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
                 return "v1 (mpsites)"
             case .JSON:
                 return "v2 (mpjson)"
+            default:
+                fatalError( "Unsupported format: \(self)" )
         }
     }
 }
@@ -283,15 +293,15 @@ extension UIView {
 extension CGSize {
     func union(_ size: CGSize) -> CGSize {
         return size.width <= self.width && size.height <= self.height ? self:
-                size.width >= self.width && size.height >= self.height ? size:
-                        CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
+        size.width >= self.width && size.height >= self.height ? size:
+        CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
     }
 
     func grow(width: CGFloat = 0, height: CGFloat = 0, size: CGSize = .zero, point: CGPoint = .zero) -> CGSize {
         let width  = width + size.width + point.x
         let height = height + size.height + point.y
         return width == 0 && height == 0 ? self:
-                CGSize( width: self.width + width, height: self.height + height )
+        CGSize( width: self.width + width, height: self.height + height )
     }
 }
 
@@ -339,14 +349,9 @@ extension UnsafePointer where Pointee == CChar {
 }
 
 extension Data {
-    func sha256() -> Data {
-        var hash = Data( count: Int( CC_SHA256_DIGEST_LENGTH ) )
-        self.withUnsafeBytes { messageBytes in
-            hash.withUnsafeMutableBytes { hashBytes in
-                _ = CC_SHA256( messageBytes, CC_LONG( self.count ), hashBytes )
-            }
-        }
-
+    func sha256() -> [UInt8] {
+        var hash = [ UInt8 ]( repeating: 0, count: Int( CC_SHA256_DIGEST_LENGTH ) )
+        self.withUnsafeBytes { _ = CC_SHA256( $0, CC_LONG( self.count ), &hash ) }
         return hash
     }
 
@@ -361,16 +366,12 @@ extension Data {
 }
 
 extension String {
-    func sha256() -> Data? {
-        return self.data( using: .utf8 )?.sha256()
+    func sha256() -> [UInt8] {
+        return self.data( using: .utf8 )?.sha256() ?? []
     }
 
     func color() -> UIColor? {
-        guard let sha = self.sha256()
-        else {
-            return nil
-        }
-
+        let sha        = self.sha256()
         let hue        = CGFloat( ratio( of: sha[0], from: 0, to: 1 ) )
         let saturation = CGFloat( ratio( of: sha[1], from: 0.3, to: 1 ) )
         let brightness = CGFloat( ratio( of: sha[2], from: 0.5, to: 0.7 ) )
