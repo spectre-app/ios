@@ -68,7 +68,7 @@ public class MPSpinnerView: UICollectionView {
             if context.invalidateEverything || context.invalidateDataSourceCounts {
                 self.itemAttributes.removeAll()
                 self.itemCount = self.collectionView?.numberOfSections ?? 0 > 0 ?
-                        self.collectionView?.numberOfItems( inSection: 0 ) ?? 0 : 0
+                        self.collectionView?.numberOfItems( inSection: 0 ) ?? 0: 0
             }
             else if let invalidatedItemIndexPaths = context.invalidatedItemIndexPaths {
                 invalidatedItemIndexPaths.forEach { self.itemAttributes.removeValue( forKey: $0.item ) }
@@ -88,7 +88,7 @@ public class MPSpinnerView: UICollectionView {
         }
 
         func layout(items: inout [Int: UICollectionViewLayoutAttributes], inBounds bounds: CGRect) {
-            let scan = bounds.origin.y / bounds.size.height
+            let scan = bounds.size.height > 0 ? bounds.origin.y / bounds.size.height: 0
             for item in 0..<self.itemCount {
                 var offset       = CGFloat.zero, scale = CGFloat.zero, alpha = CGFloat.zero
                 let itemDistance = scan - CGFloat( item )
@@ -121,7 +121,7 @@ public class MPSpinnerView: UICollectionView {
         override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
             if let oldBounds = self.oldBounds {
                 let targetBounds = self.collectionView?.bounds ?? .zero
-                let scan         = oldBounds.origin.y / oldBounds.size.height
+                let scan         = oldBounds.size.height > 0 ? oldBounds.origin.y / oldBounds.size.height: 0
                 return CGPoint( x: oldBounds.origin.x, y: scan * targetBounds.height )
             }
 
