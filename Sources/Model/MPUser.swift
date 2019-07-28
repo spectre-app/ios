@@ -52,22 +52,29 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
-    public var maskPasswords: Bool {
+    public var maskPasswords = false {
         didSet {
-            if oldValue != self.maskPasswords {
+            if oldValue != self.maskPasswords,
+               self.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) {
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
     }
-    public var biometricLock: Bool {
+    public var biometricLock = false {
         didSet {
-            if oldValue != self.biometricLock {
+            if oldValue != self.biometricLock,
+               self.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
     }
-    public var data: MPMarshalledData
-    public var origin: URL?
+    @objc public var data:   MPMarshalledData {
+        didSet {
+            self.maskPasswords = self.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
+            self.biometricLock = self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
+        }
+    }
+    public var       origin: URL?
 
     public var masterKey: MPMasterKey? {
         didSet {
@@ -107,7 +114,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
-         hidePasswords: Bool = false, biometricLock: Bool = false) {
+         data: MPMarshalledData = mpw_marshal_data_new().pointee) {
         self.algorithm = algorithm ?? .versionCurrent
         self.avatar = avatar
         self.fullName = fullName
@@ -115,13 +122,14 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         self.masterKeyID = masterKeyID
         self.defaultType = defaultType ?? .default
         self.lastUsed = lastUsed
-        self.maskPasswords = hidePasswords
-        self.biometricLock = biometricLock
         self.origin = origin
-        self.data = MPMarshalledData()
+        self.data = data
         super.init()
 
-        self.observers.register( observer: self )
+        defer {
+            self.observers.register( observer: self )
+            self.data = { self.data }()
+        }
     }
 
     // MARK: --- MPSiteObserver ---
@@ -143,6 +151,30 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     }
 
     // MARK: --- mpw ---
+
+    public func mpw_get(path: String...) -> Bool {
+        return withVaStrings( path ) { mpw_marshal_data_vget_bool( &self.data, $0 ) }
+    }
+
+    public func mpw_get(path: String...) -> Double {
+        return withVaStrings( path ) { mpw_marshal_data_vget_num( &self.data, $0 ) }
+    }
+
+    public func mpw_get(path: String...) -> String? {
+        return withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( &self.data, $0 ) ) }
+    }
+
+    public func mpw_set(_ value: Bool, path: String...) -> Bool {
+        return withVaStrings( path ) { mpw_marshal_data_vset_bool( value, &self.data, $0 ) }
+    }
+
+    public func mpw_set(_ value: Double, path: String...) -> Bool {
+        return withVaStrings( path ) { mpw_marshal_data_vset_num( value, &self.data, $0 ) }
+    }
+
+    public func mpw_set(_ value: String?, path: String...) -> Bool {
+        return withVaStrings( path ) { mpw_marshal_data_vset_str( value, &self.data, $0 ) }
+    }
 
     @discardableResult
     public func mpw_authenticate(masterPassword: String) -> Bool {

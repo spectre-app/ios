@@ -184,8 +184,9 @@ class MPMarshal: Observable {
                     marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
                 }
 
+                let data     = UnsafeMutablePointer( &user.data )
                 var error    = MPMarshalError( type: .success, message: nil )
-                let document = mpw_marshal_write( format, mpw_marshal_file( marshalledUser, &user.data ), &error )
+                let document = mpw_marshal_write( format, mpw_marshal_file( marshalledUser, data ), &error )
                 if error.type == .success {
                     if let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         return document
@@ -786,7 +787,7 @@ class MPMarshal: Observable {
                                 masterKeyID: self.resetKey ? nil: self.keyID,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                                origin: self.origin
+                                origin: self.origin, data: marshalledFile.data?.pointee ?? mpw_marshal_data_new().pointee
                         )
 
                         guard user.mpw_authenticate( masterPassword: masterPassword )

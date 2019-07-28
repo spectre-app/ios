@@ -20,6 +20,18 @@ func mirror(ratio: Int, center: Int, max: Int) -> Int {
     }
 }
 
+func withVaStrings<R>(_ strings: [String], terminate: Bool = true, body: (CVaListPointer) -> R) -> R {
+    var va: [CVarArg] = strings.map { mpw_strdup( $0 ) }
+    if terminate {
+        va.append( Int( bitPattern: nil ) )
+    }
+    defer {
+        va.forEach { free( $0 as? UnsafeMutablePointer<Int8> ) }
+    }
+
+    return withVaList( va, body )
+}
+
 extension MPKeyPurpose {
     func button() -> String {
         switch self {
@@ -64,7 +76,7 @@ extension MPResultType {
 extension MPIdenticon: Equatable {
     public static func ==(lhs: MPIdenticon, rhs: MPIdenticon) -> Bool {
         return lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
-        lhs.accessory == rhs.accessory && lhs.color == rhs.color
+                lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
 
     public func encoded() -> String? {
@@ -293,15 +305,15 @@ extension UIView {
 extension CGSize {
     func union(_ size: CGSize) -> CGSize {
         return size.width <= self.width && size.height <= self.height ? self:
-        size.width >= self.width && size.height >= self.height ? size:
-        CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
+                size.width >= self.width && size.height >= self.height ? size:
+                        CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
     }
 
     func grow(width: CGFloat = 0, height: CGFloat = 0, size: CGSize = .zero, point: CGPoint = .zero) -> CGSize {
         let width  = width + size.width + point.x
         let height = height + size.height + point.y
         return width == 0 && height == 0 ? self:
-        CGSize( width: self.width + width, height: self.height + height )
+                CGSize( width: self.width + width, height: self.height + height )
     }
 }
 
