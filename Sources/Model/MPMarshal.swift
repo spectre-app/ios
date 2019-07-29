@@ -28,7 +28,7 @@ class MPMarshal: Observable {
 
     public func setNeedsReload(completion: (([UserInfo]?) -> Void)? = nil) {
         let reloadRequested = Date()
-        self.marshalQueue.asyncAfter( deadline: .now() + .milliseconds( 500 ) ) {
+        self.marshalQueue.asyncAfter( deadline: .now() + .milliseconds( 300 ) ) {
             if let reloadCompleted = self.reloadCompleted, reloadRequested < reloadCompleted {
                 completion?( self.users )
             }
@@ -139,7 +139,7 @@ class MPMarshal: Observable {
     @discardableResult
     public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) throws -> URL {
         return try self.marshalQueue.await {
-            return try DispatchQueue.mpw.await {
+            try DispatchQueue.mpw.await {
                 guard let documentFile = self.file( for: user, in: directory, format: format )
                 else {
                     throw Error.internal( details: "No path to marshal \(user)" )
@@ -184,9 +184,9 @@ class MPMarshal: Observable {
                     marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
                 }
 
-                let data     = UnsafeMutablePointer( &user.data )
+                mpw_marshal_file( &user.file, marshalledUser, nil, nil )
                 var error    = MPMarshalError( type: .success, message: nil )
-                let document = mpw_marshal_write( format, mpw_marshal_file( marshalledUser, data ), &error )
+                let document = mpw_marshal_write( format, &user.file, &error )
                 if error.type == .success {
                     if let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         return document
@@ -502,7 +502,7 @@ class MPMarshal: Observable {
 
     public func hasLegacy() -> Bool {
         return MPCoreData.shared.await {
-            return (try? $0.count( for: MPUserEntity.fetchRequest() )) ?? -1 > 0
+            (try? $0.count( for: MPUserEntity.fetchRequest() )) ?? -1 > 0
         }
     }
 
@@ -602,7 +602,9 @@ class MPMarshal: Observable {
                     }
 
                     var error    = MPMarshalError( type: .success, message: nil )
-                    let document = mpw_marshal_write( .default, mpw_marshal_file( marshalledUser, nil ), &error )
+                    var file     = mpw_marshal_file( nil, marshalledUser, nil, nil )
+                    let document = mpw_marshal_write( .default, file, &error )
+                    mpw_marshal_file_free( &file )
                     if error.type == .success,
                        let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         let importGroup = DispatchGroup()
@@ -787,7 +789,7 @@ class MPMarshal: Observable {
                                 masterKeyID: self.resetKey ? nil: self.keyID,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                                origin: self.origin, data: marshalledFile.data?.pointee ?? mpw_marshal_data_new().pointee
+                                origin: self.origin, file: marshalledFile
                         )
 
                         guard user.mpw_authenticate( masterPassword: masterPassword )
@@ -813,6 +815,7 @@ class MPMarshal: Observable {
                                 ) )
                             }
                         }
+
                         return (user, error)
                     }
 
@@ -828,7 +831,7 @@ class MPMarshal: Observable {
         }
 
         static func ==(lhs: UserInfo, rhs: UserInfo) -> Bool {
-            return lhs.fullName == rhs.fullName
+            return lhs === rhs
         }
 
         // MARK: --- CustomStringConvertible ---

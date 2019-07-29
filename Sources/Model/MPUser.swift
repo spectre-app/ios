@@ -68,13 +68,8 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
-    @objc public var data:   MPMarshalledData {
-        didSet {
-            self.maskPasswords = self.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
-            self.biometricLock = self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
-        }
-    }
-    public var       origin: URL?
+    public var file:   MPMarshalledFile
+    public var origin: URL?
 
     public var masterKey: MPMasterKey? {
         didSet {
@@ -114,7 +109,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
-         data: MPMarshalledData = mpw_marshal_data_new().pointee) {
+         file: MPMarshalledFile = mpw_marshal_file( nil, nil, nil, nil ).pointee) {
         self.algorithm = algorithm ?? .versionCurrent
         self.avatar = avatar
         self.fullName = fullName
@@ -123,13 +118,16 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         self.defaultType = defaultType ?? .default
         self.lastUsed = lastUsed
         self.origin = origin
-        self.data = data
+        self.file = file
         super.init()
 
-        defer {
-            self.observers.register( observer: self )
-            self.data = { self.data }()
+        if self.file.data == nil {
+            mpw_marshal_file( &self.file, nil, mpw_marshal_data_new(), nil );
         }
+
+        self.maskPasswords = self.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
+        self.biometricLock = self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
+        self.observers.register( observer: self )
     }
 
     // MARK: --- MPSiteObserver ---
@@ -153,27 +151,27 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     // MARK: --- mpw ---
 
     public func mpw_get(path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vget_bool( &self.data, $0 ) }
+        return withVaStrings( path ) { mpw_marshal_data_vget_bool( self.file.data, $0 ) }
     }
 
     public func mpw_get(path: String...) -> Double {
-        return withVaStrings( path ) { mpw_marshal_data_vget_num( &self.data, $0 ) }
+        return withVaStrings( path ) { mpw_marshal_data_vget_num( self.file.data, $0 ) }
     }
 
     public func mpw_get(path: String...) -> String? {
-        return withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( &self.data, $0 ) ) }
+        return withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( self.file.data, $0 ) ) }
     }
 
     public func mpw_set(_ value: Bool, path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vset_bool( value, &self.data, $0 ) }
+        return withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.file.data, $0 ) }
     }
 
     public func mpw_set(_ value: Double, path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vset_num( value, &self.data, $0 ) }
+        return withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.file.data, $0 ) }
     }
 
     public func mpw_set(_ value: String?, path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vset_str( value, &self.data, $0 ) }
+        return withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.file.data, $0 ) }
     }
 
     @discardableResult
