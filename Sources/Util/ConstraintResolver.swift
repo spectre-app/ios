@@ -166,7 +166,7 @@ extension NSLayoutConstraint {
         if self.multiplier != 1 {
             modifier += " *\(self.multiplier)"
         }
-        if self.constant != 0 {
+        if self.constant != 0 || firstItem == nil || secondItem == nil {
             modifier += " \(self.constant, sign: true)"
         }
         var priority = ""

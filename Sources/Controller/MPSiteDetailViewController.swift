@@ -68,6 +68,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
         class ResultItemView: LabelItemView<MPSite> {
             override func didLoad(valueView: UIView) {
+                super.didLoad( valueView: valueView )
+
                 self.primaryLabel.font = MPTheme.global.font.password.get()
             }
         }

@@ -122,10 +122,8 @@ public class DispatchTask {
             }
 
             self.item = DispatchWorkItem( qos: self.qos ) {
-                self.workQueue.perform( group: self.group, qos: self.qos ) {
-                    self.item = nil
-                    self.work()
-                }
+                self.requestQueue.sync { self.item = nil }
+                self.workQueue.perform( group: self.group, qos: self.qos, execute: self.work )
             }
             return true
         }

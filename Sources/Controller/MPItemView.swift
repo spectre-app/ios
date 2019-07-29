@@ -64,6 +64,7 @@ class Item<M>: NSObject {
 
             // - View
             self.isHidden = self.item.hidden
+            self.translatesAutoresizingMaskIntoConstraints = false
 
             self.contentView.axis = .vertical
             self.contentView.alignment = .center
@@ -166,6 +167,8 @@ class SeparatorItem<M>: Item<M> {
         }
 
         override func didLoad(valueView: UIView) {
+            super.didLoad( valueView: valueView )
+
             self.separatorView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.318 )
 
             LayoutConfiguration( view: self.separatorView )
@@ -594,6 +597,8 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         }
 
         override func didLoad(valueView: UIView) {
+            super.didLoad( valueView: valueView )
+
             self.item.viewInit( self.collectionView )
         }
 
