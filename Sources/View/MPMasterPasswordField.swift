@@ -6,7 +6,7 @@
 import Foundation
 
 class MPMasterPasswordField: UITextField, UITextFieldDelegate {
-    var user:      MPMarshal.UserInfo?
+    var userFile:  MPMarshal.UserFile?
     var nameField: UITextField?
     var passwordField: UITextField? {
         willSet {
@@ -47,9 +47,18 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
-    private lazy var identiconItem = DispatchTask( queue: DispatchQueue.mpw, qos: .userInitiated,
+    private lazy var identiconTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated,
                                                    deadline: .now() + .milliseconds( .random( in: 300..<500 ) ) ) {
-        self.doIdenticon()
+        let userName       = self.userFile?.fullName ?? self.nameField?.text
+        let masterPassword = self.passwordField?.text
+
+        DispatchQueue.mpw.perform {
+            let identicon = mpw_identicon( userName, masterPassword )
+
+            DispatchQueue.main.perform {
+                self.identiconLabel.attributedText = identicon.attributedText()
+            }
+        }
     }
 
     // MARK: --- Life ---
@@ -58,8 +67,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(user: MPMarshal.UserInfo? = nil, nameField: UITextField? = nil) {
-        self.user = user
+    init(userFile: MPMarshal.UserFile? = nil, nameField: UITextField? = nil) {
+        self.userFile = userFile
         self.nameField = nameField
         super.init( frame: .zero )
 
@@ -92,41 +101,31 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         super.willMove( toWindow: newWindow )
 
         if newWindow == nil {
-            self.identiconItem.cancel()
+            self.identiconTask.cancel()
+        }
+        else {
+            self.identiconTask.request()
         }
     }
 
     // MARK: Interface
 
     public func setNeedsIdenticon() {
-        if (self.user?.fullName ?? self.nameField?.text) == nil || self.passwordField?.text == nil {
-            self.identiconItem.cancel()
-
-            DispatchQueue.main.perform {
+        DispatchQueue.main.perform {
+            if (self.userFile?.fullName ?? self.nameField?.text) == nil || self.passwordField?.text == nil {
+                self.identiconTask.cancel()
                 self.identiconLabel.attributedText = nil
             }
-        }
-        else {
-            self.identiconItem.submit()
-        }
-    }
-
-    private func doIdenticon() {
-        var identicon: MPIdenticon?
-        if let userName = self.user?.fullName ?? self.nameField?.text,
-           let masterPassword = self.passwordField?.text {
-            identicon = mpw_identicon( userName, masterPassword )
-        }
-
-        DispatchQueue.main.perform {
-            self.identiconLabel.attributedText = identicon?.attributedText()
+            else {
+                self.identiconTask.request()
+            }
         }
     }
 
     func mpw_process<U>(handler: @escaping (String, String) -> U, completion: ((U) -> Void)? = nil) -> Bool {
         return DispatchQueue.main.await { [weak self] in
             guard let self = self,
-                  let fullName = self.user?.fullName ?? self.nameField?.text, fullName.count > 0,
+                  let fullName = self.userFile?.fullName ?? self.nameField?.text, fullName.count > 0,
                   let masterPassword = self.passwordField?.text, masterPassword.count > 0
             else { return false }
 
@@ -156,6 +155,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     }
 
     // MARK: --- UITextFieldDelegate ---
+
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         return true
     }

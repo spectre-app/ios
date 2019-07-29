@@ -25,15 +25,18 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
     public var query: String? {
         didSet {
-            if self.query != oldValue || self.data.count == 0 {
-                self.updateSites()
+            if self.query != oldValue {
+                self.updateTask.request()
             }
         }
     }
 
-    private let data        = NSMutableArray()
+    private lazy var resultSource = DataSource<MPQuery.Result<MPSite>>( tableView: self )
     private var newSiteResult: MPQuery.Result<MPSite>?
     private var isSelecting = false, isInitial = true
+    private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
+        self.doUpdate()
+    }
 
     // MARK: --- Life ---
 
@@ -52,29 +55,25 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+
+        self.updateTask.request()
+    }
+
     // MARK: --- Internal ---
 
-    func dataSection(section: Int) -> NSArray {
-        return self.data.object( at: section ) as! NSArray
-    }
-
-    func dataRow(section: Int, row: Int) -> MPQuery.Result<MPSite> {
-        return self.dataSection( section: section ).object( at: row ) as! MPQuery.Result<MPSite>
-    }
-
-    func updateSites() {
+    func doUpdate() {
         DispatchQueue.global().async { [weak self] in
             guard let self = self
             else { return }
 
             // Determine search state and filter user sites
-            var selectedResult = self.data.reduce( nil, { result, section in
-                result ?? (section as? [MPQuery.Result<MPSite>])?.first { $0.value == self.selectedSite }
-            } )
+            var selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedSite } )?.element
             let selectionFollowsQuery = self.newSiteResult === selectedResult || selectedResult?.exact ?? false
             let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
             let exactResult = results.first { $0.exact }
-            let newSites: NSMutableArray = [ results ]
+            var sectionsOfElements = [ results ]
 
             // Add "new site" result if there is a query and no exact result
             if let user = self.user,
@@ -88,7 +87,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
                 if let newSiteResult = self.newSiteResult {
                     newSiteResult.matches( query: query )
-                    newSites.add( [ newSiteResult ] )
+                    sectionsOfElements.append( [ newSiteResult ] )
                 }
             }
             else {
@@ -110,18 +109,17 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 guard let self = self
                 else { return }
 
-                self.updateDataSource( self.data, toSections: newSites, reloadItems: nil, with: self.isInitial ? .none: .automatic )
+                self.resultSource.update( sectionsOfElements )
+                //self.updateDataSource( self.data, toSections: newSites, reloadItems: nil, with: self.isInitial ? .none: .automatic )
                 self.isInitial = false
 
                 // Light-weight reload the cell content without fully reloading the cell rows.
-                for (s, section) in (self.data as? [[MPQuery.Result<MPSite>]] ?? []).enumerated() {
-                    for (r, row) in section.enumerated() {
-                        (self.cellForRow( at: IndexPath( row: r, section: s ) ) as? SiteCell)?.result = row
-                    }
+                self.resultSource.elements().forEach { path, element in
+                    (self.cellForRow( at: path ) as? SiteCell)?.result = element
                 }
 
                 // Select the most appropriate row according to the query.
-                self.selectRow( at: self.find( inDataSource: self.data, item: selectedResult ), animated: true, scrollPosition: .middle )
+                self.selectRow( at: self.resultSource.indexPath( for: selectedResult ), animated: true, scrollPosition: .middle )
                 self.selectedSite = selectedResult?.value
             }
         }
@@ -146,25 +144,23 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.selectedSite = self.dataRow( section: indexPath.section, row: indexPath.row ).value
+        self.selectedSite = self.resultSource.element( at: indexPath )?.value
         self.isSelecting = false
     }
 
     // MARK: --- UITableViewDataSource ---
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        return self.data.count
+        return self.resultSource.numberOfSections
     }
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int)
-                    -> Int {
-        return self.dataSection( section: section ).count
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.resultSource.numberOfItems( in: section )
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
-                    -> UITableViewCell {
-        let result = self.dataRow( section: indexPath.section, row: indexPath.row )
-        if AvCell.is( result: result ) {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let result = self.resultSource.element( at: indexPath )
+        if let result = result, AvCell.is( result: result ) {
             return AvCell.dequeue( from: tableView, indexPath: indexPath )
         }
 
@@ -177,21 +173,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
-        DispatchQueue.main.perform {
-            self.updateSites()
-        }
+        self.updateTask.request()
     }
 
     func userDidLogout(_ user: MPUser) {
-        DispatchQueue.main.perform {
-            self.updateSites()
-        }
+        self.updateTask.request()
+    }
+
+    func userDidChange(_ user: MPUser) {
+        self.updateTask.request()
     }
 
     func userDidUpdateSites(_ user: MPUser) {
-        DispatchQueue.main.perform {
-            self.updateSites()
-        }
+        self.updateTask.request()
     }
 
     // MARK: --- Types ---
@@ -331,6 +325,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     case .recovery:
                         result = site.mpw_answer() ?? ""
                         kind = "security answer"
+                    @unknown default: ()
                 }
 
                 site.use()
@@ -406,6 +401,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         result = self.site?.mpw_login()
                     case .recovery:
                         result = self.site?.mpw_answer()
+                    @unknown default: ()
                 }
 
                 DispatchQueue.main.perform { [weak self] in

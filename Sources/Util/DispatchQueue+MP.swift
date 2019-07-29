@@ -85,26 +85,28 @@ extension DispatchQueue {
     }
 }
 
-class DispatchTask {
-    public var pending: Bool {
-        return self.item != nil
-    }
-
-    private let queue:    DispatchQueue
-    private let qos:      DispatchQoS
-    private let group:    DispatchGroup?
-    private let deadline: () -> DispatchTime
-    private let work:     () -> Void
-    private var item:     DispatchWorkItem? {
+public class DispatchTask {
+    private let requestQueue = DispatchQueue( label: "DispatchTask request", qos: .userInitiated )
+    private let workQueue: DispatchQueue
+    private let qos:       DispatchQoS
+    private let group:     DispatchGroup?
+    private let deadline:  () -> DispatchTime
+    private let work:      () -> Void
+    private var item:      DispatchWorkItem? {
         willSet {
             self.item?.cancel()
         }
+        didSet {
+            if let item = self.item {
+                self.workQueue.asyncAfter( deadline: self.deadline(), execute: item )
+            }
+        }
     }
 
-    init(queue: DispatchQueue, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified,
-         deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(),
-         execute work: @escaping @convention(block) () -> Void) {
-        self.queue = queue
+    public init(queue: DispatchQueue, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified,
+                deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(),
+                execute work: @escaping @convention(block) () -> Void) {
+        self.workQueue = queue
         self.group = group
         self.qos = qos
         self.deadline = deadline
@@ -112,28 +114,31 @@ class DispatchTask {
     }
 
     @discardableResult
-    public func submit() -> Bool {
-        guard !self.pending
-        else {
-            return false
-        }
-
-        let item = DispatchWorkItem( qos: self.qos ) {
-            self.queue.perform( group: self.group, qos: self.qos ) {
-                self.cancel()
-                self.work()
+    public func request() -> Bool {
+        return self.requestQueue.sync {
+            guard self.item == nil
+            else {
+                return false
             }
+
+            self.item = DispatchWorkItem( qos: self.qos ) {
+                self.workQueue.perform( group: self.group, qos: self.qos ) {
+                    self.item = nil
+                    self.work()
+                }
+            }
+            return true
         }
-        self.item = item
-        self.queue.asyncAfter( deadline: self.deadline(), execute: item )
-        return true
     }
 
     @discardableResult
     public func cancel() -> Bool {
-        defer {
-            self.item = nil
+        return self.requestQueue.sync {
+            defer {
+                self.item = nil
+            }
+
+            return self.item != nil
         }
-        return self.pending
     }
 }

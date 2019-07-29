@@ -11,22 +11,14 @@ import Crashlytics
 import Stellar
 
 class MPUsersViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
-    public lazy var usersDataSource = DataSource<MPMarshal.UserInfo>( collectionView: self.usersSpinner )
-    public var selectedUser: MPMarshal.UserInfo? {
+    public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
+    public var selectedFile: MPMarshal.UserFile? {
         get {
-            if let selectedPath = self.usersSpinner.indexPathsForSelectedItems?.first {
-                return self.usersDataSource.element( at: selectedPath )
-            }
-
-            return nil
+            return self.usersSpinner.indexPathsForSelectedItems?.first.flatMap { self.fileSource.element( at: $0 ) }
         }
         set {
-            if let newValue = newValue, let selectedPath = self.usersDataSource.indexPath( for: newValue ) {
-                self.usersSpinner.selectItem( at: selectedPath, animated: true, scrollPosition: .centeredVertically )
-            }
-            else {
-                self.usersSpinner.selectItem( at: nil, animated: true, scrollPosition: .centeredVertically )
-            }
+            self.usersSpinner.selectItem( at: newValue.flatMap { self.fileSource.indexPath( for: $0 ) },
+                                          animated: true, scrollPosition: .centeredVertically )
         }
     }
 
@@ -123,14 +115,14 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear( animated )
 
-        self.selectedUser = nil
+        self.selectedFile = nil
     }
 
     // MARK: --- Private ---
 
     @objc
     private func didTrashUser() {
-        if let user = self.selectedUser {
+        if let user = self.selectedFile {
             let alert = UIAlertController( title: "Delete User?", message:
             """
             This will delete the user and all of its recorded state:
@@ -142,8 +134,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
             alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { _ in
-                if MPMarshal.shared.delete( userInfo: user ) {
-                    self.usersDataSource.remove( user )
+                if MPMarshal.shared.delete( userFile: user ) {
+                    self.fileSource.remove( user )
                 }
             } )
             self.present( alert, animated: true )
@@ -152,7 +144,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     @objc
     private func didResetUser() {
-        if let user = self.selectedUser {
+        if let user = self.selectedFile {
             let alert = UIAlertController( title: "Reset Master Password?", message:
             """
             This will allow you to change the master password for:
@@ -172,17 +164,17 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     // MARK: --- UICollectionViewDataSource ---
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return self.usersDataSource.numberOfSections
+        return self.fileSource.numberOfSections
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.usersDataSource.numberOfItems( in: section )
+        return self.fileSource.numberOfItems( in: section )
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         return UserCell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
             (cell as? UserCell)?.navigationController = self.navigationController
-            (cell as? UserCell)?.user = self.usersDataSource.element( at: indexPath )
+            (cell as? UserCell)?.userFile = self.fileSource.element( at: indexPath )
         }
     }
 
@@ -202,12 +194,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     // MARK: --- MPMarshalObserver ---
 
-    func usersDidChange(_ users: [MPMarshal.UserInfo]?) {
-        DispatchQueue.main.perform {
-            var data: [MPMarshal.UserInfo?] = users?.sorted { $0.lastUsed > $1.lastUsed } ?? []
-            data.append( nil )
-            self.usersDataSource.update( [ data ], reload: true )
-        }
+    func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]?) {
+        self.fileSource.update( [ (userFiles?.sorted { $0.lastUsed > $1.lastUsed } ?? []) + [ nil ] ], reload: true )
     }
 
     // MARK: --- Types ---
@@ -216,7 +204,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         public var new: Bool = false
         public override var isSelected: Bool {
             didSet {
-                if self.user == nil {
+                if self.userFile == nil {
                     if self.isSelected {
                         self.avatar = MPUser.Avatar.userAvatars.randomElement() ?? .avatar_0
                     }
@@ -234,10 +222,10 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                 self.setNeedsDisplay()
             }
         }
-        public var user:                 MPMarshal.UserInfo? {
+        public var userFile:             MPMarshal.UserFile? {
             didSet {
-                self.passwordField.user = self.user
-                self.avatar = self.user?.avatar ?? .avatar_add
+                self.passwordField.userFile = self.userFile
+                self.avatar = self.userFile?.avatar ?? .avatar_add
                 self.update()
             }
         }
@@ -300,7 +288,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.passwordField.nameField = self.nameField
             self.passwordField.actionHandler = { fullName, masterPassword -> MPUser? in
-                if let user = self.user {
+                if let user = self.userFile {
                     let (user, error) = user.mpw_authenticate( masterPassword: masterPassword )
                     return error.type != .success ? nil: user
                 }
@@ -411,12 +399,12 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                 } )
                 UIView.animate( withDuration: 0.618 ) {
                     self.passwordField.alpha = self.isSelected ? 1: 0
-                    self.nameLabel.alpha = self.isSelected && self.user == nil ? 0: 1
+                    self.nameLabel.alpha = self.isSelected && self.userFile == nil ? 0: 1
                     self.nameField.alpha = 1 - self.nameLabel.alpha
 
                     self.avatarButton.isUserInteractionEnabled = self.isSelected
                     self.avatarButton.setImage( self.avatar.image(), for: .normal )
-                    self.nameLabel.text = self.user?.fullName ?? "Tap to create a new user"
+                    self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     if self.isSelected {
                         self.passwordConfiguration.activate()

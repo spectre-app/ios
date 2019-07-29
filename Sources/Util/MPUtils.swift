@@ -362,16 +362,16 @@ extension UnsafePointer where Pointee == CChar {
 
 extension Data {
     func sha256() -> [UInt8] {
-        var hash = [ UInt8 ]( repeating: 0, count: Int( CC_SHA256_DIGEST_LENGTH ) )
-        self.withUnsafeBytes { _ = CC_SHA256( $0, CC_LONG( self.count ), &hash ) }
-        return hash
+        return self.withUnsafeBytes {
+            var hash = [ UInt8 ]( repeating: 0, count: Int( CC_SHA256_DIGEST_LENGTH ) )
+            _ = CC_SHA256( $0.baseAddress, CC_LONG( self.count ), &hash )
+            return hash
+        }
     }
 
     func hexEncodedString() -> String {
         let hex = NSMutableString( capacity: self.count * 2 )
-        for byte in self {
-            hex.appendFormat( "%02hhX", byte )
-        }
+        self.forEach { hex.appendFormat( "%02hhX", $0 ) }
 
         return hex as String
     }

@@ -24,7 +24,9 @@ class Item<M>: NSObject {
     private let caption:  String?
     private let subitems: [Item<M>]
     private (set) lazy var view = createItemView()
-    private let updateGroup = DispatchGroup()
+    private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
+        self.doUpdate()
+    }
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption: String? = nil) {
         self.title = title
@@ -38,12 +40,7 @@ class Item<M>: NSObject {
 
     func setNeedsUpdate() {
         self.subitems.forEach { $0.setNeedsUpdate() }
-
-        if self.updateGroup.wait( timeout: .now() ) == .success {
-            DispatchQueue.main.async( group: self.updateGroup ) {
-                self.doUpdate()
-            }
-        }
+        self.updateTask.request()
     }
 
     func doUpdate() {

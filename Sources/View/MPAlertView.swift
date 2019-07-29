@@ -25,7 +25,7 @@ class MPAlertView: MPButton {
         inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, forKey: "hidden" ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
-    private lazy var automaticDismissalItem = DispatchTask( queue: DispatchQueue.main, qos: .utility, deadline: .now() + .seconds( 3 ) ) {
+    private lazy var automaticDismissalTask = DispatchTask( queue: DispatchQueue.main, qos: .utility, deadline: .now() + .seconds( 3 ) ) {
         self.dismiss()
     }
 
@@ -100,7 +100,7 @@ class MPAlertView: MPButton {
                 self.activationConfiguration.deactivate()
                 UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
                     if dismissAutomatically {
-                        self.automaticDismissalItem.submit()
+                        self.automaticDismissalTask.request()
                     }
                 } )
             }
@@ -110,7 +110,7 @@ class MPAlertView: MPButton {
     }
 
     public func dismiss() {
-        self.automaticDismissalItem.cancel()
+        self.automaticDismissalTask.cancel()
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
@@ -120,7 +120,7 @@ class MPAlertView: MPButton {
     }
 
     public func activate() {
-        self.automaticDismissalItem.cancel()
+        self.automaticDismissalTask.cancel()
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 0.618 ) { self.activationConfiguration.activate() }
