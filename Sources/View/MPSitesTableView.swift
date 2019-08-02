@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import AVKit
 
 class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, Observable, MPUserObserver {
     public let observers = Observers<MPSitesViewObserver>()
@@ -44,6 +45,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         super.init( frame: .zero, style: .plain )
 
         self.registerCell( SiteCell.self )
+        self.registerCell( LiefsteCell.self )
         self.delegate = self
         self.dataSource = self
         self.backgroundColor = .clear
@@ -73,22 +75,20 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             let selectionFollowsQuery = self.newSiteResult === selectedResult || selectedResult?.exact ?? false
             let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
             let exactResult = results.first { $0.exact }
-            var sectionsOfElements = [ results ]
+            var resultSource: [[MPQuery.Result<MPSite>?]] = [ results ]
 
             // Add "new site" result if there is a query and no exact result
             if let user = self.user,
                let query = self.query,
                !query.isEmpty, exactResult == nil {
-                if let newSiteResult = self.newSiteResult {
-                    newSiteResult.value.siteName = query
-                }
-                else {
+                self.newSiteResult?.value.siteName = query
+
+                if self.newSiteResult == nil || LiefsteCell.is( result: self.newSiteResult ) {
                     self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, siteName: query ), keySupplier: { $0.siteName } )
                 }
-                if let newSiteResult = self.newSiteResult {
-                    newSiteResult.matches( query: query )
-                    sectionsOfElements.append( [ newSiteResult ] )
-                }
+
+                self.newSiteResult?.matches( query: query )
+                resultSource.append( [ self.newSiteResult ] )
             }
             else {
                 self.newSiteResult = nil
@@ -109,7 +109,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 guard let self = self
                 else { return }
 
-                self.resultSource.update( sectionsOfElements )
+                self.resultSource.update( resultSource )
                 //self.updateDataSource( self.data, toSections: newSites, reloadItems: nil, with: self.isInitial ? .none: .automatic )
                 self.isInitial = false
 
@@ -148,6 +148,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         self.isSelecting = false
     }
 
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        (cell as? LiefsteCell)?.willDisplay()
+    }
+
+    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        (cell as? LiefsteCell)?.didEndDisplaying()
+    }
+
     // MARK: --- UITableViewDataSource ---
 
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -160,8 +168,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let result = self.resultSource.element( at: indexPath )
-        if let result = result, AvCell.is( result: result ) {
-            return AvCell.dequeue( from: tableView, indexPath: indexPath )
+        if let result = result, LiefsteCell.is( result: result ) {
+            return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
         }
 
         let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
@@ -414,11 +422,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
     }
 
-    class AvCell: UITableViewCell {
+    class LiefsteCell: UITableViewCell {
         private let propLabel = UILabel()
+        private let player    = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
 
-        class func `is`(result: MPQuery.Result<MPSite>) -> Bool {
-            return result.value.siteName == "avonlea"
+        class func `is`(result: MPQuery.Result<MPSite>?) -> Bool {
+            return result?.value.siteName == "liefste"
         }
 
         // MARK: --- Life ---
@@ -438,16 +447,33 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.selectedBackgroundView?.backgroundColor = MPTheme.global.color.selection.get()
             self.contentView.layoutMargins = UIEdgeInsets( top: 80, left: 80, bottom: 80, right: 80 )
 
-            self.propLabel.font = MPTheme.global.font.largeTitle.get()
             self.propLabel.text = "💁"
+            self.propLabel.textAlignment = .center
+            self.propLabel.font = MPTheme.global.font.largeTitle.get()
+            self.propLabel.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
+            self.propLabel.layer.shadowOpacity = 1
+            self.propLabel.layer.shadowOffset = .zero
+            self.propLabel.layer.shadowRadius = 8
 
             // - Hierarchy
             self.contentView.addSubview( self.propLabel )
 
             // - Layout
             LayoutConfiguration( view: self.propLabel )
-                    .constrainToMarginsOfOwner()
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
+        }
+
+        func willDisplay() {
+            self.player.play()
+        }
+
+        func didEndDisplaying() {
+            self.player.pause()
         }
     }
 }
