@@ -79,6 +79,7 @@
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
 		93D39D45180726A9C2484030 /* MPStarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39633973C6D2EAB335D68 /* MPStarView.swift */; };
 		93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */; };
+		93D39D506D830E25948A9EB5 /* MPEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */; };
 		93D39D8B9142B6F4077CFBD2 /* MPUntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */; };
 		93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
 		93D39E281E3658B30550CB55 /* NSDictionary+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39AA1EE2E1E7B81372240 /* NSDictionary+Indexing.m */; };
@@ -367,6 +368,7 @@
 		93D39169E1BADEFA0517D4D2 /* MPUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUser.swift; sourceTree = "<group>"; };
 		93D391AA32F24290C424438E /* NSNotificationCenter+PearlEasyCleanup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNotificationCenter+PearlEasyCleanup.h"; sourceTree = "<group>"; };
 		93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+PearlReloadItems.h"; sourceTree = "<group>"; };
+		93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEmitterView.swift; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
 		93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMasterPasswordField.swift; sourceTree = "<group>"; };
 		93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILayoutGuide+Pearl.m"; sourceTree = "<group>"; };
@@ -903,6 +905,7 @@
 				93D3995755BB75535CC37A47 /* MPTintView.swift */,
 				93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */,
 				93D3985EDA6E3B7A05799E2C /* MPTintField.swift */,
+				93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2169,6 +2172,7 @@
 				93D3958E8F03ACE57445E833 /* Graph.swift in Sources */,
 				93D392506D66E48D27338086 /* DataSource.swift in Sources */,
 				93D390D2B19CB69F721DD7A6 /* MPTintField.swift in Sources */,
+				93D39D506D830E25948A9EB5 /* MPEmitterView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

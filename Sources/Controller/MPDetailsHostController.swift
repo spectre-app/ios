@@ -80,7 +80,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                 self.contentView.addSubview( detailsController.view )
                 LayoutConfiguration( view: detailsController.view ).constrainToOwner().activate()
                 UIView.animate( withDuration: 0.382, animations: {
-                    detailsController.view.becomeFirstResponder()
+                    detailsController.view.window?.endEditing( true )
                     self.configuration.activate()
                 }, completion: { finished in
                     detailsController.endAppearanceTransition()

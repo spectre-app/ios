@@ -423,8 +423,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 
     class LiefsteCell: UITableViewCell {
-        private let propLabel = UILabel()
-        private let player    = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
+        private let emitterView = MPEmitterView()
+        private let propLabel   = UILabel()
+        private var player      : AVPlayer?
 
         class func `is`(result: MPQuery.Result<MPSite>?) -> Bool {
             return result?.value.siteName == "liefste"
@@ -456,9 +457,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.propLabel.layer.shadowRadius = 8
 
             // - Hierarchy
+            self.contentView.addSubview( self.emitterView )
             self.contentView.addSubview( self.propLabel )
 
             // - Layout
+            LayoutConfiguration( view: self.emitterView )
+                    .constrainToOwner()
+                    .activate()
             LayoutConfiguration( view: self.propLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }
@@ -469,11 +474,22 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         func willDisplay() {
-            self.player.play()
+            self.player = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
+            self.player?.play()
+            self.emitterView.emit( with: [
+                .shape( .circle, MPTheme.global.color.selection.get() ),
+                .shape( .triangle, MPTheme.global.color.shadow.get() ),
+                .emoji( "🎈" ),
+                .emoji( "❤️" ),
+                .emoji( "🎉" )
+            ], for: 8 )
+            self.emitterView.emit( with: [
+                .emoji( "❤️" ),
+            ], for: 200 )
         }
 
         func didEndDisplaying() {
-            self.player.pause()
+            self.player = nil
         }
     }
 }
