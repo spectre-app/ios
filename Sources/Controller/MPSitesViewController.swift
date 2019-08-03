@@ -120,10 +120,6 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: true )
                 .apply( LayoutConfiguration( view: self.sitesTableView )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
-
-        UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) {
-            [ $0.topAnchor.constraint( greaterThanOrEqualTo: self.sitesTableView.bottomAnchor ) ]
-        }
     }
 
     override func viewDidLayoutSubviews() {
