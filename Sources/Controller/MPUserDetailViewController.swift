@@ -83,8 +83,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
             super.init( subitems: [
                 ToggleItem<MPUser>( title: "Mask Passwords", caption:
                         """
-                        Hide the passwords in the sites list so they are not visible on-screen.
-                        Useful for deterring screen snooping.
+                        Do not reveal passwords on screen.
+                        Useful to deter screen snooping.
                         """, itemValue: { model in
                     (model.maskPasswords, UIImage( named: "icon_tripledot" ))
                 } ) { model, maskPasswords in
@@ -92,8 +92,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                 },
                 ToggleItem( title: "Biometric Lock", caption:
                         """
-                        Sign in using your device's biometrics (eg. TouchID, FaceID).
-                        This will save your master key securely in your device's key chain.
+                        Sign in using biometrics (eg. TouchID, FaceID).
+                        Saves your master key in the device's key chain.
                         """, itemValue: { model in
                     (model.biometricLock, UIImage( named: "icon_man" ))
                 } ) { model, biometricLock in
