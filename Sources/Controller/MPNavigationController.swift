@@ -10,6 +10,7 @@ import UIKit
 import Stellar
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
+    private let backgroundView = MPBackgroundView()
     private let transition = MPNavigationTransition()
 
     // MARK: --- Life ---
@@ -31,10 +32,10 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
     override func viewDidLoad() {
         // - Hierarchy
-        self.view.insertSubview( self.transition.starsView, at: 0 )
+        self.view.insertSubview( self.backgroundView, at: 0 )
 
         // - Layout
-        LayoutConfiguration( view: self.transition.starsView )
+        LayoutConfiguration( view: self.backgroundView )
                 .constrainToOwner()
                 .activate()
     }
@@ -60,8 +61,6 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     }
 
     class MPNavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
-        fileprivate let starsView = MPStarView()
-
         // MARK: --- Life ---
 
         func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
@@ -96,7 +95,6 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
                 }, completion: { finished in
                     transitionContext.completeTransition( finished )
                 } )
-                self.starsView.warp()
             }
 
             else {

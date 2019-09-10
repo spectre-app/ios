@@ -213,13 +213,20 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     }
                 }
 
-                if !self.isSelected {
-                    self.nameField.text = nil
-                    self.passwordField.text = nil
-                }
+                DispatchQueue.main.perform {
+                    if !self.isSelected {
+                        self.nameField.text = nil
+                        self.passwordField.text = nil
+                    }
 
-                self.update()
-                self.setNeedsDisplay()
+                    self.nameLabel.font.pointSize.animate(
+                            to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: 0.618, render: {
+                        self.nameLabel.font = self.nameLabel.font.withSize( $0 )
+                    } )
+
+                    self.update()
+                    self.setNeedsDisplay()
+                }
             }
         }
         public var userFile:             MPMarshal.UserFile? {
@@ -394,9 +401,6 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
         private func update() {
             DispatchQueue.main.perform {
-                self.nameLabel.font.pointSize.animate( to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: 0.618, render: { size in
-                    self.nameLabel.font = self.nameLabel.font.withSize( size )
-                } )
                 UIView.animate( withDuration: 0.618 ) {
                     self.passwordField.alpha = self.isSelected ? 1: 0
                     self.nameLabel.alpha = self.isSelected && self.userFile == nil ? 0: 1

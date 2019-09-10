@@ -37,7 +37,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
         init() {
             super.init( title: "Diagnostics", caption:
             """
-            When application crashes or errors occur, share fully anonymized issue information to enable quick resolution.
+            Share anonymized issue information to enable quick resolution.
             """, itemValue: { _ in
                 (UserDefaults.standard.bool( forKey: "sendInfo" ), UIImage( named: "icon_bandage" ))
             } ) { _, sendInfo in
