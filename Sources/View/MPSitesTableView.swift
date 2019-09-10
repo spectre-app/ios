@@ -226,11 +226,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         private var mode = MPKeyPurpose.authentication {
             didSet {
-                DispatchQueue.main.perform {
-                    self.modeButton.title = self.mode.button()
-                    self.modeButton.size = .small
-                }
-                self.updateResult()
+                self.update()
             }
         }
         private let resultLabel = MPTintField()
@@ -258,6 +254,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.resultLabel.font = MPTheme.global.font.password.get()
             self.resultLabel.text = " "
             self.resultLabel.textAlignment = .natural
+            self.resultLabel.isEnabled = false
 
             self.nameLabel.font = MPTheme.global.font.caption1.get()
             self.nameLabel.textAlignment = .natural
@@ -305,12 +302,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .activate()
-        }
-
-        override func prepareForReuse() {
-            super.prepareForReuse()
-
-            self.mode = .authentication
         }
 
         func modeAction() {
@@ -391,12 +382,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             DispatchQueue.main.perform {
                 self.nameLabel.attributedText = self.result?.attributedKey
             }
-            self.updateResult()
+            self.update()
         }
 
         // MARK: --- Private ---
 
-        private func updateResult() {
+        private func update() {
             DispatchQueue.mpw.perform { [weak self] in
                 guard let self = self
                 else { return }
@@ -416,6 +407,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     guard let self = self
                     else { return }
 
+                    self.modeButton.title = self.mode.button()
+                    self.modeButton.size = .small
                     self.resultLabel.text = result
                 }
             }
