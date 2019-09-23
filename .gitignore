@@ -23,5 +23,7 @@ DerivedData/
 build
 .gradle
 local.properties
-/gradle/builds
+/builds
 /platform-android/.externalNativeBuild
+.cxx
+
