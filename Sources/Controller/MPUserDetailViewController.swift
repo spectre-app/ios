@@ -65,7 +65,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class PasswordTypeItem: PickerItem<MPUser, MPResultType> {
         init() {
-            super.init( title: "Default Type", values: [ MPResultType ]( MPResultTypes ).filter { !$0.has( feature: .alternative ) },
+            super.init( title: "Default Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
                         itemValue: { $0.defaultType },
                         itemUpdate: { $0.defaultType = $1 },
                         itemCell: { collectionView, indexPath, type in

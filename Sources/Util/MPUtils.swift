@@ -5,8 +5,14 @@
 
 import Foundation
 
+let resultTypes = [
+    MPResultType.templateMaximum, MPResultType.templateLong, MPResultType.templateMedium, MPResultType.templateShort,
+    MPResultType.templateBasic, MPResultType.templatePIN, MPResultType.templateName, MPResultType.templatePhrase,
+    MPResultType.statefulPersonal, MPResultType.statefulDevice, MPResultType.deriveKey
+]
+
 func ratio(of value: UInt8, from: Double, to: Double) -> Double {
-    return from + (to - from) * (Double( value ) / Double( UInt8.max ))
+    from + (to - from) * (Double( value ) / Double( UInt8.max ))
 }
 
 // Map a 0-max value such that it mirrors around a center point.
@@ -65,17 +71,17 @@ extension MPKeyPurpose {
 
 extension MPResultType {
     func `in`(class c: MPResultTypeClass) -> Bool {
-        return self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
+        self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
     }
 
     func has(feature f: MPSiteFeature) -> Bool {
-        return self.rawValue & UInt32( f.rawValue ) == UInt32( f.rawValue )
+        self.rawValue & UInt32( f.rawValue ) == UInt32( f.rawValue )
     }
 }
 
 extension MPIdenticon: Equatable {
     public static func ==(lhs: MPIdenticon, rhs: MPIdenticon) -> Bool {
-        return lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
+        lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
                 lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
 
@@ -142,15 +148,15 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     public private(set) static var allCases = [ MPMarshalFormat ]( (.first)...(.last) )
 
     public func distance(to other: MPMarshalFormat) -> Int32 {
-        return Int32( other.rawValue ) - Int32( self.rawValue )
+        Int32( other.rawValue ) - Int32( self.rawValue )
     }
 
     public func advanced(by n: Int32) -> MPMarshalFormat {
-        return MPMarshalFormat( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
+        MPMarshalFormat( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
     }
 
     public var name: String? {
-        return String( safeUTF8: mpw_format_name( self ) )
+        String( safeUTF8: mpw_format_name( self ) )
     }
 
     public var uti:         String? {
@@ -249,7 +255,7 @@ extension UIColor {
     }
 
     func withHue(_ color: UIColor?) -> UIColor {
-        return self.withHueComponent( color?.hue() );
+        self.withHueComponent( color?.hue() );
     }
 
     func withSaturationComponent(_ newSaturation: CGFloat?) -> UIColor {
@@ -263,7 +269,7 @@ extension UIColor {
     }
 
     func withSaturation(_ color: UIColor?) -> UIColor {
-        return self.withSaturationComponent( color?.saturation() );
+        self.withSaturationComponent( color?.saturation() );
     }
 
     func withBrightnessComponent(_ newBrightness: CGFloat?) -> UIColor {
@@ -277,7 +283,7 @@ extension UIColor {
     }
 
     func withBrightness(_ color: UIColor?) -> UIColor {
-        return self.withBrightnessComponent( color?.brightness() );
+        self.withBrightnessComponent( color?.brightness() );
     }
 }
 
@@ -304,7 +310,7 @@ extension UIView {
 
 extension CGSize {
     func union(_ size: CGSize) -> CGSize {
-        return size.width <= self.width && size.height <= self.height ? self:
+        size.width <= self.width && size.height <= self.height ? self:
                 size.width >= self.width && size.height >= self.height ? size:
                         CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
     }
@@ -319,31 +325,31 @@ extension CGSize {
 
 extension CGRect {
     var center:      CGPoint {
-        return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY + (self.maxY - self.minY) / 2 )
+        CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY + (self.maxY - self.minY) / 2 )
     }
     var top:         CGPoint {
-        return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY )
+        CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.minY )
     }
     var topLeft:     CGPoint {
-        return CGPoint( x: self.minX, y: self.minY )
+        CGPoint( x: self.minX, y: self.minY )
     }
     var topRight:    CGPoint {
-        return CGPoint( x: self.maxX, y: self.minY )
+        CGPoint( x: self.maxX, y: self.minY )
     }
     var left:        CGPoint {
-        return CGPoint( x: self.minX, y: self.minY + (self.maxY - self.minY) / 2 )
+        CGPoint( x: self.minX, y: self.minY + (self.maxY - self.minY) / 2 )
     }
     var right:       CGPoint {
-        return CGPoint( x: self.maxX, y: self.minY + (self.maxY - self.minY) / 2 )
+        CGPoint( x: self.maxX, y: self.minY + (self.maxY - self.minY) / 2 )
     }
     var bottom:      CGPoint {
-        return CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.maxY )
+        CGPoint( x: self.minX + (self.maxX - self.minX) / 2, y: self.maxY )
     }
     var bottomLeft:  CGPoint {
-        return CGPoint( x: self.minX, y: self.maxY )
+        CGPoint( x: self.minX, y: self.maxY )
     }
     var bottomRight: CGPoint {
-        return CGPoint( x: self.maxX, y: self.maxY )
+        CGPoint( x: self.maxX, y: self.maxY )
     }
 
     init(center: CGPoint, radius: CGFloat) {
@@ -362,7 +368,7 @@ extension UnsafePointer where Pointee == CChar {
 
 extension Data {
     func sha256() -> [UInt8] {
-        return self.withUnsafeBytes {
+        self.withUnsafeBytes {
             var hash = [ UInt8 ]( repeating: 0, count: Int( CC_SHA256_DIGEST_LENGTH ) )
             _ = CC_SHA256( $0.baseAddress, CC_LONG( self.count ), &hash )
             return hash
@@ -379,7 +385,7 @@ extension Data {
 
 extension String {
     func sha256() -> [UInt8] {
-        return self.data( using: .utf8 )?.sha256() ?? []
+        self.data( using: .utf8 )?.sha256() ?? []
     }
 
     func color() -> UIColor? {
@@ -394,7 +400,7 @@ extension String {
 
 extension NSOrderedSet {
     func seq<E>(_ type: E.Type) -> [E] {
-        return self.array as! [E]
+        self.array as! [E]
     }
 }
 
@@ -405,84 +411,5 @@ extension Date {
         dateFormatter.dateStyle = dateStyle
         dateFormatter.timeStyle = timeStyle
         return dateFormatter.string( from: self )
-    }
-}
-
-// Useful for making Swift Arrays from C arrays (which are imported as tuples).
-extension Array {
-    init(_ tuple: (Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1 )
-    }
-
-    init(_ tuple: (Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16, tuple.17 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16, tuple.17, tuple.18 )
-    }
-
-    init(_ tuple: (Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element, Element)) {
-        self.init( arrayLiteral: tuple.0, tuple.1, tuple.2, tuple.3, tuple.4, tuple.5, tuple.6, tuple.7, tuple.8, tuple.9, tuple.10, tuple.11, tuple.12, tuple.13, tuple.14, tuple.15, tuple.16, tuple.17, tuple.18, tuple.19 )
     }
 }

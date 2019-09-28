@@ -86,7 +86,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class PasswordTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( title: "Password Type", values: [ MPResultType ]( MPResultTypes ).filter { !$0.has( feature: .alternative ) },
+            super.init( title: "Password Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
                         itemValue: { $0.resultType },
                         itemUpdate: { $0.resultType = $1 },
                         itemCell: { collectionView, indexPath, type in
@@ -123,7 +123,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( title: "User Name Type", values: [ MPResultType ]( MPResultTypes ).filter { !$0.has( feature: .alternative ) },
+            super.init( title: "User Name Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
                         itemValue: { $0.loginType },
                         itemUpdate: { $0.loginType = $1 },
                         itemCell: { collectionView, indexPath, type in
