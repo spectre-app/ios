@@ -132,6 +132,10 @@
 		DA32D05019D2F59B004F3F0E /* meter_fuel.png in Resources */ = {isa = PBXBuildFile; fileRef = DA32D04D19D2F59B004F3F0E /* meter_fuel.png */; };
 		DA3509FE15F101A500C14A8E /* PearlQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = DA3509FC15F101A500C14A8E /* PearlQueue.h */; };
 		DA3509FF15F101A500C14A8E /* PearlQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DA3509FD15F101A500C14A8E /* PearlQueue.m */; };
+		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
+		DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
+		DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
+		DA35148D233EF93400BCF504 /* mpw-algorithm_v3.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */; };
 		DA3BCFCB19BD09D5006B2681 /* SourceCodePro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA3BCFCA19BD09D5006B2681 /* SourceCodePro-Regular.otf */; };
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
 		DA4A0C23201531BA004E2CE5 /* MPAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */; };
@@ -511,6 +515,10 @@
 		DA32D04D19D2F59B004F3F0E /* meter_fuel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = meter_fuel.png; sourceTree = "<group>"; };
 		DA3509FC15F101A500C14A8E /* PearlQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlQueue.h; sourceTree = "<group>"; };
 		DA3509FD15F101A500C14A8E /* PearlQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlQueue.m; sourceTree = "<group>"; };
+		DA351486233EF8FE00BCF504 /* mpw-algorithm_v2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v2.h"; sourceTree = "<group>"; };
+		DA351487233EF8FE00BCF504 /* mpw-algorithm_v1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v1.h"; sourceTree = "<group>"; };
+		DA351488233EF8FE00BCF504 /* mpw-algorithm_v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v3.h"; sourceTree = "<group>"; };
+		DA351489233EF8FE00BCF504 /* mpw-algorithm_v0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v0.h"; sourceTree = "<group>"; };
 		DA3954B32066D2B5004621DB /* MasterPassword-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MasterPassword-Prefix.pch"; sourceTree = "<group>"; };
 		DA3BCFCA19BD09D5006B2681 /* SourceCodePro-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Regular.otf"; sourceTree = "<group>"; };
 		DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
@@ -944,9 +952,13 @@
 				DA5B0B3E1F36469400B663F0 /* base64.c */,
 				DA5B0B3F1F36469400B663F0 /* base64.h */,
 				93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */,
+				DA351489233EF8FE00BCF504 /* mpw-algorithm_v0.h */,
 				93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */,
+				DA351487233EF8FE00BCF504 /* mpw-algorithm_v1.h */,
 				93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */,
+				DA351486233EF8FE00BCF504 /* mpw-algorithm_v2.h */,
 				93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */,
+				DA351488233EF8FE00BCF504 /* mpw-algorithm_v3.h */,
 				93D3969393A3A46BD27D7078 /* mpw-algorithm.c */,
 				93D3990D850D76A94C6B7A4D /* mpw-algorithm.h */,
 				DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */,
@@ -1044,12 +1056,12 @@
 			isa = PBXGroup;
 			children = (
 				93D39A2239FFFE6BEC83E191 /* core */,
-				DABD3B9F1711E2DB00CF925C /* Source */,
-				DACA23B41705DF7D002C6C22 /* Resources */,
 				DACA22121705DDC5002C6C22 /* External */,
 				DA5BFA47147E415C00F98B1E /* Frameworks */,
-				DA5BFA45147E415C00F98B1E /* Products */,
 				7FCBA1D987E722EC5E5809F1 /* Pods */,
+				DA5BFA45147E415C00F98B1E /* Products */,
+				DACA23B41705DF7D002C6C22 /* Resources */,
+				DABD3B9F1711E2DB00CF925C /* Source */,
 			);
 			sourceTree = "<group>";
 		};
@@ -2112,12 +2124,14 @@
 				DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */,
 				DAE6E1BE22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m in Sources */,
 				DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */,
+				DA35148D233EF93400BCF504 /* mpw-algorithm_v3.c in Sources */,
 				DAB4FC0A203111D4002768FB /* PearlLogger.swift in Sources */,
 				DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */,
 				93D395B715D15F2B56F2A2EE /* mpw-types.c in Sources */,
 				93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */,
 				DA4A0C23201531BA004E2CE5 /* MPAppDelegate.swift in Sources */,
 				DA5B0B401F36469400B663F0 /* base64.c in Sources */,
+				DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */,
 				93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */,
 				93D39D45180726A9C2484030 /* MPStarView.swift in Sources */,
 				DAE6E1BA22CC3D1D00DE0342 /* MPSiteEntity+CoreDataProperties.m in Sources */,
@@ -2130,6 +2144,7 @@
 				93D3960D18CFE6BBCD31C84E /* MPSitesViewController.swift in Sources */,
 				DAE6E1B922CC3D1D00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.m in Sources */,
 				93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */,
+				DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */,
 				93D39A2954B245FC0D925312 /* MPSite.swift in Sources */,
 				DA9BA096215025A9006406F6 /* PearlProfiler.swift in Sources */,
 				93D393C161EB8FA55FA5174F /* MPSitesTableView.swift in Sources */,
@@ -2143,6 +2158,7 @@
 				93D398854968B51F6B8DB031 /* MPAlertView.swift in Sources */,
 				93D39470EC1F954780E354CB /* MPImageView.swift in Sources */,
 				93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */,
+				DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */,
 				93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */,
 				93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */,
 				DAE6E1BF22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataClass.m in Sources */,
