@@ -146,7 +146,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
+        .lightContent
     }
 
     // MARK: --- MPSiteHeaderObserver ---

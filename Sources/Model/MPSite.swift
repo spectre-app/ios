@@ -130,6 +130,8 @@ class MPSite: NSObject, Observable, Comparable {
         }
     }
 
+    // MARK: Comparable
+
     public static func <(lhs: MPSite, rhs: MPSite) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
             return lhs.lastUsed < rhs.lastUsed

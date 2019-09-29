@@ -11,11 +11,11 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     // MARK: --- Life ---
 
     override func loadItems() -> [Item<MPUser>] {
-        return [ IdenticonItem(), AvatarItem(), SeparatorItem(),
-                 PasswordTypeItem(), SeparatorItem(),
-                 FeaturesItem(), SeparatorItem(),
-                 ActionsItem(), SeparatorItem(),
-                 InfoItem() ]
+        [ IdenticonItem(), AvatarItem(), SeparatorItem(),
+          PasswordTypeItem(), SeparatorItem(),
+          FeaturesItem(), SeparatorItem(),
+          ActionsItem(), SeparatorItem(),
+          InfoItem() ]
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -54,7 +54,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         itemValue: { $0.avatar },
                         itemUpdate: { $0.avatar = $1 },
                         itemCell: { collectionView, indexPath, avatar in
-                            return MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                            MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPAvatarCell)?.avatar = avatar
                             }
                         } ) { collectionView in
@@ -69,7 +69,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         itemValue: { $0.defaultType },
                         itemUpdate: { $0.defaultType = $1 },
                         itemCell: { collectionView, indexPath, type in
-                            return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as! MPResultTypeCell).resultType = type
                             }
                         } ) { collectionView in
@@ -82,19 +82,19 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         init() {
             super.init( subitems: [
                 ToggleItem<MPUser>( title: "Mask Passwords", caption:
-                        """
-                        Do not reveal passwords on screen.
-                        Useful to deter screen snooping.
-                        """, itemValue: { model in
+                """
+                Do not reveal passwords on screen.
+                Useful to deter screen snooping.
+                """, itemValue: { model in
                     (model.maskPasswords, UIImage( named: "icon_tripledot" ))
                 } ) { model, maskPasswords in
                     model.maskPasswords = maskPasswords
                 },
                 ToggleItem( title: "Biometric Lock", caption:
-                        """
-                        Sign in using biometrics (eg. TouchID, FaceID).
-                        Saves your master key in the device's key chain.
-                        """, itemValue: { model in
+                """
+                Sign in using biometrics (eg. TouchID, FaceID).
+                Saves your master key in the device's key chain.
+                """, itemValue: { model in
                     (model.biometricLock, UIImage( named: "icon_man" ))
                 } ) { model, biometricLock in
                     model.biometricLock = biometricLock

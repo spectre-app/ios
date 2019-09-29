@@ -159,11 +159,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- UITableViewDataSource ---
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        return self.resultSource.numberOfSections
+        self.resultSource.numberOfSections
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.resultSource.numberOfItems( in: section )
+        self.resultSource.numberOfItems( in: section )
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -421,7 +421,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         private var player      : AVPlayer?
 
         class func `is`(result: MPQuery.Result<MPSite>?) -> Bool {
-            return result?.value.siteName == "liefste"
+            result?.value.siteName == "liefste"
         }
 
         // MARK: --- Life ---
