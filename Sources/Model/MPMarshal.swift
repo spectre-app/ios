@@ -723,7 +723,7 @@ class MPMarshal: Observable {
         }
     }
 
-    class UserFile: Hashable, CustomStringConvertible {
+    class UserFile: Hashable, Comparable, CustomStringConvertible {
         public let origin:   URL?
         public let document: String
 
@@ -813,7 +813,17 @@ class MPMarshal: Observable {
         }
 
         static func ==(lhs: UserFile, rhs: UserFile) -> Bool {
-            lhs === rhs
+            lhs.fullName == rhs.fullName
+        }
+
+        // MARK: --- Comparable ---
+
+        static func <(lhs: UserFile, rhs: UserFile) -> Bool {
+            if lhs.lastUsed != rhs.lastUsed {
+                return lhs.lastUsed > rhs.lastUsed
+            }
+
+            return lhs.fullName > rhs.fullName
         }
 
         // MARK: --- CustomStringConvertible ---

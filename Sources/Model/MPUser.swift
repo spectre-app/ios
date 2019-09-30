@@ -142,7 +142,11 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     // MARK: Comparable
 
     static func <(lhs: MPUser, rhs: MPUser) -> Bool {
-        lhs.fullName > rhs.fullName
+        if lhs.lastUsed != rhs.lastUsed {
+            return lhs.lastUsed > rhs.lastUsed
+        }
+
+        return lhs.fullName > rhs.fullName
     }
 
     // MARK: --- MPSiteObserver ---

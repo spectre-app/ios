@@ -195,7 +195,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     // MARK: --- MPMarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]?) {
-        self.fileSource.update( [ (userFiles?.sorted { $0.lastUsed > $1.lastUsed } ?? []) + [ nil ] ], reload: true )
+        self.fileSource.update( [ (userFiles ?? []).sorted() + [ nil ] ], reload: true )
         DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { self.usersSpinner.flashScrollIndicators() }
     }
 
