@@ -226,7 +226,6 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     } )
 
                     self.update()
-                    self.setNeedsDisplay()
                 }
             }
         }
@@ -251,9 +250,11 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         private let idBadgeView   = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView = UIImageView( image: UIImage( named: "icon_key" ) )
         private var passwordConfiguration: LayoutConfiguration!
-        private var path          = CGMutablePath() {
+        private var path:                  CGPath? {
             didSet {
-                self.setNeedsDisplay()
+                if self.path != oldValue {
+                    self.setNeedsDisplay()
+                }
             }
         }
 
@@ -296,8 +297,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.passwordField.nameField = self.nameField
             self.passwordField.actionHandler = { fullName, masterPassword -> MPUser? in
-                if let user = self.userFile {
-                    let (user, error) = user.mpw_authenticate( masterPassword: masterPassword )
+                if let userFile = self.userFile {
+                    let (user, error) = userFile.mpw_authenticate( masterPassword: masterPassword )
                     return error.type != .success ? nil: user
                 }
                 else {
@@ -381,19 +382,21 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             super.layoutSubviews()
 
             let path = CGMutablePath()
-            if self.passwordConfiguration.activated {
+            if self.isSelected {
                 path.addPath( CGPathCreateBetween( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
-                path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
+                if self.passwordConfiguration.activated {
+                    path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
+                }
             }
-            self.path = path
+            self.path = path.isEmpty ? nil : path
         }
 
         override func draw(_ rect: CGRect) {
             super.draw( rect )
 
-            if self.isSelected, let context = UIGraphicsGetCurrentContext() {
+            if let path = self.path, let context = UIGraphicsGetCurrentContext() {
                 MPTheme.global.color.glow.get()?.withAlphaComponent( 0.618 ).setStroke()
-                context.addPath( self.path )
+                context.addPath( path )
                 context.strokePath()
             }
         }
@@ -412,12 +415,15 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     if self.isSelected {
-                        self.passwordConfiguration.activate()
+                        if self.userFile?.biometricLock ?? false {
+                        } else {
+                            self.passwordConfiguration.activate()
+                        }
 
                         if self.nameField.alpha != 0 {
                             self.nameField.becomeFirstResponder()
                         }
-                        else {
+                        else if self.passwordConfiguration.activated {
                             self.passwordField.becomeFirstResponder()
                         }
                     }

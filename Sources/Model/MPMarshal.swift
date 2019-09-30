@@ -50,25 +50,7 @@ class MPMarshal: Observable {
     }
 
     private func userFile(for document: Data, at documentFile: URL? = nil) -> UserFile? {
-        if let userDocument = String( data: document, encoding: .utf8 ),
-           let userInfo = mpw_marshal_read_info( userDocument )?.pointee, userInfo.format != .none,
-           let fullName = String( safeUTF8: userInfo.fullName ) {
-            return UserFile(
-                    origin: documentFile,
-                    document: userDocument,
-                    format: userInfo.format,
-                    exportDate: Date( timeIntervalSince1970: TimeInterval( userInfo.exportDate ) ),
-                    redacted: userInfo.redacted,
-                    algorithm: userInfo.algorithm,
-                    avatar: MPUser.Avatar.decode( avatar: userInfo.avatar ),
-                    fullName: fullName,
-                    identicon: userInfo.identicon,
-                    keyID: String( safeUTF8: userInfo.keyID ),
-                    lastUsed: Date( timeIntervalSince1970: TimeInterval( userInfo.lastUsed ) )
-            )
-        }
-
-        return nil
+        UserFile( origin: documentFile, document: String( data: document, encoding: .utf8 ) )
     }
 
     public func delete(userFile: UserFile) -> Bool {
@@ -738,21 +720,27 @@ class MPMarshal: Observable {
         public let keyID:     String?
         public let lastUsed:  Date
 
+        public let biometricLock = false //self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
+
         public var resetKey = false
 
-        init(origin: URL?, document: String, format: MPMarshalFormat, exportDate: Date, redacted: Bool,
-             algorithm: MPAlgorithmVersion, avatar: MPUser.Avatar, fullName: String, identicon: MPIdenticon, keyID: String?, lastUsed: Date) {
+        init?(origin: URL?, document: String?) {
+            guard let document = document, let info = mpw_marshal_read_info( document )?.pointee, info.format != .none
+            else { return nil }
+            guard let fullName = String( safeUTF8: info.fullName )
+            else { return nil }
+
             self.origin = origin
             self.document = document
-            self.format = format
-            self.exportDate = exportDate
-            self.redacted = redacted
-            self.algorithm = algorithm
-            self.avatar = avatar
+            self.format = info.format
+            self.exportDate = Date( timeIntervalSince1970: TimeInterval( info.exportDate ) )
+            self.redacted = info.redacted
+            self.algorithm = info.algorithm
+            self.avatar = MPUser.Avatar.decode( avatar: info.avatar )
             self.fullName = fullName
-            self.identicon = identicon
-            self.keyID = keyID
-            self.lastUsed = lastUsed
+            self.identicon = info.identicon
+            self.keyID = String( safeUTF8: info.keyID )
+            self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
         }
 
         public func mpw_authenticate(masterPassword: String) -> (MPUser?, MPMarshalError) {
