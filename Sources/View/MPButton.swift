@@ -79,7 +79,7 @@ class MPButton: UIView {
     // MARK: --- Life ---
 
     static func closeButton() -> MPButton {
-        return MPButton( title: "╳" )
+        MPButton( title: "╳" )
     }
 
     required init?(coder aDecoder: NSCoder) {

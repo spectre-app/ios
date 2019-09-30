@@ -57,14 +57,15 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
     func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController)
                     -> UIViewControllerAnimatedTransitioning? {
-        return self.transition
+        self.transition
     }
 
     class MPNavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
+
         // MARK: --- Life ---
 
         func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-            return 0.618;
+            0.618;
         }
 
         func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {

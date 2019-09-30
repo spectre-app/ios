@@ -115,7 +115,7 @@ public class DispatchTask {
 
     @discardableResult
     public func request() -> Bool {
-        return self.requestQueue.sync {
+        self.requestQueue.sync {
             guard self.item == nil
             else {
                 return false
@@ -131,7 +131,7 @@ public class DispatchTask {
 
     @discardableResult
     public func cancel() -> Bool {
-        return self.requestQueue.sync {
+        self.requestQueue.sync {
             defer {
                 self.item = nil
             }

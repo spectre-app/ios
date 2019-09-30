@@ -14,7 +14,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
     public var selectedFile: MPMarshal.UserFile? {
         get {
-            return self.usersSpinner.indexPathsForSelectedItems?.first.flatMap { self.fileSource.element( at: $0 ) }
+            self.usersSpinner.indexPathsForSelectedItems?.first.flatMap { self.fileSource.element( at: $0 ) }
         }
         set {
             self.usersSpinner.selectItem( at: newValue.flatMap { self.fileSource.indexPath( for: $0 ) },
@@ -164,15 +164,15 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     // MARK: --- UICollectionViewDataSource ---
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return self.fileSource.numberOfSections
+        self.fileSource.numberOfSections
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.fileSource.numberOfItems( in: section )
+        self.fileSource.numberOfItems( in: section )
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        return UserCell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
+        UserCell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
             (cell as? UserCell)?.navigationController = self.navigationController
             (cell as? UserCell)?.userFile = self.fileSource.element( at: indexPath )
         }

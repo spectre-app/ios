@@ -21,7 +21,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     // MARK: --- Interface ---
 
     func loadItems() -> [Item<M>] {
-        return []
+        []
     }
 
     func setNeedsUpdate() {

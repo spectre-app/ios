@@ -11,7 +11,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     // MARK: --- Life ---
 
     override func loadItems() -> [Item<MPSite>] {
-        return [ PasswordCounterItem(), SeparatorItem(),
+        [ PasswordCounterItem(), SeparatorItem(),
                  PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
                  LoginTypeItem(), LoginResultItem(), SeparatorItem(),
                  URLItem(), SeparatorItem(),
@@ -48,7 +48,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     // MARK: --- MPUserObserver ---
 
     func userDidLogout(_ user: MPUser) {
-        if user == self.model, let navigationController = self.navigationController {
+        if user == self.model.user, let navigationController = self.navigationController {
             navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
         }
     }
@@ -63,7 +63,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         override func createItemView() -> ResultItemView {
-            return ResultItemView( withItem: self )
+            ResultItemView( withItem: self )
         }
 
         class ResultItemView: LabelItemView<MPSite> {
@@ -90,7 +90,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         itemValue: { $0.resultType },
                         itemUpdate: { $0.resultType = $1 },
                         itemCell: { collectionView, indexPath, type in
-                            return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPResultTypeCell)?.resultType = type
                             }
                         } ) { collectionView in
@@ -127,7 +127,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         itemValue: { $0.loginType },
                         itemUpdate: { $0.loginType = $1 },
                         itemCell: { collectionView, indexPath, type in
-                            return MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPResultTypeCell)?.resultType = type
                             }
                         } ) { collectionView in

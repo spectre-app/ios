@@ -18,9 +18,9 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
     }
 
     override func loadItems() -> [Item<Void>] {
-        return [ VersionItem(), SeparatorItem(),
-                 DiagnisticsItem(), LegacyItem(), SeparatorItem(),
-                 InfoItem() ]
+        [ VersionItem(), SeparatorItem(),
+          DiagnisticsItem(), LegacyItem(), SeparatorItem(),
+          InfoItem() ]
     }
 
     // MARK: --- Types ---
@@ -48,7 +48,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
     class LegacyItem: ButtonItem<Void> {
         override var hidden: Bool {
-            return !MPMarshal.shared.hasLegacy()
+            !MPMarshal.shared.hasLegacy()
         }
 
         init() {

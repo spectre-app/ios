@@ -19,19 +19,19 @@ open class DataSource<E: Hashable> {
     // MARK: --- Interface ---
 
     public var numberOfSections: Int {
-        return self.sectionsOfElements.count
+        self.sectionsOfElements.count
     }
 
     public func numberOfItems(in section: Int) -> Int {
-        return section < self.sectionsOfElements.count ? self.sectionsOfElements[section].count: 0
+        section < self.sectionsOfElements.count ? self.sectionsOfElements[section].count: 0
     }
 
     open func indexPath(for item: E?) -> IndexPath? {
-        return indexPath( for: item, in: self.sectionsOfElements )
+        indexPath( for: item, in: self.sectionsOfElements )
     }
 
     open func element(at indexPath: IndexPath) -> E? {
-        return indexPath.section < self.sectionsOfElements.count && indexPath.item < self.sectionsOfElements[indexPath.section].count ?
+        indexPath.section < self.sectionsOfElements.count && indexPath.item < self.sectionsOfElements[indexPath.section].count ?
                 self.sectionsOfElements[indexPath.section][indexPath.item]: nil
     }
 

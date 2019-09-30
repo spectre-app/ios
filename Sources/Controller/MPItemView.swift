@@ -35,7 +35,7 @@ class Item<M>: NSObject {
     }
 
     func createItemView() -> ItemView<M> {
-        return ItemView<M>( withItem: self )
+        ItemView<M>( withItem: self )
     }
 
     func setNeedsUpdate() {
@@ -114,7 +114,7 @@ class Item<M>: NSObject {
         }
 
         func createValueView() -> UIView? {
-            return nil
+            nil
         }
 
         func didLoad(valueView: UIView) {
@@ -146,7 +146,7 @@ class Item<M>: NSObject {
 
 class SeparatorItem<M>: Item<M> {
     override func createItemView() -> ItemView<M> {
-        return SeparatorItemView<M>( withItem: self )
+        SeparatorItemView<M>( withItem: self )
     }
 
     class SeparatorItemView<M>: ItemView<M> {
@@ -163,7 +163,7 @@ class SeparatorItem<M>: Item<M> {
         }
 
         override func createValueView() -> UIView? {
-            return self.separatorView
+            self.separatorView
         }
 
         override func didLoad(valueView: UIView) {
@@ -200,7 +200,7 @@ class ValueItem<M, V>: Item<M> {
 
 class LabelItem<M>: ValueItem<M, (Any?, Any?)> {
     override func createItemView() -> LabelItemView<M> {
-        return LabelItemView<M>( withItem: self )
+        LabelItemView<M>( withItem: self )
     }
 
     class LabelItemView<M>: ItemView<M> {
@@ -278,7 +278,7 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
     }
 
     override func createItemView() -> ToggleItemView<M> {
-        return ToggleItemView<M>( withItem: self )
+        ToggleItemView<M>( withItem: self )
     }
 
     class ToggleItemView<M>: ItemView<M> {
@@ -326,7 +326,7 @@ class ButtonItem<M>: ValueItem<M, (title: String?, image: UIImage?)> {
     }
 
     override func createItemView() -> ButtonItemView<M> {
-        return ButtonItemView<M>( withItem: self )
+        ButtonItemView<M>( withItem: self )
     }
 
     class ButtonItemView<M>: ItemView<M> {
@@ -360,7 +360,7 @@ class ButtonItem<M>: ValueItem<M, (title: String?, image: UIImage?)> {
 
 class DateItem<M>: ValueItem<M, Date> {
     override func createItemView() -> DateItemView<M> {
-        return DateItemView<M>( withItem: self )
+        DateItemView<M>( withItem: self )
     }
 
     class DateItemView<M>: ItemView<M> {
@@ -412,7 +412,7 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     }
 
     override func createItemView() -> TextItemView<M> {
-        return TextItemView<M>( withItem: self )
+        TextItemView<M>( withItem: self )
     }
 
     // MARK: UITextFieldDelegate
@@ -473,7 +473,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
     }
 
     override func createItemView() -> StepperItemView<M> {
-        return StepperItemView<M>( withItem: self )
+        StepperItemView<M>( withItem: self )
     }
 
     class StepperItemView<M>: ItemView<M> {
@@ -574,7 +574,7 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
     }
 
     override func createItemView() -> PickerItemView<M> {
-        return PickerItemView<M>( withItem: self )
+        PickerItemView<M>( withItem: self )
     }
 
     class PickerItemView<M>: ItemView<M>, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
@@ -636,11 +636,11 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         // MARK: --- UICollectionViewDataSource ---
 
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            return self.item.values.count
+            self.item.values.count
         }
 
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            return self.item.itemCell( collectionView, indexPath, self.item.values[indexPath.item] )
+            self.item.itemCell( collectionView, indexPath, self.item.values[indexPath.item] )
         }
 
         // MARK: --- UICollectionViewDelegateFlowLayout ---
@@ -734,7 +734,7 @@ class ListItem<M, V>: Item<M> {
     }
 
     override func createItemView() -> ListItemView<M> {
-        return ListItemView<M>( withItem: self )
+        ListItemView<M>( withItem: self )
     }
 
     class ListItemView<M>: ItemView<M>, UITableViewDelegate, UITableViewDataSource {
@@ -774,11 +774,11 @@ class ListItem<M, V>: Item<M> {
         // MARK: --- UITableViewDataSource ---
 
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            return self.item.values.count
+            self.item.values.count
         }
 
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            return self.item.itemCell( tableView, indexPath, self.item.values[indexPath.item] )
+            self.item.itemCell( tableView, indexPath, self.item.values[indexPath.item] )
         }
 
         // MARK: --- UITableViewDelegate ---

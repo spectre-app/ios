@@ -14,10 +14,10 @@ public class MPSpinnerView: UICollectionView {
         return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
     }
     public var selectedItem: Int? {
-        return self.indexPathsForSelectedItems?.first?.item
+        self.indexPathsForSelectedItems?.first?.item
     }
     public override var safeAreaInsets: UIEdgeInsets {
-        return .zero
+        .zero
     }
 
     // MARK: --- Life ---
@@ -59,7 +59,7 @@ public class MPSpinnerView: UICollectionView {
         internal var contentSize       = CGSize.zero
 
         override var collectionViewContentSize: CGSize {
-            return self.contentSize
+            self.contentSize
         }
 
         override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
@@ -144,11 +144,11 @@ public class MPSpinnerView: UICollectionView {
         }
 
         override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-            return self.itemOldAttributes[itemIndexPath.item]
+            self.itemOldAttributes[itemIndexPath.item]
         }
 
         override func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-            return self.itemAttributes[itemIndexPath.item]
+            self.itemAttributes[itemIndexPath.item]
         }
 
         override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
@@ -159,16 +159,16 @@ public class MPSpinnerView: UICollectionView {
 
             let fromItem = Int( rect.minY / collectionView.bounds.height ), toItem = Int( rect.maxY / collectionView.bounds.height )
             return (fromItem...toItem).compactMap {
-                return $0 < 0 || $0 > self.itemCount - 1 ? nil: self.itemAttributes[$0]
+                $0 < 0 || $0 > self.itemCount - 1 ? nil: self.itemAttributes[$0]
             }
         }
 
         override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-            return self.itemAttributes[indexPath.item]
+            self.itemAttributes[indexPath.item]
         }
 
         override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-            return true
+            true
         }
 
         override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {

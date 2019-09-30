@@ -123,7 +123,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     }
 
     func mpw_process<U>(handler: @escaping (String, String) -> U, completion: ((U) -> Void)? = nil) -> Bool {
-        return DispatchQueue.main.await { [weak self] in
+        DispatchQueue.main.await { [weak self] in
             guard let self = self,
                   let fullName = self.userFile?.fullName ?? self.nameField?.text, fullName.count > 0,
                   let masterPassword = self.passwordField?.text, masterPassword.count > 0
@@ -157,7 +157,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     // MARK: --- UITextFieldDelegate ---
 
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        return true
+        true
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

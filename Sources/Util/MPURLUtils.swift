@@ -165,7 +165,7 @@ struct Color: Codable, Equatable, Hashable {
     let red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8
 
     var uiColor: UIColor {
-        return UIColor( red: CGFloat( self.red ) / CGFloat( UInt8.max ),
+        UIColor( red: CGFloat( self.red ) / CGFloat( UInt8.max ),
                         green: CGFloat( self.green ) / CGFloat( UInt8.max ),
                         blue: CGFloat( self.blue ) / CGFloat( UInt8.max ),
                         alpha: CGFloat( self.alpha ) / CGFloat( UInt8.max ) )
@@ -213,6 +213,6 @@ struct Color: Codable, Equatable, Hashable {
         return max == 0 ? 0: 255 * (max - min) / max
     }
     var value:      Int {
-        return Int( Swift.max( self.red, self.green, self.blue ) )
+        Int( Swift.max( self.red, self.green, self.blue ) )
     }
 }

@@ -9,7 +9,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
     internal var links = Set<Link<E>>()
 
     var description: String {
-        return self.links.reduce( "" ) { $0 + " - \($1)\n" }
+        self.links.reduce( "" ) { $0 + " - \($1)\n" }
     }
 
     @discardableResult
@@ -26,8 +26,8 @@ class Graph<E: Hashable>: CustomStringConvertible {
     }
 
     func find(from root: E, _ found: (E) -> Bool, budget: Double = Double.greatestFiniteMagnitude) -> E? {
-        return Graph.path( from: root, find: found, links: { node in
-            return self.links.reduce( [ Link<E> ]() ) { links, link in
+        Graph.path( from: root, find: found, links: { node in
+            self.links.reduce( [ Link<E> ]() ) { links, link in
                 link.from == node ? links + [ link ]: links
             }
         }, budget: budget )?.target
@@ -38,8 +38,8 @@ class Graph<E: Hashable>: CustomStringConvertible {
             cost: (E, E) -> Double?, budget: Double = Double.greatestFiniteMagnitude) -> Path<E>?
             where S.Element == E {
 
-        return self.path( from: root, find: found, links: { node in
-            return neighbours( node ).reduce( [ Link<E> ]() ) { neighbours, neighbour in
+        self.path( from: root, find: found, links: { node in
+            neighbours( node ).reduce( [ Link<E> ]() ) { neighbours, neighbour in
                 if let cost = cost( node, neighbour ) {
                     return neighbours + [ Link( from: node, to: neighbour, cost: cost ) ]
                 }
@@ -112,7 +112,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
         internal let to:          E
         internal let cost:        Double
         public var   description: String {
-            return "[\(from)]--- \(cost) ---[\(to)]"
+            "[\(from)]--- \(cost) ---[\(to)]"
         }
 
         public init(from: E, to: E, cost: Double) {
@@ -137,7 +137,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
         }
 
         public static func ==(lhs: Link<E>, rhs: Link<E>) -> Bool {
-            return lhs.from == rhs.from && lhs.to == rhs.to
+            lhs.from == rhs.from && lhs.to == rhs.to
         }
     }
 

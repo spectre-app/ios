@@ -7,7 +7,7 @@ import UIKit
 import CoreMotion
 
 func rate(radians: Double) -> Double {
-    return radians / .pi - 2 * ((radians + .pi) / (2 * .pi)).rounded( .down )
+    radians / .pi - 2 * ((radians + .pi) / (2 * .pi)).rounded( .down )
 }
 
 class MPStarView: UIView {
@@ -206,7 +206,7 @@ class MPStarView: UIView {
             }
 
             override var isReady: Bool {
-                return super.isReady && self.distanceTravelled > self.distanceNeeded
+                super.isReady && self.distanceTravelled > self.distanceNeeded
             }
         }
     }
@@ -314,7 +314,7 @@ class MPStarView: UIView {
             }
 
             public func finished() -> Bool {
-                return self.elapsed >= self.duration
+                self.elapsed >= self.duration
             }
         }
 
@@ -342,7 +342,7 @@ class MPStarView: UIView {
             }
 
             override func finished() -> Bool {
-                return false
+                false
             }
         }
 

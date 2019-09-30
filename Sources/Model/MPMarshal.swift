@@ -30,7 +30,7 @@ class MPMarshal: Observable {
 
     @discardableResult
     public func setNeedsReload() -> Bool {
-        return self.reloadTask.request()
+        self.reloadTask.request()
     }
 
     private func doReload() {
@@ -120,7 +120,7 @@ class MPMarshal: Observable {
 
     @discardableResult
     public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) throws -> URL {
-        return try self.marshalQueue.await {
+        try self.marshalQueue.await {
             try DispatchQueue.mpw.await {
                 guard let documentURL = self.url( for: user, in: directory, format: format )
                 else {
@@ -138,7 +138,7 @@ class MPMarshal: Observable {
     }
 
     public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) throws -> Data {
-        return try DispatchQueue.mpw.await {
+        try DispatchQueue.mpw.await {
             try provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
                 guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
                 else {
@@ -483,14 +483,14 @@ class MPMarshal: Observable {
     }
 
     public func hasLegacy() -> Bool {
-        return MPCoreData.shared.await {
+        MPCoreData.shared.await {
             (try? $0.count( for: MPUserEntity.fetchRequest() )) ?? -1 > 0
         }
     }
 
     @discardableResult
     public func importLegacy(async: Bool = true, force: Bool = false) -> Bool {
-        return MPCoreData.shared.perform( async: async ) { context in
+        MPCoreData.shared.perform( async: async ) { context in
             do {
                 for user: MPUserEntity_CoreData in try context.fetch( MPUserEntity.fetchRequest() ) {
                     guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
@@ -630,11 +630,11 @@ class MPMarshal: Observable {
     }
 
     private func url(for user: MPUser, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
-        return self.url( for: user.fullName, in: directory, format: format )
+        self.url( for: user.fullName, in: directory, format: format )
     }
 
     private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
-        return DispatchQueue.mpw.await {
+        DispatchQueue.mpw.await {
             if let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
                let directory = directory ?? self.documentDirectory {
                 return directory.appendingPathComponent( name, isDirectory: false )
@@ -688,7 +688,7 @@ class MPMarshal: Observable {
         }
 
         func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-            return self.user.description
+            self.user.description
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
@@ -705,15 +705,15 @@ class MPMarshal: Observable {
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
-            return self.format.uti ?? ""
+            self.format.uti ?? ""
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
-            return "\(PearlInfoPlist.get().cfBundleDisplayName ?? "") Export: \(self.user.fullName)"
+            "\(PearlInfoPlist.get().cfBundleDisplayName ?? "") Export: \(self.user.fullName)"
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize) -> UIImage? {
-            return self.user.avatar.image()
+            self.user.avatar.image()
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?, activityError error: Swift.Error?) {
@@ -756,7 +756,7 @@ class MPMarshal: Observable {
         }
 
         public func mpw_authenticate(masterPassword: String) -> (MPUser?, MPMarshalError) {
-            return DispatchQueue.mpw.await {
+            DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
                     var error = MPMarshalError( type: .success, message: nil )
                     if let marshalledFile = mpw_marshal_read(
@@ -813,7 +813,7 @@ class MPMarshal: Observable {
         }
 
         static func ==(lhs: UserFile, rhs: UserFile) -> Bool {
-            return lhs === rhs
+            lhs === rhs
         }
 
         // MARK: --- CustomStringConvertible ---
@@ -836,7 +836,7 @@ class MPMarshal: Observable {
 
 extension MPMarshalError: CustomStringConvertible {
     public var description: String {
-        return "\(self.type.rawValue): \(String( safeUTF8: self.message ) ?? "-")"
+        "\(self.type.rawValue): \(String( safeUTF8: self.message ) ?? "-")"
     }
 }
 
@@ -858,7 +858,7 @@ private func __masterKeyObjectProvider(_ algorithm: MPAlgorithmVersion, _ fullNa
 }
 
 private func __masterKeyPasswordProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
-    return mpw_master_key( fullName, currentMasterPassword, algorithm )
+    mpw_master_key( fullName, currentMasterPassword, algorithm )
 }
 
 private func provideMasterKeyWith<R>(key: MPMasterKey?, _ perform: (@escaping MPMasterKeyProvider) throws -> R) rethrows -> R {

@@ -141,7 +141,7 @@ public class MPTheme {
         }
 
         public func get() -> V? {
-            return self.value ?? self.parent?.get()
+            self.value ?? self.parent?.get()
         }
 
         func set(_ value: V) {
@@ -156,6 +156,6 @@ public class MPTheme {
 
 extension MPTheme.Value where V == UIColor {
     func tint(_ color: UIColor?) -> UIColor? {
-        return get()?.withHue( color )
+        get()?.withHue( color )
     }
 }

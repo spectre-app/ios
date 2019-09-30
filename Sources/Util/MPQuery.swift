@@ -13,7 +13,7 @@ class MPQuery {
     }
 
     func find<V>(_ values: [V], keySupplier: @escaping (V) -> String) -> [Result<V>] {
-        return values.map { value in Result( value: value, keySupplier: keySupplier ) }
+        values.map { value in Result( value: value, keySupplier: keySupplier ) }
                      .filter { result in result.matches( query: self.query ) }
     }
 
@@ -24,7 +24,7 @@ class MPQuery {
         public var matches       = [ String.Index ]()
         public var exact:       Bool {
             get {
-                return (self.attributedKey.string.indices).elementsEqual( self.matches )
+                (self.attributedKey.string.indices).elementsEqual( self.matches )
             }
         }
 
@@ -71,7 +71,7 @@ class MPQuery {
         }
 
         static func ==(lhs: Result<V>, rhs: Result<V>) -> Bool {
-            return lhs.value == rhs.value
+            lhs.value == rhs.value
         }
 
         func hash(into hasher: inout Hasher) {
@@ -79,7 +79,7 @@ class MPQuery {
         }
 
         func debugDescription() -> String {
-            return "{Result: \(self.attributedKey.string)}"
+            "{Result: \(self.attributedKey.string)}"
         }
     }
 }

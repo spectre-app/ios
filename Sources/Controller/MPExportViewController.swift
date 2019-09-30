@@ -28,10 +28,10 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         }
     }
     var format:   MPMarshalFormat {
-        return MPMarshalFormat.allCases[self.formatControl.selectedSegmentIndex]
+        MPMarshalFormat.allCases[self.formatControl.selectedSegmentIndex]
     }
     var redacted: Bool {
-        return self.revealControl.selectedSegmentIndex == 1
+        self.revealControl.selectedSegmentIndex == 1
     }
 
     // MARK: --- Life ---
@@ -97,6 +97,6 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
     // MARK: UIPopoverPresentationControllerDelegate
 
     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
-        return .none
+        .none
     }
 }
