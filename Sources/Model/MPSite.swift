@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPSite: NSObject, Observable, Comparable {
+class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public let observers = Observers<MPSiteObserver>()
 
     public let user: MPUser
@@ -106,6 +106,9 @@ class MPSite: NSObject, Observable, Comparable {
             }
         }
     }
+    var description: String {
+        "\(self.siteName)"
+    }
 
     // MARK: --- Life ---
 
@@ -123,21 +126,30 @@ class MPSite: NSObject, Observable, Comparable {
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
         self.color = siteName.color()
-        super.init()
 
         defer {
             self.siteName = siteName
         }
     }
 
+    // MARK: Hashable
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine( self.siteName )
+    }
+
+    static func ==(lhs: MPSite, rhs: MPSite) -> Bool {
+        lhs.siteName == rhs.siteName
+    }
+
     // MARK: Comparable
 
     public static func <(lhs: MPSite, rhs: MPSite) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
-            return lhs.lastUsed < rhs.lastUsed
+            return lhs.lastUsed > rhs.lastUsed
         }
 
-        return lhs.siteName < rhs.siteName
+        return lhs.siteName > rhs.siteName
     }
 
     // MARK: --- Interface ---
@@ -151,7 +163,7 @@ class MPSite: NSObject, Observable, Comparable {
     public func copy(for user: MPUser) -> MPSite {
         // TODO: copy questions
         // TODO: do we need to re-encode state?
-        return MPSite( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
+        MPSite( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
                        resultType: self.resultType, resultState: self.resultState,
                        loginType: self.loginType, loginState: self.loginState,
                        url: self.url, uses: self.uses, lastUsed: self.lastUsed )

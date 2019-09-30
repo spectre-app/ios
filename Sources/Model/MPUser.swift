@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
+class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteObserver, MPUserObserver {
     // TODO: figure out how to batch updates or suspend changes until sites marshalling/authenticate fully complete.
     public let observers = Observers<MPUserObserver>()
 
@@ -92,7 +92,7 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
             }
         }
     }
-    override var description: String {
+    var description: String {
         if let identicon = self.identicon.encoded() {
             return "\(self.fullName): \(identicon)"
         }
@@ -119,7 +119,6 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         self.lastUsed = lastUsed
         self.origin = origin
         self.file = file
-        super.init()
 
         if self.file.data == nil {
             mpw_marshal_file( &self.file, nil, mpw_marshal_data_new(), nil );
@@ -128,6 +127,22 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
         self.maskPasswords = self.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
         self.biometricLock = self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
         self.observers.register( observer: self )
+    }
+
+    // MARK: Hashable
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine( self.fullName )
+    }
+
+    static func ==(lhs: MPUser, rhs: MPUser) -> Bool {
+        lhs.fullName == rhs.fullName
+    }
+
+    // MARK: Comparable
+
+    static func <(lhs: MPUser, rhs: MPUser) -> Bool {
+        lhs.fullName > rhs.fullName
     }
 
     // MARK: --- MPSiteObserver ---
@@ -151,32 +166,32 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
     // MARK: --- mpw ---
 
     public func mpw_get(path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vget_bool( self.file.data, $0 ) }
+        withVaStrings( path ) { mpw_marshal_data_vget_bool( self.file.data, $0 ) }
     }
 
     public func mpw_get(path: String...) -> Double {
-        return withVaStrings( path ) { mpw_marshal_data_vget_num( self.file.data, $0 ) }
+        withVaStrings( path ) { mpw_marshal_data_vget_num( self.file.data, $0 ) }
     }
 
     public func mpw_get(path: String...) -> String? {
-        return withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( self.file.data, $0 ) ) }
+        withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( self.file.data, $0 ) ) }
     }
 
     public func mpw_set(_ value: Bool, path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.file.data, $0 ) }
+        withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.file.data, $0 ) }
     }
 
     public func mpw_set(_ value: Double, path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.file.data, $0 ) }
+        withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.file.data, $0 ) }
     }
 
     public func mpw_set(_ value: String?, path: String...) -> Bool {
-        return withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.file.data, $0 ) }
+        withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.file.data, $0 ) }
     }
 
     @discardableResult
     public func mpw_authenticate(masterPassword: String) -> Bool {
-        return DispatchQueue.mpw.await {
+        DispatchQueue.mpw.await {
             self.identicon = mpw_identicon( self.fullName, masterPassword )
 
             if let authKey = mpw_master_key( self.fullName, masterPassword, .versionCurrent ),
@@ -212,11 +227,11 @@ class MPUser: NSObject, Observable, MPSiteObserver, MPUserObserver {
              avatar_add
 
         public static func decode(avatar: UInt32) -> Avatar {
-            return Avatar.userAvatars.indices.contains( Int( avatar ) ) ? Avatar.userAvatars[Int( avatar )]: .avatar_0
+            Avatar.userAvatars.indices.contains( Int( avatar ) ) ? Avatar.userAvatars[Int( avatar )]: .avatar_0
         }
 
         public func encode() -> UInt32 {
-            return UInt32( Avatar.userAvatars.firstIndex( of: self ) ?? 0 )
+            UInt32( Avatar.userAvatars.firstIndex( of: self ) ?? 0 )
         }
 
         public func image() -> UIImage? {
