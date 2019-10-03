@@ -109,7 +109,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
-         file: MPMarshalledFile = mpw_marshal_file( nil, nil, nil, nil ).pointee) {
+         file: MPMarshalledFile = mpw_marshal_file( nil, nil, nil ).pointee) {
         self.algorithm = algorithm ?? .versionCurrent
         self.avatar = avatar
         self.fullName = fullName
@@ -119,10 +119,6 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
         self.lastUsed = lastUsed
         self.origin = origin
         self.file = file
-
-        if self.file.data == nil {
-            mpw_marshal_file( &self.file, nil, mpw_marshal_data_new(), nil );
-        }
 
         self.maskPasswords = self.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
         self.biometricLock = self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )

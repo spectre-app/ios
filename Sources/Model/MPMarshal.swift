@@ -148,10 +148,8 @@ class MPMarshal: Observable {
                     marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
                 }
 
-                mpw_marshal_file( &user.file, marshalledUser, nil, nil )
-                var error    = MPMarshalError( type: .success, message: nil )
-                let document = mpw_marshal_write( format, &user.file, &error )
-                if error.type == .success {
+                let document = mpw_marshal_write( format, &user.file, marshalledUser )
+                if user.file.error.type == .success {
                     if let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
                         return document
                     }
@@ -159,7 +157,7 @@ class MPMarshal: Observable {
                     throw Error.internal( details: "Missing marshal document" )
                 }
                 else {
-                    throw Error.marshal( error: error )
+                    throw Error.marshal( error: user.file.error )
                 }
             }
         }
@@ -565,24 +563,31 @@ class MPMarshal: Observable {
                         }
                     }
 
-                    var error    = MPMarshalError( type: .success, message: nil )
-                    var file     = mpw_marshal_file( nil, marshalledUser, nil, nil )
-                    let document = mpw_marshal_write( .default, file, &error )
-                    mpw_marshal_file_free( &file )
-                    if error.type == .success,
-                       let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
-                        let importGroup = DispatchGroup()
-                        importGroup.enter()
-                        self.import( data: document ) { success in
-                            if success {
-                                self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
+                    var file = mpw_marshal_file( nil, nil, nil )
+                    defer {
+                        mpw_marshal_file_free( &file )
+                    }
+                    if let file = file {
+                        let document              = mpw_marshal_write( .default, file, marshalledUser )
+                        let error: MPMarshalError = file.pointee.error
+                        if error.type == .success,
+                           let document = document?.toStringAndDeallocate()?.data( using: .utf8 ) {
+                            let importGroup = DispatchGroup()
+                            importGroup.enter()
+                            self.import( data: document ) { success in
+                                if success {
+                                    self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
+                                }
+                                importGroup.leave()
                             }
-                            importGroup.leave()
+                            importGroup.wait()
                         }
-                        importGroup.wait()
+                        else {
+                            throw Error.marshal( error: error )
+                        }
                     }
                     else {
-                        throw Error.marshal( error: error )
+                        throw Error.internal( details: "Couldn't allocate import file." )
                     }
                 }
             }
@@ -707,7 +712,7 @@ class MPMarshal: Observable {
 
     class UserFile: Hashable, Comparable, CustomStringConvertible {
         public let origin:   URL?
-        public let document: String
+        public var file: MPMarshalledFile
 
         public let format:     MPMarshalFormat
         public let exportDate: Date
@@ -725,13 +730,13 @@ class MPMarshal: Observable {
         public var resetKey = false
 
         init?(origin: URL?, document: String?) {
-            guard let document = document, let info = mpw_marshal_read_info( document )?.pointee, info.format != .none
+            guard let document = document, let file = mpw_marshal_read( nil, document )?.pointee, file.error.type == .success
             else { return nil }
-            guard let fullName = String( safeUTF8: info.fullName )
+            guard let info = file.info?.pointee, info.format != .none, let fullName = String( safeUTF8: info.fullName )
             else { return nil }
 
             self.origin = origin
-            self.document = document
+            self.file = file
             self.format = info.format
             self.exportDate = Date( timeIntervalSince1970: TimeInterval( info.exportDate ) )
             self.redacted = info.redacted
@@ -746,11 +751,9 @@ class MPMarshal: Observable {
         public func mpw_authenticate(masterPassword: String) -> (MPUser?, MPMarshalError) {
             DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
-                    var error = MPMarshalError( type: .success, message: nil )
-                    if let marshalledFile = mpw_marshal_read(
-                            self.document, self.resetKey ? nil: masterKeyProvider, &error )?.pointee,
-                       let marshalledUser = marshalledFile.user?.pointee,
-                       error.type == .success {
+                    if let marshalledUser = mpw_marshal_auth(
+                            &self.file, self.resetKey ? nil: masterKeyProvider )?.pointee,
+                       self.file.error.type == .success {
                         let user = MPUser(
                                 algorithm: marshalledUser.algorithm,
                                 avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
@@ -759,7 +762,7 @@ class MPMarshal: Observable {
                                 masterKeyID: self.resetKey ? nil: self.keyID,
                                 defaultType: marshalledUser.defaultType,
                                 lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                                origin: self.origin, file: marshalledFile
+                                origin: self.origin, file: self.file
                         )
 
                         guard user.mpw_authenticate( masterPassword: masterPassword )
@@ -786,10 +789,10 @@ class MPMarshal: Observable {
                             }
                         }
 
-                        return (user, error)
+                        return (user, self.file.error)
                     }
 
-                    return (nil, error)
+                    return (nil, self.file.error)
                 }
             }
         }
