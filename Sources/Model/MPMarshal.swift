@@ -218,8 +218,11 @@ class MPMarshal: Observable {
             } )
             controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                 if !passwordField.mpw_process(
-                        handler: { importingFile.mpw_authenticate( masterPassword: $1 ).0 },
-                        completion: { importedUser in
+                        handler: {
+                            (importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
+                             importingFile.file.error)
+                        },
+                        completion: { (importedUser, error) in
                             if importedUser == nil {
                                 mperror( title: "Issue importing", context:
                                 "Incorrect master password for import of \(importingFile.fullName)" )
@@ -252,8 +255,8 @@ class MPMarshal: Observable {
 
                 if !passwordField.mpw_process(
                         handler: {
-                            (importingFile.mpw_authenticate( masterPassword: $1 ).0,
-                             existingFile.mpw_authenticate( masterPassword: $1 ).0)
+                            (importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
+                             existingFile.mpw_authenticate( masterPassword: $0.masterPassword ))
                         },
                         completion: { users in
                             spinner.dismiss()
@@ -300,8 +303,11 @@ class MPMarshal: Observable {
                                     spinner.show( dismissAutomatically: false )
 
                                     if !passwordField.mpw_process(
-                                            handler: { existingFile.mpw_authenticate( masterPassword: $1 ).0 },
-                                            completion: { existedUser in
+                                            handler: {
+                                                (user: existingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
+                                                 error: existingFile.file.error)
+                                            },
+                                            completion: { (existedUser, error) in
                                                 spinner.dismiss()
 
                                                 if let existedUser = existedUser {
@@ -337,8 +343,11 @@ class MPMarshal: Observable {
                                     spinner.show( dismissAutomatically: false )
 
                                     if !passwordField.mpw_process(
-                                            handler: { importingFile.mpw_authenticate( masterPassword: $1 ).0 },
-                                            completion: { importedUser in
+                                            handler: {
+                                                (user: importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
+                                                 error: importingFile.file.error)
+                                            },
+                                            completion: { (importedUser, error) in
                                                 spinner.dismiss()
 
                                                 if let importedUser = importedUser {
@@ -711,8 +720,8 @@ class MPMarshal: Observable {
     }
 
     class UserFile: Hashable, Comparable, CustomStringConvertible {
-        public let origin:   URL?
-        public var file: MPMarshalledFile
+        public let origin: URL?
+        public var file:   MPMarshalledFile
 
         public let format:     MPMarshalFormat
         public let exportDate: Date
@@ -725,7 +734,7 @@ class MPMarshal: Observable {
         public let keyID:     String?
         public let lastUsed:  Date
 
-        public let biometricLock = false //self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
+        public let biometricLock: Bool
 
         public var resetKey = false
 
@@ -746,54 +755,71 @@ class MPMarshal: Observable {
             self.identicon = info.identicon
             self.keyID = String( safeUTF8: info.keyID )
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
+
+            self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
         }
 
-        public func mpw_authenticate(masterPassword: String) -> (MPUser?, MPMarshalError) {
+        public func mpw_authenticate(masterPassword: String) -> MPUser? {
             DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
-                    if let marshalledUser = mpw_marshal_auth(
-                            &self.file, self.resetKey ? nil: masterKeyProvider )?.pointee,
-                       self.file.error.type == .success {
-                        let user = MPUser(
-                                algorithm: marshalledUser.algorithm,
-                                avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
-                                fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
-                                identicon: marshalledUser.identicon,
-                                masterKeyID: self.resetKey ? nil: self.keyID,
-                                defaultType: marshalledUser.defaultType,
-                                lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                                origin: self.origin, file: self.file
-                        )
-
-                        guard user.mpw_authenticate( masterPassword: masterPassword )
-                        else {
-                            return (nil, MPMarshalError( type: .errorMasterPassword, message: nil ))
-                        }
-
-                        for s in 0..<marshalledUser.sites_count {
-                            let site = (marshalledUser.sites + s).pointee
-                            if let siteName = String( safeUTF8: site.siteName ) {
-                                user.sites.append( MPSite(
-                                        user: user,
-                                        siteName: siteName,
-                                        algorithm: site.algorithm,
-                                        counter: site.counter,
-                                        resultType: site.resultType,
-                                        resultState: String( safeUTF8: site.resultState ),
-                                        loginType: site.loginType,
-                                        loginState: String( safeUTF8: site.loginState ),
-                                        url: String( safeUTF8: site.url ),
-                                        uses: site.uses,
-                                        lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
-                                ) )
-                            }
-                        }
-
-                        return (user, self.file.error)
+                    let user = self.mpw_authenticate( masterKeyProvider: masterKeyProvider )
+                    if let user = user, self.file.error.type == .success, !user.mpw_authenticate( masterPassword: masterPassword ) {
+                        self.file.error = MPMarshalError( type: .errorMasterPassword, message: "Unexpected identicon authentication failure." )
+                        return nil
                     }
 
-                    return (nil, self.file.error)
+                    return user
                 }
+            }
+        }
+
+        public func mpw_authenticate(masterKey: MPMasterKey) -> MPUser? {
+            DispatchQueue.mpw.await {
+                provideMasterKeyWith( key: masterKey ) { masterKeyProvider in
+                    self.mpw_authenticate( masterKeyProvider: masterKeyProvider )
+                }
+            }
+        }
+
+        private func mpw_authenticate(masterKeyProvider: @escaping MPMasterKeyProvider) -> MPUser? {
+            DispatchQueue.mpw.await {
+                if let marshalledUser = mpw_marshal_auth( &self.file, self.resetKey ? nil: masterKeyProvider )?.pointee,
+                   self.file.error.type == .success {
+
+                    let user = MPUser(
+                            algorithm: marshalledUser.algorithm,
+                            avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
+                            fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
+                            identicon: marshalledUser.identicon,
+                            masterKeyID: self.resetKey ? nil: self.keyID,
+                            defaultType: marshalledUser.defaultType,
+                            lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
+                            origin: self.origin, file: self.file
+                    )
+
+                    for s in 0..<marshalledUser.sites_count {
+                        let site = (marshalledUser.sites + s).pointee
+                        if let siteName = String( safeUTF8: site.siteName ) {
+                            user.sites.append( MPSite(
+                                    user: user,
+                                    siteName: siteName,
+                                    algorithm: site.algorithm,
+                                    counter: site.counter,
+                                    resultType: site.resultType,
+                                    resultState: String( safeUTF8: site.resultState ),
+                                    loginType: site.loginType,
+                                    loginState: String( safeUTF8: site.loginState ),
+                                    url: String( safeUTF8: site.url ),
+                                    uses: site.uses,
+                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
+                            ) )
+                        }
+                    }
+
+                    return user
+                }
+
+                return nil
             }
         }
 

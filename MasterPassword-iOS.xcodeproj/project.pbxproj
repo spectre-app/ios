@@ -45,6 +45,7 @@
 		93D395F08A087F8A24689347 /* NSArray+Indexing.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39067C0AFDC581794E2B8 /* NSArray+Indexing.m */; };
 		93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39424D508440582DC7FD0 /* MPSpinnerView.swift */; };
 		93D3960D18CFE6BBCD31C84E /* MPSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */; };
+		93D3961E8FACE81A8B060D5E /* MPKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */; };
 		93D3964B458F9F940A790D6F /* UILayoutGuide+Pearl.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */; };
 		93D396AA30690B256F30378A /* PearlNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3956915634581E737B38C /* PearlNavigationController.m */; };
 		93D396BA1C74C4A06FD86437 /* PearlOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D3942A356B639724157982 /* PearlOverlay.h */; };
@@ -373,6 +374,7 @@
 		93D3915A208E1B01BDD05A3E /* MPQuery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuery.swift; sourceTree = "<group>"; };
 		93D39169E1BADEFA0517D4D2 /* MPUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUser.swift; sourceTree = "<group>"; };
 		93D391AA32F24290C424438E /* NSNotificationCenter+PearlEasyCleanup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNotificationCenter+PearlEasyCleanup.h"; sourceTree = "<group>"; };
+		93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeychain.swift; sourceTree = "<group>"; };
 		93D39246FC21C6E63E35D615 /* UICollectionView+PearlReloadItems.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+PearlReloadItems.h"; sourceTree = "<group>"; };
 		93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEmitterView.swift; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
@@ -940,6 +942,7 @@
 				93D3909744CE918AB4432318 /* ConstraintResolver.swift */,
 				93D39BAACC08C85F91D1C5C2 /* Graph.swift */,
 				93D397326B833076646FF697 /* DataSource.swift */,
+				93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -2193,6 +2196,7 @@
 				93D390D2B19CB69F721DD7A6 /* MPTintField.swift in Sources */,
 				93D39D506D830E25948A9EB5 /* MPEmitterView.swift in Sources */,
 				93D39E31D32AFAF973C302E6 /* MPBackgroundView.swift in Sources */,
+				93D3961E8FACE81A8B060D5E /* MPKeychain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

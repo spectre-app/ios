@@ -188,6 +188,33 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
 extension MPMarshalError: Error {
 }
 
+extension MPMarshalledFile {
+
+    public func mpw_get(path: String...) -> Bool {
+        withVaStrings( path ) { mpw_marshal_data_vget_bool( self.data, $0 ) }
+    }
+
+    public func mpw_get(path: String...) -> Double {
+        withVaStrings( path ) { mpw_marshal_data_vget_num( self.data, $0 ) }
+    }
+
+    public func mpw_get(path: String...) -> String? {
+        withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( self.data, $0 ) ) }
+    }
+
+    public func mpw_set(_ value: Bool, path: String...) -> Bool {
+        withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.data, $0 ) }
+    }
+
+    public func mpw_set(_ value: Double, path: String...) -> Bool {
+        withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.data, $0 ) }
+    }
+
+    public func mpw_set(_ value: String?, path: String...) -> Bool {
+        withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.data, $0 ) }
+    }
+}
+
 extension String.StringInterpolation {
     mutating func appendInterpolation(_ value: String, prePadToLength length: Int) {
         appendLiteral( String( repeating: " ", count: max( 0, length - value.count ) ).appending( value ) )

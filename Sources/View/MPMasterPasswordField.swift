@@ -41,8 +41,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             self.setNeedsIdenticon()
         }
     }
-    var actionHandler:    ((String, String) -> MPUser?)?
-    var actionCompletion: ((MPUser?) -> Void)?
+    var actionHandler:    (((fullName: String, masterPassword: String)) -> (user: MPUser?, error: MPMarshalError))?
+    var actionCompletion: (((user: MPUser?, error: MPMarshalError)) -> Void)?
 
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
@@ -122,7 +122,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
     }
 
-    func mpw_process<U>(handler: @escaping (String, String) -> U, completion: ((U) -> Void)? = nil) -> Bool {
+    func mpw_process<U, E>(handler: @escaping ((fullName: String, masterPassword: String)) -> (user: U?, error: E),
+                           completion: (((user: U?, error: E)) -> Void)? = nil) -> Bool {
         DispatchQueue.main.await { [weak self] in
             guard let self = self,
                   let fullName = self.userFile?.fullName ?? self.nameField?.text, fullName.count > 0,
@@ -136,7 +137,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
                 guard let self = self
                 else { return }
 
-                let user = handler( fullName, masterPassword )
+                let result = handler( (fullName: fullName, masterPassword: masterPassword) )
 
                 DispatchQueue.main.perform { [weak self] in
                     guard let self = self
@@ -146,7 +147,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
                     self.passwordField?.isEnabled = true
                     self.passwordIndicator.stopAnimating()
 
-                    completion?( user )
+                    completion?( result )
                 }
             }
 
@@ -162,12 +163,12 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if let actionHandler = self.actionHandler,
-           self.mpw_process( handler: actionHandler, completion: { user in
-               if user == nil {
+           self.mpw_process( handler: actionHandler, completion: {
+               if $0.user == nil {
                    self.becomeFirstResponder()
                    self.shake()
                }
-               self.actionCompletion?( user )
+               self.actionCompletion?( $0 )
            } ) {
             return true
         }

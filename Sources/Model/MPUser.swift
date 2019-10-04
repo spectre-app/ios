@@ -55,7 +55,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var maskPasswords = false {
         didSet {
             if oldValue != self.maskPasswords,
-               self.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) {
+               self.file.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) {
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -63,7 +63,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var biometricLock = false {
         didSet {
             if oldValue != self.biometricLock,
-               self.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
+               self.file.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -120,8 +120,8 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
         self.origin = origin
         self.file = file
 
-        self.maskPasswords = self.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
-        self.biometricLock = self.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
+        self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
+        self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
         self.observers.register( observer: self )
     }
 
@@ -165,38 +165,22 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
 
     // MARK: --- mpw ---
 
-    public func mpw_get(path: String...) -> Bool {
-        withVaStrings( path ) { mpw_marshal_data_vget_bool( self.file.data, $0 ) }
-    }
-
-    public func mpw_get(path: String...) -> Double {
-        withVaStrings( path ) { mpw_marshal_data_vget_num( self.file.data, $0 ) }
-    }
-
-    public func mpw_get(path: String...) -> String? {
-        withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( self.file.data, $0 ) ) }
-    }
-
-    public func mpw_set(_ value: Bool, path: String...) -> Bool {
-        withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.file.data, $0 ) }
-    }
-
-    public func mpw_set(_ value: Double, path: String...) -> Bool {
-        withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.file.data, $0 ) }
-    }
-
-    public func mpw_set(_ value: String?, path: String...) -> Bool {
-        withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.file.data, $0 ) }
-    }
-
     @discardableResult
     public func mpw_authenticate(masterPassword: String) -> Bool {
         DispatchQueue.mpw.await {
             self.identicon = mpw_identicon( self.fullName, masterPassword )
+            if let authKey = mpw_master_key( self.fullName, masterPassword, .versionCurrent ) {
+                return self.mpw_authenticate( masterKey: authKey )
+            }
 
-            if let authKey = mpw_master_key( self.fullName, masterPassword, .versionCurrent ),
-               let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
+            return false
+        }
+    }
 
+    @discardableResult
+    public func mpw_authenticate(masterKey authKey: MPMasterKey) -> Bool {
+        DispatchQueue.mpw.await {
+            if let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
                 if let masterKeyID = self.masterKeyID {
                     if masterKeyID != authKeyID {
                         return false

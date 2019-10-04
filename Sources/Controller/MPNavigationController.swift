@@ -41,8 +41,8 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        self.visibleViewController?.view.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0 ).then()
-                                        .scaleXY( 1000, 1000 ).makeAlpha( 1 ).easing( .easeOut ).duration( 1 ).animate()
+//        self.visibleViewController?.view.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0 ).then()
+//                                        .scaleXY( 1000, 1000 ).makeAlpha( 1 ).easing( .easeOut ).duration( 1 ).animate()
 
         super.viewWillAppear( animated )
     }
@@ -55,10 +55,10 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
     // MARK: --- UINavigationControllerDelegate ---
 
-    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController)
-                    -> UIViewControllerAnimatedTransitioning? {
-        self.transition
-    }
+//    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController)
+//                    -> UIViewControllerAnimatedTransitioning? {
+//        self.transition
+//    }
 
     class MPNavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
 

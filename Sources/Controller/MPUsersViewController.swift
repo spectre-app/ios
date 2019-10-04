@@ -24,7 +24,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     private let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) )
     private let usersSpinner   = MPSpinnerView()
-    private let userToolbar    = UIToolbar()
+    private let userToolbar    = UIToolbar(frame:.infinite)
     private let detailsHost    = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
 
@@ -85,7 +85,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                 .activate()
 
         LayoutConfiguration( view: self.userToolbar )
-                .constrainToOwner( withMargins: false, anchor: .horizontally ).activate()
+                .constrainToOwner( withMargins: false, anchor: .horizontally )
+                .activate()
 
         LayoutConfiguration( view: self.detailsHost.view )
                 .constrainToOwner()
@@ -296,20 +297,25 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.textAlignment = .center
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.passwordField.nameField = self.nameField
-            self.passwordField.actionHandler = { fullName, masterPassword -> MPUser? in
+            self.passwordField.actionHandler = {
                 if let userFile = self.userFile {
-                    let (user, error) = userFile.mpw_authenticate( masterPassword: masterPassword )
-                    return error.type != .success ? nil: user
+                    return (user: userFile.mpw_authenticate( masterPassword: $0.masterPassword ), error: userFile.file.error)
                 }
                 else {
-                    let user    = MPUser( fullName: fullName )
-                    let success = user.mpw_authenticate( masterPassword: masterPassword )
-                    return success ? user: nil
+                    let user = MPUser( fullName: $0.fullName )
+                    if user.mpw_authenticate( masterPassword: $0.masterPassword ) {
+                        return (user: user, error: MPMarshalError( type: .success, message: nil ))
+                    }
+
+                    return (user: nil, error: MPMarshalError( type: .errorMasterPassword, message: nil ))
                 }
             }
-            self.passwordField.actionCompletion = { user in
-                if let user = user {
+            self.passwordField.actionCompletion = {
+                if let user = $0.user, $0.error.type == .success {
                     self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                }
+                else {
+                    mperror( title: "Access Denied", details: $0.error.description )
                 }
             }
 
@@ -388,7 +394,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
                 }
             }
-            self.path = path.isEmpty ? nil : path
+            self.path = path.isEmpty ? nil: path
         }
 
         override func draw(_ rect: CGRect) {
@@ -415,8 +421,12 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     if self.isSelected {
-                        if self.userFile?.biometricLock ?? false {
-                        } else {
+                        if let userFile = self.userFile, userFile.biometricLock,
+                           let masterKey = MPKeychain.loadKey( for: userFile.fullName ),
+                           let user = userFile.mpw_authenticate( masterKey: masterKey ) {
+                            self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                        }
+                        else {
                             self.passwordConfiguration.activate()
                         }
 

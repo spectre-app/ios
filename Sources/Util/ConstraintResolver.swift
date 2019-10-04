@@ -147,7 +147,7 @@ class ConstraintResolver: CustomStringConvertible {
 }
 
 extension NSLayoutConstraint {
-    open override var debugDescription: String {
+    open override var description: String {
         var firstItem: String?, secondItem: String?, depth = 0
         var holder                                         = self.holder
         while holder != nil {
@@ -184,7 +184,7 @@ extension NSLayoutConstraint {
             return String( repeating: "+", count: depth ) + "[ \(secondItem) ] \(self.relation)\(modifier)\(priority)"
         }
 
-        return self.description
+        return self.debugDescription
     }
 
     open var holder: UIView? {
