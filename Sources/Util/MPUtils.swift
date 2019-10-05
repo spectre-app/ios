@@ -190,11 +190,11 @@ extension MPMarshalError: Error {
 
 extension MPMarshalledFile {
 
-    public func mpw_get(path: String...) -> Bool {
+    public func mpw_get(path: String...) -> Bool? {
         withVaStrings( path ) { mpw_marshal_data_vget_bool( self.data, $0 ) }
     }
 
-    public func mpw_get(path: String...) -> Double {
+    public func mpw_get(path: String...) -> Double? {
         withVaStrings( path ) { mpw_marshal_data_vget_num( self.data, $0 ) }
     }
 
@@ -381,15 +381,6 @@ extension CGRect {
 
     init(center: CGPoint, radius: CGFloat) {
         self.init( x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2 )
-    }
-}
-
-extension UnsafePointer where Pointee == CChar {
-    func toStringAndDeallocate() -> String? {
-        defer {
-            self.deallocate()
-        }
-        return String( safeUTF8: self )
     }
 }
 

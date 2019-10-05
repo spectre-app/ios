@@ -101,7 +101,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
             else if oldValue !== self.image,
                     let oldValue = oldValue,
                     let image = self.image,
-                    oldValue.pngData( ) == image.pngData( ) {
+                    oldValue.pngData() == image.pngData() {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -164,9 +164,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
         // TODO: copy questions
         // TODO: do we need to re-encode state?
         MPSite( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
-                       resultType: self.resultType, resultState: self.resultState,
-                       loginType: self.loginType, loginState: self.loginState,
-                       url: self.url, uses: self.uses, lastUsed: self.lastUsed )
+                resultType: self.resultType, resultState: self.resultState,
+                loginType: self.loginType, loginState: self.loginState,
+                url: self.url, uses: self.uses, lastUsed: self.lastUsed )
     }
 
     // MARK: --- mpw ---
@@ -180,9 +180,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
         }
 
         return DispatchQueue.mpw.await {
-            mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                             resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm )?
-                    .toStringAndDeallocate()
+            String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+                                               resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ),
+                    deallocate: true )
         }
     }
 
@@ -196,9 +196,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
         }
 
         return DispatchQueue.mpw.await {
-            if let resultState = mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                                 resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm )?
-                    .toStringAndDeallocate() {
+            if let resultState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+                                                                   resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ),
+                                         deallocate: true ) {
                 self.resultState = resultState
                 return true
             }
@@ -216,9 +216,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
         }
 
         return DispatchQueue.mpw.await {
-            mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                             resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm )?
-                    .toStringAndDeallocate()
+            String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                               resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ),
+                    deallocate: true )
         }
     }
 
@@ -232,9 +232,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
         }
 
         return DispatchQueue.mpw.await {
-            if let loginState = mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm )?
-                    .toStringAndDeallocate() {
+            if let loginState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                                                  resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ),
+                                        deallocate: true ) {
                 self.loginState = loginState
                 return true
             }
@@ -252,9 +252,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
         }
 
         return DispatchQueue.mpw.await {
-            mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                             resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm )?
-                    .toStringAndDeallocate()
+            String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                               resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ),
+                    deallocate: true )
         }
     }
 }

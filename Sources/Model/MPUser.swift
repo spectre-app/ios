@@ -120,8 +120,8 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
         self.origin = origin
         self.file = file
 
-        self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" )
-        self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" )
+        self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
+        self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
         self.observers.register( observer: self )
     }
 

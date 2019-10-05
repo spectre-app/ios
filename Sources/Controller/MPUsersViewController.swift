@@ -24,7 +24,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     private let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) )
     private let usersSpinner   = MPSpinnerView()
-    private let userToolbar    = UIToolbar(frame:.infinite)
+    private let userToolbar    = UIToolbar( frame: .infinite )
     private let detailsHost    = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
 
