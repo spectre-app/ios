@@ -299,7 +299,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.nameField = self.nameField
             self.passwordField.actionHandler = {
                 if let userFile = self.userFile {
-                    return (user: userFile.mpw_authenticate( masterPassword: $0.masterPassword ), error: userFile.file.error)
+                    return (user: userFile.mpw_authenticate( masterPassword: $0.masterPassword ), error: userFile.file.pointee.error)
                 }
                 else {
                     let user = MPUser( fullName: $0.fullName )

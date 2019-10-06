@@ -148,13 +148,13 @@ class MPMarshal: Observable {
                     marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
                 }
 
-                if let data = String( safeUTF8: mpw_marshal_write( format, &user.file, marshalledUser ),
+                if let data = String( safeUTF8: mpw_marshal_write( format, user.file, marshalledUser ),
                                       deallocate: true )?.data( using: .utf8 ),
-                   user.file.error.type == .success {
+                   user.file.pointee.error.type == .success {
                     return data
                 }
 
-                throw Error.marshal( error: user.file.error )
+                throw Error.marshal( error: user.file.pointee.error )
             }
         }
     }
@@ -216,7 +216,7 @@ class MPMarshal: Observable {
                 if !passwordField.mpw_process(
                         handler: {
                             (importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
-                             importingFile.file.error)
+                             importingFile.file.pointee.error)
                         },
                         completion: { (importedUser, error) in
                             if importedUser == nil {
@@ -301,7 +301,7 @@ class MPMarshal: Observable {
                                     if !passwordField.mpw_process(
                                             handler: {
                                                 (user: existingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
-                                                 error: existingFile.file.error)
+                                                 error: existingFile.file.pointee.error)
                                             },
                                             completion: { (existedUser, error) in
                                                 spinner.dismiss()
@@ -341,7 +341,7 @@ class MPMarshal: Observable {
                                     if !passwordField.mpw_process(
                                             handler: {
                                                 (user: importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
-                                                 error: importingFile.file.error)
+                                                 error: importingFile.file.pointee.error)
                                             },
                                             completion: { (importedUser, error) in
                                                 spinner.dismiss()
@@ -568,30 +568,30 @@ class MPMarshal: Observable {
                         }
                     }
 
-                    var file = mpw_marshal_file( nil, nil, nil )
+                    var file_ptr = mpw_marshal_file( nil, nil, nil )
                     defer {
-                        mpw_marshal_file_free( &file )
+                        mpw_marshal_file_free( &file_ptr )
                     }
-                    if let file = file {
-                        if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
-                                              deallocate: true )?.data( using: .utf8 ),
-                           file.pointee.error.type == .success {
-                            let importGroup = DispatchGroup()
-                            importGroup.enter()
-                            self.import( data: data ) { success in
-                                if success {
-                                    self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
-                                }
-                                importGroup.leave()
-                            }
-                            importGroup.wait()
-                        }
-                        else {
-                            throw Error.marshal( error: file.pointee.error )
-                        }
-                    }
+                    guard let file = file_ptr
                     else {
                         throw Error.internal( details: "Couldn't allocate import file." )
+                    }
+
+                    if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
+                                          deallocate: true )?.data( using: .utf8 ),
+                       file.pointee.error.type == .success {
+                        let importGroup = DispatchGroup()
+                        importGroup.enter()
+                        self.import( data: data ) { success in
+                            if success {
+                                self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
+                            }
+                            importGroup.leave()
+                        }
+                        importGroup.wait()
+                    }
+                    else {
+                        throw Error.marshal( error: file.pointee.error )
                     }
                 }
             }
@@ -716,7 +716,7 @@ class MPMarshal: Observable {
 
     class UserFile: Hashable, Comparable, CustomStringConvertible {
         public let origin: URL?
-        public var file:   MPMarshalledFile
+        public var file:   UnsafeMutablePointer<MPMarshalledFile>
 
         public let format:     MPMarshalFormat
         public let exportDate: Date
@@ -734,9 +734,9 @@ class MPMarshal: Observable {
         public var resetKey = false
 
         init?(origin: URL?, document: String?) {
-            guard let document = document, let file = mpw_marshal_read( nil, document )?.pointee, file.error.type == .success
+            guard let document = document, let file = mpw_marshal_read( nil, document ), file.pointee.error.type == .success
             else { return nil }
-            guard let info = file.info?.pointee, info.format != .none, let fullName = String( safeUTF8: info.fullName )
+            guard let info = file.pointee.info?.pointee, info.format != .none, let fullName = String( safeUTF8: info.fullName )
             else { return nil }
 
             self.origin = origin
@@ -752,16 +752,14 @@ class MPMarshal: Observable {
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
-            dbg( "init - \(ObjectIdentifier( self )) -- \(self.fullName) -- \(String( describing: self.file.data ))" )
-            dbg( "init - \(self.file.data.pointee)" )
         }
 
         public func mpw_authenticate(masterPassword: String) -> MPUser? {
             DispatchQueue.mpw.await {
                 provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
                     let user = self.mpw_authenticate( masterKeyProvider: masterKeyProvider )
-                    if let user = user, self.file.error.type == .success, !user.mpw_authenticate( masterPassword: masterPassword ) {
-                        self.file.error = MPMarshalError( type: .errorMasterPassword, message: "Unexpected identicon authentication failure." )
+                    if let user = user, self.file.pointee.error.type == .success, !user.mpw_authenticate( masterPassword: masterPassword ) {
+                        self.file.pointee.error = MPMarshalError( type: .errorMasterPassword, message: "Unexpected identicon authentication failure." )
                         return nil
                     }
 
@@ -780,10 +778,8 @@ class MPMarshal: Observable {
 
         private func mpw_authenticate(masterKeyProvider: @escaping MPMasterKeyProvider) -> MPUser? {
             DispatchQueue.mpw.await {
-                dbg( "auth - \(ObjectIdentifier( self )) -- \(self.fullName) -- \(String( describing: self.file.data ))" )
-                dbg( "auth - \(self.file.data.pointee)" )
-                if let marshalledUser = mpw_marshal_auth( &self.file, self.resetKey ? nil: masterKeyProvider )?.pointee,
-                   self.file.error.type == .success {
+                if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: masterKeyProvider )?.pointee,
+                   self.file.pointee.error.type == .success {
 
                     let user = MPUser(
                             algorithm: marshalledUser.algorithm,

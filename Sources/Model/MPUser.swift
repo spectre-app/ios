@@ -68,7 +68,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
             }
         }
     }
-    public var file:   MPMarshalledFile
+    public var file:   UnsafeMutablePointer<MPMarshalledFile>
     public var origin: URL?
 
     public var masterKey: MPMasterKey? {
@@ -109,7 +109,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
-         file: MPMarshalledFile = mpw_marshal_file( nil, nil, nil ).pointee) {
+         file: UnsafeMutablePointer<MPMarshalledFile> = mpw_marshal_file( nil, nil, nil )) {
         self.algorithm = algorithm ?? .versionCurrent
         self.avatar = avatar
         self.fullName = fullName
