@@ -217,8 +217,20 @@ public class Promise<V> {
             }
         }
 
-        // TODO
-        throw MPError.internal( details: "Incomplete" )
+        let group = DispatchGroup()
+        group.enter()
+        var result: Result<V, Error>?
+        self.then {
+            result = $0
+            group.leave()
+        }
+        group.wait()
+
+        switch result {
+            case .success(let value): return value
+            case .failure(let error): throw error
+            case .none: throw MPError.internal( details: "Couldn't obtain result" )
+        }
     }
 }
 
