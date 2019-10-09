@@ -185,6 +185,10 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     }
 }
 
+public enum MPError: Error {
+    case `internal`(details: String)
+}
+
 extension MPMarshalError: Error {
 }
 

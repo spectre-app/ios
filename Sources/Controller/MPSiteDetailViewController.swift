@@ -12,10 +12,10 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     override func loadItems() -> [Item<MPSite>] {
         [ PasswordCounterItem(), SeparatorItem(),
-                 PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
-                 LoginTypeItem(), LoginResultItem(), SeparatorItem(),
-                 URLItem(), SeparatorItem(),
-                 InfoItem() ]
+          PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
+          LoginTypeItem(), LoginResultItem(), SeparatorItem(),
+          URLItem(), SeparatorItem(),
+          InfoItem() ]
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -49,7 +49,9 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     func userDidLogout(_ user: MPUser) {
         if user == self.model.user, let navigationController = self.navigationController {
-            navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
+            DispatchQueue.main.perform {
+                navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
+            }
         }
     }
 
@@ -58,7 +60,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class ResultItem: LabelItem<MPSite> {
         init() {
             super.init( title: "Password & Login" ) {
-                ($0.mpw_result() ?? "", $0.mpw_login() ?? "")
+                (try? $0.mpw_result().await() ?? "", try? $0.mpw_login().await() ?? "")
             }
         }
 
@@ -102,7 +104,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class PasswordResultItem: TextItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a password",
-                        itemValue: { $0.mpw_result() },
+                        itemValue: { try? $0.mpw_result().await() },
                         itemUpdate: { $0.mpw_result_save( resultParam: $1 ) } )
         }
 
@@ -139,7 +141,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class LoginResultItem: TextItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a user name",
-                        itemValue: { $0.mpw_login() },
+                        itemValue: { try? $0.mpw_login().await() },
                         itemUpdate: { $0.mpw_login_save( resultParam: $1 ) } )
         }
 

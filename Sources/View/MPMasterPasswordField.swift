@@ -41,8 +41,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             self.setNeedsIdenticon()
         }
     }
-    var actionHandler:    (((fullName: String, masterPassword: String)) -> (user: MPUser?, error: MPMarshalError))?
-    var actionCompletion: (((user: MPUser?, error: MPMarshalError)) -> Void)?
+    var authentication: (((fullName: String, masterPassword: String)) throws -> Promise<MPUser>)?
+    var authenticated:  ((MPUser) -> Void)?
 
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
@@ -122,36 +122,28 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
     }
 
-    func mpw_process<U, E>(handler: @escaping ((fullName: String, masterPassword: String)) -> (user: U?, error: E),
-                           completion: (((user: U?, error: E)) -> Void)? = nil) -> Bool {
+    func authenticate<U>(_ handler: (((fullName: String, masterPassword: String)) throws -> Promise<U>)?) -> Promise<U>? {
         DispatchQueue.main.await { [weak self] in
             guard let self = self,
+                  let handler = handler,
                   let fullName = self.userFile?.fullName ?? self.nameField?.text, fullName.count > 0,
                   let masterPassword = self.passwordField?.text, masterPassword.count > 0
-            else { return false }
+            else {
+                return nil
+            }
 
             self.passwordField?.isEnabled = false
             self.passwordIndicator.startAnimating()
 
-            DispatchQueue.mpw.perform { [weak self] in
-                guard let self = self
-                else { return }
-
-                let result = handler( (fullName: fullName, masterPassword: masterPassword) )
-
-                DispatchQueue.main.perform { [weak self] in
-                    guard let self = self
-                    else { return }
-
+            return DispatchQueue.mpw.promise {
+                try handler( (fullName: fullName, masterPassword: masterPassword) )
+            }.then( { _ -> Void in
+                DispatchQueue.main.async {
                     self.passwordField?.text = nil
                     self.passwordField?.isEnabled = true
                     self.passwordIndicator.stopAnimating()
-
-                    completion?( result )
                 }
-            }
-
-            return true
+            } )
         }
     }
 
@@ -162,14 +154,20 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if let actionHandler = self.actionHandler,
-           self.mpw_process( handler: actionHandler, completion: {
-               if $0.user == nil {
-                   self.becomeFirstResponder()
-                   self.shake()
-               }
-               self.actionCompletion?( $0 )
-           } ) {
+        if let authentication = self.authenticate( self.authentication ) {
+            authentication.then( { (result: Result<MPUser, Error>) in
+                DispatchQueue.main.async {
+                    switch result {
+                        case .success(let value):
+                            self.authenticated?( value )
+
+                        case .failure(let error):
+                            mperror( title: "Access Denied", context: error.localizedDescription )
+                            self.becomeFirstResponder()
+                            self.shake()
+                    }
+                }
+            } )
             return true
         }
 

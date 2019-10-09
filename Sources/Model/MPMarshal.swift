@@ -80,125 +80,120 @@ class MPMarshal: Observable {
 
         self.saving.append( user )
         self.marshalQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
-            do {
-                let destination = try self.save( user: user, format: .default )
-                if let origin = user.origin, origin != destination,
-                   FileManager.default.fileExists( atPath: origin.path ) {
-                    do {
-                        try FileManager.default.removeItem( at: origin )
-                    }
-                    catch {
-                        mperror( title: "Cleanup issue", context: origin.lastPathComponent, error: error )
-                    }
+            self.save( user: user, format: .default ).then( {
+                switch $0 {
+                    case .success(let destination):
+                        if let origin = user.origin, origin != destination,
+                           FileManager.default.fileExists( atPath: origin.path ) {
+                            do { try FileManager.default.removeItem( at: origin ) }
+                            catch { mperror( title: "Cleanup issue", context: origin.lastPathComponent, error: error ) }
+                        }
+                        user.origin = destination
+                    case .failure(let error):
+                        mperror( title: "Issue saving", context: user.fullName, error: error )
                 }
-                user.origin = destination
-            }
-            catch {
-                mperror( title: "Issue saving", context: user.fullName, error: error )
-            }
-            self.saving.removeAll { $0 == user }
+                self.saving.removeAll { $0 == user }
+            } )
         }
     }
 
     @discardableResult
-    public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) throws -> URL {
-        try self.marshalQueue.await {
-            try DispatchQueue.mpw.await {
-                guard let documentURL = self.url( for: user, in: directory, format: format )
-                else {
-                    throw Error.internal( details: "No path to marshal \(user)" )
-                }
-                if !FileManager.default.createFile( atPath: documentURL.path, contents:
-                try self.export( user: user, format: format, redacted: redacted ) ) {
-                    throw Error.internal( details: "Couldn't save \(documentURL)" )
+    public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
+        self.marshalQueue.promise {
+            guard let documentURL = self.url( for: user, in: directory, format: format )
+            else { throw MPError.internal( details: "No path to marshal \(user)" ) }
+
+            return self.export( user: user, format: format, redacted: redacted ).then( { (data: Data) in
+                if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
+                    throw MPError.internal( details: "Couldn't save \(documentURL)" )
                 }
 
                 self.setNeedsReload()
                 return documentURL
-            }
+            } )
         }
     }
 
-    public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) throws -> Data {
-        try DispatchQueue.mpw.await {
-            try provideMasterKeyWith( key: user.masterKey ) { masterKeyProvider in
-                guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
+    public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
+        DispatchQueue.mpw.promise { () -> Data in
+            let masterKeyProvider = MPKPC( masterKey: user.masterKey ).provider( for: user.fullName )
+
+            guard let marshalledUser = mpw_marshal_user( user.fullName, masterKeyProvider, user.algorithm )
+            else {
+                throw MPError.internal( details: "Couldn't marshal \(user)" )
+            }
+
+            marshalledUser.pointee.redacted = redacted
+            marshalledUser.pointee.avatar = user.avatar.encode()
+            marshalledUser.pointee.identicon = user.identicon
+            marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( user.masterKeyID ) )
+            marshalledUser.pointee.defaultType = user.defaultType
+            marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
+
+            for site in user.sites {
+                guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                 else {
-                    throw Error.internal( details: "Couldn't marshal \(user)" )
+                    throw MPError.internal( details: "Couldn't marshal \(user): \(site)" )
                 }
 
-                marshalledUser.pointee.redacted = redacted
-                marshalledUser.pointee.avatar = user.avatar.encode()
-                marshalledUser.pointee.identicon = user.identicon
-                user.masterKeyID?.withCString { marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( $0 ) ) }
-                marshalledUser.pointee.defaultType = user.defaultType
-                marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
-
-                for site in user.sites {
-                    guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
-                    else {
-                        throw Error.internal( details: "Couldn't marshal \(user): \(site)" )
-                    }
-
-                    site.resultState?.withCString { marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( $0 ) ) }
-                    marshalledSite.pointee.loginType = site.loginType
-                    site.loginState?.withCString { marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( $0 ) ) }
-                    site.url?.withCString { marshalledSite.pointee.url = UnsafePointer( mpw_strdup( $0 ) ) }
-                    marshalledSite.pointee.uses = site.uses
-                    marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
-                }
-
-                if let data = String( safeUTF8: mpw_marshal_write( format, user.file, marshalledUser ),
-                                      deallocate: true )?.data( using: .utf8 ),
-                   user.file.pointee.error.type == .success {
-                    return data
-                }
-
-                throw Error.marshal( error: user.file.pointee.error )
+                marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( site.resultState ) )
+                marshalledSite.pointee.loginType = site.loginType
+                marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( site.loginState ) )
+                marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ) )
+                marshalledSite.pointee.uses = site.uses
+                marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
             }
+
+            if let data = String( safeUTF8: mpw_marshal_write( format, user.file, marshalledUser ),
+                                  deallocate: true )?.data( using: .utf8 ),
+               user.file.pointee.error.type == .success {
+                return data
+            }
+
+            throw user.file.pointee.error
         }
     }
 
-    public func `import`(data: Data, completion: ((Bool) -> Void)? = nil) {
-        DispatchQueue.mpw.perform {
+    @discardableResult
+    public func `import`(data: Data) -> Promise<Bool> {
+        DispatchQueue.mpw.promise {
             guard let importingFile = self.userFile( for: data )
             else {
                 mperror( title: "Issue importing", context: "Not an \(PearlInfoPlist.get().cfBundleDisplayName ?? "mPass") import document" )
-                completion?( false )
-                return
+                return Promise( .success( false ) )
             }
             guard let importingName = String( safeUTF8: importingFile.fullName )
             else {
                 mperror( title: "Issue importing", context: "Import missing fullName" )
-                completion?( false )
-                return
+                return Promise( .success( false ) )
             }
             guard let importingURL = self.url( for: importingName, format: importingFile.format )
             else {
                 mperror( title: "Issue importing", context: "No path for \(importingName)" )
-                completion?( false )
-                return
+                return Promise( .success( false ) )
             }
 
             if FileManager.default.fileExists( atPath: importingURL.path ),
                let existingFile = self.userFile( at: importingURL ) {
-                self.import( data: data, from: importingFile, into: existingFile, completion: completion )
+                return self.import( data: data, from: importingFile, into: existingFile )
             }
             else {
-                self.import( data: data, from: importingFile, into: importingURL, completion: completion )
+                return self.import( data: data, from: importingFile, into: importingURL )
             }
         }
     }
 
-    private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile, completion: ((Bool) -> Void)?) {
-        DispatchQueue.main.perform {
+    private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile) -> Promise<Bool> {
+        DispatchQueue.main.promise {
             guard let viewController = UIApplication.shared.keyWindow?.rootViewController
             else {
                 mperror( title: "Issue importing", context: "Could not present UI to handle import conflict." )
-                completion?( false )
-                return
+                return Promise( .success( false ) )
             }
 
+            let promise       = Promise<Bool>()
+            let spinner       = MPAlertView( title: "Unlocking", message: importingFile.description,
+                                             content: UIActivityIndicatorView( style: .whiteLarge ) )
             let passwordField = MPMasterPasswordField( userFile: existingFile )
             let controller    = UIAlertController( title: "Merge Sites", message:
             """
@@ -210,21 +205,25 @@ class MPMarshal: Observable {
             """, preferredStyle: .alert )
             controller.addTextField { passwordField.passwordField = $0 }
             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                completion?( false )
+                promise.finish( .success( false ) )
             } )
             controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
-                if !passwordField.mpw_process(
-                        handler: {
-                            (importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
-                             importingFile.file.pointee.error)
-                        },
-                        completion: { (importedUser, error) in
-                            if importedUser == nil {
-                                mperror( title: "Issue importing", context:
-                                "Incorrect master password for import of \(importingFile.fullName)" )
-                                viewController.present( controller, animated: true )
-                            }
-                            else if let existingFile = existingFile.origin {
+                guard let authentication = passwordField.authenticate( {
+                    importingFile.mpw_authenticate( masterKeyProvider: MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName ) )
+                } )
+                else {
+                    mperror( title: "Issue importing", context: "Missing master password" )
+                    viewController.present( controller, animated: true )
+                    return
+                }
+
+                spinner.show( dismissAutomatically: false )
+                authentication.then( {
+                    spinner.dismiss()
+
+                    switch $0 {
+                        case .success:
+                            if let existingFile = existingFile.origin {
                                 if FileManager.default.fileExists( atPath: existingFile.path ) {
                                     do {
                                         try FileManager.default.removeItem( at: existingFile )
@@ -234,33 +233,41 @@ class MPMarshal: Observable {
                                     }
                                 }
 
-                                self.import( data: data, from: importingFile, into: existingFile, completion: completion )
+                                self.import( data: data, from: importingFile, into: existingFile ).then( promise )
                             }
                             else {
-                                completion?( false )
+                                promise.finish( .success( false ) )
                             }
-                        } ) {
-                    mperror( title: "Issue importing", context: "Missing master password" )
-                    viewController.present( controller, animated: true )
-                }
+
+                        case .failure(let error):
+                            mperror( title: "Issue importing", context: error.localizedDescription )
+                            viewController.present( controller, animated: true )
+                    }
+                } )
             } )
             controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                let spinner = MPAlertView( title: "Unlocking", message: importingFile.description,
-                                           content: UIActivityIndicatorView( style: .whiteLarge ) )
-                        .show( dismissAutomatically: false )
+                guard let authentication = passwordField.authenticate( {
+                    Promise( .success(
+                            (try? importingFile.mpw_authenticate( masterKeyProvider: MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName ) )
+                                               .await(),
+                             try? existingFile.mpw_authenticate( masterKeyProvider: MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName ) )
+                                              .await()) ) )
+                } )
+                else {
+                    mperror( title: "Issue importing", context: "Missing master password" )
+                    viewController.present( controller, animated: true )
+                    return
+                }
 
-                if !passwordField.mpw_process(
-                        handler: {
-                            (importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
-                             existingFile.mpw_authenticate( masterPassword: $0.masterPassword ))
-                        },
-                        completion: { users in
-                            spinner.dismiss()
+                spinner.show( dismissAutomatically: false )
+                authentication.then {
+                    spinner.dismiss()
 
-                            let (importedUser, existedUser) = users
+                    switch $0 {
+                        case .success(let (importedUser, existedUser)):
                             if let importedUser = importedUser,
                                let existedUser = existedUser {
-                                self.import( from: importedUser, into: existedUser, completion: completion )
+                                self.import( from: importedUser, into: existedUser ).then( promise )
                             }
                             else if let importedUser = importedUser {
                                 let passwordField = MPMasterPasswordField( userFile: existingFile )
@@ -272,11 +279,9 @@ class MPMarshal: Observable {
 
                                 Replacing will delete the existing user and replace it with the imported user.
                                 """, preferredStyle: .alert )
-                                controller.addTextField { field in
-                                    passwordField.passwordField = field
-                                }
+                                controller.addTextField { passwordField.passwordField = $0 }
                                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    completion?( false )
+                                    promise.finish( .success( false ) )
                                 } )
                                 controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                                     if let existingFile = existingFile.origin {
@@ -289,35 +294,35 @@ class MPMarshal: Observable {
                                             }
                                         }
 
-                                        self.import( data: data, from: importingFile, into: existingFile, completion: completion )
+                                        self.import( data: data, from: importingFile, into: existingFile ).then( promise )
                                     }
                                     else {
-                                        completion?( false )
+                                        promise.finish( .success( false ) )
                                     }
                                 } )
                                 controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                                    spinner.show( dismissAutomatically: false )
-
-                                    if !passwordField.mpw_process(
-                                            handler: {
-                                                (user: existingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
-                                                 error: existingFile.file.pointee.error)
-                                            },
-                                            completion: { (existedUser, error) in
-                                                spinner.dismiss()
-
-                                                if let existedUser = existedUser {
-                                                    self.import( from: importedUser, into: existedUser, completion: completion )
-                                                }
-                                                else {
-                                                    mperror( title: "Issue importing", context:
-                                                    "Incorrect master password for existing \(existingFile.fullName)" )
-                                                    viewController.present( controller, animated: true )
-                                                }
-                                            } ) {
+                                    guard let authentication = passwordField.authenticate( {
+                                        existingFile.mpw_authenticate( masterKeyProvider: MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName ) )
+                                    } )
+                                    else {
                                         mperror( title: "Issue importing", context: "Missing master password" )
                                         viewController.present( controller, animated: true )
+                                        return
                                     }
+
+                                    spinner.show( dismissAutomatically: false )
+                                    authentication.then( {
+                                        spinner.dismiss()
+
+                                        switch $0 {
+                                            case .success(let existedUser):
+                                                self.import( from: importedUser, into: existedUser ).then( promise )
+
+                                            case .failure(let error):
+                                                mperror( title: "Issue importing", context: existingFile.fullName, details: error.localizedDescription )
+                                                viewController.present( controller, animated: true )
+                                        }
+                                    } )
                                 } )
                                 viewController.present( controller, animated: true )
                             }
@@ -329,35 +334,33 @@ class MPMarshal: Observable {
 
                                 The continue merging, also provide the imported user's master password.
                                 """, preferredStyle: .alert )
-                                controller.addTextField { field in
-                                    passwordField.passwordField = field
-                                }
+                                controller.addTextField { passwordField.passwordField = $0 }
                                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    completion?( false )
+                                    promise.finish( .success( false ) )
                                 } )
                                 controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                                    spinner.show( dismissAutomatically: false )
-
-                                    if !passwordField.mpw_process(
-                                            handler: {
-                                                (user: importingFile.mpw_authenticate( masterPassword: $0.masterPassword ),
-                                                 error: importingFile.file.pointee.error)
-                                            },
-                                            completion: { (importedUser, error) in
-                                                spinner.dismiss()
-
-                                                if let importedUser = importedUser {
-                                                    self.import( from: importedUser, into: existedUser, completion: completion )
-                                                }
-                                                else {
-                                                    mperror( title: "Issue importing", context:
-                                                    "Incorrect master password for imported \(importingFile.fullName)" )
-                                                    viewController.present( controller, animated: true )
-                                                }
-                                            } ) {
+                                    guard let authentication = passwordField.authenticate( {
+                                        importingFile.mpw_authenticate( masterKeyProvider: MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName ) )
+                                    } )
+                                    else {
                                         mperror( title: "Issue importing", context: "Missing master password" )
                                         viewController.present( controller, animated: true )
+                                        return
                                     }
+
+                                    spinner.show( dismissAutomatically: false )
+                                    authentication.then( {
+                                        spinner.dismiss()
+
+                                        switch $0 {
+                                            case .success(let importedUser):
+                                                self.import( from: importedUser, into: existedUser ).then( promise )
+
+                                            case .failure(let error):
+                                                mperror( title: "Issue importing", context: importingFile.fullName, details: error.localizedDescription )
+                                                viewController.present( controller, animated: true )
+                                        }
+                                    } )
                                 } )
                                 viewController.present( controller, animated: true )
                             }
@@ -365,22 +368,26 @@ class MPMarshal: Observable {
                                 mperror( title: "Issue importing", context: "Incorrect master password" )
                                 viewController.present( controller, animated: true )
                             }
-                        } ) {
-                    mperror( title: "Issue importing", context: "Missing master password" )
-                    viewController.present( controller, animated: true )
+
+                        case .failure(let error):
+                            mperror( title: "Issue importing", context: error.localizedDescription )
+                            viewController.present( controller, animated: true )
+                    }
                 }
             } )
+
             viewController.present( controller, animated: true )
+            return promise
         }
     }
 
-    private func `import`(from importedUser: MPUser, into existedUser: MPUser, completion: ((Bool) -> Void)?) {
-        DispatchQueue.main.perform {
+    private func `import`(from importedUser: MPUser, into existedUser: MPUser) -> Promise<Bool> {
+        DispatchQueue.main.promise {
             let spinner = MPAlertView( title: "Merging", message: existedUser.description,
                                        content: UIActivityIndicatorView( style: .whiteLarge ) )
-                    .show( dismissAutomatically: false )
 
-            DispatchQueue.mpw.perform {
+            spinner.show( dismissAutomatically: false )
+            return DispatchQueue.mpw.promise {
                 var replacedSites = 0, newSites = 0
                 for importedSite in importedUser.sites {
                     if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
@@ -408,8 +415,7 @@ class MPMarshal: Observable {
                     updatedUser = true
                 }
 
-                DispatchQueue.main.perform {
-                    completion?( true )
+                return DispatchQueue.main.promise { () -> Bool in
                     spinner.dismiss()
 
                     if !updatedUser && replacedSites + newSites == 0 {
@@ -432,26 +438,25 @@ class MPMarshal: Observable {
                         """ ).show()
                     }
                     self.setNeedsReload()
+                    return true
                 }
             }
         }
     }
 
-    private func `import`(data: Data, from importingFile: UserFile, into documentURL: URL, completion: ((Bool) -> Void)?) {
-        DispatchQueue.main.perform {
+    private func `import`(data: Data, from importingFile: UserFile, into documentURL: URL) -> Promise<Bool> {
+        DispatchQueue.main.promise {
             let spinner = MPAlertView( title: "Replacing", message: documentURL.lastPathComponent,
                                        content: UIActivityIndicatorView( style: .whiteLarge ) )
-                    .show( dismissAutomatically: false )
 
-            DispatchQueue.mpw.perform {
+            spinner.show( dismissAutomatically: false )
+            return DispatchQueue.mpw.promise {
                 if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
                     mperror( title: "Issue importing", context: "Couldn't save \(documentURL.lastPathComponent)" )
-                    completion?( false )
-                    return
+                    return Promise( .success( false ) )
                 }
 
-                DispatchQueue.main.perform {
-                    completion?( true )
+                return DispatchQueue.main.promise { () -> Bool in
                     spinner.dismiss()
 
                     MPAlertView( title: "Import Complete", message: documentURL.lastPathComponent, details:
@@ -462,6 +467,8 @@ class MPMarshal: Observable {
                     This was a direct installation of the import data, not a merge import.
                     """ ).show()
                     self.setNeedsReload()
+
+                    return true
                 }
             }
         }
@@ -514,11 +521,11 @@ class MPMarshal: Observable {
 
                     guard let marshalledUser = mpw_marshal_user( fullName, nil, algorithm )
                     else {
-                        throw Error.internal( details: "Couldn't allocate to marshal \(fullName)" )
+                        throw MPError.internal( details: "Couldn't allocate to marshal \(fullName)" )
                     }
                     marshalledUser.pointee.redacted = true
                     marshalledUser.pointee.avatar = user.avatar_?.uint32Value ?? 0
-                    user.keyID?.hexEncodedString().withCString { marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( $0 ) ) }
+                    marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( user.keyID?.hexEncodedString() ) )
                     marshalledUser.pointee.defaultType = defaultType
                     marshalledUser.pointee.lastUsed = Int( user.lastUsed?.timeIntervalSince1970 ?? 0 )
 
@@ -548,22 +555,21 @@ class MPMarshal: Observable {
 
                         guard let marshalledSite = mpw_marshal_site( marshalledUser, siteName, type, counter, algorithm )
                         else {
-                            throw Error.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" )
+                            throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" )
                         }
-                        (site as? MPStoredSiteEntity)?.contentObject?.base64EncodedString().withCString {
-                            marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( $0 ) )
-                        }
+                        marshalledSite.pointee.resultState =
+                                UnsafePointer( mpw_strdup( (site as? MPStoredSiteEntity)?.contentObject?.base64EncodedString() ) )
                         marshalledSite.pointee.loginType =
                                 (site.loginGenerated_?.boolValue ?? true || site.loginName == nil) ? .templateName: .statefulPersonal
-                        site.loginName?.withCString { marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( $0 ) ) }
-                        site.url??.withCString { marshalledSite.pointee.url = UnsafePointer( mpw_strdup( $0 ) ) }
+                        marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( site.loginName ) )
+                        marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ?? nil ) )
                         marshalledSite.pointee.uses = site.uses_?.uint32Value ?? 0
                         marshalledSite.pointee.lastUsed = Int( site.lastUsed?.timeIntervalSince1970 ?? 0 )
 
                         for siteQuestion in site.questions?.seq( MPSiteQuestionEntity_CoreData.self ) ?? [] {
                             guard mpw_marshal_question( marshalledSite, siteQuestion.keyword ) != nil
                             else {
-                                throw Error.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
+                                throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
                             }
                         }
                     }
@@ -574,16 +580,17 @@ class MPMarshal: Observable {
                     }
                     guard let file = file_ptr
                     else {
-                        throw Error.internal( details: "Couldn't allocate import file." )
+                        throw MPError.internal( details: "Couldn't allocate import file." )
                     }
 
                     if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
                                           deallocate: true )?.data( using: .utf8 ),
                        file.pointee.error.type == .success {
+                        // TODO: replace by proper promise handling
                         let importGroup = DispatchGroup()
                         importGroup.enter()
-                        self.import( data: data ) { success in
-                            if success {
+                        self.import( data: data ).then {
+                            if (try? $0.get()) ?? false {
                                 self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
                             }
                             importGroup.leave()
@@ -591,7 +598,7 @@ class MPMarshal: Observable {
                         importGroup.wait()
                     }
                     else {
-                        throw Error.marshal( error: file.pointee.error )
+                        throw file.pointee.error
                     }
                 }
             }
@@ -638,11 +645,6 @@ class MPMarshal: Observable {
 
     // MARK: --- Types ---
 
-    enum Error: Swift.Error {
-        case `internal`(details: String)
-        case marshal(error: MPMarshalError)
-    }
-
     class ActivityItem: NSObject, UIActivityItemSource {
         let user:     MPUser
         let format:   MPMarshalFormat
@@ -684,8 +686,9 @@ class MPMarshal: Observable {
 
         func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
             do {
+                // FIXME: possible deadlock if await needs main thread?
                 let exportFile = try MPMarshal.shared.save( user: self.user, format: self.format, redacted: self.redacted,
-                                                            in: URL( fileURLWithPath: NSTemporaryDirectory() ) )
+                                                            in: URL( fileURLWithPath: NSTemporaryDirectory() ) ).await()
                 self.cleanup.append( exportFile )
                 return exportFile
             }
@@ -754,33 +757,10 @@ class MPMarshal: Observable {
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
         }
 
-        public func mpw_authenticate(masterPassword: String) -> MPUser? {
-            DispatchQueue.mpw.await {
-                provideMasterKeyWith( password: masterPassword ) { masterKeyProvider in
-                    let user = self.mpw_authenticate( masterKeyProvider: masterKeyProvider )
-                    if let user = user, self.file.pointee.error.type == .success, !user.mpw_authenticate( masterPassword: masterPassword ) {
-                        self.file.pointee.error = MPMarshalError( type: .errorMasterPassword, message: "Unexpected identicon authentication failure." )
-                        return nil
-                    }
-
-                    return user
-                }
-            }
-        }
-
-        public func mpw_authenticate(masterKey: MPMasterKey) -> MPUser? {
-            DispatchQueue.mpw.await {
-                provideMasterKeyWith( key: masterKey ) { masterKeyProvider in
-                    self.mpw_authenticate( masterKeyProvider: masterKeyProvider )
-                }
-            }
-        }
-
-        private func mpw_authenticate(masterKeyProvider: @escaping MPMasterKeyProvider) -> MPUser? {
-            DispatchQueue.mpw.await {
+        public func mpw_authenticate(masterKeyProvider: @escaping MPMasterKeyProvider) -> Promise<MPUser> {
+            DispatchQueue.mpw.promise { () -> MPUser in
                 if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: masterKeyProvider )?.pointee,
                    self.file.pointee.error.type == .success {
-
                     let user = MPUser(
                             algorithm: marshalledUser.algorithm,
                             avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
@@ -811,10 +791,11 @@ class MPMarshal: Observable {
                         }
                     }
 
+                    user.masterKeyProvider = masterKeyProvider
                     return user
                 }
 
-                return nil
+                throw self.file.pointee.error
             }
         }
 
@@ -866,37 +847,42 @@ protocol MPMarshalObserver {
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]?)
 }
 
-private var currentMasterKey:      MPMasterKey?
-private var currentMasterPassword: String?
+private var masterKeyProviderConfigurations = [ String: MPKPC ]()
 
-private func __masterKeyObjectProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
-    if let currentMasterKey = currentMasterKey {
-        let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
-        providedMasterKey.initialize( from: currentMasterKey, count: MPMasterKeySize )
-        return UnsafePointer<UInt8>( providedMasterKey )
+public class MPKPC {
+    let masterKey:      MPMasterKey?
+    let masterPassword: String?
+    let keychain:       Bool
+
+    public init(masterKey: MPMasterKey? = nil, masterPassword: String? = nil, keychain: Bool = false) {
+        self.masterKey = masterKey
+        self.masterPassword = masterPassword
+        self.keychain = keychain
+    }
+
+    public func provider(for fullName: String) -> MPMasterKeyProvider {
+        masterKeyProviderConfigurations[fullName] = self
+        return __masterKeyProvider
+    }
+}
+
+private func __masterKeyProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
+    if let fullName = String( safeUTF8: fullName ),
+       let configuration = masterKeyProviderConfigurations[fullName] {
+        if let masterKey = configuration.masterKey {
+            // TODO: algorithm?
+            let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
+            providedMasterKey.initialize( from: masterKey, count: MPMasterKeySize )
+            return UnsafePointer<UInt8>( providedMasterKey )
+        }
+        else if let masterPassword = configuration.masterPassword {
+            return mpw_master_key( fullName, masterPassword, algorithm )
+        }
+        else if configuration.keychain {
+            // TODO: algorithm?
+            return MPKeychain.loadKey( for: fullName )
+        }
     }
 
     return nil
-}
-
-private func __masterKeyPasswordProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
-    mpw_master_key( fullName, currentMasterPassword, algorithm )
-}
-
-private func provideMasterKeyWith<R>(key: MPMasterKey?, _ perform: (@escaping MPMasterKeyProvider) throws -> R) rethrows -> R {
-    currentMasterKey = key
-    defer {
-        currentMasterKey = nil
-    }
-
-    return try perform( __masterKeyObjectProvider )
-}
-
-private func provideMasterKeyWith<R>(password: String?, _ perform: (@escaping MPMasterKeyProvider) throws -> R) rethrows -> R {
-    currentMasterPassword = password
-    defer {
-        currentMasterPassword = nil
-    }
-
-    return try perform( __masterKeyPasswordProvider )
 }

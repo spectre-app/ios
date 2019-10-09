@@ -297,26 +297,23 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.textAlignment = .center
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.passwordField.nameField = self.nameField
-            self.passwordField.actionHandler = {
+            self.passwordField.authentication = {
                 if let userFile = self.userFile {
-                    return (user: userFile.mpw_authenticate( masterPassword: $0.masterPassword ), error: userFile.file.pointee.error)
+                    return userFile.mpw_authenticate( masterKeyProvider: MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName ) )
                 }
                 else {
                     let user = MPUser( fullName: $0.fullName )
-                    if user.mpw_authenticate( masterPassword: $0.masterPassword ) {
-                        return (user: user, error: MPMarshalError( type: .success, message: nil ))
+                    user.masterKeyProvider = MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName )
+                    // FIXME: masterKeyProvider not synchronously unset
+                    if user.masterKeyProvider == nil {
+                        throw MPMarshalError( type: .errorMasterPassword, message: nil )
                     }
 
-                    return (user: nil, error: MPMarshalError( type: .errorMasterPassword, message: nil ))
+                    return Promise( .success( user ) )
                 }
             }
-            self.passwordField.actionCompletion = {
-                if let user = $0.user, $0.error.type == .success {
-                    self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-                }
-                else {
-                    mperror( title: "Access Denied", details: $0.error.description )
-                }
+            self.passwordField.authenticated = {
+                self.navigationController?.pushViewController( MPSitesViewController( user: $0 ), animated: true )
             }
 
             self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
@@ -421,14 +418,21 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     if self.isSelected {
-                        if let userFile = self.userFile, userFile.biometricLock,
-                           let masterKey = MPKeychain.loadKey( for: userFile.fullName ),
-                           let user = userFile.mpw_authenticate( masterKey: masterKey ) {
-                            self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-                        }
-                        else {
+//                        if let userFile = self.userFile,
+//                           MPKeychain.hasKey( for: userFile.fullName ) {
+//                            userFile.mpw_authenticate( masterKeyProvider: MPKPC( keychain: userFile.biometricLock ).provider( for: userFile.fullName ) )
+//                                    .then( {
+//                                        switch $0 {
+//                                            case .success(let user):
+//                                                self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+//                                            case .failure:
+//                                                () // TODO: refresh UI for password box?
+//                                        }
+//                                    } )
+//                        }
+//                        else {
                             self.passwordConfiguration.activate()
-                        }
+//                        }
 
                         if self.nameField.alpha != 0 {
                             self.nameField.becomeFirstResponder()

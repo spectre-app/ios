@@ -30,11 +30,11 @@ extension DispatchQueue {
                         execute work: @escaping @convention(block) () -> Void) {
         if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                    self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
-            // Claim the queue with this thread.
+            // Already in the queue's thread.
             group?.enter()
-            var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+            let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
             defer {
-                if ownsThreadLabel {
+                if threadOwnsLabel {
                     self.threadLabels.remove( self.label )
                 }
                 group?.leave()
@@ -43,11 +43,11 @@ extension DispatchQueue {
             DispatchWorkItem( qos: qos, flags: flags, block: work ).perform()
         }
         else {
+            // Dispatch to the queue's thread.
             self.async( group: group, qos: qos, flags: flags ) {
-                // Claim the queue with this thread.
-                var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+                let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
                 defer {
-                    if ownsThreadLabel {
+                    if threadOwnsLabel {
                         self.threadLabels.remove( self.label )
                     }
                 }
@@ -61,10 +61,10 @@ extension DispatchQueue {
     public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows -> T {
         if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                    self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
-            // Claim the queue with this thread.
-            var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+            // Already in the queue's thread.
+            var threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
             defer {
-                if ownsThreadLabel {
+                if threadOwnsLabel {
                     self.threadLabels.remove( self.label )
                 }
             }
@@ -72,16 +72,153 @@ extension DispatchQueue {
             return try work()
         }
         else {
-            // Claim the queue with this thread.
-            var ownsThreadLabel = self.threadLabels.insert( self.label ).inserted
+            // Dispatch to the queue's thread.
+            return try self.sync( flags: flags ) {
+                var threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
+                defer {
+                    if threadOwnsLabel {
+                        self.threadLabels.remove( self.label )
+                    }
+                }
+
+                return try work()
+            }
+        }
+    }
+
+    @discardableResult
+    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) -> Promise<V> {
+        let promise = Promise<V>()
+
+        if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
+                   self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
+            // Already in the queue's thread.
+            let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
             defer {
-                if ownsThreadLabel {
+                if threadOwnsLabel {
                     self.threadLabels.remove( self.label )
                 }
             }
 
-            return try self.sync( flags: flags, execute: work )
+            do { promise.finish( .success( try work() ) ) }
+            catch { promise.finish( .failure( error ) ) }
         }
+        else {
+            // Dispatch to the queue's thread.
+            self.perform( flags: flags ) {
+                let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
+                defer {
+                    if threadOwnsLabel {
+                        self.threadLabels.remove( self.label )
+                    }
+                }
+
+                do { promise.finish( .success( try work() ) ) }
+                catch { promise.finish( .failure( error ) ) }
+            }
+        }
+
+        return promise
+    }
+
+    @discardableResult
+    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
+        let promise = Promise<V>()
+
+        self.promise {
+            do { try work().then( promise ) }
+            catch { promise.finish( .failure( error ) ) }
+        }
+
+        return promise
+    }
+}
+
+public class Promise<V> {
+    private var result: Result<V, Error>?
+    private var consumers = [ (Result<V, Error>) -> () ]()
+
+    public init(_ result: Result<V, Error>? = nil) {
+        if let result = result {
+            self.finish( result )
+        }
+    }
+
+    public func finish(_ result: Result<V, Error>) {
+        self.result = result
+        self.consumers.forEach { $0( result ) }
+    }
+
+    @discardableResult
+    public func then(_ consumer: @escaping (Result<V, Error>) -> ()) -> Promise<V> {
+        if let result = self.result {
+            consumer( result )
+        }
+        else {
+            self.consumers.append( consumer )
+        }
+
+        return self
+    }
+
+    @discardableResult
+    public func then(_ promise: Promise<V>) -> Promise<V> {
+        self.then( { promise.finish( $0 ) } )
+        return promise
+    }
+
+    @discardableResult
+    public func then<V2>(_ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
+        let promise = Promise<V2>()
+
+        self.then( {
+            do { try promise.finish( .success( consumer( $0 ) ) ) }
+            catch { promise.finish( .failure( error ) ) }
+        } )
+
+        return promise
+    }
+
+    @discardableResult
+    public func then<V2>(_ consumer: @escaping (V) throws -> (V2)) -> Promise<V2> {
+        let promise = Promise<V2>()
+
+        self.then( {
+            switch $0 {
+                case .success(let value):
+                    do { try promise.finish( .success( consumer( value ) ) ) }
+                    catch { promise.finish( .failure( error ) ) }
+
+                case .failure(let error):
+                    promise.finish( .failure( error ) )
+            }
+        } )
+
+        return promise
+    }
+
+    @discardableResult
+    public func then<V2>(_ consumer: @escaping (Result<V, Error>) throws -> (Promise<V2>)) -> Promise<V2> {
+        let promise = Promise<V2>()
+
+        self.then( {
+            do { try consumer( $0 ).then( promise ) }
+            catch { promise.finish( .failure( error ) ) }
+        } )
+
+        return promise
+    }
+
+    public func await() throws -> V {
+        if let result = result {
+            switch result {
+                case .success(let value): return value
+                case .failure(let error): throw error
+            }
+        }
+
+        // TODO
+        throw MPError.internal( details: "Incomplete" )
     }
 }
 

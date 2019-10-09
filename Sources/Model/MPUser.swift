@@ -71,16 +71,44 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var file:   UnsafeMutablePointer<MPMarshalledFile>
     public var origin: URL?
 
-    public var masterKey: MPMasterKey? {
+    public var masterKeyProvider: MPMasterKeyProvider? {
         didSet {
-            if oldValue != self.masterKey {
-                if let _ = self.masterKey {
+            // TODO: self.identicon = mpw_identicon( self.fullName, masterPassword )
+            DispatchQueue.mpw.promise {
+                if ({
+                        guard let masterKeyProvider = self.masterKeyProvider,
+                              let authKey = masterKeyProvider( self.algorithm, self.fullName )
+                        else { return false }
+                        defer {
+                            authKey.deallocate()
+                        }
+
+                        guard let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) )
+                        else { return false }
+                        if self.masterKeyID == nil {
+                            self.masterKeyID = authKeyID
+                        }
+
+                        return self.masterKeyID == authKeyID
+                    }()) {
+                    self.use()
                     self.observers.notify { $0.userDidLogin( self ) }
                 }
                 else {
                     self.observers.notify { $0.userDidLogout( self ) }
                 }
             }
+        }
+    }
+    public var masterKey: MPMasterKey? {
+        get {
+            // TODO: MPKeychain.saveKey( for: self.fullName, masterKey: self.biometricLock ? masterKey: nil )
+            if let masterKeyProvider = self.masterKeyProvider,
+               let masterKey = masterKeyProvider( self.algorithm, self.fullName ) {
+                return masterKey
+            }
+
+            return nil
         }
     }
     public var sites = [ MPSite ]() {
@@ -161,42 +189,6 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
 
     public func use() {
         self.lastUsed = Date()
-    }
-
-    // MARK: --- mpw ---
-
-    @discardableResult
-    public func mpw_authenticate(masterPassword: String) -> Bool {
-        DispatchQueue.mpw.await {
-            self.identicon = mpw_identicon( self.fullName, masterPassword )
-            if let authKey = mpw_master_key( self.fullName, masterPassword, .versionCurrent ) {
-                return self.mpw_authenticate( masterKey: authKey )
-            }
-
-            return false
-        }
-    }
-
-    @discardableResult
-    public func mpw_authenticate(masterKey authKey: MPMasterKey) -> Bool {
-        DispatchQueue.mpw.await {
-            if let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) ) {
-                if let masterKeyID = self.masterKeyID {
-                    if masterKeyID != authKeyID {
-                        return false
-                    }
-                }
-                else {
-                    self.masterKeyID = authKeyID
-                }
-
-                self.masterKey = authKey
-                self.use()
-                return true
-            }
-
-            return false
-        }
     }
 
     // MARK: --- Types ---

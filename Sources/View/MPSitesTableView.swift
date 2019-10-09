@@ -309,20 +309,20 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         func copyAction() {
-            DispatchQueue.mpw.perform { [weak self] in
-                guard let self = self, let site = self.site
+            DispatchQueue.mpw.promise {
+                guard let site = self.site
                 else { return }
 
                 var result = "", kind = ""
                 switch self.mode {
                     case .authentication:
-                        result = site.mpw_result() ?? ""
+                        result = try site.mpw_result().await() ?? ""
                         kind = "password"
                     case .identification:
-                        result = site.mpw_login() ?? ""
+                        result = try site.mpw_login().await() ?? ""
                         kind = "user name"
                     case .recovery:
-                        result = site.mpw_answer() ?? ""
+                        result = try site.mpw_answer().await() ?? ""
                         kind = "security answer"
                     @unknown default: ()
                 }
@@ -388,25 +388,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- Private ---
 
         private func update() {
-            DispatchQueue.mpw.perform { [weak self] in
-                guard let self = self
-                else { return }
-
+            DispatchQueue.mpw.promise {
                 var result: String?
                 switch self.mode {
                     case .authentication:
-                        result = self.site?.mpw_result()
+                        result = try self.site?.mpw_result().await()
                     case .identification:
-                        result = self.site?.mpw_login()
+                        result = try self.site?.mpw_login().await()
                     case .recovery:
-                        result = self.site?.mpw_answer()
+                        result = try self.site?.mpw_answer().await()
                     @unknown default: ()
                 }
 
-                DispatchQueue.main.perform { [weak self] in
-                    guard let self = self
-                    else { return }
-
+                DispatchQueue.main.perform {
                     self.modeButton.title = self.mode.button()
                     self.modeButton.size = .small
                     self.resultLabel.text = result
