@@ -70,17 +70,15 @@
     return configuration;
 }
 
-+ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing *)layoutGuide inView:(UIView *)ownerView {
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *)layoutGuide {
 
-    *layoutGuide = [UILayoutGuide new];
-    [ownerView addLayoutGuide:*layoutGuide];
-    return [self configurationWithTarget:[LayoutTarget layoutTargetWithLayoutGuide:*layoutGuide]];
+    return [self configurationWithTarget:[LayoutTarget layoutTargetWithLayoutGuide:layoutGuide]];
 }
 
-+ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *__autoreleasing *)layoutGuide inView:(UIView *)ownerView
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *)layoutGuide
                               configurations:(nullable void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks {
 
-    LayoutConfiguration *configuration = [self configurationWithLayoutGuide:layoutGuide inView:ownerView];
+    LayoutConfiguration *configuration = [self configurationWithLayoutGuide:layoutGuide];
 
     if (configurationBlocks) {
         LayoutConfiguration *active = [self configurationWithTarget:configuration.target];
@@ -297,15 +295,16 @@
                 [targetView setContentHuggingPriority:newPriority forAxis:UILayoutConstraintAxisVertical];
             }
 
-        if (owningView)
+        if (self.constrainers.count) {
+            NSAssert( owningView, @"Skipping layout constraints since view has no owner: %@",
+                    (id)self.target.view?: self.target.layoutGuide );
             for (LayoutConstrainers constrainer in self.constrainers)
                 for (NSLayoutConstraint *constraint in constrainer( owningView, self.target )) {
                     //trc( @"%@: activating %@", [targetView infoPathName], constraint );
                     constraint.active = YES;
                     [self.activeConstraints addObject:constraint];
                 }
-        else if (self.constrainers.count)
-            wrn( @"Skipping layout constraints since view has no owner: %@", (id)self.target.view?: self.target.layoutGuide );
+        }
 
         [self.activeValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, id newValue, BOOL *stop) {
             id oldValue = [targetView valueForKeyPath:key]?: [NSNull null];
@@ -439,17 +438,17 @@
 
 - (instancetype)constrainToView:(nullable UIView *)view {
 
-    return [self constrainToView:view withMargins:NO anchor:
+    return [self constrainToView:view withMargins:NO anchors:
             AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom];
 }
 
 - (instancetype)constrainToMarginsOfView:(nullable UIView *)view {
 
-    return [self constrainToView:view withMargins:YES anchor:
+    return [self constrainToView:view withMargins:YES anchors:
             AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom];
 }
 
-- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins anchor:(Anchor)anchor {
+- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins anchors:(Anchor)anchor {
 
     if (anchor & AnchorTop)
         [self constrainToUsing:^NSLayoutConstraint *(UIView *owningView, LayoutTarget *target) {
@@ -532,18 +531,18 @@
 
 - (instancetype)constrainToMarginsOfOwner {
 
-    return [self constrainToOwnerWithMargins:YES];
-}
-
-- (instancetype)constrainToOwnerWithMargins:(BOOL)margins {
-
-    return [self constrainToOwnerWithMargins:margins anchor:
+    return [self constrainToMarginsOfOwnerWithAnchors:
             AnchorTop | AnchorLeading | AnchorTrailing | AnchorBottom];
 }
 
-- (instancetype)constrainToOwnerWithMargins:(BOOL)margins anchor:(Anchor)anchor {
+- (instancetype)constrainToOwnerWithAnchors:(Anchor)anchor {
 
-    return [self constrainToView:nil withMargins:margins anchor:anchor];
+    return [self constrainToView:nil withMargins:NO anchors:anchor];
+}
+
+- (instancetype)constrainToMarginsOfOwnerWithAnchors:(Anchor)anchor {
+
+    return [self constrainToView:nil withMargins:YES anchors:anchor];
 }
 
 - (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key {

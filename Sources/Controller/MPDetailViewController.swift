@@ -75,8 +75,8 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
         LayoutConfiguration( view: self.itemsView )
-                .constrainToOwner( withMargins: true, anchor: .vertically )
-                .constrainToOwner( withMargins: false, anchor: .horizontally )
+                .constrainToMarginsOfOwner( withAnchors: .vertically )
+                .constrainToOwner( withAnchors: .horizontally )
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                 .activate()
         LayoutConfiguration( view: self.closeButton )

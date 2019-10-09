@@ -11,7 +11,7 @@ import Stellar
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
     private let backgroundView = MPBackgroundView()
-    private let transition = MPNavigationTransition()
+    private let transition     = MPNavigationTransition()
 
     // MARK: --- Life ---
 
@@ -19,18 +19,14 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
         super.init( rootViewController: rootViewController )
     }
 
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
-
-        self.isNavigationBarHidden = true
-        self.delegate = self
-    }
-
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
     override func viewDidLoad() {
+        self.delegate = self
+        self.isNavigationBarHidden = true
+
         // - Hierarchy
         self.view.insertSubview( self.backgroundView, at: 0 )
 

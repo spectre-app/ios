@@ -328,17 +328,6 @@ extension UIFont {
     }
 }
 
-extension UIView {
-    convenience init(constraining subview: UIView, withMargins margins: Bool = true) {
-        self.init()
-        self.addSubview( subview )
-
-        LayoutConfiguration( view: subview )
-                .constrainToOwner( withMargins: margins )
-                .activate()
-    }
-}
-
 extension CGSize {
     func union(_ size: CGSize) -> CGSize {
         size.width <= self.width && size.height <= self.height ? self:

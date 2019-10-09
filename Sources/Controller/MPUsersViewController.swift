@@ -76,16 +76,16 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
         // - Layout
         LayoutConfiguration( view: self.usersSpinner )
-                .constrainToOwner( withMargins: false, anchor: .topBox )
+                .constrainToOwner( withAnchors: .topBox )
                 .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ).withPriority( .defaultHigh ) }
                 .activate()
 
         LayoutConfiguration( view: self.settingsButton )
-                .constrainToOwner( withMargins: true, anchor: .bottomCenter )
+                .constrainToMarginsOfOwner( withAnchors: .bottomCenter )
                 .activate()
 
         LayoutConfiguration( view: self.userToolbar )
-                .constrainToOwner( withMargins: false, anchor: .horizontally )
+                .constrainToOwner( withAnchors: .horizontally )
                 .activate()
 
         LayoutConfiguration( view: self.detailsHost.view )
@@ -431,7 +431,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 //                                    } )
 //                        }
 //                        else {
-                            self.passwordConfiguration.activate()
+                        self.passwordConfiguration.activate()
 //                        }
 
                         if self.nameField.alpha != 0 {
@@ -451,4 +451,3 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         }
     }
 }
-

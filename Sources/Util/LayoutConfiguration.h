@@ -56,7 +56,7 @@ typedef NS_OPTIONS( NSUInteger, Anchor ) {
 
 typedef void ( ^ViewAction )(UIView *view);
 typedef NSLayoutConstraint *__nonnull ( ^LayoutConstrainer )(UIView *__nonnull owningView, LayoutTarget *__nonnull target);
-typedef NSArray<NSLayoutConstraint *> *__nonnull( ^LayoutConstrainers )(UIView *__nonnull owningView, LayoutTarget *__nonnull target);
+typedef NSArray<NSLayoutConstraint *> *__nonnull ( ^LayoutConstrainers )(UIView *__nonnull owningView, LayoutTarget *__nonnull target);
 
 /**
  * A layout configuration holds a set of operations that will be performed on the target when the configuration's active state changes.
@@ -85,12 +85,11 @@ typedef NSArray<NSLayoutConstraint *> *__nonnull( ^LayoutConstrainers )(UIView *
         (nullable void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks;
 
 //! Create a new configuration for a layout guide created in the view.  New configurations start deactivated.
-+ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *_Nullable __autoreleasing *_Nullable)layoutGuide inView:(UIView *)ownerView;
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *)layoutGuide;
 
 //! Create a new configuration for a layout guide created in the view and automatically add an active and inactive child configuration for it; configure them in the block.  New configurations start deactivated and the inactive configuration starts activated.
-+ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *_Nullable __autoreleasing *_Nullable)layoutGuide inView:(UIView *)ownerView
-                              configurations:
-                                      (nullable void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks;
++ (instancetype)configurationWithLayoutGuide:(UILayoutGuide *)layoutGuide configurations:
+        (nullable void ( ^ )(LayoutConfiguration *active, LayoutConfiguration *inactive))configurationBlocks;
 
 //! Activate this constraint when the configuration becomes active.
 - (instancetype)constrainTo:(NSLayoutConstraint *)constraint;
@@ -137,11 +136,11 @@ typedef NSArray<NSLayoutConstraint *> *__nonnull( ^LayoutConstrainers )(UIView *
 - (instancetype)constrainToAllUsing:(LayoutConstrainers)constrainer;
 - (instancetype)constrainToView:(nullable UIView *)view;
 - (instancetype)constrainToMarginsOfView:(nullable UIView *)view;
-- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins anchor:(Anchor)anchor;
+- (instancetype)constrainToView:(nullable UIView *)host withMargins:(BOOL)margins anchors:(Anchor)anchors;
 - (instancetype)constrainToOwner;
 - (instancetype)constrainToMarginsOfOwner;
-- (instancetype)constrainToOwnerWithMargins:(BOOL)margins;
-- (instancetype)constrainToOwnerWithMargins:(BOOL)margins anchor:(Anchor)anchor;
+- (instancetype)constrainToOwnerWithAnchors:(Anchor)anchors;
+- (instancetype)constrainToMarginsOfOwnerWithAnchors:(Anchor)anchors;
 
 - (instancetype)setFloat:(CGFloat)value forKey:(NSString *)key;
 - (instancetype)setPoint:(CGPoint)value forKey:(NSString *)key;
