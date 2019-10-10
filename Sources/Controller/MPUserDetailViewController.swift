@@ -31,8 +31,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     // MARK: --- MPUserObserver ---
 
     func userDidLogout(_ user: MPUser) {
-        if user == self.model, let navigationController = self.navigationController {
-            DispatchQueue.main.perform {
+        DispatchQueue.main.perform {
+            if user == self.model, let navigationController = self.navigationController {
                 navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
             }
         }
@@ -117,7 +117,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                     }
                 },
                 ButtonItem( itemValue: { _ in ("⎋ Log out", nil) } ) { item in
-                    item.model?.masterKeyProvider = nil
+                    item.model?.masterKeyFactory = nil
                 },
             ] )
         }

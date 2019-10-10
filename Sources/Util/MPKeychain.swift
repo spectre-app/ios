@@ -4,21 +4,23 @@
 //
 
 import Foundation
+import LocalAuthentication
 
 public class MPKeychain {
-    public static func userQuery(for fullName: String, biometrics: Bool) -> [CFString: Any] {
+    private static func userQuery(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool, context: LAContext? = nil) -> [CFString: Any]? {
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
-//            kSecAttrSynchronizable: false,
-            kSecAttrService: String(safeUTF8:mpw_purpose_scope(.authentication))!,
+            kSecAttrService: "\(String( safeUTF8: mpw_purpose_scope( .authentication ) )!).\(algorithm)",
             kSecAttrAccount: fullName,
-//            kSecAttrLabel: "Key: \(fullName)",
-//            kSecAttrDescription: "Master Password master key",
-            kSecUseOperationPrompt: "Access \(fullName)'s master key.",
+            kSecUseOperationPrompt: "Access \(fullName)'s master key (\(algorithm)). [query]",
         ]
-//        if #available( iOS 13, * ) {
-//            query[kSecUseDataProtectionKeychain] = true
-//        }
+        if #available( iOS 13, * ) {
+            query[kSecUseDataProtectionKeychain] = true
+        }
+        if let context = context,
+           context.canEvaluatePolicy( biometrics ? .deviceOwnerAuthenticationWithBiometrics: .deviceOwnerAuthentication, error: nil ) {
+            query[kSecUseAuthenticationContext] = context
+        }
 
         if biometrics {
             let flags: SecAccessControlCreateFlags
@@ -35,9 +37,11 @@ public class MPKeychain {
             }
             else if let error = error?.takeRetainedValue() {
                 mperror( title: "Biometrics Not Supported", details: "Could not create biometric access controls on this device.", error: error )
+                return nil
             }
             else {
                 mperror( title: "Biometrics Unavailable", details: "Could not enable biometric access controls on this device." )
+                return nil
             }
         }
 
@@ -45,17 +49,31 @@ public class MPKeychain {
     }
 
     @discardableResult
-    public static func saveKey(for fullName: String, masterKey: MPMasterKey?) -> Bool {
-        let query = self.userQuery( for: fullName, biometrics: true )
+    public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext) -> Promise<Bool> {
+        DispatchQueue.mpw.promise { () -> Bool in
+            assert( !Thread.current.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
-        if let masterKey = masterKey {
-            let masterKeyBytes = Data( bytes: masterKey, count: MPMasterKeySize )
+            guard let query = self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )
+            else { return false }
+            guard let masterKey = keyFactory.newMasterKey( algorithm: algorithm )
+            else { return false }
+            defer { masterKey.deallocate() }
 
-            var status = SecItemUpdate( query as CFDictionary, [ kSecValueData: masterKeyBytes ] as CFDictionary )
+            let update: [CFString: Any] = [
+                kSecValueData: Data( bytes: masterKey, count: MPMasterKeySize ),
+                kSecAttrSynchronizable: false,
+                kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(fullName)",
+                kSecAttrDescription: "Master Password master key (\(algorithm))",
+            ]
+
+            let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access key for:\n\(fullName)",
+                                   content: UIActivityIndicatorView( style: .white ) )
+            spinner.show( dismissAutomatically: false )
+            defer { spinner.dismiss() }
+
+            var status = SecItemUpdate( query as CFDictionary, update as CFDictionary )
             if status == errSecItemNotFound {
-                var newItem = query
-                newItem[kSecValueData] = masterKeyBytes
-                status = SecItemAdd( newItem as CFDictionary, nil )
+                status = SecItemAdd( query.merging( update, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
             }
 
             if status != errSecSuccess {
@@ -63,46 +81,70 @@ public class MPKeychain {
                          context: "Couldn't add master key to the keychain.",
                          details: status.description )
             }
+
             return status == errSecSuccess
         }
-        else {
+    }
+
+    @discardableResult
+    public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion) -> Bool {
+        DispatchQueue.mpw.await {
+            guard let query = self.userQuery( for: fullName, algorithm: algorithm, biometrics: true )
+            else { return false }
+
             return SecItemDelete( query as CFDictionary ) == errSecSuccess
         }
     }
 
-    public static func hasKey(for fullName: String) -> Bool {
-        var query = self.userQuery( for: fullName, biometrics: true )
-        query[kSecReturnAttributes] = true
+    public static func hasKey(for fullName: String, algorithm: MPAlgorithmVersion) -> Bool {
+        DispatchQueue.mpw.await {
+            guard var query = self.userQuery( for: fullName, algorithm: algorithm, biometrics: true )
+            else { return false }
+            query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
 
-        var cfResult: CFTypeRef?
-        if SecItemCopyMatching( query as CFDictionary, &cfResult ) == errSecSuccess,
-           let result = cfResult as? Dictionary<String, Any>, !result.isEmpty {
-            return true
+            var cfResult: CFTypeRef?
+            let status = SecItemCopyMatching( query as CFDictionary, &cfResult )
+            if status == errSecSuccess || status == errSecInteractionNotAllowed {
+                return true
+            }
+
+            if status != errSecItemNotFound {
+                mperror( title: "Keychain Error", context: "Couldn't check for master key in the keychain.", details: status.description )
+            }
+
+            return false
         }
-
-        return false
     }
 
-    public static func loadKey(for fullName: String) -> MPMasterKey? {
-        var query = self.userQuery( for: fullName, biometrics: true )
-        query[kSecReturnData] = true
+    public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws -> Promise<MPMasterKey> {
+        DispatchQueue.mpw.promise { () -> MPMasterKey in
+            assert( !Thread.current.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
-        var cfResult: CFTypeRef?
-        let status = SecItemCopyMatching( query as CFDictionary, &cfResult )
-        if status == errSecSuccess, let data = cfResult as? Data, data.count == MPMasterKeySize {
-            let masterKeyBytes = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
-            masterKeyBytes.initialize( repeating: 0, count: MPMasterKeySize )
-            data.copyBytes( to: masterKeyBytes, count: MPMasterKeySize )
-            return MPMasterKey( masterKeyBytes )
+            guard var query = self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )
+            else { throw MPError.internal( details: "Biometrics keychain unavailable." ) }
+            query[kSecReturnData] = true
+
+            let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access key for:\n\(fullName)",
+                                   content: UIActivityIndicatorView( style: .white ) )
+            spinner.show( dismissAutomatically: false )
+            defer { spinner.dismiss() }
+
+            var cfResult: CFTypeRef?
+            let status = SecItemCopyMatching( query as CFDictionary, &cfResult )
+            if status == errSecSuccess, let data = cfResult as? Data, data.count == MPMasterKeySize {
+                let masterKeyBytes = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
+                masterKeyBytes.initialize( repeating: 0, count: MPMasterKeySize )
+                data.copyBytes( to: masterKeyBytes, count: MPMasterKeySize )
+                return MPMasterKey( masterKeyBytes )
+            }
+            else {
+                if status != errSecItemNotFound {
+                    mperror( title: "Keychain Error", context: "Couldn't load master key from the keychain.", details: status.description )
+                }
+
+                throw MPError.internal( details: status.description )
+            }
         }
-
-        if status != errSecItemNotFound {
-            mperror( title: "Keychain Error",
-                     context: "Couldn't load master key from the keychain.",
-                     details: status.description )
-        }
-
-        return nil
     }
 }
 
@@ -130,7 +172,7 @@ extension OSStatus {
             case errSecInternalComponent:
                 return "errSecInternalComponent"
             case errSecCoreFoundationUnknown:
-                return "errSecCoreFoundationUnknown"            
+                return "errSecCoreFoundationUnknown"
             case errSecNotAvailable:
                 return "errSecNotAvailable: (No keychain is available)"
             case errSecReadOnly:

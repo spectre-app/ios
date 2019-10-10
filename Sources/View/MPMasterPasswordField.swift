@@ -41,7 +41,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             self.setNeedsIdenticon()
         }
     }
-    var authentication: (((fullName: String, masterPassword: String)) throws -> Promise<MPUser>)?
+    var authentication: ((MPPasswordKeyFactory) throws -> Promise<MPUser>)?
     var authenticated:  ((MPUser) -> Void)?
 
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
@@ -122,7 +122,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
     }
 
-    func authenticate<U>(_ handler: (((fullName: String, masterPassword: String)) throws -> Promise<U>)?) -> Promise<U>? {
+    func authenticate<U>(_ handler: ((MPPasswordKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
         DispatchQueue.main.await { [weak self] in
             guard let self = self,
                   let handler = handler,
@@ -136,7 +136,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             self.passwordIndicator.startAnimating()
 
             return DispatchQueue.mpw.promise {
-                try handler( (fullName: fullName, masterPassword: masterPassword) )
+                try handler( MPPasswordKeyFactory( fullName: fullName, masterPassword: masterPassword ) )
             }.then( { _ -> Void in
                 DispatchQueue.main.async {
                     self.passwordField?.text = nil
@@ -158,8 +158,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             authentication.then( { (result: Result<MPUser, Error>) in
                 DispatchQueue.main.async {
                     switch result {
-                        case .success(let value):
-                            self.authenticated?( value )
+                        case .success(let user):
+                            self.authenticated?( user )
 
                         case .failure(let error):
                             mperror( title: "Access Denied", context: error.localizedDescription )

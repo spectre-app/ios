@@ -67,19 +67,18 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     func doUpdate() {
         DispatchQueue.global().async { [weak self] in
-            guard let self = self
+            guard let self = self, let user = self.user, user.masterKeyFactory != nil
             else { return }
 
             // Determine search state and filter user sites
             var selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedSite } )?.element
             let selectionFollowsQuery = self.newSiteResult === selectedResult || selectedResult?.exact ?? false
-            let results = MPQuery( self.query ).find( self.user?.sites.sorted() ?? [] ) { $0.siteName }
+            let results = MPQuery( self.query ).find( user.sites.sorted() ) { $0.siteName }
             let exactResult = results.first { $0.exact }
             var resultSource: [[MPQuery.Result<MPSite>?]] = [ results ]
 
             // Add "new site" result if there is a query and no exact result
-            if let user = self.user,
-               let query = self.query,
+            if let query = self.query,
                !query.isEmpty, exactResult == nil {
                 self.newSiteResult?.value.siteName = query
 
@@ -341,7 +340,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                             ] )
 
                     DispatchQueue.main.perform {
-                        MPAlertView( title: site.siteName, message: "Copied \(kind) (3 min)", details:
+                        MPAlert( title: site.siteName, message: "Copied \(kind) (3 min)", details:
                         """
                         Your \(kind) for \(site.siteName) is:
                         \(result)
@@ -356,7 +355,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     UIPasteboard.general.string = result
 
                     DispatchQueue.main.perform {
-                        MPAlertView( title: site.siteName, message: "Copied \(kind)", details:
+                        MPAlert( title: site.siteName, message: "Copied \(kind)", details:
                         """
                         Your \(kind) for \(site.siteName) is:
                         \(result)

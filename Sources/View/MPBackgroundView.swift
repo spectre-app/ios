@@ -56,17 +56,17 @@ class MPBackgroundView: UIView {
     }
 
     func update() {
-        self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-            MPTheme.global.color.selection.get()?.cgColor,
-            MPTheme.global.color.panel.get()?.cgColor,
-        ] as CFArray, locations: nil )
-        self.gradientPoint = self.bounds.top
-        self.gradientPoint.y += (CGFloat( self.currentAttitude?.pitch ?? 0 ) / .pi) * 500
-        self.gradientPoint.x += (CGFloat( self.currentAttitude?.roll ?? 0 ) / .pi) * 500
-        self.gradientRadius = max( self.bounds.size.width, self.bounds.size.height )
-        self.isOpaque = false
-
         DispatchQueue.main.perform {
+            self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
+                MPTheme.global.color.selection.get()?.cgColor,
+                MPTheme.global.color.panel.get()?.cgColor,
+            ] as CFArray, locations: nil )
+            self.gradientPoint = self.bounds.top
+            self.gradientPoint.y += (CGFloat( self.currentAttitude?.pitch ?? 0 ) / .pi) * 500
+            self.gradientPoint.x += (CGFloat( self.currentAttitude?.roll ?? 0 ) / .pi) * 500
+            self.gradientRadius = max( self.bounds.size.width, self.bounds.size.height )
+            self.isOpaque = false
+
             self.setNeedsDisplay()
         }
     }

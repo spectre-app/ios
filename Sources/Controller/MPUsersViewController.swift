@@ -297,23 +297,12 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.textAlignment = .center
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.passwordField.nameField = self.nameField
-            self.passwordField.authentication = {
-                if let userFile = self.userFile {
-                    return userFile.mpw_authenticate( masterKeyProvider: MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName ) )
-                }
-                else {
-                    let user = MPUser( fullName: $0.fullName )
-                    user.masterKeyProvider = MPKPC( masterPassword: $0.masterPassword ).provider( for: $0.fullName )
-                    // FIXME: masterKeyProvider not synchronously unset
-                    if user.masterKeyProvider == nil {
-                        throw MPMarshalError( type: .errorMasterPassword, message: nil )
-                    }
-
-                    return Promise( .success( user ) )
-                }
+            self.passwordField.authentication = { keyFactory in
+                self.userFile?.mpw_authenticate( keyFactory: keyFactory ) ??
+                        Promise( .success( MPUser( fullName: keyFactory.fullName, masterKeyFactory: keyFactory ) ) )
             }
-            self.passwordField.authenticated = {
-                self.navigationController?.pushViewController( MPSitesViewController( user: $0 ), animated: true )
+            self.passwordField.authenticated = { user in
+                self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
             }
 
             self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
@@ -409,7 +398,6 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         private func update() {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.618 ) {
-                    self.passwordField.alpha = self.isSelected ? 1: 0
                     self.nameLabel.alpha = self.isSelected && self.userFile == nil ? 0: 1
                     self.nameField.alpha = 1 - self.nameLabel.alpha
 
@@ -418,21 +406,30 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     if self.isSelected {
-//                        if let userFile = self.userFile,
-//                           MPKeychain.hasKey( for: userFile.fullName ) {
-//                            userFile.mpw_authenticate( masterKeyProvider: MPKPC( keychain: userFile.biometricLock ).provider( for: userFile.fullName ) )
-//                                    .then( {
-//                                        switch $0 {
-//                                            case .success(let user):
-//                                                self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-//                                            case .failure:
-//                                                () // TODO: refresh UI for password box?
-//                                        }
-//                                    } )
-//                        }
-//                        else {
-                        self.passwordConfiguration.activate()
-//                        }
+                        if let userFile = self.userFile, userFile.biometricLock,
+                           MPKeychain.hasKey( for: userFile.fullName, algorithm: userFile.algorithm ) {
+                            self.passwordConfiguration.deactivate()
+
+                            userFile.mpw_authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) )
+                                    .then( { result -> Void in
+                                        switch result {
+                                            case .success(let user):
+                                                DispatchQueue.main.perform {
+                                                    self.navigationController?
+                                                        .pushViewController( MPSitesViewController( user: user ), animated: true )
+                                                }
+
+                                            case .failure:
+                                                for algorithm in MPAlgorithmVersion.allCases {
+                                                    MPKeychain.deleteKey( for: userFile.fullName, algorithm: algorithm )
+                                                }
+                                                self.update()
+                                        }
+                                    } )
+                        }
+                        else {
+                            self.passwordConfiguration.activate()
+                        }
 
                         if self.nameField.alpha != 0 {
                             self.nameField.becomeFirstResponder()

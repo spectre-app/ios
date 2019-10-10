@@ -38,8 +38,8 @@ class MPUserViewController: UIViewController, MPUserObserver {
     // MARK: --- MPUserObserver ---
 
     func userDidLogout(_ user: MPUser) {
-        if user == self.user, let navigationController = self.navigationController {
-            DispatchQueue.main.perform {
+        DispatchQueue.main.perform {
+            if user == self.user, let navigationController = self.navigationController {
                 navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
             }
         }

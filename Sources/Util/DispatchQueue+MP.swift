@@ -90,32 +90,9 @@ extension DispatchQueue {
     public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) -> Promise<V> {
         let promise = Promise<V>()
 
-        if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
-                   self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
-            // Already in the queue's thread.
-            let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
-            defer {
-                if threadOwnsLabel {
-                    self.threadLabels.remove( self.label )
-                }
-            }
-
+        self.perform( flags: flags ) {
             do { promise.finish( .success( try work() ) ) }
             catch { promise.finish( .failure( error ) ) }
-        }
-        else {
-            // Dispatch to the queue's thread.
-            self.perform( flags: flags ) {
-                let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
-                defer {
-                    if threadOwnsLabel {
-                        self.threadLabels.remove( self.label )
-                    }
-                }
-
-                do { promise.finish( .success( try work() ) ) }
-                catch { promise.finish( .failure( error ) ) }
-            }
         }
 
         return promise
@@ -266,9 +243,7 @@ public class DispatchTask {
     public func request() -> Bool {
         self.requestQueue.sync {
             guard self.item == nil
-            else {
-                return false
-            }
+            else { return false }
 
             self.item = DispatchWorkItem( qos: self.qos ) {
                 self.requestQueue.sync { self.item = nil }

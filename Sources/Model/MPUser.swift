@@ -66,49 +66,55 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
                self.file.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
                 self.observers.notify { $0.userDidChange( self ) }
             }
+
+            if self.biometricLock {
+                if let passwordKeyFactory = self.masterKeyFactory as? MPPasswordKeyFactory {
+                    passwordKeyFactory.toKeychain().then { self.masterKeyFactory = $0 ?? passwordKeyFactory }
+                }
+            }
+            else {
+                for algorithm in MPAlgorithmVersion.allCases {
+                    MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm )
+                }
+                if self.masterKeyFactory is MPKeychainKeyFactory {
+                    self.masterKeyFactory = nil
+                }
+            }
         }
     }
     public var file:   UnsafeMutablePointer<MPMarshalledFile>
     public var origin: URL?
 
-    public var masterKeyProvider: MPMasterKeyProvider? {
+    public var masterKeyFactory: MPKeyFactory? {
         didSet {
+            if self.masterKeyFactory == nil {
+                dbg( "masterKeyFactory unset" )
+            }
             // TODO: self.identicon = mpw_identicon( self.fullName, masterPassword )
             DispatchQueue.mpw.promise {
                 if ({
-                        guard let masterKeyProvider = self.masterKeyProvider,
-                              let authKey = masterKeyProvider( self.algorithm, self.fullName )
+                        guard let masterKeyFactory = self.masterKeyFactory,
+                              let authKey = masterKeyFactory.newMasterKey( algorithm: self.algorithm )
                         else { return false }
-                        defer {
-                            authKey.deallocate()
-                        }
-
+                        defer { authKey.deallocate() }
                         guard let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) )
                         else { return false }
+
                         if self.masterKeyID == nil {
                             self.masterKeyID = authKeyID
                         }
+                        if self.masterKeyID != authKeyID {
+                            return false
+                        }
 
-                        return self.masterKeyID == authKeyID
+                        return true
                     }()) {
-                    self.use()
                     self.observers.notify { $0.userDidLogin( self ) }
                 }
                 else {
                     self.observers.notify { $0.userDidLogout( self ) }
                 }
             }
-        }
-    }
-    public var masterKey: MPMasterKey? {
-        get {
-            // TODO: MPKeychain.saveKey( for: self.fullName, masterKey: self.biometricLock ? masterKey: nil )
-            if let masterKeyProvider = self.masterKeyProvider,
-               let masterKey = masterKeyProvider( self.algorithm, self.fullName ) {
-                return masterKey
-            }
-
-            return nil
         }
     }
     public var sites = [ MPSite ]() {
@@ -135,7 +141,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     // MARK: --- Life ---
 
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
-         identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
+         identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil, masterKeyFactory: MPKeyFactory,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
          file: UnsafeMutablePointer<MPMarshalledFile> = mpw_marshal_file( nil, nil, nil )) {
         self.algorithm = algorithm ?? .current
@@ -148,9 +154,12 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
         self.origin = origin
         self.file = file
 
-        self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
-        self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
-        self.observers.register( observer: self )
+        defer {
+            self.masterKeyFactory = masterKeyFactory
+            self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
+            self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
+            self.observers.register( observer: self )
+        }
     }
 
     // MARK: Hashable

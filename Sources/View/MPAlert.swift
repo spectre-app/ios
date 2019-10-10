@@ -5,17 +5,18 @@
 
 import Foundation
 
-class MPAlertView: MPButton {
-    private let titleLabel    = UILabel()
-    private let messageLabel  = UILabel()
-    private let expandChevron = UILabel()
-    private let detailLabel   = UILabel()
+class MPAlert {
+    private var view: MPButton!
+    private lazy var titleLabel    = UILabel()
+    private lazy var messageLabel  = UILabel()
+    private lazy var expandChevron = UILabel()
+    private lazy var detailLabel   = UILabel()
 
-    private lazy var appearanceConfiguration = LayoutConfiguration( view: self ) { active, inactive in
+    private lazy var appearanceConfiguration = LayoutConfiguration( view: self.view ) { active, inactive in
         active.constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
         inactive.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.topAnchor ) }
     }
-    private lazy var activationConfiguration = LayoutConfiguration( view: self ) { (active, inactive) in
+    private lazy var activationConfiguration = LayoutConfiguration( view: self.view ) { (active, inactive) in
         active.apply( LayoutConfiguration( view: self.titleLabel ).set( MPTheme.global.font.title1.get(), forKey: "font" ) )
         active.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.title2.get(), forKey: "font" ) )
         active.apply( LayoutConfiguration( view: self.expandChevron ).set( true, forKey: "hidden" ) )
@@ -33,55 +34,58 @@ class MPAlertView: MPButton {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(title: String?, message: String? = nil, content: UIView? = nil, details: String? = nil) {
-        let contentStack = UIStackView( arrangedSubviews: [
-            self.titleLabel, self.messageLabel, content, self.expandChevron, self.detailLabel
-        ].compactMap { $0 } )
-        super.init( content: contentStack )
+    init(title: String?, message: String? = nil, content: @escaping @autoclosure (() -> (UIView?)) = nil, details: String? = nil) {
+        DispatchQueue.main.perform {
+            let content = content()
+            let contentStack = UIStackView( arrangedSubviews: [
+                self.titleLabel, self.messageLabel, content, self.expandChevron, self.detailLabel
+            ].compactMap { $0 } )
+            self.view = MPButton( content: contentStack )
 
-        // - View
-        self.darkBackground = true
-        if #available( iOS 11.0, * ) {
-            self.insetsLayoutMarginsFromSafeArea = true
+            // - View
+            self.view.darkBackground = true
+            if #available( iOS 11.0, * ) {
+                self.view.insetsLayoutMarginsFromSafeArea = true
+            }
+
+            self.titleLabel.text = title
+            self.titleLabel.textColor = MPTheme.global.color.body.get()
+            self.titleLabel.textAlignment = .center
+            self.titleLabel.numberOfLines = 0
+
+            self.messageLabel.text = message
+            self.messageLabel.textColor = MPTheme.global.color.secondary.get()
+            self.messageLabel.textAlignment = .center
+            self.messageLabel.numberOfLines = 0
+
+            if let spinner = content as? UIActivityIndicatorView {
+                spinner.startAnimating()
+            }
+
+            self.expandChevron.text = "▾"
+            self.expandChevron.textColor = MPTheme.global.color.body.get()
+            self.expandChevron.textAlignment = .center
+            self.expandChevron.font = MPTheme.global.font.callout.get()
+            self.expandChevron.setAlignmentRectInsets( UIEdgeInsets( top: 0, left: 0, bottom: 8, right: 0 ) )
+
+            self.detailLabel.text = details
+            self.detailLabel.textColor = MPTheme.global.color.body.get()
+            self.detailLabel.textAlignment = .center
+            self.detailLabel.numberOfLines = 0
+            self.detailLabel.font = MPTheme.global.font.footnote.get()
+
+            let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
+            dismissRecognizer.direction = .up
+            let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didActivateSwipe ) )
+            activateRecognizer.direction = .down
+            self.view.addGestureRecognizer( dismissRecognizer )
+            self.view.addGestureRecognizer( activateRecognizer )
+            self.view.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( self.didTap ) ) )
+
+            contentStack.axis = .vertical
+            contentStack.alignment = .center
+            contentStack.spacing = 8
         }
-
-        self.titleLabel.text = title
-        self.titleLabel.textColor = MPTheme.global.color.body.get()
-        self.titleLabel.textAlignment = .center
-        self.titleLabel.numberOfLines = 0
-
-        self.messageLabel.text = message
-        self.messageLabel.textColor = MPTheme.global.color.secondary.get()
-        self.messageLabel.textAlignment = .center
-        self.messageLabel.numberOfLines = 0
-
-        if let spinner = content as? UIActivityIndicatorView {
-            spinner.startAnimating()
-        }
-
-        self.expandChevron.text = "▾"
-        self.expandChevron.textColor = MPTheme.global.color.body.get()
-        self.expandChevron.textAlignment = .center
-        self.expandChevron.font = MPTheme.global.font.callout.get()
-        self.expandChevron.setAlignmentRectInsets( UIEdgeInsets( top: 0, left: 0, bottom: 8, right: 0 ) )
-
-        self.detailLabel.text = details
-        self.detailLabel.textColor = MPTheme.global.color.body.get()
-        self.detailLabel.textAlignment = .center
-        self.detailLabel.numberOfLines = 0
-        self.detailLabel.font = MPTheme.global.font.footnote.get()
-
-        let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( didDismissSwipe ) )
-        dismissRecognizer.direction = .up
-        let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( didActivateSwipe ) )
-        activateRecognizer.direction = .down
-        self.addGestureRecognizer( dismissRecognizer )
-        self.addGestureRecognizer( activateRecognizer )
-        self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
-
-        contentStack.axis = .vertical
-        contentStack.alignment = .center
-        contentStack.spacing = 8
     }
 
     @discardableResult
@@ -89,9 +93,9 @@ class MPAlertView: MPButton {
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
             if let root = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow {
-                root.addSubview( self )
+                root.addSubview( self.view )
 
-                LayoutConfiguration( view: self )
+                LayoutConfiguration( view: self.view )
                         .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                         .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                         .activate()
@@ -114,7 +118,7 @@ class MPAlertView: MPButton {
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
-                self.removeFromSuperview()
+                self.view.removeFromSuperview()
             } )
         }
     }
@@ -164,6 +168,6 @@ func mperror(title: String, context: CustomStringConvertible? = nil, details: Cu
     err( message )
 
     DispatchQueue.main.perform {
-        MPAlertView( title: title, message: context?.description, details: errorDetails ).show()
+        MPAlert( title: title, message: context?.description, details: errorDetails ).show()
     }
 }
