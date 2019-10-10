@@ -138,7 +138,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
          file: UnsafeMutablePointer<MPMarshalledFile> = mpw_marshal_file( nil, nil, nil )) {
-        self.algorithm = algorithm ?? .versionCurrent
+        self.algorithm = algorithm ?? .current
         self.avatar = avatar
         self.fullName = fullName
         self.identicon = identicon

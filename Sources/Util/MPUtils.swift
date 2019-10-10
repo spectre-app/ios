@@ -144,6 +144,22 @@ extension MPIdenticonColor {
     }
 }
 
+extension MPAlgorithmVersion: Strideable, CaseIterable, CustomStringConvertible {
+    public private(set) static var allCases = [ MPAlgorithmVersion ]( (.first)...(.last) )
+
+    public func distance(to other: MPAlgorithmVersion) -> Int32 {
+        Int32( other.rawValue ) - Int32( self.rawValue )
+    }
+
+    public func advanced(by n: Int32) -> MPAlgorithmVersion {
+        MPAlgorithmVersion( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
+    }
+
+    public var description: String {
+        "v\(self.rawValue)"
+    }
+}
+
 extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     public private(set) static var allCases = [ MPMarshalFormat ]( (.first)...(.last) )
 
@@ -180,7 +196,7 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
             case .JSON:
                 return "v2 (mpjson)"
             default:
-                fatalError( "Unsupported format: \(self)" )
+                fatalError( "Unsupported format: \(self.rawValue)" )
         }
     }
 }

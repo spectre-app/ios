@@ -508,7 +508,7 @@ class MPMarshal: Observable {
                     try FileManager.default.createDirectory(
                             at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
 
-                    var algorithm = MPAlgorithmVersion.versionCurrent
+                    var algorithm = MPAlgorithmVersion.current
                     if let userAlgorithm = user.version_??.uint32Value,
                        let userAlgorithmValue = MPAlgorithmVersion( rawValue: userAlgorithm ) {
                         algorithm = userAlgorithmValue
