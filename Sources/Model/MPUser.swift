@@ -87,9 +87,6 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
 
     public var masterKeyFactory: MPKeyFactory? {
         didSet {
-            if self.masterKeyFactory == nil {
-                dbg( "masterKeyFactory unset" )
-            }
             // TODO: self.identicon = mpw_identicon( self.fullName, masterPassword )
             DispatchQueue.mpw.promise {
                 if ({

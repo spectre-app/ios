@@ -15,14 +15,6 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
     // MARK: --- Life ---
 
-    override init(rootViewController: UIViewController) {
-        super.init( rootViewController: rootViewController )
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
-    }
-
     override func viewDidLoad() {
         self.delegate = self
         self.isNavigationBarHidden = true
@@ -37,24 +29,25 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     }
 
     override func viewWillAppear(_ animated: Bool) {
-//        self.visibleViewController?.view.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0 ).then()
-//                                        .scaleXY( 1000, 1000 ).makeAlpha( 1 ).easing( .easeOut ).duration( 1 ).animate()
+        self.visibleViewController?.view.makeAlpha( 0 ).duration( 0 ).then()
+                                        .makeAlpha( 1 ).easing( .easeOut ).duration( 1.5 ).animate()
 
         super.viewWillAppear( animated )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        //self.visibleViewController?.view?.scaleXY( 1 / 1000, 1 / 1000 ).makeAlpha( 0 ).duration( 0.382 ).animate()
+        self.visibleViewController?.view?.makeAlpha( 0 ).duration( 1 ).animate()
 
         super.viewWillDisappear( animated )
     }
 
     // MARK: --- UINavigationControllerDelegate ---
 
-//    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController)
-//                    -> UIViewControllerAnimatedTransitioning? {
-//        self.transition
-//    }
+    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation,
+                              from fromVC: UIViewController, to toVC: UIViewController)
+                    -> UIViewControllerAnimatedTransitioning? {
+        self.transition
+    }
 
     class MPNavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
 
@@ -85,7 +78,7 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
                 }, completion: { finished in
                     fromView.transform = .identity
                 } )
-                UIView.animate( withDuration: 2, delay: 0, usingSpringWithDamping: 0.618, initialSpringVelocity: 0,
+                UIView.animate( withDuration: 1.5, delay: 0, usingSpringWithDamping: 0.618, initialSpringVelocity: 0,
                                 options: .curveEaseOut, animations: {
                     toView.alpha = 1
                     toView.transform = .identity
