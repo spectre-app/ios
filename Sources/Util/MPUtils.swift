@@ -5,6 +5,8 @@
 
 import Foundation
 
+let productName = "paX"
+
 let resultTypes = [
     MPResultType.templateMaximum, MPResultType.templateLong, MPResultType.templateMedium, MPResultType.templateShort,
     MPResultType.templateBasic, MPResultType.templatePIN, MPResultType.templateName, MPResultType.templatePhrase,

@@ -53,9 +53,9 @@ open class DataSource<E: Hashable> {
 
     open func update(_ updatedSectionsOfElements: [[E?]],
                      reload: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: [E?]? = nil,
-                     completion: ((Bool) -> Void)? = nil) {
+                     animated: Bool = true, completion: ((Bool) -> Void)? = nil) {
         if updatedSectionsOfElements == self.sectionsOfElements {
-            self.perform( completion: completion ) {
+            self.perform( animated: animated, completion: completion ) {
                 var reloadPaths = reloadPaths ?? []
                 for section in self.sectionsOfElements.indices {
                     let elements = self.sectionsOfElements[section]
@@ -75,7 +75,7 @@ open class DataSource<E: Hashable> {
             return
         }
 
-        self.perform( completion: completion ) {
+        self.perform( animated: animated, completion: completion ) {
             // Figure out how the section items have changed.
             var oldElements = Set<E?>()
             var deletePaths = [ IndexPath ]()
@@ -166,9 +166,9 @@ open class DataSource<E: Hashable> {
     }
 
     @discardableResult
-    open func remove(_ item: E, completion: ((Bool) -> Void)? = nil) -> Bool {
+    open func remove(_ item: E, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
         if let indexPath = self.indexPath( for: item ) {
-            self.perform( completion: completion ) {
+            self.perform( animated: animated, completion: completion ) {
                 self.sectionsOfElements[indexPath.section].remove( at: indexPath.item )
                 self.collectionView?.deleteItems( at: [ indexPath ] )
                 self.tableView?.deleteRows( at: [ indexPath ], with: .automatic )
@@ -181,19 +181,28 @@ open class DataSource<E: Hashable> {
 
     // MARK: --- Private ---
 
-    private func perform(completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
+    private func perform(animated: Bool = true, completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
         DispatchQueue.main.perform {
-            if #available( iOS 11.0, * ) {
-                self.tableView?.performBatchUpdates( updates, completion: completion )
-            }
-            else {
-                self.tableView?.beginUpdates()
-                updates()
-                self.tableView?.endUpdates()
-                completion?( true )
+            let task = {
+                if #available( iOS 11.0, * ) {
+                    self.tableView?.performBatchUpdates( updates, completion: completion )
+                }
+                else {
+                    self.tableView?.beginUpdates()
+                    updates()
+                    self.tableView?.endUpdates()
+                    completion?( true )
+                }
+
+                self.collectionView?.performBatchUpdates( updates, completion: completion )
             }
 
-            self.collectionView?.performBatchUpdates( updates, completion: completion )
+            if animated {
+                task()
+            }
+            else {
+                UIView.performWithoutAnimation( task )
+            }
         }
     }
 

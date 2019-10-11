@@ -14,45 +14,23 @@ class MPCoreData {
     private let privateManagedObjectContext = NSManagedObjectContext( concurrencyType: .privateQueueConcurrencyType )
 
     @discardableResult
-    public func perform(main: Bool = false, async: Bool = true, task: @escaping (NSManagedObjectContext) -> Void) -> Bool {
+    public func promise<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> Promise<V>) -> Promise<V>? {
         guard self.loadStore()
-        else {
-            return false
+        else { return nil }
+
+        let promise = Promise<V>()
+        let context = main ? self.mainManagedObjectContext: self.privateManagedObjectContext
+        context.perform {
+            do { try task( context ).then { promise.finish( $0 ) } }
+            catch { promise.finish( .failure( error ) ) }
         }
 
-        if !async {
-            return self.await {
-                task( $0 )
-                return true
-            }
-        }
-        else {
-            if main {
-                self.mainManagedObjectContext.perform { task( self.mainManagedObjectContext ) }
-            }
-            else {
-                self.privateManagedObjectContext.perform { task( self.privateManagedObjectContext ) }
-            }
-            return true
-        }
+        return promise
     }
 
     @discardableResult
-    public func await(main: Bool = false, task: @escaping (NSManagedObjectContext) -> Bool) -> Bool {
-        guard self.loadStore()
-        else {
-            return false
-        }
-
-        var success = false
-        if main {
-            self.mainManagedObjectContext.performAndWait { success = task( self.mainManagedObjectContext ) }
-        }
-        else {
-            self.privateManagedObjectContext.performAndWait { success = task( self.privateManagedObjectContext ) }
-        }
-
-        return success
+    public func promise<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> V) -> Promise<V>? {
+        self.promise( main: main ) { Promise( .success( try task( $0 ) ) ) }
     }
 
     private func loadStore() -> Bool {

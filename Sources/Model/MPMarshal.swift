@@ -19,7 +19,7 @@ class MPMarshal: Observable {
 
     private var saving            = [ MPUser ]()
     private let marshalQueue      = DispatchQueue( label: "marshal" )
-    private let defaults          = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? "mPass").marshal" )
+    private let defaults          = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? productName).marshal" )
     private let documentDirectory = (try? FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true ))
     private lazy var reloadTask = DispatchTask( queue: self.marshalQueue, qos: .userInitiated, deadline: .now() + .milliseconds( 300 ) ) {
@@ -35,7 +35,7 @@ class MPMarshal: Observable {
 
     private func doReload() {
         // Import legacy users
-        self.importLegacy( async: false )
+        _ = try? self.importLegacy().await()
 
         // Reload users
         self.userFiles = self.userDocuments().compactMap { self.userFile( at: $0 ) }
@@ -159,7 +159,7 @@ class MPMarshal: Observable {
         DispatchQueue.mpw.promise {
             guard let importingFile = self.userFile( for: data )
             else {
-                mperror( title: "Issue importing", context: "Not an \(PearlInfoPlist.get().cfBundleDisplayName ?? "mPass") import document" )
+                mperror( title: "Issue importing", context: "Not an \(PearlInfoPlist.get().cfBundleDisplayName ?? productName) import document" )
                 return Promise( .success( false ) )
             }
             guard let importingName = String( safeUTF8: importingFile.fullName )
@@ -233,7 +233,7 @@ class MPMarshal: Observable {
                                     }
                                 }
 
-                                self.import( data: data, from: importingFile, into: existingFile ).then( promise )
+                                self.import( data: data, from: importingFile, into: existingFile ).then { promise.finish( $0 ) }
                             }
                             else {
                                 promise.finish( .success( false ) )
@@ -258,14 +258,14 @@ class MPMarshal: Observable {
                 }
 
                 spinner.show( dismissAutomatically: false )
-                authentication.then {
+                authentication.then( on: .main ) {
                     spinner.dismiss()
 
                     switch $0 {
                         case .success(let (importedUser, existedUser)):
                             if let importedUser = importedUser,
                                let existedUser = existedUser {
-                                self.import( from: importedUser, into: existedUser ).then( promise )
+                                self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
                             }
                             else if let importedUser = importedUser {
                                 let passwordField = MPMasterPasswordField( userFile: existingFile )
@@ -292,7 +292,7 @@ class MPMarshal: Observable {
                                             }
                                         }
 
-                                        self.import( data: data, from: importingFile, into: existingFile ).then( promise )
+                                        self.import( data: data, from: importingFile, into: existingFile ).then { promise.finish( $0 ) }
                                     }
                                     else {
                                         promise.finish( .success( false ) )
@@ -314,7 +314,7 @@ class MPMarshal: Observable {
 
                                         switch $0 {
                                             case .success(let existedUser):
-                                                self.import( from: importedUser, into: existedUser ).then( promise )
+                                                self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
 
                                             case .failure(let error):
                                                 mperror( title: "Issue importing", context: existingFile.fullName, details: error.localizedDescription )
@@ -352,7 +352,7 @@ class MPMarshal: Observable {
 
                                         switch $0 {
                                             case .success(let importedUser):
-                                                self.import( from: importedUser, into: existedUser ).then( promise )
+                                                self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
 
                                             case .failure(let error):
                                                 mperror( title: "Issue importing", context: importingFile.fullName, details: error.localizedDescription )
@@ -468,138 +468,133 @@ class MPMarshal: Observable {
         }
     }
 
-    public func hasLegacy() -> Bool {
-        MPCoreData.shared.await {
-            (try? $0.count( for: MPUserEntity.fetchRequest() )) ?? -1 > 0
-        }
+    public func hasLegacy() -> Promise<Bool> {
+        MPCoreData.shared.promise {
+            (try $0.count( for: MPUserEntity.fetchRequest() )) > 0
+        } ?? Promise( .success( false ) )
     }
 
     @discardableResult
-    public func importLegacy(async: Bool = true, force: Bool = false) -> Bool {
-        MPCoreData.shared.perform( async: async ) { context in
-            do {
-                for user: MPUserEntity_CoreData in try context.fetch( MPUserEntity.fetchRequest() ) {
-                    guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
-                    else {
-                        // Not a (saved) object.
-                        continue
-                    }
-                    guard force || !(self.defaults?.bool( forKey: objectID.uriRepresentation().absoluteString ) ?? false)
-                    else {
-                        // Already imported.
-                        continue
-                    }
-                    guard let fullName = user.name
-                    else {
-                        // Has no full name.
-                        continue
-                    }
-                    guard let documentURL = self.url( for: fullName, format: .default )
-                    else {
-                        // Cannot be saved.
-                        continue
-                    }
-                    try FileManager.default.createDirectory(
-                            at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
+    public func importLegacy(force: Bool = false) -> Promise<Bool> {
+        MPCoreData.shared.promise { context -> Promise<Bool> in
+            var promises = [ Promise<Bool> ]()
 
-                    var algorithm = MPAlgorithmVersion.current
-                    if let userAlgorithm = user.version_??.uint32Value,
-                       let userAlgorithmValue = MPAlgorithmVersion( rawValue: userAlgorithm ) {
-                        algorithm = userAlgorithmValue
-                    }
-                    var defaultType = MPResultType.default
-                    if let userDefaultType = user.defaultType_?.uint32Value,
-                       let userDefaultTypeValue = MPResultType( rawValue: userDefaultType ) {
-                        defaultType = userDefaultTypeValue
-                    }
+            for user: MPUserEntity_CoreData in try context.fetch( MPUserEntity.fetchRequest() ) {
+                guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
+                else {
+                    // Not a (saved) object.
+                    continue
+                }
+                guard force || !(self.defaults?.bool( forKey: objectID.uriRepresentation().absoluteString ) ?? false)
+                else {
+                    // Already imported.
+                    continue
+                }
+                guard let fullName = user.name
+                else {
+                    // Has no full name.
+                    continue
+                }
+                guard let documentURL = self.url( for: fullName, format: .default )
+                else {
+                    // Cannot be saved.
+                    continue
+                }
+                try FileManager.default.createDirectory(
+                        at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
 
-                    guard let marshalledUser = mpw_marshal_user( fullName, nil, algorithm )
+                var algorithm = MPAlgorithmVersion.current
+                if let userAlgorithm = user.version_??.uint32Value,
+                   let userAlgorithmValue = MPAlgorithmVersion( rawValue: userAlgorithm ) {
+                    algorithm = userAlgorithmValue
+                }
+                var defaultType = MPResultType.default
+                if let userDefaultType = user.defaultType_?.uint32Value,
+                   let userDefaultTypeValue = MPResultType( rawValue: userDefaultType ) {
+                    defaultType = userDefaultTypeValue
+                }
+
+                guard let marshalledUser = mpw_marshal_user( fullName, nil, algorithm )
+                else {
+                    throw MPError.internal( details: "Couldn't allocate to marshal \(fullName)" )
+                }
+                marshalledUser.pointee.redacted = true
+                marshalledUser.pointee.avatar = user.avatar_?.uint32Value ?? 0
+                marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( user.keyID?.hexEncodedString() ) )
+                marshalledUser.pointee.defaultType = defaultType
+                marshalledUser.pointee.lastUsed = Int( user.lastUsed?.timeIntervalSince1970 ?? 0 )
+
+                for site: MPSiteEntity_CoreData in user.sites ?? [] {
+                    guard let siteName = site.name
                     else {
-                        throw MPError.internal( details: "Couldn't allocate to marshal \(fullName)" )
+                        // Has no site name.
+                        continue
                     }
-                    marshalledUser.pointee.redacted = true
-                    marshalledUser.pointee.avatar = user.avatar_?.uint32Value ?? 0
-                    marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( user.keyID?.hexEncodedString() ) )
-                    marshalledUser.pointee.defaultType = defaultType
-                    marshalledUser.pointee.lastUsed = Int( user.lastUsed?.timeIntervalSince1970 ?? 0 )
 
-                    for site: MPSiteEntity_CoreData in user.sites ?? [] {
-                        guard let siteName = site.name
+                    var counter = MPCounterValue.initial
+                    if let site = site as? MPGeneratedSiteEntity,
+                       let siteCounter = site.counter_?.uint32Value,
+                       let siteCounterValue = MPCounterValue( rawValue: siteCounter ) {
+                        counter = siteCounterValue
+                    }
+                    var type = defaultType
+                    if let siteType = site.type_?.uint32Value,
+                       let siteTypeValue = MPResultType( rawValue: siteType ) {
+                        type = siteTypeValue
+                    }
+                    var algorithm = algorithm
+                    if let siteAlgorithm = site.version_?.uint32Value,
+                       let siteAlgorithmValue = MPAlgorithmVersion( rawValue: siteAlgorithm ) {
+                        algorithm = siteAlgorithmValue
+                    }
+
+                    guard let marshalledSite = mpw_marshal_site( marshalledUser, siteName, type, counter, algorithm )
+                    else {
+                        throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" )
+                    }
+                    marshalledSite.pointee.resultState =
+                            UnsafePointer( mpw_strdup( (site as? MPStoredSiteEntity)?.contentObject?.base64EncodedString() ) )
+                    marshalledSite.pointee.loginType =
+                            (site.loginGenerated_?.boolValue ?? true || site.loginName == nil) ? .templateName: .statefulPersonal
+                    marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( site.loginName ) )
+                    marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ?? nil ) )
+                    marshalledSite.pointee.uses = site.uses_?.uint32Value ?? 0
+                    marshalledSite.pointee.lastUsed = Int( site.lastUsed?.timeIntervalSince1970 ?? 0 )
+
+                    for siteQuestion in site.questions?.seq( MPSiteQuestionEntity_CoreData.self ) ?? [] {
+                        guard mpw_marshal_question( marshalledSite, siteQuestion.keyword ) != nil
                         else {
-                            // Has no site name.
-                            continue
+                            throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
                         }
-
-                        var counter = MPCounterValue.initial
-                        if let site = site as? MPGeneratedSiteEntity,
-                           let siteCounter = site.counter_?.uint32Value,
-                           let siteCounterValue = MPCounterValue( rawValue: siteCounter ) {
-                            counter = siteCounterValue
-                        }
-                        var type = defaultType
-                        if let siteType = site.type_?.uint32Value,
-                           let siteTypeValue = MPResultType( rawValue: siteType ) {
-                            type = siteTypeValue
-                        }
-                        var algorithm = algorithm
-                        if let siteAlgorithm = site.version_?.uint32Value,
-                           let siteAlgorithmValue = MPAlgorithmVersion( rawValue: siteAlgorithm ) {
-                            algorithm = siteAlgorithmValue
-                        }
-
-                        guard let marshalledSite = mpw_marshal_site( marshalledUser, siteName, type, counter, algorithm )
-                        else {
-                            throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" )
-                        }
-                        marshalledSite.pointee.resultState =
-                                UnsafePointer( mpw_strdup( (site as? MPStoredSiteEntity)?.contentObject?.base64EncodedString() ) )
-                        marshalledSite.pointee.loginType =
-                                (site.loginGenerated_?.boolValue ?? true || site.loginName == nil) ? .templateName: .statefulPersonal
-                        marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( site.loginName ) )
-                        marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ?? nil ) )
-                        marshalledSite.pointee.uses = site.uses_?.uint32Value ?? 0
-                        marshalledSite.pointee.lastUsed = Int( site.lastUsed?.timeIntervalSince1970 ?? 0 )
-
-                        for siteQuestion in site.questions?.seq( MPSiteQuestionEntity_CoreData.self ) ?? [] {
-                            guard mpw_marshal_question( marshalledSite, siteQuestion.keyword ) != nil
-                            else {
-                                throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
-                            }
-                        }
-                    }
-
-                    var file_ptr = mpw_marshal_file( nil, nil, nil )
-                    defer {
-                        mpw_marshal_file_free( &file_ptr )
-                    }
-                    guard let file = file_ptr
-                    else {
-                        throw MPError.internal( details: "Couldn't allocate import file." )
-                    }
-
-                    if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
-                                          deallocate: true )?.data( using: .utf8 ),
-                       file.pointee.error.type == .success {
-                        // TODO: replace by proper promise handling
-                        let importGroup = DispatchGroup()
-                        importGroup.enter()
-                        self.import( data: data ).then {
-                            if (try? $0.get()) ?? false {
-                                self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
-                            }
-                            importGroup.leave()
-                        }
-                        importGroup.wait()
-                    }
-                    else {
-                        throw file.pointee.error
                     }
                 }
+
+                var file_ptr = mpw_marshal_file( nil, nil, nil )
+                defer {
+                    mpw_marshal_file_free( &file_ptr )
+                }
+                guard let file = file_ptr
+                else {
+                    throw MPError.internal( details: "Couldn't allocate import file." )
+                }
+
+                if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
+                                      deallocate: true )?.data( using: .utf8 ),
+                   file.pointee.error.type == .success {
+                    // TODO: replace by proper promise handling
+                    promises.append( self.import( data: data ).then {
+                        if (try? $0.get()) ?? false {
+                            self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
+                        }
+                    } )
+                }
+                else {
+                    throw file.pointee.error
+                }
             }
-            catch {
-                mperror( title: "Couldn't load legacy users", error: error )
-            }
-        }
+
+            return Promise<Bool>( reducing: promises, from: true ) { $0 && $1 }
+        } ?? Promise( .success( false ) )
     }
 
     private func userDocuments() -> [URL] {
@@ -652,7 +647,7 @@ class MPMarshal: Observable {
         }
 
         func text() -> String {
-            let appName    = PearlInfoPlist.get().cfBundleDisplayName ?? "mPass"
+            let appName    = PearlInfoPlist.get().cfBundleDisplayName ?? productName
             let appVersion = PearlInfoPlist.get().cfBundleShortVersionString ?? "-"
             let appBuild   = PearlInfoPlist.get().cfBundleVersion ?? "-"
 

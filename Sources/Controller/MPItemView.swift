@@ -18,7 +18,11 @@ class Item<M>: NSObject {
             self.setNeedsUpdate()
         }
     }
-    private(set) var hidden = false
+    var hidden = false {
+        didSet {
+            self.setNeedsUpdate()
+        }
+    }
 
     private let title:    String?
     private let caption:  String?
@@ -63,7 +67,6 @@ class Item<M>: NSObject {
             super.init( frame: .zero )
 
             // - View
-            self.isHidden = self.item.hidden
             self.translatesAutoresizingMaskIntoConstraints = false
 
             self.contentView.axis = .vertical
@@ -74,7 +77,8 @@ class Item<M>: NSObject {
             self.titleLabel.textColor = MPTheme.global.color.body.get()
             self.titleLabel.textAlignment = .center
             self.titleLabel.font = MPTheme.global.font.headline.get()
-            self.contentView.addArrangedSubview( self.titleLabel )
+            self.contentView.addArrangedSubview(
+                    MPMarginView( for: self.titleLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
 
             if let valueView = self.createValueView() {
                 self.contentView.addArrangedSubview( valueView )
@@ -91,7 +95,8 @@ class Item<M>: NSObject {
             self.captionLabel.textAlignment = .center
             self.captionLabel.font = MPTheme.global.font.caption1.get()
             self.captionLabel.numberOfLines = 0
-            self.contentView.addArrangedSubview( self.captionLabel )
+            self.contentView.addArrangedSubview(
+                    MPMarginView( for: self.captionLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
 
             // - Hierarchy
             self.addSubview( self.contentView )
@@ -121,6 +126,8 @@ class Item<M>: NSObject {
         }
 
         func update() {
+            self.isHidden = self.item.hidden
+
             self.titleLabel.text = self.item.title
             self.titleLabel.isHidden = self.item.title == nil
 

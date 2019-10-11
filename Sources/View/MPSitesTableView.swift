@@ -67,40 +67,45 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     func doUpdate() {
         DispatchQueue.global().async { [weak self] in
-            guard let self = self, let user = self.user, user.masterKeyFactory != nil
+            guard let self = self
             else { return }
 
-            // Determine search state and filter user sites
-            var selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedSite } )?.element
-            let selectionFollowsQuery = self.newSiteResult === selectedResult || selectedResult?.exact ?? false
-            let results = MPQuery( self.query ).find( user.sites.sorted() ) { $0.siteName }
-            let exactResult = results.first { $0.exact }
-            var resultSource: [[MPQuery.Result<MPSite>?]] = [ results ]
+            var selectedResult: MPQuery.Result<MPSite>?
+            var resultSource = [ [ MPQuery.Result<MPSite>? ] ]()
+            if let user = self.user, user.masterKeyFactory != nil {
 
-            // Add "new site" result if there is a query and no exact result
-            if let query = self.query,
-               !query.isEmpty, exactResult == nil {
-                self.newSiteResult?.value.siteName = query
+                // Determine search state and filter user sites
+                selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedSite } )?.element
+                let selectionFollowsQuery = self.newSiteResult === selectedResult || selectedResult?.exact ?? false
+                let results = MPQuery( self.query ).find( user.sites.sorted() ) { $0.siteName }
+                let exactResult = results.first { $0.exact }
+                resultSource.append( results )
 
-                if self.newSiteResult == nil || LiefsteCell.is( result: self.newSiteResult ) {
-                    self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, siteName: query ), keySupplier: { $0.siteName } )
+                // Add "new site" result if there is a query and no exact result
+                if let query = self.query,
+                   !query.isEmpty, exactResult == nil {
+                    self.newSiteResult?.value.siteName = query
+
+                    if self.newSiteResult == nil || LiefsteCell.is( result: self.newSiteResult ) {
+                        self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, siteName: query ), keySupplier: { $0.siteName } )
+                    }
+
+                    self.newSiteResult?.matches( query: query )
+                    resultSource.append( [ self.newSiteResult ] )
+                }
+                else {
+                    self.newSiteResult = nil
                 }
 
-                self.newSiteResult?.matches( query: query )
-                resultSource.append( [ self.newSiteResult ] )
-            }
-            else {
-                self.newSiteResult = nil
-            }
-
-            // Special case for selected site: keep selection on the site result that matches the query
-            if selectionFollowsQuery {
-                selectedResult = exactResult ?? self.newSiteResult
-            }
-            if self.newSiteResult != selectedResult,
-               let selectedResult_ = selectedResult,
-               !results.contains( selectedResult_ ) {
-                selectedResult = nil
+                // Special case for selected site: keep selection on the site result that matches the query
+                if selectionFollowsQuery {
+                    selectedResult = exactResult ?? self.newSiteResult
+                }
+                if self.newSiteResult != selectedResult,
+                   let selectedResult_ = selectedResult,
+                   !results.contains( selectedResult_ ) {
+                    selectedResult = nil
+                }
             }
 
             // Update the sites table to show the newly filtered sites
@@ -108,8 +113,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 guard let self = self
                 else { return }
 
-                self.resultSource.update( resultSource )
-                //self.updateDataSource( self.data, toSections: newSites, reloadItems: nil, with: self.isInitial ? .none: .automatic )
+                self.resultSource.update( resultSource, animated: !self.isInitial )
                 self.isInitial = false
 
                 // Light-weight reload the cell content without fully reloading the cell rows.
@@ -223,7 +227,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
 
-        private var mode = MPKeyPurpose.authentication {
+        private var mode        = MPKeyPurpose.authentication {
             didSet {
                 self.update()
             }
@@ -411,7 +415,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     class LiefsteCell: UITableViewCell {
         private let emitterView = MPEmitterView()
         private let propLabel   = UILabel()
-        private var player      : AVPlayer?
+        private var player: AVPlayer?
 
         class func `is`(result: MPQuery.Result<MPSite>?) -> Bool {
             result?.value.siteName == "liefste"

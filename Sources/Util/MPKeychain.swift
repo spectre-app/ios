@@ -51,7 +51,7 @@ public class MPKeychain {
     @discardableResult
     public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext) -> Promise<Bool> {
         DispatchQueue.mpw.promise { () -> Bool in
-            assert( !Thread.current.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
+            assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
             guard let query = self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )
             else { return false }
@@ -63,7 +63,7 @@ public class MPKeychain {
                 kSecValueData: Data( bytes: masterKey, count: MPMasterKeySize ),
                 kSecAttrSynchronizable: false,
                 kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(fullName)",
-                kSecAttrDescription: "Master Password master key (\(algorithm))",
+                kSecAttrDescription: "\(productName) master key (\(algorithm))",
             ]
 
             let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access key for:\n\(fullName)",
@@ -118,7 +118,7 @@ public class MPKeychain {
 
     public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws -> Promise<MPMasterKey> {
         DispatchQueue.mpw.promise { () -> MPMasterKey in
-            assert( !Thread.current.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
+            assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
             guard var query = self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )
             else { throw MPError.internal( details: "Biometrics keychain unavailable." ) }

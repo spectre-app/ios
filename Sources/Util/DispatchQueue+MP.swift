@@ -7,6 +7,10 @@ import Foundation
 
 extension DispatchQueue {
     public static var mpw = DispatchQueue( label: "mpw", qos: .utility )
+    public var isActive: Bool {
+        (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
+                self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) )
+    }
 
     private static let threadLabelsKey = "DispatchQueue+MP"
     private var threadLabels: Set<String> {
@@ -28,8 +32,7 @@ extension DispatchQueue {
     /** Performs the work asynchronously, unless queue is main and already on the main thread, then perform synchronously. */
     public func perform(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping @convention(block) () -> Void) {
-        if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
-                   self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
+        if self.isActive {
             // Already in the queue's thread.
             group?.enter()
             let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
@@ -59,8 +62,7 @@ extension DispatchQueue {
 
     /** Performs the work synchronously, returning the work's result. */
     public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows -> T {
-        if (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
-                   self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) ) {
+        if self.isActive {
             // Already in the queue's thread.
             var threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
             defer {
@@ -87,11 +89,11 @@ extension DispatchQueue {
     }
 
     @discardableResult
-    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) -> Promise<V> {
+    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
         let promise = Promise<V>()
 
         self.perform( flags: flags ) {
-            do { promise.finish( .success( try work() ) ) }
+            do { try work().then { promise.finish( $0 ) } }
             catch { promise.finish( .failure( error ) ) }
         }
 
@@ -99,21 +101,14 @@ extension DispatchQueue {
     }
 
     @discardableResult
-    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
-        let promise = Promise<V>()
-
-        self.promise {
-            do { try work().then( promise ) }
-            catch { promise.finish( .failure( error ) ) }
-        }
-
-        return promise
+    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) -> Promise<V> {
+        self.promise { Promise( .success( try work() ) ) }
     }
 }
 
 public class Promise<V> {
     private var result: Result<V, Error>?
-    private var consumers = [ (Result<V, Error>) -> () ]()
+    private var targets = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> ()) ]()
 
     public init(_ result: Result<V, Error>? = nil) {
         if let result = result {
@@ -121,34 +116,57 @@ public class Promise<V> {
         }
     }
 
+    public convenience init(reducing promises: [Promise<V>], from value: V, _ partialResult: @escaping (V, V) throws -> V) {
+        if promises.isEmpty {
+            self.init( .success( value ) )
+        }
+        else {
+            self.init()
+
+            var results = [ Result<V, Error>? ]( repeating: nil, count: promises.count )
+            for (p, promise) in promises.enumerated() {
+                promise.then {
+                    results[p] = $0
+
+                    if !results.contains( where: { $0 == nil } ) {
+                        do { self.finish( .success( try results.compactMap( { try $0?.get() } ).reduce( value, partialResult ) ) ) }
+                        catch { self.finish( .failure( error ) ) }
+                    }
+                }
+            }
+        }
+    }
+
     public func finish(_ result: Result<V, Error>) {
         self.result = result
-        self.consumers.forEach { $0( result ) }
+
+        self.targets.forEach { target in
+            if let queue = target.queue {
+                queue.perform { target.consumer( result ) }
+            }
+            else {
+                target.consumer( result )
+            }
+        }
     }
 
     @discardableResult
-    public func then(_ consumer: @escaping (Result<V, Error>) -> ()) -> Promise<V> {
-        if let result = self.result {
+    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> ()) -> Promise<V> {
+        if let result = self.result, queue?.isActive ?? true {
             consumer( result )
         }
         else {
-            self.consumers.append( consumer )
+            self.targets.append( (queue: queue, consumer: consumer) )
         }
 
         return self
     }
 
     @discardableResult
-    public func then(_ promise: Promise<V>) -> Promise<V> {
-        self.then( { promise.finish( $0 ) } )
-        return promise
-    }
-
-    @discardableResult
-    public func then<V2>(_ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
+    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
         let promise = Promise<V2>()
 
-        self.then( {
+        self.then( on: queue, {
             do { try promise.finish( .success( consumer( $0 ) ) ) }
             catch { promise.finish( .failure( error ) ) }
         } )
@@ -157,10 +175,10 @@ public class Promise<V> {
     }
 
     @discardableResult
-    public func then<V2>(_ consumer: @escaping (V) throws -> (V2)) -> Promise<V2> {
+    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> (V2)) -> Promise<V2> {
         let promise = Promise<V2>()
 
-        self.then( {
+        self.then( on: queue, {
             switch $0 {
                 case .success(let value):
                     do { try promise.finish( .success( consumer( value ) ) ) }
@@ -175,11 +193,11 @@ public class Promise<V> {
     }
 
     @discardableResult
-    public func then<V2>(_ consumer: @escaping (Result<V, Error>) throws -> (Promise<V2>)) -> Promise<V2> {
+    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> (Promise<V2>)) -> Promise<V2> {
         let promise = Promise<V2>()
 
-        self.then( {
-            do { try consumer( $0 ).then( promise ) }
+        self.then( on: queue, {
+            do { try consumer( $0 ).then { promise.finish( $0 ) } }
             catch { promise.finish( .failure( error ) ) }
         } )
 

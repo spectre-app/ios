@@ -27,7 +27,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
     class VersionItem: LabelItem<Void> {
         init() {
-            super.init( title: "\(PearlInfoPlist.get().cfBundleDisplayName ?? "mPass")" ) { _ in
+            super.init( title: "\(PearlInfoPlist.get().cfBundleDisplayName ?? productName)" ) { _ in
                 (PearlInfoPlist.get().cfBundleShortVersionString, PearlInfoPlist.get().cfBundleVersion)
             }
         }
@@ -47,16 +47,15 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
     }
 
     class LegacyItem: ButtonItem<Void> {
-        override var hidden: Bool {
-            !MPMarshal.shared.hasLegacy()
-        }
-
         init() {
             super.init( title: "Legacy Data", itemValue: { _ in
                 ("Re-Import Legacy Users", nil)
             } ) { _ in
                 MPMarshal.shared.importLegacy( force: true )
             }
+
+            self.hidden = true
+            MPMarshal.shared.hasLegacy().then { self.hidden = !$0 }
         }
     }
 

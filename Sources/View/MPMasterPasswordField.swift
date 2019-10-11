@@ -155,19 +155,17 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if let authentication = self.authenticate( self.authentication ) {
-            authentication.then( { (result: Result<MPUser, Error>) in
-                DispatchQueue.main.async {
-                    switch result {
-                        case .success(let user):
-                            self.authenticated?( user )
+            authentication.then( on: .main ) { (result: Result<MPUser, Error>) in
+                switch result {
+                    case .success(let user):
+                        self.authenticated?( user )
 
-                        case .failure(let error):
-                            mperror( title: "Access Denied", context: error.localizedDescription )
-                            self.becomeFirstResponder()
-                            self.shake()
-                    }
+                    case .failure(let error):
+                        mperror( title: "Access Denied", context: error.localizedDescription )
+                        self.becomeFirstResponder()
+                        self.shake()
                 }
-            } )
+            }
             return true
         }
 

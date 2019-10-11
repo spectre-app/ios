@@ -60,6 +60,7 @@
 		93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */; };
 		93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
+		93D398FB645DCA89A4BCC5A2 /* MPMarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MPMarginView.swift */; };
 		93D399246DC90F50913A1287 /* UIResponder+PearlFirstResponder.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A1DDFA09AE2E14D26DC /* UIResponder+PearlFirstResponder.m */; };
 		93D3992FA1546E01F498F665 /* PearlNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D398567FD02DB2647B8CF3 /* PearlNavigationController.h */; };
 		93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
@@ -400,6 +401,7 @@
 		93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailsHostController.swift; sourceTree = "<group>"; };
 		93D395C767C420C02F11C44D /* MPCoreData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCoreData.swift; sourceTree = "<group>"; };
 		93D395FD92D751588A645D15 /* MPKeyFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeyFactory.swift; sourceTree = "<group>"; };
+		93D39613B68BCF56DD931C91 /* MPMarginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMarginView.swift; sourceTree = "<group>"; };
 		93D39633973C6D2EAB335D68 /* MPStarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPStarView.swift; sourceTree = "<group>"; };
 		93D3969393A3A46BD27D7078 /* mpw-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm.c"; sourceTree = "<group>"; };
 		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
@@ -921,6 +923,7 @@
 				93D3985EDA6E3B7A05799E2C /* MPTintField.swift */,
 				93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */,
 				93D3911FED606FAE34608C50 /* MPBackgroundView.swift */,
+				93D39613B68BCF56DD931C91 /* MPMarginView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2201,6 +2204,7 @@
 				93D39E31D32AFAF973C302E6 /* MPBackgroundView.swift in Sources */,
 				93D3961E8FACE81A8B060D5E /* MPKeychain.swift in Sources */,
 				93D39C94D7BFAAE6C4B1471F /* MPKeyFactory.swift in Sources */,
+				93D398FB645DCA89A4BCC5A2 /* MPMarginView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
