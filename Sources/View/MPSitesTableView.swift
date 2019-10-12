@@ -250,6 +250,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.isOpaque = false
             self.clipsToBounds = true
             self.backgroundColor = .clear
+            if #available(iOS 11, *) {
+                self.contentView.insetsLayoutMarginsFromSafeArea = false
+            }
+
             self.selectedBackgroundView = UIView()
             self.selectedBackgroundView?.backgroundColor = MPTheme.global.color.selection.get()
 
@@ -289,7 +293,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             LayoutConfiguration( view: self.resultLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.modeButton.trailingAnchor, constant: 4 ) }
-                    .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .fittingSizeLevel )
+                    .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .defaultLow )
                     .compressionResistancePriorityHorizontal( .defaultHigh - 1, vertical: .defaultHigh + 1 )
                     .activate()
 

@@ -14,9 +14,9 @@ class ConstraintResolver: CustomStringConvertible {
             self.constraints = self.scan()
         }
 
-        return self.constraints.sorted { $1.debugDescription > $0.debugDescription }.reduce( "" ) { description, constraint in
+        return self.constraints.sorted { $1.constraintDescription > $0.constraintDescription }.reduce( "" ) { description, constraint in
             if self.axis == nil || constraint.firstAttribute.on( axis: self.axis! ) || constraint.secondAttribute.on( axis: self.axis! ) {
-                return (description.isEmpty ? "": "\(description)\n") + constraint.debugDescription
+                return (description.isEmpty ? "": "\(description)\n") + constraint.constraintDescription
             }
 
             return description
@@ -147,7 +147,7 @@ class ConstraintResolver: CustomStringConvertible {
 }
 
 extension NSLayoutConstraint {
-    open override var description: String {
+    open var constraintDescription: String {
         var firstItem: String?, secondItem: String?, depth = 0
         var holder                                         = self.holder
         while holder != nil {
@@ -185,6 +185,10 @@ extension NSLayoutConstraint {
         }
 
         return self.debugDescription
+    }
+
+    open override var description: String {
+        self.constraintDescription
     }
 
     open var holder: UIView? {
