@@ -5,26 +5,28 @@
 
 import Foundation
 
-class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
+class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persisting {
     public let observers = Observers<MPSiteObserver>()
 
     public let user: MPUser
     public var siteName: String {
         didSet {
             if oldValue != self.siteName {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
 
                 // TODO: make efficient
-//                MPURLUtils.preview( url: self.siteName, result: { info in
-//                    self.color = info.color?.uiColor
-//                    self.image = info.imageData.flatMap { UIImage( data: $0 ) }
-//                } )
+                MPURLUtils.preview( url: self.siteName, result: { info in
+                    self.color = info.color?.uiColor
+                    self.image = info.imageData.flatMap { UIImage( data: $0 ) }
+                } )
             }
         }
     }
     public var algorithm: MPAlgorithmVersion {
         didSet {
             if oldValue != self.algorithm {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -32,6 +34,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var counter: MPCounterValue = .default {
         didSet {
             if oldValue != self.counter {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -39,6 +42,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var resultType: MPResultType {
         didSet {
             if oldValue != self.resultType {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -46,6 +50,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var loginType: MPResultType {
         didSet {
             if oldValue != self.loginType {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -54,6 +59,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var resultState: String? {
         didSet {
             if oldValue != self.resultState {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -61,6 +67,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var loginState: String? {
         didSet {
             if oldValue != self.loginState {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -69,6 +76,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var url: String? {
         didSet {
             if oldValue != self.url {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -76,6 +84,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var uses: UInt32 = 0 {
         didSet {
             if oldValue != self.uses {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -83,6 +92,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     public var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
+                self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
             }
         }
@@ -99,9 +109,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
             if (oldValue == nil) != (self.image == nil) {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
-            else if oldValue !== self.image,
-                    let oldValue = oldValue,
-                    let image = self.image,
+            else if oldValue !== self.image, let oldValue = oldValue, let image = self.image,
                     oldValue.pngData() == image.pngData() {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
@@ -109,6 +117,13 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable {
     }
     var description: String {
         "\(self.siteName)"
+    }
+    var dirty = false {
+        didSet {
+            if self.dirty {
+                self.user.dirty = true
+            }
+        }
     }
 
     // MARK: --- Life ---

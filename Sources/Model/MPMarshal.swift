@@ -73,10 +73,8 @@ class MPMarshal: Observable {
     }
 
     public func setNeedsSave(user: MPUser) {
-        guard !self.saving.contains( user )
-        else {
-            return
-        }
+        guard user.dirty, !self.saving.contains( user )
+        else { return }
 
         self.saving.append( user )
         self.marshalQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {

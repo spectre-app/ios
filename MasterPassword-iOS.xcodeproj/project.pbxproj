@@ -49,6 +49,7 @@
 		93D3964B458F9F940A790D6F /* UILayoutGuide+Pearl.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */; };
 		93D396AA30690B256F30378A /* PearlNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3956915634581E737B38C /* PearlNavigationController.m */; };
 		93D396BA1C74C4A06FD86437 /* PearlOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D3942A356B639724157982 /* PearlOverlay.h */; };
+		93D396BC81D6634C478E0881 /* Persisting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CB804B95B268383FCB2 /* Persisting.swift */; };
 		93D396CEFCFCA9BF0DB66DF8 /* MPTintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3995755BB75535CC37A47 /* MPTintView.swift */; };
 		93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */; };
 		93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
@@ -447,6 +448,7 @@
 		93D39BDA5DB85FCDE4E6450A /* PearlHangDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PearlHangDetector.m; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUsersViewController.swift; sourceTree = "<group>"; };
 		93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPResultTypeCell.swift; sourceTree = "<group>"; };
+		93D39CB804B95B268383FCB2 /* Persisting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persisting.swift; sourceTree = "<group>"; };
 		93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILabel+MPFontSize.m"; sourceTree = "<group>"; };
 		93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteDetailViewController.swift; sourceTree = "<group>"; };
 		93D39CF7DB942C69D1C5D6BE /* mpw-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-util.h"; sourceTree = "<group>"; };
@@ -949,6 +951,7 @@
 				93D397326B833076646FF697 /* DataSource.swift */,
 				93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */,
 				93D395FD92D751588A645D15 /* MPKeyFactory.swift */,
+				93D39CB804B95B268383FCB2 /* Persisting.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -2205,6 +2208,7 @@
 				93D3961E8FACE81A8B060D5E /* MPKeychain.swift in Sources */,
 				93D39C94D7BFAAE6C4B1471F /* MPKeyFactory.swift in Sources */,
 				93D398FB645DCA89A4BCC5A2 /* MPMarginView.swift in Sources */,
+				93D396BC81D6634C478E0881 /* Persisting.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

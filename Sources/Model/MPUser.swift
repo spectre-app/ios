@@ -5,13 +5,14 @@
 
 import Foundation
 
-class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteObserver, MPUserObserver {
+class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPSiteObserver, MPUserObserver {
     // TODO: figure out how to batch updates or suspend changes until sites marshalling/authenticate fully complete.
     public let observers = Observers<MPUserObserver>()
 
     public var algorithm: MPAlgorithmVersion {
         didSet {
             if oldValue != self.algorithm {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -19,6 +20,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var avatar: Avatar {
         didSet {
             if oldValue != self.avatar {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -27,6 +29,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var identicon: MPIdenticon {
         didSet {
             if oldValue != self.identicon {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -34,6 +37,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var masterKeyID: String? {
         didSet {
             if oldValue != self.masterKeyID {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -41,6 +45,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var defaultType: MPResultType {
         didSet {
             if oldValue != self.defaultType {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -48,6 +53,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -56,6 +62,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
         didSet {
             if oldValue != self.maskPasswords,
                self.file.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -64,6 +71,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
         didSet {
             if oldValue != self.biometricLock,
                self.file.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
+                self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
 
@@ -117,6 +125,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     public var sites = [ MPSite ]() {
         didSet {
             if oldValue != self.sites {
+                self.dirty = true
                 self.sites.forEach { site in site.observers.register( observer: self ) }
                 self.observers.notify { $0.userDidUpdateSites( self ) }
                 self.observers.notify { $0.userDidChange( self ) }
@@ -132,6 +141,11 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
         }
         else {
             return "\(self.fullName)"
+        }
+    }
+    var dirty = false {
+        didSet {
+            MPMarshal.shared.setNeedsSave( user: self )
         }
     }
 
@@ -182,13 +196,11 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, MPSiteO
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
-        MPMarshal.shared.setNeedsSave( user: self )
     }
 
     // MARK: --- MPUserObserver ---
 
     func userDidChange(_ user: MPUser) {
-        MPMarshal.shared.setNeedsSave( user: self )
     }
 
     // MARK: --- Interface ---
