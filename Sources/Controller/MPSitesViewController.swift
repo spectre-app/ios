@@ -58,7 +58,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
                 self.detailsHost.showDetails( MPUserDetailsViewController( model: self.user ) )
             }
         }
-        self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
+//        self.userButton.setImage( UIImage( named: "icon_user" ), for: .normal )
         self.userButton.sizeToFit()
 
         self.siteHeaderView.observers.register( observer: self )

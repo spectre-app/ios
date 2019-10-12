@@ -232,7 +232,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.update()
             }
         }
-        private let resultLabel = MPTintField()
+        private let resultLabel = UITextField()
         private let nameLabel   = UILabel()
         private let modeButton  = MPButton( image: nil, title: "" )
         private let copyButton  = MPButton( image: nil, title: "" )
@@ -441,10 +441,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.propLabel.text = "💁"
             self.propLabel.textAlignment = .center
             self.propLabel.font = MPTheme.global.font.largeTitle.get()
-            self.propLabel.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
-            self.propLabel.layer.shadowOpacity = 1
-            self.propLabel.layer.shadowOffset = .zero
             self.propLabel.layer.shadowRadius = 8
+            self.propLabel.layer.shadowOpacity = 0.618
+            self.propLabel.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
+            self.propLabel.layer.shadowOffset = .zero
 
             // - Hierarchy
             self.contentView.addSubview( self.emitterView )

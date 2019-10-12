@@ -15,7 +15,14 @@ class MPButton: UIView {
     public var effectBackground = true {
         didSet {
             DispatchQueue.main.perform {
-                self.effectView.effect = self.effectBackground ? UIBlurEffect( style: self.darkBackground ? .dark: .light ): nil
+                if #available( iOS 13, * ) {
+                    self.effectView.effect = self.effectBackground ? UIBlurEffect(
+                            style: self.darkBackground ? .systemUltraThinMaterialDark: .systemUltraThinMaterialLight ): nil
+                }
+                else {
+                    self.effectView.effect = self.effectBackground ? UIBlurEffect(
+                            style: self.darkBackground ? .dark: .light ): nil
+                }
             }
         }
     }
@@ -24,7 +31,6 @@ class MPButton: UIView {
             DispatchQueue.main.perform {
                 self.tintColor = self.darkBackground ? MPTheme.global.color.secondary.get(): MPTheme.global.color.backdrop.get()
                 self.effectBackground = self.effectBackground || self.effectBackground
-                //self.layer.shadowColor = (self.darkBackground ? MPTheme.global.color.shadow.get(): MPTheme.global.color.glow.get())?.cgColor
             }
         }
     }
@@ -91,9 +97,11 @@ class MPButton: UIView {
         self.init( content: button )
         self.button = button
 
-        self.button.setTitleShadowColor( .black, for: .normal )
+        self.button.setTitleShadowColor( UIColor.black.withAlphaComponent( 0.382 ), for: .normal )
+        self.button.titleLabel?.shadowOffset = self.button.layer.shadowOffset
+        self.button.layer.shadowOpacity = 0
+
         self.button.titleLabel?.font = MPTheme.global.font.headline.get()
-        self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addAction( for: .touchUpInside ) { _, _ in
             if self.tapEffect {
@@ -116,11 +124,15 @@ class MPButton: UIView {
             self.insetsLayoutMarginsFromSafeArea = false
         }
 
-        self.layer.shadowRadius = 8
-        self.layer.shadowOpacity = 0.382
-
+        self.effectView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 )
+        self.effectView.layer.borderWidth = 2
+        self.effectView.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
         self.effectView.layer.masksToBounds = true
-        self.effectView.layer.cornerRadius = 4
+
+        content.layer.shadowRadius = 0
+        content.layer.shadowOpacity = 0.382
+        content.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
+        content.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
         self.addSubview( self.effectView )
         self.effectView.contentView.addSubview( content )
@@ -135,7 +147,7 @@ class MPButton: UIView {
     }
 
     override func updateConstraints() {
-        self.effectView.layer.cornerRadius = self.round ? self.bounds.size.height / 2: 0
+        self.effectView.layer.cornerRadius = self.round ? self.bounds.size.height / 2: 4
         super.updateConstraints()
     }
 

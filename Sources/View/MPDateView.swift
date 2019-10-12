@@ -43,8 +43,9 @@ class MPDateView: UIView {
         self.layer.cornerRadius = 8
         self.layer.borderWidth = 3
         self.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
-        self.layer.shadowOpacity = 1
         self.layer.shadowRadius = 0
+        self.layer.shadowOpacity = 0.618
+        self.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.layer.shadowOffset = CGSize( width: 0, height: 1 )
         self.layer.masksToBounds = true
 

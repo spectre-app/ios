@@ -13,7 +13,7 @@ class MPAlert {
     private lazy var detailLabel   = UILabel()
 
     private lazy var appearanceConfiguration = LayoutConfiguration( view: self.view ) { active, inactive in
-        active.constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+        active.constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: -4 ) }
         inactive.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.topAnchor ) }
     }
     private lazy var activationConfiguration = LayoutConfiguration( view: self.view ) { (active, inactive) in
@@ -96,8 +96,8 @@ class MPAlert {
                 root.addSubview( self.view )
 
                 LayoutConfiguration( view: self.view )
-                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
                         .activate()
 
                 self.appearanceConfiguration.deactivate()

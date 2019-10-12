@@ -27,8 +27,9 @@ class MPItemCell: UICollectionViewCell {
         self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
         self.contentView.layer.borderWidth = 2
         self.contentView.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
-        self.contentView.layer.shadowOpacity = 1
         self.contentView.layer.shadowRadius = 0
+        self.contentView.layer.shadowOpacity = 0.618
+        self.contentView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
         self.contentView.layer.masksToBounds = true
 
