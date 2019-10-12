@@ -33,6 +33,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         super.viewDidLoad()
 
         self.view.tintColor = self.model.color
+        self.imageView.image = self.model.image
     }
 
     // MARK: --- MPSiteObserver ---

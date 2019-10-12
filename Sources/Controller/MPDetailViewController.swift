@@ -14,9 +14,11 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     public let model: M
 
     let backgroundView = MPTintView()
+    let imageView      = UIImageView()
     let itemsView      = UIStackView()
     let closeButton    = MPButton.closeButton()
-    lazy var items = self.loadItems()
+    lazy var items         = self.loadItems()
+    lazy var imageGradient = CAGradientLayer( layer: self.imageView.layer )
 
     // MARK: --- Interface ---
 
@@ -47,10 +49,19 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     override func viewDidLoad() {
 
         // - View
+        self.imageGradient.colors = [
+            UIColor.black.withAlphaComponent( 0.2 ).cgColor,
+            UIColor.black.withAlphaComponent( 0.05 ).cgColor,
+            UIColor.clear.cgColor ]
+        self.imageGradient.needsDisplayOnBoundsChange = true
+        self.imageView.layer.mask = self.imageGradient
+        self.imageView.contentMode = .scaleAspectFill
+        self.imageView.clipsToBounds = true
+
         self.backgroundView.layoutMargins = UIEdgeInsets( top: 20, left: 8, bottom: 20, right: 8 )
         self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.shadowRadius = 8
-        self.backgroundView.layer.shadowOpacity = 0.382
+        self.backgroundView.layer.shadowOpacity = 1
         self.backgroundView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.backgroundView.layer.shadowOffset = .zero
 
@@ -65,6 +76,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         }
 
         // - Hierarchy
+        self.backgroundView.addSubview( self.imageView )
         self.backgroundView.addSubview( self.itemsView )
         self.view.addSubview( self.backgroundView )
         self.view.addSubview( self.closeButton )
@@ -76,6 +88,10 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
+        LayoutConfiguration( view: self.imageView )
+                .constrainToOwner( withAnchors: .topBox )
+                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 200 ) }
+                .activate()
         LayoutConfiguration( view: self.itemsView )
                 .constrainToMarginsOfOwner( withAnchors: .vertically )
                 .constrainToOwner( withAnchors: .horizontally )
@@ -86,6 +102,12 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
                 .constrainTo { $1.centerYAnchor.constraint( equalTo: self.backgroundView.bottomAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        self.imageGradient.frame = self.imageView.bounds
     }
 }
 

@@ -44,11 +44,11 @@ extension MPKeyPurpose {
     func button() -> String {
         switch self {
             case .authentication:
-                return "p:"
+                return "pw"
             case .identification:
-                return "u:"
+                return "un"
             case .recovery:
-                return "a:"
+                return "sa"
             default:
                 fatalError( "Unsupported purpose: \(self)" )
         }

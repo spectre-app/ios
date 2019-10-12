@@ -63,7 +63,7 @@ class MPToggleButton: UIButton {
 
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
-           let background = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 ).cgColor,
+           let background = MPTheme.global.color.mute.get()?.cgColor,
            let border = MPTheme.global.color.body.get()?.cgColor {
             let content = self.bounds.inset( by: self.contentEdgeInsets )
                                      .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )
@@ -73,7 +73,7 @@ class MPToggleButton: UIButton {
             context.clip( using: .evenOdd )
             context.setFillColor( background )
             context.setStrokeColor( border )
-            context.setLineWidth( 2 )
+            context.setLineWidth( 1.5 )
             context.fillEllipse( in: content )
             context.strokeEllipse( in: content )
             context.resetClip()

@@ -387,7 +387,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             super.draw( rect )
 
             if let path = self.path, let context = UIGraphicsGetCurrentContext() {
-                MPTheme.global.color.glow.get()?.withAlphaComponent( 0.618 ).setStroke()
+                MPTheme.global.color.mute.get()?.setStroke()
                 context.addPath( path )
                 context.strokePath()
             }

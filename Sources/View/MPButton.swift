@@ -5,33 +5,11 @@
 
 import Foundation
 
-class MPButton: UIView {
+class MPButton: MPEffectView {
     public var tapEffect = true
     public var round     = false {
         didSet {
             self.setNeedsUpdateConstraints()
-        }
-    }
-    public var effectBackground = true {
-        didSet {
-            DispatchQueue.main.perform {
-                if #available( iOS 13, * ) {
-                    self.effectView.effect = self.effectBackground ? UIBlurEffect(
-                            style: self.darkBackground ? .systemUltraThinMaterialDark: .systemUltraThinMaterialLight ): nil
-                }
-                else {
-                    self.effectView.effect = self.effectBackground ? UIBlurEffect(
-                            style: self.darkBackground ? .dark: .light ): nil
-                }
-            }
-        }
-    }
-    public var darkBackground = false {
-        didSet {
-            DispatchQueue.main.perform {
-                self.tintColor = self.darkBackground ? MPTheme.global.color.secondary.get(): MPTheme.global.color.backdrop.get()
-                self.effectBackground = self.effectBackground || self.effectBackground
-            }
         }
     }
     public var image: UIImage? {
@@ -68,13 +46,16 @@ class MPButton: UIView {
                         self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
                         self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor ).isActive = true
                     case .small:
-                        self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
+                        self.button.contentEdgeInsets = UIEdgeInsets( top: 3, left: 5, bottom: 3, right: 5 )
                 }
             }
         }
     }
-
-    private let      effectView = UIVisualEffectView()
+    override var effectBackground: Bool {
+        didSet {
+            self.layer.borderWidth = self.effectBackground ? 1.5 : 0
+        }
+    }
     private(set) var button: UIButton!
     override var     bounds: CGRect {
         didSet {
@@ -97,15 +78,15 @@ class MPButton: UIView {
         self.init( content: button )
         self.button = button
 
-        self.button.setTitleShadowColor( UIColor.black.withAlphaComponent( 0.382 ), for: .normal )
+        self.button.setTitleShadowColor( MPTheme.global.color.shadow.get(), for: .normal )
         self.button.titleLabel?.shadowOffset = self.button.layer.shadowOffset
         self.button.layer.shadowOpacity = 0
 
-        self.button.titleLabel?.font = MPTheme.global.font.headline.get()
+        self.button.titleLabel?.font = MPTheme.global.font.callout.get()
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addAction( for: .touchUpInside ) { _, _ in
             if self.tapEffect {
-                MPTapEffectView( for: self.effectView ).run()
+                MPTapEffectView( for: self ).run()
             }
         }
 
@@ -118,36 +99,32 @@ class MPButton: UIView {
     }
 
     init(content: UIView) {
-        super.init( frame: .zero )
+        super.init()
 
         if #available( iOS 11.0, * ) {
             self.insetsLayoutMarginsFromSafeArea = false
         }
 
-        self.effectView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 )
-        self.effectView.layer.borderWidth = 2
-        self.effectView.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
-        self.effectView.layer.masksToBounds = true
+        self.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
+        self.layer.masksToBounds = true
 
         content.layer.shadowRadius = 0
-        content.layer.shadowOpacity = 0.382
+        content.layer.shadowOpacity = 1
         content.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         content.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
-        self.addSubview( self.effectView )
-        self.effectView.contentView.addSubview( content )
+        self.contentView.addSubview( content )
 
-        LayoutConfiguration( view: self.effectView ).constrainToOwner().activate()
         LayoutConfiguration( view: content ).constrain( toMarginsOf: self ).activate()
 
         defer {
-            self.effectBackground = true
             self.darkBackground = false
+            self.effectBackground = true
         }
     }
 
     override func updateConstraints() {
-        self.effectView.layer.cornerRadius = self.round ? self.bounds.size.height / 2: 4
+        self.layer.cornerRadius = self.round ? self.bounds.size.height / 2: 4
         super.updateConstraints()
     }
 

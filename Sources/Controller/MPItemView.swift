@@ -176,7 +176,7 @@ class SeparatorItem<M>: Item<M> {
         override func didLoad(valueView: UIView) {
             super.didLoad( valueView: valueView )
 
-            self.separatorView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.318 )
+            self.separatorView.backgroundColor = MPTheme.global.color.mute.get()
 
             LayoutConfiguration( view: self.separatorView )
                     .constrainTo { $1.heightAnchor.constraint( equalToConstant: 1 ) }

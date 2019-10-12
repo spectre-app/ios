@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPDateView: UIView {
+class MPDateView: MPEffectView {
     public var date: Date? {
         didSet {
             DispatchQueue.main.perform {
@@ -31,20 +31,20 @@ class MPDateView: UIView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init() {
-        super.init( frame: .zero )
+    override init() {
+        super.init()
 
         // - View
         self.monthFormatter.dateFormat = "MMM"
         self.dayFormatter.dateFormat = "dd"
 
-        self.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 )
+        //self.backgroundColor = MPTheme.global.color.mute.get()
         self.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
         self.layer.cornerRadius = 8
-        self.layer.borderWidth = 3
+        self.layer.borderWidth = 2
         self.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
         self.layer.shadowRadius = 0
-        self.layer.shadowOpacity = 0.618
+        self.layer.shadowOpacity = 1
         self.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.layer.shadowOffset = CGSize( width: 0, height: 1 )
         self.layer.masksToBounds = true
@@ -60,9 +60,9 @@ class MPDateView: UIView {
         self.dayLabel.font = MPTheme.global.font.largeTitle.get()
 
         // - Hierarchy
-        self.addSubview( self.separatorView )
-        self.addSubview( self.monthLabel )
-        self.addSubview( self.dayLabel )
+        self.contentView.addSubview( self.separatorView )
+        self.contentView.addSubview( self.monthLabel )
+        self.contentView.addSubview( self.dayLabel )
 
         // - Layout
         self.widthAnchor.constraint( equalTo: self.heightAnchor, constant: 0.618 ).activate()

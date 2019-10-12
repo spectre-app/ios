@@ -6,6 +6,7 @@
 import Foundation
 
 class MPItemCell: UICollectionViewCell {
+    let effectView = MPEffectView()
     override var isSelected: Bool {
         didSet {
             DispatchQueue.main.perform {
@@ -23,19 +24,23 @@ class MPItemCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.contentView.backgroundColor = MPTheme.global.color.glow.get()?.withAlphaComponent( 0.382 )
         self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
-        self.contentView.layer.borderWidth = 2
+        self.contentView.layer.borderWidth = 1.5
         self.contentView.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
         self.contentView.layer.shadowRadius = 0
-        self.contentView.layer.shadowOpacity = 0.618
+        self.contentView.layer.shadowOpacity = 1
         self.contentView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
         self.contentView.layer.masksToBounds = true
 
+        self.contentView.addSubview( self.effectView )
+
         LayoutConfiguration( view: self.contentView )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                 .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).withPriority( .defaultHigh ) }
+                .constrainToOwner()
+                .activate()
+        LayoutConfiguration( view: self.effectView )
                 .constrainToOwner()
                 .activate()
 

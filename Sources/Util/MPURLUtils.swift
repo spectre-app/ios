@@ -85,6 +85,7 @@ class MPURLUtils {
                 }
 
                 if let responseData = responseData {
+                    dbg("\(url): \(responseData.count)")
                     info.imageData = responseData
                     self.metadata[url] = info
                 }

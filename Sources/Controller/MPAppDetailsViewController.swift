@@ -97,8 +97,8 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
                 self.button.setTitleColor( MPTheme.global.color.body.get(), for: .normal )
                 self.button.setTitleShadowColor( MPTheme.global.color.shadow.get(), for: .normal )
-                self.button.titleLabel?.font = MPTheme.global.font.callout.get()
                 self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
+                self.button.titleLabel?.font = MPTheme.global.font.callout.get()
                 self.button.addAction( for: .touchUpInside ) { _, _ in
                     self.action?()
                 }

@@ -50,7 +50,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         self.dataSource = self
         self.backgroundColor = .clear
         self.isOpaque = false
-        self.separatorStyle = .none
+        self.separatorStyle = .singleLine
+        self.separatorColor = MPTheme.global.color.mute.get()
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -250,7 +251,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.isOpaque = false
             self.clipsToBounds = true
             self.backgroundColor = .clear
-            if #available(iOS 11, *) {
+            if #available( iOS 11, * ) {
                 self.contentView.insetsLayoutMarginsFromSafeArea = false
             }
 
@@ -270,7 +271,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.nameLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.modeButton.tapEffect = false
-            self.modeButton.darkBackground = true
+//            self.modeButton.darkBackground = true
+//            self.modeButton.effectBackground = false
             self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
             self.modeButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 

@@ -60,8 +60,8 @@ class MPBackgroundView: UIView {
     func update() {
         DispatchQueue.main.perform {
             self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-                MPTheme.global.color.brand.get()?.withAlphaComponent(0.618).cgColor,
-                MPTheme.global.color.brand.get()?.withAlphaComponent(0.382).cgColor,
+                MPTheme.global.color.brand.get()?.withAlphaComponent( 0.8 ).cgColor,
+                MPTheme.global.color.brand.get()?.withAlphaComponent( 1 ).cgColor,
             ] as CFArray, locations: nil )
             self.gradientPoint = self.bounds.top
             self.gradientPoint.y += (CGFloat( self.currentAttitude?.pitch ?? 0 ) / .pi) * 500

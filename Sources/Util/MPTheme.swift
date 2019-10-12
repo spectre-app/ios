@@ -43,6 +43,7 @@ public class MPTheme {
         public let shade:     Value<UIColor>
         public let shadow:    Value<UIColor>
         public let glow:      Value<UIColor>
+        public let mute:      Value<UIColor>
         public let selection: Value<UIColor>
         public let brand:     Value<UIColor>
     }
@@ -78,8 +79,22 @@ public class MPTheme {
                 caption1: Value( UIFont.preferredFont( forTextStyle: .caption1 ) ),
                 caption2: Value( UIFont.preferredFont( forTextStyle: .caption2 ) ),
                 footnote: Value( UIFont.preferredFont( forTextStyle: .footnote ) ),
-                password: Value( UIFont( name: "SourceCodePro-Black", size: 28 ) ),
-                mono: Value( .monospacedDigitSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) ) )
+                password: {
+                    if #available( iOS 12, * ) {
+                        return Value( .monospacedSystemFont( ofSize: 22, weight: .black ) )
+                    }
+                    else {
+                        return Value( .monospacedDigitSystemFont( ofSize: 22, weight: .black ) )
+                    }
+                }(),
+                mono: {
+                    if #available( iOS 12, * ) {
+                        return Value( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
+                    }
+                    else {
+                        return Value( .monospacedDigitSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
+                    }
+                }() )
         self.color = Colors(
                 body: Value( UIColor.white ),
                 secondary: Value( UIColor.lightText ),
@@ -87,8 +102,9 @@ public class MPTheme {
                 backdrop: Value( UIColor.darkGray ),
                 panel: Value( UIColor.black ),
                 shade: Value( UIColor.black.withAlphaComponent( 0.618 ) ),
-                shadow: Value( UIColor.black ),
+                shadow: Value( UIColor.black.withAlphaComponent( 0.382 ) ),
                 glow: Value( UIColor.white ),
+                mute: Value( UIColor.white.withAlphaComponent( 0.318 ) ),
                 selection: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.382 ) ),
                 brand: Value( UIColor( red: 0, green: 0.663, blue: 0.613, alpha: 1 ) ) )
     }
@@ -125,6 +141,7 @@ public class MPTheme {
                              shade: Value( parent: self.parent?.color.shade ),
                              shadow: Value( parent: self.parent?.color.shadow ),
                              glow: Value( parent: self.parent?.color.glow ),
+                             mute: Value( parent: self.parent?.color.mute ),
                              selection: Value( parent: self.parent?.color.selection ),
                              brand: Value( parent: self.parent?.color.brand ) )
 

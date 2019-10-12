@@ -32,18 +32,18 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
         // - View
         self.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
         self.layer.shadowRadius = 40
-        self.layer.shadowOpacity = 0.618
+        self.layer.shadowOpacity = 1
         self.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.layer.shadowOffset = .zero
 
         self.siteButton.imageView?.layer.cornerRadius = 4
         self.siteButton.imageView?.contentMode = .scaleAspectFill
         self.siteButton.imageView?.clipsToBounds = true
+        self.siteButton.titleLabel?.font = MPTheme.global.font.largeTitle.get()
         self.siteButton.layer.shadowRadius = 20
-        self.siteButton.layer.shadowOpacity = 0.382
+        self.siteButton.layer.shadowOpacity = 1
         self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.siteButton.layer.shadowOffset = .zero
-        self.siteButton.titleLabel?.font = MPTheme.global.font.largeTitle.get()
 
         let leadingToolBar = UIStackView( arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
         leadingToolBar.axis = .vertical
@@ -115,6 +115,8 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
                     self.recoveryButton.darkBackground = false
                     self.keysButton.darkBackground = false
                 }
+
+                self.layoutIfNeeded()
             }
         }
     }
