@@ -37,7 +37,7 @@ public class MPPasswordKeyFactory: MPKeyFactory {
     }
 
     deinit {
-        for (_, masterKey) in masterKeys {
+        for (_, masterKey) in self.masterKeys {
             masterKey.deallocate()
         }
     }
@@ -87,6 +87,7 @@ public class MPBufferKeyFactory: MPKeyFactory {
 
 public class MPKeychainKeyFactory: MPKeyFactory {
     public let context = LAContext()
+    private var masterKeys = [ MPAlgorithmVersion: MPMasterKey ]()
 
     public override init(fullName: String) {
         super.init( fullName: fullName )
@@ -101,8 +102,22 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         }
     }
 
+    deinit {
+        for (_, masterKey) in self.masterKeys {
+            masterKey.deallocate()
+        }
+    }
+
     public override func newMasterKey(algorithm: MPAlgorithmVersion) -> MPMasterKey? {
-        try? MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, context: self.context ).await()
+        if let masterKey = self.masterKeys[algorithm] ??
+                (try? MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, context: self.context ).await()) {
+            self.masterKeys[algorithm] = masterKey
+            let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
+            providedMasterKey.initialize( from: masterKey, count: MPMasterKeySize )
+            return UnsafePointer<UInt8>( providedMasterKey )
+        }
+
+        return nil
     }
 
     func saveMasterKeys(from masterPassword: String) -> Promise<Bool> {
