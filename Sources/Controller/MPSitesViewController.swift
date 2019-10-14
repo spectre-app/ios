@@ -48,6 +48,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         }
         self.searchField.autocapitalizationType = .none
         self.searchField.autocorrectionType = .no
+        self.searchField.returnKeyType = .done
         self.searchField.delegate = self
         self.searchField.addAction( for: .editingChanged ) { _, _ in
             self.sitesTableView.query = self.searchField.text
@@ -184,5 +185,10 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
 
     func textFieldDidBeginEditing(_ textField: UITextField) {
         self.detailsHost.shouldDismissDetails()
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
 }
