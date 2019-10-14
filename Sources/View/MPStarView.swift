@@ -13,7 +13,7 @@ func rate(radians: Double) -> Double {
 class MPStarView: UIView {
     private let fps            = 40.0
     private let motionParallax = 0.5
-    private let motionQueue    = OperationQueue()
+    private let motionQueue    = OperationQueue(named: "\(productName): Motion Queue")
     private let motionManager  = CMMotionManager()
     private let field          = Field( layout: .bang )
     private let debugLabel     = UILabel()

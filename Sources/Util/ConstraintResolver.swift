@@ -184,10 +184,10 @@ extension NSLayoutConstraint {
             return String( repeating: "+", count: depth ) + "[ \(secondItem) ] \(self.relation)\(modifier)\(priority)"
         }
 
-        return self.debugDescription
+        return self.description
     }
 
-    open override var description: String {
+    open override var debugDescription: String {
         self.constraintDescription
     }
 

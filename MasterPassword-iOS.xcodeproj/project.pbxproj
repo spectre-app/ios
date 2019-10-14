@@ -186,8 +186,6 @@
 		DAB4FBFC203105EB002768FB /* UIView+PearlLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = DAB4FBF6203105EB002768FB /* UIView+PearlLayout.h */; };
 		DAB4FBFD203105EB002768FB /* UIView+PearlLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = DAB4FBF7203105EB002768FB /* UIView+PearlLayout.m */; };
 		DAB4FBFE203105EB002768FB /* WTFViews.h in Headers */ = {isa = PBXBuildFile; fileRef = DAB4FBF8203105EB002768FB /* WTFViews.h */; };
-		DAB4FBFF203105EB002768FB /* UIView+PearlSize.m in Sources */ = {isa = PBXBuildFile; fileRef = DAB4FBF9203105EB002768FB /* UIView+PearlSize.m */; };
-		DAB4FC00203105EB002768FB /* UIView+PearlSize.h in Headers */ = {isa = PBXBuildFile; fileRef = DAB4FBFA203105EB002768FB /* UIView+PearlSize.h */; };
 		DAB4FC0120310612002768FB /* NSInvocation+Pearl.h in Headers */ = {isa = PBXBuildFile; fileRef = DAB4FB9F202FCA3C002768FB /* NSInvocation+Pearl.h */; };
 		DAB4FC0220310615002768FB /* NSInvocation+Pearl.m in Sources */ = {isa = PBXBuildFile; fileRef = DAB4FBA0202FCA3C002768FB /* NSInvocation+Pearl.m */; };
 		DAB4FC0320310619002768FB /* NSMutableSet+Pearl.h in Headers */ = {isa = PBXBuildFile; fileRef = DA95B50D1C4776F00067F5EF /* NSMutableSet+Pearl.h */; };
@@ -253,6 +251,8 @@
 		DACE2F6619BA6A0A0010F92E /* PearlProfiler.h in Headers */ = {isa = PBXBuildFile; fileRef = DACE2F6419BA6A0A0010F92E /* PearlProfiler.h */; };
 		DACE2F6C19BA6A2A0010F92E /* PearlMutableStaticTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DACE2F6819BA6A2A0010F92E /* PearlMutableStaticTableViewController.m */; };
 		DACE2F6D19BA6A2A0010F92E /* PearlMutableStaticTableViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = DACE2F6919BA6A2A0010F92E /* PearlMutableStaticTableViewController.h */; };
+		DAD0CF31235421CE007428AA /* UIView+PearlSize.h in Headers */ = {isa = PBXBuildFile; fileRef = DAB4FBFA203105EB002768FB /* UIView+PearlSize.h */; };
+		DAD0CF32235421D2007428AA /* UIView+PearlSize.m in Sources */ = {isa = PBXBuildFile; fileRef = DAB4FBF9203105EB002768FB /* UIView+PearlSize.m */; };
 		DAE2725A19C93B8E007C5262 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA70EC7F1811B13C00F65DB2 /* StoreKit.framework */; };
 		DAE2726319CE9CB3007C5262 /* UITableViewCell+PearlDeque.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE2726119CE9CB3007C5262 /* UITableViewCell+PearlDeque.m */; };
 		DAE2726419CE9CB3007C5262 /* UITableViewCell+PearlDeque.h in Headers */ = {isa = PBXBuildFile; fileRef = DAE2726219CE9CB3007C5262 /* UITableViewCell+PearlDeque.h */; };
@@ -1682,10 +1682,10 @@
 				93D3980046016EFD05B35BC5 /* PearlUICollectionView.h in Headers */,
 				93D39536EB550E811CCD04BC /* UIResponder+PearlFirstResponder.h in Headers */,
 				93D393DB5325820241BA90A7 /* PearlSizedTextView.h in Headers */,
-				DAB4FC00203105EB002768FB /* UIView+PearlSize.h in Headers */,
 				93D392A8777DC30C11361647 /* UITextView+PearlAttributes.h in Headers */,
 				93D39A53D76CA70786423458 /* UICollectionView+PearlReloadItems.h in Headers */,
 				93D39AA4A0BE66A872CCC02E /* NSPersistentStore+PearlMigration.h in Headers */,
+				DAD0CF31235421CE007428AA /* UIView+PearlSize.h in Headers */,
 				93D399E4BC1E092A8C8B12AE /* NSOrderedSetOrArray.h in Headers */,
 				93D39BFB5F5F9337F6565DE3 /* UIView+Visible.h in Headers */,
 				93D39359B0DF9823F6C56A05 /* PearlHangDetector.h in Headers */,
@@ -2224,6 +2224,7 @@
 				DAFE4A1615039824003ABA7C /* NSString+PearlNSArrayFormat.m in Sources */,
 				DAFE4A1815039824003ABA7C /* NSString+PearlSEL.m in Sources */,
 				DAFE4A1B15039824003ABA7C /* PearlAbstractStrings.m in Sources */,
+				DAD0CF32235421D2007428AA /* UIView+PearlSize.m in Sources */,
 				DAFE4A1F15039824003ABA7C /* PearlCodeUtils.m in Sources */,
 				DAEFB01E19BCBD9E00525079 /* UIView+LayoutGone.m in Sources */,
 				DAFE4A2115039824003ABA7C /* PearlConfig.m in Sources */,
@@ -2237,7 +2238,6 @@
 				DAFE4A2E15039824003ABA7C /* PearlStrings.m in Sources */,
 				DAFE4A3015039824003ABA7C /* PearlStringUtils.m in Sources */,
 				DAB4FBFB203105EB002768FB /* WTFViews.m in Sources */,
-				DAB4FBFF203105EB002768FB /* UIView+PearlSize.m in Sources */,
 				DA250A17195665A100AC23F1 /* UITableView+PearlReloadItems.m in Sources */,
 				DAFE4A4115039824003ABA7C /* PearlArrayTVC.m in Sources */,
 				DAFE4A4315039824003ABA7C /* PearlBoxView.m in Sources */,

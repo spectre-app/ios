@@ -75,7 +75,6 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         self.passwordIndicator.frame = self.passwordIndicator.frame.insetBy( dx: -8, dy: 0 )
 
         self.identiconLabel.font = MPTheme.global.font.password.get()?.withSize( UIFont.labelFontSize )
-        self.identiconLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
         self.identiconLabel.textColor = MPTheme.global.color.body.get()
         self.identiconLabel.shadowColor = MPTheme.global.color.shadow.get()
         self.identiconLabel.shadowOffset = CGSize( width: 0, height: 1 )
@@ -85,11 +84,11 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         self.identiconAccessory.addSubview( self.identiconLabel )
 
         LayoutConfiguration( view: self.identiconLabel )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: 4 ) }
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor, constant: 4 ) }
+                .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor, constant: -4 ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -4 ) }
                 .activate()
 
         defer {

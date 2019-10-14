@@ -132,8 +132,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- UITableViewDelegate ---
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        self.selectRow( at: nil, animated: true, scrollPosition: .none )
-        self.selectedSite = nil
+//        self.selectRow( at: nil, animated: true, scrollPosition: .none )
+//        self.selectedSite = nil
     }
 
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
@@ -172,7 +172,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let result = self.resultSource.element( at: indexPath )
-        if let result = result, LiefsteCell.is( result: result ) {
+        if LiefsteCell.is( result: result ) {
             return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
         }
 
@@ -318,20 +318,20 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         func copyAction() {
-            DispatchQueue.mpw.promise {
+            DispatchQueue.mpw.perform {
                 guard let site = self.site
                 else { return }
 
                 var result = "", kind = ""
                 switch self.mode {
                     case .authentication:
-                        result = try site.mpw_result().await() ?? ""
+                        result = (try? site.mpw_result().await()) ?? ""
                         kind = "password"
                     case .identification:
-                        result = try site.mpw_login().await() ?? ""
+                        result = (try? site.mpw_login().await()) ?? ""
                         kind = "user name"
                     case .recovery:
-                        result = try site.mpw_answer().await() ?? ""
+                        result = (try? site.mpw_answer().await()) ?? ""
                         kind = "security answer"
                     @unknown default: ()
                 }
@@ -397,23 +397,24 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- Private ---
 
         private func update() {
-            DispatchQueue.mpw.promise {
-                var result: String?
+            DispatchQueue.mpw.promise { () -> Promise<String?> in
+                guard let site = self.site
+                else { return Promise( .success( nil ) ) }
+
                 switch self.mode {
                     case .authentication:
-                        result = try self.site?.mpw_result().await()
+                        return site.mpw_result()
                     case .identification:
-                        result = try self.site?.mpw_login().await()
+                        return site.mpw_login()
                     case .recovery:
-                        result = try self.site?.mpw_answer().await()
-                    @unknown default: ()
+                        return site.mpw_answer()
+                    @unknown default:
+                        return Promise( .success( nil ) )
                 }
-
-                DispatchQueue.main.perform {
-                    self.modeButton.title = self.mode.button()
-                    self.modeButton.size = .small
-                    self.resultLabel.text = result
-                }
+            }.then( on: DispatchQueue.main ) { (result : String?) in
+                self.modeButton.title = self.mode.button()
+                self.modeButton.size = .small
+                self.resultLabel.text = result
             }
         }
     }

@@ -7,11 +7,11 @@ import Foundation
 import SwiftLinkPreview
 
 class MPURLUtils {
-    private static let processQueue = OperationQueue()
-    private static let linkPreview  = SwiftLinkPreview( session: .shared, workQueue: SwiftLinkPreview.defaultWorkQueue,
-                                                        responseQueue: .main, cache: InMemoryCache() )
-    private static let caches       = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
-    private static var metadata     = loadMetadata() {
+    private static let queue    = OperationQueue( queue: DispatchQueue.net )
+    public static let  session  = URLSession( configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: queue )
+    private static let preview  = SwiftLinkPreview( session: session, workQueue: DispatchQueue.net, responseQueue: DispatchQueue.net, cache: InMemoryCache() )
+    private static let caches   = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
+    private static var metadata = loadMetadata() {
         didSet {
             do {
                 if oldValue != self.metadata {
@@ -43,15 +43,15 @@ class MPURLUtils {
     }
 
     static func load(url: URL, result: @escaping (Data?) -> Void) {
-        URLSession.shared.dataTask( with: url ) {
-                             (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
-                             result( responseData )
-                         }
-                         .resume()
+        MPURLUtils.session.dataTask( with: url ) {
+                              (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
+                              result( responseData )
+                          }
+                          .resume()
     }
 
     static func loadHTML(url: URL, result: @escaping (String?) -> Void) {
-        URLSession.shared.dataTask( with: url ) {
+        MPURLUtils.session.dataTask( with: url ) {
             (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
             if let mimeType = response?.mimeType, mimeType.hasSuffix( "/html" ),
                let encoding = response?.textEncodingName, let responseData = responseData,
@@ -70,13 +70,13 @@ class MPURLUtils {
             result( info )
         }
 
-        self.linkPreview.preview( url, onSuccess: { response in
+        self.preview.preview( url, onSuccess: { response in
             guard let imageURL = self.validImageURL( response[.image] as? String ) ?? self.validImageURL( response[.icon] as? String )
             else {
                 return
             }
 
-            URLSession.shared.dataTask( with: imageURL ) {
+            session.dataTask( with: imageURL ) {
                 (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
                 var info = self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil )
 
@@ -85,7 +85,7 @@ class MPURLUtils {
                 }
 
                 if let responseData = responseData {
-                    dbg("\(url): \(responseData.count)")
+                    dbg( "\(url): \(responseData.count)" )
                     info.imageData = responseData
                     self.metadata[url] = info
                 }
@@ -167,9 +167,9 @@ struct Color: Codable, Equatable, Hashable {
 
     var uiColor: UIColor {
         UIColor( red: CGFloat( self.red ) / CGFloat( UInt8.max ),
-                        green: CGFloat( self.green ) / CGFloat( UInt8.max ),
-                        blue: CGFloat( self.blue ) / CGFloat( UInt8.max ),
-                        alpha: CGFloat( self.alpha ) / CGFloat( UInt8.max ) )
+                 green: CGFloat( self.green ) / CGFloat( UInt8.max ),
+                 blue: CGFloat( self.blue ) / CGFloat( UInt8.max ),
+                 alpha: CGFloat( self.alpha ) / CGFloat( UInt8.max ) )
     }
 
     init(red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8) {
@@ -208,10 +208,13 @@ struct Color: Codable, Equatable, Hashable {
         }
     }
     var saturation: Int {
-        let min = Int( Swift.min( self.red, self.green, self.blue ) )
         let max = Int( Swift.max( self.red, self.green, self.blue ) )
+        if max == 0 {
+            return 0
+        }
 
-        return max == 0 ? 0: 255 * (max - min) / max
+        let min = Int( Swift.min( self.red, self.green, self.blue ) )
+        return 255 * (max - min) / max
     }
     var value:      Int {
         Int( Swift.max( self.red, self.green, self.blue ) )

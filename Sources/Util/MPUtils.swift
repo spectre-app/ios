@@ -210,6 +210,21 @@ public enum MPError: Error {
 extension MPMarshalError: Error {
 }
 
+extension OperationQueue {
+    convenience init(named name: String) {
+        self.init()
+
+        self.name = name
+    }
+
+    convenience init(queue: DispatchQueue) {
+        self.init()
+
+        self.name = queue.label
+        self.underlyingQueue = queue
+    }
+}
+
 extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
 
     public func mpw_get(path: String...) -> Bool? {

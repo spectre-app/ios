@@ -9,7 +9,7 @@ import CoreMotion
 class MPBackgroundView: UIView {
     private let fps            = 15.0
     private let motionManager  = CMMotionManager()
-    private let motionQueue    = OperationQueue()
+    private let motionQueue    = OperationQueue(named: "\(productName): Motion Queue")
     private var gradientColor:   CGGradient?
     private var gradientPoint  = CGPoint()
     private var gradientRadius = CGFloat( 0 )
@@ -26,7 +26,6 @@ class MPBackgroundView: UIView {
         }
 
         else {
-            self.motionQueue.name = "Motion Queue"
             self.motionQueue.maxConcurrentOperationCount = 1
             if self.motionManager.isDeviceMotionAvailable {
                 self.motionManager.deviceMotionUpdateInterval = 1 / self.fps

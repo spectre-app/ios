@@ -34,7 +34,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
            let utis = utisValue as? Array<String> {
             for format in MPMarshalFormat.allCases {
                 if let uti = format.uti, utis.contains( uti ) {
-                    URLSession.shared.dataTask( with: url, completionHandler: { (data, response, error) in
+                    MPURLUtils.session.dataTask( with: url, completionHandler: { (data, response, error) in
                         if let data = data, error == nil {
                             MPMarshal.shared.import( data: data )
                         }

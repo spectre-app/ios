@@ -6,7 +6,8 @@
 import Foundation
 
 extension DispatchQueue {
-    public static var mpw = DispatchQueue( label: "mpw", qos: .utility )
+    public static var mpw = DispatchQueue( label: "\(productName): mpw", qos: .utility )
+    public static var net = DispatchQueue( label: "\(productName): Network Queue", qos:.background )
     public var isActive: Bool {
         (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                 self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) )
