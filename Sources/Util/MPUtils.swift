@@ -225,6 +225,12 @@ extension OperationQueue {
     }
 }
 
+extension NSTextAlignment {
+    static var inverse: NSTextAlignment {
+        UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft ? .left : .right
+    }
+}
+
 extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
 
     public func mpw_get(path: String...) -> Bool? {

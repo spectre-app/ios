@@ -11,10 +11,9 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     // MARK: --- Life ---
 
     override func loadItems() -> [Item<MPUser>] {
-        [ IdenticonItem(), AvatarItem(), SeparatorItem(),
+        [ IdenticonItem(), AvatarItem(), ActionsItem(), SeparatorItem(),
           PasswordTypeItem(), SeparatorItem(),
           FeaturesItem(), SeparatorItem(),
-          ActionsItem(), SeparatorItem(),
           InfoItem() ]
     }
 
@@ -108,7 +107,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class ActionsItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ButtonItem( itemValue: { _ in ("Export", nil) } ) { item in
+                ButtonItem( itemValue: { _ in (label: "Export", image: nil) } ) { item in
                     if let user = item.model {
                         let controller = MPExportViewController( user: user )
                         controller.popoverPresentationController?.sourceView = item.view
@@ -116,7 +115,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         item.viewController?.present( controller, animated: true )
                     }
                 },
-                ButtonItem( itemValue: { _ in ("Log out", nil) } ) { item in
+                ButtonItem( itemValue: { _ in (label: "Log out",image:  nil) } ) { item in
                     item.model?.masterKeyFactory = nil
                 },
             ] )

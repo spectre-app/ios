@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persisting {
+class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPSiteObserver, MPQuestionObserver {
     public let observers = Observers<MPSiteObserver>()
 
     public let user: MPUser
@@ -115,6 +115,15 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             }
         }
     }
+    public var questions = [ MPQuestion ]() {
+        didSet {
+            if oldValue != self.questions {
+                self.dirty = true
+                self.questions.forEach { question in question.observers.register( observer: self ) }
+                self.observers.notify { $0.siteDidChange( self ) }
+            }
+        }
+    }
     var description: String {
         "\(self.siteName)"
     }
@@ -131,7 +140,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     init(user: MPUser, siteName: String, algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
          resultType: MPResultType? = nil, resultState: String? = nil,
          loginType: MPResultType? = nil, loginState: String? = nil,
-         url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil) {
+         url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil, questions: [MPQuestion] = []) {
         self.user = user
         self.siteName = ""
         self.algorithm = algorithm ?? user.algorithm
@@ -141,6 +150,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.url = url
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
+        self.questions = questions
         self.color = siteName.color()
 
         defer {
@@ -176,13 +186,24 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.user.use()
     }
 
-    public func copy(for user: MPUser) -> MPSite {
-        // TODO: copy questions
+    public func copy(to user: MPUser) -> MPSite {
         // TODO: do we need to re-encode state?
-        MPSite( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
-                resultType: self.resultType, resultState: self.resultState,
-                loginType: self.loginType, loginState: self.loginState,
-                url: self.url, uses: self.uses, lastUsed: self.lastUsed )
+        let site = MPSite( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
+                           resultType: self.resultType, resultState: self.resultState,
+                           loginType: self.loginType, loginState: self.loginState,
+                           url: self.url, uses: self.uses, lastUsed: self.lastUsed )
+        site.questions = self.questions.map { $0.copy( to: site ) }
+        return site
+    }
+
+    // MARK: --- MPSiteObserver ---
+
+    func siteDidChange(_ site: MPSite) {
+    }
+
+    // MARK: --- MPQuestionObserver ---
+
+    func questionDidChange(_ question: MPQuestion) {
     }
 
     // MARK: --- mpw ---
@@ -192,9 +213,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     -> Promise<String?> {
         DispatchQueue.mpw.promise { () -> String? in
             let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer {
-                masterKey?.deallocate()
-            }
+            defer { masterKey?.deallocate() }
 
             return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
                                                       resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ),
@@ -208,9 +227,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     -> Promise<Bool> {
         DispatchQueue.mpw.promise { () -> Bool in
             let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer {
-                masterKey?.deallocate()
-            }
+            defer { masterKey?.deallocate() }
 
             if let resultState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
                                                                    resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ),
@@ -228,9 +245,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     -> Promise<String?> {
         DispatchQueue.mpw.promise { () -> String? in
             let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer {
-                masterKey?.deallocate()
-            }
+            defer { masterKey?.deallocate() }
 
             return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
                                                       resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ),
@@ -244,9 +259,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     -> Promise<Bool> {
         DispatchQueue.mpw.promise { () -> Bool in
             let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer {
-                masterKey?.deallocate()
-            }
+            defer { masterKey?.deallocate() }
 
             if let loginState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
                                                                   resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ),

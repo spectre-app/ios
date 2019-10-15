@@ -132,7 +132,7 @@ class MPMarshal: Observable {
 
             for site in user.sites {
                 guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
-                else { throw MPError.internal( details: "Couldn't marshal \(user): \(site)" ) }
+                else { throw MPError.internal( details: "Couldn't marshal \(user.fullName): \(site)" ) }
 
                 marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( site.resultState ) )
                 marshalledSite.pointee.loginType = site.loginType
@@ -140,6 +140,14 @@ class MPMarshal: Observable {
                 marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ) )
                 marshalledSite.pointee.uses = site.uses
                 marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+
+                for question in site.questions {
+                    guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
+                    else { throw MPError.internal( details: "Couldn't marshal \(user.fullName): \(site.siteName): \(question)" ) }
+
+                    marshalledQuestion.pointee.type = question.resultType
+                    marshalledQuestion.pointee.state = UnsafePointer( mpw_strdup( question.resultState ) )
+                }
             }
 
             if let data = String( safeUTF8: mpw_marshal_write( format, user.file, marshalledUser ),
@@ -397,7 +405,7 @@ class MPMarshal: Observable {
                     newSites += 1
                 }
 
-                existedUser.sites.append( importedSite.copy( for: existedUser ) )
+                existedUser.sites.append( importedSite.copy( to: existedUser ) )
             }
             var updatedUser = false
             if importedUser.lastUsed >= existedUser.lastUsed {
@@ -761,21 +769,34 @@ class MPMarshal: Observable {
                     )
 
                     for s in 0..<marshalledUser.sites_count {
-                        let site = (marshalledUser.sites + s).pointee
-                        if let siteName = String( safeUTF8: site.siteName ) {
-                            user.sites.append( MPSite(
+                        let marshalledSite = (marshalledUser.sites + s).pointee
+                        if let siteName = String( safeUTF8: marshalledSite.siteName ) {
+                            let site = MPSite(
                                     user: user,
                                     siteName: siteName,
-                                    algorithm: site.algorithm,
-                                    counter: site.counter,
-                                    resultType: site.resultType,
-                                    resultState: String( safeUTF8: site.resultState ),
-                                    loginType: site.loginType,
-                                    loginState: String( safeUTF8: site.loginState ),
-                                    url: String( safeUTF8: site.url ),
-                                    uses: site.uses,
-                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( site.lastUsed ) )
-                            ) )
+                                    algorithm: marshalledSite.algorithm,
+                                    counter: marshalledSite.counter,
+                                    resultType: marshalledSite.resultType,
+                                    resultState: String( safeUTF8: marshalledSite.resultState ),
+                                    loginType: marshalledSite.loginType,
+                                    loginState: String( safeUTF8: marshalledSite.loginState ),
+                                    url: String( safeUTF8: marshalledSite.url ),
+                                    uses: marshalledSite.uses,
+                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
+                            )
+                            user.sites.append( site )
+
+                            for q in 0..<marshalledSite.questions_count {
+                                let marshalledQuestion = (marshalledSite.questions + q).pointee
+                                if let keyword = String( safeUTF8: marshalledQuestion.keyword ) {
+                                    site.questions.append( MPQuestion(
+                                            site: site,
+                                            keyword: keyword,
+                                            resultType: marshalledQuestion.type,
+                                            resultState: String( safeUTF8: marshalledQuestion.state )
+                                    ) )
+                                }
+                            }
                         }
                     }
 

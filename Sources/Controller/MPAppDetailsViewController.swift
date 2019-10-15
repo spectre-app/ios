@@ -49,7 +49,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
     class LegacyItem: ButtonItem<Void> {
         init() {
             super.init( title: "Legacy Data", itemValue: { _ in
-                ("Re-Import Legacy Users", nil)
+                (label: "Re-Import Legacy Users", image: nil)
             } ) { _ in
                 MPMarshal.shared.importLegacy( force: true )
             }
@@ -59,28 +59,35 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
         }
     }
 
-    class InfoItem: ListItem<Void, (title: String, url: URL?)> {
+    class InfoItem: ListItem<Void, InfoItem.Link> {
 
         init() {
-            super.init( title: "Links", values: [
-                (title: "Home", url: URL( string: "https://masterpassword.app" )),
-                (title: "Support", url: URL( string: "http://help.masterpasswordapp.com" )),
-                (title: "White Paper", url: URL( string: "https://masterpassword.app/masterpassword-algorithm.pdf" )),
-                (title: "Source Portal", url: URL( string: "https://gitlab.com/MasterPassword/MasterPassword" )),
-            ], itemCell: { tableView, indexPath, value in
-                InfoCell.dequeue( from: tableView, indexPath: indexPath ) {
-                    ($0 as? InfoCell)?.set( title: value.title ) {
+            super.init( title: "Links", values: {
+                [
+                    Link( title: "Home", url: URL( string: "https://masterpassword.app" ) ),
+                    Link( title: "Support", url: URL( string: "http://help.masterpasswordapp.com" ) ),
+                    Link( title: "White Paper", url: URL( string: "https://masterpassword.app/masterpassword-algorithm.pdf" ) ),
+                    Link( title: "Source Portal", url: URL( string: "https://gitlab.com/MasterPassword/MasterPassword" ) ),
+                ]
+            }, itemCell: { tableView, indexPath, value in
+                Cell.dequeue( from: tableView, indexPath: indexPath ) {
+                    ($0 as? Cell)?.set( title: value.title ) {
                         if let url = value.url {
                             UIApplication.shared.openURL( url )
                         }
                     }
                 }
             } ) { tableView in
-                tableView.registerCell( InfoCell.self )
+                tableView.registerCell( Cell.self )
             }
         }
 
-        class InfoCell: UITableViewCell {
+        struct Link: Hashable {
+            let title: String
+            let url:   URL?
+        }
+
+        class Cell: UITableViewCell {
             private let button = UIButton()
             private var action: (() -> Void)?
 

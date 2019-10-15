@@ -235,8 +235,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         private let resultLabel = UITextField()
         private let nameLabel   = UILabel()
-        private let modeButton  = MPButton( image: nil, title: "" )
-        private let copyButton  = MPButton( image: nil, title: "" )
+        private let modeButton  = MPButton( title: "" )
+        private let copyButton  = MPButton( title: "" )
 
         // MARK: --- Life ---
 
@@ -349,30 +349,26 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                                 UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
                             ] )
 
-                    DispatchQueue.main.perform {
-                        MPAlert( title: site.siteName, message: "Copied \(kind) (3 min)", details:
-                        """
-                        Your \(kind) for \(site.siteName) is:
-                        \(result)
+                    MPAlert( title: site.siteName, message: "Copied \(kind) (3 min)", details:
+                    """
+                    Your \(kind) for \(site.siteName) is:
+                    \(result)
 
-                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
+                    It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
 
-                        Note that after 3 minutes, the \(kind) will be removed from the pasteboard for security reasons.
-                        """ ).show( in: self )
-                    }
+                    Note that after 3 minutes, the \(kind) will expire from the pasteboard for security reasons.
+                    """ ).show( in: self )
                 }
                 else {
                     UIPasteboard.general.string = result
 
-                    DispatchQueue.main.perform {
-                        MPAlert( title: site.siteName, message: "Copied \(kind)", details:
-                        """
-                        Your \(kind) for \(site.siteName) is:
-                        \(result)
+                    MPAlert( title: site.siteName, message: "Copied \(kind)", details:
+                    """
+                    Your \(kind) for \(site.siteName) is:
+                    \(result)
 
-                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
-                        """ ).show( in: self )
-                    }
+                    It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
+                    """ ).show( in: self )
                 }
             }
         }
@@ -411,7 +407,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     @unknown default:
                         return Promise( .success( nil ) )
                 }
-            }.then( on: DispatchQueue.main ) { (result : String?) in
+            }.then( on: DispatchQueue.main ) { (result: String?) in
                 self.modeButton.title = self.mode.button()
                 self.modeButton.size = .small
                 self.resultLabel.text = result

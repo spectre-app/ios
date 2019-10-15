@@ -14,6 +14,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         [ PasswordCounterItem(), SeparatorItem(),
           PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
           LoginTypeItem(), LoginResultItem(), SeparatorItem(),
+          SecurityAnswerItem(), SeparatorItem(),
           URLItem(), SeparatorItem(),
           InfoItem() ]
     }
@@ -158,6 +159,81 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             super.doUpdate()
 
             (self.view as? TextItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
+        }
+    }
+
+    class SecurityAnswerItem: ListItem<MPSite, MPQuestion> {
+        init() {
+            super.init( title: "Security Answers", values: {
+                var questions = [ MPQuestion( site: $0, keyword: "" ) ]
+                questions.append( contentsOf: $0.questions )
+                return questions
+            }, subitems: [ ButtonItem( itemValue: { _ in (label: "Add Security Question", image: nil) } ) { item in
+            } ], itemCell: { tableView, indexPath, value in
+                Cell.dequeue( from: tableView, indexPath: indexPath ) {
+                    ($0 as? Cell)?.question = value
+                }
+            } ) { tableView in
+                tableView.registerCell( Cell.self )
+            }
+        }
+
+        class Cell: UITableViewCell {
+            private let keywordLabel = UILabel()
+            private let resultLabel  = UILabel()
+            private let copyButton   = UIButton( title: "copy" )
+
+            var question: MPQuestion? {
+                didSet {
+                    self.keywordLabel.text = self.question?.keyword
+                    self.resultLabel.text = try? self.question?.mpw_result().await()
+                }
+            }
+
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+                super.init( style: style, reuseIdentifier: reuseIdentifier )
+
+                // - View
+                self.isOpaque = false
+                self.backgroundColor = .clear
+
+                self.keywordLabel.textColor = MPTheme.global.color.body.get()
+                self.keywordLabel.shadowColor = MPTheme.global.color.shadow.get()
+                self.keywordLabel.shadowOffset = CGSize( width: 0, height: 1 )
+                self.keywordLabel.font = MPTheme.global.font.caption1.get()
+
+                self.resultLabel.textColor = MPTheme.global.color.body.get()
+                self.resultLabel.shadowColor = MPTheme.global.color.shadow.get()
+                self.resultLabel.shadowOffset = CGSize( width: 0, height: 1 )
+                self.resultLabel.font = MPTheme.global.font.password.get()
+                self.resultLabel.adjustsFontSizeToFitWidth = true
+
+                self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in }
+                self.copyButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
+
+                // - Hierarchy
+                self.contentView.addSubview( self.keywordLabel )
+                self.contentView.addSubview( self.resultLabel )
+
+                // - Layout
+                LayoutConfiguration( view: self.keywordLabel )
+                        .constrainToMarginsOfOwner( withAnchors: .topBox )
+                        .activate()
+                LayoutConfiguration( view: self.resultLabel )
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                        .constrainTo { $1.topAnchor.constraint( equalTo: self.keywordLabel.bottomAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                        .activate()
+                LayoutConfiguration( view: self.copyButton )
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor, constant: 8 ) }
+                        .constrainTo { $1.centerYAnchor.constraint( equalTo: self.keywordLabel.centerYAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                        .activate()
+            }
         }
     }
 

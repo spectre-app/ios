@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPSiteObserver, MPUserObserver {
+class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver {
     // TODO: figure out how to batch updates or suspend changes until sites marshalling/authenticate fully complete.
     public let observers = Observers<MPUserObserver>()
 
@@ -193,14 +193,14 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         return lhs.fullName > rhs.fullName
     }
 
-    // MARK: --- MPSiteObserver ---
-
-    func siteDidChange(_ site: MPSite) {
-    }
-
     // MARK: --- MPUserObserver ---
 
     func userDidChange(_ user: MPUser) {
+    }
+
+    // MARK: --- MPSiteObserver ---
+
+    func siteDidChange(_ site: MPSite) {
     }
 
     // MARK: --- Interface ---

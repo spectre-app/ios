@@ -8,14 +8,8 @@ import Foundation
 extension String {
     init?(safeUTF8 pointer: UnsafePointer<CChar>?, deallocate: Bool = false) {
         guard let pointer = pointer
-        else {
-            return nil
-        }
-        defer {
-            if deallocate {
-                pointer.deallocate()
-            }
-        }
+        else { return nil }
+        defer { if deallocate { pointer.deallocate() } }
 
         self.init( validatingUTF8: pointer )
     }

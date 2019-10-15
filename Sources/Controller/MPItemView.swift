@@ -321,11 +321,11 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
     }
 }
 
-class ButtonItem<M>: ValueItem<M, (title: String?, image: UIImage?)> {
+class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
     let itemAction: (ButtonItem<M>) -> Void
 
     init(title: String? = nil, subitems: [Item<M>] = [],
-         itemValue: @escaping (M) -> (String?, UIImage?),
+         itemValue: @escaping (M) -> (label: String?, image: UIImage?),
          itemAction: @escaping (ButtonItem<M>) -> Void = { _ in }) {
         self.itemAction = itemAction
 
@@ -359,7 +359,7 @@ class ButtonItem<M>: ValueItem<M, (title: String?, image: UIImage?)> {
         override func update() {
             super.update()
 
-            self.button.title = self.item.value?.title
+            self.button.title = self.item.value?.label
             self.button.image = self.item.value?.image
         }
     }
@@ -725,12 +725,12 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
     }
 }
 
-class ListItem<M, V>: Item<M> {
-    let values:   [V]
+class ListItem<M, V: Hashable>: Item<M> {
+    let values:   (M) -> [V]
     let itemCell: (UITableView, IndexPath, V) -> UITableViewCell
     let viewInit: (UITableView) -> Void
 
-    init(title: String?, values: [V], subitems: [Item<M>] = [], caption: String? = nil,
+    init(title: String?, values: @escaping (M) -> [V], subitems: [Item<M>] = [], caption: String? = nil,
          itemCell: @escaping (UITableView, IndexPath, V) -> UITableViewCell,
          viewInit: @escaping (UITableView) -> Void) {
         self.values = values
@@ -747,6 +747,7 @@ class ListItem<M, V>: Item<M> {
     class ListItemView<M>: ItemView<M>, UITableViewDelegate, UITableViewDataSource {
         let item: ListItem<M, V>
         let tableView = TableView()
+        lazy var dataSource = DataSource<V>( tableView: self.tableView )
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -774,18 +775,20 @@ class ListItem<M, V>: Item<M> {
         override func update() {
             super.update()
 
-            // TODO: reload items non-destructively
-            //self.tableView.reloadData()
+            self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ] )
         }
 
         // MARK: --- UITableViewDataSource ---
+        func numberOfSections(in tableView: UITableView) -> Int {
+            self.dataSource.numberOfSections
+        }
 
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            self.item.values.count
+            self.dataSource.numberOfItems( in: section )
         }
 
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            self.item.itemCell( tableView, indexPath, self.item.values[indexPath.item] )
+            self.item.itemCell( tableView, indexPath, self.dataSource.element( at: indexPath )! )
         }
 
         // MARK: --- UITableViewDelegate ---
