@@ -105,16 +105,15 @@ open class DataSource<E: Hashable> {
 
             // Figure out what sections were added and removed.
             var insertSet = IndexSet(), deleteSet = IndexSet()
-            for section in 0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count ) {
-                if section >= self.sectionsOfElements.count {
+            for section in (0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count )).reversed() {
+                if section >= updatedSectionsOfElements.count {
+                    trc( "delete section \(section)" )
+                    self.sectionsOfElements.remove( at: section )
+                    deleteSet.insert( section )
+                } else if section >= self.sectionsOfElements.count {
                     trc( "insert section \(section)" )
                     self.sectionsOfElements.append( updatedSectionsOfElements[section] )
                     insertSet.insert( section )
-                }
-                else if section >= updatedSectionsOfElements.count {
-                    trc( "delete section \(section)" )
-                    self.sectionsOfElements.remove( at: self.sectionsOfElements.count - 1 )
-                    deleteSet.insert( section )
                 }
                 else {
                     self.sectionsOfElements[section] = updatedSectionsOfElements[section]
