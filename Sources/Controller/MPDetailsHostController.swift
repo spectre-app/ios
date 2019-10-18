@@ -5,11 +5,12 @@
 
 import UIKit
 
-class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate, MPDetailsObserver {
+class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     public let scrollView  = UIScrollView()
     public let contentView = MPUntouchableView()
+    let closeButton = MPButton.closeButton()
 
-    private lazy var detailRecognizer = UITapGestureRecognizer( target: self, action: #selector( shouldDismissDetails ) )
+    private lazy var detailRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTapBackground ) )
     private lazy var configuration    = LayoutConfiguration( view: self.view )
     private var detailsController:      AnyMPDetailsViewController?
     private var contentSizeObservation: NSKeyValueObservation?
@@ -29,6 +30,8 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
             self.scrollView.contentInsetAdjustmentBehavior = .always
         }
 
+        self.closeButton.button.addAction( for: .touchUpInside ) { _, _ in self.hideDetails() }
+
         // Keep sufficient inset to keep content at the bottom of the host.
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { _, _ in
             self.scrollView.contentInset = UIEdgeInsets(
@@ -39,6 +42,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
         // - Hierarchy
         self.view.addSubview( self.scrollView )
         self.scrollView.addSubview( self.contentView )
+        self.contentView.addSubview( self.closeButton )
 
         // - Layout
         LayoutConfiguration( view: self.scrollView )
@@ -56,6 +60,12 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                 .activate()
 
+        LayoutConfiguration( view: self.closeButton )
+                .constrainTo { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
+                .constrainTo { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).withPriority( .fittingSizeLevel ) }
+                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
+                .activate()
+
         self.configuration
                 .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
                     active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -67,6 +77,11 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                 }
     }
 
+    @objc
+    func didTapBackground() {
+        self.hideDetails()
+    }
+
     // MARK: --- Interface ---
 
     public func showDetails(_ detailsController: AnyMPDetailsViewController) {
@@ -74,10 +89,9 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
             self.detailsController = detailsController
 
             if let detailsController = self.detailsController {
-                detailsController.observers.register( observer: self )
                 self.addChild( detailsController )
                 detailsController.beginAppearanceTransition( false, animated: true )
-                self.contentView.addSubview( detailsController.view )
+                self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
                 LayoutConfiguration( view: detailsController.view ).constrainToOwner().activate()
                 UIView.animate( withDuration: 0.382, animations: {
                     detailsController.view.window?.endEditing( true )
@@ -102,7 +116,6 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
-                    detailsController.observers.unregister( observer: self )
                     self.detailsController = nil
                     completion?()
                 } )
@@ -113,13 +126,6 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
             completion?()
             return false
         }
-    }
-
-    // MARK: --- MPDetailsObserver ---
-
-    @objc
-    public func shouldDismissDetails() {
-        self.hideDetails()
     }
 
     // MARK: --- UIGestureRecognizerDelegate ---
@@ -138,7 +144,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         if #available( iOS 11, * ) {
             if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -80 {
-                self.shouldDismissDetails()
+                self.hideDetails()
             }
         }
     }

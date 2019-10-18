@@ -184,7 +184,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
     // MARK: --- UITextFieldDelegate ---
 
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        self.detailsHost.shouldDismissDetails()
+        self.detailsHost.hideDetails()
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

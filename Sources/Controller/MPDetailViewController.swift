@@ -6,8 +6,7 @@
 import Foundation
 import UIKit
 
-class AnyMPDetailsViewController: UIViewController, Observable {
-    public let observers = Observers<MPDetailsObserver>()
+class AnyMPDetailsViewController: UIViewController {
 }
 
 class MPDetailsViewController<M>: AnyMPDetailsViewController {
@@ -16,7 +15,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     let backgroundView = MPTintView()
     let imageView      = UIImageView()
     let itemsView      = UIStackView()
-    let closeButton    = MPButton.closeButton()
     lazy var items         = self.loadItems()
     lazy var imageGradient = CAGradientLayer( layer: self.imageView.layer )
 
@@ -71,22 +69,14 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
             self.itemsView.addArrangedSubview( item.view )
         }
 
-        self.closeButton.button.addAction( for: .touchUpInside ) { _, _ in
-            self.observers.notify { $0.shouldDismissDetails() }
-        }
-
         // - Hierarchy
         self.backgroundView.addSubview( self.imageView )
         self.backgroundView.addSubview( self.itemsView )
         self.view.addSubview( self.backgroundView )
-        self.view.addSubview( self.closeButton )
 
         // - Layout
         LayoutConfiguration( view: self.backgroundView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                .constrainToOwner()
                 .activate()
         LayoutConfiguration( view: self.imageView )
                 .constrainToOwner( withAnchors: .topBox )
@@ -97,11 +87,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
                 .constrainToOwner( withAnchors: .horizontally )
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                 .activate()
-        LayoutConfiguration( view: self.closeButton )
-                .constrainTo { $1.centerXAnchor.constraint( equalTo: self.backgroundView.centerXAnchor ) }
-                .constrainTo { $1.centerYAnchor.constraint( equalTo: self.backgroundView.bottomAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                .activate()
     }
 
     override func viewDidLayoutSubviews() {
@@ -109,8 +94,4 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
 
         self.imageGradient.frame = self.imageView.bounds
     }
-}
-
-protocol MPDetailsObserver {
-    func shouldDismissDetails()
 }
