@@ -80,7 +80,7 @@ public class MPTheme {
                 caption2: Value( UIFont.preferredFont( forTextStyle: .caption2 ) ),
                 footnote: Value( UIFont.preferredFont( forTextStyle: .footnote ) ),
                 password: {
-                    if #available( iOS 12, * ) {
+                    if #available( iOS 13, * ) {
                         return Value( .monospacedSystemFont( ofSize: 22, weight: .black ) )
                     }
                     else {
@@ -88,7 +88,7 @@ public class MPTheme {
                     }
                 }(),
                 mono: {
-                    if #available( iOS 12, * ) {
+                    if #available( iOS 13, * ) {
                         return Value( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
                     }
                     else {
