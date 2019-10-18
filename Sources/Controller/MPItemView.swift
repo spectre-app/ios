@@ -779,6 +779,7 @@ class ListItem<M, V: Hashable>: Item<M> {
         }
 
         // MARK: --- UITableViewDataSource ---
+
         func numberOfSections(in tableView: UITableView) -> Int {
             self.dataSource.numberOfSections
         }

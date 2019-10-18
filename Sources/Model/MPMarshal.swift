@@ -9,11 +9,9 @@ class MPMarshal: Observable {
     public static let shared = MPMarshal()
 
     public let observers = Observers<MPMarshalObserver>()
-    public var userFiles: [UserFile]? {
+    public var userFiles = [ UserFile ]() {
         didSet {
-            if oldValue != self.userFiles {
-                self.observers.notify { $0.userFilesDidChange( self.userFiles ) }
-            }
+            self.observers.notify { $0.userFilesDidChange( self.userFiles ) }
         }
     }
 
@@ -42,11 +40,10 @@ class MPMarshal: Observable {
     }
 
     private func userFile(at documentURL: URL) -> UserFile? {
-        if let document = FileManager.default.contents( atPath: documentURL.path ) {
-            return self.userFile( for: document, at: documentURL )
-        }
+        guard let document = FileManager.default.contents( atPath: documentURL.path )
+        else { return nil }
 
-        return nil
+        return self.userFile( for: document, at: documentURL )
     }
 
     private func userFile(for document: Data, at documentFile: URL? = nil) -> UserFile? {
@@ -62,7 +59,7 @@ class MPMarshal: Observable {
 
         do {
             try FileManager.default.removeItem( at: userURL )
-            self.userFiles?.removeAll { $0 == userFile }
+            self.userFiles.removeAll { $0 == userFile }
             return true
         }
         catch {
@@ -130,7 +127,7 @@ class MPMarshal: Observable {
             marshalledUser.pointee.defaultType = user.defaultType
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
-            for site in user.sites {
+            for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
                 guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                 else { throw MPError.internal( details: "Couldn't marshal \(user.fullName): \(site)" ) }
 
@@ -141,7 +138,7 @@ class MPMarshal: Observable {
                 marshalledSite.pointee.uses = site.uses
                 marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
 
-                for question in site.questions {
+                for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
                     guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
                     else { throw MPError.internal( details: "Couldn't marshal \(user.fullName): \(site.siteName): \(question)" ) }
 
@@ -440,6 +437,7 @@ class MPMarshal: Observable {
                             "The existing user's settings were more recent than the import.")
                     """ ).show()
                 }
+
                 self.setNeedsReload()
                 return true
             }
@@ -451,25 +449,29 @@ class MPMarshal: Observable {
                                content: UIActivityIndicatorView( style: .whiteLarge ) )
 
         spinner.show( dismissAutomatically: false )
-        return DispatchQueue.mpw.promise {
-            if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
-                mperror( title: "Issue importing", context: "Couldn't save \(documentURL.lastPathComponent)" )
-                return Promise( .success( false ) )
-            }
+        return DispatchQueue.mpw.promise { () -> Bool in
+            FileManager.default.createFile( atPath: documentURL.path, contents: data )
+        }.then {
+            spinner.dismiss()
 
-            return DispatchQueue.main.promise { () -> Bool in
-                spinner.dismiss()
+            switch ($0) {
+                case .success(let success):
+                    if success {
+                        MPAlert( title: "Import Complete", message: documentURL.lastPathComponent, details:
+                        """
+                        Completed the import of \(importingFile) (\(importingFile.format)).
+                        This export file was created on \(importingFile.exportDate).
 
-                MPAlert( title: "Import Complete", message: documentURL.lastPathComponent, details:
-                """
-                Completed the import of \(importingFile) (\(importingFile.format)).
-                This export file was created on \(importingFile.exportDate).
+                        This was a direct installation of the import data, not a merge import.
+                        """ ).show()
+                        self.setNeedsReload()
+                    }
+                    else {
+                        mperror( title: "Issue importing", context: "Couldn't save \(documentURL.lastPathComponent)" )
+                    }
 
-                This was a direct installation of the import data, not a merge import.
-                """ ).show()
-                self.setNeedsReload()
-
-                return true
+                case .failure:
+                    mperror( title: "Issue importing", context: "Couldn't save \(documentURL.lastPathComponent)" )
             }
         }
     }
@@ -487,25 +489,14 @@ class MPMarshal: Observable {
 
             for user: MPUserEntity_CoreData in try context.fetch( MPUserEntity.fetchRequest() ) {
                 guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
-                else {
-                    // Not a (saved) object.
-                    continue
-                }
+                else { continue } // Not a (saved) object.
                 guard force || !(self.defaults?.bool( forKey: objectID.uriRepresentation().absoluteString ) ?? false)
-                else {
-                    // Already imported.
-                    continue
-                }
+                else { continue } // Already imported.
                 guard let fullName = user.name
-                else {
-                    // Has no full name.
-                    continue
-                }
+                else { continue } // Has no full name.
                 guard let documentURL = self.url( for: fullName, format: .default )
-                else {
-                    // Cannot be saved.
-                    continue
-                }
+                else { continue } // Cannot be saved.
+
                 try FileManager.default.createDirectory(
                         at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
 
@@ -521,21 +512,16 @@ class MPMarshal: Observable {
                 }
 
                 guard let marshalledUser = mpw_marshal_user( fullName, nil, algorithm )
-                else {
-                    throw MPError.internal( details: "Couldn't allocate to marshal \(fullName)" )
-                }
+                else { throw MPError.internal( details: "Couldn't allocate to marshal \(fullName)" ) }
                 marshalledUser.pointee.redacted = true
                 marshalledUser.pointee.avatar = user.avatar_?.uint32Value ?? 0
                 marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( user.keyID?.hexEncodedString() ) )
                 marshalledUser.pointee.defaultType = defaultType
                 marshalledUser.pointee.lastUsed = Int( user.lastUsed?.timeIntervalSince1970 ?? 0 )
 
-                for site: MPSiteEntity_CoreData in user.sites ?? [] {
+                for site in user.sites?.sorted( by: { $0.name ?? "" < $1.name ?? "" } ) ?? [] {
                     guard let siteName = site.name
-                    else {
-                        // Has no site name.
-                        continue
-                    }
+                    else { continue } // Has no site name.
 
                     var counter = MPCounterValue.initial
                     if let site = site as? MPGeneratedSiteEntity,
@@ -555,34 +541,27 @@ class MPMarshal: Observable {
                     }
 
                     guard let marshalledSite = mpw_marshal_site( marshalledUser, siteName, type, counter, algorithm )
-                    else {
-                        throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" )
-                    }
+                    else { throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" ) }
                     marshalledSite.pointee.resultState =
                             UnsafePointer( mpw_strdup( (site as? MPStoredSiteEntity)?.contentObject?.base64EncodedString() ) )
                     marshalledSite.pointee.loginType =
                             (site.loginGenerated_?.boolValue ?? true || site.loginName == nil) ? .templateName: .statefulPersonal
                     marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( site.loginName ) )
-                    marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ?? nil ) )
+                    // TODO: marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url?() ?? nil ) )
                     marshalledSite.pointee.uses = site.uses_?.uint32Value ?? 0
                     marshalledSite.pointee.lastUsed = Int( site.lastUsed?.timeIntervalSince1970 ?? 0 )
 
-                    for siteQuestion in site.questions?.seq( MPSiteQuestionEntity_CoreData.self ) ?? [] {
+                    for siteQuestion in site.questions?.seq( MPSiteQuestionEntity_CoreData.self )
+                                            .sorted( by: { $0.keyword ?? "" < $1.keyword ?? "" } ) ?? [] {
                         guard mpw_marshal_question( marshalledSite, siteQuestion.keyword ) != nil
-                        else {
-                            throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
-                        }
+                        else { throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" ) }
                     }
                 }
 
                 var file_ptr = mpw_marshal_file( nil, nil, nil )
-                defer {
-                    mpw_marshal_file_free( &file_ptr )
-                }
+                defer { mpw_marshal_file_free( &file_ptr ) }
                 guard let file = file_ptr
-                else {
-                    throw MPError.internal( details: "Couldn't allocate import file." )
-                }
+                else { throw MPError.internal( details: "Couldn't allocate import file." ) }
 
                 if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
                                       deallocate: true )?.data( using: .utf8 ),
@@ -756,7 +735,7 @@ class MPMarshal: Observable {
             DispatchQueue.mpw.promise { () -> MPUser in
                 if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: keyFactory.provide() )?.pointee,
                    self.file.pointee.error.type == .success {
-                    let user = MPUser(
+                    return MPUser(
                             algorithm: marshalledUser.algorithm,
                             avatar: MPUser.Avatar.decode( avatar: marshalledUser.avatar ),
                             fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
@@ -766,41 +745,40 @@ class MPMarshal: Observable {
                             defaultType: marshalledUser.defaultType,
                             lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
                             origin: self.origin, file: self.file
-                    )
+                    ) { user in
 
-                    for s in 0..<marshalledUser.sites_count {
-                        let marshalledSite = (marshalledUser.sites + s).pointee
-                        if let siteName = String( safeUTF8: marshalledSite.siteName ) {
-                            let site = MPSite(
-                                    user: user,
-                                    siteName: siteName,
-                                    algorithm: marshalledSite.algorithm,
-                                    counter: marshalledSite.counter,
-                                    resultType: marshalledSite.resultType,
-                                    resultState: String( safeUTF8: marshalledSite.resultState ),
-                                    loginType: marshalledSite.loginType,
-                                    loginState: String( safeUTF8: marshalledSite.loginState ),
-                                    url: String( safeUTF8: marshalledSite.url ),
-                                    uses: marshalledSite.uses,
-                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
-                            )
-                            user.sites.append( site )
+                        for s in 0..<marshalledUser.sites_count {
+                            let marshalledSite = (marshalledUser.sites + s).pointee
+                            if let siteName = String( safeUTF8: marshalledSite.siteName ) {
+                                user.sites.append( MPSite(
+                                        user: user,
+                                        siteName: siteName,
+                                        algorithm: marshalledSite.algorithm,
+                                        counter: marshalledSite.counter,
+                                        resultType: marshalledSite.resultType,
+                                        resultState: String( safeUTF8: marshalledSite.resultState ),
+                                        loginType: marshalledSite.loginType,
+                                        loginState: String( safeUTF8: marshalledSite.loginState ),
+                                        url: String( safeUTF8: marshalledSite.url ),
+                                        uses: marshalledSite.uses,
+                                        lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
+                                ) { site in
 
-                            for q in 0..<marshalledSite.questions_count {
-                                let marshalledQuestion = (marshalledSite.questions + q).pointee
-                                if let keyword = String( safeUTF8: marshalledQuestion.keyword ) {
-                                    site.questions.append( MPQuestion(
-                                            site: site,
-                                            keyword: keyword,
-                                            resultType: marshalledQuestion.type,
-                                            resultState: String( safeUTF8: marshalledQuestion.state )
-                                    ) )
-                                }
+                                    for q in 0..<marshalledSite.questions_count {
+                                        let marshalledQuestion = (marshalledSite.questions + q).pointee
+                                        if let keyword = String( safeUTF8: marshalledQuestion.keyword ) {
+                                            site.questions.append( MPQuestion(
+                                                    site: site,
+                                                    keyword: keyword,
+                                                    resultType: marshalledQuestion.type,
+                                                    resultState: String( safeUTF8: marshalledQuestion.state )
+                                            ) )
+                                        }
+                                    }
+                                } )
                             }
                         }
                     }
-
-                    return user
                 }
 
                 throw self.file.pointee.error
@@ -852,5 +830,5 @@ extension MPMarshalError: CustomStringConvertible {
 }
 
 protocol MPMarshalObserver {
-    func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]?)
+    func userFilesDidChange(_ userFiles: [MPMarshal.UserFile])
 }

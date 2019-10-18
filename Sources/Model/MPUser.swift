@@ -143,9 +143,16 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             return "\(self.fullName)"
         }
     }
-    var dirty = false {
+    var initializing = true {
         didSet {
-            MPMarshal.shared.setNeedsSave( user: self )
+            self.dirty = false
+        }
+    }
+    var dirty        = false {
+        didSet {
+            if !self.initializing {
+                MPMarshal.shared.setNeedsSave( user: self )
+            }
         }
     }
 
@@ -154,7 +161,8 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil, masterKeyFactory: MPKeyFactory,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
-         file: UnsafeMutablePointer<MPMarshalledFile> = mpw_marshal_file( nil, nil, nil )) {
+         file: UnsafeMutablePointer<MPMarshalledFile> = mpw_marshal_file( nil, nil, nil ),
+         initialize: (MPUser) -> () = { _ in }) {
         self.algorithm = algorithm ?? .current
         self.avatar = avatar
         self.fullName = fullName
@@ -169,6 +177,10 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             self.masterKeyFactory = masterKeyFactory
             self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
+
+            initialize( self )
+            self.initializing = false
+
             self.observers.register( observer: self )
         }
     }

@@ -15,7 +15,6 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                 self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
 
-                // TODO: make efficient
                 MPURLUtils.preview( url: self.siteName, result: { info in
                     self.color = info.color?.uiColor
                     self.image = info.imageData.flatMap { UIImage( data: $0 ) }
@@ -127,9 +126,14 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     var description: String {
         "\(self.siteName)"
     }
+    var initializing = true {
+        didSet {
+            self.dirty = false
+        }
+    }
     var dirty = false {
         didSet {
-            if self.dirty {
+            if !self.initializing && self.dirty {
                 self.user.dirty = true
             }
         }
@@ -140,9 +144,10 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     init(user: MPUser, siteName: String, algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
          resultType: MPResultType? = nil, resultState: String? = nil,
          loginType: MPResultType? = nil, loginState: String? = nil,
-         url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil, questions: [MPQuestion] = []) {
+         url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil, questions: [MPQuestion] = [],
+         initialize: (MPSite) -> () = { _ in }) {
         self.user = user
-        self.siteName = ""
+        self.siteName = siteName
         self.algorithm = algorithm ?? user.algorithm
         self.counter = counter ?? MPCounterValue.default
         self.resultType = resultType ?? user.defaultType
@@ -154,7 +159,14 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.color = siteName.color()
 
         defer {
-            self.siteName = siteName
+            // TODO: make efficient
+            MPURLUtils.preview( url: self.siteName, result: { info in
+                self.color = info.color?.uiColor
+                self.image = info.imageData.flatMap { UIImage( data: $0 ) }
+            } )
+
+            initialize( self )
+            self.initializing = false
         }
     }
 
