@@ -79,9 +79,7 @@ public class MPSpinnerView: UICollectionView {
             super.prepare()
 
             guard let collectionView = self.collectionView
-            else {
-                return
-            }
+            else { return }
 
             self.contentSize = CGSize( width: collectionView.bounds.width, height: collectionView.bounds.height * CGFloat( self.itemCount ) )
             self.layout( items: &self.itemAttributes, inBounds: collectionView.bounds )
@@ -119,13 +117,12 @@ public class MPSpinnerView: UICollectionView {
         }
 
         override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
-            if let oldBounds = self.oldBounds {
-                let targetBounds = self.collectionView?.bounds ?? .zero
-                let scan         = oldBounds.size.height > 0 ? oldBounds.origin.y / oldBounds.size.height: 0
-                return CGPoint( x: oldBounds.origin.x, y: scan * targetBounds.height )
-            }
+            guard let oldBounds = self.oldBounds
+            else { return proposedContentOffset }
 
-            return proposedContentOffset
+            let targetBounds = self.collectionView?.bounds ?? .zero
+            let scan         = oldBounds.size.height > 0 ? oldBounds.origin.y / oldBounds.size.height: 0
+            return CGPoint( x: oldBounds.origin.x, y: scan * targetBounds.height )
         }
 
         override func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
@@ -153,14 +150,10 @@ public class MPSpinnerView: UICollectionView {
 
         override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
             guard let collectionView = self.collectionView
-            else {
-                return nil
-            }
+            else { return nil }
 
             let fromItem = Int( rect.minY / collectionView.bounds.height ), toItem = Int( rect.maxY / collectionView.bounds.height )
-            return (fromItem...toItem).compactMap {
-                $0 < 0 || $0 > self.itemCount - 1 ? nil: self.itemAttributes[$0]
-            }
+            return Range( fromItem...toItem ).clamped( to: 0..<self.itemCount ).compactMap { self.itemAttributes[$0]     }
         }
 
         override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {

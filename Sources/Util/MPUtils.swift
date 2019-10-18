@@ -5,7 +5,7 @@
 
 import Foundation
 
-let productName = "paX"
+let productName = PearlInfoPlist.get().cfBundleDisplayName ?? "paX"
 
 let resultTypes = [
     MPResultType.templateMaximum, MPResultType.templateLong, MPResultType.templateMedium, MPResultType.templateShort,
@@ -203,11 +203,10 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     }
 }
 
-public enum MPError: Error {
+public enum MPError: LocalizedError {
     case `internal`(details: String)
-}
-
-extension MPMarshalError: Error {
+    case `state`(details: String)
+    case `marshal`(error: MPMarshalError)
 }
 
 extension OperationQueue {
@@ -227,7 +226,7 @@ extension OperationQueue {
 
 extension NSTextAlignment {
     static var inverse: NSTextAlignment {
-        UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft ? .left : .right
+        UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft ? .left: .right
     }
 }
 

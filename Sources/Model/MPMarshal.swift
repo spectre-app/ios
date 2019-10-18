@@ -116,9 +116,9 @@ class MPMarshal: Observable {
     public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
         DispatchQueue.mpw.promise { () -> Data in
             guard let keyFactory = user.masterKeyFactory
-            else { throw MPMarshalError( type: MPMarshalErrorType.errorMissing, message: "Missing master key." ) }
+            else { throw MPError.state( details: "Not authenticated: \(user)." ) }
             guard let marshalledUser = mpw_marshal_user( user.fullName, keyFactory.provide(), user.algorithm )
-            else { throw MPError.internal( details: "Couldn't allocate for marshalling \(user)" ) }
+            else { throw MPError.internal( details: "Couldn't allocate for marshalling: \(user)" ) }
 
             marshalledUser.pointee.redacted = redacted
             marshalledUser.pointee.avatar = user.avatar.encode()
@@ -140,7 +140,7 @@ class MPMarshal: Observable {
 
                 for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
                     guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
-                    else { throw MPError.internal( details: "Couldn't marshal \(user.fullName): \(site.siteName): \(question)" ) }
+                    else { throw MPError.internal( details: "Couldn't marshal: \(user.fullName): \(site.siteName): \(question)" ) }
 
                     marshalledQuestion.pointee.type = question.resultType
                     marshalledQuestion.pointee.state = UnsafePointer( mpw_strdup( question.resultState ) )
@@ -153,7 +153,7 @@ class MPMarshal: Observable {
                 return data
             }
 
-            throw user.file.pointee.error
+            throw MPError.marshal( error: user.file.pointee.error )
         }
     }
 
@@ -162,7 +162,7 @@ class MPMarshal: Observable {
         DispatchQueue.mpw.promise {
             guard let importingFile = self.userFile( for: data )
             else {
-                mperror( title: "Issue importing", context: "Not an \(PearlInfoPlist.get().cfBundleDisplayName ?? productName) import document" )
+                mperror( title: "Issue importing", context: "Not an \(productName) import document" )
                 return Promise( .success( false ) )
             }
             guard let importingName = String( safeUTF8: importingFile.fullName )
@@ -574,7 +574,7 @@ class MPMarshal: Observable {
                     } )
                 }
                 else {
-                    throw file.pointee.error
+                    throw MPError.marshal( error: file.pointee.error )
                 }
             }
 
@@ -632,24 +632,23 @@ class MPMarshal: Observable {
         }
 
         func text() -> String {
-            let appName    = PearlInfoPlist.get().cfBundleDisplayName ?? productName
             let appVersion = PearlInfoPlist.get().cfBundleShortVersionString ?? "-"
             let appBuild   = PearlInfoPlist.get().cfBundleVersion ?? "-"
 
             if self.redacted {
                 return """
-                       \(appName) export file (\(self.format)) for \(self.user)
+                       \(productName) export file (\(self.format)) for \(self.user)
                        NOTE: This is a SECURE export; access to the file does not expose its secrets.
                        ---
-                       \(appName) v\(appVersion) (\(appBuild))
+                       \(productName) v\(appVersion) (\(appBuild))
                        """
             }
             else {
                 return """
-                       \(appName) export (\(self.format)) for \(self.user)
+                       \(productName) export (\(self.format)) for \(self.user)
                        NOTE: This export file's passwords are REVEALED.  Keep it safe!
                        ---
-                       \(appName) v\(appVersion) (\(appBuild))
+                       \(productName) v\(appVersion) (\(appBuild))
                        """
             }
         }
@@ -781,7 +780,7 @@ class MPMarshal: Observable {
                     }
                 }
 
-                throw self.file.pointee.error
+                throw MPError.marshal( error: self.file.pointee.error )
             }
         }
 
