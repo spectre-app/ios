@@ -169,6 +169,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 questions.append( contentsOf: $0.questions )
                 return questions
             }, subitems: [ ButtonItem( itemValue: { _ in (label: "Add Security Question", image: nil) } ) { item in
+
             } ], itemCell: { tableView, indexPath, value in
                 Cell.dequeue( from: tableView, indexPath: indexPath ) {
                     ($0 as? Cell)?.question = value
@@ -181,7 +182,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         class Cell: UITableViewCell {
             private let keywordLabel = UILabel()
             private let resultLabel  = UILabel()
-            private let copyButton   = UIButton( title: "copy" )
+            private let copyButton   = MPButton( title: "copy" )
 
             var question: MPQuestion? {
                 didSet {
@@ -218,20 +219,22 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 // - Hierarchy
                 self.contentView.addSubview( self.keywordLabel )
                 self.contentView.addSubview( self.resultLabel )
+                self.contentView.addSubview( self.copyButton )
 
                 // - Layout
                 LayoutConfiguration( view: self.keywordLabel )
                         .constrainToMarginsOfOwner( withAnchors: .topBox )
                         .activate()
                 LayoutConfiguration( view: self.resultLabel )
-                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: 8 ) }
                         .constrainTo { $1.topAnchor.constraint( equalTo: self.keywordLabel.bottomAnchor ) }
-                        .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                         .activate()
                 LayoutConfiguration( view: self.copyButton )
                         .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor, constant: 8 ) }
-                        .constrainTo { $1.centerYAnchor.constraint( equalTo: self.keywordLabel.centerYAnchor ) }
-                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                        .constrainTo { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: -8 ) }
                         .activate()
             }
         }
