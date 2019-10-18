@@ -31,7 +31,9 @@ open class DataSource<E: Hashable> {
     }
 
     open func element(at indexPath: IndexPath) -> E? {
-        indexPath.section < self.sectionsOfElements.count && indexPath.item < self.sectionsOfElements[indexPath.section].count ?
+        indexPath.section >= 0 && indexPath.item >= 0 &&
+                indexPath.section < self.sectionsOfElements.count &&
+                indexPath.item < self.sectionsOfElements[indexPath.section].count ?
                 self.sectionsOfElements[indexPath.section][indexPath.item]: nil
     }
 
@@ -53,7 +55,7 @@ open class DataSource<E: Hashable> {
 
     open func update(_ updatedSectionsOfElements: [[E?]],
                      reload: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: [E?]? = nil,
-                     animated: Bool = true, completion: ((Bool) -> Void)? = nil) {
+                     animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)? = nil) {
         if updatedSectionsOfElements == self.sectionsOfElements {
             self.perform( animated: animated, completion: completion ) {
                 var reloadPaths = reloadPaths ?? []
@@ -66,7 +68,7 @@ open class DataSource<E: Hashable> {
                     }
                 }
                 if reloadPaths.count > 0 {
-                    trc( "reload items \(reloadPaths)" )
+                    //trc( "reload items \(reloadPaths)" )
                     self.collectionView?.reloadItems( at: reloadPaths )
                     self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
                 }
@@ -107,11 +109,11 @@ open class DataSource<E: Hashable> {
             var insertSet = IndexSet(), deleteSet = IndexSet()
             for section in (0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count )).reversed() {
                 if section >= updatedSectionsOfElements.count {
-                    trc( "delete section \(section)" )
+                    //trc( "delete section \(section)" )
                     self.sectionsOfElements.remove( at: section )
                     deleteSet.insert( section )
                 } else if section >= self.sectionsOfElements.count {
-                    trc( "insert section \(section)" )
+                    //trc( "insert section \(section)" )
                     self.sectionsOfElements.append( updatedSectionsOfElements[section] )
                     insertSet.insert( section )
                 }
@@ -135,29 +137,23 @@ open class DataSource<E: Hashable> {
             }
 
             // Reload existing items.
-            for path in reloadPaths {
-                trc( "reload item \(path)" )
-            }
+            //for path in reloadPaths { trc( "reload item \(path)" ) }
             self.collectionView?.reloadItems( at: reloadPaths )
             self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
 
             // Remove deleted rows.
-            for path in deletePaths {
-                trc( "delete item \(path)" )
-            }
+            //for path in deletePaths { trc( "delete item \(path)" )}
             self.collectionView?.deleteItems( at: deletePaths )
             self.tableView?.deleteRows( at: deletePaths, with: .automatic )
 
             // Add inserted rows.
-            for path in insertPaths {
-                trc( "insert item \(path)" )
-            }
+            //for path in insertPaths { trc( "insert item \(path)" ) }
             self.collectionView?.insertItems( at: insertPaths )
             self.tableView?.insertRows( at: insertPaths, with: .automatic )
 
             // Then shuffle around moved rows.
             movedPaths.forEach { fromIndexPath, toIndexPath in
-                trc( "move item \(fromIndexPath) -> \(toIndexPath)" )
+                //trc( "move item \(fromIndexPath) -> \(toIndexPath)" )
                 self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
                 self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
             }
@@ -182,6 +178,10 @@ open class DataSource<E: Hashable> {
 
     private func perform(animated: Bool = true, completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
         DispatchQueue.main.perform {
+            if self.tableView == nil && self.collectionView == nil {
+                preconditionFailure( "Data source not associated with a data view." )
+            }
+
             let task = {
                 if #available( iOS 11.0, * ) {
                     self.tableView?.performBatchUpdates( updates, completion: completion )
