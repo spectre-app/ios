@@ -136,9 +136,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- UITableViewDelegate ---
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        if self.resultSource.element( at: indexPath )?.value == self.selectedSite {
-            self.selectedSite = nil
-        }
+        self.selectedSite = self.resultSource.element( at: indexPath )?.value
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -247,12 +245,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.resultLabel.adjustsFontSizeToFitWidth = true
             self.resultLabel.font = MPTheme.global.font.password.get()
             self.resultLabel.text = " "
-            self.resultLabel.textAlignment = .natural
+            self.resultLabel.textAlignment = .center
             self.resultLabel.textColor = MPTheme.global.color.body.get()
             self.resultLabel.isEnabled = false
 
             self.nameLabel.font = MPTheme.global.font.caption1.get()
-            self.nameLabel.textAlignment = .natural
+            self.nameLabel.textAlignment = .center
             self.nameLabel.textColor = MPTheme.global.color.body.get()
             self.nameLabel.shadowColor = MPTheme.global.color.shadow.get()
             self.nameLabel.shadowOffset = CGSize( width: 0, height: 1 )
@@ -277,7 +275,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             LayoutConfiguration( view: self.resultLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.modeButton.trailingAnchor, constant: 4 ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .defaultLow )
                     .compressionResistancePriorityHorizontal( .defaultHigh - 1, vertical: .defaultHigh + 1 )
                     .activate()
@@ -285,7 +283,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             LayoutConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.resultLabel.trailingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
         }
