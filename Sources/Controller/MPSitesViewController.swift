@@ -81,7 +81,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         LayoutConfiguration( view: self.siteHeaderView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor, multiplier: 0.382 ) }
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: 0.382 ) }
                 .activate()
 
         LayoutConfiguration( view: self.sitesTableView )

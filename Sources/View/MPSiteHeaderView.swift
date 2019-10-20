@@ -45,12 +45,12 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
         self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.siteButton.layer.shadowOffset = .zero
 
-        let leadingToolBar = UIStackView( arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
+        let leadingToolBar = UIStackView() // arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
         leadingToolBar.axis = .vertical
         leadingToolBar.spacing = 12
 
-        let trailingToolBar = UIStackView( arrangedSubviews: [ self.settingsButton, self.trashButton ] )
-        trailingToolBar.axis = .vertical
+        let trailingToolBar = UIStackView( arrangedSubviews: [ self.trashButton, self.settingsButton ] )
+        trailingToolBar.axis = .horizontal
         trailingToolBar.spacing = 12
 
         self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in

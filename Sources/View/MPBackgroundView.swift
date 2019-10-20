@@ -53,6 +53,7 @@ class MPBackgroundView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+
         self.update()
     }
 

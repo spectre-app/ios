@@ -34,7 +34,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     private lazy var resultSource = DataSource<MPQuery.Result<MPSite>>( tableView: self )
     private var newSiteResult: MPQuery.Result<MPSite>?
-    private var isSelecting = false, isInitial = true
+    private var isInitial = true
     private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
         self.doUpdate()
     }
@@ -123,33 +123,26 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
 
                 // Select the most appropriate row according to the query.
-                self.selectRow( at: self.resultSource.indexPath( for: selectedResult ), animated: true, scrollPosition: .middle )
-                self.selectedSite = selectedResult?.value
+                let selectedPath = self.resultSource.indexPath( for: selectedResult )
+                if self.indexPathForSelectedRow != selectedPath {
+                    MPProgramState.sideEffect.perform {
+                        self.selectRow( at: selectedPath, animated: true, scrollPosition: .middle )
+                    }
+                }
             }
         }
     }
 
     // MARK: --- UITableViewDelegate ---
 
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-//        self.selectRow( at: nil, animated: true, scrollPosition: .none )
-//        self.selectedSite = nil
-    }
-
-    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        self.isSelecting = true;
-        return indexPath
-    }
-
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        if !self.isSelecting {
+        if self.resultSource.element( at: indexPath )?.value == self.selectedSite {
             self.selectedSite = nil
         }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.selectedSite = self.resultSource.element( at: indexPath )?.value
-        self.isSelecting = false
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -220,13 +213,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
             }
         }
-        public var new = false {
-            didSet {
-                DispatchQueue.main.perform {
-                    self.copyButton.title = self.new ? "add": "copy"
-                }
-            }
-        }
+        public var new = false
 
         private var mode        = MPKeyPurpose.authentication {
             didSet {
@@ -236,7 +223,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         private let resultLabel = UITextField()
         private let nameLabel   = UILabel()
         private let modeButton  = MPButton( title: "" )
-        private let copyButton  = MPButton( title: "" )
 
         // MARK: --- Life ---
 
@@ -277,15 +263,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
             self.modeButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
-            self.copyButton.darkBackground = true
-            self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in self.copyAction() }
-            self.copyButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
-
             // - Hierarchy
             self.contentView.addSubview( self.resultLabel )
             self.contentView.addSubview( self.nameLabel )
             self.contentView.addSubview( self.modeButton )
-            self.contentView.addSubview( self.copyButton )
 
             // - Layout
             LayoutConfiguration( view: self.modeButton )
@@ -296,6 +277,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             LayoutConfiguration( view: self.resultLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.modeButton.trailingAnchor, constant: 4 ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .defaultLow )
                     .compressionResistancePriorityHorizontal( .defaultHigh - 1, vertical: .defaultHigh + 1 )
                     .activate()
@@ -306,12 +288,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.resultLabel.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
+        }
 
-            LayoutConfiguration( view: self.copyButton )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor, constant: 20 ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .activate()
+        override func setSelected(_ selected: Bool, animated: Bool) {
+            super.setSelected( selected, animated: animated )
+
+            if selected, !MPProgramState.sideEffect.isActive {
+                self.copyAction()
+            }
         }
 
         func modeAction() {

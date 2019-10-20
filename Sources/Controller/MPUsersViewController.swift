@@ -26,6 +26,11 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     private let userToolbar    = UIToolbar( frame: .infinite )
     private let detailsHost    = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
+    private var keyboardLayoutGuide: UILayoutGuide! {
+        willSet {
+            self.keyboardLayoutGuide?.uninstallKeyboardLayoutGuide()
+        }
+    }
 
     // MARK: --- Life ---
 
@@ -93,17 +98,17 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
             inactive.set( 0, forKey: "alpha" )
         }
+    }
 
-        UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        self.keyboardLayoutGuide = UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
             [
                 self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
                 self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).withPriority( .defaultHigh )
             ]
         }
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear( animated )
 
         MPMarshal.shared.setNeedsReload()
     }
@@ -111,6 +116,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear( animated )
 
+        self.keyboardLayoutGuide = nil
         self.selectedFile = nil
     }
 
