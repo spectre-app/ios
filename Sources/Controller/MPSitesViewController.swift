@@ -55,9 +55,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         }
 
         self.userButton.addAction( for: .touchUpInside ) { _, _ in
-            if !self.detailsHost.hideDetails() {
-                self.detailsHost.showDetails( MPUserDetailsViewController( model: self.user ) )
-            }
+            self.detailsHost.show( MPUserDetailsViewController( model: self.user ) )
         }
         //self.userButton.setImage( self.user.avatar.image(), for: .normal )
         self.userButton.sizeToFit()
@@ -73,13 +71,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
 
         // - Hierarchy
         self.addChild( self.detailsHost )
-        defer {
-            self.detailsHost.didMove( toParent: self )
-        }
         self.view.addSubview( self.sitesTableView )
         self.view.addSubview( self.siteHeaderView )
         self.view.addSubview( self.detailsHost.view )
         self.view.addSubview( self.topContainer )
+        self.detailsHost.didMove( toParent: self )
 
         // - Layout
         LayoutConfiguration( view: self.siteHeaderView )
@@ -153,9 +149,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
     // MARK: --- MPSiteHeaderObserver ---
 
     func shouldOpenDetails(forSite site: MPSite) {
-        if !self.detailsHost.hideDetails() {
-            self.detailsHost.showDetails( MPSiteDetailsViewController( model: site ) )
-        }
+        self.detailsHost.show( MPSiteDetailsViewController( model: site ) )
     }
 
     // MARK: --- MPSitesViewObserver ---
@@ -167,7 +161,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
                     self.siteHeaderView.site = selectedSite
                 }
                 else {
-                    self.detailsHost.hideDetails()
+                    self.detailsHost.hide()
                     self.searchField.text = nil
                     self.sitesTableView.query = nil
                 }
@@ -184,7 +178,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
     // MARK: --- UITextFieldDelegate ---
 
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        self.detailsHost.hideDetails()
+        self.detailsHost.hide()
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

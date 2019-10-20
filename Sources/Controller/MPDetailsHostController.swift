@@ -10,8 +10,8 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
     public let contentView = MPUntouchableView()
     let closeButton = MPButton.closeButton()
 
-    private lazy var detailRecognizer = UITapGestureRecognizer( target: self, action: #selector( didTapBackground ) )
-    private lazy var configuration    = LayoutConfiguration( view: self.view )
+    private lazy var detailRecognizer   = UITapGestureRecognizer( target: self, action: #selector( didTapBackground ) )
+    private lazy var popupConfiguration = LayoutConfiguration( view: self.view )
     private var detailsController:      AnyMPDetailsViewController?
     private var contentSizeObservation: NSKeyValueObservation?
 
@@ -30,13 +30,19 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
             self.scrollView.contentInsetAdjustmentBehavior = .always
         }
 
-        self.closeButton.button.addAction( for: .touchUpInside ) { _, _ in self.hideDetails() }
+        self.closeButton.button.addAction( for: .touchUpInside ) { _, _ in self.hide() }
 
-        // Keep sufficient inset to keep content at the bottom of the host.
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { _, _ in
+            // Inset top to push content to the bottom of the host.
             self.scrollView.contentInset = UIEdgeInsets(
                     top: max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height ),
                     left: 0, bottom: 0, right: 0 )
+
+            // Inset bottom to ensure content is large enough to enable scrolling.
+            if #available( iOS 11.0, * ) {
+                self.scrollView.contentInset.bottom = max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height
+                        - self.scrollView.adjustedContentInset.top - self.scrollView.adjustedContentInset.bottom + 1 )
+            }
         }
 
         // - Hierarchy
@@ -66,7 +72,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
                 .activate()
 
-        self.configuration
+        self.popupConfiguration
                 .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
                     active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -79,13 +85,13 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
 
     @objc
     func didTapBackground() {
-        self.hideDetails()
+        self.hide()
     }
 
     // MARK: --- Interface ---
 
-    public func showDetails(_ detailsController: AnyMPDetailsViewController) {
-        self.hideDetails {
+    public func show(_ detailsController: AnyMPDetailsViewController) {
+        self.hide {
             self.detailsController = detailsController
 
             if let detailsController = self.detailsController {
@@ -95,7 +101,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                 LayoutConfiguration( view: detailsController.view ).constrainToOwner().activate()
                 UIView.animate( withDuration: 0.382, animations: {
                     detailsController.view.window?.endEditing( true )
-                    self.configuration.activate()
+                    self.popupConfiguration.activate()
                 }, completion: { finished in
                     detailsController.endAppearanceTransition()
                     detailsController.didMove( toParent: self )
@@ -105,13 +111,13 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
     }
 
     @discardableResult
-    public func hideDetails(completion: (() -> Void)? = nil) -> Bool {
+    public func hide(completion: (() -> Void)? = nil) -> Bool {
         if let detailsController = self.detailsController {
             DispatchQueue.main.perform {
                 detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
                 UIView.animate( withDuration: 0.382, animations: {
-                    self.configuration.deactivate()
+                    self.popupConfiguration.deactivate()
                 }, completion: { finished in
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()
@@ -144,7 +150,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         if #available( iOS 11, * ) {
             if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -80 {
-                self.hideDetails()
+                self.hide()
             }
         }
     }

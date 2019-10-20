@@ -740,6 +740,7 @@
 		DADBB55918DB0CFC00D099FE /* keyboard-dark@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "keyboard-dark@2x.png"; sourceTree = "<group>"; };
 		DAE2726119CE9CB3007C5262 /* UITableViewCell+PearlDeque.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITableViewCell+PearlDeque.m"; sourceTree = "<group>"; };
 		DAE2726219CE9CB3007C5262 /* UITableViewCell+PearlDeque.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableViewCell+PearlDeque.h"; sourceTree = "<group>"; };
+		DAE4AC30235B623000CDD88A /* MasterPassword.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MasterPassword.entitlements; sourceTree = "<group>"; };
 		DAE6E18D22CC3CE100DE0342 /* MasterPassword 5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 5.xcdatamodel"; sourceTree = "<group>"; };
 		DAE6E18E22CC3CE100DE0342 /* MasterPassword 9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 9.xcdatamodel"; sourceTree = "<group>"; };
 		DAE6E18F22CC3CE100DE0342 /* MasterPassword 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 3.xcdatamodel"; sourceTree = "<group>"; };
@@ -1059,13 +1060,14 @@
 		DA4A0BDE201443F4004E2CE5 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				DAE4AC30235B623000CDD88A /* MasterPassword.entitlements */,
+				DA4A0C1E201531B9004E2CE5 /* MasterPassword-Bridging-Header.h */,
+				DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */,
+				DA4A0C1F201531B9004E2CE5 /* MasterPassword-Info.plist */,
+				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
 				93D39E0C533C1943D2425F07 /* Controller */,
 				93D39760DAE73795CA63D02A /* Util */,
 				93D39472440F87F0B0FAD295 /* View */,
-				DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */,
-				DA4A0C1E201531B9004E2CE5 /* MasterPassword-Bridging-Header.h */,
-				DA4A0C1F201531B9004E2CE5 /* MasterPassword-Info.plist */,
-				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -2484,7 +2486,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "-";
+				CODE_SIGN_IDENTITY = "-";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
@@ -2846,7 +2848,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
@@ -2884,7 +2886,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";

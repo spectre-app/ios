@@ -14,11 +14,10 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
     public var selectedFile: MPMarshal.UserFile? {
         get {
-            self.usersSpinner.indexPathsForSelectedItems?.first.flatMap { self.fileSource.element( at: $0 ) }
+            self.fileSource.element( item: self.usersSpinner.selectedItem )
         }
         set {
-            self.usersSpinner.selectItem( at: newValue.flatMap { self.fileSource.indexPath( for: $0 ) },
-                                          animated: true, scrollPosition: .centeredVertically )
+            self.usersSpinner.selectItem( self.fileSource.indexPath( for: newValue )?.item )
         }
     }
 
@@ -53,9 +52,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
         self.settingsButton.darkBackground = true
         self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
-            if !self.detailsHost.hideDetails() {
-                self.detailsHost.showDetails( MPAppDetailsViewController() )
-            }
+            self.detailsHost.show( MPAppDetailsViewController() )
         }
 
         self.userToolbar.barStyle = .black
@@ -66,13 +63,11 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
         // - Hierarchy
         self.addChild( self.detailsHost )
-        defer {
-            self.detailsHost.didMove( toParent: self )
-        }
         self.view.addSubview( self.usersSpinner )
         self.view.addSubview( self.settingsButton )
         self.view.addSubview( self.userToolbar )
         self.view.addSubview( self.detailsHost.view )
+        self.detailsHost.didMove( toParent: self )
 
         // - Layout
         LayoutConfiguration( view: self.usersSpinner )
@@ -181,15 +176,19 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     // MARK: --- UICollectionViewDelegate ---
 
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        self.usersSpinner.selectedItem = nil
+    }
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         UIView.animate( withDuration: 0.382 ) {
-            self.userToolbarConfiguration.updateActivated( self.usersSpinner.indexPathsForSelectedItems?.count ?? 0 > 0 )
+            self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         UIView.animate( withDuration: 0.382 ) {
-            self.userToolbarConfiguration.updateActivated( self.usersSpinner.indexPathsForSelectedItems?.count ?? 0 > 0 )
+            self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
         }
     }
 

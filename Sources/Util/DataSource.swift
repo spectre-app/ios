@@ -30,26 +30,35 @@ open class DataSource<E: Hashable> {
         indexPath( for: item, in: self.sectionsOfElements )
     }
 
-    open func element(at indexPath: IndexPath) -> E? {
-        indexPath.section >= 0 && indexPath.item >= 0 &&
-                indexPath.section < self.sectionsOfElements.count &&
-                indexPath.item < self.sectionsOfElements[indexPath.section].count ?
-                self.sectionsOfElements[indexPath.section][indexPath.item]: nil
+    open func element(at indexPath: IndexPath?) -> E? {
+        guard let indexPath = indexPath
+        else { return nil }
+
+        return element( item: indexPath.item, section: indexPath.section )
+    }
+
+    open func element(item: Int?, section: Int = 0) -> E? {
+        guard let item = item
+        else { return nil }
+
+        return section >= 0 && item >= 0 &&
+                section < self.sectionsOfElements.count &&
+                item < self.sectionsOfElements[section].count ?
+                self.sectionsOfElements[section][item]: nil
     }
 
     open func elements() -> AnySequence<(indexPath: IndexPath, element: E?)> {
+        // TODO: inline these types
         let s: LazySequence<FlattenSequence<LazyMapSequence<EnumeratedSequence<[[E?]]>, LazyMapSequence<EnumeratedSequence<[E?]>, (indexPath: IndexPath, element: E?)>>>>
-                =
-                self.sectionsOfElements.enumerated().lazy.flatMap {
-                    let (section, sectionElements) = $0
+                = self.sectionsOfElements.enumerated().lazy.flatMap {
+            let (section, sectionElements) = $0
 
-                    return sectionElements.enumerated().lazy.map {
-                        let (item, element) = $0
+            return sectionElements.enumerated().lazy.map {
+                let (item, element) = $0
 
-                        return (indexPath: IndexPath( item: item, section: section ), element: element)
-                    }
-                }
-
+                return (indexPath: IndexPath( item: item, section: section ), element: element)
+            }
+        }
         return AnySequence<(indexPath: IndexPath, element: E?)>( s )
     }
 
@@ -112,7 +121,8 @@ open class DataSource<E: Hashable> {
                     //trc( "delete section \(section)" )
                     self.sectionsOfElements.remove( at: section )
                     deleteSet.insert( section )
-                } else if section >= self.sectionsOfElements.count {
+                }
+                else if section >= self.sectionsOfElements.count {
                     //trc( "insert section \(section)" )
                     self.sectionsOfElements.append( updatedSectionsOfElements[section] )
                     insertSet.insert( section )

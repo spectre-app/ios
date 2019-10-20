@@ -14,7 +14,12 @@ public class MPSpinnerView: UICollectionView {
         return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
     }
     public var selectedItem: Int? {
-        self.indexPathsForSelectedItems?.first?.item
+        get {
+            self.indexPathsForSelectedItems?.first?.item
+        }
+        set {
+            self.selectItem( newValue )
+        }
     }
     public override var safeAreaInsets: UIEdgeInsets {
         .zero
@@ -37,15 +42,41 @@ public class MPSpinnerView: UICollectionView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    @discardableResult
+    public func selectItem(_ item: Int?, animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically) -> Bool {
+        let selectPath = item.flatMap { IndexPath( item: $0, section: 0 ) }
+        let selectedPath = self.selectedItem.flatMap { IndexPath( item: $0, section: 0 ) }
+
+        if let selectPath = selectPath, selectPath == selectedPath ||
+                !(self.delegate?.collectionView?( self, shouldSelectItemAt: selectPath ) ?? true) {
+            return false
+        }
+        if let selectedPath = selectedPath, selectedPath.item != selectPath?.item &&
+                !(self.delegate?.collectionView?( self, shouldDeselectItemAt: selectedPath ) ?? true) {
+            return false
+        }
+
+        self.selectItem( at: selectPath, animated: animated, scrollPosition: scrollPosition )
+
+        if let selectedPath = selectedPath {
+            self.delegate?.collectionView?( self, didDeselectItemAt: selectedPath )
+        }
+        if let selectPath = selectPath {
+            self.delegate?.collectionView?( self, didSelectItemAt: selectPath )
+        }
+
+        return true
+    }
+
     // MARK: --- Private ---
 
     @objc
     private func didTap(recognizer: UITapGestureRecognizer) {
-        if self.selectedItem != nil {
-            self.selectItem( at: nil, animated: true, scrollPosition: .centeredVertically )
+        if self.scrolledItem == self.selectedItem {
+            self.selectItem( nil )
         }
         else {
-            self.selectItem( at: IndexPath( item: self.scrolledItem, section: 0 ), animated: true, scrollPosition: .centeredVertically )
+            self.selectItem( self.scrolledItem )
         }
     }
 
@@ -153,7 +184,7 @@ public class MPSpinnerView: UICollectionView {
             else { return nil }
 
             let fromItem = Int( rect.minY / collectionView.bounds.height ), toItem = Int( rect.maxY / collectionView.bounds.height )
-            return Range( fromItem...toItem ).clamped( to: 0..<self.itemCount ).compactMap { self.itemAttributes[$0]     }
+            return Range( fromItem...toItem ).clamped( to: 0..<self.itemCount ).compactMap { self.itemAttributes[$0] }
         }
 
         override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
