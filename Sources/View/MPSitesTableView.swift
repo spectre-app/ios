@@ -262,6 +262,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.resultLabel.font = MPTheme.global.font.password.get()
             self.resultLabel.text = " "
             self.resultLabel.textAlignment = .natural
+            self.resultLabel.textColor = MPTheme.global.color.body.get()
             self.resultLabel.isEnabled = false
 
             self.nameLabel.font = MPTheme.global.font.caption1.get()
