@@ -27,7 +27,11 @@ open class DataSource<E: Hashable> {
     }
 
     open func indexPath(for item: E?) -> IndexPath? {
-        indexPath( for: item, in: self.sectionsOfElements )
+        self.indexPath( for: item, in: self.sectionsOfElements )
+    }
+
+    open func indexPath(where predicate: (E?) -> Bool) -> IndexPath? {
+        self.indexPath( where: predicate, in: self.sectionsOfElements )
     }
 
     open func element(at indexPath: IndexPath?) -> E? {
@@ -216,10 +220,14 @@ open class DataSource<E: Hashable> {
     }
 
     private func indexPath<E: Hashable>(for item: E?, in sections: [[E?]]?) -> IndexPath? {
+        self.indexPath( where: { $0 == item }, in: sections )
+    }
+
+    private func indexPath<E: Hashable>(where predicate: (E?) -> Bool, in sections: [[E?]]?) -> IndexPath? {
         var section = 0
         if let sections = sections {
             for sectionItems in sections {
-                if let index = sectionItems.firstIndex( where: { $0 == item } ) {
+                if let index = sectionItems.firstIndex( where: predicate ) {
                     return IndexPath( item: index, section: section )
                 }
 

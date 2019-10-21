@@ -40,37 +40,6 @@ func withVaStrings<R>(_ strings: [String], terminate: Bool = true, body: (CVaLis
     return withVaList( va, body )
 }
 
-extension MPKeyPurpose {
-    func button() -> String {
-        switch self {
-            case .authentication:
-                return "pw"
-            case .identification:
-                return "un"
-            case .recovery:
-                return "sa"
-            default:
-                fatalError( "Unsupported purpose: \(self)" )
-        }
-    }
-
-    @discardableResult
-    mutating func next() -> MPKeyPurpose {
-        switch self {
-            case .authentication:
-                self = .identification
-            case .identification:
-                self = .recovery
-            case .recovery:
-                self = .authentication
-            default:
-                fatalError( "Unsupported purpose: \(self)" )
-        }
-
-        return self
-    }
-}
-
 extension MPResultType {
     func `in`(class c: MPResultTypeClass) -> Bool {
         self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )

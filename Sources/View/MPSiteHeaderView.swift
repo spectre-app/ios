@@ -5,8 +5,7 @@
 
 import Foundation
 
-class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
-    public let observers = Observers<MPSiteHeaderObserver>()
+class MPSiteHeaderView: UIView, MPSiteObserver {
     public var site: MPSite? {
         willSet {
             self.site?.observers.unregister( observer: self )
@@ -19,10 +18,6 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
     }
 
     private let siteButton     = UIButton( type: .custom )
-    private let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
-    private let trashButton    = MPButton( image: UIImage( named: "icon_delete" ) )
-    private let recoveryButton = MPButton( image: UIImage( named: "icon_btn_question" ) )
-    private let keysButton     = MPButton( image: UIImage( named: "icon_key" ) )
 
     // MARK: --- Life ---
 
@@ -45,27 +40,8 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
         self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.siteButton.layer.shadowOffset = .zero
 
-        let leadingToolBar = UIStackView() // arrangedSubviews: [ self.recoveryButton, self.keysButton ] )
-        leadingToolBar.axis = .vertical
-        leadingToolBar.spacing = 12
-
-        let trailingToolBar = UIStackView( arrangedSubviews: [ self.trashButton, self.settingsButton ] )
-        trailingToolBar.axis = .horizontal
-        trailingToolBar.spacing = 12
-
-        self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
-            if let site = self.site {
-                self.observers.notify { $0.shouldOpenDetails( forSite: site ) }
-            }
-        }
-        self.trashButton.button.addAction( for: .touchUpInside ) { _, _ in
-            self.site?.user.sites.removeAll { $0 == self.site }
-        }
-
         // - Hierarchy
         self.addSubview( self.siteButton )
-        self.addSubview( leadingToolBar )
-        self.addSubview( trailingToolBar )
 
         // - Layout
         LayoutConfiguration( view: self.siteButton )
@@ -75,16 +51,6 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
                 .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
-                .activate()
-        LayoutConfiguration( view: leadingToolBar )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .activate()
-        LayoutConfiguration( view: trailingToolBar )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                 .activate()
     }
 
@@ -103,25 +69,13 @@ class MPSiteHeaderView: UIView, Observable, MPSiteObserver {
 
                 if let brightness = self.site?.color?.brightness(), brightness > 0.8 {
                     self.siteButton.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
-                    self.settingsButton.darkBackground = true
-                    self.trashButton.darkBackground = true
-                    self.recoveryButton.darkBackground = true
-                    self.keysButton.darkBackground = true
                 }
                 else {
                     self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
-                    self.settingsButton.darkBackground = false
-                    self.trashButton.darkBackground = false
-                    self.recoveryButton.darkBackground = false
-                    self.keysButton.darkBackground = false
                 }
 
                 self.layoutIfNeeded()
             }
         }
     }
-}
-
-protocol MPSiteHeaderObserver {
-    func shouldOpenDetails(forSite site: MPSite)
 }

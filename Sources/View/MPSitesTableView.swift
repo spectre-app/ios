@@ -19,8 +19,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
     public var selectedSite: MPSite? {
         didSet {
+            let selectedPath = self.resultSource.indexPath( where: { $0?.value == self.selectedSite } )
+            if self.indexPathForSelectedRow != selectedPath {
+                self.selectRow( at: selectedPath, animated: UIView.areAnimationsEnabled, scrollPosition: .middle )
+            }
+            else if let selectedPath = selectedPath {
+                self.scrollToRow( at: selectedPath, at: .middle, animated: UIView.areAnimationsEnabled )
+            }
+
             if self.selectedSite != oldValue {
-                self.observers.notify { $0.siteWasSelected( selectedSite: self.selectedSite ) }
+                self.observers.notify { $0.siteWasSelected( site: self.selectedSite ) }
             }
         }
     }
@@ -123,25 +131,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
 
                 // Select the most appropriate row according to the query.
-                let selectedPath = self.resultSource.indexPath( for: selectedResult )
-                if self.indexPathForSelectedRow != selectedPath {
-                    MPProgramState.sideEffect.perform {
-                        self.selectRow( at: selectedPath, animated: true, scrollPosition: .middle )
-                    }
-                }
+                self.selectedSite = selectedResult?.value
             }
         }
     }
 
     // MARK: --- UITableViewDelegate ---
-
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        self.selectedSite = self.resultSource.element( at: indexPath )?.value
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.selectedSite = self.resultSource.element( at: indexPath )?.value
-    }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as? LiefsteCell)?.willDisplay()
@@ -168,6 +163,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
+        cell.sitesView = self
         cell.result = result
         cell.new = cell.result == self.newSiteResult
         return cell
@@ -194,6 +190,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- Types ---
 
     class SiteCell: UITableViewCell, MPSiteObserver, MPUserObserver {
+        public var sitesView : MPSitesTableView?
         public var result: MPQuery.Result<MPSite>? {
             didSet {
                 self.site = self.result?.value
@@ -213,14 +210,15 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         public var new = false
 
-        private var mode        = MPKeyPurpose.authentication {
+        private var mode           = MPKeyPurpose.authentication {
             didSet {
                 self.update()
             }
         }
-        private let resultLabel = UITextField()
-        private let nameLabel   = UILabel()
-        private let modeButton  = MPButton( title: "" )
+        private let resultLabel    = UITextField()
+        private let nameLabel      = UILabel()
+        private let modeButton     = MPButton( image: UIImage( named: "icon_person" ) )
+        private let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
 
         // MARK: --- Life ---
 
@@ -239,6 +237,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.contentView.insetsLayoutMarginsFromSafeArea = false
             }
 
+            self.contentView.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( cellAction ) ) )
+
             self.selectedBackgroundView = UIView()
             self.selectedBackgroundView?.backgroundColor = MPTheme.global.color.selection.get()
 
@@ -255,9 +255,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.nameLabel.shadowColor = MPTheme.global.color.shadow.get()
             self.nameLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
+            self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
+                if let site = self.site {
+                    self.sitesView?.observers.notify { $0.siteDetailsAction( site: site ) }
+                }
+            }
+
             self.modeButton.tapEffect = false
-//            self.modeButton.darkBackground = true
-//            self.modeButton.effectBackground = false
+            self.modeButton.effectBackground = false
             self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
             self.modeButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
@@ -265,25 +270,32 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.contentView.addSubview( self.resultLabel )
             self.contentView.addSubview( self.nameLabel )
             self.contentView.addSubview( self.modeButton )
+            self.contentView.addSubview( self.settingsButton )
 
             // - Layout
             LayoutConfiguration( view: self.modeButton )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .activate()
+
+            LayoutConfiguration( view: self.settingsButton )
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.resultLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.modeButton.trailingAnchor, constant: 4 ) }
+                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeButton.trailingAnchor, constant: 4 ) }
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.settingsButton.leadingAnchor, constant: -4 ) }
                     .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .defaultLow )
                     .compressionResistancePriorityHorizontal( .defaultHigh - 1, vertical: .defaultHigh + 1 )
                     .activate()
 
             LayoutConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
         }
@@ -291,16 +303,26 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         override func setSelected(_ selected: Bool, animated: Bool) {
             super.setSelected( selected, animated: animated )
 
-            if selected, !MPProgramState.sideEffect.isActive {
-                self.copyAction()
+            UIView.animate( withDuration: 0.382 ) {
+                self.settingsButton.alpha = selected ? 1: 0
             }
         }
 
         func modeAction() {
-            self.mode.next()
+            switch self.mode {
+                case .authentication:
+                    self.mode = .identification
+                case .identification:
+                    self.mode = .authentication
+                default:
+                    self.mode = .authentication
+            }
         }
 
-        func copyAction() {
+        @objc
+        func cellAction() {
+            self.sitesView?.selectedSite = self.site
+
             DispatchQueue.mpw.perform {
                 guard let site = self.site
                 else { return }
@@ -391,7 +413,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         return Promise( .success( nil ) )
                 }
             }.then( on: DispatchQueue.main ) { (result: String?) in
-                self.modeButton.title = self.mode.button()
+                switch self.mode {
+                    case .authentication:
+                        self.modeButton.image = UIImage( named: "icon_tripledot" )
+                    case .identification:
+                        self.modeButton.image = UIImage( named: "icon_user" )
+                    case .recovery:
+                        self.modeButton.image = UIImage( named: "icon_btn_question" )
+                    @unknown default:
+                        self.modeButton.image = nil
+                }
                 self.modeButton.size = .small
                 self.resultLabel.text = result
             }
@@ -471,5 +502,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 }
 
 protocol MPSitesViewObserver {
-    func siteWasSelected(selectedSite: MPSite?)
+    func siteWasSelected(site selectedSite: MPSite?)
+    func siteDetailsAction(site: MPSite)
 }

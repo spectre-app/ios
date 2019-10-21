@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHeaderObserver, MPSitesViewObserver {
+class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
     private let searchField             = UITextField()
     private let userButton              = UIButton( type: .custom )
@@ -59,8 +59,6 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         }
         //self.userButton.setImage( self.user.avatar.image(), for: .normal )
         self.userButton.sizeToFit()
-
-        self.siteHeaderView.observers.register( observer: self )
 
         self.sitesTableView.observers.register( observer: self )
         self.sitesTableView.keyboardDismissMode = .onDrag
@@ -146,15 +144,9 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
         .lightContent
     }
 
-    // MARK: --- MPSiteHeaderObserver ---
-
-    func shouldOpenDetails(forSite site: MPSite) {
-        self.detailsHost.show( MPSiteDetailsViewController( model: site ) )
-    }
-
     // MARK: --- MPSitesViewObserver ---
 
-    func siteWasSelected(selectedSite: MPSite?) {
+    func siteWasSelected(site selectedSite: MPSite?) {
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 1, animations: {
                 if let selectedSite = selectedSite {
@@ -170,6 +162,12 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSiteHe
                     self.siteHeaderView.site = nil
                 }
             } )
+        }
+    }
+
+    func siteDetailsAction(site: MPSite) {
+        DispatchQueue.main.perform {
+            self.detailsHost.show( MPSiteDetailsViewController( model: site ) )
         }
     }
 

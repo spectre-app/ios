@@ -79,14 +79,7 @@ public class MPTheme {
                 caption1: Value( UIFont.preferredFont( forTextStyle: .caption1 ) ),
                 caption2: Value( UIFont.preferredFont( forTextStyle: .caption2 ) ),
                 footnote: Value( UIFont.preferredFont( forTextStyle: .footnote ) ),
-                password: {
-                    if #available( iOS 13, * ) {
-                        return Value( .monospacedSystemFont( ofSize: 22, weight: .black ) )
-                    }
-                    else {
-                        return Value( .monospacedDigitSystemFont( ofSize: 22, weight: .black ) )
-                    }
-                }(),
+                password: Value( .monospacedDigitSystemFont( ofSize: 22, weight: .black ) ),
                 mono: {
                     if #available( iOS 13, * ) {
                         return Value( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
