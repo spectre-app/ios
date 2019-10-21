@@ -22,11 +22,14 @@ class MPButton: MPEffectView {
     public var title: String? {
         didSet {
             DispatchQueue.main.perform {
-                if let title = self.title, title.count > 1 {
+                if self.title?.count ?? 0 > 1 {
                     self.size = .text
                 }
-                else if let title = self.title, title.count == 1 {
-                    self.size = .icon
+                else if self.title?.count ?? 0 == 1 {
+                    self.size = .text_icon
+                }
+                else if self.title?.isEmpty ?? true {
+                    self.size = .image_icon
                 }
                 else {
                     self.size = .small
@@ -36,17 +39,22 @@ class MPButton: MPEffectView {
             }
         }
     }
-    public var size = Size.icon {
+    public var size = Size.image_icon {
         didSet {
             DispatchQueue.main.perform {
                 switch self.size {
                     case .text:
                         self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
-                    case .icon:
+                        self.squareButtonConstraint.isActive = false
+                    case .text_icon:
                         self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
-                        self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor ).isActive = true
+                        self.squareButtonConstraint.isActive = true
+                    case .image_icon:
+                        self.button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
+                        self.squareButtonConstraint.isActive = true
                     case .small:
                         self.button.contentEdgeInsets = UIEdgeInsets( top: 3, left: 5, bottom: 3, right: 5 )
+                        self.squareButtonConstraint.isActive = false
                 }
             }
         }
@@ -57,6 +65,7 @@ class MPButton: MPEffectView {
         }
     }
     private(set) var button: UIButton!
+    private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
     override var     bounds: CGRect {
         didSet {
             self.setNeedsUpdateConstraints()
@@ -129,6 +138,6 @@ class MPButton: MPEffectView {
     }
 
     enum Size {
-        case text, icon, small
+        case text, text_icon, image_icon, small
     }
 }

@@ -190,13 +190,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- Types ---
 
     class SiteCell: UITableViewCell, MPSiteObserver, MPUserObserver {
-        public var sitesView : MPSitesTableView?
-        public var result: MPQuery.Result<MPSite>? {
+        public var sitesView: MPSitesTableView?
+        public var result:    MPQuery.Result<MPSite>? {
             didSet {
                 self.site = self.result?.value
             }
         }
-        public var site:   MPSite? {
+        public var site:      MPSite? {
             willSet {
                 self.site?.observers.unregister( observer: self )
                 self.site?.user.observers.unregister( observer: self )
@@ -243,7 +243,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.selectedBackgroundView?.backgroundColor = MPTheme.global.color.selection.get()
 
             self.resultLabel.adjustsFontSizeToFitWidth = true
-            self.resultLabel.font = MPTheme.global.font.password.get()
+            self.resultLabel.font = MPTheme.global.font.password.get()?.withSize( 32 )
             self.resultLabel.text = " "
             self.resultLabel.textAlignment = .center
             self.resultLabel.textColor = MPTheme.global.color.body.get()
