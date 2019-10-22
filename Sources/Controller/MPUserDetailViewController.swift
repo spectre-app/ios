@@ -52,9 +52,9 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class AvatarItem: PickerItem<MPUser, MPUser.Avatar> {
         init() {
             super.init( title: "Avatar", values: MPUser.Avatar.allCases,
-                        itemValue: { $0.avatar },
-                        itemUpdate: { $0.avatar = $1 },
-                        itemCell: { collectionView, indexPath, avatar in
+                        value: { $0.avatar },
+                        update: { $0.avatar = $1 },
+                        cell: { collectionView, indexPath, avatar in
                             MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPAvatarCell)?.avatar = avatar
                             }
@@ -67,9 +67,9 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class PasswordTypeItem: PickerItem<MPUser, MPResultType> {
         init() {
             super.init( title: "Default Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
-                        itemValue: { $0.defaultType },
-                        itemUpdate: { $0.defaultType = $1 },
-                        itemCell: { collectionView, indexPath, type in
+                        value: { $0.defaultType },
+                        update: { $0.defaultType = $1 },
+                        cell: { collectionView, indexPath, type in
                             MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as! MPResultTypeCell).resultType = type
                             }
@@ -109,7 +109,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class ActionsItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ButtonItem( itemValue: { _ in (label: "Export", image: nil) } ) { item in
+                ButtonItem( value: { _ in (label: "Export", image: nil) } ) { item in
                     if let user = item.model {
                         let controller = MPExportViewController( user: user )
                         controller.popoverPresentationController?.sourceView = item.view
@@ -117,7 +117,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         item.viewController?.present( controller, animated: true )
                     }
                 },
-                ButtonItem( itemValue: { _ in (label: "Log out", image: nil) } ) { item in
+                ButtonItem( value: { _ in (label: "Log out", image: nil) } ) { item in
                     item.model?.masterKeyFactory = nil
                 },
             ] )

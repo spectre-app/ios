@@ -298,14 +298,14 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
 }
 
 class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
-    let itemAction: (ButtonItem<M>) -> Void
+    let action: (ButtonItem<M>) -> Void
 
     init(title: String? = nil, subitems: [Item<M>] = [],
-         itemValue: @escaping (M) -> (label: String?, image: UIImage?),
-         itemAction: @escaping (ButtonItem<M>) -> Void = { _ in }) {
-        self.itemAction = itemAction
+         value: @escaping (M) -> (label: String?, image: UIImage?),
+         action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
+        self.action = action
 
-        super.init( title: title, subitems: subitems, value: itemValue )
+        super.init( title: title, subitems: subitems, value: value )
     }
 
     override func createItemView() -> ButtonItemView<M> {
@@ -327,7 +327,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
 
         override func createValueView() -> UIView? {
             self.button.button.addAction( for: .touchUpInside ) { _, _ in
-                self.item.itemAction( self.item )
+                self.item.action( self.item )
             }
             return self.button
         }
@@ -384,14 +384,14 @@ class DateItem<M>: ValueItem<M, Date> {
 
 class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     let placeholder: String?
-    let itemUpdate:  (M, String) -> Void
+    let update:      (M, String) -> Void
 
     init(title: String?, placeholder: String?, subitems: [Item<M>] = [],
-         itemValue: @escaping (M) -> String? = { _ in nil },
-         itemUpdate: @escaping (M, String) -> Void = { _, _ in }) {
+         value: @escaping (M) -> String? = { _ in nil },
+         update: @escaping (M, String) -> Void = { _, _ in }) {
         self.placeholder = placeholder
-        self.itemUpdate = itemUpdate
-        super.init( title: title, subitems: subitems, value: itemValue )
+        self.update = update
+        super.init( title: title, subitems: subitems, value: value )
     }
 
     override func createItemView() -> TextItemView<M> {
@@ -425,7 +425,7 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.addAction( for: .editingChanged ) { _, _ in
                 if let model = self.item.model,
                    let text = self.valueField.text {
-                    self.item.itemUpdate( model, text )
+                    self.item.update( model, text )
                 }
             }
             return self.valueField
@@ -441,18 +441,18 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
 }
 
 class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
-    let itemUpdate: (M, V) -> Void
-    let step:       V, min: V, max: V
+    let update: (M, V) -> Void
+    let step:   V, min: V, max: V
 
     init(title: String? = nil, subitems: [Item<M>] = [],
-         itemValue: @escaping (M) -> V? = { _ in nil },
-         itemUpdate: @escaping (M, V) -> Void = { _, _ in },
+         value: @escaping (M) -> V? = { _ in nil },
+         update: @escaping (M, V) -> Void = { _, _ in },
          step: V, min: V, max: V) {
-        self.itemUpdate = itemUpdate
+        self.update = update
         self.step = step
         self.min = min
         self.max = max
-        super.init( title: title, subitems: subitems, value: itemValue )
+        super.init( title: title, subitems: subitems, value: value )
     }
 
     override func createItemView() -> StepperItemView<M> {
@@ -481,7 +481,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
                 if let model = self.item.model,
                    let value = self.item.value,
                    value > self.item.min {
-                    self.item.itemUpdate( model, value - self.item.step )
+                    self.item.update( model, value - self.item.step )
                 }
             }
 
@@ -490,7 +490,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
                 if let model = self.item.model,
                    let value = self.item.value,
                    value < self.item.max {
-                    self.item.itemUpdate( model, value + self.item.step )
+                    self.item.update( model, value + self.item.step )
                 }
             }
 
@@ -538,22 +538,22 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
 }
 
 class PickerItem<M, V: Equatable>: ValueItem<M, V> {
-    let values:     [V]
-    let itemUpdate: (M, V) -> Void
-    let itemCell:   (UICollectionView, IndexPath, V) -> UICollectionViewCell
-    let viewInit:   (UICollectionView) -> Void
+    let values:   [V]
+    let update:   (M, V) -> Void
+    let cell:     (UICollectionView, IndexPath, V) -> UICollectionViewCell
+    let viewInit: (UICollectionView) -> Void
 
     init(title: String?, values: [V], subitems: [Item<M>] = [],
-         itemValue: @escaping (M) -> V,
-         itemUpdate: @escaping (M, V) -> Void = { _, _ in },
-         itemCell: @escaping (UICollectionView, IndexPath, V) -> UICollectionViewCell,
-         viewInit: @escaping (UICollectionView) -> Void) {
+         value: @escaping (M) -> V,
+         update: @escaping (M, V) -> Void = { _, _ in },
+         cell: @escaping (UICollectionView, IndexPath, V) -> UICollectionViewCell,
+         init viewInit: @escaping (UICollectionView) -> Void) {
         self.values = values
-        self.itemUpdate = itemUpdate
-        self.itemCell = itemCell
+        self.update = update
+        self.cell = cell
         self.viewInit = viewInit
 
-        super.init( title: title, subitems: subitems, value: itemValue )
+        super.init( title: title, subitems: subitems, value: value )
     }
 
     override func createItemView() -> PickerItemView<M> {
@@ -623,14 +623,14 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         }
 
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            self.item.itemCell( collectionView, indexPath, self.item.values[indexPath.item] )
+            self.item.cell( collectionView, indexPath, self.item.values[indexPath.item] )
         }
 
         // MARK: --- UICollectionViewDelegateFlowLayout ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             if let model = self.item.model {
-                self.item.itemUpdate( model, self.item.values[indexPath.item] )
+                self.item.update( model, self.item.values[indexPath.item] )
             }
         }
 

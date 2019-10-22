@@ -49,7 +49,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
     class LegacyItem: ButtonItem<Void> {
         init() {
-            super.init( title: "Legacy Data", itemValue: { _ in
+            super.init( title: "Legacy Data", value: { _ in
                 (label: "Re-Import Legacy Users", image: nil)
             } ) { _ in
                 MPMarshal.shared.importLegacy( force: true )
@@ -61,7 +61,6 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
     }
 
     class InfoItem: ListItem<Void, InfoItem.Link> {
-
         init() {
             super.init( title: "Links", values: {
                 [

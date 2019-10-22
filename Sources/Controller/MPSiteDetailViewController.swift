@@ -84,8 +84,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class PasswordCounterItem: StepperItem<MPSite, UInt32> {
         init() {
             super.init( title: "Password Counter",
-                        itemValue: { $0.counter.rawValue },
-                        itemUpdate: { $0.counter = MPCounterValue( rawValue: $1 ) ?? .default },
+                        value: { $0.counter.rawValue },
+                        update: { $0.counter = MPCounterValue( rawValue: $1 ) ?? .default },
                         step: 1, min: MPCounterValue.initial.rawValue, max: MPCounterValue.last.rawValue )
         }
     }
@@ -93,9 +93,9 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class PasswordTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
             super.init( title: "Password Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
-                        itemValue: { $0.resultType },
-                        itemUpdate: { $0.resultType = $1 },
-                        itemCell: { collectionView, indexPath, type in
+                        value: { $0.resultType },
+                        update: { $0.resultType = $1 },
+                        cell: { collectionView, indexPath, type in
                             MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPResultTypeCell)?.resultType = type
                             }
@@ -108,8 +108,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class PasswordResultItem: TextItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a password",
-                        itemValue: { try? $0.mpw_result().await() },
-                        itemUpdate: { site, password in
+                        value: { try? $0.mpw_result().await() },
+                        update: { site, password in
                             site.mpw_state( resultParam: password )
                                 .then { state in site.resultState = state }
                         } )
@@ -133,9 +133,9 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
             super.init( title: "User Name Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
-                        itemValue: { $0.loginType },
-                        itemUpdate: { $0.loginType = $1 },
-                        itemCell: { collectionView, indexPath, type in
+                        value: { $0.loginType },
+                        update: { $0.loginType = $1 },
+                        cell: { collectionView, indexPath, type in
                             MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                                 ($0 as? MPResultTypeCell)?.resultType = type
                             }
@@ -148,8 +148,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class LoginResultItem: TextItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a user name",
-                        itemValue: { try? $0.mpw_result( keyPurpose: .identification ).await() },
-                        itemUpdate: { site, login in
+                        value: { try? $0.mpw_result( keyPurpose: .identification ).await() },
+                        update: { site, login in
                             site.mpw_state( keyPurpose: .identification, resultParam: login )
                                 .then { state in site.loginState = state }
                         } )
@@ -176,7 +176,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 var questions = [ MPQuestion( site: $0, keyword: "" ) ]
                 questions.append( contentsOf: $0.questions )
                 return questions
-            }, subitems: [ ButtonItem( itemValue: { _ in (label: "Add Security Question", image: nil) } ) { item in
+            }, subitems: [ ButtonItem( value: { _ in (label: "Add Security Question", image: nil) } ) { item in
             } ], cell: { tableView, indexPath, value in
                 Cell.dequeue( from: tableView, indexPath: indexPath ) {
                     ($0 as? Cell)?.question = value
@@ -250,8 +250,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class URLItem: TextItem<MPSite> {
         init() {
             super.init( title: "URL", placeholder: "eg. https://www.apple.com",
-                        itemValue: { $0.url },
-                        itemUpdate: { $0.url = $1 } )
+                        value: { $0.url },
+                        update: { $0.url = $1 } )
         }
 
         override func createItemView() -> TextItemView<MPSite> {
