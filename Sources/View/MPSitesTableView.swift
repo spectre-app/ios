@@ -323,57 +323,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         func cellAction() {
             self.sitesView?.selectedSite = self.site
 
-            DispatchQueue.mpw.perform {
-                guard let site = self.site
-                else { return }
-
-                var result = "", kind = ""
-                switch self.mode {
-                    case .authentication:
-                        result = (try? site.mpw_result().await()) ?? ""
-                        kind = "password"
-                    case .identification:
-                        result = (try? site.mpw_login().await()) ?? ""
-                        kind = "user name"
-                    case .recovery:
-                        result = (try? site.mpw_answer().await()) ?? ""
-                        kind = "security answer"
-                    @unknown default: ()
-                }
-
-                site.use()
-                if self.new {
+            self.site?.mpw_copy( keyPurpose: self.mode, for: self ).then {
+                if let site = self.site, self.new {
                     site.user.sites.append( site )
-                }
-
-                if #available( iOS 10.0, * ) {
-                    UIPasteboard.general.setItems(
-                            [ [ UIPasteboard.typeAutomatic: result ] ],
-                            options: [
-                                UIPasteboard.OptionsKey.localOnly: true,
-                                UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                            ] )
-
-                    MPAlert( title: site.siteName, message: "Copied \(kind) (3 min)", details:
-                    """
-                    Your \(kind) for \(site.siteName) is:
-                    \(result)
-
-                    It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
-
-                    Note that after 3 minutes, the \(kind) will expire from the pasteboard for security reasons.
-                    """ ).show( in: self )
-                }
-                else {
-                    UIPasteboard.general.string = result
-
-                    MPAlert( title: site.siteName, message: "Copied \(kind)", details:
-                    """
-                    Your \(kind) for \(site.siteName) is:
-                    \(result)
-
-                    It was copied to the pasteboard, you can now switch to your application and paste it into the \(kind) field.
-                    """ ).show( in: self )
                 }
             }
         }
@@ -398,21 +350,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- Private ---
 
         private func update() {
-            DispatchQueue.mpw.promise { () -> Promise<String?> in
-                guard let site = self.site
-                else { return Promise( .success( nil ) ) }
-
-                switch self.mode {
-                    case .authentication:
-                        return site.mpw_result()
-                    case .identification:
-                        return site.mpw_login()
-                    case .recovery:
-                        return site.mpw_answer()
-                    @unknown default:
-                        return Promise( .success( nil ) )
-                }
-            }.then( on: DispatchQueue.main ) { (result: String?) in
+            self.site?.mpw_result( keyPurpose: self.mode ).then( on: DispatchQueue.main ) { (result: String?) in
                 switch self.mode {
                     case .authentication:
                         self.modeButton.image = UIImage( named: "icon_tripledot" )

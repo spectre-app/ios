@@ -61,9 +61,11 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class ResultItem: LabelItem<MPSite> {
         init() {
-            super.init( title: "Password & Login" ) {
-                (try? $0.mpw_result().await() ?? "", try? $0.mpw_login().await() ?? "")
-            }
+            super.init( title: "Password & Login", value: {
+                try? $0.mpw_result( keyPurpose: .authentication ).await()
+            }, caption: {
+                try? $0.mpw_result( keyPurpose: .identification ).await()
+            } )
         }
 
         override func createItemView() -> ResultItemView {
@@ -74,7 +76,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             override func didLoad(valueView: UIView) {
                 super.didLoad( valueView: valueView )
 
-                self.primaryLabel.font = MPTheme.global.font.password.get()
+                self.titleLabel.font = MPTheme.global.font.password.get()
             }
         }
     }
@@ -107,7 +109,10 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         init() {
             super.init( title: nil, placeholder: "set a password",
                         itemValue: { try? $0.mpw_result().await() },
-                        itemUpdate: { $0.mpw_result_save( resultParam: $1 ) } )
+                        itemUpdate: { site, password in
+                            site.mpw_state( resultParam: password )
+                                .then { state in site.resultState = state }
+                        } )
         }
 
         override func createItemView() -> TextItemView<MPSite> {
@@ -143,8 +148,11 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class LoginResultItem: TextItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a user name",
-                        itemValue: { try? $0.mpw_login().await() },
-                        itemUpdate: { $0.mpw_login_save( resultParam: $1 ) } )
+                        itemValue: { try? $0.mpw_result( keyPurpose: .identification ).await() },
+                        itemUpdate: { site, login in
+                            site.mpw_state( keyPurpose: .identification, resultParam: login )
+                                .then { state in site.loginState = state }
+                        } )
         }
 
         override func createItemView() -> TextItemView<MPSite> {
@@ -169,8 +177,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 questions.append( contentsOf: $0.questions )
                 return questions
             }, subitems: [ ButtonItem( itemValue: { _ in (label: "Add Security Question", image: nil) } ) { item in
-
-            } ], itemCell: { tableView, indexPath, value in
+            } ], cell: { tableView, indexPath, value in
                 Cell.dequeue( from: tableView, indexPath: indexPath ) {
                     ($0 as? Cell)?.question = value
                 }
@@ -268,19 +275,19 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class UsesItem: LabelItem<MPSite> {
         init() {
-            super.init( title: "Total Uses" ) { ("\($0.uses)", nil) }
+            super.init( title: "Total Uses", value: { $0.uses } )
         }
     }
 
     class UsedItem: DateItem<MPSite> {
         init() {
-            super.init( title: "Last Used" ) { $0.lastUsed }
+            super.init( title: "Last Used", value: { $0.lastUsed } )
         }
     }
 
     class AlgorithmItem: LabelItem<MPSite> {
         init() {
-            super.init( title: "Algorithm" ) { ("v\($0.algorithm.rawValue)", nil) }
+            super.init( title: "Algorithm", value: { $0.algorithm } )
         }
     }
 }

@@ -59,14 +59,14 @@ class MPButton: MPEffectView {
             }
         }
     }
-    override var effectBackground: Bool {
+    override var     effectBackground: Bool {
         didSet {
-            self.layer.borderWidth = self.effectBackground ? 1.5 : 0
+            self.layer.borderWidth = self.effectBackground ? 1.5: 0
         }
     }
-    private(set) var button: UIButton!
+    private(set) var button:           UIButton!
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
-    override var     bounds: CGRect {
+    override var bounds: CGRect {
         didSet {
             self.setNeedsUpdateConstraints()
         }

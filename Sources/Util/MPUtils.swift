@@ -40,6 +40,21 @@ func withVaStrings<R>(_ strings: [String], terminate: Bool = true, body: (CVaLis
     return withVaList( va, body )
 }
 
+extension MPKeyPurpose {
+    var result : String {
+        switch self {
+            case .authentication:
+                return "password"
+            case .identification:
+                return "user name"
+            case .recovery:
+                return "security answer"
+            @unknown default:
+                return ""
+        }
+    }
+}
+
 extension MPResultType {
     func `in`(class c: MPResultTypeClass) -> Bool {
         self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )

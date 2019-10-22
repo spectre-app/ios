@@ -45,7 +45,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class IdenticonItem: LabelItem<MPUser> {
         init() {
-            super.init( itemValue: { ($0.identicon.attributedText(), $0.fullName) } )
+            super.init( value: { $0.identicon.attributedText() }, caption: { $0.fullName } )
         }
     }
 
@@ -82,21 +82,23 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class FeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ToggleItem<MPUser>( title: "Mask Passwords", caption:
-                """
-                Do not reveal passwords on screen.
-                Useful to deter screen snooping.
-                """, itemValue: { model in
+                ToggleItem<MPUser>( title: "Mask Passwords", value: { model in
                     (model.maskPasswords, UIImage( named: "icon_tripledot" ))
+                }, caption: { _ in
+                    """
+                    Do not reveal passwords on screen.
+                    Useful to deter screen snooping.
+                    """
                 } ) { model, maskPasswords in
                     model.maskPasswords = maskPasswords
                 },
-                ToggleItem( title: "Biometric Lock", caption:
-                """
-                Sign in using biometrics (eg. TouchID, FaceID).
-                Saves your master key in the device's key chain.
-                """, itemValue: { model in
+                ToggleItem( title: "Biometric Lock", value: { model in
                     (model.biometricLock, UIImage( named: "icon_man" ))
+                }, caption: { _ in
+                    """
+                    Sign in using biometrics (eg. TouchID, FaceID).
+                    Saves your master key in the device's key chain.
+                    """
                 } ) { model, biometricLock in
                     model.biometricLock = biometricLock
                 }
@@ -115,7 +117,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         item.viewController?.present( controller, animated: true )
                     }
                 },
-                ButtonItem( itemValue: { _ in (label: "Log out",image:  nil) } ) { item in
+                ButtonItem( itemValue: { _ in (label: "Log out", image: nil) } ) { item in
                     item.model?.masterKeyFactory = nil
                 },
             ] )
@@ -134,19 +136,19 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class UsesItem: LabelItem<MPUser> {
         init() {
-            super.init( title: "Sites" ) { ("\($0.sites.count)", nil) }
+            super.init( title: "Sites", value: { $0.sites.count } )
         }
     }
 
     class UsedItem: DateItem<MPUser> {
         init() {
-            super.init( title: "Last Used" ) { $0.lastUsed }
+            super.init( title: "Last Used", value: { $0.lastUsed } )
         }
     }
 
     class AlgorithmItem: LabelItem<MPUser> {
         init() {
-            super.init( title: "Algorithm" ) { ("v\($0.algorithm.rawValue)", nil) }
+            super.init( title: "Algorithm", value: { $0.algorithm } )
         }
     }
 }

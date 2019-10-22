@@ -24,17 +24,17 @@ class Item<M>: NSObject {
         }
     }
 
-    private let title:    String?
-    private let caption:  String?
-    private let subitems: [Item<M>]
+    private let title:          String?
+    private let captionFactory: (M) -> String?
+    private let subitems:       [Item<M>]
     private (set) lazy var view = createItemView()
     private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
         self.doUpdate()
     }
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption: String? = nil) {
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption captionFactory: @escaping (M) -> String? = { _ in nil }) {
         self.title = title
-        self.caption = caption
+        self.captionFactory = captionFactory
         self.subitems = subitems
     }
 
@@ -131,8 +131,8 @@ class Item<M>: NSObject {
             self.titleLabel.text = self.item.title
             self.titleLabel.isHidden = self.item.title == nil
 
-            self.captionLabel.text = self.item.caption
-            self.captionLabel.isHidden = self.item.caption == nil
+            self.captionLabel.text = self.item.model.flatMap { self.item.captionFactory( $0 ) }
+            self.captionLabel.isHidden = self.captionLabel.text == nil
 
             for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
                 let subitemView     = i < self.item.subitems.count ? self.item.subitems[i].view: nil
@@ -187,33 +187,27 @@ class SeparatorItem<M>: Item<M> {
 }
 
 class ValueItem<M, V>: Item<M> {
-    let itemValue: (M) -> V?
-    var value:     V? {
-        get {
-            if let model = self.model {
-                return self.itemValue( model )
-            }
-            else {
-                return nil
-            }
-        }
+    let valueFactory: (M) -> V?
+    var value: V? {
+        self.model.flatMap { self.valueFactory( $0 ) }
     }
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption: String? = nil, itemValue: @escaping (M) -> V? = { _ in nil }) {
-        self.itemValue = itemValue
-        super.init( title: title, subitems: subitems, caption: caption )
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
+         value valueFactory: @escaping (M) -> V? = { _ in nil },
+         caption captionFactory: @escaping (M) -> String? = { _ in nil }) {
+        self.valueFactory = valueFactory
+        super.init( title: title, subitems: subitems, caption: captionFactory )
     }
 }
 
-class LabelItem<M>: ValueItem<M, (Any?, Any?)> {
+class LabelItem<M>: ValueItem<M, Any> {
     override func createItemView() -> LabelItemView<M> {
         LabelItemView<M>( withItem: self )
     }
 
     class LabelItemView<M>: ItemView<M> {
         let item: LabelItem
-        let primaryLabel   = UILabel()
-        let secondaryLabel = UILabel()
+        let valueLabel = UILabel()
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -225,63 +219,45 @@ class LabelItem<M>: ValueItem<M, (Any?, Any?)> {
         }
 
         override func createValueView() -> UIView? {
-            self.primaryLabel.font = MPTheme.global.font.largeTitle.get()
-            self.primaryLabel.textAlignment = .center
-            self.primaryLabel.textColor = MPTheme.global.color.body.get()
-            self.primaryLabel.shadowColor = MPTheme.global.color.shadow.get()
-            self.primaryLabel.shadowOffset = CGSize( width: 0, height: 1 )
+            self.valueLabel.font = MPTheme.global.font.largeTitle.get()
+            self.valueLabel.textAlignment = .center
+            self.valueLabel.textColor = MPTheme.global.color.body.get()
+            self.valueLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
-            self.secondaryLabel.font = MPTheme.global.font.caption1.get()
-            self.secondaryLabel.textAlignment = .center
-            self.secondaryLabel.textColor = MPTheme.global.color.secondary.get()
-            self.secondaryLabel.shadowColor = MPTheme.global.color.shadow.get()
-            self.secondaryLabel.shadowOffset = CGSize( width: 0, height: 1 )
-
-            let valueView = UIStackView( arrangedSubviews: [ self.primaryLabel, self.secondaryLabel ] )
-            valueView.axis = .vertical
-            return valueView
+            return self.valueLabel
         }
 
         override func update() {
             super.update()
 
-            if let primary = self.item.value?.0 {
-                if let primary = primary as? NSAttributedString {
-                    self.primaryLabel.attributedText = primary
-                }
-                else {
-                    self.primaryLabel.text = String( describing: primary )
-                }
-                self.primaryLabel.isHidden = false
+            if let value = self.item.value as? NSAttributedString {
+                self.valueLabel.attributedText = value
+                self.valueLabel.isHidden = false
+            }
+            else if let value = self.item.value {
+                self.valueLabel.text = String( describing: value )
+                self.valueLabel.isHidden = false
             }
             else {
-                self.primaryLabel.isHidden = true
-            }
-            if let secondary = self.item.value?.1 {
-                if let secondary = secondary as? NSAttributedString {
-                    self.secondaryLabel.attributedText = secondary
-                }
-                else {
-                    self.secondaryLabel.text = String( describing: secondary )
-                }
-                self.secondaryLabel.isHidden = false
-            }
-            else {
-                self.secondaryLabel.isHidden = true
+                self.valueLabel.text = nil
+                self.valueLabel.attributedText = nil
+                self.valueLabel.isHidden = true
             }
         }
     }
 }
 
 class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
-    let itemUpdate: (M, Bool) -> Void
+    let update: (M, Bool) -> Void
 
-    init(title: String? = nil, subitems: [Item<M>] = [], caption: String? = nil,
-         itemValue: @escaping (M) -> (selected: Bool, icon: UIImage?),
-         itemUpdate: @escaping (M, Bool) -> Void = { _, _ in }) {
-        self.itemUpdate = itemUpdate
+    init(title: String? = nil, subitems: [Item<M>] = [],
+         value: @escaping (M) -> (selected: Bool, icon: UIImage?),
+         caption: @escaping (M) -> String? = { _ in nil },
+         update: @escaping (M, Bool) -> Void = { _, _ in }) {
+        self.update = update
 
-        super.init( title: title, subitems: subitems, caption: caption, itemValue: itemValue )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> ToggleItemView<M> {
@@ -305,7 +281,7 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
             self.button.addAction( for: .touchUpInside ) { _, _ in
                 if let model = self.item.model {
                     self.button.isSelected = !self.button.isSelected
-                    self.item.itemUpdate( model, self.button.isSelected )
+                    self.item.update( model, self.button.isSelected )
                     self.item.setNeedsUpdate()
                 }
             }
@@ -329,7 +305,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
          itemAction: @escaping (ButtonItem<M>) -> Void = { _ in }) {
         self.itemAction = itemAction
 
-        super.init( title: title, subitems: subitems, itemValue: itemValue )
+        super.init( title: title, subitems: subitems, value: itemValue )
     }
 
     override func createItemView() -> ButtonItemView<M> {
@@ -415,7 +391,7 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
          itemUpdate: @escaping (M, String) -> Void = { _, _ in }) {
         self.placeholder = placeholder
         self.itemUpdate = itemUpdate
-        super.init( title: title, subitems: subitems, itemValue: itemValue )
+        super.init( title: title, subitems: subitems, value: itemValue )
     }
 
     override func createItemView() -> TextItemView<M> {
@@ -476,7 +452,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         self.step = step
         self.min = min
         self.max = max
-        super.init( title: title, subitems: subitems, itemValue: itemValue )
+        super.init( title: title, subitems: subitems, value: itemValue )
     }
 
     override func createItemView() -> StepperItemView<M> {
@@ -577,7 +553,7 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         self.itemCell = itemCell
         self.viewInit = viewInit
 
-        super.init( title: title, subitems: subitems, itemValue: itemValue )
+        super.init( title: title, subitems: subitems, value: itemValue )
     }
 
     override func createItemView() -> PickerItemView<M> {
@@ -621,7 +597,7 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
 
         private func updateSelection() {
             if let model = self.item.model,
-               let selectedValue = self.item.itemValue( model ),
+               let selectedValue = self.item.valueFactory( model ),
                let selectedIndex = self.item.values.firstIndex( of: selectedValue ),
                let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems {
                 let selectedIndexPath = IndexPath( item: selectedIndex, section: 0 )
@@ -726,15 +702,16 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
 }
 
 class ListItem<M, V: Hashable>: Item<M> {
-    let values:   (M) -> [V]
-    let itemCell: (UITableView, IndexPath, V) -> UITableViewCell
-    let viewInit: (UITableView) -> Void
+    let values:      (M) -> [V]
+    let cellFactory: (UITableView, IndexPath, V) -> UITableViewCell
+    let viewInit:    (UITableView) -> Void
 
-    init(title: String?, values: @escaping (M) -> [V], subitems: [Item<M>] = [], caption: String? = nil,
-         itemCell: @escaping (UITableView, IndexPath, V) -> UITableViewCell,
-         viewInit: @escaping (UITableView) -> Void) {
+    init(title: String?, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
+         caption: @escaping (M) -> String? = { _ in nil },
+         cell cellFactory: @escaping (UITableView, IndexPath, V) -> UITableViewCell,
+         init viewInit: @escaping (UITableView) -> Void) {
         self.values = values
-        self.itemCell = itemCell
+        self.cellFactory = cellFactory
         self.viewInit = viewInit
 
         super.init( title: title, subitems: subitems, caption: caption )
@@ -789,7 +766,7 @@ class ListItem<M, V: Hashable>: Item<M> {
         }
 
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            self.item.itemCell( tableView, indexPath, self.dataSource.element( at: indexPath )! )
+            self.item.cellFactory( tableView, indexPath, self.dataSource.element( at: indexPath )! )
         }
 
         // MARK: --- UITableViewDelegate ---

@@ -27,19 +27,20 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
     class VersionItem: LabelItem<Void> {
         init() {
-            super.init( title: "\(PearlInfoPlist.get().cfBundleDisplayName ?? productName)" ) { _ in
-                (PearlInfoPlist.get().cfBundleShortVersionString, PearlInfoPlist.get().cfBundleVersion)
-            }
+            super.init( title: "\(PearlInfoPlist.get().cfBundleDisplayName ?? productName)",
+                        value: { _ in PearlInfoPlist.get().cfBundleShortVersionString },
+                        caption: { _ in PearlInfoPlist.get().cfBundleVersion } )
         }
     }
 
     class DiagnisticsItem: ToggleItem<Void> {
         init() {
-            super.init( title: "Diagnostics", caption:
-            """
-            Share anonymized issue information to enable quick resolution.
-            """, itemValue: { _ in
+            super.init( title: "Diagnostics", value: { _ in
                 (UserDefaults.standard.bool( forKey: "sendInfo" ), UIImage( named: "icon_bandage" ))
+            }, caption: { _ in
+                """
+                Share anonymized issue information to enable quick resolution.
+                """
             } ) { _, sendInfo in
                 UserDefaults.standard.set( sendInfo, forKey: "sendInfo" )
             }
@@ -69,7 +70,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
                     Link( title: "White Paper", url: URL( string: "https://masterpassword.app/masterpassword-algorithm.pdf" ) ),
                     Link( title: "Source Portal", url: URL( string: "https://gitlab.com/MasterPassword/MasterPassword" ) ),
                 ]
-            }, itemCell: { tableView, indexPath, value in
+            }, cell: { tableView, indexPath, value in
                 Cell.dequeue( from: tableView, indexPath: indexPath ) {
                     ($0 as? Cell)?.set( title: value.title ) {
                         if let url = value.url {

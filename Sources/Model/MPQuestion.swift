@@ -85,33 +85,23 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
     public func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                            resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<String?> {
-        DispatchQueue.mpw.promise { () -> String? in
-            let masterKey = self.site.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.site.algorithm )
-            defer { masterKey?.deallocate() }
-
-            return String( safeUTF8: mpw_site_result( masterKey, self.keyword, counter ?? .initial, keyPurpose, keyContext ?? self.keyword,
-                                                      resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.site.algorithm ),
-                           deallocate: true )
-        }
+        self.site.mpw_result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                              resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
     }
 
-    @discardableResult
-    public func mpw_result_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                                resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<Bool> {
-        DispatchQueue.mpw.promise { () -> Bool in
-            let masterKey = self.site.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.site.algorithm )
-            defer { masterKey?.deallocate() }
+    public func mpw_state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                          resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                    -> Promise<String?> {
+        self.site.mpw_state( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                             resultType: resultType, resultParam: resultParam, algorithm: algorithm )
+    }
 
-            if let resultState = String( safeUTF8: mpw_site_state( masterKey, self.keyword, counter ?? .initial, keyPurpose, keyContext ?? self.keyword,
-                                                                   resultType ?? self.resultType, resultParam, algorithm ?? self.site.algorithm ),
-                                         deallocate: true ) {
-                self.resultState = resultState
-                return true
-            }
-
-            return false
-        }
+    public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                         resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
+                         for host: UIView? = nil) -> Promise<Void> {
+        self.site.mpw_copy( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                            resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm,
+                            for: host )
     }
 }
 

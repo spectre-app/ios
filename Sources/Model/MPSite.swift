@@ -131,7 +131,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             self.dirty = false
         }
     }
-    var dirty = false {
+    var dirty        = false {
         didSet {
             if !self.initializing && self.dirty {
                 self.user.dirty = true
@@ -227,75 +227,96 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
             defer { masterKey?.deallocate() }
 
-            return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                                      resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ),
-                           deallocate: true )
-        }
-    }
+            switch keyPurpose {
+                case .authentication:
+                    return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+                                                              resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ),
+                                   deallocate: true )
 
-    @discardableResult
-    public func mpw_result_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                                resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<Bool> {
-        DispatchQueue.mpw.promise { () -> Bool in
-            let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer { masterKey?.deallocate() }
+                case .identification:
+                    return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                                              resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ),
+                                   deallocate: true )
 
-            if let resultState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                                                   resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ),
-                                         deallocate: true ) {
-                self.resultState = resultState
-                return true
+                case .recovery:
+                    return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                                              resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ),
+                                   deallocate: true )
+
+                @unknown default:
+                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
             }
-
-            return false
         }
     }
 
-    public func mpw_login(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .identification, keyContext: String? = nil,
-                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+    public func mpw_state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                          resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<String?> {
         DispatchQueue.mpw.promise { () -> String? in
             let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
             defer { masterKey?.deallocate() }
 
-            return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                      resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ),
-                           deallocate: true )
+            switch keyPurpose {
+                case .authentication:
+                    return String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+                                                             resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ),
+                                   deallocate: true )
+
+                case .identification:
+                    return String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                                             resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ),
+                                   deallocate: true )
+
+                case .recovery:
+                    return String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                                             resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ),
+                                   deallocate: true )
+
+                @unknown default:
+                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+            }
         }
     }
 
-    @discardableResult
-    public func mpw_login_save(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                               resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<Bool> {
-        DispatchQueue.mpw.promise { () -> Bool in
-            let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer { masterKey?.deallocate() }
+    public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                         resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
+                         for host: UIView? = nil) -> Promise<Void> {
+        self.mpw_result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                         resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then { (result: String?) in
+            guard let result = result
+            else { return }
 
-            if let loginState = String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                                  resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ),
-                                        deallocate: true ) {
-                self.loginState = loginState
-                return true
+            self.use()
+
+            if #available( iOS 10.0, * ) {
+                UIPasteboard.general.setItems(
+                        [ [ UIPasteboard.typeAutomatic: result ] ],
+                        options: [
+                            UIPasteboard.OptionsKey.localOnly: true,
+                            UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
+                        ] )
+
+                MPAlert( title: self.siteName, message: "Copied \(keyPurpose.result) (3 min)", details:
+                """
+                Your \(keyPurpose.result) for \(self.siteName) is:
+                \(result)
+
+                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose.result) field.
+
+                Note that after 3 minutes, the \(keyPurpose.result) will expire from the pasteboard for security reasons.
+                """ ).show( in: host )
             }
+            else {
+                UIPasteboard.general.string = result
 
-            return false
-        }
-    }
+                MPAlert( title: self.siteName, message: "Copied \(keyPurpose.result)", details:
+                """
+                Your \(keyPurpose.result) for \(self.siteName) is:
+                \(result)
 
-    public func mpw_answer(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                           resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<String?> {
-        DispatchQueue.mpw.promise { () -> String? in
-            let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer {
-                masterKey?.deallocate()
+                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose.result) field.
+                """ ).show( in: host )
             }
-
-            return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                      resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ),
-                           deallocate: true )
         }
     }
 }
