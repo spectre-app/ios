@@ -178,7 +178,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         else { return nil }
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.9 )
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -190,7 +190,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         else { return nil }
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.9 )
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
