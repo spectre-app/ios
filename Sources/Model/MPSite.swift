@@ -133,8 +133,13 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     var dirty        = false {
         didSet {
-            if !self.initializing && self.dirty {
-                self.user.dirty = true
+            if self.dirty {
+                if !self.initializing && self.dirty {
+                    self.user.dirty = true
+                }
+            }
+            else {
+                self.questions.forEach { $0.dirty = false }
             }
         }
     }

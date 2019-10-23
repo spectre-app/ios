@@ -148,10 +148,15 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             self.dirty = false
         }
     }
-    var dirty        = false {
+    var dirty = false {
         didSet {
-            if !self.initializing {
-                MPMarshal.shared.setNeedsSave( user: self )
+            if self.dirty {
+                if !self.initializing {
+                    MPMarshal.shared.setNeedsSave( user: self )
+                }
+            }
+            else {
+                self.sites.forEach { $0.dirty = false }
             }
         }
     }

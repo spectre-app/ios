@@ -75,7 +75,7 @@ class MPMarshal: Observable {
 
         self.saving.append( user )
         self.marshalQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
-            guard user.masterKeyFactory != nil
+            guard user.dirty, user.masterKeyFactory != nil
             else { return }
 
             self.save( user: user, format: .default ).then( {
@@ -91,7 +91,9 @@ class MPMarshal: Observable {
                     case .failure(let error):
                         mperror( title: "Issue saving", context: user.fullName, error: error )
                 }
+
                 self.saving.removeAll { $0 == user }
+                user.dirty = false
             } )
         }
     }
