@@ -151,7 +151,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         (self.resultSource.element( at: indexPath )?.value).flatMap { site in
-            UIContextMenuConfiguration( identifier: nil, previewProvider: { MPSitePreviewController( site: site ) }, actionProvider: { elements in
+            UIContextMenuConfiguration( identifier: indexPath as NSIndexPath, previewProvider: { MPSitePreviewController( site: site ) }, actionProvider: { elements in
                 UIMenu( title: site.siteName, children: [
                     UIAction( title: "Delete", image: UIImage( named: "icon_delete" ), attributes: .destructive ) { _ in
                         site.user.sites.removeAll { $0 === site }
@@ -172,16 +172,31 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        nil
+        guard let indexPath = configuration.identifier as? IndexPath
+        else { return nil }
+        guard let view = self.cellForRow( at: indexPath )
+        else { return nil }
+
+        let parameters = UIPreviewParameters()
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.9 )
+        return UITargetedPreview( view: view, parameters: parameters )
     }
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        nil
+        guard let indexPath = configuration.identifier as? IndexPath
+        else { return nil }
+        guard let view = self.cellForRow( at: indexPath )
+        else { return nil }
+
+        let parameters = UIPreviewParameters()
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.9 )
+        return UITargetedPreview( view: view, parameters: parameters )
     }
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+        self.selectedSite = self.resultSource.element( at: configuration.identifier as? IndexPath )?.value
     }
 
     @available(iOS 13, *)
