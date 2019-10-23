@@ -148,6 +148,52 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     // MARK: --- UITableViewDataSource ---
 
+    @available(iOS 13, *)
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        (self.resultSource.element( at: indexPath )?.value).flatMap { site in
+            UIContextMenuConfiguration( identifier: nil, previewProvider: { MPSitePreviewController( site: site ) }, actionProvider: { elements in
+                UIMenu( title: site.siteName, children: [
+                    UIAction( title: "Delete", image: UIImage( named: "icon_delete" ), attributes: .destructive ) { _ in
+                        site.user.sites.removeAll { $0 === site }
+                    },
+                    UIAction( title: "Details", image: UIImage( named: "icon_sliders" ) ) { _ in
+                        self.observers.notify { $0.siteDetailsAction( site: site ) }
+                    },
+                    UIAction( title: "Copy Login Name", image: UIImage( named: "icon_user" ) ) { _ in
+                        site.mpw_copy( keyPurpose: .identification, for: self )
+                    },
+                    UIAction( title: "Copy Password", image: UIImage( named: "icon_tripledot" ) ) { _ in
+                        site.mpw_copy( keyPurpose: .authentication, for: self )
+                    },
+                ] )
+            } )
+        }
+    }
+
+    @available(iOS 13, *)
+    func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        nil
+    }
+
+    @available(iOS 13, *)
+    func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        nil
+    }
+
+    @available(iOS 13, *)
+    func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+    }
+
+    @available(iOS 13, *)
+    func tableView(_ tableView: UITableView, willCommitMenuWithAnimator animator: UIContextMenuInteractionCommitAnimating) {
+    }
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if let site = self.resultSource.element( at: indexPath )?.value, editingStyle == .delete {
+            site.user.sites.removeAll { $0 === site }
+        }
+    }
+
     func numberOfSections(in tableView: UITableView) -> Int {
         self.resultSource.numberOfSections
     }
@@ -208,7 +254,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
             }
         }
-        public var new = false
+        public var new = false {
+            didSet {
+                self.update()
+            }
+        }
 
         private var mode           = MPKeyPurpose.authentication {
             didSet {
@@ -216,9 +266,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
         private let resultLabel    = UITextField()
-        private let nameLabel      = UILabel()
+        private let captionLabel   = UILabel()
         private let modeButton     = MPButton( image: UIImage( named: "icon_person" ) )
         private let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
+        private let newButton      = MPButton( image: UIImage( named: "icon_btn_plus" ) )
 
         // MARK: --- Life ---
 
@@ -249,17 +300,21 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.resultLabel.textColor = MPTheme.global.color.body.get()
             self.resultLabel.isEnabled = false
 
-            self.nameLabel.font = MPTheme.global.font.caption1.get()
-            self.nameLabel.textAlignment = .center
-            self.nameLabel.textColor = MPTheme.global.color.body.get()
-            self.nameLabel.shadowColor = MPTheme.global.color.shadow.get()
-            self.nameLabel.shadowOffset = CGSize( width: 0, height: 1 )
+            self.captionLabel.font = MPTheme.global.font.caption1.get()
+            self.captionLabel.textAlignment = .center
+            self.captionLabel.textColor = MPTheme.global.color.body.get()
+            self.captionLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
                 if let site = self.site {
                     self.sitesView?.observers.notify { $0.siteDetailsAction( site: site ) }
                 }
             }
+
+            self.newButton.tapEffect = false
+            self.newButton.effectBackground = false
+            self.newButton.isUserInteractionEnabled = false
 
             self.modeButton.tapEffect = false
             self.modeButton.effectBackground = false
@@ -268,9 +323,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             // - Hierarchy
             self.contentView.addSubview( self.resultLabel )
-            self.contentView.addSubview( self.nameLabel )
+            self.contentView.addSubview( self.captionLabel )
             self.contentView.addSubview( self.modeButton )
             self.contentView.addSubview( self.settingsButton )
+            self.contentView.addSubview( self.newButton )
 
             // - Layout
             LayoutConfiguration( view: self.modeButton )
@@ -279,6 +335,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .activate()
 
             LayoutConfiguration( view: self.settingsButton )
+                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .activate()
+
+            LayoutConfiguration( view: self.newButton )
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                     .activate()
@@ -292,7 +353,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .compressionResistancePriorityHorizontal( .defaultHigh - 1, vertical: .defaultHigh + 1 )
                     .activate()
 
-            LayoutConfiguration( view: self.nameLabel )
+            LayoutConfiguration( view: self.captionLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor ) }
@@ -303,9 +364,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         override func setSelected(_ selected: Bool, animated: Bool) {
             super.setSelected( selected, animated: animated )
 
-            UIView.animate( withDuration: 0.382 ) {
-                self.settingsButton.alpha = selected ? 1: 0
-            }
+            self.update()
         }
 
         func modeAction() {
@@ -342,7 +401,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         func siteDidChange(_ site: MPSite) {
             DispatchQueue.main.perform {
-                self.nameLabel.attributedText = self.result?.attributedKey
+                if let resultKey = self.result?.attributedKey {
+                    let resultCaption = NSMutableAttributedString( attributedString: resultKey )
+                    if self.new {
+                        resultCaption.append( NSAttributedString( string: " (new site)" ) )
+                    }
+                    self.captionLabel.attributedText = resultCaption
+                }
+                else {
+                    self.captionLabel.attributedText = nil
+                }
             }
             self.update()
         }
@@ -350,7 +418,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- Private ---
 
         private func update() {
-            self.site?.mpw_result( keyPurpose: self.mode ).then( on: DispatchQueue.main ) { (result: String?) in
+            DispatchQueue.main.promise {
+                self.modeButton.size = .small
                 switch self.mode {
                     case .authentication:
                         self.modeButton.image = UIImage( named: "icon_tripledot" )
@@ -361,7 +430,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     @unknown default:
                         self.modeButton.image = nil
                 }
-                self.modeButton.size = .small
+
+                self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
+                self.newButton.alpha = self.isSelected && self.new ? 1: 0
+            }.then { _ -> Promise<String?> in
+                self.site?.mpw_result( keyPurpose: self.mode ) ?? Promise( .success( nil ) )
+            }.then( on: DispatchQueue.main ) { (result: String?) in
                 self.resultLabel.text = result
             }
         }

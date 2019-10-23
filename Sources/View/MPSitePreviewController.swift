@@ -5,7 +5,7 @@
 
 import Foundation
 
-class MPSiteHeaderView: UIView, MPSiteObserver {
+class MPSitePreviewController: UIViewController, MPSiteObserver {
     public var site: MPSite? {
         willSet {
             self.site?.observers.unregister( observer: self )
@@ -14,22 +14,36 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
             if let site = self.site {
                 site.observers.register( observer: self ).siteDidChange( site )
             }
+
+            self.setNeedsStatusBarAppearanceUpdate()
         }
     }
 
-    private let siteButton     = UIButton( type: .custom )
+    private let siteButton = UIButton( type: .custom )
 
     // MARK: --- Life ---
 
-    init() {
-        super.init( frame: .zero )
+    init(site: MPSite? = nil) {
+        super.init( nibName: nil, bundle: nil )
+
+        defer {
+            self.site = site
+        }
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
         // - View
-        self.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
-        self.layer.shadowRadius = 40
-        self.layer.shadowOpacity = 1
-        self.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
-        self.layer.shadowOffset = .zero
+        self.view.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
+        self.view.layer.shadowRadius = 40
+        self.view.layer.shadowOpacity = 1
+        self.view.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
+        self.view.layer.shadowOffset = .zero
 
         self.siteButton.imageView?.layer.cornerRadius = 4
         self.siteButton.imageView?.contentMode = .scaleAspectFill
@@ -41,7 +55,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
         self.siteButton.layer.shadowOffset = .zero
 
         // - Hierarchy
-        self.addSubview( self.siteButton )
+        self.view.addSubview( self.siteButton )
 
         // - Layout
         LayoutConfiguration( view: self.siteButton )
@@ -54,8 +68,13 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
                 .activate()
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        if #available( iOS 13.0, * ) {
+            return self.site?.color?.brightness() ?? 0 > 0.8 ? .darkContent: .lightContent
+        }
+        else {
+            return self.site?.color?.brightness() ?? 0 > 0.8 ? .default: .lightContent
+        }
     }
 
     // MARK: --- MPSiteObserver ---
@@ -63,9 +82,10 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
     func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
             UIView.performWithoutAnimation {
-                self.backgroundColor = self.site?.color
+                self.view.backgroundColor = self.site?.color
                 self.siteButton.setImage( self.site?.image, for: .normal )
                 self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
+                self.preferredContentSize = self.site?.image?.size ?? CGSize( width: 0, height: 200 )
 
                 if let brightness = self.site?.color?.brightness(), brightness > 0.8 {
                     self.siteButton.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
@@ -74,7 +94,7 @@ class MPSiteHeaderView: UIView, MPSiteObserver {
                     self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
                 }
 
-                self.layoutIfNeeded()
+                self.view.layoutIfNeeded()
             }
         }
     }

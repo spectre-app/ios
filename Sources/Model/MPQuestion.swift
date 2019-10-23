@@ -96,6 +96,7 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
                              resultType: resultType, resultParam: resultParam, algorithm: algorithm )
     }
 
+    @discardableResult
     public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
                          for host: UIView? = nil) -> Promise<Void> {

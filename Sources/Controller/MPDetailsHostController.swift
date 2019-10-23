@@ -8,10 +8,13 @@ import UIKit
 class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     public let scrollView  = UIScrollView()
     public let contentView = MPUntouchableView()
-    let closeButton = MPButton.closeButton()
+    public var isShowing: Bool {
+        self.detailsController != nil
+    }
 
     private lazy var detailRecognizer   = UITapGestureRecognizer( target: self, action: #selector( didTapBackground ) )
     private lazy var popupConfiguration = LayoutConfiguration( view: self.view )
+    private let closeButton = MPButton.closeButton()
     private var detailsController:      AnyMPDetailsViewController?
     private var contentSizeObservation: NSKeyValueObservation?
 
@@ -83,6 +86,22 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                 }
     }
 
+    private var  activeChild:                                UIViewController? {
+        self.detailsController
+    }
+    override var childForStatusBarStyle:                     UIViewController? {
+        self.activeChild
+    }
+    override var childForStatusBarHidden:                    UIViewController? {
+        self.activeChild
+    }
+    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
+        self.activeChild
+    }
+    override var childForHomeIndicatorAutoHidden:            UIViewController? {
+        self.activeChild
+    }
+
     @objc
     func didTapBackground() {
         self.hide()
@@ -149,7 +168,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
 
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         if #available( iOS 11, * ) {
-            if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -80 {
+            if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -44 {
                 self.hide()
             }
         }

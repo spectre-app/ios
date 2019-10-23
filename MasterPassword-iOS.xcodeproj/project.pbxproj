@@ -20,7 +20,7 @@
 		93D392506D66E48D27338086 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
 		93D39262A8A97DB748213309 /* PearlEMail.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D393BB973253D4BAAC84AA /* PearlEMail.m */; };
 		93D3928D629EA563F9EC4909 /* NSPersistentStore+PearlMigration.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D399C2F3D48E57C4803BDC /* NSPersistentStore+PearlMigration.m */; };
-		93D392937A9E6664CA09124D /* MPSiteHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSiteHeaderView.swift */; };
+		93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */; };
 		93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */; };
 		93D3929C87281367272F69F1 /* MPProgramState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* MPProgramState.swift */; };
 		93D392A33CCE85431E910C7B /* NSOrderedSetOrArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39789AAF49338F8AC8B02 /* NSOrderedSetOrArray.m */; };
@@ -469,7 +469,7 @@
 		93D39F718C1C38C46D9D5078 /* MPSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSite.swift; sourceTree = "<group>"; };
 		93D39F7C9F47BF6387FBC5C3 /* PearlEMail.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PearlEMail.h; sourceTree = "<group>"; };
 		93D39F9106F2CCFB94283188 /* NSError+PearlFullDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError+PearlFullDescription.m"; sourceTree = "<group>"; };
-		93D39F997E40F20C5B75ADAD /* MPSiteHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteHeaderView.swift; sourceTree = "<group>"; };
+		93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitePreviewController.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAvatarCell.swift; sourceTree = "<group>"; };
 		93D39FBF8FCEB4C106272334 /* NSOrderedSetOrArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSOrderedSetOrArray.h; sourceTree = "<group>"; };
 		A374698F63075B77FCACEE84 /* Pods-MasterPassword.test.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.test.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.test.xcconfig"; sourceTree = "<group>"; };
@@ -916,7 +916,7 @@
 				93D399AC72BBE25033B26BF0 /* AutoLayoutCollectionViewCell.m */,
 				93D39A199BE0BC2D2EDBCC34 /* AutoLayoutCollectionViewCell.h */,
 				93D39564D6408073D59CDB6A /* MPButton.swift */,
-				93D39F997E40F20C5B75ADAD /* MPSiteHeaderView.swift */,
+				93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */,
 				93D3990C92C01413465156FF /* MPAlert.swift */,
 				93D396EF81F724F74A21AFA9 /* MPImageView.swift */,
 				93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */,
@@ -2175,7 +2175,7 @@
 				93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */,
 				93D3935F05DB41DFB75D907C /* AutoLayoutCollectionViewCell.m in Sources */,
 				93D39139805FC516B6C2C181 /* MPButton.swift in Sources */,
-				93D392937A9E6664CA09124D /* MPSiteHeaderView.swift in Sources */,
+				93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */,
 				93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */,
 				DAE6E19622CC3CE100DE0342 /* MasterPassword.xcdatamodeld in Sources */,
 				93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */,

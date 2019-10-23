@@ -7,12 +7,12 @@ import UIKit
 
 class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
     private lazy var topContainer = MPButton( content: self.searchField )
-    private let searchField             = UITextField()
-    private let userButton              = UIButton( type: .custom )
-    private let sitesTableView          = MPSitesTableView()
-    private let siteHeaderView          = MPSiteHeaderView()
-    private let siteHeaderConfiguration = LayoutConfiguration()
-    private let detailsHost             = MPDetailsHostController()
+    private let searchField              = UITextField()
+    private let userButton               = UIButton( type: .custom )
+    private let sitesTableView           = MPSitesTableView()
+    private let sitePreviewController    = MPSitePreviewController()
+    private let sitePreviewConfiguration = LayoutConfiguration()
+    private let detailsHost              = MPDetailsHostController()
 
     override var user: MPUser {
         didSet {
@@ -56,6 +56,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
         self.userButton.addAction( for: .touchUpInside ) { _, _ in
             self.detailsHost.show( MPUserDetailsViewController( model: self.user ) )
+            self.setNeedsStatusBarAppearanceUpdate()
         }
         //self.userButton.setImage( self.user.avatar.image(), for: .normal )
         self.userButton.sizeToFit()
@@ -68,22 +69,24 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         }
 
         // - Hierarchy
+        self.addChild( self.sitePreviewController )
         self.addChild( self.detailsHost )
         self.view.addSubview( self.sitesTableView )
-        self.view.addSubview( self.siteHeaderView )
+        self.view.addSubview( self.sitePreviewController.view )
         self.view.addSubview( self.detailsHost.view )
         self.view.addSubview( self.topContainer )
+        self.sitePreviewController.didMove( toParent: self )
         self.detailsHost.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: self.siteHeaderView )
+        LayoutConfiguration( view: self.sitePreviewController.view )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: 0.382 ) }
                 .activate()
 
         LayoutConfiguration( view: self.sitesTableView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: self.siteHeaderView.bottomAnchor ) }
+                .constrainTo { $1.topAnchor.constraint( equalTo: self.sitePreviewController.view.bottomAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -99,7 +102,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                         $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
                         $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )
                                     .withPriority( UILayoutPriority( 500 ) ),
-                        $1.topAnchor.constraint( greaterThanOrEqualTo: self.siteHeaderView.layoutMarginsGuide.bottomAnchor )
+                        $1.topAnchor.constraint( greaterThanOrEqualTo: self.sitePreviewController.view.layoutMarginsGuide.bottomAnchor )
                                     .withPriority( UILayoutPriority( 510 ) ),
                         $1.bottomAnchor.constraint( lessThanOrEqualTo: self.detailsHost.contentView.topAnchor, constant: 8 )
                                        .withPriority( UILayoutPriority( 520 ) ),
@@ -110,8 +113,8 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                 }
                 .activate()
 
-        self.siteHeaderConfiguration
-                .apply( LayoutConfiguration( view: self.siteHeaderView )
+        self.sitePreviewConfiguration
+                .apply( LayoutConfiguration( view: self.sitePreviewController.view )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: true )
                 .apply( LayoutConfiguration( view: self.sitesTableView )
                                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
@@ -127,20 +130,36 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
         // Add space consumed by header and top container to details safe area.
         if #available( iOS 11, * ) {
-            if self.siteHeaderView.frame.maxY <= 0 {
+            if self.sitePreviewController.view.frame.maxY <= 0 {
                 self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
                         top: self.topContainer.frame.maxY
                                 - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
             }
             else {
                 self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
-                        top: self.siteHeaderView.frame.maxY + (self.topContainer.frame.size.height + 8) / 2
+                        top: self.sitePreviewController.view.frame.maxY + (self.topContainer.frame.size.height + 8) / 2
                                 - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
             }
         }
     }
 
-    override var preferredStatusBarStyle: UIStatusBarStyle {
+    private var  activeChild:                                UIViewController? {
+        self.sitePreviewConfiguration.activated ? self.sitePreviewController: self.detailsHost.isShowing ? self.detailsHost: nil
+    }
+    override var childForStatusBarStyle:                     UIViewController? {
+        self.activeChild
+    }
+    override var childForStatusBarHidden:                    UIViewController? {
+        self.activeChild
+    }
+    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
+        self.activeChild
+    }
+    override var childForHomeIndicatorAutoHidden:            UIViewController? {
+        self.activeChild
+    }
+     override var preferredStatusBarStyle: UIStatusBarStyle {
+        // TODO: depend on theme
         .lightContent
     }
 
@@ -150,16 +169,17 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         DispatchQueue.main.perform {
             UIView.animate( withDuration: 1, animations: {
                 if let selectedSite = selectedSite {
-                    self.siteHeaderView.site = selectedSite
+                    self.sitePreviewController.site = selectedSite
                 }
                 else {
                     self.detailsHost.hide()
                 }
 
-                self.siteHeaderConfiguration.activated = selectedSite != nil;
+                self.sitePreviewConfiguration.activated = selectedSite != nil
+                self.setNeedsStatusBarAppearanceUpdate()
             }, completion: { finished in
                 if selectedSite == nil {
-                    self.siteHeaderView.site = nil
+                    self.sitePreviewController.site = nil
                 }
             } )
         }
@@ -168,6 +188,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     func siteDetailsAction(site: MPSite) {
         DispatchQueue.main.perform {
             self.detailsHost.show( MPSiteDetailsViewController( model: site ) )
+            self.setNeedsStatusBarAppearanceUpdate()
         }
     }
 
@@ -175,6 +196,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
     func textFieldDidBeginEditing(_ textField: UITextField) {
         self.detailsHost.hide()
+        self.setNeedsStatusBarAppearanceUpdate()
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

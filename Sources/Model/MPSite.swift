@@ -283,6 +283,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         }
     }
 
+    @discardableResult
     public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
                          for host: UIView? = nil) -> Promise<Void> {
