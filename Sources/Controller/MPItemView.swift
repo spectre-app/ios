@@ -43,11 +43,15 @@ class Item<M>: NSObject {
     }
 
     func setNeedsUpdate() {
+        guard self.viewController != nil
+        else { return }
+
         self.subitems.forEach { $0.setNeedsUpdate() }
         self.updateTask.request()
     }
 
     func doUpdate() {
+        self.subitems.forEach { $0.doUpdate() }
         self.view.update()
     }
 
@@ -537,21 +541,14 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
     }
 }
 
-class PickerItem<M, V: Equatable>: ValueItem<M, V> {
-    let values:   [V]
-    let update:   (M, V) -> Void
-    let cell:     (UICollectionView, IndexPath, V) -> UICollectionViewCell
-    let viewInit: (UICollectionView) -> Void
+class PickerItem<M, V: Hashable>: ValueItem<M, V> {
+    let values: (M) -> [V]
+    let update: (M, V) -> Void
 
-    init(title: String?, values: [V], subitems: [Item<M>] = [],
-         value: @escaping (M) -> V,
-         update: @escaping (M, V) -> Void = { _, _ in },
-         cell: @escaping (UICollectionView, IndexPath, V) -> UICollectionViewCell,
-         init viewInit: @escaping (UICollectionView) -> Void) {
+    init(title: String?, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
+         value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in }) {
         self.values = values
         self.update = update
-        self.cell = cell
-        self.viewInit = viewInit
 
         super.init( title: title, subitems: subitems, value: value )
     }
@@ -560,9 +557,17 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         PickerItemView<M>( withItem: self )
     }
 
+    func didLoad(collectionView: UICollectionView) {
+    }
+
+    func cell(collectionView: UICollectionView, indexPath: IndexPath, model: M, value: V) -> UICollectionViewCell? {
+        nil
+    }
+
     class PickerItemView<M>: ItemView<M>, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
         let item: PickerItem<M, V>
         let collectionView = CollectionView()
+        lazy var dataSource = DataSource<V>( collectionView: self.collectionView )
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -582,14 +587,13 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         override func didLoad(valueView: UIView) {
             super.didLoad( valueView: valueView )
 
-            self.item.viewInit( self.collectionView )
+            self.item.didLoad( collectionView: self.collectionView )
         }
 
         override func update() {
             super.update()
 
-            // TODO: reload items non-destructively
-            //self.collectionView.reloadData()
+            self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ] )
             self.updateSelection()
         }
 
@@ -598,39 +602,33 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
         private func updateSelection() {
             if let model = self.item.model,
                let selectedValue = self.item.valueFactory( model ),
-               let selectedIndex = self.item.values.firstIndex( of: selectedValue ),
-               let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems {
-                let selectedIndexPath = IndexPath( item: selectedIndex, section: 0 )
-                if !selectedIndexPaths.elementsEqual( [ selectedIndexPath ] ) {
-                    if self.collectionView.visibleCells.count > 0 {
-                        self.collectionView.selectItem( at: selectedIndexPath, animated: false, scrollPosition: .centeredHorizontally )
-                    }
-                    else {
-                        DispatchQueue.main.async {
-                            if self.window != nil {
-                                self.updateSelection()
-                            }
-                        }
-                    }
-                }
+               let selectedIndexPath = self.dataSource.indexPath( for: selectedValue ),
+               let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems,
+               selectedIndexPaths != [ selectedIndexPath ] {
+                self.collectionView.selectItem( at: selectedIndexPath, animated: UIView.areAnimationsEnabled, scrollPosition: .centeredHorizontally )
             }
         }
 
         // MARK: --- UICollectionViewDataSource ---
 
+        func numberOfSections(in collectionView: UICollectionView) -> Int {
+            self.dataSource.numberOfSections
+        }
+
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            self.item.values.count
+            self.dataSource.numberOfItems( in: section )
         }
 
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            self.item.cell( collectionView, indexPath, self.item.values[indexPath.item] )
+            self.item.cell( collectionView: collectionView, indexPath: indexPath,
+                            model: self.item.model!, value: self.dataSource.element( at: indexPath )! )!
         }
 
         // MARK: --- UICollectionViewDelegateFlowLayout ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            if let model = self.item.model {
-                self.item.update( model, self.item.values[indexPath.item] )
+            if let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
+                self.item.update( model, value )
             }
         }
 
@@ -645,30 +643,35 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
             }
 
             init() {
-                super.init( frame: .zero, collectionViewLayout: self.layout )
+                super.init( frame: UIScreen.main.bounds, collectionViewLayout: self.layout )
                 self.backgroundColor = .clear
             }
 
             override var intrinsicContentSize: CGSize {
-                var contentSize = self.collectionViewLayout.collectionViewContentSize, itemSize = self.layout.itemSize
+                var itemSize = self.layout.itemSize
                 if let cell = self.visibleCells.first {
-                    itemSize = cell.systemLayoutSizeFitting( contentSize )
-                }
-                else if self.numberOfSections > 0, self.numberOfItems( inSection: 0 ) > 0 {
-                    let first = IndexPath( item: 0, section: 0 )
-                    if let size = (self.delegate as? UICollectionViewDelegateFlowLayout)?
-                            .collectionView?( self, layout: self.layout, sizeForItemAt: first ) {
-                        itemSize = size
-                    }
-                    else if let cell = self.dataSource?.collectionView( self, cellForItemAt: first ) {
-                        itemSize = cell.systemLayoutSizeFitting( contentSize )
-                    }
+                    itemSize = cell.systemLayoutSizeFitting( self.collectionViewLayout.collectionViewContentSize )
                 }
                 itemSize.width += self.layout.sectionInset.left + self.layout.sectionInset.right
                 itemSize.height += self.layout.sectionInset.top + self.layout.sectionInset.bottom
-                contentSize = CGSizeUnion( contentSize, itemSize )
 
-                return contentSize
+                if self.layout.scrollDirection == .horizontal {
+                    itemSize.width = max( self.collectionViewLayout.collectionViewContentSize.width, itemSize.width )
+                }
+                else {
+                    itemSize.height = max( self.collectionViewLayout.collectionViewContentSize.height, itemSize.height )
+                }
+
+                if #available( iOS 11, * ) {
+                    itemSize.width += self.adjustedContentInset.left + self.adjustedContentInset.right
+                    itemSize.height += self.adjustedContentInset.top + self.adjustedContentInset.bottom
+                }
+                else {
+                    itemSize.width += self.contentInset.left + self.contentInset.right
+                    itemSize.height += self.contentInset.top + self.contentInset.bottom
+                }
+
+                return itemSize
             }
 
             class CollectionViewFlowLayout: UICollectionViewFlowLayout {
@@ -702,19 +705,24 @@ class PickerItem<M, V: Equatable>: ValueItem<M, V> {
 }
 
 class ListItem<M, V: Hashable>: Item<M> {
-    let values:      (M) -> [V]
-    let cellFactory: (UITableView, IndexPath, V) -> UITableViewCell
-    let viewInit:    (UITableView) -> Void
+    let values: (M) -> [V]
+    var deletable = false
 
     init(title: String?, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
-         caption: @escaping (M) -> String? = { _ in nil },
-         cell cellFactory: @escaping (UITableView, IndexPath, V) -> UITableViewCell,
-         init viewInit: @escaping (UITableView) -> Void) {
+         caption: @escaping (M) -> String? = { _ in nil }) {
         self.values = values
-        self.cellFactory = cellFactory
-        self.viewInit = viewInit
 
         super.init( title: title, subitems: subitems, caption: caption )
+    }
+
+    func didLoad(tableView: UITableView) {
+    }
+
+    func cell(tableView: UITableView, indexPath: IndexPath, model: M, value: V) -> UITableViewCell? {
+        nil
+    }
+
+    func delete(model: M, value: V) {
     }
 
     override func createItemView() -> ListItemView<M> {
@@ -746,7 +754,7 @@ class ListItem<M, V: Hashable>: Item<M> {
                     .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
                     .activate()
 
-            self.item.viewInit( self.tableView )
+            self.item.didLoad( tableView: self.tableView )
         }
 
         override func update() {
@@ -766,7 +774,19 @@ class ListItem<M, V: Hashable>: Item<M> {
         }
 
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            self.item.cellFactory( tableView, indexPath, self.dataSource.element( at: indexPath )! )
+            self.item.cell( tableView: tableView, indexPath: indexPath,
+                            model: self.item.model!, value: self.dataSource.element( at: indexPath )! )!
+        }
+
+        func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+            self.item.deletable
+        }
+
+        func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+            if editingStyle == .delete, self.item.deletable,
+               let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
+                self.item.delete( model: model, value: value )
+            }
         }
 
         // MARK: --- UITableViewDelegate ---

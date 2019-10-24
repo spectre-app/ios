@@ -69,16 +69,20 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
                     Link( title: "White Paper", url: URL( string: "https://masterpassword.app/masterpassword-algorithm.pdf" ) ),
                     Link( title: "Source Portal", url: URL( string: "https://gitlab.com/MasterPassword/MasterPassword" ) ),
                 ]
-            }, cell: { tableView, indexPath, value in
-                Cell.dequeue( from: tableView, indexPath: indexPath ) {
-                    ($0 as? Cell)?.set( title: value.title ) {
-                        if let url = value.url {
-                            UIApplication.shared.openURL( url )
-                        }
+            } )
+        }
+
+        override func didLoad(tableView: UITableView) {
+            tableView.registerCell( Cell.self )
+        }
+
+        override func cell(tableView: UITableView, indexPath: IndexPath, model: (), value: Link) -> UITableViewCell? {
+            Cell.dequeue( from: tableView, indexPath: indexPath ) {
+                ($0 as? Cell)?.set( title: value.title ) {
+                    if let url = value.url {
+                        UIApplication.shared.openURL( url )
                     }
                 }
-            } ) { tableView in
-                tableView.registerCell( Cell.self )
             }
         }
 

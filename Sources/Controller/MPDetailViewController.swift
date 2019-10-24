@@ -38,10 +38,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         self.model = model
         super.init( nibName: nil, bundle: nil )
 
-        for item in self.items {
-            item.viewController = self
-            item.model = self.model
-        }
+        self.items.forEach { $0.model = self.model }
     }
 
     override func viewDidLoad() {
@@ -66,6 +63,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         self.itemsView.axis = .vertical
         self.itemsView.spacing = 20
         for item in self.items {
+            item.viewController = self
             self.itemsView.addArrangedSubview( item.view )
         }
 
@@ -87,6 +85,12 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
                 .constrainToOwner( withAnchors: .horizontally )
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                 .activate()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        self.items.forEach { $0.doUpdate() }
     }
 
     override func viewDidLayoutSubviews() {

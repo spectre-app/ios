@@ -51,30 +51,38 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class AvatarItem: PickerItem<MPUser, MPUser.Avatar> {
         init() {
-            super.init( title: "Avatar", values: MPUser.Avatar.allCases,
+            super.init( title: "Avatar",
+                        values: { _ in MPUser.Avatar.allCases },
                         value: { $0.avatar },
-                        update: { $0.avatar = $1 },
-                        cell: { collectionView, indexPath, avatar in
-                            MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                                ($0 as? MPAvatarCell)?.avatar = avatar
-                            }
-                        } ) { collectionView in
-                collectionView.registerCell( MPAvatarCell.self )
+                        update: { $0.avatar = $1 } )
+        }
+
+        override func didLoad(collectionView: UICollectionView) {
+            collectionView.registerCell( MPAvatarCell.self )
+        }
+
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPUser.Avatar) -> UICollectionViewCell? {
+            MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                ($0 as? MPAvatarCell)?.avatar = value
             }
         }
     }
 
     class PasswordTypeItem: PickerItem<MPUser, MPResultType> {
         init() {
-            super.init( title: "Default Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
+            super.init( title: "Default Type",
+                        values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.defaultType },
-                        update: { $0.defaultType = $1 },
-                        cell: { collectionView, indexPath, type in
-                            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                                ($0 as! MPResultTypeCell).resultType = type
-                            }
-                        } ) { collectionView in
-                collectionView.registerCell( MPResultTypeCell.self )
+                        update: { $0.defaultType = $1 } )
+        }
+
+        override func didLoad(collectionView: UICollectionView) {
+            collectionView.registerCell( MPResultTypeCell.self )
+        }
+
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
+            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                ($0 as! MPResultTypeCell).resultType = value
             }
         }
     }

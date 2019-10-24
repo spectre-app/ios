@@ -13,6 +13,24 @@ let resultTypes = [
     MPResultType.statefulPersonal, MPResultType.statefulDevice, MPResultType.deriveKey
 ]
 
+postfix operator <
+
+postfix public func <(a: Any?) -> Any? {
+    (a as? String)< ?? (a as? Int)< ?? (a as? Int64)<
+}
+
+postfix public func <(s: String?) -> String? {
+    (s?.isEmpty ?? true) ? nil: s
+}
+
+postfix public func <(i: Int?) -> Int? {
+    i ?? 0 == 0 ? nil: i
+}
+
+postfix public func <(i: Int64?) -> Int64? {
+    i ?? 0 == 0 ? nil: i
+}
+
 func ratio(of value: UInt8, from: Double, to: Double) -> Double {
     from + (to - from) * (Double( value ) / Double( UInt8.max ))
 }

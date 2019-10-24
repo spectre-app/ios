@@ -92,15 +92,19 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class PasswordTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( title: "Password Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
+            super.init( title: "Password Type",
+                        values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.resultType },
-                        update: { $0.resultType = $1 },
-                        cell: { collectionView, indexPath, type in
-                            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                                ($0 as? MPResultTypeCell)?.resultType = type
-                            }
-                        } ) { collectionView in
-                collectionView.registerCell( MPResultTypeCell.self )
+                        update: { $0.resultType = $1 } )
+        }
+
+        override func didLoad(collectionView: UICollectionView) {
+            collectionView.registerCell( MPResultTypeCell.self )
+        }
+
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPSite, value: MPResultType) -> UICollectionViewCell? {
+            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                ($0 as? MPResultTypeCell)?.resultType = value
             }
         }
     }
@@ -132,15 +136,19 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( title: "User Name Type", values: resultTypes.filter { !$0.has( feature: .alternative ) },
+            super.init( title: "User Name Type",
+                        values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.loginType },
-                        update: { $0.loginType = $1 },
-                        cell: { collectionView, indexPath, type in
-                            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                                ($0 as? MPResultTypeCell)?.resultType = type
-                            }
-                        } ) { collectionView in
-                collectionView.registerCell( MPResultTypeCell.self )
+                        update: { $0.loginType = $1 } )
+        }
+
+        override func didLoad(collectionView: UICollectionView) {
+            collectionView.registerCell( MPResultTypeCell.self )
+        }
+
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPSite, value: MPResultType) -> UICollectionViewCell? {
+            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                ($0 as? MPResultTypeCell)?.resultType = value
             }
         }
     }
@@ -173,17 +181,27 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class SecurityAnswerItem: ListItem<MPSite, MPQuestion> {
         init() {
             super.init( title: "Security Answers", values: {
-                var questions = [ MPQuestion( site: $0, keyword: "" ) ]
-                questions.append( contentsOf: $0.questions )
-                return questions
+                var questions = [ "": MPQuestion( site: $0, keyword: "" ) ]
+                $0.questions.forEach { questions[$0.keyword] = $0 }
+                return questions.values.sorted()
             }, subitems: [ ButtonItem( value: { _ in (label: "Add Security Question", image: nil) } ) { item in
-            } ], cell: { tableView, indexPath, value in
-                Cell.dequeue( from: tableView, indexPath: indexPath ) {
-                    ($0 as? Cell)?.question = value
-                }
-            } ) { tableView in
-                tableView.registerCell( Cell.self )
+            } ] )
+
+            self.deletable = true
+        }
+
+        override func didLoad(tableView: UITableView) {
+            tableView.registerCell( Cell.self )
+        }
+
+        override func cell(tableView: UITableView, indexPath: IndexPath, model: MPSite, value: MPQuestion) -> UITableViewCell? {
+            Cell.dequeue( from: tableView, indexPath: indexPath ) {
+                ($0 as? Cell)?.question = value
             }
+        }
+
+        override func delete(model: MPSite, value: MPQuestion) {
+            super.delete( model: model, value: value )
         }
 
         class Cell: UITableViewCell {
@@ -193,8 +211,10 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
             var question: MPQuestion? {
                 didSet {
-                    self.keywordLabel.text = self.question?.keyword
-                    self.resultLabel.text = try? self.question?.mpw_result().await()
+                    self.question?.mpw_result().then( on: .main ) { (answer: String?) in
+                        self.resultLabel.text = answer
+                        self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
+                    }
                 }
             }
 
@@ -209,19 +229,18 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-                self.keywordLabel.textColor = MPTheme.global.color.body.get()
+                self.keywordLabel.font = MPTheme.global.font.caption1.get()
                 self.keywordLabel.shadowColor = MPTheme.global.color.shadow.get()
                 self.keywordLabel.shadowOffset = CGSize( width: 0, height: 1 )
-                self.keywordLabel.font = MPTheme.global.font.caption1.get()
+                self.keywordLabel.textColor = MPTheme.global.color.body.get()
 
-                self.resultLabel.textColor = MPTheme.global.color.body.get()
+                self.resultLabel.font = MPTheme.global.font.password.get()
                 self.resultLabel.shadowColor = MPTheme.global.color.shadow.get()
                 self.resultLabel.shadowOffset = CGSize( width: 0, height: 1 )
-                self.resultLabel.font = MPTheme.global.font.password.get()
+                self.resultLabel.textColor = MPTheme.global.color.body.get()
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in }
-                self.copyButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
                 // - Hierarchy
                 self.contentView.addSubview( self.keywordLabel )
@@ -229,19 +248,22 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.contentView.addSubview( self.copyButton )
 
                 // - Layout
-                LayoutConfiguration( view: self.keywordLabel )
-                        .constrainToMarginsOfOwner( withAnchors: .topBox )
-                        .activate()
                 LayoutConfiguration( view: self.resultLabel )
-                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: 8 ) }
-                        .constrainTo { $1.topAnchor.constraint( equalTo: self.keywordLabel.bottomAnchor ) }
-                        .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                        .constrainTo { $1.topAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
+                        .activate()
+                LayoutConfiguration( view: self.keywordLabel )
+                        .constrainTo { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.leadingAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                         .activate()
                 LayoutConfiguration( view: self.copyButton )
+                        .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
                         .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor, constant: 8 ) }
-                        .constrainTo { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
-                        .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: -8 ) }
+                        .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                        .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                         .activate()
             }
         }

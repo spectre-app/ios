@@ -87,6 +87,10 @@ class MPButton: MPEffectView {
         self.init( content: button )
         self.button = button
 
+        self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
+        self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
+        self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
+        self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
         self.button.setTitleShadowColor( MPTheme.global.color.shadow.get(), for: .normal )
         self.button.titleLabel?.shadowOffset = self.button.layer.shadowOffset
         self.button.layer.shadowOpacity = 0

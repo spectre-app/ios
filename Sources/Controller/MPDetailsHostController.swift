@@ -115,7 +115,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
 
             if let detailsController = self.detailsController {
                 self.addChild( detailsController )
-                detailsController.beginAppearanceTransition( false, animated: true )
+                detailsController.beginAppearanceTransition( true, animated: true )
                 self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
                 LayoutConfiguration( view: detailsController.view ).constrainToOwner().activate()
                 UIView.animate( withDuration: 0.382, animations: {

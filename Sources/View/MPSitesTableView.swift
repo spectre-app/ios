@@ -11,10 +11,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     public var user: MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
+            self.query = nil
         }
         didSet {
             self.user?.observers.register( observer: self )
-            self.query = nil
+            self.updateTask.request()
         }
     }
     public var selectedSite: MPSite? {
@@ -64,12 +65,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-
-        self.updateTask.request()
     }
 
     // MARK: --- Internal ---
@@ -334,7 +329,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.modeButton.tapEffect = false
             self.modeButton.effectBackground = false
             self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
-            self.modeButton.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
 
             // - Hierarchy
             self.contentView.addSubview( self.resultLabel )

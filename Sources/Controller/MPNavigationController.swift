@@ -30,7 +30,7 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
     override func viewWillAppear(_ animated: Bool) {
         self.visibleViewController?.view.makeAlpha( 0 ).duration( 0 ).then()
-                                        .makeAlpha( 1 ).easing( .easeOut ).duration( 1.5 ).animate()
+                                        .makeAlpha( 1 ).easing( .easeOut ).duration( 1.2 ).animate()
 
         super.viewWillAppear( animated )
     }
