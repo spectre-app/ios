@@ -89,7 +89,7 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
                               resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
     }
 
-    public func mpw_state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+    public func mpw_state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                           resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<String?> {
         self.site.mpw_state( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
@@ -97,7 +97,7 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
     }
 
     @discardableResult
-    public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+    public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
                          for host: UIView? = nil) -> Promise<Void> {
         self.site.mpw_copy( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,

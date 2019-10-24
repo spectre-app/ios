@@ -185,6 +185,20 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 $0.questions.forEach { questions[$0.keyword] = $0 }
                 return questions.values.sorted()
             }, subitems: [ ButtonItem( value: { _ in (label: "Add Security Question", image: nil) } ) { item in
+                let controller = UIAlertController( title: "Security Question", message:
+                """
+                Enter the most significant noun for the site's security question.
+                """, preferredStyle: .alert )
+                controller.addTextField {
+                    $0.placeholder = "eg. teacher"
+                }
+                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                controller.addAction( UIAlertAction( title: "Add", style: .default ) { _ in
+                    if let site = item.model, let keyword = controller.textFields?.first?.text< {
+                        site.questions.append( MPQuestion( site: site, keyword: keyword ) )
+                    }
+                } )
+                item.viewController?.present( controller, animated: true )
             } ] )
 
             self.deletable = true
@@ -201,7 +215,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         override func delete(model: MPSite, value: MPQuestion) {
-            super.delete( model: model, value: value )
+            model.questions.removeAll { $0 === value }
         }
 
         class Cell: UITableViewCell {
@@ -240,7 +254,9 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.resultLabel.textColor = MPTheme.global.color.body.get()
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
-                self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in }
+                self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in
+                    self.question?.mpw_copy()
+                }
 
                 // - Hierarchy
                 self.contentView.addSubview( self.keywordLabel )
