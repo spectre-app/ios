@@ -96,28 +96,32 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     public var masterKeyFactory: MPKeyFactory? {
         didSet {
             // TODO: self.identicon = mpw_identicon( self.fullName, masterPassword )
-            DispatchQueue.mpw.promise {
-                if ({
-                        guard let masterKeyFactory = self.masterKeyFactory,
-                              let authKey = masterKeyFactory.newMasterKey( algorithm: self.algorithm )
-                        else { return false }
-                        defer { authKey.deallocate() }
-                        guard let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) )
-                        else { return false }
 
-                        if self.masterKeyID == nil {
-                            self.masterKeyID = authKeyID
-                        }
-                        if self.masterKeyID != authKeyID {
-                            return false
-                        }
+            if self.masterKeyFactory !== oldValue {
+                DispatchQueue.mpw.promise {
+                    if ({
+                            guard let masterKeyFactory = self.masterKeyFactory,
+                                  let authKey = masterKeyFactory.newMasterKey( algorithm: self.algorithm )
+                            else { return false }
+                            defer { authKey.deallocate() }
+                            guard let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) )
+                            else { return false }
 
-                        return true
-                    }()) {
-                    self.observers.notify { $0.userDidLogin( self ) }
-                }
-                else {
-                    self.observers.notify { $0.userDidLogout( self ) }
+                            if self.masterKeyID == nil {
+                                self.masterKeyID = authKeyID
+                            }
+                            if self.masterKeyID != authKeyID {
+                                return false
+                            }
+
+                            return true
+                        }()) {
+                        self.observers.notify { $0.userDidLogin( self ) }
+                    }
+                    else {
+                        self.masterKeyFactory = nil
+                        self.observers.notify { $0.userDidLogout( self ) }
+                    }
                 }
             }
         }

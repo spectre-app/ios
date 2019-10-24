@@ -131,7 +131,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             self.dirty = false
         }
     }
-    var dirty        = false {
+    var dirty = false {
         didSet {
             if self.dirty {
                 if !self.initializing && self.dirty {
@@ -229,8 +229,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                            resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<String?> {
         DispatchQueue.mpw.promise { () -> String? in
-            let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer { masterKey?.deallocate() }
+            guard let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
+            else { return nil }
+            defer { masterKey.deallocate() }
 
             switch keyPurpose {
                 case .authentication:
@@ -258,8 +259,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                           resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<String?> {
         DispatchQueue.mpw.promise { () -> String? in
-            let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            defer { masterKey?.deallocate() }
+            guard let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
+            else { return nil }
+            defer { masterKey.deallocate() }
 
             switch keyPurpose {
                 case .authentication:

@@ -6,8 +6,9 @@
 import Foundation
 
 class MPButton: MPEffectView {
-    public var tapEffect = true
-    public var round     = false {
+    public var tapEffect             = true
+    public var isBorderedOnSelection = false
+    public var round                 = false {
         didSet {
             self.setNeedsUpdateConstraints()
         }
@@ -65,7 +66,9 @@ class MPButton: MPEffectView {
         }
     }
     private(set) var button:           UIButton!
+    private var      stateObserver:    Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
+                                                                     .withPriority( .defaultHigh )
     override var bounds: CGRect {
         didSet {
             self.setNeedsUpdateConstraints()
@@ -82,7 +85,7 @@ class MPButton: MPEffectView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    convenience init(image: UIImage? = nil, title: String? = nil) {
+    convenience init(image: UIImage? = nil, title: String? = nil, action: ((UIControl, UIEvent) -> ())? = nil) {
         let button = UIButton( type: .custom )
         self.init( content: button )
         self.button = button
@@ -101,6 +104,17 @@ class MPButton: MPEffectView {
             if self.tapEffect {
                 MPTapEffectView( for: self ).run()
             }
+        }
+        self.stateObserver = self.button.observe( \UIButton.isSelected, options: .initial ) { _, _ in
+            if self.isBorderedOnSelection && !self.button.isSelected {
+                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
+            }
+            else {
+                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 1 )
+            }
+        }
+        if let action = action {
+            self.button.addAction( for: .touchUpInside, action: action )
         }
 
         defer {

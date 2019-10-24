@@ -43,14 +43,13 @@ public class MPPasswordKeyFactory: MPKeyFactory {
     }
 
     public override func newMasterKey(algorithm: MPAlgorithmVersion) -> MPMasterKey? {
-        if let masterKey = self.masterKeys[algorithm] ?? mpw_master_key( self.fullName, self.masterPassword, algorithm ) {
-            self.masterKeys[algorithm] = masterKey
-            let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
-            providedMasterKey.initialize( from: masterKey, count: MPMasterKeySize )
-            return UnsafePointer<UInt8>( providedMasterKey )
-        }
+        guard let masterKey = self.masterKeys[algorithm] ?? mpw_master_key( self.fullName, self.masterPassword, algorithm )
+        else { return nil }
 
-        return nil
+        self.masterKeys[algorithm] = masterKey
+        let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
+        providedMasterKey.initialize( from: masterKey, count: MPMasterKeySize )
+        return UnsafePointer<UInt8>( providedMasterKey )
     }
 
     public func toKeychain() -> Promise<MPKeyFactory?> {
@@ -86,7 +85,7 @@ public class MPBufferKeyFactory: MPKeyFactory {
 }
 
 public class MPKeychainKeyFactory: MPKeyFactory {
-    public let context = LAContext()
+    public let  context    = LAContext()
     private var masterKeys = [ MPAlgorithmVersion: MPMasterKey ]()
 
     public override init(fullName: String) {
@@ -109,15 +108,14 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     }
 
     public override func newMasterKey(algorithm: MPAlgorithmVersion) -> MPMasterKey? {
-        if let masterKey = self.masterKeys[algorithm] ??
-                (try? MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, context: self.context ).await()) {
-            self.masterKeys[algorithm] = masterKey
-            let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
-            providedMasterKey.initialize( from: masterKey, count: MPMasterKeySize )
-            return UnsafePointer<UInt8>( providedMasterKey )
-        }
+        guard let masterKey = self.masterKeys[algorithm] ??
+                (try? MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, context: self.context ).await())
+        else { return nil }
 
-        return nil
+        self.masterKeys[algorithm] = masterKey
+        let providedMasterKey = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
+        providedMasterKey.initialize( from: masterKey, count: MPMasterKeySize )
+        return UnsafePointer<UInt8>( providedMasterKey )
     }
 
     func saveMasterKeys(from masterPassword: String) -> Promise<Bool> {
