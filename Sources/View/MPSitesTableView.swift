@@ -391,7 +391,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         func cellAction() {
             self.sitesView?.selectedSite = self.site
 
-            self.site?.mpw_copy( keyPurpose: self.mode, for: self ).then {
+            _ = self.site?.mpw_copy( keyPurpose: self.mode, for: self ).then { _ in
                 if let site = self.site, self.new {
                     site.user.sites.append( site )
                 }

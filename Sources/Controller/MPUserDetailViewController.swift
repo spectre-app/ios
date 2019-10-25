@@ -126,7 +126,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                     }
                 },
                 ButtonItem( value: { _ in (label: "Log out", image: nil) } ) { item in
-                    item.model?.masterKeyFactory = nil
+                    item.model?.logout()
                 },
             ] )
         }

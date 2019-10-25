@@ -56,7 +56,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
             }
 
             self.hidden = true
-            MPMarshal.shared.hasLegacy().then { self.hidden = !$0 }
+            _ = MPMarshal.shared.hasLegacy().then { self.hidden = !$0 }
         }
     }
 

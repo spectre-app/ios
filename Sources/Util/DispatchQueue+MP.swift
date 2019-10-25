@@ -16,8 +16,7 @@ extension DispatchQueue {
     private static let threadLabelsKey = "DispatchQueue+MP"
     private var threadLabels: Set<String> {
         get {
-            let threadLabels: Set<String>? = Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] as? Set<String>
-            if let threadLabels = threadLabels {
+            if let threadLabels = Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] as? Set<String> {
                 return threadLabels
             }
 
@@ -38,9 +37,7 @@ extension DispatchQueue {
             group?.enter()
             let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
             defer {
-                if threadOwnsLabel {
-                    self.threadLabels.remove( self.label )
-                }
+                if threadOwnsLabel { self.threadLabels.remove( self.label ) }
                 group?.leave()
             }
 
@@ -50,11 +47,7 @@ extension DispatchQueue {
             // Dispatch to the queue's thread.
             self.async( group: group, qos: qos, flags: flags ) {
                 let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
-                defer {
-                    if threadOwnsLabel {
-                        self.threadLabels.remove( self.label )
-                    }
-                }
+                defer { if threadOwnsLabel { self.threadLabels.remove( self.label ) } }
 
                 work()
             }
@@ -65,31 +58,22 @@ extension DispatchQueue {
     public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows -> T {
         if self.isActive {
             // Already in the queue's thread.
-            var threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
-            defer {
-                if threadOwnsLabel {
-                    self.threadLabels.remove( self.label )
-                }
-            }
+            let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
+            defer { if threadOwnsLabel { self.threadLabels.remove( self.label ) } }
 
             return try work()
         }
         else {
             // Dispatch to the queue's thread.
             return try self.sync( flags: flags ) {
-                var threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
-                defer {
-                    if threadOwnsLabel {
-                        self.threadLabels.remove( self.label )
-                    }
-                }
+                let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
+                defer { if threadOwnsLabel { self.threadLabels.remove( self.label ) } }
 
                 return try work()
             }
         }
     }
 
-    @discardableResult
     public func promised<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
         let promise = Promise<V>()
 
@@ -101,8 +85,11 @@ extension DispatchQueue {
         return promise
     }
 
-    @discardableResult
     public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) -> Promise<V> {
+        self.promised { Promise( .success( try work() ) ) }
+    }
+
+    public func promise(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> ()) -> Promise<Void> {
         self.promised { Promise( .success( try work() ) ) }
     }
 }
@@ -163,19 +150,17 @@ public class Promise<V> {
         return self
     }
 
-//    @discardableResult
-//    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
-//        let promise = Promise<V2>()
-//
-//        self.then( on: queue, {
-//            do { try promise.finish( .success( consumer( $0 ) ) ) }
-//            catch { promise.finish( .failure( error ) ) }
-//        } )
-//
-//        return promise
-//    }
+    public func then<V2>(on queue: DispatchQueue? = nil, x: Void = (), _ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
+        let promise = Promise<V2>()
 
-    @discardableResult
+        self.then( on: queue, {
+            do { try promise.finish( .success( consumer( $0 ) ) ) }
+            catch { promise.finish( .failure( error ) ) }
+        } )
+
+        return promise
+    }
+
     public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> (V2)) -> Promise<V2> {
         let promise = Promise<V2>()
 
@@ -193,7 +178,6 @@ public class Promise<V> {
         return promise
     }
 
-    @discardableResult
     public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping () throws -> (Promise<V2>)) -> Promise<V2> {
         let promise = Promise<V2>()
 
@@ -211,7 +195,6 @@ public class Promise<V> {
         return promise
     }
 
-    @discardableResult
     public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> (Promise<V2>)) -> Promise<V2> {
         let promise = Promise<V2>()
 

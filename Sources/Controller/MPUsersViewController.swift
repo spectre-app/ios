@@ -306,7 +306,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.nameField = self.nameField
             self.passwordField.authentication = { keyFactory in
                 self.userFile?.mpw_authenticate( keyFactory: keyFactory ) ??
-                        Promise( .success( MPUser( fullName: keyFactory.fullName, masterKeyFactory: keyFactory ) ) )
+                        Promise( .success( MPUser( fullName: keyFactory.fullName ) ) )
             }
             self.passwordField.authenticated = { user in
                 self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )

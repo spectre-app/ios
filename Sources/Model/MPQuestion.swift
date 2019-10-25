@@ -99,7 +99,7 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
     @discardableResult
     public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
-                         for host: UIView? = nil) -> Promise<Void> {
+                         for host: UIView? = nil) -> Promise<String> {
         self.site.mpw_copy( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                             resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm,
                             for: host )

@@ -52,7 +52,7 @@ public class MPPasswordKeyFactory: MPKeyFactory {
         return UnsafePointer<UInt8>( providedMasterKey )
     }
 
-    public func toKeychain() -> Promise<MPKeyFactory?> {
+    public func toKeychain() -> Promise<MPKeyFactory> {
         let keychainKeyFactory = MPKeychainKeyFactory( fullName: self.fullName )
         return keychainKeyFactory.saveMasterKeys( from: self.masterPassword ).then { keychainKeyFactory }
     }

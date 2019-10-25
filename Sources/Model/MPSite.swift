@@ -296,39 +296,45 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     @discardableResult
     public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
-                         for host: UIView? = nil) -> Promise<Void> {
+                         for host: UIView? = nil) -> Promise<String> {
         self.mpw_result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                         resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then { result in
-            self.use()
+                         resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then {
+            switch $0 {
+                case .success(let result):
+                    self.use()
 
-            if #available( iOS 10.0, * ) {
-                UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: result ] ],
-                        options: [
-                            UIPasteboard.OptionsKey.localOnly: true,
-                            UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                        ] )
+                    if #available( iOS 10.0, * ) {
+                        UIPasteboard.general.setItems(
+                                [ [ UIPasteboard.typeAutomatic: result ] ],
+                                options: [
+                                    UIPasteboard.OptionsKey.localOnly: true,
+                                    UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
+                                ] )
 
-                MPAlert( title: self.siteName, message: "Copied \(keyPurpose.result) (3 min)", details:
-                """
-                Your \(keyPurpose.result) for \(self.siteName) is:
-                \(result)
+                        MPAlert( title: self.siteName, message: "Copied \(keyPurpose.result) (3 min)", details:
+                        """
+                        Your \(keyPurpose.result) for \(self.siteName) is:
+                        \(result)
 
-                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose.result) field.
+                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose.result) field.
 
-                Note that after 3 minutes, the \(keyPurpose.result) will expire from the pasteboard for security reasons.
-                """ ).show( in: host )
-            }
-            else {
-                UIPasteboard.general.string = result
+                        Note that after 3 minutes, the \(keyPurpose.result) will expire from the pasteboard for security reasons.
+                        """ ).show( in: host )
+                    }
+                    else {
+                        UIPasteboard.general.string = result
 
-                MPAlert( title: self.siteName, message: "Copied \(keyPurpose.result)", details:
-                """
-                Your \(keyPurpose.result) for \(self.siteName) is:
-                \(result)
+                        MPAlert( title: self.siteName, message: "Copied \(keyPurpose.result)", details:
+                        """
+                        Your \(keyPurpose.result) for \(self.siteName) is:
+                        \(result)
 
-                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose.result) field.
-                """ ).show( in: host )
+                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose.result) field.
+                        """ ).show( in: host )
+                    }
+
+                case .failure(let error):
+                    mperror( title: "", error: error )
             }
         }
     }

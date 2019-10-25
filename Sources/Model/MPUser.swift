@@ -42,6 +42,16 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             }
         }
     }
+    public private(set) var masterKeyFactory: MPKeyFactory? {
+        didSet {
+            if self.masterKeyFactory != nil {
+                self.observers.notify { $0.userDidLogin( self ) }
+            }
+            else {
+                self.observers.notify { $0.userDidLogout( self ) }
+            }
+        }
+    }
     public var defaultType: MPResultType {
         didSet {
             if oldValue != self.defaultType {
@@ -58,6 +68,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             }
         }
     }
+
     public var maskPasswords = false {
         didSet {
             if oldValue != self.maskPasswords,
@@ -77,7 +88,15 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
             if self.biometricLock {
                 if let passwordKeyFactory = self.masterKeyFactory as? MPPasswordKeyFactory {
-                    passwordKeyFactory.toKeychain().then { self.masterKeyFactory = $0 ?? passwordKeyFactory }
+                    passwordKeyFactory.toKeychain().then {
+                        switch $0 {
+                            case .success(let keychainKeyFactory):
+                                self.masterKeyFactory = keychainKeyFactory
+
+                            case .failure(let error):
+                                mperror( title: "", error: error )
+                        }
+                    }
                 }
             }
             else {
@@ -90,42 +109,10 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             }
         }
     }
+
     public var file:   UnsafeMutablePointer<MPMarshalledFile>
     public var origin: URL?
 
-    public var masterKeyFactory: MPKeyFactory? {
-        didSet {
-            // TODO: self.identicon = mpw_identicon( self.fullName, masterPassword )
-
-            if self.masterKeyFactory !== oldValue {
-                DispatchQueue.mpw.promise {
-                    if ({
-                            guard let masterKeyFactory = self.masterKeyFactory,
-                                  let authKey = masterKeyFactory.newMasterKey( algorithm: self.algorithm )
-                            else { return false }
-                            defer { authKey.deallocate() }
-                            guard let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) )
-                            else { return false }
-
-                            if self.masterKeyID == nil {
-                                self.masterKeyID = authKeyID
-                            }
-                            if self.masterKeyID != authKeyID {
-                                return false
-                            }
-
-                            return true
-                        }()) {
-                        self.observers.notify { $0.userDidLogin( self ) }
-                    }
-                    else {
-                        self.masterKeyFactory = nil
-                        self.observers.notify { $0.userDidLogout( self ) }
-                    }
-                }
-            }
-        }
-    }
     public var sites = [ MPSite ]() {
         didSet {
             if oldValue != self.sites {
@@ -168,7 +155,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     // MARK: --- Life ---
 
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
-         identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil, masterKeyFactory: MPKeyFactory,
+         identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
          file: UnsafeMutablePointer<MPMarshalledFile> = mpw_marshal_file( nil, nil, nil ),
          initialize: (MPUser) -> () = { _ in }) {
@@ -183,7 +170,6 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.file = file
 
         defer {
-            self.masterKeyFactory = masterKeyFactory
             self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
 
@@ -192,6 +178,38 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
             self.observers.register( observer: self )
         }
+    }
+
+    func login(keyFactory: MPKeyFactory) -> Promise<MPUser> {
+        // TODO: self.identicon = mpw_identicon( self.fullName, masterPassword )
+        DispatchQueue.mpw.promise {
+            guard let authKey = keyFactory.newMasterKey( algorithm: self.algorithm )
+            else { throw MPError.internal( details: "Cannot authenticate user since master key is missing." ) }
+            defer { authKey.deallocate() }
+            guard let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) )
+            else { throw MPError.internal( details: "Could not determine key ID for authentication key." ) }
+
+            if self.masterKeyID == nil {
+                self.masterKeyID = authKeyID
+            }
+            if self.masterKeyID != authKeyID {
+                throw MPError.state( details: "Incorrect master key for user." )
+            }
+        }.then { (result: Result<Void, Error>) -> MPUser in
+            switch result {
+                case .success:
+                    self.masterKeyFactory = keyFactory
+
+                case .failure:
+                    self.logout()
+            }
+
+            return self
+        }
+    }
+
+    func logout() {
+        self.masterKeyFactory = nil
     }
 
     // MARK: Hashable

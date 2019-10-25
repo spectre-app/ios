@@ -733,7 +733,7 @@ class MPMarshal: Observable {
         }
 
         public func mpw_authenticate(keyFactory: MPKeyFactory) -> Promise<MPUser> {
-            DispatchQueue.mpw.promise {
+            DispatchQueue.mpw.promised {
                 if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: keyFactory.provide() )?.pointee,
                    self.file.pointee.error.type == .success {
                     return MPUser(
@@ -742,7 +742,6 @@ class MPMarshal: Observable {
                             fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
                             identicon: marshalledUser.identicon,
                             masterKeyID: self.resetKey ? nil: self.keyID,
-                            masterKeyFactory: keyFactory,
                             defaultType: marshalledUser.defaultType,
                             lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
                             origin: self.origin, file: self.file
@@ -779,7 +778,7 @@ class MPMarshal: Observable {
                                 } )
                             }
                         }
-                    }
+                    }.login( keyFactory: keyFactory )
                 }
 
                 throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User" )

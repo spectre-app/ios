@@ -114,8 +114,15 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             super.init( title: nil, placeholder: "set a password",
                         value: { try? $0.mpw_result().await() },
                         update: { site, password in
-                            site.mpw_state( resultParam: password )
-                                .then { site.resultState = $0 }
+                            site.mpw_state( resultParam: password ).then {
+                                switch $0 {
+                                    case .success(let state):
+                                        site.resultState = state
+
+                                    case .failure(let error):
+                                        mperror( title: "", error: error )
+                                }
+                            }
                         } )
         }
 
@@ -158,8 +165,15 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             super.init( title: nil, placeholder: "set a user name",
                         value: { try? $0.mpw_result( keyPurpose: .identification ).await() },
                         update: { site, login in
-                            site.mpw_state( keyPurpose: .identification, resultParam: login )
-                                .then { site.loginState = $0 }
+                            site.mpw_state( keyPurpose: .identification, resultParam: login ).then {
+                                switch $0 {
+                                    case .success(let state):
+                                        site.loginState = state
+
+                                    case .failure(let error):
+                                        mperror( title: "", error: error )
+                                }
+                            }
                         } )
         }
 
