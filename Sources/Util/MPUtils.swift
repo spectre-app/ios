@@ -59,7 +59,7 @@ func withVaStrings<R>(_ strings: [String], terminate: Bool = true, body: (CVaLis
 }
 
 extension MPKeyPurpose {
-    var result : String {
+    var result: String {
         switch self {
             case .authentication:
                 return "password"
@@ -206,9 +206,12 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
 }
 
 public enum MPError: LocalizedError {
+    case `issue`(_ error: Error, title: String)
+    case `issue`(_ error: Error, title: String, details: String)
+    case `issue`(title: String, details: String)
     case `internal`(details: String)
     case `state`(details: String)
-    case `marshal`(error: MPMarshalError)
+    case `marshal`(MPMarshalError, title: String)
 }
 
 extension OperationQueue {

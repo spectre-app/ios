@@ -225,9 +225,14 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
             var question: MPQuestion? {
                 didSet {
-                    self.question?.mpw_result().then( on: .main ) { (answer: String?) in
-                        self.resultLabel.text = answer
-                        self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
+                    self.question?.mpw_result().then( on: .main ) {
+                        switch $0 {
+                            case .success(let answer):
+                                self.resultLabel.text = answer
+                                self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
+                            case .failure(let error):
+                                mperror( title: "Could not derive result.", error: error )
+                        }
                     }
                 }
             }

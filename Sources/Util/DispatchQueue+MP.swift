@@ -7,7 +7,7 @@ import Foundation
 
 extension DispatchQueue {
     public static var mpw = DispatchQueue( label: "\(productName): mpw", qos: .utility )
-    public static var net = DispatchQueue( label: "\(productName): Network Queue", qos:.background )
+    public static var net = DispatchQueue( label: "\(productName): Network Queue", qos: .background )
     public var isActive: Bool {
         (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                 self.label == String( safeUTF8: __dispatch_queue_get_label( nil ) )
@@ -102,7 +102,7 @@ extension DispatchQueue {
     }
 
     @discardableResult
-    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) -> Promise<V> {
+    public func promise<V>(flags: DispatchWorkItemFlags = [], x: Void = (), execute work: @escaping () throws -> V) -> Promise<V> {
         self.promise { Promise( .success( try work() ) ) }
     }
 }
@@ -164,7 +164,7 @@ public class Promise<V> {
     }
 
     @discardableResult
-    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
+    public func then<V2>(on queue: DispatchQueue? = nil, x: Void = (), _ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -176,7 +176,7 @@ public class Promise<V> {
     }
 
     @discardableResult
-    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> (V2)) -> Promise<V2> {
+    public func then<V2>(on queue: DispatchQueue? = nil, x: Void = (), _ consumer: @escaping (V) throws -> (V2)) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {

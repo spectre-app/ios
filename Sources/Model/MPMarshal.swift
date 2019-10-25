@@ -155,7 +155,7 @@ class MPMarshal: Observable {
                 return data
             }
 
-            throw MPError.marshal( error: user.file.pointee.error )
+            throw MPError.marshal( user.file.pointee.error, title: "Issue Writing User" )
         }
     }
 
@@ -576,7 +576,7 @@ class MPMarshal: Observable {
                     } )
                 }
                 else {
-                    throw MPError.marshal( error: file.pointee.error )
+                    throw MPError.marshal( file.pointee.error, title: "Issue Importing User" )
                 }
             }
 
@@ -782,7 +782,7 @@ class MPMarshal: Observable {
                     }
                 }
 
-                throw MPError.marshal( error: self.file.pointee.error )
+                throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User" )
             }
         }
 
