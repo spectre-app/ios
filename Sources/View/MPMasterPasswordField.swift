@@ -122,27 +122,22 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     }
 
     func authenticate<U>(_ handler: ((MPPasswordKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
-        DispatchQueue.main.await { [weak self] in
-            guard let self = self,
-                  let handler = handler,
+        DispatchQueue.main.await {
+            guard let handler = handler,
                   let fullName = self.userFile?.fullName ?? self.nameField?.text, fullName.count > 0,
                   let masterPassword = self.passwordField?.text, masterPassword.count > 0
-            else {
-                return nil
-            }
+            else { return nil }
 
             self.passwordField?.isEnabled = false
             self.passwordIndicator.startAnimating()
 
-            return DispatchQueue.mpw.promise {
+            return DispatchQueue.mpw.promised {
                 try handler( MPPasswordKeyFactory( fullName: fullName, masterPassword: masterPassword ) )
-            }.then( { _ -> Void in
-                DispatchQueue.main.async {
-                    self.passwordField?.text = nil
-                    self.passwordField?.isEnabled = true
-                    self.passwordIndicator.stopAnimating()
-                }
-            } )
+            }.then( on: .main ) { _ in
+                self.passwordField?.text = nil
+                self.passwordField?.isEnabled = true
+                self.passwordIndicator.stopAnimating()
+            }
         }
     }
 
@@ -154,8 +149,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if let authentication = self.authenticate( self.authentication ) {
-            authentication.then( on: .main ) { (result: Result<MPUser, Error>) in
-                switch result {
+            authentication.then( on: .main ) {
+                switch $0 {
                     case .success(let user):
                         self.authenticated?( user )
 

@@ -320,22 +320,21 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                 self.biometricButton.button.isSelected = true
                 self.passwordButton.button.isSelected = false
                 self.passwordField.isEnabled = true
-                userFile.mpw_authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) )
-                        .then( { result -> Void in
-                            switch result {
-                                case .success(let user):
-                                    DispatchQueue.main.perform {
-                                        self.navigationController?
-                                            .pushViewController( MPSitesViewController( user: user ), animated: true )
-                                    }
-
-                                case .failure:
-                                    for algorithm in MPAlgorithmVersion.allCases {
-                                        MPKeychain.deleteKey( for: userFile.fullName, algorithm: algorithm )
-                                    }
-                                    self.update()
+                userFile.mpw_authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) ).then {
+                    switch $0 {
+                        case .success(let user):
+                            DispatchQueue.main.perform {
+                                self.navigationController?
+                                    .pushViewController( MPSitesViewController( user: user ), animated: true )
                             }
-                        } )
+
+                        case .failure:
+                            for algorithm in MPAlgorithmVersion.allCases {
+                                MPKeychain.deleteKey( for: userFile.fullName, algorithm: algorithm )
+                            }
+                            self.update()
+                    }
+                }
             }
             self.passwordButton.isBorderedOnSelection = true
             self.passwordButton.button.addAction( for: .touchUpInside ) { _, _ in

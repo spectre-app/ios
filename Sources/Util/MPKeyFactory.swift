@@ -117,7 +117,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     }
 
     func saveMasterKeys(from masterPassword: String) -> Promise<Void> {
-        DispatchQueue.mpw.promise {
+        DispatchQueue.mpw.promised {
             var promises = [ Promise<Void> ]()
             for algorithm in MPAlgorithmVersion.allCases {
                 if let masterKey = mpw_master_key( self.fullName, masterPassword, algorithm ) {

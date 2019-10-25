@@ -14,7 +14,7 @@ class MPCoreData {
     private let privateManagedObjectContext = NSManagedObjectContext( concurrencyType: .privateQueueConcurrencyType )
 
     @discardableResult
-    public func promise<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> Promise<V>) -> Promise<V>? {
+    public func promised<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> Promise<V>) -> Promise<V>? {
         guard self.loadStore()
         else { return nil }
 
@@ -30,7 +30,7 @@ class MPCoreData {
 
     @discardableResult
     public func promise<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> V) -> Promise<V>? {
-        self.promise( main: main ) { Promise( .success( try task( $0 ) ) ) }
+        self.promised( main: main ) { Promise( .success( try task( $0 ) ) ) }
     }
 
     private func loadStore() -> Bool {

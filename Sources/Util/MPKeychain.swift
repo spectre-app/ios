@@ -50,7 +50,7 @@ public class MPKeychain {
     @discardableResult
     public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext)
                     -> Promise<Void> {
-        DispatchQueue.mpw.promise { () -> () in
+        DispatchQueue.mpw.promise {
             assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
             let query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )
@@ -84,7 +84,7 @@ public class MPKeychain {
     @discardableResult
     public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion)
                     -> Promise<Void> {
-        DispatchQueue.mpw.promise { () -> () in
+        DispatchQueue.mpw.promise {
             let query  = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true )
             let status = SecItemDelete( query as CFDictionary )
             if status != errSecSuccess {
@@ -113,7 +113,7 @@ public class MPKeychain {
 
     public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
                     -> Promise<MPMasterKey> {
-        DispatchQueue.mpw.promise { () -> MPMasterKey in
+        DispatchQueue.mpw.promise {
             assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
             var query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )

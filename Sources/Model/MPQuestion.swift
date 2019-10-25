@@ -84,14 +84,14 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
 
     public func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                            resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<String?> {
+                    -> Promise<String> {
         self.site.mpw_result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                               resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
     }
 
     public func mpw_state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                           resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<String?> {
+                    -> Promise<String> {
         self.site.mpw_state( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                              resultType: resultType, resultParam: resultParam, algorithm: algorithm )
     }

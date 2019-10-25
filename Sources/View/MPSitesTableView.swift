@@ -442,10 +442,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
                 self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
-            }.then { _ -> Promise<String?> in
-                self.site?.mpw_result( keyPurpose: self.mode ) ?? Promise( .success( nil ) )
-            }.then( on: DispatchQueue.main ) { (result: String?) in
-                self.resultLabel.text = result
+            }.promised {
+                self.site?.mpw_result( keyPurpose: self.mode ) ?? Promise( .success( "" ) )
+            }.then( on: DispatchQueue.main ) {
+                switch $0 {
+                    case .success(let result):
+                        self.resultLabel.text = result
+
+                    case .failure(let error):
+                        mperror( title: "", error: error )
+                }
             }
         }
     }

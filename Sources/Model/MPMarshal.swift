@@ -100,23 +100,23 @@ class MPMarshal: Observable {
 
     @discardableResult
     public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
-        self.marshalQueue.promise {
+        self.marshalQueue.promised {
             guard let documentURL = self.url( for: user, in: directory, format: format )
             else { throw MPError.internal( details: "No path to marshal \(user)" ) }
 
-            return self.export( user: user, format: format, redacted: redacted ).then( { (data: Data) in
-                if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
+            return self.export( user: user, format: format, redacted: redacted ).then {
+                if !FileManager.default.createFile( atPath: documentURL.path, contents: $0 ) {
                     throw MPError.internal( details: "Couldn't save \(documentURL)" )
                 }
 
                 self.setNeedsReload()
                 return documentURL
-            } )
+            }
         }
     }
 
     public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
-        DispatchQueue.mpw.promise { () -> Data in
+        DispatchQueue.mpw.promise {
             guard let keyFactory = user.masterKeyFactory
             else { throw MPError.state( details: "Not authenticated: \(user)." ) }
             guard let marshalledUser = mpw_marshal_user( user.fullName, keyFactory.provide(), user.algorithm )
@@ -161,7 +161,7 @@ class MPMarshal: Observable {
 
     @discardableResult
     public func `import`(data: Data) -> Promise<Bool> {
-        DispatchQueue.mpw.promise {
+        DispatchQueue.mpw.promised {
             guard let importingFile = self.userFile( for: data )
             else {
                 mperror( title: "Issue importing", context: "Not an \(productName) import document" )
@@ -189,7 +189,7 @@ class MPMarshal: Observable {
     }
 
     private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile) -> Promise<Bool> {
-        DispatchQueue.main.promise {
+        DispatchQueue.main.promised {
             guard let viewController = UIApplication.shared.keyWindow?.rootViewController
             else {
                 mperror( title: "Issue importing", context: "Could not present UI to handle import conflict." )
@@ -389,7 +389,7 @@ class MPMarshal: Observable {
                                content: UIActivityIndicatorView( style: .whiteLarge ) )
 
         spinner.show( dismissAutomatically: false )
-        return DispatchQueue.mpw.promise {
+        return DispatchQueue.mpw.promised {
             var replacedSites = 0, newSites = 0
             for importedSite in importedUser.sites {
                 if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
@@ -417,7 +417,7 @@ class MPMarshal: Observable {
                 updatedUser = true
             }
 
-            return DispatchQueue.main.promise { () -> Bool in
+            return DispatchQueue.main.promise {
                 spinner.dismiss()
 
                 if !updatedUser && replacedSites + newSites == 0 {
@@ -451,7 +451,7 @@ class MPMarshal: Observable {
                                content: UIActivityIndicatorView( style: .whiteLarge ) )
 
         spinner.show( dismissAutomatically: false )
-        return DispatchQueue.mpw.promise { () -> Bool in
+        return DispatchQueue.mpw.promise {
             FileManager.default.createFile( atPath: documentURL.path, contents: data )
         }.then {
             spinner.dismiss()
@@ -486,10 +486,10 @@ class MPMarshal: Observable {
 
     @discardableResult
     public func importLegacy(force: Bool = false) -> Promise<Bool> {
-        MPCoreData.shared.promise { context -> Promise<Bool> in
+        MPCoreData.shared.promised {
             var promises = [ Promise<Bool> ]()
 
-            for user: MPUserEntity_CoreData in try context.fetch( MPUserEntity.fetchRequest() ) {
+            for user: MPUserEntity_CoreData in try $0.fetch( MPUserEntity.fetchRequest() ) {
                 guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
                 else { continue } // Not a (saved) object.
                 guard force || !(self.defaults?.bool( forKey: objectID.uriRepresentation().absoluteString ) ?? false)
@@ -733,7 +733,7 @@ class MPMarshal: Observable {
         }
 
         public func mpw_authenticate(keyFactory: MPKeyFactory) -> Promise<MPUser> {
-            DispatchQueue.mpw.promise { () -> MPUser in
+            DispatchQueue.mpw.promise {
                 if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: keyFactory.provide() )?.pointee,
                    self.file.pointee.error.type == .success {
                     return MPUser(

@@ -115,7 +115,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         value: { try? $0.mpw_result().await() },
                         update: { site, password in
                             site.mpw_state( resultParam: password )
-                                .then { state in site.resultState = state }
+                                .then { site.resultState = $0 }
                         } )
         }
 
@@ -159,7 +159,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         value: { try? $0.mpw_result( keyPurpose: .identification ).await() },
                         update: { site, login in
                             site.mpw_state( keyPurpose: .identification, resultParam: login )
-                                .then { state in site.loginState = state }
+                                .then { site.loginState = $0 }
                         } )
         }
 

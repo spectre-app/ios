@@ -227,61 +227,69 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
     public func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                            resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<String?> {
-        DispatchQueue.mpw.promise { () -> String? in
+                    -> Promise<String> {
+        DispatchQueue.mpw.promise {
             guard let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            else { return nil }
+            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
             defer { masterKey.deallocate() }
 
+            var result: UnsafePointer<CChar>?
             switch keyPurpose {
                 case .authentication:
-                    return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                                              resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm ),
-                                   deallocate: true )
+                    result = mpw_site_result( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+                                              resultType ?? self.resultType, resultParam ?? self.resultState, algorithm ?? self.algorithm )
 
                 case .identification:
-                    return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                              resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm ),
-                                   deallocate: true )
+                    result = mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                              resultType ?? self.loginType, resultParam ?? self.loginState, algorithm ?? self.algorithm )
 
                 case .recovery:
-                    return String( safeUTF8: mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                              resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ),
-                                   deallocate: true )
+                    result = mpw_site_result( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                              resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm )
 
                 @unknown default:
                     throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
             }
+
+            if let result = String( safeUTF8: result, deallocate: true ) {
+                return result
+            }
+
+            throw MPError.internal( details: "Couldn't calculate site result." )
         }
     }
 
     public func mpw_state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                           resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<String?> {
-        DispatchQueue.mpw.promise { () -> String? in
+                    -> Promise<String> {
+        DispatchQueue.mpw.promise {
             guard let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm ?? self.algorithm )
-            else { return nil }
+            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
             defer { masterKey.deallocate() }
 
+            var result: UnsafePointer<CChar>?
             switch keyPurpose {
                 case .authentication:
-                    return String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
-                                                             resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm ),
-                                   deallocate: true )
+                    result = mpw_site_state( masterKey, self.siteName, counter ?? self.counter, keyPurpose, keyContext,
+                                             resultType ?? self.resultType, resultParam, algorithm ?? self.algorithm )
 
                 case .identification:
-                    return String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                             resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm ),
-                                   deallocate: true )
+                    result = mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                             resultType ?? self.loginType, resultParam, algorithm ?? self.algorithm )
 
                 case .recovery:
-                    return String( safeUTF8: mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
-                                                             resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm ),
-                                   deallocate: true )
+                    result = mpw_site_state( masterKey, self.siteName, counter ?? .initial, keyPurpose, keyContext,
+                                             resultType ?? MPResultType.templatePhrase, resultParam, algorithm ?? self.algorithm )
 
                 @unknown default:
                     throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
             }
+
+            if let result = String( safeUTF8: result, deallocate: true ) {
+                return result
+            }
+
+            throw MPError.internal( details: "Couldn't calculate site result." )
         }
     }
 
@@ -290,10 +298,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                          resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
                          for host: UIView? = nil) -> Promise<Void> {
         self.mpw_result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                         resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then { (result: String?) in
-            guard let result = result
-            else { return }
-
+                         resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then { result in
             self.use()
 
             if #available( iOS 10.0, * ) {
