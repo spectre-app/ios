@@ -13,12 +13,7 @@ import Stellar
 class MPUsersViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
     public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
     public var selectedFile: MPMarshal.UserFile? {
-        get {
-            self.fileSource.element( item: self.usersSpinner.selectedItem )
-        }
-        set {
-            self.usersSpinner.selectItem( self.fileSource.indexPath( for: newValue )?.item )
-        }
+        self.fileSource.element( item: self.usersSpinner.selectedItem )
     }
 
     private let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) )
@@ -117,7 +112,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         super.viewWillDisappear( animated )
 
         self.keyboardLayoutGuide = nil
-        self.selectedFile = nil
+        self.usersSpinner.selectItem( nil )
     }
 
     // MARK: --- Private ---
