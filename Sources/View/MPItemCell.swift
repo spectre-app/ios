@@ -24,7 +24,7 @@ class MPItemCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.effectView.round = true
+        self.effectView.isRound = true
         self.effectView.isDimmedBySelection = true
         self.effectView.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 

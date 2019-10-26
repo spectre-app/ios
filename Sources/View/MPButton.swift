@@ -6,7 +6,7 @@
 import Foundation
 
 class MPButton: MPEffectView {
-    public var tapEffect             = true
+    public var tapEffect = true
     public var image: UIImage? {
         didSet {
             DispatchQueue.main.perform {
@@ -54,13 +54,9 @@ class MPButton: MPEffectView {
             }
         }
     }
-    override var     effectBackground: Bool {
-        didSet {
-            self.layer.borderWidth = self.effectBackground ? 1.5: 0
-        }
-    }
-    private(set) var button:           UIButton!
-    private var      stateObserver:    Any?
+    public let button: UIButton!
+
+    private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
                                                                      .withPriority( .defaultHigh )
     override var bounds: CGRect {
@@ -80,9 +76,8 @@ class MPButton: MPEffectView {
     }
 
     convenience init(image: UIImage? = nil, title: String? = nil, action: ((UIControl, UIEvent) -> ())? = nil) {
-        let button = UIButton( type: .custom )
-        self.init( content: button )
-        self.button = button
+        self.init( content: UIButton( type: .custom ) )
+        self.isRound = true
 
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
@@ -102,31 +97,34 @@ class MPButton: MPEffectView {
             self.button.addAction( for: .touchUpInside, action: action )
         }
 
-        self.layer.borderWidth = 1
         self.contentView.layoutMargins = .zero
         if #available( iOS 11.0, * ) {
             self.contentView.insetsLayoutMarginsFromSafeArea = false
         }
 
         defer {
-            self.layoutMargins = .zero
-            self.round = true
             self.image = image
             self.title = title
         }
     }
 
     init(content: UIView) {
+        self.button = content as? UIButton
         super.init()
 
         self.contentView.addSubview( content )
         LayoutConfiguration( view: content ).constrainToMarginsOfOwner().activate()
-
-        defer {
-            self.darkBackground = false
-            self.effectBackground = true
-        }
     }
+
+    // MARK: --- Private ---
+
+    override func updateBackground() {
+        super.updateBackground()
+
+        self.layer.borderWidth = self.isBackgroundVisible ? (self.button == nil ? 1.5: 1): 0
+    }
+
+    // MARK: --- Types ---
 
     enum Size {
         case text, text_icon, image_icon, small

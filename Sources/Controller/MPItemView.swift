@@ -480,7 +480,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         }
 
         override func createValueView() -> UIView? {
-            self.downButton.effectBackground = false
+            self.downButton.isBackgroundVisible = false
             self.downButton.button.addAction( for: .touchUpInside ) { _, _ in
                 if let model = self.item.model,
                    let value = self.item.value,
@@ -489,7 +489,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
                 }
             }
 
-            self.upButton.effectBackground = false
+            self.upButton.isBackgroundVisible = false
             self.upButton.button.addAction( for: .touchUpInside ) { _, _ in
                 if let model = self.item.model,
                    let value = self.item.value,

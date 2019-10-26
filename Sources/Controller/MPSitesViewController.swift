@@ -32,7 +32,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     override func viewDidLoad() {
 
         // - View
-        self.topContainer.darkBackground = true
+        self.topContainer.isBackgroundDark = true
 
         self.searchField.attributedPlaceholder = stra( "Site Name", [
             NSAttributedString.Key.foregroundColor: MPTheme.global.color.secondary.get()!.withAlphaComponent( 0.382 )

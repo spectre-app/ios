@@ -323,11 +323,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
 
             self.newButton.tapEffect = false
-            self.newButton.effectBackground = false
+            self.newButton.isBackgroundVisible = false
             self.newButton.isUserInteractionEnabled = false
 
             self.modeButton.tapEffect = false
-            self.modeButton.effectBackground = false
+            self.modeButton.isBackgroundVisible = false
             self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
 
             // - Hierarchy

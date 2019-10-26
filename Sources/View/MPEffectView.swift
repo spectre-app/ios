@@ -6,57 +6,34 @@
 import UIKit
 
 class MPEffectView: UIVisualEffectView {
-    public var effectBackground = false {
+    public var isBackgroundVisible = true {
         didSet {
-            DispatchQueue.main.perform {
-                if self.effectBackground {
-                    self.effect = MPEffectView.effect( dark: self.darkBackground )
-                }
-                else {
-                    self.effect = nil
-                }
-            }
+            self.updateBackground()
         }
     }
-    public var darkBackground = false {
+    public var isBackgroundDark    = false {
         didSet {
-            DispatchQueue.main.perform {
-                self.tintColor = self.darkBackground ? MPTheme.global.color.secondary.get(): MPTheme.global.color.backdrop.get()
-                self.effectBackground = { self.effectBackground }()
-            }
+            self.updateBackground()
         }
     }
-    public var round    = false {
+    public var isRound             = false {
         didSet {
-            self.setNeedsUpdateConstraints()
+            self.updateRounding()
         }
     }
-    public var rounding = CGFloat( 4 ) {
+    public var rounding            = CGFloat( 4 ) {
         didSet {
-            self.setNeedsUpdateConstraints()
+            self.updateRounding()
         }
     }
-
     public var isSelected          = true {
         didSet {
-            if self.isDimmedBySelection && !self.isSelected {
-                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
-                self.contentView.alpha = 0.618
-            }
-            else {
-                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 1 )
-                self.contentView.alpha = 1
-            }
+            self.updateDimming()
         }
     }
-    public var isDimmedBySelection = false
-
-    public static func effect(dark: Bool) -> UIVisualEffect {
-        if #available( iOS 13, * ) {
-            return UIBlurEffect( style: dark ? .systemUltraThinMaterialDark: .systemUltraThinMaterialLight )
-        }
-        else {
-            return UIBlurEffect( style: dark ? .dark: .light )
+    public var isDimmedBySelection = false {
+        didSet {
+            self.updateDimming()
         }
     }
 
@@ -72,9 +49,7 @@ class MPEffectView: UIVisualEffectView {
         self.contentView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
-        defer {
-            self.effectBackground = true
-        }
+        self.updateBackground()
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -82,8 +57,45 @@ class MPEffectView: UIVisualEffectView {
     }
 
     override func layoutSubviews() {
-        self.layer.cornerRadius = self.round ? self.bounds.size.height / 2: self.rounding
+        self.updateRounding()
 
         super.layoutSubviews()
+    }
+
+    // MARK: Private
+
+    private static func effect(dark: Bool) -> UIVisualEffect {
+        if #available( iOS 13, * ) {
+            return UIBlurEffect( style: dark ? .systemUltraThinMaterialDark: .systemUltraThinMaterialLight )
+        }
+        else {
+            return UIBlurEffect( style: dark ? .dark: .light )
+        }
+    }
+
+    func updateBackground() {
+        DispatchQueue.main.perform {
+            self.tintColor = self.isBackgroundDark ? MPTheme.global.color.secondary.get(): MPTheme.global.color.backdrop.get()
+            self.effect = self.isBackgroundVisible ? MPEffectView.effect( dark: self.isBackgroundDark ): nil
+        }
+    }
+
+    func updateRounding() {
+        DispatchQueue.main.perform {
+            self.layer.cornerRadius = self.isRound ? self.bounds.size.height / 2: self.rounding
+        }
+    }
+
+    func updateDimming() {
+        DispatchQueue.main.perform {
+            if self.isDimmedBySelection && !self.isSelected {
+                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
+                self.contentView.alpha = 0.618
+            }
+            else {
+                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 1 )
+                self.contentView.alpha = 1
+            }
+        }
     }
 }

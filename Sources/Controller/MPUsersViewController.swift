@@ -16,10 +16,10 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         self.fileSource.element( item: self.usersSpinner.selectedItem )
     }
 
-    private let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) )
-    private let usersSpinner   = MPSpinnerView()
-    private let userToolbar    = UIToolbar( frame: .infinite )
-    private let detailsHost    = MPDetailsHostController()
+    private let appToolbar   = UIStackView()
+    private let usersSpinner = MPSpinnerView()
+    private let userToolbar  = UIToolbar( frame: .infinite )
+    private let detailsHost  = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
     private var keyboardLayoutGuide:      UILayoutGuide! {
         willSet {
@@ -50,10 +50,17 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         self.usersSpinner.backgroundColor = .clear
         self.usersSpinner.indicatorStyle = .white
 
-        self.settingsButton.darkBackground = true
-        self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
+        self.appToolbar.axis = .horizontal
+        self.appToolbar.spacing = 12
+        let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) ) { _, _ in
             self.detailsHost.show( MPAppDetailsViewController() )
         }
+        settingsButton.isBackgroundVisible = false
+        self.appToolbar.addArrangedSubview( settingsButton )
+        let incognitoButton = MPButton( image: UIImage( named: "icon_shield" ) ) { _, _ in
+        }
+        incognitoButton.isBackgroundVisible = false
+        self.appToolbar.addArrangedSubview( incognitoButton )
 
         self.userToolbar.barStyle = .black
         self.userToolbar.items = [
@@ -64,7 +71,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         // - Hierarchy
         self.addChild( self.detailsHost )
         self.view.addSubview( self.usersSpinner )
-        self.view.addSubview( self.settingsButton )
+        self.view.addSubview( self.appToolbar )
         self.view.addSubview( self.userToolbar )
         self.view.addSubview( self.detailsHost.view )
         self.detailsHost.didMove( toParent: self )
@@ -75,7 +82,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                 .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ).withPriority( .defaultHigh ) }
                 .activate()
 
-        LayoutConfiguration( view: self.settingsButton )
+        LayoutConfiguration( view: self.appToolbar )
                 .constrainToMarginsOfOwner( withAnchors: .bottomCenter )
                 .activate()
 
