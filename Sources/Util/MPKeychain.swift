@@ -50,9 +50,7 @@ public class MPKeychain {
     @discardableResult
     public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext)
                     -> Promise<Void> {
-        dbg("will save \(fullName) \(algorithm) from \(keyFactory)")
-        return DispatchQueue.mpw.promise {
-            defer { dbg("finished save \(fullName) \(algorithm) from \(keyFactory)") }
+        DispatchQueue.mpw.promise {
             assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
             let query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )

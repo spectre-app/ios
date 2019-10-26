@@ -53,8 +53,7 @@ public class MPPasswordKeyFactory: MPKeyFactory {
     }
 
     public func toKeychain() -> Promise<MPKeychainKeyFactory> {
-        let keychainKeyFactory = MPKeychainKeyFactory( fullName: self.fullName )
-        return keychainKeyFactory.saveMasterKeys( from: self.masterPassword ).then { keychainKeyFactory }
+        MPKeychainKeyFactory( fullName: self.fullName ).saveMasterKeys( from: self.masterPassword )
     }
 }
 
@@ -116,17 +115,17 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         return UnsafePointer<UInt8>( providedMasterKey )
     }
 
-    func saveMasterKeys(from masterPassword: String) -> Promise<Void> {
+    func saveMasterKeys(from masterPassword: String) -> Promise<MPKeychainKeyFactory> {
         DispatchQueue.mpw.promised {
             var promises = [ Promise<Void> ]()
             for algorithm in MPAlgorithmVersion.allCases {
                 if let masterKey = mpw_master_key( self.fullName, masterPassword, algorithm ) {
-                    let keyFactory = MPBufferKeyFactory( fullName: self.fullName, masterKey: masterKey, algorithm: algorithm )
-                    promises.append( MPKeychain.saveKey( for: self.fullName, algorithm: algorithm, keyFactory: keyFactory, context: self.context ) )
+                    self.masterKeys[algorithm] = masterKey
+                    promises.append( MPKeychain.saveKey( for: self.fullName, algorithm: algorithm, keyFactory: self, context: self.context ) )
                 }
             }
 
-            return Promise( reducing: promises, from: () ) { _, _ in () }
+            return Promise( reducing: promises, from: () ).then { self }
         }
     }
 }

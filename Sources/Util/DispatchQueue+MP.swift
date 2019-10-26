@@ -104,7 +104,7 @@ public class Promise<V> {
         }
     }
 
-    public convenience init(reducing promises: [Promise<V>], from value: V, _ partialResult: @escaping (V, V) throws -> V) {
+    public convenience init(reducing promises: [Promise<V>], from value: V, _ partialResult: @escaping (V, V) throws -> V = { a, b in a }) {
         if promises.isEmpty {
             self.init( .success( value ) )
         }
