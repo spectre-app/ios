@@ -70,7 +70,7 @@ class MPMarshal: Observable {
     }
 
     public func setNeedsSave(user: MPUser) {
-        guard user.dirty, !self.saving.contains( user )
+        guard user.dirty, user.file != nil, !self.saving.contains( user )
         else { return }
 
         self.saving.append( user )
@@ -117,6 +117,8 @@ class MPMarshal: Observable {
 
     public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
         DispatchQueue.mpw.promise {
+            guard let file = user.file
+            else { throw MPError.state( details: "Cannot export incognito user: \(user)." ) }
             guard let keyFactory = user.masterKeyFactory
             else { throw MPError.state( details: "Not authenticated: \(user)." ) }
             guard let marshalledUser = mpw_marshal_user( user.fullName, keyFactory.provide(), user.algorithm )
@@ -149,13 +151,12 @@ class MPMarshal: Observable {
                 }
             }
 
-            if let data = String( safeUTF8: mpw_marshal_write( format, user.file, marshalledUser ),
-                                  deallocate: true )?.data( using: .utf8 ),
-               user.file.pointee.error.type == .success {
+            if let data = String( safeUTF8: mpw_marshal_write( format, file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
+               file.pointee.error.type == .success {
                 return data
             }
 
-            throw MPError.marshal( user.file.pointee.error, title: "Issue Writing User" )
+            throw MPError.marshal( file.pointee.error, title: "Issue Writing User" )
         }
     }
 

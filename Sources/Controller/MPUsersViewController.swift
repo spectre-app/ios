@@ -58,6 +58,31 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         settingsButton.isBackgroundVisible = false
         self.appToolbar.addArrangedSubview( settingsButton )
         let incognitoButton = MPButton( image: UIImage( named: "icon_shield" ) ) { _, _ in
+            let controller = UIAlertController( title: "Incognito Login", message:
+            """
+            While in incognito mode, no user information is kept on the device.
+            """, preferredStyle: .alert )
+
+            let passwordField = MPMasterPasswordField()
+            passwordField.authenticate = { keyFactory in MPUser( fullName: keyFactory.fullName, file: nil ).login( keyFactory: keyFactory ) }
+            passwordField.authenticated = {
+                switch $0 {
+                    case .success(let user):
+                        controller.dismiss( animated: true )
+                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+
+                    case .failure(let error):
+                        mperror( title: "Access Denied", error: error )
+                }
+            }
+
+            controller.addTextField { passwordField.nameField = $0 }
+            controller.addTextField { passwordField.passwordField = $0 }
+            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+            controller.addAction( UIAlertAction( title: "Log In", style: .default ) { _ in
+                passwordField.try()
+            } )
+            self.present( controller, animated: true )
         }
         incognitoButton.isBackgroundVisible = false
         self.appToolbar.addArrangedSubview( incognitoButton )
@@ -285,34 +310,36 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.nameLabel.preferredMaxLayoutWidth = .infinity
             self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
+            self.avatarButton.contentMode = .center
+            self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
+
+            self.passwordField.borderStyle = .roundedRect
+            self.passwordField.font = MPTheme.global.font.callout.get()
+            self.passwordField.placeholder = "Your master password"
+            self.passwordField.nameField = self.nameField
+            self.passwordField.authenticate = { keyFactory in
+                self.userFile?.mpw_authenticate( keyFactory: keyFactory ) ??
+                        MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
+            }
+            self.passwordField.authenticated = {
+                switch $0 {
+                    case .success(let user):
+                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+
+                    case .failure(let error):
+                        mperror( title: "Access Denied", error: error )
+                }
+            }
+
             self.nameField.font = MPTheme.global.font.callout.get()?.withSize( UIFont.labelFontSize * 2 )
             self.nameField.adjustsFontSizeToFitWidth = true
-            self.nameField.textAlignment = .center
             self.nameField.textColor = MPTheme.global.color.body.get()
             self.nameField.borderStyle = .none
             self.nameField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.nameField.attributedPlaceholder = stra( "Your Full Name", [
                 NSAttributedString.Key.foregroundColor: MPTheme.global.color.secondary.get()!.withAlphaComponent( 0.382 )
             ] )
-            self.nameField.autocapitalizationType = .words
-            self.nameField.returnKeyType = .next
-            self.nameField.delegate = self.passwordField
             self.nameField.alpha = 0
-
-            self.avatarButton.contentMode = .center
-            self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
-
-            self.passwordField.borderStyle = .roundedRect
-            self.passwordField.font = MPTheme.global.font.callout.get()
-            self.passwordField.textAlignment = .center
-            self.passwordField.nameField = self.nameField
-            self.passwordField.authentication = { keyFactory in
-                self.userFile?.mpw_authenticate( keyFactory: keyFactory ) ??
-                        MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
-            }
-            self.passwordField.authenticated = { user in
-                self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-            }
 
             self.biometricButton.isDimmedBySelection = true
             self.biometricButton.button.addAction( for: .touchUpInside ) { _, _ in

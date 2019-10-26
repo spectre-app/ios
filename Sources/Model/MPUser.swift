@@ -72,7 +72,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     public var maskPasswords = false {
         didSet {
             if oldValue != self.maskPasswords,
-               self.file.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) {
+               self.file?.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -103,14 +103,14 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             }
 
             if oldValue != self.biometricLock,
-               self.file.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
+               self.file?.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
     }
 
-    public var file:   UnsafeMutablePointer<MPMarshalledFile>
+    public var file:   UnsafeMutablePointer<MPMarshalledFile>?
     public var origin: URL?
 
     public var sites = [ MPSite ]() {
@@ -157,7 +157,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
-         file: UnsafeMutablePointer<MPMarshalledFile> = mpw_marshal_file( nil, nil, nil ),
+         file: UnsafeMutablePointer<MPMarshalledFile>? = mpw_marshal_file( nil, nil, nil ),
          initialize: (MPUser) -> () = { _ in }) {
         self.algorithm = algorithm ?? .current
         self.avatar = avatar
@@ -170,8 +170,8 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.file = file
 
         defer {
-            self.maskPasswords = self.file.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
-            self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
+            self.maskPasswords = self.file?.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
+            self.biometricLock = self.file?.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
 
             initialize( self )
             self.initializing = false

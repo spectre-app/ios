@@ -7,7 +7,20 @@ import Foundation
 
 class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     var userFile:  MPMarshal.UserFile?
-    var nameField: UITextField?
+    var nameField: UITextField? {
+        willSet {
+            self.nameField?.delegate = nil
+        }
+        didSet {
+            if let nameField = self.nameField {
+                nameField.delegate = self
+                nameField.placeholder = "Your full name"
+                nameField.autocapitalizationType = .words
+                nameField.returnKeyType = .next
+                nameField.textAlignment = .center
+            }
+        }
+    }
     var passwordField: UITextField? {
         willSet {
             if let passwordField = self.passwordField {
@@ -23,12 +36,12 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
                 passwordField.delegate = self
                 passwordField.isSecureTextEntry = true
                 passwordField.placeholder = "Your master password"
-
                 passwordField.inputAccessoryView = self.identiconAccessory
                 passwordField.rightView = self.passwordIndicator
                 passwordField.leftView = UIView( frame: self.passwordIndicator.frame )
                 passwordField.leftViewMode = .always
                 passwordField.rightViewMode = .always
+                passwordField.textAlignment = .center
 
                 NotificationCenter.default.addObserver( forName: UITextField.textDidChangeNotification, object: passwordField, queue: nil ) { notification in
                     self.setNeedsIdenticon()
@@ -41,8 +54,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             self.setNeedsIdenticon()
         }
     }
-    var authentication: ((MPPasswordKeyFactory) throws -> Promise<MPUser>)?
-    var authenticated:  ((MPUser) -> Void)?
+    var authenticate:  ((MPPasswordKeyFactory) throws -> Promise<MPUser>)?
+    var authenticated: ((Result<MPUser, Error>) -> Void)?
 
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
@@ -107,7 +120,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
     }
 
-    // MARK: Interface
+    // MARK: --- Interface ---
 
     public func setNeedsIdenticon() {
         DispatchQueue.main.perform {
@@ -121,7 +134,13 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
     }
 
-    func authenticate<U>(_ handler: ((MPPasswordKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
+    public func `try`(_ textField: UITextField? = nil) {
+        if let field = textField ?? self.nameField ?? self.passwordField {
+            self.textFieldShouldReturn( field )
+        }
+    }
+
+    public func authenticate<U>(_ handler: ((MPPasswordKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
         DispatchQueue.main.await {
             guard let handler = handler,
                   let fullName = self.userFile?.fullName ?? self.nameField?.text, fullName.count > 0,
@@ -133,9 +152,17 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
 
             return DispatchQueue.mpw.promised {
                 try handler( MPPasswordKeyFactory( fullName: fullName, masterPassword: masterPassword ) )
-            }.then( on: .main ) { _ in
+            }.then( on: .main ) { result in
                 self.passwordField?.text = nil
                 self.passwordField?.isEnabled = true
+                switch result {
+                    case .success:
+                        self.passwordField?.resignFirstResponder()
+
+                    case .failure:
+                        self.passwordField?.becomeFirstResponder()
+                        self.passwordField?.shake()
+                }
                 self.passwordIndicator.stopAnimating()
             }
         }
@@ -147,19 +174,10 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         true
     }
 
+    @discardableResult
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if let authentication = self.authenticate( self.authentication ) {
-            authentication.then( on: .main ) {
-                switch $0 {
-                    case .success(let user):
-                        self.authenticated?( user )
-
-                    case .failure(let error):
-                        mperror( title: "Access Denied", context: error.localizedDescription )
-                        self.becomeFirstResponder()
-                        self.shake()
-                }
-            }
+        if let authentication = self.authenticate( self.authenticate ) {
+            authentication.then( on: .main ) { result -> Void in self.authenticated?( result ) }
             return true
         }
 
