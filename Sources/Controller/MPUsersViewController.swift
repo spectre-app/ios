@@ -312,7 +312,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                 self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
             }
 
-            self.biometricButton.isBorderedOnSelection = true
+            self.biometricButton.isDimmedBySelection = true
             self.biometricButton.button.addAction( for: .touchUpInside ) { _, _ in
                 guard let userFile = self.userFile
                 else { return }
@@ -336,7 +336,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                     }
                 }
             }
-            self.passwordButton.isBorderedOnSelection = true
+            self.passwordButton.isDimmedBySelection = true
             self.passwordButton.button.addAction( for: .touchUpInside ) { _, _ in
                 self.biometricButton.button.isSelected = false
                 self.passwordButton.button.isSelected = true

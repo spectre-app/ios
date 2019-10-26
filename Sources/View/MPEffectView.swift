@@ -37,17 +37,19 @@ class MPEffectView: UIVisualEffectView {
         }
     }
 
-    public var isSelected            = false {
+    public var isSelected          = true {
         didSet {
-            if self.isBorderedOnSelection && !self.isSelected {
+            if self.isDimmedBySelection && !self.isSelected {
                 self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
+                self.contentView.alpha = 0.618
             }
             else {
                 self.layer.borderColor = self.layer.borderColor?.copy( alpha: 1 )
+                self.contentView.alpha = 1
             }
         }
     }
-    public var isBorderedOnSelection = false
+    public var isDimmedBySelection = false
 
     public static func effect(dark: Bool) -> UIVisualEffect {
         if #available( iOS 13, * ) {
@@ -72,7 +74,6 @@ class MPEffectView: UIVisualEffectView {
         if #available( iOS 11.0, * ) {
             self.contentView.insetsLayoutMarginsFromSafeArea = false
         }
-
 
         defer {
             self.effectBackground = true

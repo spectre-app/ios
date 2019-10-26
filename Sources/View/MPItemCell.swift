@@ -12,7 +12,6 @@ class MPItemCell: UICollectionViewCell {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.382 ) {
                     self.effectView.isSelected = self.isSelected
-                    self.contentView.alpha = self.isSelected ? 1: 0.618
                 }
             }
         }
@@ -26,7 +25,7 @@ class MPItemCell: UICollectionViewCell {
         super.init( frame: frame )
 
         self.effectView.round = true
-        self.effectView.isBorderedOnSelection = true
+        self.effectView.isDimmedBySelection = true
         self.effectView.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
         self.contentView.addSubview( self.effectView )
