@@ -201,7 +201,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     // MARK: --- MPMarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
-        self.fileSource.update( [ userFiles.sorted() + [ nil ] ], reload: true )
+        self.fileSource.update( [ userFiles.sorted() + [ nil ] ], reloadItems: true )
         DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { self.usersSpinner.flashScrollIndicators() }
     }
 
@@ -306,7 +306,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             self.passwordField.nameField = self.nameField
             self.passwordField.authentication = { keyFactory in
                 self.userFile?.mpw_authenticate( keyFactory: keyFactory ) ??
-                        Promise( .success( MPUser( fullName: keyFactory.fullName ) ) )
+                        MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
             self.passwordField.authenticated = { user in
                 self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
@@ -454,10 +454,10 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
                     if let userFile = self.userFile, userFile.biometricLock,
                        MPKeychain.hasKey( for: userFile.fullName, algorithm: userFile.algorithm ) {
-                        self.biometricButton.isHidden = false
+                        self.biometricButton.button.isEnabled = true
                     }
                     else {
-                        self.biometricButton.isHidden = true
+                        self.biometricButton.button.isEnabled = false
                     }
                     self.biometricButton.button.isSelected = false
                     self.passwordButton.button.isSelected = true

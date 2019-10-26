@@ -67,19 +67,19 @@ open class DataSource<E: Hashable> {
     }
 
     open func update(_ updatedSectionsOfElements: [[E?]],
-                     reload: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: [E?]? = nil,
+                     reloadItems: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: [E?]? = nil,
                      animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)? = nil) {
         if updatedSectionsOfElements == self.sectionsOfElements {
             self.perform( animated: animated, completion: completion ) {
                 var reloadPaths = reloadPaths ?? []
-                for section in self.sectionsOfElements.indices {
-                    let elements = self.sectionsOfElements[section]
-                    for item in elements.indices {
-                        if reload || reloadElements?.contains( where: { $0 == elements[item] } ) ?? false {
+                for (section, elements) in self.sectionsOfElements.enumerated() {
+                    for (item, element) in elements.enumerated() {
+                        if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
                             reloadPaths.append( IndexPath( item: item, section: section ) )
                         }
                     }
                 }
+                self.sectionsOfElements = updatedSectionsOfElements
                 if reloadPaths.count > 0 {
                     //trc( "reload items \(reloadPaths)" )
                     self.collectionView?.reloadItems( at: reloadPaths )
@@ -97,10 +97,8 @@ open class DataSource<E: Hashable> {
             var movedPaths  = [ IndexPath: IndexPath ]()
             var reloadPaths = reloadPaths ?? []
 
-            for section in self.sectionsOfElements.indices {
-                let elements = self.sectionsOfElements[section]
-                for item in elements.indices {
-                    let element = elements[item]
+            for (section, elements) in self.sectionsOfElements.enumerated() {
+                for (item, element) in elements.enumerated() {
                     oldElements.insert( element )
 
                     let fromIndexPath = IndexPath( item: item, section: section )
@@ -108,7 +106,7 @@ open class DataSource<E: Hashable> {
                         if fromIndexPath != toIndexPath {
                             movedPaths[fromIndexPath] = toIndexPath
                         }
-                        else if reload || reloadElements?.contains( where: { $0 == element } ) ?? false {
+                        else if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
                             reloadPaths.append( toIndexPath )
                         }
                     }
@@ -118,7 +116,7 @@ open class DataSource<E: Hashable> {
                 }
             }
 
-            // Figure out what sections were added and removed.
+            // Update the internal data sections and determine which sections changed.
             var insertSet = IndexSet(), deleteSet = IndexSet()
             for section in (0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count )).reversed() {
                 if section >= updatedSectionsOfElements.count {
@@ -156,7 +154,7 @@ open class DataSource<E: Hashable> {
             self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
 
             // Remove deleted rows.
-            //for path in deletePaths { trc( "delete item \(path)" )}
+            //for path in deletePaths { trc( "delete item \(path)" ) }
             self.collectionView?.deleteItems( at: deletePaths )
             self.tableView?.deleteRows( at: deletePaths, with: .automatic )
 

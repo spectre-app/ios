@@ -35,6 +35,15 @@ class MPUserViewController: UIViewController, MPUserObserver {
         super.init( nibName: nil, bundle: nil )
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        if self.user.masterKeyFactory == nil {
+            mperror( title: "Not Authenticated", context: self.user, details: "Can't appear for non-authenticated user." )
+            self.userDidLogout( self.user )
+        }
+    }
+
     // MARK: --- MPUserObserver ---
 
     func userDidLogout(_ user: MPUser) {

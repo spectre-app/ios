@@ -89,7 +89,7 @@ public class MPKeychain {
         DispatchQueue.mpw.promise {
             let query  = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true )
             let status = SecItemDelete( query as CFDictionary )
-            if status != errSecSuccess {
+            if status != errSecSuccess, status != errSecItemNotFound {
                 throw MPError.issue( status, title: "Biometrics Denied Deleting Key" )
             }
         }

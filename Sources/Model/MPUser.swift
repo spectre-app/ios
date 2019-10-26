@@ -80,12 +80,6 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public var biometricLock = false {
         didSet {
-            if oldValue != self.biometricLock,
-               self.file.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
-                self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
-            }
-
             if self.biometricLock {
                 if let passwordKeyFactory = self.masterKeyFactory as? MPPasswordKeyFactory {
                     passwordKeyFactory.toKeychain().then {
@@ -106,6 +100,12 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                 if self.masterKeyFactory is MPKeychainKeyFactory {
                     self.masterKeyFactory = nil
                 }
+            }
+
+            if oldValue != self.biometricLock,
+               self.file.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) {
+                self.dirty = true
+                self.observers.notify { $0.userDidChange( self ) }
             }
         }
     }
