@@ -7,12 +7,6 @@ import Foundation
 
 class MPButton: MPEffectView {
     public var tapEffect             = true
-    public var isBorderedOnSelection = false
-    public var round                 = false {
-        didSet {
-            self.setNeedsUpdateConstraints()
-        }
-    }
     public var image: UIImage? {
         didSet {
             DispatchQueue.main.perform {
@@ -94,10 +88,6 @@ class MPButton: MPEffectView {
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
-        self.button.setTitleShadowColor( MPTheme.global.color.shadow.get(), for: .normal )
-        self.button.titleLabel?.shadowOffset = self.button.layer.shadowOffset
-        self.button.layer.shadowOpacity = 0
-
         self.button.titleLabel?.font = MPTheme.global.font.callout.get()
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addAction( for: .touchUpInside ) { _, _ in
@@ -106,16 +96,14 @@ class MPButton: MPEffectView {
             }
         }
         self.stateObserver = self.button.observe( \UIButton.isSelected, options: .initial ) { _, _ in
-            if self.isBorderedOnSelection && !self.button.isSelected {
-                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
-            }
-            else {
-                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 1 )
-            }
+            self.isSelected = self.button.isSelected
         }
         if let action = action {
             self.button.addAction( for: .touchUpInside, action: action )
         }
+
+        self.layer.borderWidth = 1
+        self.contentView.layoutMargins = .zero
 
         defer {
             self.layoutMargins = .zero
@@ -128,31 +116,13 @@ class MPButton: MPEffectView {
     init(content: UIView) {
         super.init()
 
-        if #available( iOS 11.0, * ) {
-            self.insetsLayoutMarginsFromSafeArea = false
-        }
-
-        self.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
-        self.layer.masksToBounds = true
-
-        content.layer.shadowRadius = 0
-        content.layer.shadowOpacity = 1
-        content.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
-        content.layer.shadowOffset = CGSize( width: 0, height: 1 )
-
         self.contentView.addSubview( content )
-
-        LayoutConfiguration( view: content ).constrain( toMarginsOf: self ).activate()
+        LayoutConfiguration( view: content ).constrainToMarginsOfOwner().activate()
 
         defer {
             self.darkBackground = false
             self.effectBackground = true
         }
-    }
-
-    override func updateConstraints() {
-        self.layer.cornerRadius = self.round ? self.bounds.size.height / 2: 4
-        super.updateConstraints()
     }
 
     enum Size {

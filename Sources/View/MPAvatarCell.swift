@@ -23,7 +23,7 @@ class MPAvatarCell: MPItemCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.contentView.addSubview( self.avatarImage )
+        self.effectView.contentView.addSubview( self.avatarImage )
 
         LayoutConfiguration( view: self.avatarImage )
                 .constrainToMarginsOfOwner()

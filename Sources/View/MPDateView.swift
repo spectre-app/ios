@@ -38,16 +38,8 @@ class MPDateView: MPEffectView {
         self.monthFormatter.dateFormat = "MMM"
         self.dayFormatter.dateFormat = "dd"
 
-        //self.backgroundColor = MPTheme.global.color.mute.get()
-        self.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
-        self.layer.cornerRadius = 8
-        self.layer.borderWidth = 2
-        self.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
-        self.layer.shadowRadius = 0
-        self.layer.shadowOpacity = 1
-        self.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
-        self.layer.shadowOffset = CGSize( width: 0, height: 1 )
-        self.layer.masksToBounds = true
+        self.rounding = 8
+        self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
         self.separatorView.backgroundColor = MPTheme.global.color.body.get()
 

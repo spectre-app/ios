@@ -52,9 +52,9 @@ class MPResultTypeCell: MPItemCell {
         self.classLabel.textAlignment = .center
         self.classLabel.font = MPTheme.global.font.caption1.get()
 
-        self.contentView.addSubview( self.separatorView )
-        self.contentView.addSubview( self.nameLabel )
-        self.contentView.addSubview( self.classLabel )
+        self.effectView.contentView.addSubview( self.separatorView )
+        self.effectView.contentView.addSubview( self.nameLabel )
+        self.effectView.contentView.addSubview( self.classLabel )
 
         LayoutConfiguration( view: self.separatorView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }

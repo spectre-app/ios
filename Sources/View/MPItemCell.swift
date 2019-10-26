@@ -11,6 +11,7 @@ class MPItemCell: UICollectionViewCell {
         didSet {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.382 ) {
+                    self.effectView.isSelected = self.isSelected
                     self.contentView.alpha = self.isSelected ? 1: 0.618
                 }
             }
@@ -24,14 +25,9 @@ class MPItemCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
-        self.contentView.layer.borderWidth = 1.5
-        self.contentView.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
-        self.contentView.layer.shadowRadius = 0
-        self.contentView.layer.shadowOpacity = 1
-        self.contentView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
-        self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
-        self.contentView.layer.masksToBounds = true
+        self.effectView.round = true
+        self.effectView.isBorderedOnSelection = true
+        self.effectView.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
         self.contentView.addSubview( self.effectView )
 
@@ -45,15 +41,7 @@ class MPItemCell: UICollectionViewCell {
                 .activate()
 
         defer {
-            UIView.performWithoutAnimation {
-                self.isSelected = false
-            }
+            self.isSelected = false
         }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        self.contentView.layer.cornerRadius = self.contentView.bounds.size.height / 2
     }
 }
