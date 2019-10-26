@@ -71,9 +71,6 @@ class MPEffectView: UIVisualEffectView {
         self.contentView.layer.shadowOpacity = 0.382
         self.contentView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
-        if #available( iOS 11.0, * ) {
-            self.contentView.insetsLayoutMarginsFromSafeArea = false
-        }
 
         defer {
             self.effectBackground = true

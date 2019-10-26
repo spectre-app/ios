@@ -104,6 +104,9 @@ class MPButton: MPEffectView {
 
         self.layer.borderWidth = 1
         self.contentView.layoutMargins = .zero
+        if #available( iOS 11.0, * ) {
+            self.contentView.insetsLayoutMarginsFromSafeArea = false
+        }
 
         defer {
             self.layoutMargins = .zero

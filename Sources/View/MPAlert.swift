@@ -34,7 +34,17 @@ class MPAlert {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(title: String?, message: String? = nil, content: @escaping @autoclosure (() -> (UIView?)) = nil, details: String? = nil) {
+    init(title: String?, message: String? = nil, content: @escaping @autoclosure (() -> (UIView?)) = nil, details: String? = nil,
+         level: PearlLogLevel = .info) {
+        var logMessage = "[\(title ?? "")]"
+        if let message = message {
+            logMessage += ": \(message)"
+        }
+        if let details = details {
+            logMessage += "\n\(details)"
+        }
+        log( logMessage, level: level )
+
         DispatchQueue.main.perform {
             let content = content()
             let contentStack = UIStackView( arrangedSubviews: [
@@ -158,16 +168,5 @@ func mperror(title: String, context: CustomStringConvertible? = nil, details: Cu
         }
     }
 
-    var message = title
-    if let context = context {
-        message += " (\(context))"
-    }
-    if let errorDetails = errorDetails {
-        message += ": \(errorDetails)"
-    }
-    err( message )
-
-    DispatchQueue.main.perform {
-        MPAlert( title: title, message: context?.description, details: errorDetails ).show()
-    }
+    MPAlert( title: title, message: context?.description, details: errorDetails, level: .error ).show()
 }
