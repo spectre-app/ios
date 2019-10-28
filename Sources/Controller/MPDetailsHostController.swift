@@ -86,6 +86,25 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
                 }
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        self.becomeFirstResponder()
+    }
+
+    override var canBecomeFirstResponder: Bool {
+        true
+    }
+
+    override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+        if motion == .motionShake {
+            self.show( MPLogDetailsViewController() )
+        }
+        else {
+            super.motionEnded( motion, with: event )
+        }
+    }
+
     private var  activeChild:                                UIViewController? {
         self.detailsController
     }

@@ -19,6 +19,12 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
         Crashlytics.sharedInstance().delegate = self
         FirebaseApp.configure()
         PearlLogger.get().printLevel = .debug
+        PearlLogger.get().historyLevel = .debug
+        PearlLogger.get().registerListener {
+            CLSLogv( "%@", getVaList( [ $0.messageDescription() ] ) )
+            return true
+        }
+        inf( "Launching \(productName) \(PearlInfoPlist.get().cfBundleShortVersionString ?? "?") (\(PearlInfoPlist.get().cfBundleVersion ?? "?"))" )
 
         // Start UI
         self.window.tintColor = MPTheme.global.color.brand.get()

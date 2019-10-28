@@ -73,8 +73,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         class ResultItemView: LabelItemView<MPSite> {
-            override func didLoad(valueView: UIView) {
-                super.didLoad( valueView: valueView )
+            override func didLoad() {
+                super.didLoad()
 
                 self.titleLabel.font = MPTheme.global.font.password.get()
             }
@@ -109,7 +109,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
     }
 
-    class PasswordResultItem: TextItem<MPSite> {
+    class PasswordResultItem: FieldItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a password",
                         value: { try? $0.mpw_result().await() },
@@ -126,7 +126,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         } )
         }
 
-        override func createItemView() -> TextItemView<MPSite> {
+        override func createItemView() -> FieldItemView<MPSite> {
             let view = super.createItemView()
             view.valueField.font = MPTheme.global.font.password.get()
             view.valueField.autocapitalizationType = .none
@@ -137,7 +137,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         override func doUpdate() {
             super.doUpdate()
 
-            (self.view as? TextItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
+            (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
     }
 
@@ -160,7 +160,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
     }
 
-    class LoginResultItem: TextItem<MPSite> {
+    class LoginResultItem: FieldItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a user name",
                         value: { try? $0.mpw_result( keyPurpose: .identification ).await() },
@@ -177,7 +177,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         } )
         }
 
-        override func createItemView() -> TextItemView<MPSite> {
+        override func createItemView() -> FieldItemView<MPSite> {
             let view = super.createItemView()
             view.valueField.font = MPTheme.global.font.mono.get()
             view.valueField.autocapitalizationType = .none
@@ -188,7 +188,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         override func doUpdate() {
             super.doUpdate()
 
-            (self.view as? TextItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
+            (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
     }
 
@@ -304,14 +304,14 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
     }
 
-    class URLItem: TextItem<MPSite> {
+    class URLItem: FieldItem<MPSite> {
         init() {
             super.init( title: "URL", placeholder: "eg. https://www.apple.com",
                         value: { $0.url },
                         update: { $0.url = $1 } )
         }
 
-        override func createItemView() -> TextItemView<MPSite> {
+        override func createItemView() -> FieldItemView<MPSite> {
             let itemView = super.createItemView()
             itemView.valueField.autocapitalizationType = .none
             itemView.valueField.autocorrectionType = .no

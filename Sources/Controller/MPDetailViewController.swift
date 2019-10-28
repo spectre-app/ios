@@ -71,6 +71,9 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         self.backgroundView.addSubview( self.imageView )
         self.backgroundView.addSubview( self.itemsView )
         self.view.addSubview( self.backgroundView )
+        for item in self.items {
+            item.view.didLoad()
+        }
 
         // - Layout
         LayoutConfiguration( view: self.backgroundView )

@@ -28,6 +28,7 @@ class Item<M>: NSObject {
     private let captionFactory: (M) -> String?
     private let subitems:       [Item<M>]
     private (set) lazy var view = createItemView()
+
     private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
         self.doUpdate()
     }
@@ -60,6 +61,8 @@ class Item<M>: NSObject {
         let captionLabel = UILabel()
         let contentView  = UIStackView()
         let subitemsView = UIStackView()
+
+        private lazy var valueView = self.createValueView()
         private let item: Item<M>
 
         required init?(coder aDecoder: NSCoder) {
@@ -76,7 +79,6 @@ class Item<M>: NSObject {
             self.contentView.axis = .vertical
             self.contentView.alignment = .center
             self.contentView.spacing = 8
-            self.contentView.preservesSuperviewLayoutMargins = true
 
             self.titleLabel.textColor = MPTheme.global.color.body.get()
             self.titleLabel.textAlignment = .center
@@ -84,16 +86,9 @@ class Item<M>: NSObject {
             self.contentView.addArrangedSubview(
                     MPMarginView( for: self.titleLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
 
-            if let valueView = self.createValueView() {
+            if let valueView = self.valueView {
                 self.contentView.addArrangedSubview( valueView )
-                self.didLoad( valueView: valueView )
             }
-
-            self.subitemsView.axis = .horizontal
-            self.subitemsView.distribution = .fillEqually
-            self.subitemsView.spacing = 20
-            self.subitemsView.preservesSuperviewLayoutMargins = true
-            self.subitemsView.isLayoutMarginsRelativeArrangement = true
 
             self.captionLabel.textColor = MPTheme.global.color.secondary.get()
             self.captionLabel.textAlignment = .center
@@ -101,6 +96,12 @@ class Item<M>: NSObject {
             self.captionLabel.numberOfLines = 0
             self.contentView.addArrangedSubview(
                     MPMarginView( for: self.captionLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
+
+            self.subitemsView.axis = .horizontal
+            self.subitemsView.distribution = .fillEqually
+            self.subitemsView.spacing = 20
+            self.subitemsView.preservesSuperviewLayoutMargins = true
+            self.subitemsView.isLayoutMarginsRelativeArrangement = true
 
             // - Hierarchy
             self.addSubview( self.contentView )
@@ -126,7 +127,11 @@ class Item<M>: NSObject {
             nil
         }
 
-        func didLoad(valueView: UIView) {
+        func didLoad() {
+            if let valueView = self.valueView {
+                valueView.superview?.readableContentGuide.widthAnchor.constraint( equalTo: valueView.widthAnchor )
+                                                                     .withPriority( .defaultLow + 1 ).activate()
+            }
         }
 
         func update() {
@@ -174,18 +179,9 @@ class SeparatorItem<M>: Item<M> {
         }
 
         override func createValueView() -> UIView? {
-            self.separatorView
-        }
-
-        override func didLoad(valueView: UIView) {
-            super.didLoad( valueView: valueView )
-
             self.separatorView.backgroundColor = MPTheme.global.color.mute.get()
-
-            LayoutConfiguration( view: self.separatorView )
-                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 1 ) }
-                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
-                    .activate()
+            self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).activate()
+            return self.separatorView
         }
     }
 }
@@ -198,9 +194,9 @@ class ValueItem<M, V>: Item<M> {
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
          value valueFactory: @escaping (M) -> V? = { _ in nil },
-         caption captionFactory: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> String? = { _ in nil }) {
         self.valueFactory = valueFactory
-        super.init( title: title, subitems: subitems, caption: captionFactory )
+        super.init( title: title, subitems: subitems, caption: caption )
     }
 }
 
@@ -306,10 +302,11 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
 
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (label: String?, image: UIImage?),
+         caption: @escaping (M) -> String? = { _ in nil },
          action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
         self.action = action
 
-        super.init( title: title, subitems: subitems, value: value )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> ButtonItemView<M> {
@@ -386,20 +383,21 @@ class DateItem<M>: ValueItem<M, Date> {
     }
 }
 
-class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
+class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     let placeholder: String?
-    let update:      (M, String) -> Void
+    let update:      ((M, String) -> Void)?
 
-    init(title: String?, placeholder: String?, subitems: [Item<M>] = [],
+    init(title: String? = nil, placeholder: String?, subitems: [Item<M>] = [],
          value: @escaping (M) -> String? = { _ in nil },
-         update: @escaping (M, String) -> Void = { _, _ in }) {
+         update: ((M, String) -> Void)? = nil,
+         caption: @escaping (M) -> String? = { _ in nil }) {
         self.placeholder = placeholder
         self.update = update
-        super.init( title: title, subitems: subitems, value: value )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
-    override func createItemView() -> TextItemView<M> {
-        TextItemView<M>( withItem: self )
+    override func createItemView() -> FieldItemView<M> {
+        FieldItemView<M>( withItem: self )
     }
 
     // MARK: UITextFieldDelegate
@@ -409,8 +407,8 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         return true
     }
 
-    class TextItemView<M>: ItemView<M> {
-        let item: TextItem
+    class FieldItemView<M>: ItemView<M> {
+        let item: FieldItem
         let valueField = UITextField()
 
         required init?(coder aDecoder: NSCoder) {
@@ -418,7 +416,7 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         }
 
         override init(withItem item: Item<M>) {
-            self.item = item as! TextItem
+            self.item = item as! FieldItem
             super.init( withItem: item )
         }
 
@@ -429,7 +427,7 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.addAction( for: .editingChanged ) { _, _ in
                 if let model = self.item.model,
                    let text = self.valueField.text {
-                    self.item.update( model, text )
+                    self.item.update?( model, text )
                 }
             }
             return self.valueField
@@ -438,8 +436,71 @@ class TextItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         override func update() {
             super.update()
 
+            self.valueField.isEnabled = self.item.update != nil
             self.valueField.placeholder = self.item.placeholder
             self.valueField.text = self.item.value
+        }
+    }
+}
+
+class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
+    let update: ((M, String) -> Void)?
+
+    init(title: String? = nil, subitems: [Item<M>] = [],
+         value: @escaping (M) -> String? = { _ in nil },
+         update: ((M, String) -> Void)? = nil,
+         caption: @escaping (M) -> String? = { _ in nil }) {
+        self.update = update
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
+    }
+
+    override func createItemView() -> AreaItemView<M> {
+        AreaItemView<M>( withItem: self )
+    }
+
+    // MARK: UITextViewDelegate
+
+    func textViewDidChange(_ textView: UITextView) {
+        if let model = self.model, let text = textView.text {
+            self.update?( model, text )
+        }
+    }
+
+    class AreaItemView<M>: ItemView<M> {
+        let item: AreaItem
+        let valueView = UITextView()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item<M>) {
+            self.item = item as! AreaItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.valueView.delegate = self.item
+            self.valueView.font = MPTheme.global.font.mono.get()?.withSize( 11 )
+            self.valueView.textColor = MPTheme.global.color.body.get()
+            self.valueView.backgroundColor = .clear
+            return self.valueView
+        }
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+
+            if let window = self.valueView.window {
+                self.valueView.heightAnchor.constraint( equalTo: window.heightAnchor, multiplier: 0.618 )
+                                           .withPriority( .defaultHigh ).activate()
+            }
+        }
+
+        override func update() {
+            super.update()
+
+            self.valueView.isEditable = self.item.update != nil
+            self.valueView.text = self.item.value
         }
     }
 }
@@ -451,12 +512,13 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> V? = { _ in nil },
          update: @escaping (M, V) -> Void = { _, _ in },
-         step: V, min: V, max: V) {
+         step: V, min: V, max: V,
+         caption: @escaping (M) -> String? = { _ in nil }) {
         self.update = update
         self.step = step
         self.min = min
         self.max = max
-        super.init( title: title, subitems: subitems, value: value )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> StepperItemView<M> {
@@ -545,12 +607,13 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
     let values: (M) -> [V]
     let update: (M, V) -> Void
 
-    init(title: String?, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
-         value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in }) {
+    init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
+         value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in },
+         caption: @escaping (M) -> String? = { _ in nil }) {
         self.values = values
         self.update = update
 
-        super.init( title: title, subitems: subitems, value: value )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> PickerItemView<M> {
@@ -584,8 +647,8 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
             return self.collectionView
         }
 
-        override func didLoad(valueView: UIView) {
-            super.didLoad( valueView: valueView )
+        override func didLoad() {
+            super.didLoad()
 
             self.item.didLoad( collectionView: self.collectionView )
         }
@@ -655,13 +718,6 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
                 itemSize.width += self.layout.sectionInset.left + self.layout.sectionInset.right
                 itemSize.height += self.layout.sectionInset.top + self.layout.sectionInset.bottom
 
-                if self.layout.scrollDirection == .horizontal {
-                    itemSize.width = max( self.collectionViewLayout.collectionViewContentSize.width, itemSize.width )
-                }
-                else {
-                    itemSize.height = max( self.collectionViewLayout.collectionViewContentSize.height, itemSize.height )
-                }
-
                 if #available( iOS 11, * ) {
                     itemSize.width += self.adjustedContentInset.left + self.adjustedContentInset.right
                     itemSize.height += self.adjustedContentInset.top + self.adjustedContentInset.bottom
@@ -708,7 +764,7 @@ class ListItem<M, V: Hashable>: Item<M> {
     let values: (M) -> [V]
     var deletable = false
 
-    init(title: String?, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
+    init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
          caption: @escaping (M) -> String? = { _ in nil }) {
         self.values = values
 
@@ -749,10 +805,8 @@ class ListItem<M, V: Hashable>: Item<M> {
             return self.tableView
         }
 
-        override func didLoad(valueView: UIView) {
-            LayoutConfiguration( view: self.tableView )
-                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
-                    .activate()
+        override func didLoad() {
+            super.didLoad()
 
             self.item.didLoad( tableView: self.tableView )
         }
