@@ -629,7 +629,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
     class PickerItemView<M>: ItemView<M>, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
         let item: PickerItem<M, V>
-        let collectionView = CollectionView()
+        let collectionView = PickerView()
         lazy var dataSource = DataSource<V>( collectionView: self.collectionView )
 
         required init?(coder aDecoder: NSCoder) {
@@ -698,8 +698,8 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         }
 
-        class CollectionView: UICollectionView {
-            let layout = CollectionViewFlowLayout()
+        class PickerView: UICollectionView {
+            let layout = PickerLayout()
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
@@ -711,49 +711,75 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
             }
 
             override var intrinsicContentSize: CGSize {
-                var itemSize = self.layout.itemSize
-                if let cell = self.visibleCells.first {
-                    itemSize = cell.systemLayoutSizeFitting( self.collectionViewLayout.collectionViewContentSize )
-                }
-                itemSize.width += self.layout.sectionInset.left + self.layout.sectionInset.right
-                itemSize.height += self.layout.sectionInset.top + self.layout.sectionInset.bottom
-
-                if #available( iOS 11, * ) {
-                    itemSize.width += self.adjustedContentInset.left + self.adjustedContentInset.right
-                    itemSize.height += self.adjustedContentInset.top + self.adjustedContentInset.bottom
-                }
-                else {
-                    itemSize.width += self.contentInset.left + self.contentInset.right
-                    itemSize.height += self.contentInset.top + self.contentInset.bottom
+                if self.numberOfSections > 0 && self.numberOfItems( inSection: 0 ) > 0,
+                   let itemSize = self.layout.layoutAttributesForItem( at: IndexPath( item: 0, section: 0 ) )?.size {
+                    return itemSize + self.layoutMargins.size
                 }
 
-                return itemSize
+                return CGSize( width: 1, height: 1 ) + self.layoutMargins.size
             }
 
-            class CollectionViewFlowLayout: UICollectionViewFlowLayout {
-                required init?(coder aDecoder: NSCoder) {
-                    fatalError( "init(coder:) is not supported for this class" )
+            class PickerLayout: UICollectionViewLayout {
+                private var itemAttributes = [ IndexPath: UICollectionViewLayoutAttributes ]()
+                private let initialSize    = CGSize( width: 50, height: 50 )
+                private var contentSize    = CGSize.zero
+                private let spacing        = CGFloat( 12 )
+
+                open override var collectionViewContentSize: CGSize {
+                    self.contentSize
                 }
 
-                override init() {
-                    super.init()
+                open override func prepare() {
+                    super.prepare()
 
-                    self.scrollDirection = .horizontal
-                    self.sectionInset = UIEdgeInsets( top: 0, left: 20, bottom: 0, right: 20 )
-                    self.minimumInteritemSpacing = 12
-                    self.minimumLineSpacing = 12
+                    let oldAttributes = self.itemAttributes
+                    let start         = self.collectionView?.layoutMargins.left ?? 0
+                    var offset        = start, height = CGFloat( 0 )
 
-                    if #available( iOS 10.0, * ) {
-                        self.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
+                    self.itemAttributes.removeAll()
+                    for section in 0..<(self.collectionView?.numberOfSections ?? 0) {
+                        for item in 0..<(self.collectionView?.numberOfItems( inSection: section ) ?? 0) {
+                            let path = IndexPath( item: item, section: section )
+                            let attr = oldAttributes[path] ?? UICollectionViewLayoutAttributes( forCellWith: path )
+                            if attr.size == .zero {
+                                attr.size = self.initialSize
+                            }
+
+                            attr.frame.origin = CGPoint( x: offset == start ? start: offset + spacing,
+                                                         y: self.collectionView?.layoutMargins.top ?? 0 )
+                            height = max( height, attr.frame.maxY )
+                            offset = attr.frame.maxX
+
+                            self.itemAttributes[path] = attr
+                        }
                     }
-                    else {
-                        self.estimatedItemSize = self.itemSize
-                    }
-                }
 
-                override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
-                    super.invalidateLayout( with: context )
+                    self.contentSize = CGSize( width: offset + (self.collectionView?.layoutMargins.right ?? 0),
+                                               height: height + (self.collectionView?.layoutMargins.bottom ?? 0) )
                     self.collectionView?.invalidateIntrinsicContentSize()
+                }
+
+                open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
+                                                          withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+                    if let currentAttributes = self.itemAttributes[originalAttributes.indexPath],
+                       currentAttributes.size != preferredAttributes.size {
+                        currentAttributes.size = preferredAttributes.size
+                        return true
+                    }
+
+                    return false
+                }
+
+                open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+                    self.itemAttributes.values.filter { rect.intersects( $0.frame ) }
+                }
+
+                open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+                    self.itemAttributes[indexPath]
+                }
+
+                open override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+                    self.itemAttributes[itemIndexPath]
                 }
             }
         }

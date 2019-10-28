@@ -205,6 +205,7 @@ open class DataSource<E: Hashable> {
                     completion?( true )
                 }
 
+                self.collectionView?.layoutIfNeeded()
                 self.collectionView?.performBatchUpdates( updates, completion: completion )
             }
 

@@ -8,13 +8,13 @@ import Foundation
 class ConstraintResolver: CustomStringConvertible {
     let view: UIView
     let axis: NSLayoutConstraint.Axis?
-    var constraints = Set<NSLayoutConstraint>()
+    var constraints = [ NSLayoutConstraint ]()
     var description: String {
         if self.constraints.isEmpty {
             self.constraints = self.scan()
         }
 
-        return self.constraints.sorted { $1.constraintDescription > $0.constraintDescription }.reduce( "" ) { description, constraint in
+        return self.constraints.reduce( "" ) { description, constraint in
             if self.axis == nil || constraint.firstAttribute.on( axis: self.axis! ) || constraint.secondAttribute.on( axis: self.axis! ) {
                 return (description.isEmpty ? "": "\(description)\n") + constraint.constraintDescription
             }
@@ -28,14 +28,14 @@ class ConstraintResolver: CustomStringConvertible {
         self.axis = axis
     }
 
-    func constraints(affecting item: NSObject, for axis: NSLayoutConstraint.Axis? = nil) -> Set<NSLayoutConstraint> {
-        var constraints     = Set<NSLayoutConstraint>()
-        var holder: UIView? = (item as? UIView) ?? (item as? UILayoutGuide)?.owningView
+    func constraints(affecting item: NSObject, for axis: NSLayoutConstraint.Axis? = nil) -> Set<HashableConstraint> {
+        var constraints = Set<HashableConstraint>()
+        var holder      = (item as? UIView) ?? (item as? UILayoutGuide)?.owningView
         while let holder_ = holder {
             for constraint in holder_.constraints {
                 if constraint.firstItem === item || constraint.secondItem === item {
                     if axis == nil || constraint.firstAttribute.on( axis: axis! ) || constraint.secondAttribute.on( axis: axis! ) {
-                        constraints.insert( constraint )
+                        constraints.insert( HashableConstraint( constraint: constraint ) )
                     }
                 }
             }
@@ -45,8 +45,8 @@ class ConstraintResolver: CustomStringConvertible {
         return constraints
     }
 
-    func scan() -> Set<NSLayoutConstraint> {
-        var scannedConstraints = Set<NSLayoutConstraint>()
+    func scan() -> [NSLayoutConstraint] {
+        var scannedConstraints = Set<HashableConstraint>()
 
         var scannedHosts = [ NSObject ](), scanHosts: [NSObject] = [ self.view ]
         while !scanHosts.isEmpty {
@@ -65,23 +65,25 @@ class ConstraintResolver: CustomStringConvertible {
 
             // Search the collected constraints for additional views to scan
             for constraint in hostConstraints {
-                if let other = constraint.firstItem as? NSObject, other !== host, !scannedHosts.contains( other ) {
+                if let other = constraint.constraint.firstItem as? NSObject, other !== host, !scannedHosts.contains( other ) {
                     scanHosts.append( other )
                 }
-                if let other = constraint.secondItem as? NSObject, other !== host, !scannedHosts.contains( other ) {
+                if let other = constraint.constraint.secondItem as? NSObject, other !== host, !scannedHosts.contains( other ) {
                     scanHosts.append( other )
                 }
             }
         }
 
         if self.axis == nil || self.axis == .vertical {
-            scannedConstraints.formUnion( self.view.constraintsAffectingLayout( for: .vertical ) )
+            scannedConstraints.formUnion(
+                    self.view.constraintsAffectingLayout( for: .vertical ).map { HashableConstraint( constraint: $0 ) } )
         }
         if self.axis == nil || self.axis == .horizontal {
-            scannedConstraints.formUnion( self.view.constraintsAffectingLayout( for: .horizontal ) )
+            scannedConstraints.formUnion(
+                    self.view.constraintsAffectingLayout( for: .horizontal ).map { HashableConstraint( constraint: $0 ) } )
         }
 
-        return scannedConstraints
+        return scannedConstraints.map { $0.constraint }.sorted { $1.constraintDescription > $0.constraintDescription }
     }
 
     enum Edge: CustomStringConvertible {
@@ -146,20 +148,58 @@ class ConstraintResolver: CustomStringConvertible {
     }
 }
 
+class HashableConstraint: Hashable {
+    let constraint: NSLayoutConstraint
+
+    init(constraint: NSLayoutConstraint) {
+        self.constraint = constraint
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine( self.constraint.firstItem as? NSObject )
+        hasher.combine( self.constraint.firstAttribute )
+        hasher.combine( self.constraint.relation )
+        hasher.combine( self.constraint.secondItem as? NSObject )
+        hasher.combine( self.constraint.secondAttribute )
+        hasher.combine( self.constraint.multiplier )
+        hasher.combine( self.constraint.constant )
+        hasher.combine( self.constraint.priority )
+        hasher.combine( self.constraint.identifier )
+        // hasher.combine( self.constraint.isActive )
+    }
+
+    static func ==(lhs: HashableConstraint, rhs: HashableConstraint) -> Bool {
+        lhs === rhs || lhs.constraint === rhs.constraint || lhs.constraint == rhs.constraint || (
+                lhs.constraint.firstItem === rhs.constraint.firstItem && lhs.constraint.firstAttribute == rhs.constraint.firstAttribute
+                        && lhs.constraint.secondItem === rhs.constraint.secondItem && lhs.constraint.secondAttribute == rhs.constraint.secondAttribute
+                        && lhs.constraint.multiplier == rhs.constraint.multiplier && lhs.constraint.constant == rhs.constraint.constant
+                        && lhs.constraint.relation == rhs.constraint.relation && lhs.constraint.priority == rhs.constraint.priority
+                        && lhs.constraint.identifier == rhs.constraint.identifier //&& lhs.constraint.isActive == rhs.constraint.isActive
+        )
+    }
+}
+
 extension NSLayoutConstraint {
+    open override var description: String {
+        self.constraintDescription
+    }
+
     open var constraintDescription: String {
-        var firstItem: String?, secondItem: String?, depth = 0
-        var holder                                         = self.holder
+        if self.firstAttribute.description.contains( "?" ) || self.secondAttribute.description.contains( "?" ) {
+            return super.description
+        }
+
+        var firstItem: String?, secondItem: String?, depth = 0, holder = self.holder
         while holder != nil {
             depth += 1
             holder = holder?.superview
         }
 
-        if let first = self.firstItem, self.firstAttribute.description != "?" {
-            firstItem = "\((first as? UIView)?.infoName() ?? (first as? UILayoutGuide)?.identifier ?? String( describing: first )): \(self.firstAttribute)"
+        if let first = self.firstItem {
+            firstItem = "\(self.describeItem( first )): \(self.firstAttribute)"
         }
-        if let second = self.secondItem, self.secondAttribute.description != "?" {
-            secondItem = "\((second as? UIView)?.infoName() ?? (second as? UILayoutGuide)?.identifier ?? String( describing: second )): \(self.secondAttribute)"
+        if let second = self.secondItem {
+            secondItem = "\(self.describeItem( second )): \(self.secondAttribute)"
         }
 
         var modifier = ""
@@ -184,11 +224,7 @@ extension NSLayoutConstraint {
             return String( repeating: "+", count: depth ) + "[ \(secondItem) ] \(self.relation)\(modifier)\(priority)"
         }
 
-        return self.description
-    }
-
-    open override var debugDescription: String {
-        self.constraintDescription
+        return "[ no items ]"
     }
 
     open var holder: UIView? {
@@ -204,40 +240,29 @@ extension NSLayoutConstraint {
         return nil
     }
 
-//    open override var hash: Int {
-//        var hasher = Hasher()
-//        if let item = self.firstItem as? NSObject {
-//            hasher.combine( item )
-//        }
-//        hasher.combine( self.firstAttribute )
-//        hasher.combine( self.relation )
-//        if let item = self.secondItem as? NSObject {
-//            hasher.combine( item )
-//        }
-//        hasher.combine( self.secondAttribute )
-//        hasher.combine( self.multiplier )
-//        hasher.combine( self.constant )
-//        hasher.combine( self.priority )
-////        hasher.combine( self.isActive )
-////        hasher.combine( self.identifier )
-//        return hasher.finalize()
-//    }
-//
-//    open override func isEqual(_ object: Any?) -> Bool {
-//        guard let object = object as? NSLayoutConstraint
-//        else {
-//            return false
-//        }
-//        if self === object {
-//            return true
-//        }
-//
-//        return self.firstItem === object.firstItem && self.firstAttribute == object.firstAttribute
-//                && self.secondItem === object.secondItem && self.secondAttribute == object.secondAttribute
-//                && self.multiplier == object.multiplier && self.constant == object.constant
-//                && self.relation == object.relation && self.priority == object.priority
-////                && self.isActive == object.isActive && self.identifier == object.identifier
-//    }
+    private func describeItem(_ item: AnyObject) -> String {
+        if let view = item as? UIView {
+            return view.infoName()
+        }
+        else if let guide = item as? UILayoutGuide {
+            let owner = guide.owningView?.infoName() ?? ""
+            if guide.identifier == "UIViewLayoutMarginsGuide" {
+                return "LM{\(owner)}"
+            }
+            else if guide.identifier == "UIViewReadableContentGuide" {
+                return "RC{\(owner)}"
+            }
+            else if !guide.identifier.isEmpty {
+                return "\(guide.identifier){\(owner)}"
+            }
+            else {
+                return "L{\(owner)}"
+            }
+        }
+        else {
+            return String( describing: item )
+        }
+    }
 }
 
 extension NSLayoutConstraint.Attribute: CustomStringConvertible {
@@ -286,7 +311,7 @@ extension NSLayoutConstraint.Attribute: CustomStringConvertible {
             case .notAnAttribute:
                 return "notAnAttribute"
             @unknown default:
-                return "?"
+                return "?(\(self.rawValue))"
         }
     }
 

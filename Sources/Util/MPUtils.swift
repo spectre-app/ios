@@ -372,6 +372,19 @@ extension UIFont {
 }
 
 extension CGSize {
+    public static func +(lhs: CGSize, rhs: CGSize) -> CGSize {
+        CGSize( width: lhs.width + rhs.width, height: lhs.height + rhs.height )
+    }
+
+    public static func +=(lhs: inout CGSize, rhs: CGSize) {
+        lhs.width += rhs.width
+        lhs.height += rhs.height
+    }
+
+    init(_ point: CGPoint) {
+        self.init( width: point.x, height: point.y )
+    }
+
     func union(_ size: CGSize) -> CGSize {
         size.width <= self.width && size.height <= self.height ? self:
                 size.width >= self.width && size.height >= self.height ? size:
@@ -383,6 +396,18 @@ extension CGSize {
         let height = height + size.height + point.y
         return width == 0 && height == 0 ? self:
                 CGSize( width: self.width + width, height: self.height + height )
+    }
+}
+
+extension UIEdgeInsets {
+    var width:  CGFloat {
+        self.left + self.right
+    }
+    var height: CGFloat {
+        self.top + self.bottom
+    }
+    var size:   CGSize {
+        CGSize( width: self.width, height: self.height )
     }
 }
 

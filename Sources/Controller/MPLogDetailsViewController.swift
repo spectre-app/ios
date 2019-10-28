@@ -23,7 +23,6 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
 
     override func loadItems() -> [Item<Model>] {
         [ VersionItem(), SeparatorItem(),
-          DiagnisticsItem(), SeparatorItem(),
           LogLevelPicker(), LogsItem() ]
     }
 
@@ -37,29 +36,11 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
         }
     }
 
-    class DiagnisticsItem: ToggleItem<Model> {
-        init() {
-            super.init( title: "Diagnostics", value: { _ in
-                (UserDefaults.standard.bool( forKey: "sendInfo" ), UIImage( named: "icon_bandage" ))
-            }, caption: { _ in
-                """
-                Share anonymized issue information to enable quick resolution.
-                """
-            } ) { _, sendInfo in
-                UserDefaults.standard.set( sendInfo, forKey: "sendInfo" )
-            }
-        }
-    }
-
     class LogsItem: AreaItem<Model> {
         init() {
             super.init( value: {
-                PearlLogger.get().messages( with: $0.logbookLevel ).reduce("") { (str : String, message: PearlLogMessage) -> String in
-                    """
-                    \(str)
-                    \(message.occurrenceDescription()) [\(message.level.short)] \(message.sourceDescription())
-                    \(message.message)
-                    """
+                PearlLogger.get().messages( with: $0.logbookLevel ).reduce( "" ) {
+                    "\($0 ?? "")\($1.occurrenceDescription()) [\($1.level.short)] \($1.sourceDescription())\n\($1.message)\n\n"
                 }
             } )
         }
