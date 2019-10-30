@@ -79,11 +79,11 @@ class MPURLUtils {
                 var info = self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil )
 
                 if let error = error {
-                    err( "\(imageURL): \((response as? HTTPURLResponse)?.statusCode ?? -1): \(error)" )
+                    wrn( "Couldn't fetch site preview. [>TRC]" )
+                    trc( "\(imageURL): HTTP \((response as? HTTPURLResponse)?.statusCode ?? -1): \(error)" )
                 }
 
                 if let responseData = responseData {
-                    dbg( "\(url): \(responseData.count)" )
                     info.imageData = responseData
                     self.metadata[url] = info
                 }
@@ -95,7 +95,8 @@ class MPURLUtils {
                 case .noURLHasBeenFound:
                     break
                 default:
-                    wrn( "No preview for \(url): \(error)" )
+                    wrn( "No site preview. [>TRC]" )
+                    trc( "\(url): \(error)" )
             }
 
             result( self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil ) )

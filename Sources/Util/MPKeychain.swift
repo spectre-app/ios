@@ -105,7 +105,7 @@ public class MPKeychain {
         }
 
         if status != errSecItemNotFound {
-            wrn("Issue looking for master key in keychain: \(status)")
+            wrn( "Issue looking for master key in keychain: \(status)" )
         }
 
         return false
