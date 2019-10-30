@@ -16,6 +16,8 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
     let window = UIWindow()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        //PearlLogger.get().minimumLevel = .trace
+        //PearlLogger.get().printLevel = .trace
         Crashlytics.sharedInstance().delegate = self
         FirebaseApp.configure()
         PearlLogger.get().registerListener {
@@ -58,6 +60,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
     // MARK: --- CrashlyticsDelegate ---
 
     func crashlyticsDidDetectReport(forLastExecution report: CLSReport, completionHandler: @escaping (Bool) -> Void) {
+        trc( "crashlyticsDidDetectReport: \(report.identifier), on: \(report.crashedOnDate?.description ?? "-"), keys: \(report.customKeys)" )
 
         DispatchQueue.main.async {
             if let root = UIApplication.shared.keyWindow?.rootViewController {

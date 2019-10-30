@@ -29,6 +29,10 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     // MARK: --- Life ---
 
+    override var next: UIResponder? {
+        self.detailsHost
+    }
+
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }

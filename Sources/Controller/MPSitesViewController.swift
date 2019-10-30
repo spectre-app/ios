@@ -29,6 +29,10 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
     // MARK: --- Life ---
 
+    override var next: UIResponder? {
+        self.detailsHost
+    }
+
     override func viewDidLoad() {
 
         // - View
