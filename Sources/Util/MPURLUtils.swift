@@ -21,8 +21,7 @@ class MPURLUtils {
                 }
             }
             catch {
-                // TODO: handle error
-                mperror( title: "Couldn't save metadata", error: error )
+                mperror( title: "Couldn't save site metadata", error: error )
             }
         }
     }
@@ -35,8 +34,7 @@ class MPURLUtils {
             }
         }
         catch {
-            // TODO: handle error
-            mperror( title: "Couldn't load metadata", error: error )
+            mperror( title: "Couldn't load site metadata", error: error )
         }
 
         return [:]

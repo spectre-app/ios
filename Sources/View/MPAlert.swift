@@ -34,14 +34,14 @@ class MPAlert {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(title: String?, message: String? = nil, content: @escaping @autoclosure (() -> (UIView?)) = nil, details: String? = nil,
-         level: PearlLogLevel = .info) {
-        var logMessage = "[\(title ?? "")]"
+    init(title: String?, message: String? = nil, content: @escaping @autoclosure (() -> (UIView?)) = nil,
+         details: String? = nil, level: PearlLogLevel = .info) {
+        var logMessage = ""
+        if let title = title {
+            logMessage += "[\(title)]"
+        }
         if let message = message {
             logMessage += ": \(message)"
-        }
-        if let details = details {
-            logMessage += "\n\(details)"
         }
         log( logMessage, level: level )
 
@@ -157,7 +157,7 @@ class MPAlert {
     }
 }
 
-func mperror(title: String, context: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil) {
+func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil) {
     var errorDetails = details?.description
     if let error = error {
         if let errorDetails_ = errorDetails {
@@ -168,5 +168,5 @@ func mperror(title: String, context: CustomStringConvertible? = nil, details: Cu
         }
     }
 
-    MPAlert( title: title, message: context?.description, details: errorDetails, level: .error ).show()
+    MPAlert( title: title, message: message?.description, details: errorDetails, level: .error ).show()
 }

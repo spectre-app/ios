@@ -105,7 +105,7 @@ public class MPKeychain {
         }
 
         if status != errSecItemNotFound {
-            mperror( title: "Keychain Error", context: "Couldn't check for master key in the keychain.", details: status.description )
+            wrn("Issue looking for master key in keychain: \(status)")
         }
 
         return false

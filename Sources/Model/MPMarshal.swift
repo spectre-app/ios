@@ -15,13 +15,23 @@ class MPMarshal: Observable {
         }
     }
 
-    private var saving            = [ MPUser ]()
-    private let marshalQueue      = DispatchQueue( label: "marshal" )
-    private let defaults          = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? productName).marshal" )
-    private let documentDirectory = (try? FileManager.default.url(
-            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true ))
+    private var saving       = [ MPUser ]()
+    private let marshalQueue = DispatchQueue( label: "marshal" )
+    private let defaults     = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? productName).marshal" )
+    private let documentDirectory: URL?
     private lazy var reloadTask = DispatchTask( queue: self.marshalQueue, qos: .userInitiated, deadline: .now() + .milliseconds( 300 ) ) {
         self.doReload()
+    }
+
+    init() {
+        do {
+            self.documentDirectory = try FileManager.default.url(
+                    for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
+        }
+        catch {
+            mperror( title: "Couldn't access user documents", error: error )
+            self.documentDirectory = nil
+        }
     }
 
     // MARK: --- Interface ---
@@ -53,7 +63,7 @@ class MPMarshal: Observable {
     public func delete(userFile: UserFile) -> Bool {
         guard let userURL = userFile.origin
         else {
-            mperror( title: "Couldn't remove user document", context: "\(userFile.fullName) has no origin" )
+            mperror( title: "Couldn't delete user", message: "No origin document for user", details: userFile )
             return false
         }
 
@@ -63,7 +73,7 @@ class MPMarshal: Observable {
             return true
         }
         catch {
-            mperror( title: "Couldn't remove user document", context: userURL.lastPathComponent, error: error )
+            mperror( title: "Couldn't delete user", message: "Cannot delete origin document", details: userURL.lastPathComponent, error: error )
         }
 
         return false
@@ -84,12 +94,15 @@ class MPMarshal: Observable {
                         if let origin = user.origin, origin != destination,
                            FileManager.default.fileExists( atPath: origin.path ) {
                             do { try FileManager.default.removeItem( at: origin ) }
-                            catch { mperror( title: "Cleanup issue", context: origin.lastPathComponent, error: error ) }
+                            catch {
+                                mperror( title: "Migration issue", message: "Cannot delete obsolete origin document",
+                                         details: origin.lastPathComponent, error: error )
+                            }
                         }
                         user.origin = destination
 
                     case .failure(let error):
-                        mperror( title: "Issue saving", context: user.fullName, error: error )
+                        mperror( title: "Couldn't save user", details: user, error: error )
                 }
 
                 self.saving.removeAll { $0 == user }
@@ -165,17 +178,17 @@ class MPMarshal: Observable {
         DispatchQueue.mpw.promised {
             guard let importingFile = self.userFile( for: data )
             else {
-                mperror( title: "Issue importing", context: "Not an \(productName) import document" )
+                mperror( title: "Couldn't import user", message: "Import is no \(productName) document" )
                 return Promise( .success( false ) )
             }
             guard let importingName = String( safeUTF8: importingFile.fullName )
             else {
-                mperror( title: "Issue importing", context: "Import missing fullName" )
+                mperror( title: "Couldn't import user", message: "Import missing user's full name" )
                 return Promise( .success( false ) )
             }
             guard let importingURL = self.url( for: importingName, format: importingFile.format )
             else {
-                mperror( title: "Issue importing", context: "No path for \(importingName)" )
+                mperror( title: "Couldn't import user", message: "Not a savable document", details: importingFile )
                 return Promise( .success( false ) )
             }
 
@@ -193,7 +206,7 @@ class MPMarshal: Observable {
         DispatchQueue.main.promised {
             guard let viewController = UIApplication.shared.keyWindow?.rootViewController
             else {
-                mperror( title: "Issue importing", context: "Could not present UI to handle import conflict." )
+                mperror( title: "Couldn't import user", message: "No window for user interface" )
                 return Promise( .success( false ) )
             }
 
@@ -218,7 +231,7 @@ class MPMarshal: Observable {
                     importingFile.mpw_authenticate( keyFactory: keyFactory )
                 } )
                 else {
-                    mperror( title: "Issue importing", context: "Missing master password" )
+                    mperror( title: "Couldn't import user", message: "Missing master password" )
                     viewController.present( controller, animated: true )
                     return
                 }
@@ -231,11 +244,10 @@ class MPMarshal: Observable {
                         case .success:
                             if let existingFile = existingFile.origin {
                                 if FileManager.default.fileExists( atPath: existingFile.path ) {
-                                    do {
-                                        try FileManager.default.removeItem( at: existingFile )
-                                    }
+                                    do { try FileManager.default.removeItem( at: existingFile ) }
                                     catch {
-                                        mperror( title: "Issue replacing", context: "Couldn't remove \(existingFile.lastPathComponent)" )
+                                        mperror( title: "Migration issue", message: "Cannot delete old user document",
+                                                 details: existingFile.lastPathComponent, error: error )
                                     }
                                 }
 
@@ -246,7 +258,7 @@ class MPMarshal: Observable {
                             }
 
                         case .failure(let error):
-                            mperror( title: "Issue importing", context: error.localizedDescription )
+                            mperror( title: "Couldn't import user", message: "User authentication failed", error: error )
                             viewController.present( controller, animated: true )
                     }
                 } )
@@ -258,7 +270,7 @@ class MPMarshal: Observable {
                              try? existingFile.mpw_authenticate( keyFactory: keyFactory ).await()) ) )
                 } )
                 else {
-                    mperror( title: "Issue importing", context: "Missing master password" )
+                    mperror( title: "Couldn't import user", message: "Missing master password" )
                     viewController.present( controller, animated: true )
                     return
                 }
@@ -290,11 +302,10 @@ class MPMarshal: Observable {
                                 controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                                     if let existingFile = existingFile.origin {
                                         if FileManager.default.fileExists( atPath: existingFile.path ) {
-                                            do {
-                                                try FileManager.default.removeItem( at: existingFile )
-                                            }
+                                            do { try FileManager.default.removeItem( at: existingFile ) }
                                             catch {
-                                                mperror( title: "Issue replacing", context: "Couldn't remove \(existingFile.lastPathComponent)" )
+                                                mperror( title: "Migration issue", message: "Cannot delete old user",
+                                                         details: existingFile.lastPathComponent, error: error )
                                             }
                                         }
 
@@ -309,7 +320,7 @@ class MPMarshal: Observable {
                                         existingFile.mpw_authenticate( keyFactory: keyFactory )
                                     } )
                                     else {
-                                        mperror( title: "Issue importing", context: "Missing master password" )
+                                        mperror( title: "Couldn't import user", message: "Missing master password" )
                                         viewController.present( controller, animated: true )
                                         return
                                     }
@@ -323,7 +334,8 @@ class MPMarshal: Observable {
                                                 self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
 
                                             case .failure(let error):
-                                                mperror( title: "Issue importing", context: existingFile.fullName, details: error.localizedDescription )
+                                                mperror( title: "Couldn't import user", message: "User authentication failed",
+                                                         details: existingFile, error: error )
                                                 viewController.present( controller, animated: true )
                                         }
                                     } )
@@ -347,7 +359,7 @@ class MPMarshal: Observable {
                                         importingFile.mpw_authenticate( keyFactory: keyFactory )
                                     } )
                                     else {
-                                        mperror( title: "Issue importing", context: "Missing master password" )
+                                        mperror( title: "Couldn't import user", message: "Missing master password" )
                                         viewController.present( controller, animated: true )
                                         return
                                     }
@@ -361,7 +373,8 @@ class MPMarshal: Observable {
                                                 self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
 
                                             case .failure(let error):
-                                                mperror( title: "Issue importing", context: importingFile.fullName, details: error.localizedDescription )
+                                                mperror( title: "Couldn't import user", message: "User authentication failed",
+                                                         details: importingFile, error: error )
                                                 viewController.present( controller, animated: true )
                                         }
                                     } )
@@ -369,12 +382,12 @@ class MPMarshal: Observable {
                                 viewController.present( controller, animated: true )
                             }
                             else {
-                                mperror( title: "Issue importing", context: "Incorrect master password" )
+                                mperror( title: "Couldn't import user", message: "User authentication failed" )
                                 viewController.present( controller, animated: true )
                             }
 
                         case .failure(let error):
-                            mperror( title: "Issue importing", context: error.localizedDescription )
+                            mperror( title: "Couldn't import user", error: error )
                             viewController.present( controller, animated: true )
                     }
                 }
@@ -470,11 +483,11 @@ class MPMarshal: Observable {
                         self.setNeedsReload()
                     }
                     else {
-                        mperror( title: "Issue importing", context: "Couldn't save \(documentURL.lastPathComponent)" )
+                        mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL )
                     }
 
-                case .failure:
-                    mperror( title: "Issue importing", context: "Couldn't save \(documentURL.lastPathComponent)" )
+                case .failure(let error):
+                    mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL, error: error )
             }
         }
     }
@@ -587,10 +600,7 @@ class MPMarshal: Observable {
 
     private func userDocuments() -> [URL] {
         guard let documentsDirectory = self.documentDirectory
-        else {
-            mperror( title: "Couldn't find user documents" )
-            return []
-        }
+        else { return [] }
 
         do {
             return try FileManager.default.contentsOfDirectory( atPath: documentsDirectory.path ).compactMap {
@@ -598,8 +608,7 @@ class MPMarshal: Observable {
             }
         }
         catch {
-            // TODO: handle error
-            mperror( title: "Couldn't access user documents", error: error )
+            mperror( title: "Couldn't list user documents", error: error )
             return []
         }
     }
@@ -669,7 +678,7 @@ class MPMarshal: Observable {
                 return exportFile
             }
             catch {
-                mperror( title: "Issue exporting", context: self.user.fullName, error: error )
+                mperror( title: "Couldn't export user document", details: self.user, error: error )
                 return nil
             }
         }
@@ -811,13 +820,13 @@ class MPMarshal: Observable {
         var description: String {
             get {
                 if let identicon = self.identicon.encoded() {
-                    return "\(self.fullName): \(identicon)"
+                    return "\(self.fullName): \(identicon) [\(self.format)]"
                 }
                 else if let keyID = self.keyID {
-                    return "\(self.fullName): \(keyID)"
+                    return "\(self.fullName): \(keyID) [\(self.format)]"
                 }
                 else {
-                    return "\(self.fullName)"
+                    return "\(self.fullName) [\(self.format)]"
                 }
             }
         }

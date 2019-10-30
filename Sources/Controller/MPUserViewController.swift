@@ -39,7 +39,7 @@ class MPUserViewController: UIViewController, MPUserObserver {
         super.viewWillAppear( animated )
 
         if self.user.masterKeyFactory == nil {
-            mperror( title: "Not Authenticated", context: self.user, details: "Can't appear for non-authenticated user." )
+            mperror( title: "User logged out", message: "User is no longer authenticated", details: self.user )
             self.userDidLogout( self.user )
         }
     }

@@ -56,45 +56,43 @@ class MPCoreData {
 
             guard let identifier = Bundle.main.bundleIdentifier
             else {
-                mperror( title: "Couldn't load legacy data store", context: "Missing application identifier" )
+                mperror( title: "Couldn't load legacy data", message: "Missing application identifier" )
                 return false
             }
-            guard let localStoreURL = try? FileManager.default.url( for: .applicationSupportDirectory, in: .userDomainMask,
-                                                                    appropriateFor: nil, create: false )
-                                                              .appendingPathComponent( identifier, isDirectory: true )
-                                                              .appendingPathComponent( "MasterPassword", isDirectory: false )
-                                                              .appendingPathExtension( "sqlite" )
+            guard let storeURL = try? FileManager.default.url( for: .applicationSupportDirectory, in: .userDomainMask,
+                                                               appropriateFor: nil, create: false )
+                                                         .appendingPathComponent( identifier, isDirectory: true )
+                                                         .appendingPathComponent( "MasterPassword", isDirectory: false )
+                                                         .appendingPathExtension( "sqlite" )
             else {
-                mperror( title: "Couldn't load legacy data store", context: "Couldn't access support directory" )
+                mperror( title: "Couldn't load legacy data", message: "Couldn't access support directory" )
                 return false
             }
-            if !FileManager.default.fileExists( atPath: localStoreURL.path ) {
+            if !FileManager.default.fileExists( atPath: storeURL.path ) {
                 return false
             }
 
             do {
-                // Open the store and find the model.
-                guard let model = NSManagedObjectModel.mergedModel(
-                        from: nil, forStoreMetadata: try NSPersistentStoreCoordinator.metadataForPersistentStore( ofType: NSSQLiteStoreType, at: localStoreURL, options: [
+                let storeOptions: [AnyHashable: Any] = [
                     NSReadOnlyPersistentStoreOption: true,
                     NSInferMappingModelAutomaticallyOption: true,
                     NSMigratePersistentStoresAutomaticallyOption: false,
                     NSPersistentStoreFileProtectionKey: FileProtectionType.complete,
-                ] ) )
+                ]
+
+                // Open the store and find the model.
+                let storeMetadata                    = try NSPersistentStoreCoordinator.metadataForPersistentStore(
+                        ofType: NSSQLiteStoreType, at: storeURL, options: storeOptions )
+                guard let storeModel = NSManagedObjectModel.mergedModel( from: nil, forStoreMetadata: storeMetadata )
                 else {
-                    mperror( title: "Couldn't load legacy data store", context: "Missing data model" )
+                    mperror( title: "Couldn't load legacy data", message: "Unsupported data model", details: storeMetadata )
                     return false
                 }
 
                 // Create a new store coordinator.
-                self.storeCoordinator = NSPersistentStoreCoordinator( managedObjectModel: model )
+                self.storeCoordinator = NSPersistentStoreCoordinator( managedObjectModel: storeModel )
                 try self.storeCoordinator?.addPersistentStore(
-                        ofType: NSSQLiteStoreType, configurationName: nil, at: localStoreURL, options: [
-                    NSReadOnlyPersistentStoreOption: true,
-                    NSInferMappingModelAutomaticallyOption: true,
-                    NSMigratePersistentStoresAutomaticallyOption: false,
-                    NSPersistentStoreFileProtectionKey: FileProtectionType.complete,
-                ] )
+                        ofType: NSSQLiteStoreType, configurationName: nil, at: storeURL, options: storeOptions )
 
                 // Install managed object contexts and observers.
                 self.privateManagedObjectContext.performAndWait {
@@ -111,7 +109,7 @@ class MPCoreData {
                 return true
             }
             catch {
-                mperror( title: "Couldn't load legacy data store", error: error )
+                mperror( title: "Couldn't load legacy data", error: error )
                 return false
             }
         }

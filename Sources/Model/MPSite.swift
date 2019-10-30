@@ -334,7 +334,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     }
 
                 case .failure(let error):
-                    mperror( title: "", error: error )
+                    mperror( title: "Couldn't copy site", message: "Site value could not be calculated", error: error )
             }
         }
     }

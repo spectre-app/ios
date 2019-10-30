@@ -450,7 +450,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         self.resultLabel.text = result
 
                     case .failure(let error):
-                        mperror( title: "", error: error )
+                        mperror( title: "Couldn't calculate site \(self.mode.result)", error: error )
                 }
             }
         }

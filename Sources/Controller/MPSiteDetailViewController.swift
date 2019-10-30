@@ -120,7 +120,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                                         site.resultState = state
 
                                     case .failure(let error):
-                                        mperror( title: "", error: error )
+                                        mperror( title: "Couldn't update site password", error: error )
                                 }
                             }
                         } )
@@ -171,7 +171,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                                         site.loginState = state
 
                                     case .failure(let error):
-                                        mperror( title: "", error: error )
+                                        mperror( title: "Couldn't update site name", error: error )
                                 }
                             }
                         } )
@@ -244,8 +244,9 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             case .success(let answer):
                                 self.resultLabel.text = answer
                                 self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
+
                             case .failure(let error):
-                                mperror( title: "Could not derive result.", error: error )
+                                mperror( title: "Couldn't calculate security answer", error: error )
                         }
                     }
                 }

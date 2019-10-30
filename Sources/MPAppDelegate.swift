@@ -13,13 +13,11 @@ import Firebase
 @UIApplicationMain
 class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
 
-    let window: UIWindow = UIWindow()
+    let window = UIWindow()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         Crashlytics.sharedInstance().delegate = self
         FirebaseApp.configure()
-        PearlLogger.get().printLevel = .debug
-        PearlLogger.get().historyLevel = .debug
         PearlLogger.get().registerListener {
             CLSLogv( "%@", getVaList( [ $0.messageDescription() ] ) )
             return true
@@ -46,7 +44,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
                         }
                         else {
                             // TODO: error handling
-                            mperror( title: "Couldn't open document", context: url.lastPathComponent, error: error )
+                            mperror( title: "Couldn't open document", details: url.lastPathComponent, error: error )
                         }
                     } ).resume()
                     return true
@@ -65,7 +63,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
             if let root = UIApplication.shared.keyWindow?.rootViewController {
                 let alert = UIAlertController( title: "Issue Detected", message:
                 """
-                It looks like an unknown issue has caused the app to shut down last time.
+                It looks like an unknown issue has caused the app to shut down.
                 The issue occurred on:
                 \(report.dateCreated)
 
@@ -81,7 +79,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
                 root.present( alert, animated: true )
             }
             else {
-                mperror( title: "Issue Detected", context: report.dateCreated, details: report )
+                mperror( title: "Issue detected", message: report.dateCreated, details: report )
                 completionHandler( false )
             }
         }

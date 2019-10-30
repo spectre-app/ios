@@ -72,7 +72,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                     case .failure(let error):
-                        mperror( title: "Access Denied", error: error )
+                        mperror( title: "Couldn't unlock user", error: error )
                 }
             }
 
@@ -327,7 +327,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                     case .failure(let error):
-                        mperror( title: "Access Denied", error: error )
+                        mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
                 }
             }
 

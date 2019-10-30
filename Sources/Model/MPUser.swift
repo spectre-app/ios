@@ -88,7 +88,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                                 self.masterKeyFactory = keychainKeyFactory
 
                             case .failure(let error):
-                                mperror( title: "", error: error )
+                                mperror( title: "Couldn't migrate to biometrics", error: error )
                         }
                     }
                 }

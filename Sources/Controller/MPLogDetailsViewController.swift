@@ -64,6 +64,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                     caption: { _ in
                         """
                         Show only messages at the selected level or higher.
+                        Debug and trace messages are not recorded unless the level is set accordingly.
                         """
                     } )
         }
@@ -114,8 +115,10 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     class Model {
         var onChange: (() -> ())?
 
-        var logbookLevel = PearlLogLevel.trace {
+        var logbookLevel = PearlLogger.get().historyLevel {
             didSet {
+                PearlLogger.get().minimumLevel = min( PearlLogLevel.info, self.logbookLevel )
+                PearlLogger.get().historyLevel = min( PearlLogLevel.info, self.logbookLevel )
                 self.onChange?()
             }
         }
