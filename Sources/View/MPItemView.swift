@@ -84,30 +84,29 @@ class Item<M>: NSObject {
             self.titleLabel.textAlignment = .center
             self.titleLabel.font = MPTheme.global.font.headline.get()
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
-            self.contentView.addArrangedSubview(
-                    MPMarginView( for: self.titleLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
-
-            if let valueView = self.valueView {
-                self.contentView.addArrangedSubview( valueView )
-            }
+            self.titleLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
             self.subitemsView.axis = .horizontal
             self.subitemsView.distribution = .fillEqually
             self.subitemsView.spacing = 20
             self.subitemsView.preservesSuperviewLayoutMargins = true
             self.subitemsView.isLayoutMarginsRelativeArrangement = true
-            self.contentView.addArrangedSubview( self.subitemsView )
 
             self.captionLabel.textColor = MPTheme.global.color.secondary.get()
             self.captionLabel.textAlignment = .center
             self.captionLabel.font = MPTheme.global.font.caption1.get()
             self.captionLabel.numberOfLines = 0
             self.captionLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
-            self.contentView.addArrangedSubview(
-                    MPMarginView( for: self.captionLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
+            self.captionLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
             // - Hierarchy
             self.addSubview( self.contentView )
+            self.contentView.addArrangedSubview( self.titleLabel )
+            if let valueView = self.valueView {
+                self.contentView.addArrangedSubview( valueView )
+            }
+            self.contentView.addArrangedSubview( self.subitemsView )
+            self.contentView.addArrangedSubview( self.captionLabel )
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
@@ -118,6 +117,7 @@ class Item<M>: NSObject {
                     .activate()
 
             LayoutConfiguration( view: self.subitemsView )
+                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).withPriority( .defaultHigh ) }
                     .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                     .activate()
         }
