@@ -68,17 +68,24 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             """, preferredStyle: .alert )
 
             let passwordField = MPMasterPasswordField()
-            passwordField.authenticate = { keyFactory in MPUser( fullName: keyFactory.fullName, file: nil ).login( keyFactory: keyFactory ) }
-            passwordField.authenticated = {
-                trc( "Incognito authentication: \($0)" )
-                controller.dismiss( animated: true )
+            let spinner       = MPAlert( title: "Unlocking", message: passwordField.nameField?.text,
+                                         content: UIActivityIndicatorView( style: .whiteLarge ) )
+            passwordField.authenticater = { keyFactory in
+                spinner.show( dismissAutomatically: false )
+                return MPUser( fullName: keyFactory.fullName, file: nil ).login( keyFactory: keyFactory )
+            }
+            passwordField.authenticated = { result in
+                trc( "Incognito authentication: \(result)" )
 
-                switch $0 {
-                    case .success(let user):
-                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                spinner.dismiss()
+                controller.dismiss( animated: true ) {
+                    switch result {
+                        case .success(let user):
+                            self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
-                    case .failure(let error):
-                        mperror( title: "Couldn't unlock user", error: error )
+                        case .failure(let error):
+                            mperror( title: "Couldn't unlock user", error: error )
+                    }
                 }
             }
 
@@ -86,7 +93,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             controller.addTextField { passwordField.passwordField = $0 }
             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
             controller.addAction( UIAlertAction( title: "Log In", style: .default ) { _ in
-                passwordField.try()
+                if !passwordField.try() {
+                    mperror( title: "Couldn't unlock user", message: "Missing credentials" )
+                    self.present( controller, animated: true )
+                }
             } )
             self.present( controller, animated: true )
         }
@@ -147,10 +157,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear( animated )
-
         self.keyboardLayoutGuide = nil
         self.usersSpinner.selectItem( nil )
+
+        super.viewWillDisappear( animated )
     }
 
     // MARK: --- Private ---
@@ -226,6 +236,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         UIView.animate( withDuration: 0.382 ) {
             trc( "Selected user: \(self.selectedFile?.description ?? "-")" )
+
             self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
         }
     }
@@ -240,6 +251,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
         trc( "Users updated: \(userFiles)" )
+
         self.fileSource.update( [ userFiles.sorted() + [ nil ] ], reloadItems: true )
         DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { self.usersSpinner.flashScrollIndicators() }
     }
@@ -329,7 +341,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.font = MPTheme.global.font.callout.get()
             self.passwordField.placeholder = "Your master password"
             self.passwordField.nameField = self.nameField
-            self.passwordField.authenticate = { keyFactory in
+            self.passwordField.authenticater = { keyFactory in
                 self.userFile?.mpw_authenticate( keyFactory: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }

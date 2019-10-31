@@ -5,7 +5,10 @@
 
 import UIKit
 
-class MPViewController : UIViewController {
+class MPViewController: UIViewController {
+
+    // MARK: --- Life ---
+
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
@@ -15,12 +18,12 @@ class MPViewController : UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        trc( "> \(type(of: self))" )
+        trc( "> \(type( of: self ))" )
         super.viewWillAppear( animated )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        trc( "< \(type(of: self))" )
+        trc( "< \(type( of: self ))" )
         super.viewWillDisappear( animated )
     }
 }

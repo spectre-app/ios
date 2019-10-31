@@ -36,6 +36,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
                 passwordField.delegate = self
                 passwordField.isSecureTextEntry = true
                 passwordField.placeholder = "Your master password"
+                passwordField.returnKeyType = .continue
                 passwordField.inputAccessoryView = self.identiconAccessory
                 passwordField.rightView = self.passwordIndicator
                 passwordField.leftView = UIView( frame: self.passwordIndicator.frame )
@@ -54,7 +55,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
             self.setNeedsIdenticon()
         }
     }
-    var authenticate:  ((MPPasswordKeyFactory) throws -> Promise<MPUser>)?
+    var authenticater: ((MPPasswordKeyFactory) throws -> Promise<MPUser>)?
     var authenticated: ((Result<MPUser, Error>) -> Void)?
 
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
@@ -134,10 +135,12 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
         }
     }
 
-    public func `try`(_ textField: UITextField? = nil) {
+    public func `try`(_ textField: UITextField? = nil) -> Bool {
         if let field = textField ?? self.nameField ?? self.passwordField {
-            self.textFieldShouldReturn( field )
+            return self.textFieldShouldReturn( field )
         }
+
+        return false
     }
 
     public func authenticate<U>(_ handler: ((MPPasswordKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
@@ -176,23 +179,44 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
 
     @discardableResult
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if let authentication = self.authenticate( self.authenticate ) {
-            authentication.then( on: .main ) { result -> Void in self.authenticated?( result ) }
+        if let authentication = self.authenticate( self.authenticater ) {
+            authentication.then( on: .main ) { result in
+                textField.resignFirstResponder()
+                self.authenticated?( result )
+            }
             return true
         }
 
-        if let nameField = self.nameField, nameField.text?.count ?? 0 == 0 {
-            nameField.becomeFirstResponder()
-            nameField.shake()
-            return false
+        if let nameField = self.nameField, textField == nameField {
+            if nameField.text?.count ?? 0 == 0 {
+                nameField.becomeFirstResponder()
+                nameField.shake()
+            }
+            else {
+                if let passwordField = self.passwordField {
+                    passwordField.becomeFirstResponder()
+                }
+                else {
+                    nameField.resignFirstResponder()
+                }
+            }
         }
 
-        if let passwordField = self.passwordField, passwordField.text?.count ?? 0 == 0 {
-            passwordField.becomeFirstResponder()
-            passwordField.shake()
-            return false
+        if let passwordField = self.passwordField, textField == passwordField {
+            if passwordField.text?.count ?? 0 == 0 {
+                passwordField.becomeFirstResponder()
+                passwordField.shake()
+            }
+            else {
+                if let nameField = self.nameField, nameField.text?.count ?? 0 == 0 {
+                    nameField.becomeFirstResponder()
+                }
+                else {
+                    passwordField.resignFirstResponder()
+                }
+            }
         }
 
-        return true
+        return false
     }
 }

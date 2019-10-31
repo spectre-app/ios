@@ -6,7 +6,7 @@
 import Foundation
 
 class MPAlert {
-    private var view: MPButton!
+    private lazy var view          = self.loadView()
     private lazy var titleLabel    = UILabel()
     private lazy var messageLabel  = UILabel()
     private lazy var expandChevron = UILabel()
@@ -30,76 +30,45 @@ class MPAlert {
         self.dismiss()
     }
 
+    // MARK: --- Life ---
+
+    private lazy var title = self.titleFactory()
+    private lazy var message = self.messageFactory()
+    private lazy var details = self.detailsFactory()
+    private lazy var content = self.contentFactory()
+    private let titleFactory:   () -> String?
+    private let messageFactory: () -> String?
+    private let detailsFactory: () -> String?
+    private let contentFactory: () -> (UIView?)
+    private let level:   PearlLogLevel
+
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(title: String?, message: String? = nil, content: @escaping @autoclosure (() -> (UIView?)) = nil,
-         details: String? = nil, level: PearlLogLevel = .info) {
-        var logMessage = ""
-        if let title = title {
-            logMessage += "[\(title)]"
-        }
-        if let message = message {
-            logMessage += ": \(message)"
-        }
-        log( logMessage, level: level )
-
-        DispatchQueue.main.perform {
-            let content = content()
-            let contentStack = UIStackView( arrangedSubviews: [
-                self.titleLabel, self.messageLabel, content, self.expandChevron, self.detailLabel
-            ].compactMap { $0 } )
-            self.view = MPButton( content: contentStack )
-
-            // - View
-            self.view.isBackgroundDark = true
-            if #available( iOS 11.0, * ) {
-                self.view.insetsLayoutMarginsFromSafeArea = true
-            }
-
-            self.titleLabel.text = title
-            self.titleLabel.textColor = MPTheme.global.color.body.get()
-            self.titleLabel.textAlignment = .center
-            self.titleLabel.numberOfLines = 0
-
-            self.messageLabel.text = message
-            self.messageLabel.textColor = MPTheme.global.color.secondary.get()
-            self.messageLabel.textAlignment = .center
-            self.messageLabel.numberOfLines = 0
-
-            if let spinner = content as? UIActivityIndicatorView {
-                spinner.startAnimating()
-            }
-
-            self.expandChevron.text = "▾"
-            self.expandChevron.textColor = MPTheme.global.color.body.get()
-            self.expandChevron.textAlignment = .center
-            self.expandChevron.font = MPTheme.global.font.callout.get()
-            self.expandChevron.setAlignmentRectInsets( UIEdgeInsets( top: 0, left: 0, bottom: 8, right: 0 ) )
-
-            self.detailLabel.text = details
-            self.detailLabel.textColor = MPTheme.global.color.body.get()
-            self.detailLabel.textAlignment = .center
-            self.detailLabel.numberOfLines = 0
-            self.detailLabel.font = MPTheme.global.font.footnote.get()
-
-            let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
-            dismissRecognizer.direction = .up
-            let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didActivateSwipe ) )
-            activateRecognizer.direction = .down
-            self.view.addGestureRecognizer( dismissRecognizer )
-            self.view.addGestureRecognizer( activateRecognizer )
-            self.view.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( self.didTap ) ) )
-
-            contentStack.axis = .vertical
-            contentStack.alignment = .center
-            contentStack.spacing = 8
-        }
+    init(title: @escaping @autoclosure () -> String?, message: @escaping @autoclosure () -> String? = nil,
+         details: @escaping @autoclosure () -> String? = nil, content: @escaping @autoclosure () -> (UIView?) = nil,
+         level: PearlLogLevel = .info) {
+        self.titleFactory = title
+        self.messageFactory = message
+        self.detailsFactory = details
+        self.contentFactory = content
+        self.level = level
     }
+
+    // MARK: --- Interface ---
 
     @discardableResult
     public func show(in view: UIView? = nil, dismissAutomatically: Bool = true) -> Self {
+        var logMessage = ""
+        if let title = self.title {
+            logMessage += "[\(title)]"
+        }
+        if let message = self.message {
+            logMessage += ": \(message)"
+        }
+        log( logMessage, level: self.level )
+
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
             if let root = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow {
@@ -141,23 +110,77 @@ class MPAlert {
         }
     }
 
+    // MARK: --- Private ---
+
+    private func loadView() -> UIView {
+        let content = self.contentFactory()
+        if let spinner = content as? UIActivityIndicatorView {
+            spinner.startAnimating()
+        }
+
+        let contentStack = UIStackView( arrangedSubviews: [
+            self.titleLabel, self.messageLabel, content, self.expandChevron, self.detailLabel
+        ].compactMap { $0 } )
+        contentStack.axis = .vertical
+        contentStack.alignment = .center
+        contentStack.spacing = 8
+
+        let view = MPButton( content: contentStack )
+        view.isBackgroundDark = true
+        if #available( iOS 11.0, * ) {
+            view.insetsLayoutMarginsFromSafeArea = true
+        }
+
+        self.titleLabel.text = self.title
+        self.titleLabel.textColor = MPTheme.global.color.body.get()
+        self.titleLabel.textAlignment = .center
+        self.titleLabel.numberOfLines = 0
+
+        self.messageLabel.text = self.message
+        self.messageLabel.textColor = MPTheme.global.color.secondary.get()
+        self.messageLabel.textAlignment = .center
+        self.messageLabel.numberOfLines = 0
+
+        self.expandChevron.text = "▾"
+        self.expandChevron.textColor = MPTheme.global.color.body.get()
+        self.expandChevron.textAlignment = .center
+        self.expandChevron.font = MPTheme.global.font.callout.get()
+        self.expandChevron.setAlignmentRectInsets( UIEdgeInsets( top: 0, left: 0, bottom: 8, right: 0 ) )
+
+        self.detailLabel.text = self.details
+        self.detailLabel.textColor = MPTheme.global.color.body.get()
+        self.detailLabel.textAlignment = .center
+        self.detailLabel.numberOfLines = 0
+        self.detailLabel.font = MPTheme.global.font.footnote.get()
+
+        let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
+        dismissRecognizer.direction = .up
+        let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didActivateSwipe ) )
+        activateRecognizer.direction = .down
+        view.addGestureRecognizer( dismissRecognizer )
+        view.addGestureRecognizer( activateRecognizer )
+        view.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( self.didTap ) ) )
+
+        return view
+    }
+
     @objc
-    func didTap(_ recognizer: UITapGestureRecognizer) {
+    private func didTap(_ recognizer: UITapGestureRecognizer) {
         self.activate()
     }
 
     @objc
-    func didDismissSwipe(_ recognizer: UISwipeGestureRecognizer) {
+    private func didDismissSwipe(_ recognizer: UISwipeGestureRecognizer) {
         self.dismiss()
     }
 
     @objc
-    func didActivateSwipe(_ recognizer: UISwipeGestureRecognizer) {
+    private func didActivateSwipe(_ recognizer: UISwipeGestureRecognizer) {
         self.activate()
     }
 }
 
-func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil) {
+public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil) {
     var errorDetails = details?.description
     if let error = error {
         if let errorDetails_ = errorDetails {

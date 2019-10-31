@@ -237,10 +237,11 @@ class MPMarshal: Observable {
                 }
 
                 spinner.show( dismissAutomatically: false )
-                authentication.then( {
+                authentication.then( { result in
+                    trc( "Import replace authentication: \(result)" )
                     spinner.dismiss()
 
-                    switch $0 {
+                    switch result {
                         case .success:
                             if let existingFile = existingFile.origin {
                                 if FileManager.default.fileExists( atPath: existingFile.path ) {
@@ -276,17 +277,17 @@ class MPMarshal: Observable {
                 }
 
                 spinner.show( dismissAutomatically: false )
-                authentication.then( on: .main ) {
+                authentication.then( on: .main ) { result in
+                    trc( "Import merge authentication: \(result)" )
                     spinner.dismiss()
 
-                    switch $0 {
+                    switch result {
                         case .success(let (importedUser, existedUser)):
                             if let importedUser = importedUser,
                                let existedUser = existedUser {
                                 self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
                             }
                             else if let importedUser = importedUser {
-                                let passwordField = MPMasterPasswordField( userFile: existingFile )
                                 let controller    = UIAlertController( title: "Unlock Existing User", message:
                                 """
                                 The existing user is locked with a different master password.
@@ -295,41 +296,18 @@ class MPMarshal: Observable {
 
                                 Replacing will delete the existing user and replace it with the imported user.
                                 """, preferredStyle: .alert )
-                                controller.addTextField { passwordField.passwordField = $0 }
-                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    promise.finish( .success( false ) )
-                                } )
-                                controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
-                                    if let existingFile = existingFile.origin {
-                                        if FileManager.default.fileExists( atPath: existingFile.path ) {
-                                            do { try FileManager.default.removeItem( at: existingFile ) }
-                                            catch {
-                                                mperror( title: "Migration issue", message: "Cannot delete old user",
-                                                         details: existingFile.lastPathComponent, error: error )
-                                            }
-                                        }
 
-                                        self.import( data: data, from: importingFile, into: existingFile ).then { promise.finish( $0 ) }
-                                    }
-                                    else {
-                                        promise.finish( .success( false ) )
-                                    }
-                                } )
-                                controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                                    guard let authentication = passwordField.authenticate( { keyFactory in
-                                        existingFile.mpw_authenticate( keyFactory: keyFactory )
-                                    } )
-                                    else {
-                                        mperror( title: "Couldn't import user", message: "Missing master password" )
-                                        viewController.present( controller, animated: true )
-                                        return
-                                    }
-
+                                let passwordField = MPMasterPasswordField( userFile: existingFile )
+                                passwordField.authenticater = { keyFactory in
                                     spinner.show( dismissAutomatically: false )
-                                    authentication.then( {
-                                        spinner.dismiss()
+                                    return existingFile.mpw_authenticate( keyFactory: keyFactory )
+                                }
+                                passwordField.authenticated = { result in
+                                    trc( "Existing user authentication: \(result)" )
 
-                                        switch $0 {
+                                    spinner.dismiss()
+                                    controller.dismiss( animated: true ) {
+                                        switch result {
                                             case .success(let existedUser):
                                                 self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
 
@@ -338,37 +316,39 @@ class MPMarshal: Observable {
                                                          details: existingFile, error: error )
                                                 viewController.present( controller, animated: true )
                                         }
-                                    } )
+                                    }
+                                }
+                                controller.addTextField { passwordField.passwordField = $0 }
+                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                                    promise.finish( .success( false ) )
+                                } )
+                                controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
+                                    if !passwordField.try() {
+                                        mperror( title: "Couldn't import user", message: "Missing master password" )
+                                        viewController.present( controller, animated: true )
+                                    }
                                 } )
                                 viewController.present( controller, animated: true )
                             }
                             else if let existedUser = existedUser {
-                                let passwordField = MPMasterPasswordField( userFile: importingFile )
                                 let controller    = UIAlertController( title: "Unlock Import", message:
                                 """
                                 The import user is locked with a different master password.
 
                                 The continue merging, also provide the imported user's master password.
                                 """, preferredStyle: .alert )
-                                controller.addTextField { passwordField.passwordField = $0 }
-                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    promise.finish( .success( false ) )
-                                } )
-                                controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                                    guard let authentication = passwordField.authenticate( { keyFactory in
-                                        importingFile.mpw_authenticate( keyFactory: keyFactory )
-                                    } )
-                                    else {
-                                        mperror( title: "Couldn't import user", message: "Missing master password" )
-                                        viewController.present( controller, animated: true )
-                                        return
-                                    }
 
+                                let passwordField = MPMasterPasswordField( userFile: importingFile )
+                                passwordField.authenticater = { keyFactory in
                                     spinner.show( dismissAutomatically: false )
-                                    authentication.then( {
-                                        spinner.dismiss()
+                                    return importingFile.mpw_authenticate( keyFactory: keyFactory )
+                                }
+                                passwordField.authenticated = { result in
+                                    trc( "Import user authentication: \(result)" )
 
-                                        switch $0 {
+                                    spinner.dismiss()
+                                    controller.dismiss( animated: true ) {
+                                        switch result {
                                             case .success(let importedUser):
                                                 self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
 
@@ -377,7 +357,17 @@ class MPMarshal: Observable {
                                                          details: importingFile, error: error )
                                                 viewController.present( controller, animated: true )
                                         }
-                                    } )
+                                    }
+                                }
+                                controller.addTextField { passwordField.passwordField = $0 }
+                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                                    promise.finish( .success( false ) )
+                                } )
+                                controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
+                                    if !passwordField.try() {
+                                        mperror( title: "Couldn't import user", message: "Missing master password" )
+                                        viewController.present( controller, animated: true )
+                                    }
                                 } )
                                 viewController.present( controller, animated: true )
                             }
