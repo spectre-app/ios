@@ -29,8 +29,27 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
     // MARK: --- Life ---
 
-    override var next: UIResponder? {
+    override var next:                                       UIResponder? {
         self.detailsHost
+    }
+    private var  activeChild:                                UIViewController? {
+        self.sitePreviewConfiguration.activated ? self.sitePreviewController: self.detailsHost.isShowing ? self.detailsHost: nil
+    }
+    override var childForStatusBarStyle:                     UIViewController? {
+        self.activeChild
+    }
+    override var childForStatusBarHidden:                    UIViewController? {
+        self.activeChild
+    }
+    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
+        self.activeChild
+    }
+    override var childForHomeIndicatorAutoHidden:            UIViewController? {
+        self.activeChild
+    }
+    override var preferredStatusBarStyle:                    UIStatusBarStyle {
+        // TODO: depend on theme
+        .lightContent
     }
 
     override func viewDidLoad() {
@@ -147,31 +166,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         }
     }
 
-    private var  activeChild:                                UIViewController? {
-        self.sitePreviewConfiguration.activated ? self.sitePreviewController: self.detailsHost.isShowing ? self.detailsHost: nil
-    }
-    override var childForStatusBarStyle:                     UIViewController? {
-        self.activeChild
-    }
-    override var childForStatusBarHidden:                    UIViewController? {
-        self.activeChild
-    }
-    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
-        self.activeChild
-    }
-    override var childForHomeIndicatorAutoHidden:            UIViewController? {
-        self.activeChild
-    }
-     override var preferredStatusBarStyle: UIStatusBarStyle {
-        // TODO: depend on theme
-        .lightContent
-    }
-
     // MARK: --- MPSitesViewObserver ---
 
     func siteWasSelected(site selectedSite: MPSite?) {
         DispatchQueue.main.perform {
-            UIView.animate( withDuration: 1, animations: {
+            UIView.animate( withDuration: 0.618, animations: {
                 if let selectedSite = selectedSite {
                     self.sitePreviewController.site = selectedSite
                 }

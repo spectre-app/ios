@@ -228,7 +228,7 @@ class MPMarshal: Observable {
             } )
             controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                 guard let authentication = passwordField.authenticate( { keyFactory in
-                    importingFile.mpw_authenticate( keyFactory: keyFactory )
+                    importingFile.authenticate( keyFactory: keyFactory )
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Missing master password" )
@@ -267,8 +267,8 @@ class MPMarshal: Observable {
             controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                 guard let authentication = passwordField.authenticate( { keyFactory in
                     Promise( .success(
-                            (try? importingFile.mpw_authenticate( keyFactory: keyFactory ).await(),
-                             try? existingFile.mpw_authenticate( keyFactory: keyFactory ).await()) ) )
+                            (try? importingFile.authenticate( keyFactory: keyFactory ).await(),
+                             try? existingFile.authenticate( keyFactory: keyFactory ).await()) ) )
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Missing master password" )
@@ -300,7 +300,7 @@ class MPMarshal: Observable {
                                 let passwordField = MPMasterPasswordField( userFile: existingFile )
                                 passwordField.authenticater = { keyFactory in
                                     spinner.show( dismissAutomatically: false )
-                                    return existingFile.mpw_authenticate( keyFactory: keyFactory )
+                                    return existingFile.authenticate( keyFactory: keyFactory )
                                 }
                                 passwordField.authenticated = { result in
                                     trc( "Existing user authentication: \(result)" )
@@ -341,7 +341,7 @@ class MPMarshal: Observable {
                                 let passwordField = MPMasterPasswordField( userFile: importingFile )
                                 passwordField.authenticater = { keyFactory in
                                     spinner.show( dismissAutomatically: false )
-                                    return importingFile.mpw_authenticate( keyFactory: keyFactory )
+                                    return importingFile.authenticate( keyFactory: keyFactory )
                                 }
                                 passwordField.authenticated = { result in
                                     trc( "Import user authentication: \(result)" )
@@ -732,7 +732,7 @@ class MPMarshal: Observable {
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
         }
 
-        public func mpw_authenticate(keyFactory: MPKeyFactory) -> Promise<MPUser> {
+        public func authenticate(keyFactory: MPKeyFactory) -> Promise<MPUser> {
             DispatchQueue.mpw.promised {
                 if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: keyFactory.provide() )?.pointee,
                    self.file.pointee.error.type == .success {

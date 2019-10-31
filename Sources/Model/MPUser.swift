@@ -6,7 +6,6 @@
 import Foundation
 
 class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver {
-    // TODO: figure out how to batch updates or suspend changes until sites marshalling/authenticate fully complete.
     public let observers = Observers<MPUserObserver>()
 
     public var algorithm: MPAlgorithmVersion {

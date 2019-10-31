@@ -45,7 +45,6 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
                             MPMarshal.shared.import( data: data )
                         }
                         else {
-                            // TODO: error handling
                             mperror( title: "Couldn't open document", details: url.lastPathComponent, error: error )
                         }
                     } ).resume()

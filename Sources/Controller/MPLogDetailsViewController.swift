@@ -44,14 +44,6 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                 }
             } )
         }
-
-        override func doUpdate() {
-            super.doUpdate()
-
-            if let view = (self.view as? AreaItemView<Model>)?.valueView {
-                view.scrollRectToVisible( CGRect( x: 0, y: view.contentSize.height, width: 0, height: 0 ), animated: true )
-            }
-        }
     }
 
     class LogLevelPicker: PickerItem<Model, PearlLogLevel> {
@@ -90,6 +82,8 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
 
             private let titleLabel = UILabel()
 
+            // MARK: --- Life ---
+
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
             }
@@ -97,12 +91,15 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
             override init(frame: CGRect) {
                 super.init( frame: frame )
 
+                // - View
                 self.titleLabel.font = MPTheme.global.font.headline.get()
                 self.titleLabel.textColor = MPTheme.global.color.body.get()
                 self.titleLabel.textAlignment = .center
 
+                // - Hierarchy
                 self.effectView.contentView.addSubview( self.titleLabel )
 
+                // - Layout
                 LayoutConfiguration( view: self.titleLabel )
                         .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                         .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }

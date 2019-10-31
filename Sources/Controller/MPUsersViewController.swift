@@ -342,13 +342,13 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.placeholder = "Your master password"
             self.passwordField.nameField = self.nameField
             self.passwordField.authenticater = { keyFactory in
-                self.userFile?.mpw_authenticate( keyFactory: keyFactory ) ??
+                self.userFile?.authenticate( keyFactory: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
-            self.passwordField.authenticated = {
-                trc( "User password authentication: \($0)" )
+            self.passwordField.authenticated = { result in
+                trc( "User password authentication: \(result)" )
 
-                switch $0 {
+                switch result {
                     case .success(let user):
                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
@@ -375,10 +375,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 self.biometricButton.button.isSelected = true
                 self.passwordButton.button.isSelected = false
                 self.passwordField.isEnabled = true
-                userFile.mpw_authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) ).then {
-                    trc( "User biometric authentication: \($0)" )
+                userFile.authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) ).then { result in
+                    trc( "User biometric authentication: \(result)" )
 
-                    switch $0 {
+                    switch result {
                         case .success(let user):
                             DispatchQueue.main.perform {
                                 self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )

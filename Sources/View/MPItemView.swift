@@ -83,6 +83,7 @@ class Item<M>: NSObject {
             self.titleLabel.textColor = MPTheme.global.color.body.get()
             self.titleLabel.textAlignment = .center
             self.titleLabel.font = MPTheme.global.font.headline.get()
+            self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
             self.contentView.addArrangedSubview(
                     MPMarginView( for: self.titleLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
 
@@ -90,35 +91,33 @@ class Item<M>: NSObject {
                 self.contentView.addArrangedSubview( valueView )
             }
 
-            self.captionLabel.textColor = MPTheme.global.color.secondary.get()
-            self.captionLabel.textAlignment = .center
-            self.captionLabel.font = MPTheme.global.font.caption1.get()
-            self.captionLabel.numberOfLines = 0
-            self.contentView.addArrangedSubview(
-                    MPMarginView( for: self.captionLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
-
             self.subitemsView.axis = .horizontal
             self.subitemsView.distribution = .fillEqually
             self.subitemsView.spacing = 20
             self.subitemsView.preservesSuperviewLayoutMargins = true
             self.subitemsView.isLayoutMarginsRelativeArrangement = true
+            self.contentView.addArrangedSubview( self.subitemsView )
+
+            self.captionLabel.textColor = MPTheme.global.color.secondary.get()
+            self.captionLabel.textAlignment = .center
+            self.captionLabel.font = MPTheme.global.font.caption1.get()
+            self.captionLabel.numberOfLines = 0
+            self.captionLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
+            self.contentView.addArrangedSubview(
+                    MPMarginView( for: self.captionLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
 
             // - Hierarchy
             self.addSubview( self.contentView )
-            self.addSubview( self.subitemsView )
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.subitemsView.topAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.subitemsView )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
                     .activate()
         }
@@ -253,8 +252,8 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
 
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (selected: Bool, icon: UIImage?),
-         caption: @escaping (M) -> String? = { _ in nil },
-         update: @escaping (M, Bool) -> Void = { _, _ in }) {
+         update: @escaping (M, Bool) -> Void = { _, _ in },
+         caption: @escaping (M) -> String? = { _ in nil }) {
         self.update = update
 
         super.init( title: title, subitems: subitems, value: value, caption: caption )

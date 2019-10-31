@@ -29,15 +29,6 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     // MARK: --- MPUserObserver ---
 
-    func userDidLogout(_ user: MPUser) {
-        DispatchQueue.main.perform {
-            if user == self.model, let navigationController = self.navigationController {
-                trc( "Dismissing since user logged out." )
-                navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
-            }
-        }
-    }
-
     func userDidChange(_ user: MPUser) {
         self.setNeedsUpdate()
     }
@@ -91,27 +82,26 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class FeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ToggleItem<MPUser>( title: "Mask Passwords", value: { model in
-                    (model.maskPasswords, UIImage( named: "icon_tripledot" ))
-                }, caption: { _ in
-                    """
-                    Do not reveal passwords on screen.
-                    Useful to deter screen snooping.
-                    """
-                } ) { model, maskPasswords in
-                    model.maskPasswords = maskPasswords
-                },
-                ToggleItem( title: "Biometric Lock", value: { model in
-                    (model.biometricLock, UIImage( named: "icon_man" ))
-                }, caption: { _ in
-                    """
-                    Sign in using biometrics (eg. TouchID, FaceID).
-                    Saves your master key in the device's key chain.
-                    """
-                } ) { model, biometricLock in
-                    model.biometricLock = biometricLock
-                }
-            ] )
+                ToggleItem<MPUser>(
+                        title: "Mask Passwords",
+                        value: { ($0.maskPasswords, UIImage( named: "icon_tripledot" )) },
+                        update: { $0.maskPasswords = $1 },
+                        caption: { _ in
+                            """
+                            Do not reveal passwords on screen.
+                            Useful to deter screen snooping.
+                            """
+                        } ),
+                ToggleItem(
+                        title: "Biometric Lock",
+                        value: { ($0.biometricLock, UIImage( named: "icon_man" )) },
+                        update: { $0.biometricLock = $1 },
+                        caption: { _ in
+                            """
+                            Sign in using biometrics (eg. TouchID, FaceID).
+                            Saves your master key in the device's key chain.
+                            """
+                        } ) ] )
         }
     }
 

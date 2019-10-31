@@ -18,6 +18,27 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     private var detailsController:      AnyMPDetailsViewController?
     private var contentSizeObservation: NSKeyValueObservation?
 
+    // MARK: --- Life ---
+
+    override var next: UIResponder? {
+        self.parent?.view.superview
+    }
+    private var  activeChild:                                UIViewController? {
+        self.detailsController
+    }
+    override var childForStatusBarStyle:                     UIViewController? {
+        self.activeChild
+    }
+    override var childForStatusBarHidden:                    UIViewController? {
+        self.activeChild
+    }
+    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
+        self.activeChild
+    }
+    override var childForHomeIndicatorAutoHidden:            UIViewController? {
+        self.activeChild
+    }
+
     override func loadView() {
         self.view = MPUntouchableView()
     }
@@ -86,10 +107,6 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 }
     }
 
-    override var next: UIResponder? {
-        self.parent?.view.superview
-    }
-
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         if motion == .motionShake {
             trc( "Shake motion, opening log details." )
@@ -100,24 +117,10 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         }
     }
 
-    private var  activeChild:                                UIViewController? {
-        self.detailsController
-    }
-    override var childForStatusBarStyle:                     UIViewController? {
-        self.activeChild
-    }
-    override var childForStatusBarHidden:                    UIViewController? {
-        self.activeChild
-    }
-    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
-        self.activeChild
-    }
-    override var childForHomeIndicatorAutoHidden:            UIViewController? {
-        self.activeChild
-    }
+    // MARK: --- Private ---
 
     @objc
-    func didTapBackground() {
+    private func didTapBackground() {
         self.hide()
     }
 

@@ -20,6 +20,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.revealControl,
         self.exportButton,
     ] )
+
     override var user: MPUser {
         didSet {
             DispatchQueue.main.perform {
@@ -50,6 +51,9 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // - View
+        self.view.preservesSuperviewLayoutMargins = true
+
         self.titleLabel.numberOfLines = 0
         self.titleLabel.font = MPTheme.global.font.title1.get()
         self.titleLabel.text = "Exporting"
@@ -76,10 +80,12 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
 
         self.exportButton.button.addAction( for: .touchUpInside ) { _, _ in
             trc( "Requested export of \(self.user), format: \(self.format), redacted: \(self.redacted)" )
+
             let item       = MPMarshal.ActivityItem( user: self.user, format: self.format, redacted: self.redacted )
             let controller = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
             controller.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
                 trc( "Export activity completed: \(completed), error: \(activityError?.localizedDescription ?? "-")" )
+
                 item.activityViewController( controller, completed: completed, forActivityType: activityType,
                                              returnedItems: returnedItems, activityError: activityError )
                 self.dismiss( animated: true )
@@ -90,10 +96,13 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.contentView.axis = .vertical
         self.contentView.spacing = 8
 
+        // - Hierarchy
         self.view.addSubview( self.contentView )
-        self.view.preservesSuperviewLayoutMargins = true
 
-        LayoutConfiguration( view: self.contentView ).constrainToMarginsOfOwner().activate()
+        // - Layout
+        LayoutConfiguration( view: self.contentView )
+                .constrainToMarginsOfOwner()
+                .activate()
     }
 
     // MARK: UIPopoverPresentationControllerDelegate

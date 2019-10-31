@@ -35,25 +35,35 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
     class DiagnisticsItem: ToggleItem<Void> {
         init() {
-            super.init( title: "Diagnostics", value: { _ in
-                (UserDefaults.standard.bool( forKey: "sendInfo" ), UIImage( named: "icon_bandage" ))
-            }, caption: { _ in
-                """
-                Share anonymized issue information to enable quick resolution.
-                """
-            } ) { _, sendInfo in
-                UserDefaults.standard.set( sendInfo, forKey: "sendInfo" )
-            }
+            super.init(
+                    title: "Diagnostics",
+                    value: { _ in (UserDefaults.standard.bool( forKey: "sendInfo" ), UIImage( named: "icon_bandage" )) },
+                    update: { UserDefaults.standard.set( $1, forKey: "sendInfo" ) },
+                    caption: { _ in
+                        """
+                        Share anonymized issue information to enable quick resolution.
+                        """
+                    } )
         }
     }
 
-    class LegacyItem: ButtonItem<Void> {
+    class LegacyItem: Item<Void> {
         init() {
-            super.init( title: "Legacy Data", value: { _ in
-                (label: "Re-Import Legacy Users", image: nil)
-            } ) { _ in
-                MPMarshal.shared.importLegacy( force: true )
-            }
+            super.init( title: "Legacy Data",
+                        subitems: [
+                            ButtonItem<Void>( value: { _ in (label: "Re-import", image: nil) } ) { _ in
+                                MPMarshal.shared.importLegacy( force: true )
+                            },
+                            ButtonItem<Void>( value: { _ in (label: "Clean up", image: nil) } ) { _ in
+                                // TODO: purge legacy data
+                            }
+                        ],
+                        caption: { _ in
+                            """
+                            User information from an older version of the app exists.
+                            You can leave it untouched or clean up to remove it.
+                            """
+                        } )
 
             self.hidden = true
             _ = MPMarshal.shared.hasLegacy().then { self.hidden = !$0 }
@@ -78,12 +88,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
 
         override func cell(tableView: UITableView, indexPath: IndexPath, model: (), value: Link) -> UITableViewCell? {
             Cell.dequeue( from: tableView, indexPath: indexPath ) {
-                ($0 as? Cell)?.set( title: value.title ) {
-                    if let url = value.url {
-                        trc( "Opening link: \(url)" )
-                        UIApplication.shared.openURL( url )
-                    }
-                }
+                ($0 as? Cell)?.link = value
             }
         }
 
@@ -93,8 +98,16 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
         }
 
         class Cell: UITableViewCell {
-            private let button = UIButton()
-            private var action: (() -> Void)?
+            let button = UIButton()
+            var link: Link? {
+                didSet {
+                    DispatchQueue.main.perform {
+                        self.button.setTitle( self.link?.title, for: .normal )
+                    }
+                }
+            }
+
+            // MARK: --- Life ---
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
@@ -112,7 +125,11 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
                 self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
                 self.button.titleLabel?.font = MPTheme.global.font.callout.get()
                 self.button.addAction( for: .touchUpInside ) { _, _ in
-                    self.action?()
+                    if let url = self.link?.url {
+                        trc( "Opening link: \(url)" )
+
+                        UIApplication.shared.openURL( url )
+                    }
                 }
 
                 // - Hierarchy
@@ -122,11 +139,6 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
                 LayoutConfiguration( view: self.button )
                         .constrainToOwner()
                         .activate()
-            }
-
-            func set(title: String?, action: @escaping () -> Void) {
-                self.action = action
-                self.button.setTitle( title, for: .normal )
             }
         }
     }

@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver, /*MPUserViewController*/MPUserObserver {
+class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver {
 
     // MARK: --- Life ---
 
@@ -27,7 +27,6 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         super.init( model: model )
 
         self.model.observers.register( observer: self ).siteDidChange( self.model )
-        self.model.user.observers.register( observer: self )
     }
 
     override func viewDidLoad() {
@@ -47,40 +46,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         self.setNeedsUpdate()
     }
 
-    // MARK: --- MPUserObserver ---
-
-    func userDidLogout(_ user: MPUser) {
-        DispatchQueue.main.perform {
-            if user == self.model.user, let navigationController = self.navigationController {
-                trc( "Dismissing since user logged out." )
-                navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
-            }
-        }
-    }
-
     // MARK: --- Types ---
-
-    class ResultItem: LabelItem<MPSite> {
-        init() {
-            super.init( title: "Password & Login", value: {
-                try? $0.mpw_result( keyPurpose: .authentication ).await()
-            }, caption: {
-                try? $0.mpw_result( keyPurpose: .identification ).await()
-            } )
-        }
-
-        override func createItemView() -> ResultItemView {
-            ResultItemView( withItem: self )
-        }
-
-        class ResultItemView: LabelItemView<MPSite> {
-            override func didLoad() {
-                super.didLoad()
-
-                self.titleLabel.font = MPTheme.global.font.password.get()
-            }
-        }
-    }
 
     class PasswordCounterItem: StepperItem<MPSite, UInt32> {
         init() {
@@ -132,6 +98,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             view.valueField.font = MPTheme.global.font.password.get()
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
+            view.valueField.keyboardType = .asciiCapable
             return view
         }
 
@@ -180,9 +147,10 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
         override func createItemView() -> FieldItemView<MPSite> {
             let view = super.createItemView()
-            view.valueField.font = MPTheme.global.font.mono.get()
+            view.valueField.font = MPTheme.global.font.password.get()
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
+            view.valueField.keyboardType = .emailAddress
             return view
         }
 
@@ -195,28 +163,34 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class SecurityAnswerItem: ListItem<MPSite, MPQuestion> {
         init() {
-            super.init( title: "Security Answers", values: {
-                var questions = [ "": MPQuestion( site: $0, keyword: "" ) ]
-                $0.questions.forEach { questions[$0.keyword] = $0 }
-                return questions.values.sorted()
-            }, subitems: [ ButtonItem( value: { _ in (label: "Add Security Question", image: nil) } ) { item in
-                trc( "Adding security question for: \(item.model?.description ?? "-")" )
+            super.init(
+                    title: "Security Answers",
+                    values: {
+                        $0.questions.reduce( [ "": MPQuestion( site: $0, keyword: "" ) ] ) {
+                            $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
+                        }.values.sorted()
+                    },
+                    subitems: [ ButtonItem( value: { _ in (label: "Add Security Question", image: nil) } ) { item in
+                        let controller = UIAlertController( title: "Security Question", message:
+                        """
+                        Enter the most significant noun for the site's security question.
+                        """, preferredStyle: .alert )
+                        controller.addTextField {
+                            $0.placeholder = "eg. teacher"
+                            $0.autocapitalizationType = .none
+                            $0.keyboardType = .alphabet
+                            $0.returnKeyType = .done
+                        }
+                        controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                        controller.addAction( UIAlertAction( title: "Add", style: .default ) { _ in
+                            if let site = item.model, let keyword = controller.textFields?.first?.text< {
+                                trc( "Adding security question <\(keyword)> for: \(item.model?.description ?? "-")" )
 
-                let controller = UIAlertController( title: "Security Question", message:
-                """
-                Enter the most significant noun for the site's security question.
-                """, preferredStyle: .alert )
-                controller.addTextField {
-                    $0.placeholder = "eg. teacher"
-                }
-                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                controller.addAction( UIAlertAction( title: "Add", style: .default ) { _ in
-                    if let site = item.model, let keyword = controller.textFields?.first?.text< {
-                        site.questions.append( MPQuestion( site: site, keyword: keyword ) )
-                    }
-                } )
-                item.viewController?.present( controller, animated: true )
-            } ] )
+                                site.questions.append( MPQuestion( site: site, keyword: keyword ) )
+                            }
+                        } )
+                        item.viewController?.present( controller, animated: true )
+                    } ] )
 
             self.deletable = true
         }
@@ -232,6 +206,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         override func delete(model: MPSite, value: MPQuestion) {
+            trc( "Trashing security question: \(value)" )
+
             model.questions.removeAll { $0 === value }
         }
 
@@ -254,6 +230,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                     }
                 }
             }
+
+            // MARK: --- Life ---
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
