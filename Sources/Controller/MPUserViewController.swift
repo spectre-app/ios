@@ -8,14 +8,10 @@ import UIKit
 class MPUserViewController: MPViewController, MPUserObserver {
     var user: MPUser {
         willSet {
-            if (newValue !== self.user) {
-                self.user.observers.unregister( observer: self )
-            }
+            self.user.observers.unregister( observer: self )
         }
         didSet {
-            if (oldValue !== self.user) {
-                self.user.observers.register( observer: self )
-            }
+            self.user.observers.register( observer: self )
         }
     }
 
@@ -29,7 +25,9 @@ class MPUserViewController: MPViewController, MPUserObserver {
         self.user = user
         super.init()
 
-        self.user.observers.register( observer: self )
+        defer {
+            self.user = user
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -46,7 +44,7 @@ class MPUserViewController: MPViewController, MPUserObserver {
     func userDidLogout(_ user: MPUser) {
         DispatchQueue.main.perform {
             if user == self.user, let navigationController = self.navigationController {
-                trc( "Dismissing since user logged out." )
+                trc( "Dismissing \(type(of: self)) since user logged out." )
                 navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
             }
         }
