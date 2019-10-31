@@ -6,9 +6,9 @@
 import UIKit
 
 class MPExportViewController: MPUserViewController, UIPopoverPresentationControllerDelegate {
-    let titleLabel   = UILabel()
-    let subtitleLabel   = UILabel()
-    let messageLabel = UILabel()
+    let titleLabel    = UILabel()
+    let subtitleLabel = UILabel()
+    let messageLabel  = UILabel()
     let formatControl = UISegmentedControl( items: MPMarshalFormat.allCases.compactMap { $0.description } )
     let revealControl = UISegmentedControl( items: [ "Reveal Passwords", "Secure Export" ] )
     let exportButton  = MPButton( title: "Export User" )
@@ -75,9 +75,11 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.revealControl.selectedSegmentIndex = 1
 
         self.exportButton.button.addAction( for: .touchUpInside ) { _, _ in
+            trc( "Requested export of \(self.user), format: \(self.format), redacted: \(self.redacted)" )
             let item       = MPMarshal.ActivityItem( user: self.user, format: self.format, redacted: self.redacted )
             let controller = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
             controller.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
+                trc( "Export activity completed: \(completed), error: \(activityError?.localizedDescription ?? "-")" )
                 item.activityViewController( controller, completed: completed, forActivityType: activityType,
                                              returnedItems: returnedItems, activityError: activityError )
                 self.dismiss( animated: true )

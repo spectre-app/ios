@@ -10,7 +10,7 @@ import UIKit
 import Crashlytics
 import Stellar
 
-class MPUsersViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
+class MPUsersViewController: MPViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
     public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
     public var selectedFile: MPMarshal.UserFile? {
         self.fileSource.element( item: self.usersSpinner.selectedItem )
@@ -37,8 +37,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init() {
-        super.init( nibName: nil, bundle: nil )
+    override init() {
+        super.init()
 
         MPMarshal.shared.observers.register( observer: self )
     }
@@ -70,9 +70,11 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             let passwordField = MPMasterPasswordField()
             passwordField.authenticate = { keyFactory in MPUser( fullName: keyFactory.fullName, file: nil ).login( keyFactory: keyFactory ) }
             passwordField.authenticated = {
+                trc( "Incognito authentication: \($0)" )
+                controller.dismiss( animated: true )
+
                 switch $0 {
                     case .success(let user):
-                        controller.dismiss( animated: true )
                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                     case .failure(let error):
@@ -167,6 +169,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
             alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { _ in
+                trc( "Trashing user: \(user)" )
+
                 if MPMarshal.shared.delete( userFile: user ) {
                     self.fileSource.remove( user )
                 }
@@ -188,6 +192,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
             alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { _ in
+                trc( "Resetting user: \(user)" )
+
                 user.resetKey = true
             } )
             self.present( alert, animated: true )
@@ -219,6 +225,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         UIView.animate( withDuration: 0.382 ) {
+            trc( "Selected user: \(self.selectedFile?.description ?? "-")" )
             self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
         }
     }
@@ -232,6 +239,7 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
     // MARK: --- MPMarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
+        trc( "Users updated: \(userFiles)" )
         self.fileSource.update( [ userFiles.sorted() + [ nil ] ], reloadItems: true )
         DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { self.usersSpinner.flashScrollIndicators() }
     }
@@ -326,6 +334,8 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
             self.passwordField.authenticated = {
+                trc( "User password authentication: \($0)" )
+
                 switch $0 {
                     case .success(let user):
                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
@@ -354,11 +364,12 @@ class MPUsersViewController: UIViewController, UICollectionViewDelegate, UIColle
                 self.passwordButton.button.isSelected = false
                 self.passwordField.isEnabled = true
                 userFile.mpw_authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) ).then {
+                    trc( "User biometric authentication: \($0)" )
+
                     switch $0 {
                         case .success(let user):
                             DispatchQueue.main.perform {
-                                self.navigationController?
-                                    .pushViewController( MPSitesViewController( user: user ), animated: true )
+                                self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
                             }
 
                         case .failure:

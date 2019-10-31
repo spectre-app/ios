@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate {
+class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     public let scrollView  = UIScrollView()
     public let contentView = MPUntouchableView()
     public var isShowing: Bool {
@@ -92,6 +92,7 @@ class MPDetailsHostController: UIViewController, UIScrollViewDelegate, UIGesture
 
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         if motion == .motionShake {
+            trc( "Shake motion, opening log details." )
             self.show( MPLogDetailsViewController() )
         }
         else {

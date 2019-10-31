@@ -32,6 +32,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     func userDidLogout(_ user: MPUser) {
         DispatchQueue.main.perform {
             if user == self.model, let navigationController = self.navigationController {
+                trc( "Dismissing since user logged out." )
                 navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
             }
         }
@@ -118,6 +119,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         init() {
             super.init( subitems: [
                 ButtonItem( value: { _ in (label: "Export", image: nil) } ) { item in
+                    trc( "Exporting: \(item.model?.description ?? "-")" )
+
                     if let user = item.model {
                         let controller = MPExportViewController( user: user )
                         controller.popoverPresentationController?.sourceView = item.view
@@ -126,6 +129,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                     }
                 },
                 ButtonItem( value: { _ in (label: "Log out", image: nil) } ) { item in
+                    trc( "Logging out: \(item.model?.description ?? "-")" )
+
                     item.model?.logout()
                 },
             ] )

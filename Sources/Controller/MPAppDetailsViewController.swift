@@ -80,6 +80,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
             Cell.dequeue( from: tableView, indexPath: indexPath ) {
                 ($0 as? Cell)?.set( title: value.title ) {
                     if let url = value.url {
+                        trc( "Opening link: \(url)" )
                         UIApplication.shared.openURL( url )
                     }
                 }

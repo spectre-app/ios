@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class AnyMPDetailsViewController: UIViewController {
+class AnyMPDetailsViewController: MPViewController {
 }
 
 class MPDetailsViewController<M>: AnyMPDetailsViewController {
@@ -36,7 +36,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
 
     init(model: M) {
         self.model = model
-        super.init( nibName: nil, bundle: nil )
+        super.init()
 
         self.items.forEach { $0.model = self.model }
     }

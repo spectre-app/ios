@@ -52,6 +52,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     func userDidLogout(_ user: MPUser) {
         DispatchQueue.main.perform {
             if user == self.model.user, let navigationController = self.navigationController {
+                trc( "Dismissing since user logged out." )
                 navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
             }
         }
@@ -199,6 +200,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 $0.questions.forEach { questions[$0.keyword] = $0 }
                 return questions.values.sorted()
             }, subitems: [ ButtonItem( value: { _ in (label: "Add Security Question", image: nil) } ) { item in
+                trc( "Adding security question for: \(item.model?.description ?? "-")" )
+
                 let controller = UIAlertController( title: "Security Question", message:
                 """
                 Enter the most significant noun for the site's security question.
