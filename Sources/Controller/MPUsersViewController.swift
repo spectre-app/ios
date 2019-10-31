@@ -295,20 +295,18 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         }
         public var navigationController: UINavigationController?
 
-        private var avatar              = MPUser.Avatar.avatar_add {
+        private var avatar          = MPUser.Avatar.avatar_add {
             didSet {
                 self.update()
             }
         }
-        private let nameLabel           = UILabel()
-        private let nameField           = UITextField()
-        private let avatarButton        = UIButton()
-        private let authenticationStack = UIStackView()
-        private let biometricButton     = MPButton( image: UIImage( named: "icon_man" ) )
-        private let passwordButton      = MPButton( image: UIImage( named: "icon_tripledot" ) )
-        private let passwordField       = MPMasterPasswordField()
-        private let idBadgeView         = UIImageView( image: UIImage( named: "icon_user" ) )
-        private let authBadgeView       = UIImageView( image: UIImage( named: "icon_key" ) )
+        private let nameLabel       = UILabel()
+        private let nameField       = UITextField()
+        private let avatarButton    = UIButton()
+        private let biometricButton = MPButton( image: UIImage( named: "icon_man" ) )
+        private let passwordField   = MPMasterPasswordField()
+        private let idBadgeView     = UIImageView( image: UIImage( named: "icon_user" ) )
+        private let authBadgeView   = UIImageView( image: UIImage( named: "icon_key" ) )
         private var authenticationConfiguration: LayoutConfiguration!
         private var path:                        CGPath? {
             didSet {
@@ -341,6 +339,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.font = MPTheme.global.font.callout.get()
             self.passwordField.placeholder = "Your master password"
             self.passwordField.nameField = self.nameField
+            self.passwordField.rightView = self.biometricButton
+            self.passwordField.rightViewMode = .always
             self.passwordField.authenticater = { keyFactory in
                 self.userFile?.authenticate( keyFactory: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
@@ -367,14 +367,11 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             ] )
             self.nameField.alpha = 0
 
-            self.biometricButton.isDimmedBySelection = true
+            self.biometricButton.isBackgroundVisible = false
             self.biometricButton.button.addAction( for: .touchUpInside ) { _, _ in
                 guard let userFile = self.userFile
                 else { return }
 
-                self.biometricButton.button.isSelected = true
-                self.passwordButton.button.isSelected = false
-                self.passwordField.isEnabled = true
                 userFile.authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) ).then { result in
                     trc( "User biometric authentication: \(result)" )
 
@@ -392,30 +389,17 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     }
                 }
             }
-            self.passwordButton.isDimmedBySelection = true
-            self.passwordButton.button.addAction( for: .touchUpInside ) { _, _ in
-                self.biometricButton.button.isSelected = false
-                self.passwordButton.button.isSelected = true
-                self.passwordField.isEnabled = false
-            }
-
-            self.authenticationStack.axis = .horizontal
-            self.authenticationStack.spacing = 8
-            self.authenticationStack.isLayoutMarginsRelativeArrangement = true
-            self.authenticationStack.layoutMargins = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
-            self.authenticationStack.addArrangedSubview( self.passwordButton )
-            self.authenticationStack.addArrangedSubview( self.passwordField )
-            self.authenticationStack.addArrangedSubview( self.biometricButton )
 
             self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
             self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
+            self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
             self.contentView.addSubview( self.idBadgeView )
             self.contentView.addSubview( self.authBadgeView )
             self.contentView.addSubview( self.avatarButton )
             self.contentView.addSubview( self.nameLabel )
             self.contentView.addSubview( self.nameField )
-            self.contentView.addSubview( self.authenticationStack )
+            self.contentView.addSubview( self.passwordField )
 
             LayoutConfiguration( view: self.contentView )
                     .constrainToOwner()
@@ -435,18 +419,19 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             LayoutConfiguration( view: self.avatarButton )
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .activate()
-            LayoutConfiguration( view: self.authenticationStack )
+            LayoutConfiguration( view: self.passwordField )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
-            self.authenticationConfiguration = LayoutConfiguration( view: self.authenticationStack ) { active, inactive in
+            self.authenticationConfiguration = LayoutConfiguration( view: self.passwordField ) { active, inactive in
                 active.set( 1, forKey: "alpha" )
                 inactive.set( 0, forKey: "alpha" )
             }
                     .apply( LayoutConfiguration( view: self.passwordField ) { active, inactive in
+                        active.set( true, forKey: "enabled" )
                         inactive.set( false, forKey: "enabled" )
                         inactive.set( nil, forKey: "text" )
                     } )
@@ -480,7 +465,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             if self.isSelected {
                 path.addPath( CGPathCreateBetween( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
                 if self.authenticationConfiguration.activated {
-                    path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.authenticationStack.alignmentRect ) )
+                    path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
                 }
             }
             self.path = path.isEmpty ? nil: path
@@ -515,9 +500,6 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     else {
                         self.biometricButton.button.isEnabled = false
                     }
-                    self.biometricButton.button.isSelected = false
-                    self.passwordButton.button.isSelected = true
-                    self.passwordField.isEnabled = true
 
                     if self.isSelected {
                         self.authenticationConfiguration.activate()

@@ -62,8 +62,8 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         ] )
         self.searchField.textColor = MPTheme.global.color.body.get()
         self.searchField.rightView = self.userButton
-        self.searchField.clearButtonMode = .whileEditing
         self.searchField.rightViewMode = .unlessEditing
+        self.searchField.clearButtonMode = .whileEditing
         self.searchField.keyboardAppearance = .dark
         self.searchField.keyboardType = .URL
         if #available( iOS 10.0, * ) {
