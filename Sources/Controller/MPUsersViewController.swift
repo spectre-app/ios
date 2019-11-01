@@ -136,9 +136,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 .activate()
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
-            active.constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+            active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).withPriority( .defaultHigh ) }
             active.set( 1, forKey: "alpha" )
-            inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
+            inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).withPriority( .defaultHigh ) }
             inactive.set( 0, forKey: "alpha" )
         }
     }
@@ -149,7 +149,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         self.keyboardLayoutGuide = UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
             [
                 self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
-                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).withPriority( .defaultHigh )
+                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).withPriority( .defaultHigh + 1 )
             ]
         }
 
@@ -333,6 +333,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
             self.avatarButton.contentMode = .center
+            self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
             self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
 
             self.passwordField.borderStyle = .roundedRect

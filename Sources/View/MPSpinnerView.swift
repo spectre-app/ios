@@ -172,7 +172,7 @@ public class MPSpinnerView: UICollectionView {
         }
 
         override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-            self.itemOldAttributes[itemIndexPath.item]
+            self.itemOldAttributes[itemIndexPath.item] ?? self.itemAttributes[itemIndexPath.item]
         }
 
         override func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
