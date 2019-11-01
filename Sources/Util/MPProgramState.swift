@@ -10,11 +10,11 @@ public enum MPProgramState {
 
     case sideEffect
 
-    var isActive: Bool {
+    public var isActive: Bool {
         MPProgramState.activeStates[self] ?? 0 > 0
     }
 
-    func perform(_ action: () -> ()) {
+    public func perform(_ action: () -> Void) {
         MPProgramState.activeStates[self] = (MPProgramState.activeStates[self] ?? 0) + 1
         defer { MPProgramState.activeStates[self] = (MPProgramState.activeStates[self] ?? 0) - 1 }
 

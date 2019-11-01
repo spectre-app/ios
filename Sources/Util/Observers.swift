@@ -26,7 +26,7 @@ public class Observers<O> {
     }
 
     @discardableResult
-    public func notify(event: (O) -> ()) -> Bool {
+    public func notify(event: (O) -> Void) -> Bool {
         var notified = false
 
         for observer in self.observers {

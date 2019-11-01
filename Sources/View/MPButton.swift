@@ -75,7 +75,7 @@ class MPButton: MPEffectView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    convenience init(image: UIImage? = nil, title: String? = nil, action: ((UIControl, UIEvent) -> ())? = nil) {
+    convenience init(image: UIImage? = nil, title: String? = nil, action: ((UIControl, UIEvent) -> Void)? = nil) {
         self.init( content: UIButton( type: .custom ) )
         self.isRound = true
 

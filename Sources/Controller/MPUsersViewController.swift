@@ -494,13 +494,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.avatarButton.setImage( self.avatar.image(), for: .normal )
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
-                    if let userFile = self.userFile, userFile.biometricLock,
-                       MPKeychain.hasKey( for: userFile.fullName, algorithm: userFile.algorithm ) {
-                        self.biometricButton.button.isEnabled = true
-                    }
-                    else {
-                        self.biometricButton.button.isEnabled = false
-                    }
+                    let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }
+                    self.biometricButton.isHidden = !(keychainKeyFactory?.hasKey( algorithm: self.userFile?.algorithm ?? .current ) ?? false)
+                    self.biometricButton.image = keychainKeyFactory?.factor.icon
 
                     if self.isSelected {
                         self.authenticationConfiguration.activate()

@@ -157,7 +157,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
          defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
          file: UnsafeMutablePointer<MPMarshalledFile>? = mpw_marshal_file( nil, nil, nil ),
-         initialize: (MPUser) -> () = { _ in }) {
+         initialize: (MPUser) -> Void = { _ in }) {
         self.algorithm = algorithm ?? .current
         self.avatar = avatar
         self.fullName = fullName

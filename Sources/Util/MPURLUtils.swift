@@ -41,16 +41,13 @@ class MPURLUtils {
     }
 
     static func load(url: URL, result: @escaping (Data?) -> Void) {
-        MPURLUtils.session.dataTask( with: url ) {
-                              (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
-                              result( responseData )
-                          }
-                          .resume()
+        MPURLUtils.session.dataTask( with: url ) { responseData, response, error in
+            result( responseData )
+        }.resume()
     }
 
     static func loadHTML(url: URL, result: @escaping (String?) -> Void) {
-        MPURLUtils.session.dataTask( with: url ) {
-            (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
+        MPURLUtils.session.dataTask( with: url ) { responseData, response, error in
             if let mimeType = response?.mimeType, mimeType.hasSuffix( "/html" ),
                let encoding = response?.textEncodingName, let responseData = responseData,
                let response = NSString( data: responseData, encoding:
@@ -70,20 +67,16 @@ class MPURLUtils {
 
         self.preview.preview( url, onSuccess: { response in
             guard let imageURL = self.validImageURL( response[.image] as? String ) ?? self.validImageURL( response[.icon] as? String )
-            else {
-                return
-            }
+            else { return }
 
-            session.dataTask( with: imageURL ) {
-                (responseData: Data?, response: URLResponse?, error: Error?) -> Void in
+            session.dataTask( with: imageURL ) { responseData, response, error in
                 var info = self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil )
 
                 if let error = error {
                     wrn( "Couldn't fetch site preview. [>TRC]" )
                     trc( "\(imageURL): HTTP \((response as? HTTPURLResponse)?.statusCode ?? -1): \(error)" )
                 }
-
-                if let responseData = responseData {
+                else if let responseData = responseData {
                     info.imageData = responseData
                     self.metadata[url] = info
                 }
@@ -92,8 +85,8 @@ class MPURLUtils {
             }.resume()
         }, onError: { error in
             switch error {
-                case .noURLHasBeenFound:
-                    break
+                case .noURLHasBeenFound: ()
+
                 default:
                     wrn( "No site preview. [>TRC]" )
                     trc( "\(url): \(error)" )
@@ -105,8 +98,8 @@ class MPURLUtils {
 
     private class func validImageURL(_ string: String?) -> URL? {
         if let string = string, !string.isEmpty,
-           string.lowercased().hasSuffix( "png" ) || string.lowercased().hasSuffix( "jpg" ) ||
-                   string.lowercased().hasSuffix( "jpeg" ) || string.lowercased().hasSuffix( "gif" ),
+           string.lowercased().hasSuffix( "png" ) || string.lowercased().hasSuffix( "gif" ) ||
+           string.lowercased().hasSuffix( "jpg" ) || string.lowercased().hasSuffix( "jpeg" ),
            let url = URL( string: string ) {
             return url
         }
@@ -128,9 +121,7 @@ struct Meta: Codable, Equatable {
                                              space: CGColorSpaceCreateDeviceRGB(),
                                              bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue ),
                   let pixelData = cgContext.data
-            else {
-                return
-            }
+            else { return }
 
             // Draw the image into the context to convert its color space and pixel format to a known format.
             cgContext.draw( cgImage, in: CGRect( x: 0, y: 0, width: cgImage.width, height: cgImage.height ) )
@@ -147,9 +138,9 @@ struct Meta: Codable, Equatable {
                 // Weigh colors according to interested parameters.
                 let saturation = color.saturation, value = color.value, alpha = Int( color.alpha )
                 scoresByColor[color] = 0 +
-                        400 * alpha * alpha / 65536 +
-                        200 * saturation / 256 +
-                        100 * mirror( ratio: value, center: 216, max: 256 ) / 256
+                400 * alpha * alpha / 65536 +
+                200 * saturation / 256 +
+                100 * mirror( ratio: value, center: 216, max: 256 ) / 256
             }
 
             // Use top weighted color as site's color.
@@ -180,9 +171,7 @@ struct Color: Codable, Equatable, Hashable {
 
     init?(uiColor: UIColor?) {
         guard let uiColor = uiColor
-        else {
-            return nil
-        }
+        else { return nil }
 
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
         uiColor.getRed( &red, green: &green, blue: &blue, alpha: &alpha )

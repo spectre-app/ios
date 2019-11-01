@@ -110,7 +110,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     }
 
     class Model {
-        var onChange: (() -> ())?
+        var onChange: (() -> Void)?
 
         var logbookLevel = PearlLogger.get().historyLevel {
             didSet {

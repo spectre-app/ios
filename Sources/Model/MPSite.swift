@@ -150,7 +150,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
          resultType: MPResultType? = nil, resultState: String? = nil,
          loginType: MPResultType? = nil, loginState: String? = nil,
          url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil, questions: [MPQuestion] = [],
-         initialize: (MPSite) -> () = { _ in }) {
+         initialize: (MPSite) -> Void = { _ in }) {
         self.user = user
         self.siteName = siteName
         self.algorithm = algorithm ?? user.algorithm

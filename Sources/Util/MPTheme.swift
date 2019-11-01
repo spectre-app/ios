@@ -61,14 +61,14 @@ public class MPTheme {
 
         // Global default style
         self.font = Fonts(
-                largeTitle: Value( {
-                                       if #available( iOS 11.0, * ) {
-                                           return UIFont.preferredFont( forTextStyle: .largeTitle )
-                                       }
-                                       else {
-                                           return UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold )
-                                       }
-                                   }() ),
+                largeTitle: {
+                    if #available( iOS 11, * ) {
+                        return Value( UIFont.preferredFont( forTextStyle: .largeTitle ) )
+                    }
+                    else {
+                        return Value( UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold ) )
+                    }
+                }(),
                 title1: Value( UIFont.preferredFont( forTextStyle: .title1 ) ),
                 title2: Value( UIFont.preferredFont( forTextStyle: .title2 ) ),
                 title3: Value( UIFont.preferredFont( forTextStyle: .title3 ) ),

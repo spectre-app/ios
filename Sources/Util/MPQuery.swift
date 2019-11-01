@@ -14,7 +14,7 @@ class MPQuery {
 
     func find<V>(_ values: [V], keySupplier: @escaping (V) -> String) -> [Result<V>] {
         values.map { value in Result( value: value, keySupplier: keySupplier ) }
-                     .filter { result in result.matches( query: self.query ) }
+              .filter { result in result.matches( query: self.query ) }
     }
 
     class Result<V>: Hashable where V: Hashable {
@@ -39,13 +39,9 @@ class MPQuery {
             self.attributedKey.setAttributedString( NSAttributedString( string: key ) )
 
             guard key.count > 0
-            else {
-                return query?.count == 0
-            }
+            else { return query?.count == 0 }
             guard let query = query, query.count > 0
-            else {
-                return true
-            }
+            else { return true }
 
             // Consume query and key characters until one of them runs out, recording any matches against the result's key.
             var q = query.startIndex, k = key.startIndex, n = k
@@ -75,7 +71,7 @@ class MPQuery {
         }
 
         func hash(into hasher: inout Hasher) {
-            self.value.hash( into: &hasher )
+            hasher.combine( self.value )
         }
 
         func debugDescription() -> String {

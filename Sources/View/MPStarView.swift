@@ -13,7 +13,7 @@ func rate(radians: Double) -> Double {
 class MPStarView: UIView {
     private let fps            = 40.0
     private let motionParallax = 0.5
-    private let motionQueue    = OperationQueue(named: "\(productName): Motion Queue")
+    private let motionQueue    = OperationQueue( named: "\(productName): Motion Queue" )
     private let motionManager  = CMMotionManager()
     private let field          = Field( layout: .bang )
     private let debugLabel     = UILabel()
@@ -90,7 +90,7 @@ class MPStarView: UIView {
     override func draw(_ rect: CGRect) {
         // TODO: This is not very accurate since the reschedule is delayed by the dt between setNeedsDisplay and draw:.
         // TODO: UIView's draw flow is also suboptimal for a constantly changing layer. Consider using an EAGL layer or Metal instead.
-        self.perform( #selector( self.setNeedsDisplay as () -> () ), with: nil, afterDelay: 1 / self.fps )
+        self.perform( #selector( self.setNeedsDisplay as () -> Void ), with: nil, afterDelay: 1 / self.fps )
 
         super.draw( rect )
 

@@ -89,14 +89,14 @@ extension DispatchQueue {
         self.promised { Promise( .success( try work() ) ) }
     }
 
-    public func promise(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> ()) -> Promise<Void> {
+    public func promise(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> Void) -> Promise<Void> {
         self.promised { Promise( .success( try work() ) ) }
     }
 }
 
 public class Promise<V> {
     private var result: Result<V, Error>?
-    private var targets = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> ()) ]()
+    private var targets = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void) ]()
 
     public init(_ result: Result<V, Error>? = nil) {
         if let result = result {
@@ -139,7 +139,7 @@ public class Promise<V> {
     }
 
     @discardableResult
-    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> ()) -> Promise<V> {
+    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void) -> Promise<V> {
         if let result = self.result, queue?.isActive ?? true {
             consumer( result )
         }
@@ -202,6 +202,38 @@ public class Promise<V> {
             do { try consumer( $0 ).then { promise.finish( $0 ) } }
             catch { promise.finish( .failure( error ) ) }
         } )
+
+        return promise
+    }
+
+    public func and<V2>(_ other: Promise<V2>) -> Promise<Void> {
+        self.promised {
+            other.then { _ in
+                ()
+            }
+        }
+    }
+
+    public func and<V2>(_ other: Promise<V2>) -> Promise<(V, V2)> {
+        let promise = Promise<(V, V2)>()
+
+        self.then { result1 in
+            _ = other.then { result2 in
+                switch result1 {
+                    case .success(let value1):
+                        switch result2 {
+                            case .success(let value2):
+                                promise.finish( .success( (value1, value2) ) )
+
+                            case .failure(let error):
+                                promise.finish( .failure( error ) )
+                        }
+
+                    case .failure(let error):
+                        promise.finish( .failure( error ) )
+                }
+            }
+        }
 
         return promise
     }

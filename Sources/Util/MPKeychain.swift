@@ -65,11 +65,6 @@ public class MPKeychain {
                 kSecAttrDescription: "\(productName) master key (\(algorithm))",
             ]
 
-            let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access key for:\n\(fullName)",
-                                   content: UIActivityIndicatorView( style: .white ) )
-            spinner.show( dismissAutomatically: false )
-            defer { spinner.dismiss() }
-
             var status = SecItemUpdate( query as CFDictionary, update as CFDictionary )
             if status == errSecItemNotFound {
                 status = SecItemAdd( query.merging( update, uniquingKeysWith: { $1 } ) as CFDictionary, nil )

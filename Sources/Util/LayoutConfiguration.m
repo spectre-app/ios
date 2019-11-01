@@ -259,7 +259,7 @@
 }
 
 - (instancetype)activateFromParent:(LayoutConfiguration *)parent {
-    
+
     if (self.activated)
         return self;
 
