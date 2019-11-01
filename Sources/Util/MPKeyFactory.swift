@@ -166,14 +166,20 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     }
 
     public func hasKey(algorithm: MPAlgorithmVersion) -> Bool {
-        self.factor != .none && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
+        self.factor != .none && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm, biometrics: true )
+    }
+
+    public func purgeKeys() {
+        for algorithm in MPAlgorithmVersion.allCases {
+            MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm, biometrics: true )
+        }
     }
 
     // MARK: --- Private ---
 
     fileprivate override func createMasterKey(algorithm: MPAlgorithmVersion) -> MPMasterKey? {
         do {
-            return try MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, context: self.context ).await()
+            return try MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, biometrics: true, context: self.context ).await()
         }
         catch {
             mperror( title: "Biometric Authentication Failed", error: error )
@@ -191,7 +197,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
 
                     promise = promise.and(
                             MPKeychain.saveKey( for: self.fullName, algorithm: algorithm,
-                                                keyFactory: self, context: self.context ) )
+                                                keyFactory: self, biometrics: true, context: self.context ) )
                 }
             }
 

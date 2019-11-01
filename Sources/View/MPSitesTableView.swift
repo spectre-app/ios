@@ -28,14 +28,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.scrollToRow( at: selectedPath, at: .middle, animated: UIView.areAnimationsEnabled )
             }
 
-            if self.selectedSite != oldValue {
+            if oldValue != self.selectedSite {
                 self.observers.notify { $0.siteWasSelected( site: self.selectedSite ) }
             }
         }
     }
     public var query: String? {
         didSet {
-            if self.query != oldValue {
+            if oldValue != self.query {
                 self.updateTask.request()
             }
         }

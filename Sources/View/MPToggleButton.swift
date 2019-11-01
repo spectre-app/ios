@@ -18,6 +18,15 @@ class MPToggleButton: UIButton {
             }
         }
     }
+    override var isEnabled: Bool {
+        didSet {
+            DispatchQueue.main.perform {
+                UIView.animate( withDuration: 0.382 ) {
+                    self.checkLabel.textColor = self.isEnabled ? MPTheme.global.color.body.get(): MPTheme.global.color.secondary.get()
+                }
+            }
+        }
+    }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -30,9 +39,7 @@ class MPToggleButton: UIButton {
         self.layoutMargins = self.contentEdgeInsets
         self.layer.needsDisplayOnBoundsChange = true
 
-        self.checkLabel.adjustsFontSizeToFitWidth = true
         self.checkLabel.font = MPTheme.global.font.callout.get()
-        self.checkLabel.textColor = MPTheme.global.color.body.get()
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
 
@@ -63,16 +70,16 @@ class MPToggleButton: UIButton {
 
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
-           let background = MPTheme.global.color.mute.get()?.cgColor,
-           let border = MPTheme.global.color.body.get()?.cgColor {
+           let backgroundColor = MPTheme.global.color.mute.get()?.cgColor,
+           let borderColor = self.checkLabel.textColor?.cgColor {
             let content = self.bounds.inset( by: self.contentEdgeInsets )
                                      .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )
             let circle  = CGRect( center: content.bottom, radius: self.contentEdgeInsets.bottom )
             context.addRect( self.bounds )
             context.addPath( CGPath( ellipseIn: circle, transform: nil ) )
             context.clip( using: .evenOdd )
-            context.setFillColor( background )
-            context.setStrokeColor( border )
+            context.setFillColor( backgroundColor )
+            context.setStrokeColor( borderColor )
             context.setLineWidth( 1.5 )
             context.fillEllipse( in: content )
             context.strokeEllipse( in: content )

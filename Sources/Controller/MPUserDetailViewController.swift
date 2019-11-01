@@ -84,7 +84,11 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
             super.init( subitems: [
                 ToggleItem<MPUser>(
                         title: "Mask Passwords",
-                        value: { ($0.maskPasswords, UIImage( named: "icon_tripledot" )) },
+                        value: {
+                            (icon: UIImage( named: "icon_tripledot" ),
+                             selected: $0.maskPasswords,
+                             enabled: true)
+                        },
                         update: { $0.maskPasswords = $1 },
                         caption: { _ in
                             """
@@ -94,7 +98,12 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         } ),
                 ToggleItem(
                         title: "Biometric Lock",
-                        value: { ($0.biometricLock, UIImage( named: "icon_man" )) },
+                        value: {
+                            let keychainKeyFactory = MPKeychainKeyFactory( fullName: $0.fullName )
+                            return (icon: keychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon,
+                                    selected: $0.biometricLock,
+                                    enabled: keychainKeyFactory.factor != .none)
+                        },
                         update: { $0.biometricLock = $1 },
                         caption: { _ in
                             """

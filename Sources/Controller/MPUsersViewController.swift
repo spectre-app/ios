@@ -310,7 +310,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         private var authenticationConfiguration: LayoutConfiguration!
         private var path:                        CGPath? {
             didSet {
-                if self.path != oldValue {
+                if oldValue != self.path {
                     self.setNeedsDisplay()
                 }
             }
@@ -373,7 +373,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 guard let userFile = self.userFile
                 else { return }
 
-                userFile.authenticate( keyFactory: MPKeychainKeyFactory( fullName: userFile.fullName ) ).then { result in
+                let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
+                userFile.authenticate( keyFactory: keychainKeyFactory ).then { result in
                     trc( "User biometric authentication: \(result)" )
 
                     switch result {
@@ -383,9 +384,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                             }
 
                         case .failure:
-                            for algorithm in MPAlgorithmVersion.allCases {
-                                MPKeychain.deleteKey( for: userFile.fullName, algorithm: algorithm )
-                            }
+                            keychainKeyFactory.purgeKeys()
                             self.update()
                     }
                 }

@@ -37,7 +37,11 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
         init() {
             super.init(
                     title: "Diagnostics",
-                    value: { _ in (UserDefaults.standard.bool( forKey: "sendInfo" ), UIImage( named: "icon_bandage" )) },
+                    value: { _ in
+                        (icon: UIImage( named: "icon_bandage" ),
+                         selected: UserDefaults.standard.bool( forKey: "sendInfo" ),
+                         enabled: true)
+                    },
                     update: { UserDefaults.standard.set( $1, forKey: "sendInfo" ) },
                     caption: { _ in
                         """

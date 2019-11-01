@@ -93,10 +93,8 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                 }
             }
             else {
-                for algorithm in MPAlgorithmVersion.allCases {
-                    MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm )
-                }
-                if self.masterKeyFactory is MPKeychainKeyFactory {
+                if let keychainKeyFactory = self.masterKeyFactory as? MPKeychainKeyFactory {
+                    keychainKeyFactory.purgeKeys()
                     self.masterKeyFactory = nil
                 }
             }

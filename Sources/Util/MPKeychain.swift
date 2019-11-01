@@ -48,12 +48,12 @@ public class MPKeychain {
     }
 
     @discardableResult
-    public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext)
+    public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, biometrics: Bool, context: LAContext)
                     -> Promise<Void> {
         DispatchQueue.mpw.promise {
             assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
-            let query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )
+            let query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
             guard let masterKey = keyFactory.newMasterKey( algorithm: algorithm )
             else { throw MPError.internal( details: "Cannot save master key since key provider cannot provide one." ) }
             defer { masterKey.deallocate() }
@@ -77,10 +77,10 @@ public class MPKeychain {
     }
 
     @discardableResult
-    public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion)
+    public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool)
                     -> Promise<Void> {
         DispatchQueue.mpw.promise {
-            let query  = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true )
+            let query  = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics )
             let status = SecItemDelete( query as CFDictionary )
             if status != errSecSuccess, status != errSecItemNotFound {
                 throw MPError.issue( status, title: "Biometrics Denied Deleting Key" )
@@ -88,9 +88,9 @@ public class MPKeychain {
         }
     }
 
-    public static func hasKey(for fullName: String, algorithm: MPAlgorithmVersion)
+    public static func hasKey(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool)
                     -> Bool {
-        guard var query = try? self.userQuery( for: fullName, algorithm: algorithm, biometrics: true )
+        guard var query = try? self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics )
         else { return false }
         query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
 
@@ -106,12 +106,12 @@ public class MPKeychain {
         return false
     }
 
-    public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
+    public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool, context: LAContext) throws
                     -> Promise<MPMasterKey> {
         DispatchQueue.mpw.promise {
             assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
-            var query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: true, context: context )
+            var query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
             query[kSecReturnData] = true
 
             let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access key for:\n\(fullName)",

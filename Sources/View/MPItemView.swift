@@ -20,7 +20,9 @@ class Item<M>: NSObject {
     }
     var hidden = false {
         didSet {
-            self.setNeedsUpdate()
+            if oldValue != self.hidden {
+                self.setNeedsUpdate()
+            }
         }
     }
 
@@ -247,11 +249,11 @@ class LabelItem<M>: ValueItem<M, Any> {
     }
 }
 
-class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
+class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool)> {
     let update: (M, Bool) -> Void
 
     init(title: String? = nil, subitems: [Item<M>] = [],
-         value: @escaping (M) -> (selected: Bool, icon: UIImage?),
+         value: @escaping (M) -> (icon: UIImage?, selected: Bool, enabled: Bool),
          update: @escaping (M, Bool) -> Void = { _, _ in },
          caption: @escaping (M) -> String? = { _ in nil }) {
         self.update = update
@@ -290,8 +292,9 @@ class ToggleItem<M>: ValueItem<M, (selected: Bool, icon: UIImage?)> {
         override func update() {
             super.update()
 
-            self.button.isSelected = self.item.value?.selected ?? false
             self.button.setImage( self.item.value?.icon, for: .normal )
+            self.button.isSelected = self.item.value?.selected ?? false
+            self.button.isEnabled = self.item.value?.enabled ?? false
         }
     }
 }
