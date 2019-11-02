@@ -90,6 +90,9 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                                         mperror( title: "Couldn't update site password", error: error )
                                 }
                             }
+                        },
+                        caption: {
+                            MPAttacker.budget5K.timeToCrack( type: $0.resultType )
                         } )
         }
 

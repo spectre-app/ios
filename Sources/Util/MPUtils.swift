@@ -280,6 +280,33 @@ extension String.StringInterpolation {
             appendLiteral( string )
         }
     }
+
+    mutating func appendInterpolation(_ value: Any?, numeric format: String) {
+        let formatter = NumberFormatter()
+        formatter.positiveFormat = format
+        formatter.negativeFormat = format
+        if let string = formatter.string( for: value ) {
+            appendLiteral( string )
+        }
+    }
+
+    mutating func appendInterpolation(amount value: Decimal) {
+        if value >= 1000000000000 {
+            appendLiteral( "\(value / 1000000000000, numeric: "0")T" )
+        }
+        else if value >= 1000000000 {
+            appendLiteral( "\(value / 1000000000, numeric: "0")B" )
+        }
+        else if value >= 1000000 {
+            appendLiteral( "\(value / 1000000, numeric: "0")M" )
+        }
+        else if value >= 1000 {
+            appendLiteral( "\(value / 1000, numeric: "0")k" )
+        }
+        else {
+            appendLiteral( "\(value, numeric: "0")" )
+        }
+    }
 }
 
 extension UIColor {

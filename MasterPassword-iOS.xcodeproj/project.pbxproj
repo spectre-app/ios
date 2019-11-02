@@ -58,6 +58,7 @@
 		93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */; };
 		93D39707EDA5669AB5A96ECB /* MPLogDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */; };
 		93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
+		93D3975E8CAF0B2422D7C1D7 /* MPAttacker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */; };
 		93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
 		93D397952F5635C793C24DF1 /* NSError+PearlFullDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F9106F2CCFB94283188 /* NSError+PearlFullDescription.m */; };
 		93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
@@ -392,6 +393,7 @@
 		93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMasterPasswordField.swift; sourceTree = "<group>"; };
 		93D3932EBBE8C23414A94FBB /* UILayoutGuide+Pearl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILayoutGuide+Pearl.m"; sourceTree = "<group>"; };
 		93D39352DCB3AD8CB34A38B0 /* LayoutConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayoutConfiguration.h; sourceTree = "<group>"; };
+		93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAttacker.swift; sourceTree = "<group>"; };
 		93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUserViewController.swift; sourceTree = "<group>"; };
 		93D393A49E8705F3E38EB779 /* MPViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPViewController.swift; sourceTree = "<group>"; };
 		93D393B97158D7BE9332EA53 /* NSDictionary+Indexing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+Indexing.h"; sourceTree = "<group>"; };
@@ -970,6 +972,7 @@
 				93D39CB804B95B268383FCB2 /* Persisting.swift */,
 				93D3975A310BEA6C16903C25 /* MPProgramState.swift */,
 				93D393E2C339F220532F1D53 /* WeakBox.swift */,
+				93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -2235,6 +2238,7 @@
 				93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */,
 				93D395FF978C5B91FA5268DC /* MPItemView.swift in Sources */,
 				93D39216BF04B39B4E90B8D6 /* WeakBox.swift in Sources */,
+				93D3975E8CAF0B2422D7C1D7 /* MPAttacker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

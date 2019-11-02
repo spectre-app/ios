@@ -27,7 +27,7 @@ class Item<M>: NSObject {
     }
 
     private let title:          String?
-    private let captionFactory: (M) -> String?
+    private let captionFactory: (M) -> CustomStringConvertible?
     private let subitems:       [Item<M>]
     private (set) lazy var view = createItemView()
 
@@ -35,7 +35,7 @@ class Item<M>: NSObject {
         self.doUpdate()
     }
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption captionFactory: @escaping (M) -> String? = { _ in nil }) {
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption captionFactory: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.title = title
         self.captionFactory = captionFactory
         self.subitems = subitems
@@ -141,7 +141,7 @@ class Item<M>: NSObject {
             self.titleLabel.text = self.item.title
             self.titleLabel.isHidden = self.item.title == nil
 
-            self.captionLabel.text = self.item.model.flatMap { self.item.captionFactory( $0 ) }
+            self.captionLabel.text = self.item.model.flatMap { self.item.captionFactory( $0 )?.description }
             self.captionLabel.isHidden = self.captionLabel.text == nil
 
             for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
@@ -195,7 +195,7 @@ class ValueItem<M, V>: Item<M> {
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
          value valueFactory: @escaping (M) -> V? = { _ in nil },
-         caption: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.valueFactory = valueFactory
         super.init( title: title, subitems: subitems, caption: caption )
     }
@@ -255,7 +255,7 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (icon: UIImage?, selected: Bool, enabled: Bool),
          update: @escaping (M, Bool) -> Void = { _, _ in },
-         caption: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.update = update
 
         super.init( title: title, subitems: subitems, value: value, caption: caption )
@@ -304,7 +304,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
 
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (label: String?, image: UIImage?),
-         caption: @escaping (M) -> String? = { _ in nil },
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
          action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
         self.action = action
 
@@ -392,7 +392,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     init(title: String? = nil, placeholder: String?, subitems: [Item<M>] = [],
          value: @escaping (M) -> String? = { _ in nil },
          update: ((M, String) -> Void)? = nil,
-         caption: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.placeholder = placeholder
         self.update = update
         super.init( title: title, subitems: subitems, value: value, caption: caption )
@@ -451,7 +451,7 @@ class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> String? = { _ in nil },
          update: ((M, String) -> Void)? = nil,
-         caption: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.update = update
         super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
@@ -515,7 +515,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
          value: @escaping (M) -> V? = { _ in nil },
          update: @escaping (M, V) -> Void = { _, _ in },
          step: V, min: V, max: V,
-         caption: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.update = update
         self.step = step
         self.min = min
@@ -611,7 +611,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
     init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
          value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in },
-         caption: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.values = values
         self.update = update
 
@@ -793,7 +793,7 @@ class ListItem<M, V: Hashable>: Item<M> {
     var deletable = false
 
     init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
-         caption: @escaping (M) -> String? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.values = values
 
         super.init( title: title, subitems: subitems, caption: caption )
