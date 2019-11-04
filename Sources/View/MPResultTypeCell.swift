@@ -17,13 +17,13 @@ class MPClassItemCell: MPItemCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.separatorView.backgroundColor = MPTheme.global.color.body.get()
-        self.nameLabel.textColor = MPTheme.global.color.body.get()
+        self.separatorView.backgroundColor = appConfig.theme.color.body.get()
+        self.nameLabel.textColor = appConfig.theme.color.body.get()
         self.nameLabel.textAlignment = .center
-        self.nameLabel.font = MPTheme.global.font.headline.get()
-        self.classLabel.textColor = MPTheme.global.color.body.get()
+        self.nameLabel.font = appConfig.theme.font.headline.get()
+        self.classLabel.textColor = appConfig.theme.color.body.get()
         self.classLabel.textAlignment = .center
-        self.classLabel.font = MPTheme.global.font.caption1.get()
+        self.classLabel.font = appConfig.theme.font.caption1.get()
 
         self.effectView.contentView.addSubview( self.separatorView )
         self.effectView.contentView.addSubview( self.nameLabel )

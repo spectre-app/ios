@@ -5,18 +5,33 @@
 
 import UIKit
 
-public class MPTheme {
-    public static let global = MPTheme()
+public class MPTheme: Hashable, CustomStringConvertible {
+    public static let  all    = [ MPTheme.default, MPTheme.alt0, MPTheme.alt1, MPTheme.alt2, MPTheme.alt3, MPTheme.alt4 ]
+    private static var byPath = [ String: MPTheme ]()
+
+    public static let `default` = MPTheme()
+    public static let alt0 = MPTheme( path: ".alt0" ) {
+        $0.color.brand.set( UIColor( red: 0, green: 0.613, blue: 0.663, alpha: 1 ) )
+    }
+    public static let alt1 = MPTheme( path: ".alt1" ) {
+        $0.color.brand.set( UIColor( red: 0.613, green: 0.663, blue: 0, alpha: 1 ) )
+    }
+    public static let alt2 = MPTheme( path: ".alt2" ) {
+        $0.color.brand.set( UIColor( red: 0.663, green: 0.613, blue: 0, alpha: 1 ) )
+    }
+    public static let alt3 = MPTheme( path: ".alt3" ) {
+        $0.color.brand.set( UIColor( red: 0.613, green: 0, blue: 0.663, alpha: 1 ) )
+    }
+    public static let alt4 = MPTheme( path: ".alt4" ) {
+        $0.color.brand.set( UIColor( red: 0.663, green: 0, blue: 0.613, alpha: 1 ) )
+    }
+
+    public class func with(path: String?) -> MPTheme? {
+        path.flatMap { MPTheme.byPath[$0] }
+    }
+
     public let font:  Fonts
     public let color: Colors
-
-    public class func with(path: String) -> MPTheme {
-        if let theme = MPTheme.themes[path] {
-            return theme
-        }
-
-        return MPTheme( path: path )
-    }
 
     public struct Fonts {
         public let largeTitle:  Value<UIFont>
@@ -48,12 +63,21 @@ public class MPTheme {
         public let brand:     Value<UIColor>
     }
 
-    // MARK: --- Internal ---
+    // MARK: --- Life ---
 
-    private static var themes = [ String: MPTheme ]()
-
-    private let name:   String
     private let parent: MPTheme?
+    private let name:   String
+    public var  path:   String {
+        if let parent = parent {
+            return "\(parent.path).\(self.name)"
+        }
+        else {
+            return self.name
+        }
+    }
+    public var description : String {
+        "Theme[\(self.path)]"
+    }
 
     private init() {
         self.name = ""
@@ -100,9 +124,11 @@ public class MPTheme {
                 mute: Value( UIColor.white.withAlphaComponent( 0.318 ) ),
                 selection: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.382 ) ),
                 brand: Value( UIColor( red: 0, green: 0.663, blue: 0.613, alpha: 1 ) ) )
+
+        MPTheme.byPath[""] = self
     }
 
-    private init(path: String) {
+    private init(path: String, override: (MPTheme) -> ()) {
         if let lastDot = path.lastIndex( of: "." ) {
             self.parent = MPTheme.with( path: String( path[path.startIndex..<lastDot] ) )
             self.name = String( path[path.index( after: lastDot )..<path.endIndex] )
@@ -138,7 +164,17 @@ public class MPTheme {
                              selection: Value( parent: self.parent?.color.selection ),
                              brand: Value( parent: self.parent?.color.brand ) )
 
-        MPTheme.themes[path] = self
+        MPTheme.byPath[path] = self
+
+        override( self )
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine( self.path )
+    }
+
+    public static func ==(lhs: MPTheme, rhs: MPTheme) -> Bool {
+        lhs.path == rhs.path
     }
 
     public class Value<V> {

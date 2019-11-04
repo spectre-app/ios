@@ -102,8 +102,8 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 } )
                 .applyLayoutConfigurations { active, inactive in
-                    active.set( MPTheme.global.color.shade.get(), forKey: "backgroundColor" )
-                    inactive.set( MPTheme.global.color.shade.get()?.withAlphaComponent( 0 ), forKey: "backgroundColor" )
+                    active.set( appConfig.theme.color.shade.get(), forKey: "backgroundColor" )
+                    inactive.set( appConfig.theme.color.shade.get()?.withAlphaComponent( 0 ), forKey: "backgroundColor" )
                 }
     }
 

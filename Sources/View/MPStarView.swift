@@ -36,8 +36,8 @@ class MPStarView: UIView {
         self.backgroundColor = .black
 
         self.debugLabel.text = " "
-        self.debugLabel.textColor = MPTheme.global.color.body.get()
-        self.debugLabel.font = MPTheme.global.font.mono.get()
+        self.debugLabel.textColor = appConfig.theme.color.body.get()
+        self.debugLabel.font = appConfig.theme.font.mono.get()
         self.debugLabel.isHidden = true
 
         self.addSubview( self.debugLabel )

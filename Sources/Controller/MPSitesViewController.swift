@@ -58,9 +58,9 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.topContainer.isBackgroundDark = true
 
         self.searchField.attributedPlaceholder = stra( "Site Name", [
-            NSAttributedString.Key.foregroundColor: MPTheme.global.color.secondary.get()!.withAlphaComponent( 0.382 )
+            NSAttributedString.Key.foregroundColor: appConfig.theme.color.secondary.get()!.withAlphaComponent( 0.382 )
         ] )
-        self.searchField.textColor = MPTheme.global.color.body.get()
+        self.searchField.textColor = appConfig.theme.color.body.get()
         self.searchField.rightView = self.userButton
         self.searchField.rightViewMode = .unlessEditing
         self.searchField.clearButtonMode = .whileEditing

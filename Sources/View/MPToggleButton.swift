@@ -22,7 +22,7 @@ class MPToggleButton: UIButton {
         didSet {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.382 ) {
-                    self.checkLabel.textColor = self.isEnabled ? MPTheme.global.color.body.get(): MPTheme.global.color.secondary.get()
+                    self.checkLabel.textColor = self.isEnabled ? appConfig.theme.color.body.get(): appConfig.theme.color.secondary.get()
                 }
             }
         }
@@ -39,7 +39,7 @@ class MPToggleButton: UIButton {
         self.layoutMargins = self.contentEdgeInsets
         self.layer.needsDisplayOnBoundsChange = true
 
-        self.checkLabel.font = MPTheme.global.font.callout.get()
+        self.checkLabel.font = appConfig.theme.font.callout.get()
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
 
@@ -72,7 +72,7 @@ class MPToggleButton: UIButton {
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
            let borderColor = self.checkLabel.textColor?.cgColor,
-           let backgroundColor = MPTheme.global.color.mute.get()?.cgColor {
+           let backgroundColor = appConfig.theme.color.mute.get()?.cgColor {
 
             let content = self.bounds.inset( by: self.contentEdgeInsets )
                                      .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )

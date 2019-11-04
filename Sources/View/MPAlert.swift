@@ -17,12 +17,12 @@ class MPAlert {
         inactive.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.topAnchor ) }
     }
     private lazy var activationConfiguration = LayoutConfiguration( view: self.view ) { (active, inactive) in
-        active.apply( LayoutConfiguration( view: self.titleLabel ).set( MPTheme.global.font.title1.get(), forKey: "font" ) )
-        active.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.title2.get(), forKey: "font" ) )
+        active.apply( LayoutConfiguration( view: self.titleLabel ).set( appConfig.theme.font.title1.get(), forKey: "font" ) )
+        active.apply( LayoutConfiguration( view: self.messageLabel ).set( appConfig.theme.font.title2.get(), forKey: "font" ) )
         active.apply( LayoutConfiguration( view: self.expandChevron ).set( true, forKey: "hidden" ) )
         active.apply( LayoutConfiguration( view: self.detailLabel ).set( false, forKey: "hidden" ) )
-        inactive.apply( LayoutConfiguration( view: self.titleLabel ).set( MPTheme.global.font.headline.get(), forKey: "font" ) )
-        inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( MPTheme.global.font.subheadline.get(), forKey: "font" ) )
+        inactive.apply( LayoutConfiguration( view: self.titleLabel ).set( appConfig.theme.font.headline.get(), forKey: "font" ) )
+        inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( appConfig.theme.font.subheadline.get(), forKey: "font" ) )
         inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, forKey: "hidden" ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
@@ -132,26 +132,26 @@ class MPAlert {
         }
 
         self.titleLabel.text = self.title
-        self.titleLabel.textColor = MPTheme.global.color.body.get()
+        self.titleLabel.textColor = appConfig.theme.color.body.get()
         self.titleLabel.textAlignment = .center
         self.titleLabel.numberOfLines = 0
 
         self.messageLabel.text = self.message
-        self.messageLabel.textColor = MPTheme.global.color.secondary.get()
+        self.messageLabel.textColor = appConfig.theme.color.secondary.get()
         self.messageLabel.textAlignment = .center
         self.messageLabel.numberOfLines = 0
 
         self.expandChevron.text = "▾"
-        self.expandChevron.textColor = MPTheme.global.color.body.get()
+        self.expandChevron.textColor = appConfig.theme.color.body.get()
         self.expandChevron.textAlignment = .center
-        self.expandChevron.font = MPTheme.global.font.callout.get()
+        self.expandChevron.font = appConfig.theme.font.callout.get()
         self.expandChevron.setAlignmentRectInsets( UIEdgeInsets( top: 0, left: 0, bottom: 8, right: 0 ) )
 
         self.detailLabel.text = self.details
-        self.detailLabel.textColor = MPTheme.global.color.body.get()
+        self.detailLabel.textColor = appConfig.theme.color.body.get()
         self.detailLabel.textAlignment = .center
         self.detailLabel.numberOfLines = 0
-        self.detailLabel.font = MPTheme.global.font.footnote.get()
+        self.detailLabel.font = appConfig.theme.font.footnote.get()
 
         let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
         dismissRecognizer.direction = .up

@@ -19,7 +19,7 @@ class MPBackgroundView: UIView {
     override func willMove(toWindow newWindow: UIWindow?) {
         super.willMove( toWindow: newWindow )
 
-        self.backgroundColor = MPTheme.global.color.panel.get()
+        self.backgroundColor = appConfig.theme.color.panel.get()
 
         if (newWindow == nil) {
             self.motionManager.stopDeviceMotionUpdates()
@@ -60,8 +60,8 @@ class MPBackgroundView: UIView {
     func update() {
         DispatchQueue.main.perform {
             self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-                MPTheme.global.color.brand.get()?.withAlphaComponent( 0.8 ).cgColor,
-                MPTheme.global.color.brand.get()?.withAlphaComponent( 1 ).cgColor,
+                appConfig.theme.color.brand.get()?.withAlphaComponent( 0.8 ).cgColor,
+                appConfig.theme.color.brand.get()?.withAlphaComponent( 1 ).cgColor,
             ] as CFArray, locations: nil )
             self.gradientPoint = self.bounds.top
             self.gradientPoint.y += (CGFloat( self.currentAttitude?.pitch ?? 0 ) / .pi) * 500

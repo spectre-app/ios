@@ -57,7 +57,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = 1
-        self.backgroundView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
+        self.backgroundView.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
         self.backgroundView.layer.shadowOffset = .zero
 
         self.itemsView.axis = .vertical

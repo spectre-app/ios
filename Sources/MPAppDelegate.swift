@@ -11,9 +11,11 @@ import CoreServices
 import Firebase
 
 @UIApplicationMain
-class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
+class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate, MPConfigObserver {
 
     let window = UIWindow()
+
+    // MARK: --- Life ---
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         //PearlLogger.get().minimumLevel = .trace
@@ -27,9 +29,11 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
         inf( "Launching \(productName) \(PearlInfoPlist.get().cfBundleShortVersionString ?? "?") (\(PearlInfoPlist.get().cfBundleVersion ?? "?"))" )
 
         // Start UI
-        self.window.tintColor = MPTheme.global.color.brand.get()
+        self.window.tintColor = appConfig.theme.color.brand.get()
         self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window.makeKeyAndVisible()
+
+        appConfig.observers.register(observer: self)
 
         return true
     }
@@ -54,6 +58,12 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate {
         }
 
         return false
+    }
+
+    // MARK: --- MPConfigObserver ---
+
+    func didChangeConfig() {
+        self.window.tintColor = appConfig.theme.color.brand.get()
     }
 
     // MARK: --- CrashlyticsDelegate ---

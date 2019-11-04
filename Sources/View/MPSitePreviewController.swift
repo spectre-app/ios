@@ -42,16 +42,16 @@ class MPSitePreviewController: UIViewController, MPSiteObserver {
         self.view.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
         self.view.layer.shadowRadius = 40
         self.view.layer.shadowOpacity = 1
-        self.view.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
+        self.view.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
         self.view.layer.shadowOffset = .zero
 
         self.siteButton.imageView?.layer.cornerRadius = 4
         self.siteButton.imageView?.contentMode = .scaleAspectFill
         self.siteButton.imageView?.clipsToBounds = true
-        self.siteButton.titleLabel?.font = MPTheme.global.font.largeTitle.get()
+        self.siteButton.titleLabel?.font = appConfig.theme.font.largeTitle.get()
         self.siteButton.layer.shadowRadius = 20
         self.siteButton.layer.shadowOpacity = 1
-        self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
+        self.siteButton.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
         self.siteButton.layer.shadowOffset = .zero
 
         // - Hierarchy
@@ -88,10 +88,10 @@ class MPSitePreviewController: UIViewController, MPSiteObserver {
                 self.preferredContentSize = self.site?.image?.size ?? CGSize( width: 0, height: 200 )
 
                 if let brightness = self.site?.color?.brightness(), brightness > 0.8 {
-                    self.siteButton.layer.shadowColor = MPTheme.global.color.glow.get()?.cgColor
+                    self.siteButton.layer.shadowColor = appConfig.theme.color.glow.get()?.cgColor
                 }
                 else {
-                    self.siteButton.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
+                    self.siteButton.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
                 }
 
                 self.view.layoutIfNeeded()

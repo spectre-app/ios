@@ -109,7 +109,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
         override func createItemView() -> FieldItemView<MPSite> {
             let view = super.createItemView()
-            view.valueField.font = MPTheme.global.font.password.get()
+            view.valueField.font = appConfig.theme.font.password.get()
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .asciiCapable
@@ -163,7 +163,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
         override func createItemView() -> FieldItemView<MPSite> {
             let view = super.createItemView()
-            view.valueField.font = MPTheme.global.font.password.get()
+            view.valueField.font = appConfig.theme.font.password.get()
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
@@ -261,15 +261,15 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-                self.keywordLabel.font = MPTheme.global.font.caption1.get()
-                self.keywordLabel.shadowColor = MPTheme.global.color.shadow.get()
+                self.keywordLabel.font = appConfig.theme.font.caption1.get()
+                self.keywordLabel.shadowColor = appConfig.theme.color.shadow.get()
                 self.keywordLabel.shadowOffset = CGSize( width: 0, height: 1 )
-                self.keywordLabel.textColor = MPTheme.global.color.body.get()
+                self.keywordLabel.textColor = appConfig.theme.color.body.get()
 
-                self.resultLabel.font = MPTheme.global.font.password.get()
-                self.resultLabel.shadowColor = MPTheme.global.color.shadow.get()
+                self.resultLabel.font = appConfig.theme.font.password.get()
+                self.resultLabel.shadowColor = appConfig.theme.color.shadow.get()
                 self.resultLabel.shadowOffset = CGSize( width: 0, height: 1 )
-                self.resultLabel.textColor = MPTheme.global.color.body.get()
+                self.resultLabel.textColor = appConfig.theme.color.body.get()
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in

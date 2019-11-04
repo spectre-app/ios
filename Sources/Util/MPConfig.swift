@@ -10,7 +10,7 @@ let appConfig = MPConfig()
 public class MPConfig: Observable {
     public let observers = Observers<MPConfigObserver>()
 
-    public var sendInfo = UserDefaults.standard.bool( forKey: "sendInfo" ) {
+    public var sendInfo = false {
         didSet {
             if self.sendInfo != UserDefaults.standard.bool( forKey: "sendInfo" ) {
                 UserDefaults.standard.set( self.sendInfo, forKey: "sendInfo" )
@@ -20,7 +20,7 @@ public class MPConfig: Observable {
             }
         }
     }
-    public var premium = UserDefaults.standard.bool( forKey: "premium" ) {
+    public var premium = false {
         didSet {
             if self.premium != UserDefaults.standard.bool( forKey: "premium" ) {
                 UserDefaults.standard.set( self.premium, forKey: "premium" )
@@ -37,18 +37,28 @@ public class MPConfig: Observable {
             }
         }
     }
+    public var theme = MPTheme.default {
+        didSet {
+            if self.theme.path != UserDefaults.standard.string( forKey: "theme" ) {
+                UserDefaults.standard.set( self.theme.path, forKey: "theme" )
+            }
+            if oldValue != self.theme {
+                self.observers.notify { $0.didChangeConfig() }
+            }
+        }
+    }
 
     private var observer: NSObjectProtocol?
 
     // MARK: --- Life ---
 
     init() {
-        self.observer = NotificationCenter.default.addObserver( forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
-            self.sendInfo = UserDefaults.standard.bool( forKey: "sendInfo" )
-            self.premium = UserDefaults.standard.bool( forKey: "premium" )
-        }
-
+        self.load()
         self.checkLegacy()
+
+        self.observer = NotificationCenter.default.addObserver( forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
+            self.load()
+        }
     }
 
     deinit {
@@ -70,6 +80,16 @@ public class MPConfig: Observable {
                     trc( error.localizedDescription )
             }
         }
+    }
+
+    // MARK: --- Private ---
+
+    private func load() {
+        _ = MPTheme.all // Register all theme objects
+
+        self.sendInfo = UserDefaults.standard.bool( forKey: "sendInfo" )
+        self.premium = UserDefaults.standard.bool( forKey: "premium" )
+        self.theme = !self.premium ? .default: MPTheme.with( path: UserDefaults.standard.string( forKey: "theme" ) ) ?? .default
     }
 }
 

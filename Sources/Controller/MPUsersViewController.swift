@@ -327,10 +327,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.isOpaque = false
             self.contentView.layoutMargins = UIEdgeInsets( top: 20, left: 20, bottom: 20, right: 20 )
 
-            self.nameLabel.font = MPTheme.global.font.callout.get()
+            self.nameLabel.font = appConfig.theme.font.callout.get()
             self.nameLabel.adjustsFontSizeToFitWidth = true
             self.nameLabel.textAlignment = .center
-            self.nameLabel.textColor = MPTheme.global.color.body.get()
+            self.nameLabel.textColor = appConfig.theme.color.body.get()
             self.nameLabel.numberOfLines = 0
             self.nameLabel.preferredMaxLayoutWidth = .infinity
             self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
@@ -340,7 +340,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
 
             self.passwordField.borderStyle = .roundedRect
-            self.passwordField.font = MPTheme.global.font.callout.get()
+            self.passwordField.font = appConfig.theme.font.callout.get()
             self.passwordField.placeholder = "Your master password"
             self.passwordField.nameField = self.nameField
             self.passwordField.rightView = self.biometricButton
@@ -361,13 +361,13 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 }
             }
 
-            self.nameField.font = MPTheme.global.font.callout.get()?.withSize( UIFont.labelFontSize * 2 )
+            self.nameField.font = appConfig.theme.font.callout.get()?.withSize( UIFont.labelFontSize * 2 )
             self.nameField.adjustsFontSizeToFitWidth = true
-            self.nameField.textColor = MPTheme.global.color.body.get()
+            self.nameField.textColor = appConfig.theme.color.body.get()
             self.nameField.borderStyle = .none
             self.nameField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
             self.nameField.attributedPlaceholder = stra( "Your Full Name", [
-                NSAttributedString.Key.foregroundColor: MPTheme.global.color.secondary.get()!.withAlphaComponent( 0.382 )
+                NSAttributedString.Key.foregroundColor: appConfig.theme.color.secondary.get()!.withAlphaComponent( 0.382 )
             ] )
             self.nameField.alpha = 0
 
@@ -480,7 +480,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             super.draw( rect )
 
             if let path = self.path, let context = UIGraphicsGetCurrentContext() {
-                MPTheme.global.color.mute.get()?.setStroke()
+                appConfig.theme.color.mute.get()?.setStroke()
                 context.addPath( path )
                 context.strokePath()
             }

@@ -82,9 +82,9 @@ class Item<M>: NSObject {
             self.contentView.spacing = 8
 
             self.titleLabel.numberOfLines = 0
-            self.titleLabel.textColor = MPTheme.global.color.body.get()
+            self.titleLabel.textColor = appConfig.theme.color.body.get()
             self.titleLabel.textAlignment = .center
-            self.titleLabel.font = MPTheme.global.font.headline.get()
+            self.titleLabel.font = appConfig.theme.font.headline.get()
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
             self.titleLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
@@ -95,9 +95,9 @@ class Item<M>: NSObject {
             self.subitemsView.preservesSuperviewLayoutMargins = true
             self.subitemsView.isLayoutMarginsRelativeArrangement = true
 
-            self.captionLabel.textColor = MPTheme.global.color.secondary.get()
+            self.captionLabel.textColor = appConfig.theme.color.secondary.get()
             self.captionLabel.textAlignment = .center
-            self.captionLabel.font = MPTheme.global.font.caption1.get()
+            self.captionLabel.font = appConfig.theme.font.caption1.get()
             self.captionLabel.numberOfLines = 0
             self.captionLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
             self.captionLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
@@ -181,7 +181,7 @@ class SeparatorItem<M>: Item<M> {
         }
 
         override func createValueView() -> UIView? {
-            self.separatorView.backgroundColor = MPTheme.global.color.mute.get()
+            self.separatorView.backgroundColor = appConfig.theme.color.mute.get()
             self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).activate()
             return self.separatorView
         }
@@ -222,10 +222,10 @@ class LabelItem<M>: ValueItem<M, Any> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueLabel.font = MPTheme.global.font.largeTitle.get()
+            self.valueLabel.font = appConfig.theme.font.largeTitle.get()
             self.valueLabel.textAlignment = .center
-            self.valueLabel.textColor = MPTheme.global.color.body.get()
-            self.valueLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.valueLabel.textColor = appConfig.theme.color.body.get()
+            self.valueLabel.shadowColor = appConfig.theme.color.shadow.get()
             self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             return self.valueLabel
@@ -429,7 +429,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
 
         override func createValueView() -> UIView? {
             self.valueField.delegate = self.item
-            self.valueField.textColor = MPTheme.global.color.body.get()
+            self.valueField.textColor = appConfig.theme.color.body.get()
             self.valueField.textAlignment = .center
             self.valueField.addAction( for: .editingChanged ) { _, _ in
                 if let model = self.item.model,
@@ -489,8 +489,8 @@ class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
 
         override func createValueView() -> UIView? {
             self.valueView.delegate = self.item
-            self.valueView.font = MPTheme.global.font.mono.get()?.withSize( 11 )
-            self.valueView.textColor = MPTheme.global.color.body.get()
+            self.valueView.font = appConfig.theme.font.mono.get()?.withSize( 11 )
+            self.valueView.textColor = appConfig.theme.color.body.get()
             self.valueView.backgroundColor = .clear
             return self.valueView
         }
@@ -569,10 +569,10 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
                 }
             }
 
-            self.valueLabel.font = MPTheme.global.font.largeTitle.get()
+            self.valueLabel.font = appConfig.theme.font.largeTitle.get()
             self.valueLabel.textAlignment = .center
-            self.valueLabel.textColor = MPTheme.global.color.body.get()
-            self.valueLabel.shadowColor = MPTheme.global.color.shadow.get()
+            self.valueLabel.textColor = appConfig.theme.color.body.get()
+            self.valueLabel.shadowColor = appConfig.theme.color.shadow.get()
             self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.valueView.addSubview( self.valueLabel )

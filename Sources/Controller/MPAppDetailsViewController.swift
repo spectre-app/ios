@@ -24,7 +24,9 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
           Item<MPConfig>( subitems: [
               DiagnisticsItem(),
               ProItem(),
-          ] ), LegacyItem(), SeparatorItem(),
+          ] ), SeparatorItem(),
+          ThemeItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
+          LegacyItem(), SeparatorItem(),
           InfoItem() ]
     }
 
@@ -79,6 +81,42 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                         Unlock enhanced comfort and security features.
                         """
                     } )
+        }
+    }
+
+    class ThemeItem: PickerItem<MPConfig, MPTheme> {
+        init() {
+            super.init(
+                    title: "Application Themes 🅿",
+                    values: { _ in MPTheme.all },
+                        value: { $0.theme },
+                        update: { $0.theme = $1 },
+                        caption: { _ in
+                            """
+                            Personalize the application's appearance.
+                            """
+                        },
+                        hidden: { !$0.premium } )
+        }
+
+        override func didLoad(collectionView: UICollectionView) {
+            collectionView.registerCell( Cell.self )
+        }
+
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPConfig, value: MPTheme) -> UICollectionViewCell? {
+            Cell.dequeue( from: collectionView, indexPath: indexPath ) {
+                ($0 as? Cell)?.theme = value
+            }
+        }
+
+        class Cell: MPItemCell {
+            var theme: MPTheme = MPTheme.default {
+                didSet {
+                    DispatchQueue.main.perform {
+                        self.effectView.contentView.backgroundColor = self.theme.color.brand.get()
+                    }
+                }
+            }
         }
     }
 
@@ -153,10 +191,10 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-                self.button.setTitleColor( MPTheme.global.color.body.get(), for: .normal )
-                self.button.setTitleShadowColor( MPTheme.global.color.shadow.get(), for: .normal )
+                self.button.setTitleColor( appConfig.theme.color.body.get(), for: .normal )
+                self.button.setTitleShadowColor( appConfig.theme.color.shadow.get(), for: .normal )
                 self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
-                self.button.titleLabel?.font = MPTheme.global.font.callout.get()
+                self.button.titleLabel?.font = appConfig.theme.font.callout.get()
                 self.button.addAction( for: .touchUpInside ) { _, _ in
                     if let url = self.link?.url {
                         trc( "Opening link: \(url)" )

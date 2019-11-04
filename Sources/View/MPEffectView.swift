@@ -41,12 +41,12 @@ class MPEffectView: UIVisualEffectView {
         super.init( effect: nil )
 
         self.layer.borderWidth = 2
-        self.layer.borderColor = MPTheme.global.color.body.get()?.cgColor
+        self.layer.borderColor = appConfig.theme.color.body.get()?.cgColor
         self.layer.masksToBounds = true
 
         self.contentView.layer.shadowRadius = 0
         self.contentView.layer.shadowOpacity = 0.382
-        self.contentView.layer.shadowColor = MPTheme.global.color.shadow.get()?.cgColor
+        self.contentView.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
         self.updateBackground()
@@ -75,7 +75,7 @@ class MPEffectView: UIVisualEffectView {
 
     func updateBackground() {
         DispatchQueue.main.perform {
-            self.tintColor = self.isBackgroundDark ? MPTheme.global.color.secondary.get(): MPTheme.global.color.backdrop.get()
+            self.tintColor = self.isBackgroundDark ? appConfig.theme.color.secondary.get(): appConfig.theme.color.backdrop.get()
             self.effect = self.isBackgroundVisible ? MPEffectView.effect( dark: self.isBackgroundDark ): nil
         }
     }

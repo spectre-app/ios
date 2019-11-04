@@ -45,7 +45,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         super.init( user: user )
         self.modalPresentationStyle = .popover
         self.popoverPresentationController?.delegate = self
-        self.popoverPresentationController?.backgroundColor = MPTheme.global.color.shade.get()
+        self.popoverPresentationController?.backgroundColor = appConfig.theme.color.shade.get()
     }
 
     override func viewDidLoad() {
@@ -55,20 +55,20 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.view.preservesSuperviewLayoutMargins = true
 
         self.titleLabel.numberOfLines = 0
-        self.titleLabel.font = MPTheme.global.font.title1.get()
+        self.titleLabel.font = appConfig.theme.font.title1.get()
         self.titleLabel.text = "Exporting"
         self.titleLabel.textAlignment = .center
-        self.titleLabel.textColor = MPTheme.global.color.body.get()
+        self.titleLabel.textColor = appConfig.theme.color.body.get()
         self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.subtitleLabel.numberOfLines = 0
-        self.subtitleLabel.font = MPTheme.global.font.title2.get()
+        self.subtitleLabel.font = appConfig.theme.font.title2.get()
         self.subtitleLabel.textAlignment = .center
-        self.subtitleLabel.textColor = MPTheme.global.color.body.get()
+        self.subtitleLabel.textColor = appConfig.theme.color.body.get()
         self.subtitleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.messageLabel.numberOfLines = 0
-        self.messageLabel.font = MPTheme.global.font.caption1.get()
+        self.messageLabel.font = appConfig.theme.font.caption1.get()
         self.messageLabel.textAlignment = .center
-        self.messageLabel.textColor = MPTheme.global.color.secondary.get()
+        self.messageLabel.textColor = appConfig.theme.color.secondary.get()
         self.messageLabel.text =
                 """
                 A "Secure Export" contains everything necessary to fully restore your user's history.

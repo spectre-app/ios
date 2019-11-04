@@ -83,7 +83,7 @@ class MPButton: MPEffectView {
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
-        self.button.titleLabel?.font = MPTheme.global.font.callout.get()
+        self.button.titleLabel?.font = appConfig.theme.font.callout.get()
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addAction( for: .touchUpInside ) { _, _ in
             if self.tapEffect {
