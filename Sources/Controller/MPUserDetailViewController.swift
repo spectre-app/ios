@@ -12,7 +12,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     override func loadItems() -> [Item<MPUser>] {
         [ IdenticonItem(), AvatarItem(), ActionsItem(), SeparatorItem(),
-          PasswordTypeItem(), SeparatorItem(),
+          DefaultTypeItem(), SeparatorItem(),
+          AttackerItem(), SeparatorItem(),
           FeaturesItem(), SeparatorItem(),
           InfoItem() ]
     }
@@ -67,7 +68,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         }
     }
 
-    class PasswordTypeItem: PickerItem<MPUser, MPResultType> {
+    class DefaultTypeItem: PickerItem<MPUser, MPResultType> {
         init() {
             super.init( title: "Default Type",
                         values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
@@ -82,6 +83,47 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
             MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                 ($0 as! MPResultTypeCell).resultType = value
+            }
+        }
+    }
+
+    class AttackerItem: PickerItem<MPUser, MPAttacker?> {
+        init() {
+            super.init( title: "Defense Strategy 🅿",
+                        values: { _ in MPAttacker.allCases },
+                        value: { $0.attacker },
+                        update: { $0.attacker = $1 },
+                        caption: { _ in
+                            """
+                            Yearly budget of the primary attacker persona you're seeking to repel (@ \(cost_per_kwh)$/kWh).
+                            """
+                        },
+                        hidden: { _ in !appConfig.premium } )
+        }
+
+        override func didLoad(collectionView: UICollectionView) {
+            collectionView.registerCell( Cell.self )
+        }
+
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPAttacker?) -> UICollectionViewCell? {
+            Cell.dequeue( from: collectionView, indexPath: indexPath ) {
+                ($0 as! Cell).attacker = value
+            }
+        }
+
+        class Cell: MPClassItemCell {
+            var attacker: MPAttacker? {
+                didSet {
+                    DispatchQueue.main.perform {
+                        if let attacker = self.attacker {
+                            self.nameLabel.text = "\(amount: attacker.fixed_budget + attacker.monthly_budget * 12)$"
+                            self.classLabel.text = attacker.identifier
+                        } else {
+                            self.nameLabel.text = "Off"
+                            self.classLabel.text = ""
+                        }
+                    }
+                }
             }
         }
     }

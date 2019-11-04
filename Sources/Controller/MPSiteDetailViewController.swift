@@ -99,8 +99,11 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             }
                         },
                         caption: {
-                            !appConfig.premium ? nil:
-                                    "\(MPAttacker.budget5K.timeToCrack( type: $0.resultType )?.description ?? "") 🅿"
+                            guard appConfig.premium, let attacker = $0.user.attacker,
+                                  let timeToCrack = attacker.timeToCrack( type: $0.resultType )
+                            else { return nil }
+
+                            return "Time to crack: \(timeToCrack) 🅿"
                         } )
         }
 

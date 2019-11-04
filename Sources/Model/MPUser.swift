@@ -70,7 +70,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
     public var maskPasswords = false {
         didSet {
-            if oldValue != self.maskPasswords,
+            if oldValue != self.maskPasswords, !self.initializing,
                self.file?.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
@@ -99,8 +99,17 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                 }
             }
 
-            if oldValue != self.biometricLock,
+            if oldValue != self.biometricLock, !self.initializing,
                self.file?.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) ?? true {
+                self.dirty = true
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
+    public var attacker: MPAttacker? {
+        didSet {
+            if oldValue != self.attacker, !self.initializing,
+               self.file?.mpw_set( self.attacker?.identifier, path: "user", "_ext_mpw", "attacker" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -169,6 +178,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         defer {
             self.maskPasswords = self.file?.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
             self.biometricLock = self.file?.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
+            self.attacker = self.file?.mpw_get( path: "user", "_ext_mpw", "attacker" ).flatMap { MPAttacker.for( $0 ) }
 
             initialize( self )
             self.initializing = false

@@ -14,27 +14,56 @@ let cost_fixed          = Decimal( 310 ) // $
 let cost_watt           = Decimal( 120 ) // W
 let cost_per_kwh        = Decimal( 0.1 ) // $/kWh
 
-enum MPAttacker: CustomStringConvertible {
-    case budget1, budget5K, budget20M, budget5B
-    var description: String {
-        "\(self.scale, numeric: "0.#") x \(amount: attempts_per_second)/s (~ \(amount: self.scale * cost_fixed)$ HW)"
+enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
+    case single, `private`, corporate, state
+
+    var description:    String {
+        "\(self.scale, numeric: "0.#") x \(amount: attempts_per_second)/s (~ \(amount: self.fixed_budget)$ HW + \(amount: self.monthly_budget)$/m)"
+    }
+    var identifier:     String {
+        switch self {
+            case .single:
+                return "single"
+            case .private:
+                return "private"
+            case .corporate:
+                return "corporate"
+            case .state:
+                return "state"
+        }
+    }
+    var fixed_budget:   Decimal {
+        switch self {
+            case .single:
+                return cost_fixed
+
+            case .private:
+                return 5_000
+
+            case .corporate:
+                return 20_000_000
+
+            case .state:
+                return 5_000_000_000
+        }
+    }
+    var monthly_budget: Decimal {
+        (self.scale * cost_watt / 1000) * 24 * 30 * cost_per_kwh
     }
 
     /// The hardware scale that the attacker employs to attack a hash.
-    var scale:       Decimal {
-        switch self {
-            case .budget1:
-                return 1
+    var scale:          Decimal {
+        self.fixed_budget / cost_fixed
+    }
 
-            case .budget5K:
-                return 5000 / cost_fixed
-
-            case .budget20M:
-                return 20000000 / cost_fixed
-
-            case .budget5B:
-                return 5000000000 / cost_fixed
+    static func `for`(_ identifier: String) -> MPAttacker {
+        for attacker in MPAttacker.allCases {
+            if attacker.identifier == identifier {
+                return attacker
+            }
         }
+
+        return .private
     }
 
     func timeToCrack(type: MPResultType) -> TimeToCrack? {
@@ -119,29 +148,29 @@ struct TimeToCrack: CustomStringConvertible {
     var inUniverses:  Decimal = 0
 
     var description: String {
-        let kWh = (self.attacker.scale * cost_watt) * self.inHours / 1000
+        let kWh  = (self.attacker.scale * cost_watt) * self.inHours / 1000
         let cost = (self.attacker.scale * cost_fixed) + cost_per_kwh * kWh
 
         if self.inUniverses > 1 {
             return "> age of the universe"
         }
         else if self.inYears > 1 {
-            return "~\(self.inYears, numeric: "0.#") years, ~\(amount: cost)$"
+            return "~\(self.inYears, numeric: "#,##0.#") years, ~\(amount: cost)$"
         }
         else if self.inMonths > 1 {
-            return "\(self.inMonths, numeric: "0.#") months, ~\(amount: cost)$"
+            return "\(self.inMonths, numeric: "#,##0.#") months, ~\(amount: cost)$"
         }
         else if self.inWeeks > 1 {
-            return "\(self.inWeeks, numeric: "0.#") weeks, ~\(amount: cost)$"
+            return "\(self.inWeeks, numeric: "#,##0.#") weeks, ~\(amount: cost)$"
         }
         else if self.inDays > 1 {
-            return "\(self.inDays, numeric: "0.#") days, ~\(amount: cost)$"
+            return "\(self.inDays, numeric: "#,##0.#") days, ~\(amount: cost)$"
         }
         else if self.inHours > 1 {
-            return "\(self.inHours, numeric: "0.#") hours, ~\(amount: cost)$"
+            return "\(self.inHours, numeric: "#,##0.#") hours, ~\(amount: cost)$"
         }
         else if self.inSeconds > 2 {
-            return "\(self.inSeconds, numeric: "0.#") seconds, ~\(amount: cost)$"
+            return "\(self.inSeconds, numeric: "#,##0.#") seconds, ~\(amount: cost)$"
         }
 
         return "trivial"

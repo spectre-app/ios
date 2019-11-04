@@ -15,7 +15,7 @@ public class MPConfig: Observable {
             if self.sendInfo != UserDefaults.standard.bool( forKey: "sendInfo" ) {
                 UserDefaults.standard.set( self.sendInfo, forKey: "sendInfo" )
             }
-            if self.sendInfo != oldValue {
+            if oldValue != self.sendInfo {
                 self.observers.notify { $0.didChangeConfig() }
             }
         }
@@ -25,14 +25,14 @@ public class MPConfig: Observable {
             if self.premium != UserDefaults.standard.bool( forKey: "premium" ) {
                 UserDefaults.standard.set( self.premium, forKey: "premium" )
             }
-            if self.premium != oldValue {
+            if oldValue != self.premium {
                 self.observers.notify { $0.didChangeConfig() }
             }
         }
     }
     public private(set) var hasLegacy = false {
         didSet {
-            if self.hasLegacy != oldValue {
+            if oldValue != self.hasLegacy {
                 self.observers.notify { $0.didChangeConfig() }
             }
         }

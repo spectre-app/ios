@@ -5,37 +5,10 @@
 
 import Foundation
 
-class MPResultTypeCell: MPItemCell {
-    public var resultType: MPResultType? {
-        didSet {
-            DispatchQueue.main.perform {
-                if let resultType = self.resultType {
-                    self.nameLabel.text = String( safeUTF8: mpw_type_abbreviation( resultType ) )
-
-                    if 0 != resultType.rawValue & UInt32( MPResultTypeClass.template.rawValue ) {
-                        self.classLabel.text = "Template"
-                    }
-                    else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.stateful.rawValue ) {
-                        self.classLabel.text = "Stateful"
-                    }
-                    else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.derive.rawValue ) {
-                        self.classLabel.text = "Derive"
-                    }
-                    else {
-                        self.classLabel.text = ""
-                    }
-                }
-                else {
-                    self.nameLabel.text = ""
-                    self.classLabel.text = ""
-                }
-            }
-        }
-    }
-
-    private let separatorView = UIView()
-    private let nameLabel     = UILabel()
-    private let classLabel    = UILabel()
+class MPClassItemCell: MPItemCell {
+    let separatorView = UIView()
+    let nameLabel     = UILabel()
+    let classLabel    = UILabel()
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -72,5 +45,34 @@ class MPResultTypeCell: MPItemCell {
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .activate()
+    }
+}
+
+class MPResultTypeCell: MPClassItemCell {
+    public var resultType: MPResultType? {
+        didSet {
+            DispatchQueue.main.perform {
+                if let resultType = self.resultType {
+                    self.nameLabel.text = String( safeUTF8: mpw_type_abbreviation( resultType ) )
+
+                    if 0 != resultType.rawValue & UInt32( MPResultTypeClass.template.rawValue ) {
+                        self.classLabel.text = "Template"
+                    }
+                    else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.stateful.rawValue ) {
+                        self.classLabel.text = "Stateful"
+                    }
+                    else if 0 != resultType.rawValue & UInt32( MPResultTypeClass.derive.rawValue ) {
+                        self.classLabel.text = "Derive"
+                    }
+                    else {
+                        self.classLabel.text = ""
+                    }
+                }
+                else {
+                    self.nameLabel.text = ""
+                    self.classLabel.text = ""
+                }
+            }
+        }
     }
 }
