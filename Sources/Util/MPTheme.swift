@@ -6,24 +6,27 @@
 import UIKit
 
 public class MPTheme: Hashable, CustomStringConvertible {
-    public static let  all    = [ MPTheme.default, MPTheme.alt0, MPTheme.alt1, MPTheme.alt2, MPTheme.alt3, MPTheme.alt4 ]
+    public static let  all    = [ MPTheme.default, MPTheme.alt0, MPTheme.alt1, MPTheme.alt2, MPTheme.alt3, MPTheme.alt4, MPTheme.alt5 ]
     private static var byPath = [ String: MPTheme ]()
 
     public static let `default` = MPTheme()
     public static let alt0 = MPTheme( path: ".alt0" ) {
-        $0.color.brand.set( UIColor( red: 0, green: 0.613, blue: 0.663, alpha: 1 ) )
+        $0.color.brand.set( UIColor( hex: "009CA9" ) )
     }
     public static let alt1 = MPTheme( path: ".alt1" ) {
-        $0.color.brand.set( UIColor( red: 0.613, green: 0.663, blue: 0, alpha: 1 ) )
+        $0.color.brand.set( UIColor( hex: "1B3042" ) )
     }
     public static let alt2 = MPTheme( path: ".alt2" ) {
-        $0.color.brand.set( UIColor( red: 0.663, green: 0.613, blue: 0, alpha: 1 ) )
+        $0.color.brand.set( UIColor( hex: "1683DB" ) )
     }
     public static let alt3 = MPTheme( path: ".alt3" ) {
-        $0.color.brand.set( UIColor( red: 0.613, green: 0, blue: 0.663, alpha: 1 ) )
+        $0.color.brand.set( UIColor( hex: "B3452D" ) )
     }
     public static let alt4 = MPTheme( path: ".alt4" ) {
-        $0.color.brand.set( UIColor( red: 0.663, green: 0, blue: 0.613, alpha: 1 ) )
+        $0.color.brand.set( UIColor( hex: "F5C80C" ) )
+    }
+    public static let alt5 = MPTheme( path: ".alt5" ) {
+        $0.color.brand.set( UIColor( hex: "11734F" ) )
     }
 
     public class func with(path: String?) -> MPTheme? {
@@ -65,9 +68,9 @@ public class MPTheme: Hashable, CustomStringConvertible {
 
     // MARK: --- Life ---
 
-    private let parent: MPTheme?
-    private let name:   String
-    public var  path:   String {
+    private let parent:      MPTheme?
+    private let name:        String
+    public var  path:        String {
         if let parent = parent {
             return "\(parent.path).\(self.name)"
         }
@@ -75,7 +78,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
             return self.name
         }
     }
-    public var description : String {
+    public var  description: String {
         "Theme[\(self.path)]"
     }
 
@@ -123,7 +126,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
                 glow: Value( UIColor.white ),
                 mute: Value( UIColor.white.withAlphaComponent( 0.318 ) ),
                 selection: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.382 ) ),
-                brand: Value( UIColor( red: 0, green: 0.663, blue: 0.613, alpha: 1 ) ) )
+                brand: Value( UIColor( hex: "00A99C" ) ) )
 
         MPTheme.byPath[""] = self
     }
@@ -190,7 +193,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
             self.value ?? self.parent?.get()
         }
 
-        func set(_ value: V) {
+        func set(_ value: V?) {
             self.value = value
         }
 
