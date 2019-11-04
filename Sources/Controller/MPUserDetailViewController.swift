@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserViewController*/MPUserObserver {
+class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserViewController*/MPUserObserver, MPConfigObserver {
 
     // MARK: --- Life ---
 
@@ -25,11 +25,18 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         super.init( model: model )
 
         self.model.observers.register( observer: self ).userDidChange( self.model )
+        appConfig.observers.register( observer: self )
     }
 
     // MARK: --- MPUserObserver ---
 
     func userDidChange(_ user: MPUser) {
+        self.setNeedsUpdate()
+    }
+
+    // MARK: --- MPConfigObserver ---
+
+    func didChangeConfig() {
         self.setNeedsUpdate()
     }
 
@@ -97,7 +104,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             """
                         } ),
                 ToggleItem(
-                        title: "Biometric Lock",
+                        title: "Biometric Lock 🅿",
                         value: {
                             let keychainKeyFactory = MPKeychainKeyFactory( fullName: $0.fullName )
                             return (icon: keychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon,
@@ -110,7 +117,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             Sign in using biometrics (eg. TouchID, FaceID).
                             Saves your master key in the device's key chain.
                             """
-                        } ) ] )
+                        },
+                        hidden: { _ in !appConfig.premium } ) ] )
         }
     }
 

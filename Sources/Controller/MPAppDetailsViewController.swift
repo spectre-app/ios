@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPAppDetailsViewController: MPDetailsViewController<Void> {
+class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObserver {
 
     // MARK: --- Life ---
 
@@ -14,35 +14,46 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
     }
 
     init() {
-        super.init( model: Void() )
+        super.init( model: appConfig )
+
+        self.model.observers.register( observer: self )
     }
 
-    override func loadItems() -> [Item<Void>] {
+    override func loadItems() -> [Item<MPConfig>] {
         [ VersionItem(), SeparatorItem(),
-          DiagnisticsItem(), LegacyItem(), SeparatorItem(),
+          Item<MPConfig>( subitems: [
+              DiagnisticsItem(),
+              ProItem(),
+          ] ), LegacyItem(), SeparatorItem(),
           InfoItem() ]
+    }
+
+    // MARK: --- MPConfigObserver ---
+
+    func didChangeConfig() {
+        self.setNeedsUpdate()
     }
 
     // MARK: --- Types ---
 
-    class VersionItem: LabelItem<Void> {
+    class VersionItem: LabelItem<MPConfig> {
         init() {
-            super.init( title: "\(PearlInfoPlist.get().cfBundleDisplayName ?? productName)",
+            super.init( title: "\(productName)",
                         value: { _ in PearlInfoPlist.get().cfBundleShortVersionString },
                         caption: { _ in PearlInfoPlist.get().cfBundleVersion } )
         }
     }
 
-    class DiagnisticsItem: ToggleItem<Void> {
+    class DiagnisticsItem: ToggleItem<MPConfig> {
         init() {
             super.init(
                     title: "Diagnostics",
-                    value: { _ in
+                    value: {
                         (icon: UIImage( named: "icon_bandage" ),
-                         selected: UserDefaults.standard.bool( forKey: "sendInfo" ),
+                         selected: $0.sendInfo,
                          enabled: true)
                     },
-                    update: { UserDefaults.standard.set( $1, forKey: "sendInfo" ) },
+                    update: { $0.sendInfo = $1 },
                     caption: { _ in
                         """
                         Share anonymized issue information to enable quick resolution.
@@ -51,14 +62,34 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
         }
     }
 
-    class LegacyItem: Item<Void> {
+    class ProItem: ToggleItem<MPConfig> {
+        init() {
+            super.init(
+                    title: """
+                           Premium 🅿
+                           """,
+                    value: {
+                        (icon: UIImage( named: "icon_manage" ),
+                         selected: $0.premium,
+                         enabled: true)
+                    },
+                    update: { $0.premium = $1 },
+                    caption: { _ in
+                        """
+                        Unlock enhanced comfort and security features.
+                        """
+                    } )
+        }
+    }
+
+    class LegacyItem: Item<MPConfig> {
         init() {
             super.init( title: "Legacy Data",
                         subitems: [
-                            ButtonItem<Void>( value: { _ in (label: "Re-import", image: nil) } ) { _ in
+                            ButtonItem<MPConfig>( value: { _ in (label: "Re-import", image: nil) } ) { _ in
                                 MPMarshal.shared.importLegacy( force: true )
                             },
-                            ButtonItem<Void>( value: { _ in (label: "Clean up", image: nil) } ) { _ in
+                            ButtonItem<MPConfig>( value: { _ in (label: "Clean up", image: nil) } ) { _ in
                                 // TODO: purge legacy data
                             }
                         ],
@@ -67,16 +98,14 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
                             User information from an older version of the app exists.
                             You can leave it untouched or clean up to remove it.
                             """
-                        } )
-
-            self.hidden = true
-            _ = MPMarshal.shared.hasLegacy().then { self.hidden = !$0 }
+                        },
+                        hidden: { !$0.hasLegacy } )
         }
     }
 
-    class InfoItem: ListItem<Void, InfoItem.Link> {
+    class InfoItem: ListItem<MPConfig, InfoItem.Link> {
         init() {
-            super.init( title: "Links", values: {
+            super.init( title: "Links", values: { _ in
                 [
                     Link( title: "Home", url: URL( string: "https://masterpassword.app" ) ),
                     Link( title: "Support", url: URL( string: "http://help.masterpasswordapp.com" ) ),
@@ -90,7 +119,7 @@ class MPAppDetailsViewController: MPDetailsViewController<Void> {
             tableView.registerCell( Cell.self )
         }
 
-        override func cell(tableView: UITableView, indexPath: IndexPath, model: (), value: Link) -> UITableViewCell? {
+        override func cell(tableView: UITableView, indexPath: IndexPath, model: MPConfig, value: Link) -> UITableViewCell? {
             Cell.dequeue( from: tableView, indexPath: indexPath ) {
                 ($0 as? Cell)?.link = value
             }

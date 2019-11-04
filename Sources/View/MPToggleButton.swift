@@ -66,23 +66,29 @@ class MPToggleButton: UIButton {
         super.layoutSubviews()
 
         self.imageView?.alpha = self.isSelected ? 1: 0.318
+        self.setNeedsDisplay()
     }
 
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
-           let backgroundColor = MPTheme.global.color.mute.get()?.cgColor,
-           let borderColor = self.checkLabel.textColor?.cgColor {
+           let borderColor = self.checkLabel.textColor?.cgColor,
+           let backgroundColor = MPTheme.global.color.mute.get()?.cgColor {
+
             let content = self.bounds.inset( by: self.contentEdgeInsets )
                                      .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )
             let circle  = CGRect( center: content.bottom, radius: self.contentEdgeInsets.bottom )
+
             context.addRect( self.bounds )
             context.addPath( CGPath( ellipseIn: circle, transform: nil ) )
             context.clip( using: .evenOdd )
+
             context.setFillColor( backgroundColor )
-            context.setStrokeColor( borderColor )
-            context.setLineWidth( 1.5 )
             context.fillEllipse( in: content )
+
+            context.setLineWidth( 1.5 )
+            context.setStrokeColor( borderColor )
             context.strokeEllipse( in: content )
+
             context.resetClip()
             context.setLineWidth( 1 )
             context.strokeEllipse( in: circle )

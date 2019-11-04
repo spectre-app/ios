@@ -288,7 +288,7 @@ class MPMarshal: Observable {
                                 self.import( from: importedUser, into: existedUser ).then { promise.finish( $0 ) }
                             }
                             else if let importedUser = importedUser {
-                                let controller    = UIAlertController( title: "Unlock Existing User", message:
+                                let controller = UIAlertController( title: "Unlock Existing User", message:
                                 """
                                 The existing user is locked with a different master password.
 
@@ -331,7 +331,7 @@ class MPMarshal: Observable {
                                 viewController.present( controller, animated: true )
                             }
                             else if let existedUser = existedUser {
-                                let controller    = UIAlertController( title: "Unlock Import", message:
+                                let controller = UIAlertController( title: "Unlock Import", message:
                                 """
                                 The import user is locked with a different master password.
 
@@ -480,12 +480,6 @@ class MPMarshal: Observable {
                     mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL, error: error )
             }
         }
-    }
-
-    public func hasLegacy() -> Promise<Bool> {
-        MPCoreData.shared.promise {
-            (try $0.count( for: MPUserEntity.fetchRequest() )) > 0
-        } ?? Promise( .success( false ) )
     }
 
     @discardableResult

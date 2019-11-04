@@ -18,27 +18,26 @@ class Item<M>: NSObject {
             self.setNeedsUpdate()
         }
     }
-    var hidden = false {
-        didSet {
-            if oldValue != self.hidden {
-                self.setNeedsUpdate()
-            }
-        }
-    }
 
     private let title:          String?
     private let captionFactory: (M) -> CustomStringConvertible?
+    private let hiddenFactory:  (M) -> Bool
     private let subitems:       [Item<M>]
     private (set) lazy var view = createItemView()
 
     private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
-        self.doUpdate()
+        UIView.animate( withDuration: 0.382 ) {
+            self.doUpdate()
+        }
     }
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), caption captionFactory: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
+         caption captionFactory: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden hiddenFactory: @escaping (M) -> Bool = { _ in false }) {
         self.title = title
-        self.captionFactory = captionFactory
         self.subitems = subitems
+        self.captionFactory = captionFactory
+        self.hiddenFactory = hiddenFactory
     }
 
     func createItemView() -> ItemView<M> {
@@ -82,6 +81,7 @@ class Item<M>: NSObject {
             self.contentView.alignment = .center
             self.contentView.spacing = 8
 
+            self.titleLabel.numberOfLines = 0
             self.titleLabel.textColor = MPTheme.global.color.body.get()
             self.titleLabel.textAlignment = .center
             self.titleLabel.font = MPTheme.global.font.headline.get()
@@ -90,6 +90,7 @@ class Item<M>: NSObject {
 
             self.subitemsView.axis = .horizontal
             self.subitemsView.distribution = .fillEqually
+            self.subitemsView.alignment = .firstBaseline
             self.subitemsView.spacing = 20
             self.subitemsView.preservesSuperviewLayoutMargins = true
             self.subitemsView.isLayoutMarginsRelativeArrangement = true
@@ -136,7 +137,7 @@ class Item<M>: NSObject {
         }
 
         func update() {
-            self.isHidden = self.item.hidden
+            self.isHidden = self.item.model.flatMap { self.item.hiddenFactory( $0 ) } ?? true
 
             self.titleLabel.text = self.item.title
             self.titleLabel.isHidden = self.item.title == nil
@@ -195,9 +196,10 @@ class ValueItem<M, V>: Item<M> {
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
          value valueFactory: @escaping (M) -> V? = { _ in nil },
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false }) {
         self.valueFactory = valueFactory
-        super.init( title: title, subitems: subitems, caption: caption )
+        super.init( title: title, subitems: subitems, caption: caption, hidden: hidden )
     }
 }
 
@@ -255,10 +257,11 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (icon: UIImage?, selected: Bool, enabled: Bool),
          update: @escaping (M, Bool) -> Void = { _, _ in },
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false }) {
         self.update = update
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
     }
 
     override func createItemView() -> ToggleItemView<M> {
@@ -305,10 +308,11 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (label: String?, image: UIImage?),
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false },
          action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
         self.action = action
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
     }
 
     override func createItemView() -> ButtonItemView<M> {
@@ -392,10 +396,11 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     init(title: String? = nil, placeholder: String?, subitems: [Item<M>] = [],
          value: @escaping (M) -> String? = { _ in nil },
          update: ((M, String) -> Void)? = nil,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false }) {
         self.placeholder = placeholder
         self.update = update
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
     }
 
     override func createItemView() -> FieldItemView<M> {
@@ -451,9 +456,10 @@ class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> String? = { _ in nil },
          update: ((M, String) -> Void)? = nil,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false }) {
         self.update = update
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
     }
 
     override func createItemView() -> AreaItemView<M> {
@@ -515,12 +521,13 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
          value: @escaping (M) -> V? = { _ in nil },
          update: @escaping (M, V) -> Void = { _, _ in },
          step: V, min: V, max: V,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false }) {
         self.update = update
         self.step = step
         self.min = min
         self.max = max
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
     }
 
     override func createItemView() -> StepperItemView<M> {
@@ -611,11 +618,12 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
     init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
          value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in },
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false }) {
         self.values = values
         self.update = update
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
     }
 
     override func createItemView() -> PickerItemView<M> {
@@ -793,10 +801,11 @@ class ListItem<M, V: Hashable>: Item<M> {
     var deletable = false
 
     init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         hidden: @escaping (M) -> Bool = { _ in false }) {
         self.values = values
 
-        super.init( title: title, subitems: subitems, caption: caption )
+        super.init( title: title, subitems: subitems, caption: caption, hidden: hidden )
     }
 
     func didLoad(tableView: UITableView) {

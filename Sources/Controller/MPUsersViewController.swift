@@ -258,7 +258,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     // MARK: --- Types ---
 
-    class UserCell: UICollectionViewCell {
+    class UserCell: UICollectionViewCell, MPConfigObserver {
         public var new: Bool = false
         public override var isSelected: Bool {
             didSet {
@@ -321,6 +321,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         override init(frame: CGRect) {
             super.init( frame: CGRect() )
 
+            appConfig.observers.register(observer: self)
+
+            // - View
             self.isOpaque = false
             self.contentView.layoutMargins = UIEdgeInsets( top: 20, left: 20, bottom: 20, right: 20 )
 
@@ -394,6 +397,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
             self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
 
+            // - Hierarchy
             self.contentView.addSubview( self.idBadgeView )
             self.contentView.addSubview( self.authBadgeView )
             self.contentView.addSubview( self.avatarButton )
@@ -401,6 +405,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.contentView.addSubview( self.nameField )
             self.contentView.addSubview( self.passwordField )
 
+            // - Layout
             LayoutConfiguration( view: self.contentView )
                     .constrainToOwner()
                     .activate()
@@ -481,6 +486,12 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             }
         }
 
+        // MARK: --- MPConfigObserver ---
+
+        func didChangeConfig() {
+            self.update()
+        }
+
         // MARK: --- Private ---
 
         private func update() {
@@ -494,7 +505,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }
-                    self.biometricButton.isHidden = !(keychainKeyFactory?.hasKey( algorithm: self.userFile?.algorithm ?? .current ) ?? false)
+                    self.biometricButton.isHidden = !appConfig.premium ||
+                            !(keychainKeyFactory?.hasKey( algorithm: self.userFile?.algorithm ?? .current ) ?? false)
                     self.biometricButton.image = keychainKeyFactory?.factor.icon
 
                     if self.isSelected {

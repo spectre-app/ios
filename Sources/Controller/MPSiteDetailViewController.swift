@@ -6,15 +6,15 @@
 import Foundation
 import UIKit
 
-class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver {
+class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver, MPConfigObserver {
 
     // MARK: --- Life ---
 
     override func loadItems() -> [Item<MPSite>] {
         [ PasswordCounterItem(), SeparatorItem(),
           PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
-          LoginTypeItem(), LoginResultItem(), SeparatorItem(),
-          SecurityAnswerItem(), SeparatorItem(),
+          LoginTypeItem(), LoginResultItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
+          SecurityAnswerItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
           URLItem(), SeparatorItem(),
           InfoItem() ]
     }
@@ -27,6 +27,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         super.init( model: model )
 
         self.model.observers.register( observer: self ).siteDidChange( self.model )
+        appConfig.observers.register( observer: self )
     }
 
     override func viewDidLoad() {
@@ -43,6 +44,12 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             self.viewIfLoaded?.tintColor = self.model.color
         }
 
+        self.setNeedsUpdate()
+    }
+
+    // MARK: --- MPSiteObserver ---
+
+    func didChangeConfig() {
         self.setNeedsUpdate()
     }
 
@@ -92,7 +99,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             }
                         },
                         caption: {
-                            MPAttacker.budget5K.timeToCrack( type: $0.resultType )
+                            !appConfig.premium ? nil:
+                                    "\(MPAttacker.budget5K.timeToCrack( type: $0.resultType )?.description ?? "") 🅿"
                         } )
         }
 
@@ -114,10 +122,11 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( title: "User Name Type",
+            super.init( title: "User Name Type 🅿",
                         values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.loginType },
-                        update: { $0.loginType = $1 } )
+                        update: { $0.loginType = $1 },
+                        hidden: { _ in !appConfig.premium } )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -145,7 +154,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                                         mperror( title: "Couldn't update site name", error: error )
                                 }
                             }
-                        } )
+                        },
+                        hidden: { _ in !appConfig.premium } )
         }
 
         override func createItemView() -> FieldItemView<MPSite> {
@@ -167,7 +177,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class SecurityAnswerItem: ListItem<MPSite, MPQuestion> {
         init() {
             super.init(
-                    title: "Security Answers",
+                    title: "Security Answers 🅿",
                     values: {
                         $0.questions.reduce( [ "": MPQuestion( site: $0, keyword: "" ) ] ) {
                             $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
@@ -193,7 +203,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             }
                         } )
                         item.viewController?.present( controller, animated: true )
-                    } ] )
+                    } ],
+                    hidden: { _ in !appConfig.premium } )
 
             self.deletable = true
         }

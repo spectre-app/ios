@@ -154,7 +154,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     UIAction( title: "Details", image: UIImage( named: "icon_sliders" ) ) { _ in
                         self.observers.notify { $0.siteDetailsAction( site: site ) }
                     },
-                    UIAction( title: "Copy Login Name", image: UIImage( named: "icon_user" ) ) { _ in
+                    UIAction( title: "Copy Login Name 🅿", image: UIImage( named: "icon_user" ), attributes: appConfig.premium ? []: .hidden ) { _ in
                         site.mpw_copy( keyPurpose: .identification, for: self )
                     },
                     UIAction( title: "Copy Password", image: UIImage( named: "icon_tripledot" ) ) { _ in
@@ -245,7 +245,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     // MARK: --- Types ---
 
-    class SiteCell: UITableViewCell, MPSiteObserver, MPUserObserver {
+    class SiteCell: UITableViewCell, MPSiteObserver, MPUserObserver, MPConfigObserver {
         public var sitesView: MPSitesTableView?
         public var result:    MPQuery.Result<MPSite>? {
             didSet {
@@ -289,6 +289,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
             super.init( style: style, reuseIdentifier: reuseIdentifier )
+
+            appConfig.observers.register( observer: self )
 
             // - View
             self.isOpaque = false
@@ -424,6 +426,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.update()
         }
 
+        // MARK: --- MPConfigObserver ---
+
+        func didChangeConfig() {
+            self.update()
+        }
+
         // MARK: --- Private ---
 
         private func update() {
@@ -440,6 +448,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         self.modeButton.image = nil
                 }
 
+                self.modeButton.alpha = appConfig.premium ? 1: 0
                 self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
             }.promised {
