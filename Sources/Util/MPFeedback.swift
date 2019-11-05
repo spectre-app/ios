@@ -71,12 +71,19 @@ public class MPHapticFeedback: MPFeedback {
     }
 
     public override func play(_ effect: Effect) {
-        do {
-            try self.players[effect]?.start( atTime: 0 )
-        }
-        catch {
-            err( "Couldn't play haptic [>TRC]" )
-            trc( "\(error)" )
+        self.hapticEngine?.start { error in
+            do {
+                if let error = error {
+                    throw error
+                }
+                else {
+                    try self.players[effect]?.start( atTime: 0 )
+                }
+            }
+            catch {
+                err( "Couldn't play haptic [>TRC]" )
+                trc( "\(error)" )
+            }
         }
     }
 }
