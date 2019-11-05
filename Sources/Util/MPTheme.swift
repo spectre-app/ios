@@ -109,7 +109,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
                 shade: Value( UIColor.black.withAlphaComponent( 0.618 ) ),
                 shadow: Value( UIColor.black.withAlphaComponent( 0.382 ) ),
                 glow: Value( UIColor.white ),
-                mute: Value( UIColor.white.withAlphaComponent( 0.318 ) ),
+                mute: Value( UIColor.white.withAlphaComponent( 0.382 ) ),
                 selection: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.382 ) ),
                 brand: Value( UIColor( hex: "00A99C" ) ) )
 

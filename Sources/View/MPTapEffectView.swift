@@ -54,6 +54,8 @@ class MPTapEffectView: UIView {
             self.removeFromSuperview()
         } )
         self.isHidden = false
+
+        MPFeedback.shared.play( .activate )
     }
 
     private class FlareView: UIView {

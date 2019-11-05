@@ -186,6 +186,8 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                 }
             } )
         }
+
+        MPFeedback.shared.play( .activate )
     }
 
     func siteDetailsAction(site: MPSite) {

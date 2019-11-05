@@ -81,6 +81,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 controller.dismiss( animated: true ) {
                     switch result {
                         case .success(let user):
+                            MPFeedback.shared.play( .trigger )
                             self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                         case .failure(let error):
@@ -231,6 +232,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.usersSpinner.selectedItem = nil
+        MPFeedback.shared.play( .flick )
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -238,6 +240,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             trc( "Selected user: \(self.selectedFile?.description ?? "-")" )
 
             self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
+            if self.userToolbarConfiguration.activated {
+                MPFeedback.shared.play( .activate )
+            }
         }
     }
 
@@ -321,7 +326,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         override init(frame: CGRect) {
             super.init( frame: CGRect() )
 
-            appConfig.observers.register(observer: self)
+            appConfig.observers.register( observer: self )
 
             // - View
             self.isOpaque = false
@@ -354,6 +359,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
                 switch result {
                     case .success(let user):
+                        MPFeedback.shared.play( .trigger )
                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                     case .failure(let error):
@@ -377,14 +383,13 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 else { return }
 
                 let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
-                userFile.authenticate( keyFactory: keychainKeyFactory ).then { result in
+                userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { result in
                     trc( "User biometric authentication: \(result)" )
 
                     switch result {
                         case .success(let user):
-                            DispatchQueue.main.perform {
-                                self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-                            }
+                            MPFeedback.shared.play( .trigger )
+                            self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                         case .failure:
                             keychainKeyFactory.purgeKeys()

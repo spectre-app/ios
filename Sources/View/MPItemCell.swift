@@ -14,6 +14,10 @@ class MPItemCell: UICollectionViewCell {
                     self.effectView.isSelected = self.isSelected
                 }
             }
+
+            if self.isSelected != oldValue, self.isSelected, UIView.areAnimationsEnabled {
+                MPFeedback.shared.play( .trigger )
+            }
         }
     }
 

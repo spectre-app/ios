@@ -239,14 +239,17 @@ public class Promise<V> {
     }
 
     public func await() throws -> V {
-        // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         if let result = result {
             switch result {
-                case .success(let value): return value
-                case .failure(let error): throw error
+                case .success(let value):
+                    return value
+
+                case .failure(let error):
+                    throw error
             }
         }
 
+        // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         let group = DispatchGroup()
         group.enter()
         var result: Result<V, Error>?
@@ -257,9 +260,14 @@ public class Promise<V> {
         group.wait()
 
         switch result {
-            case .success(let value): return value
-            case .failure(let error): throw error
-            case .none: throw MPError.internal( details: "Couldn't obtain result" )
+            case .success(let value):
+                return value
+
+            case .failure(let error):
+                throw error
+
+            case .none:
+                throw MPError.internal( details: "Couldn't obtain result" )
         }
     }
 }

@@ -93,7 +93,9 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        self.items.forEach { $0.doUpdate() }
+        UIView.performWithoutAnimation {
+            self.items.forEach { $0.doUpdate() }
+        }
     }
 
     override func viewDidLayoutSubviews() {

@@ -12,9 +12,13 @@ class MPToggleButton: UIButton {
         didSet {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.382 ) {
-                    self.imageView?.alpha = self.isSelected ? 1: 0.318
+                    self.imageView?.alpha = self.isSelected ? 1: 0.382
                     self.checkLabel.alpha = self.isSelected ? 1: 0
                 }
+            }
+
+            if self.isSelected != oldValue, UIView.areAnimationsEnabled {
+                MPFeedback.shared.play( .trigger )
             }
         }
     }
@@ -56,16 +60,14 @@ class MPToggleButton: UIButton {
                 .activate()
 
         defer {
-            UIView.performWithoutAnimation {
-                self.isSelected = false
-            }
+            self.isSelected = false
         }
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        self.imageView?.alpha = self.isSelected ? 1: 0.318
+        self.imageView?.alpha = self.isSelected ? 1: 0.382
         self.setNeedsDisplay()
     }
 

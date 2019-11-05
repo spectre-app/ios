@@ -303,6 +303,8 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                 case .success(let result):
                     self.use()
 
+                    MPFeedback.shared.play( .trigger )
+
                     if #available( iOS 10.0, * ) {
                         UIPasteboard.general.setItems(
                                 [ [ UIPasteboard.typeAutomatic: result ] ],
