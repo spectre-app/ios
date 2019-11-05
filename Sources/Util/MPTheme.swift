@@ -6,27 +6,12 @@
 import UIKit
 
 public class MPTheme: Hashable, CustomStringConvertible {
-    public static let  all    = [ MPTheme.default, MPTheme.alt0, MPTheme.alt1, MPTheme.alt2, MPTheme.alt3, MPTheme.alt4, MPTheme.alt5 ]
+    public static let  all    = [ MPTheme.default, MPTheme.dark ]
     private static var byPath = [ String: MPTheme ]()
 
     public static let `default` = MPTheme()
-    public static let alt0 = MPTheme( path: ".alt0" ) {
-        $0.color.brand.set( UIColor( hex: "009CA9" ) )
-    }
-    public static let alt1 = MPTheme( path: ".alt1" ) {
-        $0.color.brand.set( UIColor( hex: "1B3042" ) )
-    }
-    public static let alt2 = MPTheme( path: ".alt2" ) {
-        $0.color.brand.set( UIColor( hex: "1683DB" ) )
-    }
-    public static let alt3 = MPTheme( path: ".alt3" ) {
-        $0.color.brand.set( UIColor( hex: "B3452D" ) )
-    }
-    public static let alt4 = MPTheme( path: ".alt4" ) {
-        $0.color.brand.set( UIColor( hex: "F5C80C" ) )
-    }
-    public static let alt5 = MPTheme( path: ".alt5" ) {
-        $0.color.brand.set( UIColor( hex: "11734F" ) )
+    public static let dark = MPTheme( path: ".dark" ) {
+        $0.color.brand.set( UIColor( hex: "1C343B" ) )
     }
 
     public class func with(path: String?) -> MPTheme? {
