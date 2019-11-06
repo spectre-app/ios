@@ -93,7 +93,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             controller.addTextField { passwordField.nameField = $0 }
             controller.addTextField { passwordField.passwordField = $0 }
             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            controller.addAction( UIAlertAction( title: "Log In", style: .default ) { _ in
+            controller.addAction( UIAlertAction( title: "Log In", style: .default ) { [weak self] _ in
+                guard let self = self
+                else { return }
+
                 if !passwordField.try() {
                     mperror( title: "Couldn't unlock user", message: "Missing credentials" )
                     self.present( controller, animated: true )
@@ -179,7 +182,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             The user's identicon (\(user.identicon.text() ?? "-")) is a good manual check that you got this right.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { _ in
+            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak self, weak user] _ in
+                guard let self = self, let user = user
+                else { return }
                 trc( "Trashing user: \(user)" )
 
                 if MPMarshal.shared.delete( userFile: user ) {
@@ -202,7 +207,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             The master password can always be changed back to revert to the user's current site passwords and generated content.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { _ in
+            alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak user] _ in
+                guard let user = user
+                else { return }
                 trc( "Resetting user: \(user)" )
 
                 user.resetKey = true
@@ -264,7 +271,6 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     // MARK: --- Types ---
 
     class UserCell: UICollectionViewCell, MPConfigObserver {
-        public var new: Bool = false
         public override var isSelected: Bool {
             didSet {
                 if self.userFile == nil {
@@ -291,14 +297,16 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 }
             }
         }
-        public var userFile:             MPMarshal.UserFile? {
+
+        public var new: Bool = false
+        public weak var userFile:             MPMarshal.UserFile? {
             didSet {
                 self.passwordField.userFile = self.userFile
                 self.avatar = self.userFile?.avatar ?? .avatar_add
                 self.update()
             }
         }
-        public var navigationController: UINavigationController?
+        public weak var navigationController: UINavigationController?
 
         private var avatar          = MPUser.Avatar.avatar_add {
             didSet {
@@ -342,7 +350,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
             self.avatarButton.contentMode = .center
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.addAction( for: .touchUpInside ) { _, _ in self.avatar.next() }
+            self.avatarButton.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+                self.avatar.next()
+            }
 
             self.passwordField.borderStyle = .roundedRect
             self.passwordField.font = appConfig.theme.font.callout.get()
@@ -378,7 +388,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameField.alpha = 0
 
             self.biometricButton.isBackgroundVisible = false
-            self.biometricButton.button.addAction( for: .touchUpInside ) { _, _ in
+            self.biometricButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                 guard let userFile = self.userFile
                 else { return }
 

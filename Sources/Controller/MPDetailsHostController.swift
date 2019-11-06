@@ -12,7 +12,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.detailsController != nil
     }
 
-    private lazy var detailRecognizer   = UITapGestureRecognizer( target: self, action: #selector( didTapBackground ) )
+    private lazy var detailRecognizer   = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
     private lazy var popupConfiguration = LayoutConfiguration( view: self.view )
     private let closeButton = MPButton.closeButton()
     private var detailsController:      AnyMPDetailsViewController?
@@ -20,7 +20,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
     // MARK: --- Life ---
 
-    override var next: UIResponder? {
+    override var next:                                       UIResponder? {
         self.parent?.view.superview
     }
     private var  activeChild:                                UIViewController? {
@@ -54,7 +54,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             self.scrollView.contentInsetAdjustmentBehavior = .always
         }
 
-        self.closeButton.button.addAction( for: .touchUpInside ) { _, _ in self.hide() }
+        self.closeButton.button.addTarget( self, action: #selector( hideAction ), for: .touchUpInside )
 
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { _, _ in
             // Inset top to push content to the bottom of the host.
@@ -120,7 +120,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     // MARK: --- Private ---
 
     @objc
-    private func didTapBackground() {
+    private func hideAction() {
         self.hide()
     }
 

@@ -73,11 +73,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.searchField.autocorrectionType = .no
         self.searchField.returnKeyType = .done
         self.searchField.delegate = self
-        self.searchField.addAction( for: .editingChanged ) { _, _ in
+        self.searchField.addAction( for: .editingChanged ) { [unowned self] _, _ in
             self.sitesTableView.query = self.searchField.text
         }
 
-        self.userButton.addAction( for: .touchUpInside ) { _, _ in
+        self.userButton.addAction( for: .touchUpInside ) { [unowned self] _, _ in
             self.detailsHost.show( MPUserDetailsViewController( model: self.user ) )
             self.setNeedsStatusBarAppearanceUpdate()
         }

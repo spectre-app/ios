@@ -198,12 +198,12 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             $0.returnKeyType = .done
                         }
                         controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                        controller.addAction( UIAlertAction( title: "Add", style: .default ) { _ in
-                            if let site = item.model, let keyword = controller.textFields?.first?.text< {
-                                trc( "Adding security question <\(keyword)> for: \(item.model?.description ?? "-")" )
+                        controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
+                            guard let site = item?.model, let keyword = controller?.textFields?.first?.text<
+                            else { return }
 
-                                site.questions.append( MPQuestion( site: site, keyword: keyword ) )
-                            }
+                            trc( "Adding security question <\(keyword)> for: \(site)" )
+                            site.questions.append( MPQuestion( site: site, keyword: keyword ) )
                         } )
                         item.viewController?.present( controller, animated: true )
                     } ],
@@ -233,7 +233,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             private let resultLabel  = UILabel()
             private let copyButton   = MPButton( title: "copy" )
 
-            var question: MPQuestion? {
+            weak var question: MPQuestion? {
                 didSet {
                     self.question?.mpw_result().then( on: .main ) {
                         switch $0 {
@@ -272,7 +272,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.resultLabel.textColor = appConfig.theme.color.body.get()
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
-                self.copyButton.button.addAction( for: .touchUpInside ) { _, _ in
+                self.copyButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                     self.question?.mpw_copy()
                 }
 

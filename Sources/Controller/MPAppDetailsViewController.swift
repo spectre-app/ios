@@ -110,10 +110,10 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
 
         class Cell: MPItemCell {
-            var theme: MPTheme = MPTheme.default {
+            weak var theme: MPTheme? = MPTheme.default {
                 didSet {
                     DispatchQueue.main.perform {
-                        self.effectView.contentView.backgroundColor = self.theme.color.brand.get()
+                        self.effectView.contentView.backgroundColor = self.theme?.color.brand.get()
                     }
                 }
             }
@@ -169,7 +169,6 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
 
         class Cell: UITableViewCell {
-            let button = UIButton()
             var link: Link? {
                 didSet {
                     DispatchQueue.main.perform {
@@ -177,6 +176,8 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     }
                 }
             }
+
+            private let button = UIButton()
 
             // MARK: --- Life ---
 
@@ -195,7 +196,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                 self.button.setTitleShadowColor( appConfig.theme.color.shadow.get(), for: .normal )
                 self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
                 self.button.titleLabel?.font = appConfig.theme.font.callout.get()
-                self.button.addAction( for: .touchUpInside ) { _, _ in
+                self.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                     if let url = self.link?.url {
                         trc( "Opening link: \(url)" )
 

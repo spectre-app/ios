@@ -49,7 +49,7 @@ class MPClassItemCell: MPItemCell {
 }
 
 class MPResultTypeCell: MPClassItemCell {
-    public var resultType: MPResultType? {
+    var resultType: MPResultType? {
         didSet {
             DispatchQueue.main.perform {
                 if let resultType = self.resultType {

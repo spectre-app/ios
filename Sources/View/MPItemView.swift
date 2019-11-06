@@ -282,7 +282,7 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         }
 
         override func createValueView() -> UIView? {
-            self.button.addAction( for: .touchUpInside ) { _, _ in
+            self.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                 if let model = self.item.model {
                     self.button.isSelected = !self.button.isSelected
                     self.item.update( model, self.button.isSelected )
@@ -333,7 +333,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
         }
 
         override func createValueView() -> UIView? {
-            self.button.button.addAction( for: .touchUpInside ) { _, _ in
+            self.button.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                 self.item.action( self.item )
             }
             return self.button
@@ -431,7 +431,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.delegate = self.item
             self.valueField.textColor = appConfig.theme.color.body.get()
             self.valueField.textAlignment = .center
-            self.valueField.addAction( for: .editingChanged ) { _, _ in
+            self.valueField.addAction( for: .editingChanged ) { [unowned self] _, _ in
                 if let model = self.item.model,
                    let text = self.valueField.text {
                     self.item.update?( model, text )
@@ -552,7 +552,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
 
         override func createValueView() -> UIView? {
             self.downButton.isBackgroundVisible = false
-            self.downButton.button.addAction( for: .touchUpInside ) { _, _ in
+            self.downButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                 if let model = self.item.model,
                    let value = self.item.value,
                    value > self.item.min {
@@ -561,7 +561,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
             }
 
             self.upButton.isBackgroundVisible = false
-            self.upButton.button.addAction( for: .touchUpInside ) { _, _ in
+            self.upButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                 if let model = self.item.model,
                    let value = self.item.value,
                    value < self.item.max {

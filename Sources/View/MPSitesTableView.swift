@@ -246,13 +246,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- Types ---
 
     class SiteCell: UITableViewCell, MPSiteObserver, MPUserObserver, MPConfigObserver {
-        public var sitesView: MPSitesTableView?
-        public var result:    MPQuery.Result<MPSite>? {
-            didSet {
-                self.site = self.result?.value
-            }
-        }
-        public var site:      MPSite? {
+        public weak var sitesView: MPSitesTableView?
+        public weak var result:    MPQuery.Result<MPSite>? {
             willSet {
                 self.site?.observers.unregister( observer: self )
                 self.site?.user.observers.unregister( observer: self )
@@ -263,6 +258,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     site.user.observers.register( observer: self ).userDidChange( site.user )
                 }
             }
+        }
+        public var site:      MPSite? {
+            self.result?.value
         }
         public var new = false {
             didSet {
@@ -318,11 +316,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.captionLabel.shadowColor = appConfig.theme.color.shadow.get()
             self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
-            self.settingsButton.button.addAction( for: .touchUpInside ) { _, _ in
-                if let site = self.site {
-                    self.sitesView?.observers.notify { $0.siteDetailsAction( site: site ) }
-                }
-            }
+            self.settingsButton.button.addTarget( self, action: #selector( settingsAction ), for: .touchUpInside )
 
             self.newButton.tapEffect = false
             self.newButton.isBackgroundVisible = false
@@ -330,7 +324,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             self.modeButton.tapEffect = false
             self.modeButton.isBackgroundVisible = false
-            self.modeButton.button.addAction( for: .touchUpInside ) { _, _ in self.modeAction() }
+            self.modeButton.button.addTarget( self, action: #selector( modeAction ), for: .touchUpInside )
 
             // - Hierarchy
             self.contentView.addSubview( self.resultLabel )
@@ -378,6 +372,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.update()
         }
 
+        @objc
+        func settingsAction() {
+            if let site = self.site {
+                self.sitesView?.observers.notify { $0.siteDetailsAction( site: site ) }
+            }
+        }
+
+        @objc
         func modeAction() {
             switch self.mode {
                 case .authentication:

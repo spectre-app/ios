@@ -6,7 +6,6 @@
 import Foundation
 
 class MPItemCell: UICollectionViewCell {
-    let effectView = MPEffectView()
     override var isSelected: Bool {
         didSet {
             DispatchQueue.main.perform {
@@ -20,6 +19,8 @@ class MPItemCell: UICollectionViewCell {
             }
         }
     }
+
+    let effectView = MPEffectView()
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )

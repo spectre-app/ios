@@ -78,7 +78,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.formatControl.selectedSegmentIndex = MPMarshalFormat.allCases.firstIndex( of: MPMarshalFormat.default ) ?? -1
         self.revealControl.selectedSegmentIndex = 1
 
-        self.exportButton.button.addAction( for: .touchUpInside ) { _, _ in
+        self.exportButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
             trc( "Requested export of \(self.user), format: \(self.format), redacted: \(self.redacted)" )
 
             let item       = MPMarshal.ActivityItem( user: self.user, format: self.format, redacted: self.redacted )
