@@ -70,10 +70,10 @@ public class MPConfig: Observable {
     public func checkLegacy() {
         MPCoreData.shared.promise {
             (try $0.count( for: MPUserEntity.fetchRequest() )) > 0
-        }?.then {
+        }.then {
             switch $0 {
                 case .success(let hasLegacy):
-                    self.hasLegacy = hasLegacy
+                    self.hasLegacy = hasLegacy ?? false
 
                 case .failure(let error):
                     err( "Couldn't determine legacy store state. [>TRC]" )

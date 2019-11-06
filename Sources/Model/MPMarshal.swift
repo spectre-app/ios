@@ -483,7 +483,7 @@ class MPMarshal: Observable {
     }
 
     @discardableResult
-    public func importLegacy(force: Bool = false) -> Promise<Bool> {
+    public func importLegacy(force: Bool = false) -> Promise<Bool?> {
         MPCoreData.shared.promised {
             var promises = [ Promise<Bool> ]()
 
@@ -579,7 +579,7 @@ class MPMarshal: Observable {
             }
 
             return Promise<Bool>( reducing: promises, from: true ) { $0 && $1 }
-        } ?? Promise( .success( false ) )
+        }
     }
 
     private func userDocuments() -> [URL] {

@@ -14,37 +14,52 @@ class MPCoreData {
     private let privateManagedObjectContext = NSManagedObjectContext( concurrencyType: .privateQueueConcurrencyType )
 
     @discardableResult
-    public func promised<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> Promise<V>) -> Promise<V>? {
-        guard self.loadStore()
-        else { return nil }
+    public func promised<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> Promise<V>) -> Promise<V?> {
+        self.loadStore().promised {
+            let promise = Promise<V?>()
 
-        let promise = Promise<V>()
-        let context = main ? self.mainManagedObjectContext: self.privateManagedObjectContext
-        context.perform {
-            do { try task( context ).then { promise.finish( $0 ) } }
-            catch { promise.finish( .failure( error ) ) }
+            switch $0 {
+                case .success(let storeLoaded):
+                    guard storeLoaded
+                    else {
+                        promise.finish( .success( nil ) )
+                        break
+                    }
+
+                    let context = main ? self.mainManagedObjectContext: self.privateManagedObjectContext
+                    context.perform {
+                        do {
+                            try task( context ).then {
+                                switch $0 {
+                                    case .success(let value):
+                                        promise.finish( .success( value ) )
+
+                                    case .failure(let error):
+                                        promise.finish( .failure( error ) )
+                                }
+                            }
+                        }
+                        catch { promise.finish( .failure( error ) ) }
+                    }
+
+                case .failure(let error):
+                    promise.finish( .failure( error ) )
+            }
+
+            return promise
         }
-
-        return promise
     }
 
     @discardableResult
-    public func promise<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> V) -> Promise<V>? {
+    public func promise<V>(main: Bool = false, task: @escaping (NSManagedObjectContext) throws -> V) -> Promise<V?> {
         self.promised( main: main ) { Promise( .success( try task( $0 ) ) ) }
     }
 
-    private func loadStore() -> Bool {
-        guard self.storeCoordinator == nil
-        else {
-            return true
-        }
-
-        return self.storeQueue.await {
+    private func loadStore() -> Promise<Bool> {
+        self.storeQueue.promise {
             // Do nothing if already fully set up, otherwise (re-)load the store.
             guard self.storeCoordinator == nil
-            else {
-                return true
-            }
+            else { return true }
 
             // Unregister any existing observers and contexts.
             self.mainManagedObjectContext.performAndWait {
@@ -55,63 +70,50 @@ class MPCoreData {
             }
 
             guard let identifier = Bundle.main.bundleIdentifier
-            else {
-                mperror( title: "Couldn't load legacy data", message: "Missing application identifier" )
-                return false
-            }
+            else { throw MPError.internal( details: "Missing application identifier" ) }
+
             guard let storeURL = try? FileManager.default.url( for: .applicationSupportDirectory, in: .userDomainMask,
                                                                appropriateFor: nil, create: false )
                                                          .appendingPathComponent( identifier, isDirectory: true )
                                                          .appendingPathComponent( "MasterPassword", isDirectory: false )
                                                          .appendingPathExtension( "sqlite" )
-            else {
-                mperror( title: "Couldn't load legacy data", message: "Couldn't access support directory" )
-                return false
-            }
+            else { throw MPError.internal( details: "Couldn't access support directory" ) }
+
             if !FileManager.default.fileExists( atPath: storeURL.path ) {
                 return false
             }
 
-            do {
-                let storeOptions: [AnyHashable: Any] = [
-                    NSReadOnlyPersistentStoreOption: true,
-                    NSInferMappingModelAutomaticallyOption: true,
-                    NSMigratePersistentStoresAutomaticallyOption: false,
-                    NSPersistentStoreFileProtectionKey: FileProtectionType.complete,
-                ]
+            let storeOptions: [AnyHashable: Any] = [
+                NSReadOnlyPersistentStoreOption: true,
+                NSInferMappingModelAutomaticallyOption: true,
+                NSMigratePersistentStoresAutomaticallyOption: false,
+                NSPersistentStoreFileProtectionKey: FileProtectionType.complete,
+            ]
 
-                // Open the store and find the model.
-                let storeMetadata                    = try NSPersistentStoreCoordinator.metadataForPersistentStore(
-                        ofType: NSSQLiteStoreType, at: storeURL, options: storeOptions )
-                guard let storeModel = NSManagedObjectModel.mergedModel( from: nil, forStoreMetadata: storeMetadata )
-                else {
-                    mperror( title: "Couldn't load legacy data", message: "Unsupported data model", details: storeMetadata )
-                    return false
-                }
+            // Open the store and find the model.
+            let storeMetadata                    = try NSPersistentStoreCoordinator.metadataForPersistentStore(
+                    ofType: NSSQLiteStoreType, at: storeURL, options: storeOptions )
+            guard let storeModel = NSManagedObjectModel.mergedModel( from: nil, forStoreMetadata: storeMetadata )
+            else { throw MPError.state( details: "Unsupported data model" ) }
 
-                // Create a new store coordinator.
-                self.storeCoordinator = NSPersistentStoreCoordinator( managedObjectModel: storeModel )
-                try self.storeCoordinator?.addPersistentStore(
-                        ofType: NSSQLiteStoreType, configurationName: nil, at: storeURL, options: storeOptions )
+            // Create a new store coordinator.
+            self.storeCoordinator = NSPersistentStoreCoordinator( managedObjectModel: storeModel )
+            try self.storeCoordinator?.addPersistentStore(
+                    ofType: NSSQLiteStoreType, configurationName: nil, at: storeURL, options: storeOptions )
 
-                // Install managed object contexts and observers.
-                self.privateManagedObjectContext.performAndWait {
-                    self.privateManagedObjectContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-                    self.privateManagedObjectContext.persistentStoreCoordinator = self.storeCoordinator
-                }
-                self.mainManagedObjectContext.performAndWait {
-                    self.mainManagedObjectContext.parent = self.privateManagedObjectContext
-                    if #available( iOS 10.0, * ) {
-                        self.mainManagedObjectContext.automaticallyMergesChangesFromParent = true
-                    }
-                }
-
-                return true
+            // Install managed object contexts and observers.
+            self.privateManagedObjectContext.performAndWait {
+                self.privateManagedObjectContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+                self.privateManagedObjectContext.persistentStoreCoordinator = self.storeCoordinator
             }
-            catch {
-                mperror( title: "Couldn't load legacy data", error: error )
-                return false
+            self.mainManagedObjectContext.performAndWait {
+                self.mainManagedObjectContext.parent = self.privateManagedObjectContext
+                if #available( iOS 10.0, * ) {
+                    self.mainManagedObjectContext.automaticallyMergesChangesFromParent = true
+                }
             }
+
+            return true
         }
     }
 }
