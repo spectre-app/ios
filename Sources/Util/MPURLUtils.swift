@@ -74,7 +74,8 @@ class MPURLUtils {
 
                 if let error = error {
                     wrn( "Couldn't fetch site preview. [>TRC]" )
-                    trc( "\(imageURL): HTTP \((response as? HTTPURLResponse)?.statusCode ?? -1): \(error)" )
+                    trc( "[>] %@: HTTP %d: %@",
+                         imageURL, (response as? HTTPURLResponse)?.statusCode ?? -1, error )
                 }
                 else if let responseData = responseData {
                     info.imageData = responseData
@@ -89,7 +90,7 @@ class MPURLUtils {
 
                 default:
                     wrn( "No site preview. [>TRC]" )
-                    trc( "\(url): \(error)" )
+                    trc( "[>] %@: %@", url, error )
             }
 
             result( self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil ) )
@@ -99,7 +100,7 @@ class MPURLUtils {
     private class func validImageURL(_ string: String?) -> URL? {
         if let string = string, !string.isEmpty,
            string.lowercased().hasSuffix( "png" ) || string.lowercased().hasSuffix( "gif" ) ||
-           string.lowercased().hasSuffix( "jpg" ) || string.lowercased().hasSuffix( "jpeg" ),
+                   string.lowercased().hasSuffix( "jpg" ) || string.lowercased().hasSuffix( "jpeg" ),
            let url = URL( string: string ) {
             return url
         }
@@ -138,9 +139,9 @@ struct Meta: Codable, Equatable {
                 // Weigh colors according to interested parameters.
                 let saturation = color.saturation, value = color.value, alpha = Int( color.alpha )
                 scoresByColor[color] = 0 +
-                400 * alpha * alpha / 65536 +
-                200 * saturation / 256 +
-                100 * mirror( ratio: value, center: 216, max: 256 ) / 256
+                        400 * alpha * alpha / 65536 +
+                        200 * saturation / 256 +
+                        100 * mirror( ratio: value, center: 216, max: 256 ) / 256
             }
 
             // Use top weighted color as site's color.

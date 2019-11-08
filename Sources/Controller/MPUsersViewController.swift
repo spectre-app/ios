@@ -75,7 +75,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 return MPUser( fullName: keyFactory.fullName, file: nil ).login( keyFactory: keyFactory )
             }
             passwordField.authenticated = { result in
-                trc( "Incognito authentication: \(result)" )
+                trc( "Incognito authentication: %@", result )
 
                 spinner.dismiss()
                 controller.dismiss( animated: true ) {
@@ -185,7 +185,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak self, weak user] _ in
                 guard let self = self, let user = user
                 else { return }
-                trc( "Trashing user: \(user)" )
+                trc( "Trashing user: %@", user )
 
                 if MPMarshal.shared.delete( userFile: user ) {
                     self.fileSource.remove( user )
@@ -210,7 +210,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak user] _ in
                 guard let user = user
                 else { return }
-                trc( "Resetting user: \(user)" )
+                trc( "Resetting user: %@", user )
 
                 user.resetKey = true
             } )
@@ -244,7 +244,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         UIView.animate( withDuration: 0.382 ) {
-            trc( "Selected user: \(self.selectedFile?.description ?? "-")" )
+            trc( "Selected user: %@", self.selectedFile )
 
             self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
             if self.userToolbarConfiguration.activated {
@@ -262,7 +262,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     // MARK: --- MPMarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
-        trc( "Users updated: \(userFiles)" )
+        trc( "Users updated: %@", userFiles )
 
         self.fileSource.update( [ userFiles.sorted() + [ nil ] ], reloadItems: true )
         DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { self.usersSpinner.flashScrollIndicators() }
@@ -365,7 +365,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
             self.passwordField.authenticated = { result in
-                trc( "User password authentication: \(result)" )
+                trc( "User password authentication: %@", result )
 
                 switch result {
                     case .success(let user):
@@ -394,7 +394,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
                 let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
                 userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { result in
-                    trc( "User biometric authentication: \(result)" )
+                    trc( "User biometric authentication: %@", result )
 
                     switch result {
                         case .success(let user):

@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewController.Model> {
+class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewController.Model>, ModelObserver {
 
     // MARK: --- Life ---
 
@@ -16,14 +16,17 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     init() {
         super.init( model: Model() )
 
-        self.model.onChange = {
-            self.setNeedsUpdate()
-        }
+        self.model.observers.register( observer: self )
     }
 
     override func loadItems() -> [Item<Model>] {
-        [ VersionItem(), SeparatorItem(),
-          LogLevelPicker(), LogsItem() ]
+        [ LogLevelPicker(), SeparatorItem(), LogsItem() ]
+    }
+
+    // MARK: --- ModelObserver ---
+
+    func didChange() {
+        self.setNeedsUpdate()
     }
 
     // MARK: --- Types ---
@@ -36,21 +39,11 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
         }
     }
 
-    class LogsItem: AreaItem<Model> {
-        init() {
-            super.init( value: {
-                PearlLogger.get().messages( with: $0.logbookLevel ).reduce( "" ) {
-                    "\($0 ?? "")\($1.occurrenceDescription()) [\($1.level.short)] \($1.sourceDescription())\n\($1.message)\n\n"
-                }
-            } )
-        }
-    }
-
-    class LogLevelPicker: PickerItem<Model, PearlLogLevel> {
+    class LogLevelPicker: PickerItem<Model, LogLevel> {
         init() {
             super.init(
                     title: "Logbook",
-                    values: { _ in PearlLogLevel.allCases },
+                    values: { _ in LogLevel.allCases },
                     value: { $0.logbookLevel },
                     update: { $0.logbookLevel = $1 },
                     caption: { _ in
@@ -65,14 +58,14 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
             collectionView.registerCell( Cell.self )
         }
 
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: Model, value: PearlLogLevel) -> UICollectionViewCell? {
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: Model, value: LogLevel) -> UICollectionViewCell? {
             Cell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
                 (cell as? Cell)?.level = value
             }
         }
 
         class Cell: MPItemCell {
-            var level = PearlLogLevel.trace {
+            var level = LogLevel.trace {
                 didSet {
                     DispatchQueue.main.perform {
                         self.titleLabel.text = self.level.description
@@ -109,15 +102,46 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
         }
     }
 
-    class Model {
-        var onChange: (() -> Void)?
+    class LogsItem: AreaItem<Model, NSAttributedString> {
+        init() {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "DDD'-'HH':'mm':'ss"
+            super.init( value: {
+                MPLogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
+                    logs.append( NSAttributedString(
+                            string: "\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)\n",
+                            attributes: [
+                                .font: appConfig.theme.font.mono.get()?.withSize( 11 ) as Any,
+                                .foregroundColor: appConfig.theme.color.secondary.get() as Any,
+                            ] ) )
+                    logs.append( NSAttributedString(
+                            string: "\(record.message)\n",
+                            attributes: [
+                                .font: appConfig.theme.font.mono.get()?.withSize( 11 ).withSymbolicTraits(
+                                        record.level <= .warning ?
+                                                .traitBold:
+                                                [] ) as Any,
+                                .foregroundColor: appConfig.theme.color.body.get() as Any,
+                            ] ) )
+                    return logs
+                }
+            } )
+        }
+    }
 
-        var logbookLevel = PearlLogger.get().historyLevel {
+    class Model: Observable {
+        let observers = Observers<ModelObserver>()
+
+        var logbookLevel = MPLogSink.shared.level {
             didSet {
-                PearlLogger.get().minimumLevel = min( PearlLogLevel.info, self.logbookLevel )
-                PearlLogger.get().historyLevel = min( PearlLogLevel.info, self.logbookLevel )
-                self.onChange?()
+                MPLogSink.shared.level = max( .info, self.logbookLevel )
+
+                self.observers.notify { $0.didChange() }
             }
         }
     }
+}
+
+protocol ModelObserver {
+    func didChange()
 }

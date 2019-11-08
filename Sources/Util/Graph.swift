@@ -57,7 +57,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
 
         // Test the root.
         if (found( root )) {
-            trc( "found root: \(root)" )
+            trc( "found root: %@", root )
             return Path( target: root, cost: 0 )
         }
 
@@ -87,17 +87,17 @@ class Graph<E: Hashable>: CustomStringConvertible {
                 let neighbourCost = testPath.cost + link.cost
                 if neighbourCost > budget {
                     // Stepping to neighbour from here would exceed maximum cost.
-                    trc( "neighbour exceeds maximum cost (\(neighbourCost) > \(budget)): \(neighbour)" )
+                    trc( "neighbour exceeds maximum cost (%f > %f): %@", neighbourCost, budget, neighbour )
                     continue
                 }
 
                 // Did we find the target?
                 let neighbourPath = Path( parent: testPath, target: neighbour, cost: neighbourCost )
                 if (found( neighbour )) {
-                    trc( "found neighbour at cost \(neighbourCost): \(neighbour)" )
+                    trc( "found neighbour at cost %f: %@", neighbourCost, neighbour )
                     return neighbourPath
                 }
-                trc( "intermediate neighbour at cost \(neighbourCost): \(neighbour)" )
+                trc( "intermediate neighbour at cost %f: %@", neighbourCost, neighbour )
 
                 // Neighbour is not the target, add it for testing its neighbours later.
                 testPaths.append( neighbourPath )

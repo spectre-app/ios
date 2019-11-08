@@ -168,7 +168,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         init() {
             super.init( subitems: [
                 ButtonItem( value: { _ in (label: "Export", image: nil) } ) { item in
-                    trc( "Exporting: \(item.model?.description ?? "-")" )
+                    trc( "Exporting: %@", item.model )
 
                     if let user = item.model {
                         let controller = MPExportViewController( user: user )
@@ -178,7 +178,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                     }
                 },
                 ButtonItem( value: { _ in (label: "Log out", image: nil) } ) { item in
-                    trc( "Logging out: \(item.model?.description ?? "-")" )
+                    trc( "Logging out: %@", item.model )
 
                     item.model?.logout()
                 },

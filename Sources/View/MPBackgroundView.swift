@@ -33,7 +33,8 @@ class MPBackgroundView: UIView {
                     (data: CMDeviceMotion?, error: Error?) in
 
                     if let error = error {
-                        err( "Core Motion error: \(error)" )
+                        err( "Core Motion error [>TRC]" )
+                        trc( "[>] %@", error )
                     }
                     guard let data = data
                     else { return }

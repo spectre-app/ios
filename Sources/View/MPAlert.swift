@@ -40,7 +40,7 @@ class MPAlert {
     private let messageFactory: () -> String?
     private let detailsFactory: () -> String?
     private let contentFactory: () -> (UIView?)
-    private let level:   PearlLogLevel
+    private let level:   LogLevel
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -48,7 +48,7 @@ class MPAlert {
 
     init(title: @escaping @autoclosure () -> String?, message: @escaping @autoclosure () -> String? = nil,
          details: @escaping @autoclosure () -> String? = nil, content: @escaping @autoclosure () -> (UIView?) = nil,
-         level: PearlLogLevel = .info) {
+         level: LogLevel = .info) {
         self.titleFactory = title
         self.messageFactory = message
         self.detailsFactory = details
@@ -60,14 +60,7 @@ class MPAlert {
 
     @discardableResult
     public func show(in view: UIView? = nil, dismissAutomatically: Bool = true) -> Self {
-        var logMessage = ""
-        if let title = self.title {
-            logMessage += "[\(title)]"
-        }
-        if let message = self.message {
-            logMessage += ": \(message)"
-        }
-        log( logMessage, level: self.level )
+        log( level: self.level, "[%@]: %@", [ self.title, self.message ] )
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {

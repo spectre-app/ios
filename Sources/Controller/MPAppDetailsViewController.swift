@@ -198,7 +198,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                 self.button.titleLabel?.font = appConfig.theme.font.callout.get()
                 self.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
                     if let url = self.link?.url {
-                        trc( "Opening link: \(url)" )
+                        trc( "Opening link: %@", url )
 
                         UIApplication.shared.openURL( url )
                     }

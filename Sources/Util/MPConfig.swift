@@ -10,6 +10,7 @@ let appConfig = MPConfig()
 public class MPConfig: Observable {
     public let observers = Observers<MPConfigObserver>()
 
+    public var isDebug = false
     public var sendInfo = false {
         didSet {
             if self.sendInfo != UserDefaults.standard.bool( forKey: "sendInfo" ) {
@@ -53,6 +54,11 @@ public class MPConfig: Observable {
     // MARK: --- Life ---
 
     init() {
+        assert( {
+                    self.isDebug = true
+                    return true
+                }() )
+
         self.load()
         self.checkLegacy()
 
@@ -77,7 +83,7 @@ public class MPConfig: Observable {
 
                 case .failure(let error):
                     err( "Couldn't determine legacy store state. [>TRC]" )
-                    trc( error.localizedDescription )
+                    trc( "[>] %@", error )
             }
         }
     }

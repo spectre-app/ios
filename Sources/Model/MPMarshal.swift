@@ -238,7 +238,7 @@ class MPMarshal: Observable {
 
                 spinner.show( dismissAutomatically: false )
                 authentication.then( { result in
-                    trc( "Import replace authentication: \(result)" )
+                    trc( "Import replace authentication: %@", result )
                     spinner.dismiss()
 
                     switch result {
@@ -278,7 +278,7 @@ class MPMarshal: Observable {
 
                 spinner.show( dismissAutomatically: false )
                 authentication.then( on: .main ) { result in
-                    trc( "Import merge authentication: \(result)" )
+                    trc( "Import merge authentication: %@", result )
                     spinner.dismiss()
 
                     switch result {
@@ -303,7 +303,7 @@ class MPMarshal: Observable {
                                     return existingFile.authenticate( keyFactory: keyFactory )
                                 }
                                 passwordField.authenticated = { result in
-                                    trc( "Existing user authentication: \(result)" )
+                                    trc( "Existing user authentication: %@", result )
 
                                     spinner.dismiss()
                                     controller.dismiss( animated: true ) {
@@ -344,7 +344,7 @@ class MPMarshal: Observable {
                                     return importingFile.authenticate( keyFactory: keyFactory )
                                 }
                                 passwordField.authenticated = { result in
-                                    trc( "Import user authentication: \(result)" )
+                                    trc( "Import user authentication: %@", result )
 
                                     spinner.dismiss()
                                     controller.dismiss( animated: true ) {

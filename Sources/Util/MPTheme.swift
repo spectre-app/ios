@@ -12,6 +12,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
     public static let `default` = MPTheme()
     public static let dark = MPTheme( path: ".dark" ) {
         $0.color.brand.set( UIColor( hex: "1C343B" ) )
+        $0.color.selection.set( UIColor( hex: "78DDFB" )?.withAlphaComponent( 0.382 ) )
     }
 
     public class func with(path: String?) -> MPTheme? {

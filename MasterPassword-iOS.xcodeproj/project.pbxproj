@@ -65,6 +65,7 @@
 		93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
 		93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
 		93D3980046016EFD05B35BC5 /* PearlUICollectionView.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D39B1D8177A86C5B9EDDE3 /* PearlUICollectionView.h */; };
+		93D3983CA421991D12ADDDBA /* MPLogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* MPLogSink.swift */; };
 		93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */; };
 		93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
@@ -90,7 +91,6 @@
 		93D39C34FE35830EF5BE1D2A /* NSArray+Indexing.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D396D04E57792A54D437AC /* NSArray+Indexing.h */; };
 		93D39C94D7BFAAE6C4B1471F /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
-		93D39D45180726A9C2484030 /* MPStarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39633973C6D2EAB335D68 /* MPStarView.swift */; };
 		93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D3908DF8EABBD952065DC0 /* UICollectionView+PearlReloadItems.m */; };
 		93D39D506D830E25948A9EB5 /* MPEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */; };
 		93D39D8B9142B6F4077CFBD2 /* MPUntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */; };
@@ -170,6 +170,8 @@
 		DA67460F18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460B18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf */; };
 		DA67461018DE7F0C00DFE240 /* Exo2.0-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460C18DE7F0C00DFE240 /* Exo2.0-Bold.otf */; };
 		DA6A72E82371E63A006C1AD3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6A72E72371E63A006C1AD3 /* CoreHaptics.framework */; };
+		DA6A72E92373E02A006C1AD3 /* PearlLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFE45EC15039823003ABA7C /* PearlLogger.m */; };
+		DA6A72EA2373E02D006C1AD3 /* PearlLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAFE45EB15039823003ABA7C /* PearlLogger.h */; };
 		DA854C8318D4CFBF00106317 /* avatar-add@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA854C8118D4CFBF00106317 /* avatar-add@2x.png */; };
 		DA854C8418D4CFBF00106317 /* avatar-add.png in Resources */ = {isa = PBXBuildFile; fileRef = DA854C8218D4CFBF00106317 /* avatar-add.png */; };
 		DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA945C8617E3F3FD0053236B /* Images.xcassets */; };
@@ -200,7 +202,6 @@
 		DAB4FC0320310619002768FB /* NSMutableSet+Pearl.h in Headers */ = {isa = PBXBuildFile; fileRef = DA95B50D1C4776F00067F5EF /* NSMutableSet+Pearl.h */; };
 		DAB4FC042031061B002768FB /* NSMutableSet+Pearl.m in Sources */ = {isa = PBXBuildFile; fileRef = DA95B50E1C4776F00067F5EF /* NSMutableSet+Pearl.m */; };
 		DAB4FC052031061E002768FB /* NSNotificationCenter+PearlEasyCleanup.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D391AA32F24290C424438E /* NSNotificationCenter+PearlEasyCleanup.h */; };
-		DAB4FC0A203111D4002768FB /* PearlLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAB4FBA1202FCA3C002768FB /* PearlLogger.swift */; };
 		DAB7AE5D1F3D752900C856B1 /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAB7AE5C1F3D752900C856B1 /* libjson-c.a */; };
 		DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
 		DABB981615100B4000B05417 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DABB981515100B4000B05417 /* SystemConfiguration.framework */; };
@@ -303,8 +304,6 @@
 		DAFE4A2315039824003ABA7C /* PearlDeviceUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFE45E815039823003ABA7C /* PearlDeviceUtils.m */; };
 		DAFE4A2415039824003ABA7C /* PearlInfoPlist.h in Headers */ = {isa = PBXBuildFile; fileRef = DAFE45E915039823003ABA7C /* PearlInfoPlist.h */; };
 		DAFE4A2515039824003ABA7C /* PearlInfoPlist.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFE45EA15039823003ABA7C /* PearlInfoPlist.m */; };
-		DAFE4A2615039824003ABA7C /* PearlLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAFE45EB15039823003ABA7C /* PearlLogger.h */; };
-		DAFE4A2715039824003ABA7C /* PearlLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFE45EC15039823003ABA7C /* PearlLogger.m */; };
 		DAFE4A2815039824003ABA7C /* PearlMathUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = DAFE45ED15039823003ABA7C /* PearlMathUtils.h */; };
 		DAFE4A2915039824003ABA7C /* PearlMathUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFE45EE15039823003ABA7C /* PearlMathUtils.m */; };
 		DAFE4A2A15039824003ABA7C /* PearlObjectUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = DAFE45EF15039823003ABA7C /* PearlObjectUtils.h */; };
@@ -419,7 +418,6 @@
 		93D395C767C420C02F11C44D /* MPCoreData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCoreData.swift; sourceTree = "<group>"; };
 		93D395FD92D751588A645D15 /* MPKeyFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeyFactory.swift; sourceTree = "<group>"; };
 		93D39613B68BCF56DD931C91 /* MPMarginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMarginView.swift; sourceTree = "<group>"; };
-		93D39633973C6D2EAB335D68 /* MPStarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPStarView.swift; sourceTree = "<group>"; };
 		93D3969393A3A46BD27D7078 /* mpw-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm.c"; sourceTree = "<group>"; };
 		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
 		93D396D04E57792A54D437AC /* NSArray+Indexing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+Indexing.h"; sourceTree = "<group>"; };
@@ -443,6 +441,7 @@
 		93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPLogDetailsViewController.swift; sourceTree = "<group>"; };
 		93D3990C92C01413465156FF /* MPAlert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAlert.swift; sourceTree = "<group>"; };
 		93D3990D850D76A94C6B7A4D /* mpw-algorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm.h"; sourceTree = "<group>"; };
+		93D39941059143124D09AE05 /* MPLogSink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPLogSink.swift; sourceTree = "<group>"; };
 		93D39949A9E5C95F193F4315 /* MPItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPItemView.swift; sourceTree = "<group>"; };
 		93D3995755BB75535CC37A47 /* MPTintView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintView.swift; sourceTree = "<group>"; };
 		93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UILabel+MPFontSize.h"; sourceTree = "<group>"; };
@@ -927,7 +926,6 @@
 			children = (
 				93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */,
 				93D39424D508440582DC7FD0 /* MPSpinnerView.swift */,
-				93D39633973C6D2EAB335D68 /* MPStarView.swift */,
 				93D399AC72BBE25033B26BF0 /* AutoLayoutCollectionViewCell.m */,
 				93D39A199BE0BC2D2EDBCC34 /* AutoLayoutCollectionViewCell.h */,
 				93D39564D6408073D59CDB6A /* MPButton.swift */,
@@ -982,6 +980,7 @@
 				93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */,
 				93D39C3FA9FA2CA5B234741E /* MPConfig.swift */,
 				93D3909E003FF5E936687AA6 /* MPFeedback.swift */,
+				93D39941059143124D09AE05 /* MPLogSink.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1661,7 +1660,6 @@
 				DAFE4A2415039824003ABA7C /* PearlInfoPlist.h in Headers */,
 				DA2CA4E418D28866007798F8 /* NSLayoutConstraint+PearlUIKit.h in Headers */,
 				DACE2F6D19BA6A2A0010F92E /* PearlMutableStaticTableViewController.h in Headers */,
-				DAFE4A2615039824003ABA7C /* PearlLogger.h in Headers */,
 				DAFE4A2815039824003ABA7C /* PearlMathUtils.h in Headers */,
 				DAFE4A2A15039824003ABA7C /* PearlObjectUtils.h in Headers */,
 				DAB4FC0320310619002768FB /* NSMutableSet+Pearl.h in Headers */,
@@ -1680,6 +1678,7 @@
 				DAEFB01F19BCBD9E00525079 /* UIView+LayoutGone.h in Headers */,
 				DAFE4A4415039824003ABA7C /* PearlGradientView.h in Headers */,
 				DAFE4A4A15039824003ABA7C /* PearlMessageView.h in Headers */,
+				DA6A72EA2373E02D006C1AD3 /* PearlLogger.h in Headers */,
 				DACE2F6619BA6A0A0010F92E /* PearlProfiler.h in Headers */,
 				DAFE4A4C15039824003ABA7C /* PearlRootViewController.h in Headers */,
 				DAFE4A5015039824003ABA7C /* PearlUIDebug.h in Headers */,
@@ -2170,7 +2169,6 @@
 				DAE6E1BE22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m in Sources */,
 				DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */,
 				DA35148D233EF93400BCF504 /* mpw-algorithm_v3.c in Sources */,
-				DAB4FC0A203111D4002768FB /* PearlLogger.swift in Sources */,
 				DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */,
 				93D395B715D15F2B56F2A2EE /* mpw-types.c in Sources */,
 				93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */,
@@ -2178,7 +2176,6 @@
 				DA5B0B401F36469400B663F0 /* base64.c in Sources */,
 				DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */,
 				93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */,
-				93D39D45180726A9C2484030 /* MPStarView.swift in Sources */,
 				DAE6E1BA22CC3D1D00DE0342 /* MPSiteEntity+CoreDataProperties.m in Sources */,
 				93D39BED3DFB61513B0D015D /* MPUsersViewController.swift in Sources */,
 				93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */,
@@ -2251,6 +2248,7 @@
 				93D3975E8CAF0B2422D7C1D7 /* MPAttacker.swift in Sources */,
 				93D39F69D0EDD80B5DCAF0BB /* MPConfig.swift in Sources */,
 				93D39676011DF46822C3BEAC /* MPFeedback.swift in Sources */,
+				93D3983CA421991D12ADDDBA /* MPLogSink.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2270,7 +2268,6 @@
 				DAFE4A2315039824003ABA7C /* PearlDeviceUtils.m in Sources */,
 				DAB4FC0220310615002768FB /* NSInvocation+Pearl.m in Sources */,
 				DAFE4A2515039824003ABA7C /* PearlInfoPlist.m in Sources */,
-				DAFE4A2715039824003ABA7C /* PearlLogger.m in Sources */,
 				DAFE4A2915039824003ABA7C /* PearlMathUtils.m in Sources */,
 				DAFE4A2B15039824003ABA7C /* PearlObjectUtils.m in Sources */,
 				DAFE4A2E15039824003ABA7C /* PearlStrings.m in Sources */,
@@ -2323,6 +2320,7 @@
 				93D39D47FC623E91FC39D20C /* UICollectionView+PearlReloadItems.m in Sources */,
 				93D3928D629EA563F9EC4909 /* NSPersistentStore+PearlMigration.m in Sources */,
 				93D392A33CCE85431E910C7B /* NSOrderedSetOrArray.m in Sources */,
+				DA6A72E92373E02A006C1AD3 /* PearlLogger.m in Sources */,
 				93D3942C1B117EE4851AA7B6 /* UIView+Visible.m in Sources */,
 				93D395373A425B05C86B2268 /* PearlHangDetector.m in Sources */,
 				93D3964B458F9F940A790D6F /* UILayoutGuide+Pearl.m in Sources */,

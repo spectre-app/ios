@@ -202,7 +202,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             guard let site = item?.model, let keyword = controller?.textFields?.first?.text<
                             else { return }
 
-                            trc( "Adding security question <\(keyword)> for: \(site)" )
+                            trc( "Adding security question <%@> for: %@", keyword, site )
                             site.questions.append( MPQuestion( site: site, keyword: keyword ) )
                         } )
                         item.viewController?.present( controller, animated: true )
@@ -223,7 +223,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         override func delete(model: MPSite, value: MPQuestion) {
-            trc( "Trashing security question: \(value)" )
+            trc( "Trashing security question: %@", value )
 
             model.questions.removeAll { $0 === value }
         }

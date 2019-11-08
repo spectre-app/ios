@@ -18,12 +18,12 @@ class MPViewController: UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        trc( "> \(type( of: self ))" )
+        trc( "> %@", type( of: self ) )
         super.viewWillAppear( animated )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        trc( "< \(type( of: self ))" )
+        trc( "< %@", type( of: self ) )
         super.viewWillDisappear( animated )
     }
 }

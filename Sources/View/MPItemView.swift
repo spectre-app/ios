@@ -450,12 +450,12 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     }
 }
 
-class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
-    let update: ((M, String) -> Void)?
+class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
+    let update: ((M, V) -> Void)?
 
     init(title: String? = nil, subitems: [Item<M>] = [],
-         value: @escaping (M) -> String? = { _ in nil },
-         update: ((M, String) -> Void)? = nil,
+         value: @escaping (M) -> V? = { _ in nil },
+         update: ((M, V) -> Void)? = nil,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
          hidden: @escaping (M) -> Bool = { _ in false }) {
         self.update = update
@@ -469,8 +469,13 @@ class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
     // MARK: UITextViewDelegate
 
     func textViewDidChange(_ textView: UITextView) {
-        if let model = self.model, let text = textView.text {
-            self.update?( model, text )
+        if let model = self.model, let update = update {
+            if let value = textView.text as? V {
+                update( model, value )
+            }
+            else if let value = textView.attributedText as? V {
+                update( model, value )
+            }
         }
     }
 
@@ -489,7 +494,7 @@ class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
 
         override func createValueView() -> UIView? {
             self.valueView.delegate = self.item
-            self.valueView.font = appConfig.theme.font.mono.get()?.withSize( 11 )
+            self.valueView.font = appConfig.theme.font.mono.get()
             self.valueView.textColor = appConfig.theme.color.body.get()
             self.valueView.backgroundColor = .clear
             return self.valueView
@@ -508,7 +513,20 @@ class AreaItem<M>: ValueItem<M, String>, UITextViewDelegate {
             super.update()
 
             self.valueView.isEditable = self.item.update != nil
-            self.valueView.text = self.item.value
+
+            if let value = self.item.value as? NSAttributedString {
+                self.valueView.attributedText = value
+                self.valueView.isHidden = false
+            }
+            else if let value = self.item.value {
+                self.valueView.text = String( describing: value )
+                self.valueView.isHidden = false
+            }
+            else {
+                self.valueView.text = nil
+                self.valueView.attributedText = nil
+                self.valueView.isHidden = true
+            }
         }
     }
 }

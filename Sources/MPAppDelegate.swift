@@ -13,27 +13,31 @@ import Firebase
 @UIApplicationMain
 class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate, MPConfigObserver {
 
-    let window = UIWindow()
+    private let window = UIWindow()
 
     // MARK: --- Life ---
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        //PearlLogger.get().minimumLevel = .trace
-        //PearlLogger.get().printLevel = .trace
+
+        // Crashlytics
         Crashlytics.sharedInstance().delegate = self
         FirebaseApp.configure()
-        PearlLogger.get().registerListener {
-            CLSLogv( "%@", getVaList( [ $0.messageDescription() ] ) )
-            return true
-        }
-        inf( "Launching \(productName) \(PearlInfoPlist.get().cfBundleShortVersionString ?? "?") (\(PearlInfoPlist.get().cfBundleVersion ?? "?"))" )
+        mpw_log_sink_register( { event in
+            if let event = event, event.pointee.level <= (appConfig.sendInfo ? .info: .warning) {
+                CLSLogv( "%s", getVaList( [ event.pointee.message ] ) )
+            }
+        } )
+
+        // Log Sink
+        MPLogSink.shared.register()
+        inf( "Launching %@ v%@ (%@)", productName, PearlInfoPlist.get().cfBundleShortVersionString, PearlInfoPlist.get().cfBundleVersion )
 
         // Start UI
         self.window.tintColor = appConfig.theme.color.brand.get()
         self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window.makeKeyAndVisible()
 
-        appConfig.observers.register(observer: self)
+        appConfig.observers.register( observer: self )
 
         return true
     }
@@ -69,7 +73,8 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate, MP
     // MARK: --- CrashlyticsDelegate ---
 
     func crashlyticsDidDetectReport(forLastExecution report: CLSReport, completionHandler: @escaping (Bool) -> Void) {
-        trc( "crashlyticsDidDetectReport: \(report.identifier), on: \(report.crashedOnDate?.description ?? "-"), keys: \(report.customKeys)" )
+        trc( "crashlyticsDidDetectReport: %@, on: %@, keys: %@",
+             report.identifier, report.crashedOnDate, report.customKeys )
 
         DispatchQueue.main.async {
             if let root = UIApplication.shared.keyWindow?.rootViewController {

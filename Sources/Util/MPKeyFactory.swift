@@ -160,7 +160,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
                 return .biometricFace
 
             @unknown default:
-                wrn( "Unsupported biometry type: \(self.context.biometryType)" )
+                wrn( "Unsupported biometry type: %@", self.context.biometryType )
                 return .none
         }
     }
