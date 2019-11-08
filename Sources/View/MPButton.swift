@@ -116,6 +116,10 @@ class MPButton: MPEffectView {
         LayoutConfiguration( view: content ).constrainToMarginsOfOwner().activate()
     }
 
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        self.systemLayoutSizeFitting( size )
+    }
+
     // MARK: --- Private ---
 
     override func updateBackground() {

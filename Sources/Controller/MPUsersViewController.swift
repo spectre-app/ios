@@ -523,6 +523,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.biometricButton.isHidden = !appConfig.premium ||
                             !(keychainKeyFactory?.hasKey( algorithm: self.userFile?.algorithm ?? .current ) ?? false)
                     self.biometricButton.image = keychainKeyFactory?.factor.icon
+                    self.biometricButton.sizeToFit()
 
                     if self.isSelected {
                         self.authenticationConfiguration.activate()
