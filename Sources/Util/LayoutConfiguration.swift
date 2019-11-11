@@ -157,8 +157,6 @@ public class LayoutConfiguration: CustomStringConvertible {
         configurations( active, inactive )
         self.apply( active, active: true )
         self.apply( inactive, active: false )
-        dbg( "active: %@", self.activeConfigurations )
-        dbg( "inactive: %@", self.inactiveConfigurations )
 
         return self
     }
@@ -374,7 +372,7 @@ public class LayoutConfiguration: CustomStringConvertible {
             UIView.animate( withDuration: duration ) { self.activate( parent: parent ) }
             return self
         }
-        dbg( "%@: activate: %@", parent?.target, self )
+        trc( "%@: activate: %@", parent?.target, self )
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: duration ) {
@@ -382,7 +380,7 @@ public class LayoutConfiguration: CustomStringConvertible {
                 let targetView = self.target.view ?? owningView
 
                 self.inactiveConfigurations.forEach {
-                    dbg( "%@:%@: -> deactivate inactive child: %@", parent?.target, self.target, $0 )
+                    trc( "%@:%@: -> deactivate inactive child: %@", parent?.target, self.target, $0 )
                     $0.deactivate( parent: self )
                 }
 
@@ -416,7 +414,7 @@ public class LayoutConfiguration: CustomStringConvertible {
                         targetView?.translatesAutoresizingMaskIntoConstraints = false
                         for constrainer in self.constrainers {
                             for constraint in constrainer( owningView, self.target ) {
-                                dbg( "%@:%@: activating %@", parent?.target, self.target, constraint )
+                                trc( "%@:%@: activating %@", parent?.target, self.target, constraint )
                                 constraint.isActive = true
                                 self.activeConstraints.insert( constraint )
                             }
@@ -437,13 +435,13 @@ public class LayoutConfiguration: CustomStringConvertible {
                         self.inactiveValues[keyPath] = oldValue
                     }
 
-                    dbg( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
+                    trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
                     self.target.view?.setValue( newValue, forKeyPath: keyPath )
                 }
 
                 targetView.flatMap { targetView in self.actions.forEach { $0( targetView ) } }
                 self.activeConfigurations.forEach {
-                    dbg( "%@:%@: -> activate active child: %@", parent?.target, self.target, $0 )
+                    trc( "%@:%@: -> activate active child: %@", parent?.target, self.target, $0 )
                     $0.activate( parent: self )
                 }
 
@@ -470,14 +468,14 @@ public class LayoutConfiguration: CustomStringConvertible {
             UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
             return self
         }
-        dbg( "%@: deactivate: %@", parent?.target, self )
+        trc( "%@: deactivate: %@", parent?.target, self )
 
         DispatchQueue.main.perform {
                 let owningView = self.target.owningView
                 let targetView = self.target.view ?? owningView
 
                 self.activeConfigurations.forEach {
-                    dbg( "%@:%@: -> deactivate active child: %@", parent?.target, self.target, $0 )
+                    trc( "%@:%@: -> deactivate active child: %@", parent?.target, self.target, $0 )
                     $0.deactivate( parent: self )
                 }
 
@@ -499,7 +497,7 @@ public class LayoutConfiguration: CustomStringConvertible {
                 }
 
                 self.activeConstraints.forEach {
-                    dbg( "%@:%@: deactivating %@", parent?.target, self.target, $0 )
+                    trc( "%@:%@: deactivating %@", parent?.target, self.target, $0 )
                     $0.isActive = false
                 }
                 self.activeConstraints.removeAll()
@@ -510,12 +508,12 @@ public class LayoutConfiguration: CustomStringConvertible {
                         return
                     }
 
-                    dbg( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
+                    trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
                     self.target.view?.setValue( newValue, forKeyPath: keyPath )
                 }
 
                 self.inactiveConfigurations.forEach {
-                    dbg( "%@:%@: -> activate inactive child: %@", parent?.target, self.target, $0 )
+                    trc( "%@:%@: -> activate inactive child: %@", parent?.target, self.target, $0 )
                     $0.activate( parent: self )
                 }
 
