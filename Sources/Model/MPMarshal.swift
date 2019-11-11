@@ -485,7 +485,7 @@ class MPMarshal: Observable {
     @discardableResult
     public func importLegacy(force: Bool = false) -> Promise<Bool?> {
         MPCoreData.shared.promised {
-            var promises = [ Promise<Bool> ]()
+            var promise = Promise( .success( true ) )
 
             for user: MPUserEntity_CoreData in try $0.fetch( MPUserEntity.fetchRequest() ) {
                 guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
@@ -567,18 +567,18 @@ class MPMarshal: Observable {
                                       deallocate: true )?.data( using: .utf8 ),
                    file.pointee.error.type == .success {
                     // TODO: replace by proper promise handling
-                    promises.append( self.import( data: data ).then {
-                        if (try? $0.get()) ?? false {
+                    promise = promise.and( self.import( data: data ).then { (result : Result<Bool,Error>) -> Void in
+                        if (try? result.get()) ?? false {
                             self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
                         }
-                    } )
+                    }, reducing: { $0 && $1 })
                 }
                 else {
                     throw MPError.marshal( file.pointee.error, title: "Issue Importing User" )
                 }
             }
 
-            return Promise<Bool>( reducing: promises, from: true ) { $0 && $1 }
+            return promise
         }
     }
 
