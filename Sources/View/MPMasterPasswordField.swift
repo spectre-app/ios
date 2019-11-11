@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     var userFile:  MPMarshal.UserFile?

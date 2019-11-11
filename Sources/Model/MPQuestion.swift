@@ -3,7 +3,7 @@
 // Copyright (c) 2018 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPQuestionObserver {
     public let observers = Observers<MPQuestionObserver>()

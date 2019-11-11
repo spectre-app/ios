@@ -73,7 +73,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         override func didLoad(collectionView: UICollectionView) {
-            collectionView.registerCell( MPResultTypeCell.self )
+            collectionView.register( MPResultTypeCell.self )
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPSite, value: MPResultType) -> UICollectionViewCell? {
@@ -133,7 +133,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         override func didLoad(collectionView: UICollectionView) {
-            collectionView.registerCell( MPResultTypeCell.self )
+            collectionView.register( MPResultTypeCell.self )
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPSite, value: MPResultType) -> UICollectionViewCell? {
@@ -213,7 +213,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         }
 
         override func didLoad(tableView: UITableView) {
-            tableView.registerCell( Cell.self )
+            tableView.register( Cell.self )
         }
 
         override func cell(tableView: UITableView, indexPath: IndexPath, model: MPSite, value: MPQuestion) -> UITableViewCell? {
@@ -272,7 +272,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.resultLabel.textColor = appConfig.theme.color.body.get()
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
-                self.copyButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+                self.copyButton.button.action( for: .touchUpInside ) { [unowned self] in
                     self.question?.mpw_copy()
                 }
 

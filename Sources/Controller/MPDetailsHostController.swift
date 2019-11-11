@@ -87,12 +87,12 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: -8 ) }
                 .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -8 ) }
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor, constant: -16 ) }
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
+                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                 .activate()
 
         LayoutConfiguration( view: self.closeButton )
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
-                .constrainTo { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).withPriority( .fittingSizeLevel ) }
+                .constrainTo { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).with( priority: .fittingSizeLevel ) }
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
                 .activate()
 
@@ -101,7 +101,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 } )
-                .applyLayoutConfigurations { active, inactive in
+                .apply { active, inactive in
                     active.set( appConfig.theme.color.shade.get(), forKey: "backgroundColor" )
                     inactive.set( appConfig.theme.color.shade.get()?.withAlphaComponent( 0 ), forKey: "backgroundColor" )
                 }
@@ -134,7 +134,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 self.addChild( detailsController )
                 detailsController.beginAppearanceTransition( true, animated: true )
                 self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
-                LayoutConfiguration( view: detailsController.view ).constrainToOwner().activate()
+                LayoutConfiguration( view: detailsController.view ).constrain().activate()
                 UIView.animate( withDuration: 0.382, animations: {
                     detailsController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()

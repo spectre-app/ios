@@ -21,11 +21,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     private let userToolbar  = UIToolbar( frame: .infinite )
     private let detailsHost  = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
-    private var keyboardLayoutGuide:      UILayoutGuide! {
-        willSet {
-            self.keyboardLayoutGuide?.uninstallKeyboardLayoutGuide()
-        }
-    }
+    private var keyboardLayoutGuide:      KeyboardLayoutGuide!
 
     // MARK: --- Life ---
 
@@ -48,7 +44,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         // - View
         self.view.layoutMargins = UIEdgeInsets( top: 8, left: 8, bottom: 8, right: 8 )
 
-        self.usersSpinner.registerCell( UserCell.self )
+        self.usersSpinner.register( UserCell.self )
         self.usersSpinner.delegate = self
         self.usersSpinner.dataSource = self
         self.usersSpinner.backgroundColor = .clear
@@ -56,12 +52,12 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         self.appToolbar.axis = .horizontal
         self.appToolbar.spacing = 12
-        let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) ) { _, _ in
+        let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) ) { _ in
             self.detailsHost.show( MPAppDetailsViewController() )
         }
         settingsButton.isBackgroundVisible = false
         self.appToolbar.addArrangedSubview( settingsButton )
-        let incognitoButton = MPButton( image: UIImage( named: "icon_shield" ) ) { _, _ in
+        let incognitoButton = MPButton( image: UIImage( named: "icon_shield" ) ) { _ in
             let controller = UIAlertController( title: "Incognito Login", message:
             """
             While in incognito mode, no user information is kept on the device.
@@ -123,45 +119,47 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         // - Layout
         LayoutConfiguration( view: self.usersSpinner )
-                .constrainToOwner( withAnchors: .topBox )
-                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ).withPriority( .defaultHigh ) }
+                .constrain( anchors: .topBox )
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ).with( priority: .defaultHigh ) }
                 .activate()
 
         LayoutConfiguration( view: self.appToolbar )
-                .constrainToMarginsOfOwner( withAnchors: .bottomCenter )
+                .constrain( margins: true, anchors: .bottomCenter )
                 .activate()
 
         LayoutConfiguration( view: self.userToolbar )
-                .constrainToOwner( withAnchors: .horizontally )
+                .constrain( anchors: .horizontally )
                 .activate()
 
         LayoutConfiguration( view: self.detailsHost.view )
-                .constrainToOwner()
+                .constrain()
                 .activate()
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
-            active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).withPriority( .defaultHigh ) }
+            active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
             active.set( 1, forKey: "alpha" )
-            inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).withPriority( .defaultHigh ) }
+            inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
             inactive.set( 0, forKey: "alpha" )
+        }
+
+        self.keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
+            [
+                self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
+                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 )
+            ]
         }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        self.keyboardLayoutGuide = UILayoutGuide.installKeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
-            [
-                self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
-                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).withPriority( .defaultHigh + 1 )
-            ]
-        }
+        self.keyboardLayoutGuide.install()
 
         MPMarshal.shared.setNeedsReload()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        self.keyboardLayoutGuide = nil
+        self.keyboardLayoutGuide.uninstall()
         self.usersSpinner.selectItem( nil )
 
         super.viewWillDisappear( animated )
@@ -346,11 +344,11 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameLabel.textColor = appConfig.theme.color.body.get()
             self.nameLabel.numberOfLines = 0
             self.nameLabel.preferredMaxLayoutWidth = .infinity
-            self.nameLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
+            self.nameLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             self.avatarButton.contentMode = .center
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+            self.avatarButton.action( for: .touchUpInside ) { [unowned self] in
                 self.avatar.next()
             }
 
@@ -381,14 +379,14 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.textColor = appConfig.theme.color.body.get()
             self.nameField.borderStyle = .none
-            self.nameField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
-            self.nameField.attributedPlaceholder = stra( "Your Full Name", [
+            self.nameField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
+            self.nameField.attributedPlaceholder = NSAttributedString( string: "Your Full Name", attributes: [
                 NSAttributedString.Key.foregroundColor: appConfig.theme.color.secondary.get()!.withAlphaComponent( 0.382 )
             ] )
             self.nameField.alpha = 0
 
             self.biometricButton.isBackgroundVisible = false
-            self.biometricButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+            self.biometricButton.button.action( for: .touchUpInside ) { [unowned self] in
                 guard let userFile = self.userFile
                 else { return }
 
@@ -408,9 +406,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 }
             }
 
-            self.idBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 ) )
-            self.authBadgeView.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 ) )
-            self.passwordField.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
+            self.idBadgeView.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 )
+            self.authBadgeView.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 )
+            self.passwordField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             // - Hierarchy
             self.contentView.addSubview( self.idBadgeView )
@@ -422,7 +420,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
-                    .constrainToOwner()
+                    .constrain()
                     .activate()
             LayoutConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
@@ -483,9 +481,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
             let path = CGMutablePath()
             if self.isSelected {
-                path.addPath( CGPathCreateBetween( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
+                path.addPath( CGPath.between( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
                 if self.authenticationConfiguration.activated {
-                    path.addPath( CGPathCreateBetween( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
+                    path.addPath( CGPath.between( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
                 }
             }
             self.path = path.isEmpty ? nil: path

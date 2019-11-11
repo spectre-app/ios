@@ -24,7 +24,7 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
 
         // - Layout
         LayoutConfiguration( view: self.backgroundView )
-                .constrainToOwner()
+                .constrain()
                 .activate()
     }
 

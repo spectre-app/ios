@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPTapEffectView: UIView {
     private let host: UIView
@@ -43,7 +43,7 @@ class MPTapEffectView: UIView {
     public func run() {
         if let hostSnapshot = self.host.snapshotView( afterScreenUpdates: false ) {
             self.addSubview( hostSnapshot )
-            hostSnapshot.center = CGRectGetCenter( self.bounds )
+            hostSnapshot.center = self.bounds.center
         }
 
         self.flareView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
@@ -77,8 +77,9 @@ class MPTapEffectView: UIView {
                 let lineSize = self.bounds.size.width / 2 - hostSize / 2
                 context.setStrokeColor( self.tintColor.withAlphaComponent( 0.618 ).cgColor )
                 context.setLineWidth( lineSize )
-                context.strokeEllipse( in: CGRectFromCenterWithSize(
-                        CGRectGetCenter( self.bounds ), CGSize( width: lineSize + hostSize, height: lineSize + hostSize ) ) )
+                context.strokeEllipse( in: CGRect(
+                        center: self.bounds.center,
+                        size: CGSize( width: lineSize + hostSize, height: lineSize + hostSize ) ) )
             }
         }
     }

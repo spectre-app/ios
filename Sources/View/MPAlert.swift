@@ -3,7 +3,7 @@
 // Copyright (c) 2018 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPAlert {
     private lazy var view          = self.loadView()
@@ -32,7 +32,7 @@ class MPAlert {
 
     // MARK: --- Life ---
 
-    private lazy var title = self.titleFactory()
+    private lazy var title   = self.titleFactory()
     private lazy var message = self.messageFactory()
     private lazy var details = self.detailsFactory()
     private lazy var content = self.contentFactory()
@@ -40,7 +40,7 @@ class MPAlert {
     private let messageFactory: () -> String?
     private let detailsFactory: () -> String?
     private let contentFactory: () -> (UIView?)
-    private let level:   LogLevel
+    private let level:          LogLevel
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -138,7 +138,7 @@ class MPAlert {
         self.expandChevron.textColor = appConfig.theme.color.body.get()
         self.expandChevron.textAlignment = .center
         self.expandChevron.font = appConfig.theme.font.callout.get()
-        self.expandChevron.setAlignmentRectInsets( UIEdgeInsets( top: 0, left: 0, bottom: 8, right: 0 ) )
+        self.expandChevron.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 0, bottom: -8, right: 0 )
 
         self.detailLabel.text = self.details
         self.detailLabel.textColor = appConfig.theme.color.body.get()

@@ -57,7 +57,7 @@ class MPDateView: MPEffectView {
         self.contentView.addSubview( self.dayLabel )
 
         // - Layout
-        self.widthAnchor.constraint( equalTo: self.heightAnchor, constant: 0.618 ).activate()
+        self.widthAnchor.constraint( equalTo: self.heightAnchor, constant: 0.618 ).isActive = true
         LayoutConfiguration( view: self.monthLabel )
                 .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }

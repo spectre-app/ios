@@ -78,7 +78,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.formatControl.selectedSegmentIndex = MPMarshalFormat.allCases.firstIndex( of: MPMarshalFormat.default ) ?? -1
         self.revealControl.selectedSegmentIndex = 1
 
-        self.exportButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+        self.exportButton.button.action( for: .touchUpInside ) { [unowned self] in
             trc( "Requested export of %@, format: %@, redacted: %d",
                  self.user, self.format, self.redacted )
 
@@ -102,7 +102,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
 
         // - Layout
         LayoutConfiguration( view: self.contentView )
-                .constrainToMarginsOfOwner()
+                .constrain( margins: true )
                 .activate()
     }
 

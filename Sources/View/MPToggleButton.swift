@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPToggleButton: UIButton {
     private let checkLabel = UILabel()
@@ -49,8 +49,8 @@ class MPToggleButton: UIButton {
 
         self.addSubview( self.checkLabel )
 
-        self.widthAnchor.constraint( equalTo: self.heightAnchor ).activate()
-        self.widthAnchor.constraint( equalToConstant: 70 ).withPriority( .defaultHigh ).activate()
+        self.widthAnchor.constraint( equalTo: self.heightAnchor ).isActive = true
+        self.widthAnchor.constraint( equalToConstant: 70 ).with(priority: .defaultHigh).isActive = true
 
         LayoutConfiguration( view: self.checkLabel )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }

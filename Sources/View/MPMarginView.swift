@@ -15,7 +15,7 @@ class MPMarginView: UIView {
 
         self.addSubview( view )
         LayoutConfiguration( view: view )
-                .constrainToMarginsOfOwner()
+                .constrain( margins: true )
                 .activate()
     }
 

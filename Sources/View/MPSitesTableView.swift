@@ -53,8 +53,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     init() {
         super.init( frame: .zero, style: .plain )
 
-        self.registerCell( SiteCell.self )
-        self.registerCell( LiefsteCell.self )
+        self.register( SiteCell.self )
+        self.register( LiefsteCell.self )
         self.delegate = self
         self.dataSource = self
         self.backgroundColor = .clear
@@ -259,7 +259,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
             }
         }
-        public var site:      MPSite? {
+        public var site: MPSite? {
             self.result?.value
         }
         public var new = false {
@@ -354,8 +354,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeButton.trailingAnchor, constant: 4 ) }
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.settingsButton.leadingAnchor, constant: -4 ) }
-                    .huggingPriorityHorizontal( .fittingSizeLevel, vertical: .defaultLow )
-                    .compressionResistancePriorityHorizontal( .defaultHigh - 1, vertical: .defaultHigh + 1 )
+                    .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
+                    .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 1 )
                     .activate()
 
             LayoutConfiguration( view: self.captionLabel )
@@ -507,7 +507,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             // - Layout
             LayoutConfiguration( view: self.emitterView )
-                    .constrainToOwner()
+                    .constrain()
                     .activate()
             LayoutConfiguration( view: self.propLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }

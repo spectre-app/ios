@@ -3,7 +3,7 @@
 // Copyright (c) 2018 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver {
     public let observers = Observers<MPUserObserver>()

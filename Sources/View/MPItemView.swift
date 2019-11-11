@@ -86,7 +86,7 @@ class Item<M>: NSObject {
             self.titleLabel.textAlignment = .center
             self.titleLabel.font = appConfig.theme.font.headline.get()
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
-            self.titleLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
+            self.titleLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             self.subitemsView.axis = .horizontal
             self.subitemsView.distribution = .fillEqually
@@ -100,7 +100,7 @@ class Item<M>: NSObject {
             self.captionLabel.font = appConfig.theme.font.caption1.get()
             self.captionLabel.numberOfLines = 0
             self.captionLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
-            self.captionLabel.setAlignmentRectOutsets( UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) )
+            self.captionLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             // - Hierarchy
             self.addSubview( self.contentView )
@@ -120,8 +120,8 @@ class Item<M>: NSObject {
                     .activate()
 
             LayoutConfiguration( view: self.subitemsView )
-                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).withPriority( .defaultHigh ) }
-                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
+                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultHigh ) }
+                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                     .activate()
         }
 
@@ -132,7 +132,7 @@ class Item<M>: NSObject {
         func didLoad() {
             if let valueView = self.valueView {
                 valueView.superview?.readableContentGuide.widthAnchor.constraint( equalTo: valueView.widthAnchor )
-                                                                     .withPriority( .defaultLow + 1 ).activate()
+                                                                     .with( priority: .defaultLow + 1 ).isActive = true
             }
         }
 
@@ -182,7 +182,7 @@ class SeparatorItem<M>: Item<M> {
 
         override func createValueView() -> UIView? {
             self.separatorView.backgroundColor = appConfig.theme.color.mute.get()
-            self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).activate()
+            self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).isActive = true
             return self.separatorView
         }
     }
@@ -282,7 +282,7 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         }
 
         override func createValueView() -> UIView? {
-            self.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+            self.button.action( for: .touchUpInside ) { [unowned self] in
                 if let model = self.item.model {
                     self.button.isSelected = !self.button.isSelected
                     self.item.update( model, self.button.isSelected )
@@ -333,7 +333,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
         }
 
         override func createValueView() -> UIView? {
-            self.button.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+            self.button.button.action( for: .touchUpInside ) { [unowned self] in
                 self.item.action( self.item )
             }
             return self.button
@@ -431,7 +431,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.delegate = self.item
             self.valueField.textColor = appConfig.theme.color.body.get()
             self.valueField.textAlignment = .center
-            self.valueField.addAction( for: .editingChanged ) { [unowned self] _, _ in
+            self.valueField.action( for: .editingChanged ) { [unowned self] in
                 if let model = self.item.model,
                    let text = self.valueField.text {
                     self.item.update?( model, text )
@@ -505,7 +505,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 
             if let window = self.valueView.window {
                 self.valueView.heightAnchor.constraint( equalTo: window.heightAnchor, multiplier: 0.618 )
-                                           .withPriority( .defaultHigh ).activate()
+                                           .with(priority: .defaultHigh).isActive = true
             }
         }
 
@@ -570,7 +570,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
 
         override func createValueView() -> UIView? {
             self.downButton.isBackgroundVisible = false
-            self.downButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+            self.downButton.button.action( for: .touchUpInside ) { [unowned self] in
                 if let model = self.item.model,
                    let value = self.item.value,
                    value > self.item.min {
@@ -579,7 +579,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
             }
 
             self.upButton.isBackgroundVisible = false
-            self.upButton.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+            self.upButton.button.action( for: .touchUpInside ) { [unowned self] in
                 if let model = self.item.model,
                    let value = self.item.value,
                    value < self.item.max {
@@ -900,7 +900,32 @@ class ListItem<M, V: Hashable>: Item<M> {
 
         // MARK: --- UITableViewDelegate ---
 
-        class TableView: PearlFixedTableView {
+        class TableView: UITableView {
+            override var intrinsicContentSize: CGSize {
+                CGSize( width: UIView.noIntrinsicMetric, height: self.contentSize.height )
+            }
+
+            override var bounds: CGRect {
+                didSet {
+                    if self.bounds.size.height < self.contentSize.height {
+                        if !self.isScrollEnabled {
+                            self.isScrollEnabled = true
+                            self.flashScrollIndicators()
+                        }
+                    }
+                    else {
+                        self.isScrollEnabled = false
+                    }
+                }
+            }
+            override var contentSize: CGSize {
+                didSet {
+                    self.invalidateIntrinsicContentSize()
+                    self.setNeedsUpdateConstraints()
+                    self.setNeedsLayout()
+                }
+            }
+
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
             }
@@ -909,6 +934,22 @@ class ListItem<M, V: Hashable>: Item<M> {
                 super.init( frame: .zero, style: .plain )
                 self.backgroundColor = .clear
                 self.separatorStyle = .none
+            }
+
+            override func endUpdates() {
+                super.endUpdates()
+
+                self.invalidateIntrinsicContentSize()
+                self.setNeedsUpdateConstraints()
+                self.setNeedsLayout()
+            }
+
+            override func reloadData() {
+                super.reloadData()
+
+                self.invalidateIntrinsicContentSize()
+                self.setNeedsUpdateConstraints()
+                self.setNeedsLayout()
             }
         }
     }

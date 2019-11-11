@@ -3,10 +3,10 @@
 // Copyright (c) 2018 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import os
 
-let productName = PearlInfoPlist.get().cfBundleDisplayName ?? "paX"
+let productName = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) ?? "paX"
 
 let resultTypes = [
     MPResultType.templateMaximum, MPResultType.templateLong, MPResultType.templateMedium, MPResultType.templateShort,
@@ -34,6 +34,12 @@ postfix public func <(i: Int64?) -> Int64? {
 
 func ratio(of value: UInt8, from: Double, to: Double) -> Double {
     from + (to - from) * (Double( value ) / Double( UInt8.max ))
+}
+
+prefix operator -
+
+prefix public func -(a: UIEdgeInsets) -> UIEdgeInsets {
+    UIEdgeInsets( top: -a.top, left: -a.left, bottom: -a.bottom, right: -a.right )
 }
 
 // Map a 0-max value such that it mirrors around a center point.
@@ -117,10 +123,12 @@ extension MPIdenticon: Equatable {
         let shadow = NSShadow()
         shadow.shadowColor = appConfig.theme.color.shadow.get()
         shadow.shadowOffset = CGSize( width: 0, height: 1 )
-        return stra( self.text(), [
-            NSAttributedString.Key.foregroundColor: self.color.ui(),
-            NSAttributedString.Key.shadow: shadow,
-        ] )
+        return self.text().flatMap {
+            NSAttributedString( string: $0, attributes: [
+                .foregroundColor: self.color.ui(),
+                .shadow: shadow,
+            ] )
+        }
     }
 }
 
@@ -356,21 +364,21 @@ extension UIColor {
         var hue: CGFloat = 0
         self.getHue( &hue, saturation: nil, brightness: nil, alpha: nil )
 
-        return hue;
+        return hue
     }
 
     func saturation() -> CGFloat {
         var saturation: CGFloat = 0
         self.getHue( nil, saturation: &saturation, brightness: nil, alpha: nil )
 
-        return saturation;
+        return saturation
     }
 
     func brightness() -> CGFloat {
         var brightness: CGFloat = 0
         self.getHue( nil, saturation: nil, brightness: &brightness, alpha: nil )
 
-        return brightness;
+        return brightness
     }
 
     func withHueComponent(_ newHue: CGFloat?) -> UIColor {
@@ -380,11 +388,11 @@ extension UIColor {
         var alpha:      CGFloat = 0
         self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
 
-        return UIColor( hue: newHue ?? hue, saturation: saturation, brightness: brightness, alpha: alpha );
+        return UIColor( hue: newHue ?? hue, saturation: saturation, brightness: brightness, alpha: alpha )
     }
 
     func withHue(_ color: UIColor?) -> UIColor {
-        self.withHueComponent( color?.hue() );
+        self.withHueComponent( color?.hue() )
     }
 
     func withSaturationComponent(_ newSaturation: CGFloat?) -> UIColor {
@@ -394,11 +402,11 @@ extension UIColor {
         var alpha:      CGFloat = 0
         self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
 
-        return UIColor( hue: hue, saturation: newSaturation ?? saturation, brightness: brightness, alpha: alpha );
+        return UIColor( hue: hue, saturation: newSaturation ?? saturation, brightness: brightness, alpha: alpha )
     }
 
     func withSaturation(_ color: UIColor?) -> UIColor {
-        self.withSaturationComponent( color?.saturation() );
+        self.withSaturationComponent( color?.saturation() )
     }
 
     func withBrightnessComponent(_ newBrightness: CGFloat?) -> UIColor {
@@ -408,11 +416,11 @@ extension UIColor {
         var alpha:      CGFloat = 0
         self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
 
-        return UIColor( hue: hue, saturation: saturation, brightness: newBrightness ?? brightness, alpha: alpha );
+        return UIColor( hue: hue, saturation: saturation, brightness: newBrightness ?? brightness, alpha: alpha )
     }
 
     func withBrightness(_ color: UIColor?) -> UIColor {
-        self.withBrightnessComponent( color?.brightness() );
+        self.withBrightnessComponent( color?.brightness() )
     }
 }
 
@@ -422,7 +430,7 @@ extension UIFont {
             return UIFont( descriptor: descriptor, size: self.pointSize )
         }
 
-        return self;
+        return self
     }
 }
 
@@ -497,6 +505,33 @@ extension CGRect {
 
     init(center: CGPoint, radius: CGFloat) {
         self.init( x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2 )
+    }
+
+    init(center: CGPoint, size: CGSize) {
+        self.init( x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height )
+    }
+}
+
+extension CGPath {
+    static func between(_ fromRect: CGRect, _ toRect: CGRect) -> CGPath {
+        let path = CGMutablePath()
+
+        if abs( fromRect.minX - toRect.minX ) < abs( fromRect.maxX - toRect.maxX ) {
+            let p1 = fromRect.left, p2 = toRect.topLeft
+            path.move( to: p1 )
+            path.addLine( to: CGPoint( x: p2.x, y: p1.y ) )
+            path.addLine( to: p2 )
+            path.addLine( to: toRect.bottomLeft )
+        }
+        else {
+            let p1 = fromRect.right, p2 = toRect.topRight
+            path.move( to: p1 )
+            path.addLine( to: CGPoint( x: p2.x, y: p1.y ) )
+            path.addLine( to: p2 )
+            path.addLine( to: toRect.bottomRight )
+        }
+
+        return path
     }
 }
 
@@ -581,32 +616,32 @@ extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
 
 public func trc(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) {
-    log( file: file, line: line, function: function, dso: dso, level: .trace, format, args );
+    log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
 }
 
 public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) {
-    log( file: file, line: line, function: function, dso: dso, level: .debug, format, args );
+    log( file: file, line: line, function: function, dso: dso, level: .debug, format, args )
 }
 
 public func inf(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) {
-    log( file: file, line: line, function: function, dso: dso, level: .info, format, args );
+    log( file: file, line: line, function: function, dso: dso, level: .info, format, args )
 }
 
 public func wrn(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) {
-    log( file: file, line: line, function: function, dso: dso, level: .warning, format, args );
+    log( file: file, line: line, function: function, dso: dso, level: .warning, format, args )
 }
 
 public func err(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) {
-    log( file: file, line: line, function: function, dso: dso, level: .error, format, args );
+    log( file: file, line: line, function: function, dso: dso, level: .error, format, args )
 }
 
 public func ftl(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) {
-    log( file: file, line: line, function: function, dso: dso, level: .fatal, format, args );
+    log( file: file, line: line, function: function, dso: dso, level: .fatal, format, args )
 }
 
 public func log(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,

@@ -41,8 +41,8 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
     class VersionItem: LabelItem<MPConfig> {
         init() {
             super.init( title: "\(productName)",
-                        value: { _ in PearlInfoPlist.get().cfBundleShortVersionString },
-                        caption: { _ in PearlInfoPlist.get().cfBundleVersion } )
+                        value: { _ in Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) },
+                        caption: { _ in Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String } )
         }
     }
 
@@ -100,7 +100,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
 
         override func didLoad(collectionView: UICollectionView) {
-            collectionView.registerCell( Cell.self )
+            collectionView.register( Cell.self )
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPConfig, value: MPTheme) -> UICollectionViewCell? {
@@ -154,7 +154,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
 
         override func didLoad(tableView: UITableView) {
-            tableView.registerCell( Cell.self )
+            tableView.register( Cell.self )
         }
 
         override func cell(tableView: UITableView, indexPath: IndexPath, model: MPConfig, value: Link) -> UITableViewCell? {
@@ -196,7 +196,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                 self.button.setTitleShadowColor( appConfig.theme.color.shadow.get(), for: .normal )
                 self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
                 self.button.titleLabel?.font = appConfig.theme.font.callout.get()
-                self.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+                self.button.action( for: .touchUpInside ) { [unowned self] in
                     if let url = self.link?.url {
                         trc( "Opening link: %@", url )
 
@@ -209,7 +209,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
 
                 // - Layout
                 LayoutConfiguration( view: self.button )
-                        .constrainToOwner()
+                        .constrain()
                         .activate()
             }
         }

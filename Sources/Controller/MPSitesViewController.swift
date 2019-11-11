@@ -57,7 +57,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         // - View
         self.topContainer.isBackgroundDark = true
 
-        self.searchField.attributedPlaceholder = stra( "Site Name", [
+        self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name", attributes: [
             NSAttributedString.Key.foregroundColor: appConfig.theme.color.secondary.get()!.withAlphaComponent( 0.382 )
         ] )
         self.searchField.textColor = appConfig.theme.color.body.get()
@@ -73,11 +73,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.searchField.autocorrectionType = .no
         self.searchField.returnKeyType = .done
         self.searchField.delegate = self
-        self.searchField.addAction( for: .editingChanged ) { [unowned self] _, _ in
+        self.searchField.action( for: .editingChanged ) { [unowned self] in
             self.sitesTableView.query = self.searchField.text
         }
 
-        self.userButton.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+        self.userButton.action( for: .touchUpInside ) { [unowned self] in
             self.detailsHost.show( MPUserDetailsViewController( model: self.user ) )
             self.setNeedsStatusBarAppearanceUpdate()
         }
@@ -116,7 +116,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                 .activate()
 
         LayoutConfiguration( view: self.detailsHost.view )
-                .constrainToOwner()
+                .constrain()
                 .activate()
 
         LayoutConfiguration( view: self.topContainer )
@@ -124,11 +124,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                     [
                         $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
                         $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )
-                                    .withPriority( UILayoutPriority( 500 ) ),
+                                    .with( priority: UILayoutPriority( 500 ) ),
                         $1.topAnchor.constraint( greaterThanOrEqualTo: self.sitePreviewController.view.layoutMarginsGuide.bottomAnchor )
-                                    .withPriority( UILayoutPriority( 510 ) ),
+                                    .with( priority: UILayoutPriority( 510 ) ),
                         $1.bottomAnchor.constraint( lessThanOrEqualTo: self.detailsHost.contentView.topAnchor, constant: 8 )
-                                       .withPriority( UILayoutPriority( 520 ) ),
+                                       .with( priority: UILayoutPriority( 520 ) ),
                         $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
                         $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
                         $1.heightAnchor.constraint( equalToConstant: 50 ),
@@ -147,7 +147,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         super.viewDidLayoutSubviews()
 
         // Offset sites content's top inset to make space for the top container.
-        let top = self.sitesTableView.convert( CGRectGetBottom( self.topContainer.bounds ), from: self.topContainer ).y - 8
+        let top = self.sitesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y - 8
         self.sitesTableView.contentInset = UIEdgeInsets(
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 

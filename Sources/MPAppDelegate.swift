@@ -30,7 +30,9 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate, MP
 
         // Log Sink
         MPLogSink.shared.register()
-        inf( "Launching %@ v%@ (%@)", productName, PearlInfoPlist.get().cfBundleShortVersionString, PearlInfoPlist.get().cfBundleVersion )
+        inf( "Launching %@ v%@ (%@)", productName,
+             Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString"),
+             Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") )
 
         // Start UI
         self.window.tintColor = appConfig.theme.color.brand.get()
@@ -43,12 +45,15 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate, MP
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
+        dbg( "opening: %@, options: %@", url, options )
         if let utisValue = UTTypeCreateAllIdentifiersForTag(
                 kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
            let utis = utisValue as? Array<String> {
             for format in MPMarshalFormat.allCases {
                 if let uti = format.uti, utis.contains( uti ) {
+                    dbg( "connecting to: %@", url )
                     MPURLUtils.session.dataTask( with: url, completionHandler: { (data, response, error) in
+                        dbg( "connected to: %@, response: %@, error: %@", url, response, error )
                         if let data = data, error == nil {
                             MPMarshal.shared.import( data: data )
                         }

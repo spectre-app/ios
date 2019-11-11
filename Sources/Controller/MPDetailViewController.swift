@@ -77,16 +77,16 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
 
         // - Layout
         LayoutConfiguration( view: self.backgroundView )
-                .constrainToOwner()
+                .constrain()
                 .activate()
         LayoutConfiguration( view: self.imageView )
-                .constrainToOwner( withAnchors: .topBox )
+                .constrain( anchors: .topBox )
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 200 ) }
                 .activate()
         LayoutConfiguration( view: self.itemsView )
-                .constrainToMarginsOfOwner( withAnchors: .vertically )
-                .constrainToOwner( withAnchors: .horizontally )
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).withPriority( .fittingSizeLevel ) }
+                .constrain( margins: true, anchors: .vertically )
+                .constrain( anchors: .horizontally )
+                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                 .activate()
     }
 

@@ -3,7 +3,7 @@
 // Copyright (c) 2018 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPButton: MPEffectView {
     public var tapEffect = true
@@ -58,7 +58,7 @@ class MPButton: MPEffectView {
 
     private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
-                                                                     .withPriority( .defaultHigh )
+                                                                     .with( priority: .defaultHigh )
     override var bounds: CGRect {
         didSet {
             self.setNeedsUpdateConstraints()
@@ -75,7 +75,7 @@ class MPButton: MPEffectView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    convenience init(image: UIImage? = nil, title: String? = nil, action: ((UIControl, UIEvent) -> Void)? = nil) {
+    convenience init(image: UIImage? = nil, title: String? = nil, action: ((UIEvent) -> Void)? = nil) {
         self.init( content: UIButton( type: .custom ) )
         self.isRound = true
 
@@ -85,7 +85,7 @@ class MPButton: MPEffectView {
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
         self.button.titleLabel?.font = appConfig.theme.font.callout.get()
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
-        self.button.addAction( for: .touchUpInside ) { [unowned self] _, _ in
+        self.button.action( for: .touchUpInside ) { [unowned self] in
             if self.tapEffect {
                 MPTapEffectView( for: self ).run()
             }
@@ -94,7 +94,7 @@ class MPButton: MPEffectView {
             self.isSelected = self.button.isSelected
         }
         if let action = action {
-            self.button.addAction( for: .touchUpInside, action: action )
+            self.button.action( for: .touchUpInside, action )
         }
 
         self.contentView.layoutMargins = .zero
@@ -112,8 +112,13 @@ class MPButton: MPEffectView {
         self.button = content as? UIButton
         super.init()
 
+        // - View
         self.contentView.addSubview( content )
-        LayoutConfiguration( view: content ).constrainToMarginsOfOwner().activate()
+
+        // - Layout
+        LayoutConfiguration( view: content )
+                .constrain( margins: true )
+                .activate()
     }
 
     override func sizeThatFits(_ size: CGSize) -> CGSize {

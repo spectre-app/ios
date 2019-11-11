@@ -58,7 +58,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         }
 
         override func didLoad(collectionView: UICollectionView) {
-            collectionView.registerCell( MPAvatarCell.self )
+            collectionView.register( MPAvatarCell.self )
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPUser.Avatar) -> UICollectionViewCell? {
@@ -77,7 +77,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         }
 
         override func didLoad(collectionView: UICollectionView) {
-            collectionView.registerCell( MPResultTypeCell.self )
+            collectionView.register( MPResultTypeCell.self )
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
@@ -102,7 +102,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         }
 
         override func didLoad(collectionView: UICollectionView) {
-            collectionView.registerCell( Cell.self )
+            collectionView.register( Cell.self )
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPAttacker?) -> UICollectionViewCell? {

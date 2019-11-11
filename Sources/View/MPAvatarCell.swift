@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPAvatarCell: MPItemCell {
     public var avatar: MPUser.Avatar = .avatar_0 {
@@ -26,7 +26,7 @@ class MPAvatarCell: MPItemCell {
         self.effectView.contentView.addSubview( self.avatarImage )
 
         LayoutConfiguration( view: self.avatarImage )
-                .constrainToMarginsOfOwner()
+                .constrain( margins: true )
                 .activate()
     }
 }

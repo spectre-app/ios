@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPMarshal: Observable {
     public static let shared = MPMarshal()
@@ -628,8 +628,8 @@ class MPMarshal: Observable {
         }
 
         func text() -> String {
-            let appVersion = PearlInfoPlist.get().cfBundleShortVersionString ?? "-"
-            let appBuild   = PearlInfoPlist.get().cfBundleVersion ?? "-"
+            let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "-"
+            let appBuild   = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) ?? "-"
 
             if self.redacted {
                 return """
@@ -672,7 +672,7 @@ class MPMarshal: Observable {
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
-            "\(PearlInfoPlist.get().cfBundleDisplayName ?? "") Export: \(self.user.fullName)"
+            "\(productName) Export: \(self.user.fullName)"
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize) -> UIImage? {

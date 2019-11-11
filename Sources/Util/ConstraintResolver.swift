@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class ConstraintResolver: CustomStringConvertible {
     let view: UIView
@@ -242,10 +242,10 @@ extension NSLayoutConstraint {
 
     private func describeItem(_ item: AnyObject) -> String {
         if let view = item as? UIView {
-            return view.infoName()
+            return describe( view )
         }
-        else if let guide = item as? UILayoutGuide {
-            let owner = guide.owningView?.infoName() ?? ""
+        else if let guide = item as? UILayoutGuide, let owningView = guide.owningView {
+            let owner = describe( owningView )
             if guide.identifier == "UIViewLayoutMarginsGuide" {
                 return "LM{\(owner)}"
             }

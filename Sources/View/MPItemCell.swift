@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class MPItemCell: UICollectionViewCell {
     override var isSelected: Bool {
@@ -37,11 +37,11 @@ class MPItemCell: UICollectionViewCell {
 
         LayoutConfiguration( view: self.contentView )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).withPriority( .defaultHigh ) }
-                .constrainToOwner()
+                .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).with(priority: .defaultHigh) }
+                .constrain()
                 .activate()
         LayoutConfiguration( view: self.effectView )
-                .constrainToOwner()
+                .constrain()
                 .activate()
 
         defer {

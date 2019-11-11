@@ -31,14 +31,6 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
 
     // MARK: --- Types ---
 
-    class VersionItem: LabelItem<Model> {
-        init() {
-            super.init( title: "\(PearlInfoPlist.get().cfBundleDisplayName ?? productName)",
-                        value: { _ in PearlInfoPlist.get().cfBundleShortVersionString },
-                        caption: { _ in PearlInfoPlist.get().cfBundleVersion } )
-        }
-    }
-
     class LogLevelPicker: PickerItem<Model, LogLevel> {
         init() {
             super.init(
@@ -55,7 +47,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
         }
 
         override func didLoad(collectionView: UICollectionView) {
-            collectionView.registerCell( Cell.self )
+            collectionView.register( Cell.self )
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: Model, value: LogLevel) -> UICollectionViewCell? {
