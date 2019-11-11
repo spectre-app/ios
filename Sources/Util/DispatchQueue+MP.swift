@@ -215,7 +215,11 @@ public class Promise<V> {
     }
 
     public func and<V2>(_ other: Promise<V2>) -> Promise<(V, V2)> {
-        let promise = Promise<(V, V2)>()
+        and( other, reducing: { ($0, $1) } )
+    }
+
+    public func and<V2, V3>(_ other: Promise<V2>, reducing: @escaping (V, V2) -> V3) -> Promise<V3> {
+        let promise = Promise<V3>()
 
         self.then { result1 in
             _ = other.then { result2 in
@@ -223,7 +227,7 @@ public class Promise<V> {
                     case .success(let value1):
                         switch result2 {
                             case .success(let value2):
-                                promise.finish( .success( (value1, value2) ) )
+                                promise.finish( .success( reducing( value1, value2 ) ) )
 
                             case .failure(let error):
                                 promise.finish( .failure( error ) )
