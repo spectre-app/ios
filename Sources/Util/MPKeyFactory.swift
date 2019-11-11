@@ -98,6 +98,12 @@ public class MPPasswordKeyFactory: MPKeyFactory {
 
     // MARK: --- Interface ---
 
+    public var identicon : MPIdenticon {
+        DispatchQueue.mpw.await {
+            mpw_identicon( self.fullName, self.masterPassword )
+        }
+    }
+
     public func toKeychain() -> Promise<MPKeychainKeyFactory> {
         MPKeychainKeyFactory( fullName: self.fullName ).saveMasterKeys( from: self.masterPassword )
     }

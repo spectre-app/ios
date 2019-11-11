@@ -48,7 +48,6 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.activeChild
     }
     override var preferredStatusBarStyle:                    UIStatusBarStyle {
-        // TODO: depend on theme
         .lightContent
     }
 

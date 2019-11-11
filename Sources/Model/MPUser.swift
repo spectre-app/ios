@@ -188,7 +188,6 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
 
     func login(keyFactory: MPKeyFactory) -> Promise<MPUser> {
-        // TODO: self.identicon = mpw_identicon( self.fullName, masterPassword )
         DispatchQueue.mpw.promise {
             guard let authKey = keyFactory.newMasterKey( algorithm: self.algorithm )
             else { throw MPError.internal( details: "Cannot authenticate user since master key is missing." ) }
@@ -205,6 +204,10 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         }.then { (result: Result<Void, Error>) -> MPUser in
             switch result {
                 case .success:
+                    if let keyFactory = keyFactory as? MPPasswordKeyFactory {
+                        self.identicon = keyFactory.identicon
+                    }
+
                     self.masterKeyFactory = keyFactory
 
                 case .failure:
