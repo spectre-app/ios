@@ -4,81 +4,37 @@
 //
 
 import UIKit
-import CoreMotion
 
 class MPBackgroundView: UIView {
-    private let fps            = 15.0
-    private let motionManager  = CMMotionManager()
-    private let motionQueue    = OperationQueue(named: "\(productName): Motion Queue")
-    private var gradientColor:   CGGradient?
+    private var gradientColor: CGGradient?
     private var gradientPoint  = CGPoint()
     private var gradientRadius = CGFloat( 0 )
-    private var initialAttitude: CMAttitude?
-    private var currentAttitude: CMAttitude?
-
-    override func willMove(toWindow newWindow: UIWindow?) {
-        super.willMove( toWindow: newWindow )
-
-        self.backgroundColor = appConfig.theme.color.panel.get()
-
-        if (newWindow == nil) {
-            self.motionManager.stopDeviceMotionUpdates()
-        }
-
-        else {
-            self.motionQueue.maxConcurrentOperationCount = 1
-            if self.motionManager.isDeviceMotionAvailable {
-                self.motionManager.deviceMotionUpdateInterval = 1 / self.fps
-                self.motionManager.startDeviceMotionUpdates( to: self.motionQueue ) {
-                    (data: CMDeviceMotion?, error: Error?) in
-
-                    if let error = error {
-                        err( "Core Motion error [>TRC]" )
-                        trc( "[>] %@", error )
-                    }
-                    guard let data = data
-                    else { return }
-
-                    let initialAttitude = self.initialAttitude ?? data.attitude
-                    if self.initialAttitude == nil {
-                        self.initialAttitude = initialAttitude
-                    }
-
-                    data.attitude.multiply( byInverseOf: initialAttitude )
-                    self.currentAttitude = data.attitude
-                    self.update()
-                }
-            }
-        }
-    }
 
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        self.update()
+        self.gradientPoint = self.bounds.top
+        self.gradientRadius = max( self.bounds.size.width, self.bounds.size.height )
+        self.setNeedsDisplay()
     }
 
-    func update() {
-        DispatchQueue.main.perform {
-            self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-                appConfig.theme.color.brand.get()?.withAlphaComponent( 0.8 ).cgColor,
-                appConfig.theme.color.brand.get()?.withAlphaComponent( 1 ).cgColor,
-            ] as CFArray, locations: nil )
-            self.gradientPoint = self.bounds.top
-            self.gradientPoint.y += (CGFloat( self.currentAttitude?.pitch ?? 0 ) / .pi) * 500
-            self.gradientPoint.x += (CGFloat( self.currentAttitude?.roll ?? 0 ) / .pi) * 500
-            self.gradientRadius = max( self.bounds.size.width, self.bounds.size.height )
+    override func tintColorDidChange() {
+        super.tintColorDidChange()
 
-            self.setNeedsDisplay()
-        }
+        self.backgroundColor = appConfig.theme.color.backdrop.get()
+        self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
+            self.tintColor.withAlphaComponent( 0.618 ).cgColor,
+            self.tintColor.withAlphaComponent( 1 ).cgColor,
+        ] as CFArray, locations: nil )
+        self.setNeedsDisplay()
     }
 
     override func draw(_ rect: CGRect) {
-        let context = UIGraphicsGetCurrentContext()
-        if let gradientColor = self.gradientColor {
-            context?.drawRadialGradient(
-                    gradientColor, startCenter: self.gradientPoint, startRadius: 0,
-                    endCenter: self.gradientPoint, endRadius: self.gradientRadius, options: .drawsAfterEndLocation )
-        }
+        guard let gradientColor = self.gradientColor
+        else { return }
+
+        UIGraphicsGetCurrentContext()?.drawRadialGradient(
+                gradientColor, startCenter: self.gradientPoint, startRadius: 0,
+                endCenter: self.gradientPoint, endRadius: self.gradientRadius, options: .drawsAfterEndLocation )
     }
 }
