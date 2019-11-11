@@ -371,7 +371,7 @@
 		DA5A09E9171BB0F7005284AB /* unlocked@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "unlocked@2x.png"; sourceTree = "<group>"; };
 		DA5B0B3E1F36469400B663F0 /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
 		DA5B0B3F1F36469400B663F0 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
-		DA5BFA44147E415C00F98B1E /* MasterPassword.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MasterPassword.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA5BFA44147E415C00F98B1E /* Volto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Volto.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA5BFA48147E415C00F98B1E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DA5BFA4A147E415C00F98B1E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DA5BFA4C147E415C00F98B1E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -822,7 +822,7 @@
 		DA5BFA45147E415C00F98B1E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DA5BFA44147E415C00F98B1E /* MasterPassword.app */,
+				DA5BFA44147E415C00F98B1E /* Volto.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1208,7 +1208,7 @@
 			);
 			name = MasterPassword;
 			productName = MasterPassword;
-			productReference = DA5BFA44147E415C00F98B1E /* MasterPassword.app */;
+			productReference = DA5BFA44147E415C00F98B1E /* Volto.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1852,6 +1852,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
+				PRODUCT_NAME = Volto;
 				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/MasterPassword-Bridging-Header.h";
 			};
@@ -2194,6 +2195,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
+				PRODUCT_NAME = Volto;
 				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/MasterPassword-Bridging-Header.h";
 			};
@@ -2232,6 +2234,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
+				PRODUCT_NAME = Volto;
 				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/MasterPassword-Bridging-Header.h";
 			};

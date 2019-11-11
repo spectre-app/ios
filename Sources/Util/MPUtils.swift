@@ -6,7 +6,7 @@
 import UIKit
 import os
 
-let productName = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) ?? "paX"
+let productName = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) ?? "Volto"
 
 let resultTypes = [
     MPResultType.templateMaximum, MPResultType.templateLong, MPResultType.templateMedium, MPResultType.templateShort,
