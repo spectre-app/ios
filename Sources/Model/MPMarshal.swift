@@ -566,7 +566,6 @@ class MPMarshal: Observable {
                 if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
                                       deallocate: true )?.data( using: .utf8 ),
                    file.pointee.error.type == .success {
-                    // TODO: replace by proper promise handling
                     promise = promise.and( self.import( data: data ).then { (result : Result<Bool,Error>) -> Void in
                         if (try? result.get()) ?? false {
                             self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
