@@ -6,6 +6,8 @@
 import UIKit
 
 class MPButton: MPEffectView {
+    public var identifier: String?
+    public var action:     ((UIEvent) -> Void)?
     public var tapEffect = true
     public var image: UIImage? {
         didSet {
@@ -54,7 +56,7 @@ class MPButton: MPEffectView {
             }
         }
     }
-    public let button: UIButton!
+    public let button = UIButton( type: .custom )
 
     private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
@@ -67,16 +69,19 @@ class MPButton: MPEffectView {
 
     // MARK: --- Life ---
 
-    static func closeButton() -> MPButton {
-        MPButton( title: "╳" )
+    static func close(for prefix: String) -> MPButton {
+        MPButton( identifier: "\(prefix) #close", title: "╳" )
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    convenience init(image: UIImage? = nil, title: String? = nil, action: ((UIEvent) -> Void)? = nil) {
-        self.init( content: UIButton( type: .custom ) )
+    init(identifier: String? = nil, image: UIImage? = nil, title: String? = nil, action: ((UIEvent) -> Void)? = nil) {
+        self.identifier = identifier
+        self.action = action
+        super.init()
+        self.borderWidth = 1
         self.isRound = true
 
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
@@ -85,16 +90,9 @@ class MPButton: MPEffectView {
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
         self.button.titleLabel?.font = appConfig.theme.font.callout.get()
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
-        self.button.action( for: .touchUpInside ) { [unowned self] in
-            if self.tapEffect {
-                MPTapEffectView( for: self ).run()
-            }
-        }
+        self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
         self.stateObserver = self.button.observe( \UIButton.isSelected, options: .initial ) { _, _ in
             self.isSelected = self.button.isSelected
-        }
-        if let action = action {
-            self.button.action( for: .touchUpInside, action )
         }
 
         self.contentView.layoutMargins = .zero
@@ -102,40 +100,50 @@ class MPButton: MPEffectView {
             self.contentView.insetsLayoutMarginsFromSafeArea = false
         }
 
+        self.contentView.addSubview( self.button )
+
+        LayoutConfiguration( view: self.button )
+                .constrain( margins: true )
+                .activate()
+
         defer {
             self.image = image
             self.title = title
         }
     }
 
-    init(content: UIView) {
-        self.button = content as? UIButton
-        super.init()
-
-        // - View
-        self.contentView.addSubview( content )
-
-        // - Layout
-        LayoutConfiguration( view: content )
-                .constrain( margins: true )
-                .activate()
-    }
-
     override func sizeThatFits(_ size: CGSize) -> CGSize {
         self.systemLayoutSizeFitting( size )
     }
 
-    // MARK: --- Private ---
+    @objc
+    func action(_ event: UIEvent) {
+        self.track()
 
-    override func updateBackground() {
-        super.updateBackground()
+        if self.tapEffect {
+            MPTapEffectView( for: self ).run()
+        }
 
-        self.layer.borderWidth = self.isBackgroundVisible ? (self.button == nil ? 1.5: 1): 0
+        self.action?( event )
+    }
+
+    func track() {
+        if let identifier = self.identifier {
+            MPTracker.shared.event( named: identifier )
+        }
     }
 
     // MARK: --- Types ---
 
     enum Size {
         case text, text_icon, image_icon, small
+    }
+}
+
+class MPTimedButton: MPButton {
+    override func track() {
+        if let identifier = self.identifier {
+            MPTracker.shared.begin( named: identifier )
+        }
     }
 }

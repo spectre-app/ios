@@ -9,7 +9,7 @@ class MPAvatarCell: MPItemCell {
     public var avatar: MPUser.Avatar = .avatar_0 {
         didSet {
             DispatchQueue.main.perform {
-                self.avatarImage.image = self.avatar.image()
+                self.avatarImage.image = self.avatar.image
             }
         }
     }

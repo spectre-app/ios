@@ -14,7 +14,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
     private lazy var detailRecognizer   = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
     private lazy var popupConfiguration = LayoutConfiguration( view: self.view )
-    private let closeButton = MPButton.closeButton()
+    private let closeButton = MPButton.close( for: "details" )
     private var detailsController:      AnyMPDetailsViewController?
     private var contentSizeObservation: NSKeyValueObservation?
 
@@ -54,7 +54,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             self.scrollView.contentInsetAdjustmentBehavior = .always
         }
 
-        self.closeButton.button.addTarget( self, action: #selector( hideAction ), for: .touchUpInside )
+        self.closeButton.button.addTarget( self, action: #selector( hideAction ), for: .primaryActionTriggered )
 
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { _, _ in
             // Inset top to push content to the bottom of the host.

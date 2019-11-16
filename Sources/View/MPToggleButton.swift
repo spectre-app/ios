@@ -8,6 +8,8 @@ import UIKit
 class MPToggleButton: UIButton {
     private let checkLabel = UILabel()
 
+    var tapEffect = true
+    var identifier: String?
     override var isSelected: Bool {
         didSet {
             DispatchQueue.main.perform {
@@ -15,10 +17,6 @@ class MPToggleButton: UIButton {
                     self.imageView?.alpha = self.isSelected ? 1: 0.382
                     self.checkLabel.alpha = self.isSelected ? 1: 0
                 }
-            }
-
-            if self.isSelected != oldValue, UIView.areAnimationsEnabled {
-                MPFeedback.shared.play( .trigger )
             }
         }
     }
@@ -36,8 +34,10 @@ class MPToggleButton: UIButton {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override init(frame: CGRect) {
-        super.init( frame: frame )
+    init(identifier: String? = nil) {
+        self.identifier = identifier
+        super.init( frame: .zero )
+        self.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
 
         self.contentEdgeInsets = UIEdgeInsets( top: 10, left: 10, bottom: 10, right: 10 )
         self.layoutMargins = self.contentEdgeInsets
@@ -50,7 +50,7 @@ class MPToggleButton: UIButton {
         self.addSubview( self.checkLabel )
 
         self.widthAnchor.constraint( equalTo: self.heightAnchor ).isActive = true
-        self.widthAnchor.constraint( equalToConstant: 70 ).with(priority: .defaultHigh).isActive = true
+        self.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ).isActive = true
 
         LayoutConfiguration( view: self.checkLabel )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
@@ -94,6 +94,24 @@ class MPToggleButton: UIButton {
             context.resetClip()
             context.setLineWidth( 1 )
             context.strokeEllipse( in: circle )
+        }
+    }
+
+    @objc
+    func action(_ event: UIEvent) {
+        self.isSelected = !self.isSelected
+        self.track()
+
+//        if self.tapEffect {
+//            MPTapEffectView( for: self ).run()
+//        }
+
+        MPFeedback.shared.play( .trigger )
+    }
+
+    func track() {
+        if let identifier = self.identifier {
+            MPTracker.shared.event( named: identifier, [ "value": self.isSelected ] )
         }
     }
 }

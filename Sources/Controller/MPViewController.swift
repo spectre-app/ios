@@ -6,6 +6,11 @@
 import UIKit
 
 class MPViewController: UIViewController {
+    var screen: MPTracker.Screen? {
+        willSet {
+            self.screen?.dismiss()
+        }
+    }
 
     // MARK: --- Life ---
 
@@ -18,12 +23,14 @@ class MPViewController: UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        trc( "> %@", type( of: self ) )
+        self.screen = MPTracker.shared.screen( named: type( of: self ).description() )
+
         super.viewWillAppear( animated )
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        trc( "< %@", type( of: self ) )
-        super.viewWillDisappear( animated )
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear( animated )
+
+        self.screen = nil
     }
 }

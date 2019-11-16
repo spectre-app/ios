@@ -11,7 +11,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
     let messageLabel  = UILabel()
     let formatControl = UISegmentedControl( items: MPMarshalFormat.allCases.compactMap { $0.description } )
     let revealControl = UISegmentedControl( items: [ "Reveal Passwords", "Secure Export" ] )
-    let exportButton  = MPButton( title: "Export User" )
+    let exportButton  = MPButton( identifier: "export #export", title: "Export User" )
     lazy var contentView = UIStackView( arrangedSubviews: [
         self.titleLabel,
         self.subtitleLabel,
@@ -78,7 +78,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.formatControl.selectedSegmentIndex = MPMarshalFormat.allCases.firstIndex( of: MPMarshalFormat.default ) ?? -1
         self.revealControl.selectedSegmentIndex = 1
 
-        self.exportButton.button.action( for: .touchUpInside ) { [unowned self] in
+        self.exportButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
             trc( "Requested export of %@, format: %@, redacted: %d",
                  self.user, self.format, self.redacted )
 

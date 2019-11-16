@@ -44,6 +44,7 @@
 		93D396BC81D6634C478E0881 /* Persisting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CB804B95B268383FCB2 /* Persisting.swift */; };
 		93D396CEFCFCA9BF0DB66DF8 /* MPTintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3995755BB75535CC37A47 /* MPTintView.swift */; };
 		93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */; };
+		93D396F895C0A16CF1FDAB79 /* UIContextMenuConfiguration+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39242076F89C40E7B292C /* UIContextMenuConfiguration+MP.swift */; };
 		93D39707EDA5669AB5A96ECB /* MPLogDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */; };
 		93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
 		93D3975E8CAF0B2422D7C1D7 /* MPAttacker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */; };
@@ -57,7 +58,9 @@
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
 		93D398FB645DCA89A4BCC5A2 /* MPMarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MPMarginView.swift */; };
 		93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
+		93D3998DDFAB93EA585BCB12 /* Result+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397311C748F45186ADB8D /* Result+MP.swift */; };
 		93D39A2954B245FC0D925312 /* MPSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPSite.swift */; };
+		93D39A467E6B7BB3B646E004 /* MPTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* MPTracker.swift */; };
 		93D39AA18A00A587610444F4 /* MPToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */; };
 		93D39AA2456367CDF6A7A296 /* MPQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */; };
 		93D39AB0E8841E744F4B6F4C /* MPItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39865ECFD34CF3ADF930D /* MPItemCell.swift */; };
@@ -130,6 +133,8 @@
 		DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA945C8617E3F3FD0053236B /* Images.xcassets */; };
 		DA95B50C1C476B6A0067F5EF /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA95B50B1C476B6A0067F5EF /* LocalAuthentication.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		DA95D5F214DF0B2C008D1B94 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA95D5F014DF0B1E008D1B94 /* MessageUI.framework */; };
+		DA9986F6237C56FF001FD155 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA9986F5237C56FF001FD155 /* CFNetwork.framework */; };
+		DA9986F8237C5710001FD155 /* libicucore.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DA9986F7237C5710001FD155 /* libicucore.tbd */; };
 		DAA1762319D89B600044227B /* thumb_touch_id@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = DAA1761D19D89B600044227B /* thumb_touch_id@3x.png */; };
 		DAA1762419D89B610044227B /* thumb_touch_id@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DAA1761E19D89B600044227B /* thumb_touch_id@2x.png */; };
 		DAA1762519D89B610044227B /* thumb_touch_id.png in Resources */ = {isa = PBXBuildFile; fileRef = DAA1761F19D89B600044227B /* thumb_touch_id.png */; };
@@ -208,7 +213,6 @@
 		DAE6E1BF22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1AC22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataClass.m */; };
 		DAE6E1C622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1B622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m */; };
 		DAEBC45314F6364500987BF6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAEBC45214F6364500987BF6 /* QuartzCore.framework */; };
-		DAF4359A22CF73FD00889E85 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -243,9 +247,11 @@
 		93D3911FED606FAE34608C50 /* MPBackgroundView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPBackgroundView.swift; sourceTree = "<group>"; };
 		93D3915A208E1B01BDD05A3E /* MPQuery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuery.swift; sourceTree = "<group>"; };
 		93D39169E1BADEFA0517D4D2 /* MPUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUser.swift; sourceTree = "<group>"; };
+		93D3917402B9BC4575713560 /* MPTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTracker.swift; sourceTree = "<group>"; };
 		93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuestion.swift; sourceTree = "<group>"; };
 		93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeychain.swift; sourceTree = "<group>"; };
 		93D39203C899BA783F02D3B5 /* MPEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEffectView.swift; sourceTree = "<group>"; };
+		93D39242076F89C40E7B292C /* UIContextMenuConfiguration+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIContextMenuConfiguration+MP.swift"; sourceTree = "<group>"; };
 		93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEmitterView.swift; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
 		93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMasterPasswordField.swift; sourceTree = "<group>"; };
@@ -273,6 +279,7 @@
 		93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailViewController.swift; sourceTree = "<group>"; };
 		93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v1.c"; sourceTree = "<group>"; };
 		93D396FE084F709867C7C6CC /* Describe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Describe.swift; sourceTree = "<group>"; };
+		93D397311C748F45186ADB8D /* Result+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Result+MP.swift"; sourceTree = "<group>"; };
 		93D397326B833076646FF697 /* DataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataSource.swift; sourceTree = "<group>"; };
 		93D3975A310BEA6C16903C25 /* MPProgramState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPProgramState.swift; sourceTree = "<group>"; };
 		93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAppDetailsViewController.swift; sourceTree = "<group>"; };
@@ -390,6 +397,8 @@
 		DA945C8617E3F3FD0053236B /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		DA95B50B1C476B6A0067F5EF /* LocalAuthentication.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LocalAuthentication.framework; path = System/Library/Frameworks/LocalAuthentication.framework; sourceTree = SDKROOT; };
 		DA95D5F014DF0B1E008D1B94 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		DA9986F5237C56FF001FD155 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		DA9986F7237C5710001FD155 /* libicucore.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libicucore.tbd; path = usr/lib/libicucore.tbd; sourceTree = SDKROOT; };
 		DAA1761D19D89B600044227B /* thumb_touch_id@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumb_touch_id@3x.png"; sourceTree = "<group>"; };
 		DAA1761E19D89B600044227B /* thumb_touch_id@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumb_touch_id@2x.png"; sourceTree = "<group>"; };
 		DAA1761F19D89B600044227B /* thumb_touch_id.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = thumb_touch_id.png; sourceTree = "<group>"; };
@@ -573,7 +582,6 @@
 		DAE6E1B022CC3D1D00DE0342 /* MPSiteEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPSiteEntity+CoreDataClass.h"; sourceTree = "<group>"; };
 		DAE6E1B622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPUserEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
 		DAEBC45214F6364500987BF6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -581,6 +589,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA9986F8237C5710001FD155 /* libicucore.tbd in Frameworks */,
+				DA9986F6237C56FF001FD155 /* CFNetwork.framework in Frameworks */,
 				DAA7BC2720C4C27100101DC7 /* libsodium.a in Frameworks */,
 				DAB7AE5D1F3D752900C856B1 /* libjson-c.a in Frameworks */,
 				DA95B50C1C476B6A0067F5EF /* LocalAuthentication.framework in Frameworks */,
@@ -692,6 +702,9 @@
 				93D396FE084F709867C7C6CC /* Describe.swift */,
 				93D398D4B9F2323DC419DC82 /* NSObject+MP.swift */,
 				93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */,
+				93D3917402B9BC4575713560 /* MPTracker.swift */,
+				93D397311C748F45186ADB8D /* Result+MP.swift */,
+				93D39242076F89C40E7B292C /* UIContextMenuConfiguration+MP.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -796,7 +809,6 @@
 			children = (
 				DAE4AC30235B623000CDD88A /* MasterPassword.entitlements */,
 				DA4A0C1E201531B9004E2CE5 /* MasterPassword-Bridging-Header.h */,
-				DAF4359922CF73FC00889E85 /* GoogleService-Info.plist */,
 				DA4A0C1F201531B9004E2CE5 /* MasterPassword-Info.plist */,
 				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
 				93D39E0C533C1943D2425F07 /* Controller */,
@@ -830,6 +842,8 @@
 		DA5BFA47147E415C00F98B1E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DA9986F7237C5710001FD155 /* libicucore.tbd */,
+				DA9986F5237C56FF001FD155 /* CFNetwork.framework */,
 				DA6A72E72371E63A006C1AD3 /* CoreHaptics.framework */,
 				DAB7AE5C1F3D752900C856B1 /* libjson-c.a */,
 				DA6701B716406A4100B61001 /* Accounts.framework */,
@@ -1196,9 +1210,8 @@
 				DA5BFA40147E415C00F98B1E /* Sources */,
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
-				DA6556E314D55F3000841C99 /* Run Script: GIT version -> Info.plist */,
 				F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */,
-				DAF4359B22CF927600889E85 /* Run Script: Fabric */,
+				DA6556E314D55F3000841C99 /* Run Script: GIT version -> Info.plist */,
 			);
 			buildRules = (
 			);
@@ -1425,7 +1438,6 @@
 				DAA1762519D89B610044227B /* thumb_touch_id.png in Resources */,
 				DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */,
 				DA32D04E19D2F59B004F3F0E /* meter_fuel@3x.png in Resources */,
-				DAF4359A22CF73FD00889E85 /* GoogleService-Info.plist in Resources */,
 				DABD39871711E29700CF925C /* SourceCodePro-Black.otf in Resources */,
 				DABD39881711E29700CF925C /* SourceCodePro-ExtraLight.otf in Resources */,
 				DA29993219C9132F00AF7DF1 /* thumb_generated_login@3x.png in Resources */,
@@ -1506,26 +1518,6 @@
 			shellScript = "exec Scripts/genassets\n";
 			showEnvVarsInLog = 0;
 		};
-		DAF4359B22CF927600889E85 /* Run Script: Fabric */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
-			);
-			name = "Run Script: Fabric";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Fabric/run\"\n";
-			showEnvVarsInLog = 0;
-		};
 		F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1533,17 +1525,19 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
+				"${BUILT_PRODUCTS_DIR}/Amplitude-iOS/Amplitude_iOS.framework",
+				"${BUILT_PRODUCTS_DIR}/Mixpanel-swift/Mixpanel.framework",
+				"${BUILT_PRODUCTS_DIR}/Sentry/Sentry.framework",
 				"${BUILT_PRODUCTS_DIR}/Stellar/Stellar.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftLinkPreview/SwiftLinkPreview.framework",
-				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Amplitude_iOS.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mixpanel.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Sentry.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stellar.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftLinkPreview.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1649,6 +1643,9 @@
 				93D394687CCE5DACAE237129 /* Describe.swift in Sources */,
 				93D39284CA724E394A9E91FD /* NSObject+MP.swift in Sources */,
 				93D3952C2984BC63002825C5 /* LayoutConfiguration.swift in Sources */,
+				93D39A467E6B7BB3B646E004 /* MPTracker.swift in Sources */,
+				93D3998DDFAB93EA585BCB12 /* Result+MP.swift in Sources */,
+				93D396F895C0A16CF1FDAB79 /* UIContextMenuConfiguration+MP.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1767,7 +1764,6 @@
 					"$(inherited)",
 					"NDEBUG=1",
 					"NS_BLOCK_ASSERTIONS=1",
-					"CRASHLYTICS=1",
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
@@ -1956,7 +1952,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
-					"CRASHLYTICS=1",
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
@@ -2110,7 +2105,6 @@
 					"$(inherited)",
 					"NDEBUG=1",
 					"NS_BLOCK_ASSERTIONS=1",
-					"CRASHLYTICS=1",
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;

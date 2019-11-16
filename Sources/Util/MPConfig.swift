@@ -54,6 +54,10 @@ public class MPConfig: Observable {
     // MARK: --- Life ---
 
     init() {
+        UserDefaults.standard.register( defaults: [
+            "sendInfo": true
+        ] )
+
         assert( {
                     self.isDebug = true
                     return true

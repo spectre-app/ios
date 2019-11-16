@@ -34,8 +34,9 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     class LogLevelPicker: PickerItem<Model, LogLevel> {
         init() {
             super.init(
+                    identifier: "app >logbookLevel",
                     title: "Logbook",
-                    values: { _ in LogLevel.allCases },
+                    values: { _ in LogLevel.allCases.reversed() },
                     value: { $0.logbookLevel },
                     update: { $0.logbookLevel = $1 },
                     caption: { _ in

@@ -8,36 +8,75 @@
 
 import UIKit
 import CoreServices
-import Firebase
+import Sentry
 
 @UIApplicationMain
-class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate, MPConfigObserver {
+class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
 
-    private let window = UIWindow()
+    lazy var window: UIWindow? = UIWindow()
 
     // MARK: --- Life ---
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
-        // Crashlytics
-        Crashlytics.sharedInstance().delegate = self
-        FirebaseApp.configure()
-        mpw_log_sink_register( { event in
-            if let event = event, event.pointee.level <= (appConfig.sendInfo ? .info: .warning) {
-                CLSLogv( "%s", getVaList( [ event.pointee.message ] ) )
-            }
-        } )
-
-        // Log Sink
         MPLogSink.shared.register()
-        inf( "Launching %@ v%@ (%@)", productName,
-             Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString"),
-             Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") )
 
-        // Start UI
-        self.window.tintColor = appConfig.theme.color.brand.get()
-        self.window.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
-        self.window.makeKeyAndVisible()
+        // Sentry
+        do {
+            Client.shared = try Client( dsn: "" )
+            Client.shared?.enabled = appConfig.sendInfo as NSNumber
+            try Client.shared?.startCrashHandler()
+            Client.shared?.enableAutomaticBreadcrumbTracking()
+
+            mpw_log_sink_register( { event in
+                if let event: MPLogEvent = event?.pointee, event.level <= .info,
+                   let message = String( safeUTF8: event.message ) {
+                    var severity = SentrySeverity.debug
+                    switch event.level {
+                        case .info:
+                            severity = .info
+                        case .warning:
+                            severity = .warning
+                        case .error:
+                            severity = .error
+                        case .fatal:
+                            severity = .fatal
+                        default: ()
+                    }
+
+                    if event.level <= .error {
+                        let sentryEvent = Event( level: severity )
+                        sentryEvent.message = message
+                        sentryEvent.logger = "mpw"
+                        sentryEvent.timestamp = Date( timeIntervalSince1970: TimeInterval( event.occurrence ) )
+                        var file = String( safeUTF8: event.file ) ?? "-"
+                        file = file.lastIndex( of: "/" ).flatMap( { String( file.suffix( from: file.index( after: $0 ) ) ) } ) ?? file
+                        sentryEvent.tags = [ "file": file, "line": "\(event.line)", "function": String( safeUTF8: event.function ) ?? "-" ]
+                        Client.shared?.appendStacktrace( to: sentryEvent )
+                        Client.shared?.send( event: sentryEvent )
+                    }
+                    else {
+                        let breadcrumb = Breadcrumb( level: severity, category: "mpw" )
+                        breadcrumb.type = message
+                        breadcrumb.message = message
+                        breadcrumb.timestamp = Date( timeIntervalSince1970: TimeInterval( event.occurrence ) )
+                        var file = String( safeUTF8: event.file ) ?? "-"
+                        file = file.lastIndex( of: "/" ).flatMap( { String( file.suffix( from: file.index( after: $0 ) ) ) } ) ?? file
+                        breadcrumb.data = [ "file": file, "line": "\(event.line)", "function": String( safeUTF8: event.function ) ?? "-" ]
+                        Client.shared?.breadcrumbs.add( breadcrumb )
+                    }
+                }
+            } )
+        }
+        catch {
+            err( "Couldn't install Sentry [>TRC]" )
+            trc( "[>] %@", error )
+        }
+
+        // Start
+        MPTracker.shared.startup()
+        self.window?.tintColor = appConfig.theme.color.brand.get()
+        self.window?.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
+        self.window?.makeKeyAndVisible()
 
         appConfig.observers.register( observer: self )
 
@@ -72,37 +111,12 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, CrashlyticsDelegate, MP
     // MARK: --- MPConfigObserver ---
 
     func didChangeConfig() {
-        self.window.tintColor = appConfig.theme.color.brand.get()
-    }
+        // Sentry
+        Client.shared?.enabled = appConfig.sendInfo as NSNumber
 
-    // MARK: --- CrashlyticsDelegate ---
-
-    func crashlyticsDidDetectReport(forLastExecution report: CLSReport, completionHandler: @escaping (Bool) -> Void) {
-        trc( "crashlyticsDidDetectReport: %@, on: %@, keys: %@",
-             report.identifier, report.crashedOnDate, report.customKeys )
-
-        DispatchQueue.main.async {
-            if let root = UIApplication.shared.keyWindow?.rootViewController {
-                let alert = UIAlertController( title: "Issue Detected", message:
-                """
-                It looks like an unknown issue has caused the app to shut down.
-                The issue occurred on:
-                \(report.dateCreated)
-
-                To help us address these types of issues quickly, you can submit a fully anonymized report on what went wrong.
-                """, preferredStyle: .alert )
-                alert.addAction( UIAlertAction( title: "Delete Issue Report", style: .destructive ) { _ in
-                    completionHandler( false )
-                } )
-                alert.addAction( UIAlertAction( title: "Submit Issue Report", style: .default ) { _ in
-                    completionHandler( true )
-                } )
-                alert.preferredAction = alert.actions.last
-                root.present( alert, animated: true )
-            }
-            else {
-                mperror( title: "Issue detected", message: report.dateCreated, details: report )
-                completionHandler( false )
+        DispatchQueue.main.perform {
+            if self.window?.tintColor != appConfig.theme.color.brand.get() {
+                self.window?.tintColor = appConfig.theme.color.brand.get()
             }
         }
     }

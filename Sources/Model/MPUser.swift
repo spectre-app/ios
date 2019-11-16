@@ -109,7 +109,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     public var attacker: MPAttacker? {
         didSet {
             if oldValue != self.attacker, !self.initializing,
-               self.file?.mpw_set( self.attacker?.identifier, path: "user", "_ext_mpw", "attacker" ) ?? true {
+               self.file?.mpw_set( self.attacker?.description, path: "user", "_ext_mpw", "attacker" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -260,7 +260,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
     // MARK: --- Types ---
 
-    enum Avatar: Int, CaseIterable {
+    enum Avatar: UInt32, CaseIterable, CustomStringConvertible {
         static let userAvatars: [Avatar] = [
             .avatar_0, .avatar_1, .avatar_2, .avatar_3, .avatar_4, .avatar_5, .avatar_6, .avatar_7, .avatar_8, .avatar_9,
             .avatar_10, .avatar_11, .avatar_12, .avatar_13, .avatar_14, .avatar_15, .avatar_16, .avatar_17, .avatar_18 ]
@@ -269,21 +269,16 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
              avatar_10, avatar_11, avatar_12, avatar_13, avatar_14, avatar_15, avatar_16, avatar_17, avatar_18,
              avatar_add
 
-        public static func decode(avatar: UInt32) -> Avatar {
-            Avatar.userAvatars.indices.contains( Int( avatar ) ) ? Avatar.userAvatars[Int( avatar )]: .avatar_0
-        }
-
-        public func encode() -> UInt32 {
-            UInt32( Avatar.userAvatars.firstIndex( of: self ) ?? 0 )
-        }
-
-        public func image() -> UIImage? {
-            switch self {
-                case .avatar_add:
-                    return UIImage.init( named: "avatar-add" )
-                default:
-                    return UIImage.init( named: "avatar-\(self.rawValue)" )
+        public var description: String {
+            if case .avatar_add = self {
+                return "avatar-add"
             }
+
+            return "avatar-\(self.rawValue)"
+        }
+
+        public var image: UIImage? {
+            UIImage( named: "\(self)" )
         }
 
         public mutating func next() {

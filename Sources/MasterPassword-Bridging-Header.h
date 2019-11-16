@@ -4,6 +4,8 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
+#import <Heap.h>
+
 #import "MPUserEntity+CoreDataClass.h"
 #import "MPSiteEntity+CoreDataClass.h"
 #import "MPStoredSiteEntity+CoreDataClass.h"

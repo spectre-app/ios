@@ -150,14 +150,14 @@ public class MPKeychainKeyFactory: MPKeyFactory {
 
     public var factor: Factor {
         guard self.context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: nil )
-        else { return .none }
+        else { return .biometricNone }
 
         guard #available( iOS 11.0, * )
         else { return .biometricTouch }
 
         switch self.context.biometryType {
             case .none:
-                return .none
+                return .biometricNone
 
             case .touchID:
                 return .biometricTouch
@@ -167,12 +167,12 @@ public class MPKeychainKeyFactory: MPKeyFactory {
 
             @unknown default:
                 wrn( "Unsupported biometry type: %@", self.context.biometryType )
-                return .none
+                return .biometricNone
         }
     }
 
     public func hasKey(algorithm: MPAlgorithmVersion) -> Bool {
-        self.factor != .none && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm, biometrics: true )
+        self.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm, biometrics: true )
     }
 
     public func purgeKeys() {
@@ -211,8 +211,21 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         }
     }
 
-    public enum Factor {
-        case biometricTouch, biometricFace, none
+    public enum Factor : CustomStringConvertible {
+        case biometricTouch, biometricFace, biometricNone
+
+        public var description: String {
+            switch self {
+                case .biometricTouch:
+                    return "TouchID"
+
+                case .biometricFace:
+                    return "FaceID"
+
+                case .biometricNone:
+                    return "none"
+            }
+        }
 
         var icon: UIImage? {
             switch self {
@@ -222,7 +235,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
                 case .biometricFace:
                     return UIImage( named: "icon_watched" )
 
-                case .none:
+                case .biometricNone:
                     return nil
             }
         }

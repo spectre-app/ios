@@ -49,6 +49,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
     class DiagnisticsItem: ToggleItem<MPConfig> {
         init() {
             super.init(
+                    identifier: "app >sendInfo",
                     title: "Diagnostics",
                     value: {
                         (icon: UIImage( named: "icon_bandage" ),
@@ -67,6 +68,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
     class ProItem: ToggleItem<MPConfig> {
         init() {
             super.init(
+                    identifier: "app >premium",
                     title: """
                            Premium 🅿
                            """,
@@ -87,6 +89,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
     class ThemeItem: PickerItem<MPConfig, MPTheme> {
         init() {
             super.init(
+                    identifier: "app >theme",
                     title: "Application Themes 🅿",
                     values: { _ in MPTheme.all },
                         value: { $0.theme },
@@ -124,10 +127,10 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         init() {
             super.init( title: "Legacy Data",
                         subitems: [
-                            ButtonItem<MPConfig>( value: { _ in (label: "Re-import", image: nil) } ) { _ in
+                            ButtonItem<MPConfig>( identifier: "app.legacy #re-import", value: { _ in (label: "Re-import", image: nil) } ) { _ in
                                 MPMarshal.shared.importLegacy( force: true )
                             },
-                            ButtonItem<MPConfig>( value: { _ in (label: "Clean up", image: nil) } ) { _ in
+                            ButtonItem<MPConfig>( identifier: "app.legacy #clean", value: { _ in (label: "Clean up", image: nil) } ) { _ in
                                 // TODO: purge legacy data
                             }
                         ],
@@ -196,7 +199,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                 self.button.setTitleShadowColor( appConfig.theme.color.shadow.get(), for: .normal )
                 self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
                 self.button.titleLabel?.font = appConfig.theme.font.callout.get()
-                self.button.action( for: .touchUpInside ) { [unowned self] in
+                self.button.action( for: .primaryActionTriggered ) { [unowned self] in
                     if let url = self.link?.url {
                         trc( "Opening link: %@", url )
 

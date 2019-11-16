@@ -66,7 +66,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class PasswordTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( title: "Password Type",
+            super.init( identifier: "site >resultType", title: "Password Type",
                         values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.resultType },
                         update: { $0.resultType = $1 } )
@@ -86,12 +86,17 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class PasswordResultItem: FieldItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a password",
-                        value: { try? $0.mpw_result().await() },
+                        value: { try? $0.result().await().token },
                         update: { site, password in
-                            site.mpw_state( resultParam: password ).then {
+                            MPTracker.shared.event( named: "site >password", [
+                                "type": "\(site.resultType)",
+                                "entropy": MPAttacker.entropy( string: password ) ?? 0,
+                            ] )
+
+                            site.state( resultParam: password ).then {
                                 switch $0 {
                                     case .success(let state):
-                                        site.resultState = state
+                                        site.resultState = state.token
 
                                     case .failure(let error):
                                         mperror( title: "Couldn't update site password", error: error )
@@ -125,7 +130,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( title: "User Name Type 🅿",
+            super.init( identifier: "site >loginType", title: "User Name Type 🅿",
                         values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.loginType },
                         update: { $0.loginType = $1 },
@@ -146,12 +151,17 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class LoginResultItem: FieldItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "set a user name",
-                        value: { try? $0.mpw_result( keyPurpose: .identification ).await() },
+                        value: { try? $0.result( keyPurpose: .identification ).await().token },
                         update: { site, login in
-                            site.mpw_state( keyPurpose: .identification, resultParam: login ).then {
+                            MPTracker.shared.event( named: "site >login", [
+                                "type": "\(site.loginType)",
+                                "entropy": MPAttacker.entropy( string: login ) ?? 0,
+                            ] )
+
+                            site.state( keyPurpose: .identification, resultParam: login ).then {
                                 switch $0 {
                                     case .success(let state):
-                                        site.loginState = state
+                                        site.loginState = state.token
 
                                     case .failure(let error):
                                         mperror( title: "Couldn't update site name", error: error )
@@ -186,7 +196,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
                         }.values.sorted()
                     },
-                    subitems: [ ButtonItem( value: { _ in (label: "Add Security Question", image: nil) } ) { item in
+                    subitems: [ ButtonItem( identifier: "site.question #add", value: { _ in (label: "Add Security Question", image: nil) } ) { item in
                         let controller = UIAlertController( title: "Security Question", message:
                         """
                         Enter the most significant noun for the site's security question.
@@ -231,14 +241,14 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         class Cell: UITableViewCell {
             private let keywordLabel = UILabel()
             private let resultLabel  = UILabel()
-            private let copyButton   = MPButton( title: "copy" )
+            private let copyButton   = MPButton( identifier: "site.question #copy", title: "copy" )
 
             weak var question: MPQuestion? {
                 didSet {
-                    self.question?.mpw_result().then( on: .main ) {
+                    self.question?.result().then( on: .main ) {
                         switch $0 {
                             case .success(let answer):
-                                self.resultLabel.text = answer
+                                self.resultLabel.text = answer.token
                                 self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
 
                             case .failure(let error):
@@ -272,8 +282,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.resultLabel.textColor = appConfig.theme.color.body.get()
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
-                self.copyButton.button.action( for: .touchUpInside ) { [unowned self] in
-                    self.question?.mpw_copy()
+                self.copyButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+                    self.question?.copy()
                 }
 
                 // - Hierarchy

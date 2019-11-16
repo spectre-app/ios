@@ -6,7 +6,7 @@
 import UIKit
 
 class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
-    private lazy var topContainer = MPButton( content: self.searchField )
+    private lazy var topContainer = MPEffectView( content: self.searchField )
     private let searchField              = UITextField()
     private let userButton               = UIButton( type: .custom )
     private let sitesTableView           = MPSitesTableView()
@@ -76,7 +76,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
             self.sitesTableView.query = self.searchField.text
         }
 
-        self.userButton.action( for: .touchUpInside ) { [unowned self] in
+        self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
             self.detailsHost.show( MPUserDetailsViewController( model: self.user ) )
             self.setNeedsStatusBarAppearanceUpdate()
         }

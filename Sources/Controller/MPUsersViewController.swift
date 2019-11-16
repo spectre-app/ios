@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Crashlytics
 import Stellar
 
 class MPUsersViewController: MPViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
@@ -52,12 +51,12 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         self.appToolbar.axis = .horizontal
         self.appToolbar.spacing = 12
-        let settingsButton = MPButton( image: UIImage( named: "icon_gears" ) ) { _ in
+        let settingsButton = MPButton( identifier: "users #app_settings", image: UIImage( named: "icon_gears" ) ) { _ in
             self.detailsHost.show( MPAppDetailsViewController() )
         }
         settingsButton.isBackgroundVisible = false
         self.appToolbar.addArrangedSubview( settingsButton )
-        let incognitoButton = MPButton( image: UIImage( named: "icon_shield" ) ) { _ in
+        let incognitoButton = MPTimedButton( identifier: "users #auth_incognito", image: UIImage( named: "icon_shield" ) ) { _ in
             let controller = UIAlertController( title: "Incognito Login", message:
             """
             While in incognito mode, no user information is kept on the device.
@@ -72,6 +71,11 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             }
             passwordField.authenticated = { result in
                 trc( "Incognito authentication: %@", result )
+                MPTracker.shared.event( named: "users #auth_incognito", [
+                    "result": result.name,
+                    "length": passwordField.text?.count ?? 0,
+                    "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
+                ] )
 
                 spinner.dismiss()
                 controller.dismiss( animated: true ) {
@@ -88,7 +92,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
             controller.addTextField { passwordField.nameField = $0 }
             controller.addTextField { passwordField.passwordField = $0 }
-            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                MPTracker.shared.event( named: "users #auth_incognito", [ "result": "cancel" ] )
+            } )
             controller.addAction( UIAlertAction( title: "Log In", style: .default ) { [weak self] _ in
                 guard let self = self
                 else { return }
@@ -246,6 +252,11 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
             self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
             if self.userToolbarConfiguration.activated {
+                MPTracker.shared.event( named: "users >user", [
+                    "value": indexPath.item,
+                    "count": collectionView.numberOfItems( inSection: indexPath.section ),
+                ] )
+
                 MPFeedback.shared.play( .activate )
             }
         }
@@ -314,7 +325,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         private let nameLabel       = UILabel()
         private let nameField       = UITextField()
         private let avatarButton    = UIButton()
-        private let biometricButton = MPButton( image: UIImage( named: "icon_man" ) )
+        private let biometricButton = MPTimedButton( identifier: "users #auth_biometric", image: UIImage( named: "icon_man" ) )
         private let passwordField   = MPMasterPasswordField()
         private let idBadgeView     = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView   = UIImageView( image: UIImage( named: "icon_key" ) )
@@ -348,7 +359,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
             self.avatarButton.contentMode = .center
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.action( for: .touchUpInside ) { [unowned self] in
+            self.avatarButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.avatar.next()
             }
 
@@ -359,11 +370,17 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.rightView = self.biometricButton
             self.passwordField.rightViewMode = .always
             self.passwordField.authenticater = { keyFactory in
-                self.userFile?.authenticate( keyFactory: keyFactory ) ??
+                MPTracker.shared.begin( named: "users #auth_password" )
+                return self.userFile?.authenticate( keyFactory: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
             self.passwordField.authenticated = { result in
                 trc( "User password authentication: %@", result )
+                MPTracker.shared.event( named: "users #auth_password", [
+                    "result": result.name,
+                    "length": self.passwordField.text?.count ?? 0,
+                    "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
+                ] )
 
                 switch result {
                     case .success(let user):
@@ -386,13 +403,17 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameField.alpha = 0
 
             self.biometricButton.isBackgroundVisible = false
-            self.biometricButton.button.action( for: .touchUpInside ) { [unowned self] in
+            self.biometricButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 guard let userFile = self.userFile
                 else { return }
 
                 let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
                 userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { result in
                     trc( "User biometric authentication: %@", result )
+                    MPTracker.shared.event( named: "users #auth_biometric", [
+                        "result": result.name,
+                        "factor": keychainKeyFactory.factor.description,
+                    ] )
 
                     switch result {
                         case .success(let user):
@@ -514,7 +535,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.nameField.alpha = 1 - self.nameLabel.alpha
 
                     self.avatarButton.isUserInteractionEnabled = self.isSelected
-                    self.avatarButton.setImage( self.avatar.image(), for: .normal )
+                    self.avatarButton.setImage( self.avatar.image, for: .normal )
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }

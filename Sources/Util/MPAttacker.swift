@@ -17,10 +17,7 @@ let cost_per_kwh        = Decimal( 0.1 ) // $/kWh
 enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
     case single, `private`, corporate, state
 
-    var description:    String {
-        "\(self.scale, numeric: "0.#") x \(amount: attempts_per_second)/s (~ \(amount: self.fixed_budget)$ HW + \(amount: self.monthly_budget)$/m)"
-    }
-    var identifier:     String {
+    var description:          String {
         switch self {
             case .single:
                 return "single"
@@ -32,7 +29,10 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
                 return "state"
         }
     }
-    var fixed_budget:   Decimal {
+    var localizedDescription: String {
+        "\(self.scale, numeric: "0.#") x \(amount: attempts_per_second)/s (~ \(amount: self.fixed_budget)$ HW + \(amount: self.monthly_budget)$/m)"
+    }
+    var fixed_budget:         Decimal {
         switch self {
             case .single:
                 return cost_fixed
@@ -47,18 +47,18 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
                 return 5_000_000_000
         }
     }
-    var monthly_budget: Decimal {
+    var monthly_budget:       Decimal {
         (self.scale * cost_watt / 1000) * 24 * 30 * cost_per_kwh
     }
 
     /// The hardware scale that the attacker employs to attack a hash.
-    var scale:          Decimal {
+    var scale:                Decimal {
         self.fixed_budget / cost_fixed
     }
 
     static func `for`(_ identifier: String) -> MPAttacker {
         for attacker in MPAttacker.allCases {
-            if attacker.identifier == identifier {
+            if attacker.description == identifier {
                 return attacker
             }
         }
@@ -66,7 +66,7 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         return .private
     }
 
-    func timeToCrack(type: MPResultType) -> TimeToCrack? {
+    static func permutations(type: MPResultType) -> Decimal? {
         guard type.in( class: .template )
         else { return nil }
 
@@ -88,10 +88,21 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
             typePermutations += templatePermutations
         }
 
-        return self.timeToCrack( permutations: typePermutations )
+        return typePermutations
     }
 
-    func timeToCrack(string: String) -> TimeToCrack? {
+    static func entropy(type: MPResultType) -> Int? {
+        self.permutations( type: type ).flatMap { self.entropy( permutations: $0 ) }
+    }
+
+    func timeToCrack(type: MPResultType) -> TimeToCrack? {
+        MPAttacker.permutations( type: type ).flatMap { self.timeToCrack( permutations: $0 ) }
+    }
+
+    static func permutations(string: String?) -> Decimal? {
+        guard let string = string
+        else { return nil }
+
         var stringPermutations = Decimal( 1 )
 
         for passwordCharacter in string.utf8CString {
@@ -111,7 +122,19 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
             stringPermutations *= characterEntropy
         }
 
-        return self.timeToCrack( permutations: stringPermutations )
+        return stringPermutations
+    }
+
+    static func entropy(string: String?) -> Int? {
+        self.permutations( string: string ).flatMap { self.entropy( permutations: $0 ) }
+    }
+
+    func timeToCrack(string: String?) -> TimeToCrack? {
+        MPAttacker.permutations( string: string ).flatMap { self.timeToCrack( permutations: $0 ) }
+    }
+
+    static func entropy(permutations: Decimal) -> Int {
+        Int( truncating: permutations.log( base: 2 ) as NSNumber )
     }
 
     func timeToCrack(permutations: Decimal) -> TimeToCrack {

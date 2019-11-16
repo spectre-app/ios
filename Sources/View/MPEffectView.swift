@@ -6,6 +6,11 @@
 import UIKit
 
 class MPEffectView: UIVisualEffectView {
+    public var borderWidth         = CGFloat( 2 ) {
+        didSet {
+            self.updateBackground()
+        }
+    }
     public var isBackgroundVisible = true {
         didSet {
             self.updateBackground()
@@ -40,7 +45,6 @@ class MPEffectView: UIVisualEffectView {
     init() {
         super.init( effect: nil )
 
-        self.layer.borderWidth = 2
         self.layer.borderColor = appConfig.theme.color.body.get()?.cgColor
         self.layer.masksToBounds = true
 
@@ -50,6 +54,18 @@ class MPEffectView: UIVisualEffectView {
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
         self.updateBackground()
+    }
+
+    convenience init(content: UIView) {
+        self.init()
+
+        // - View
+        self.contentView.addSubview( content )
+
+        // - Layout
+        LayoutConfiguration( view: content )
+                .constrain( margins: true )
+                .activate()
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -77,6 +93,7 @@ class MPEffectView: UIVisualEffectView {
         DispatchQueue.main.perform {
             self.tintColor = self.isBackgroundDark ? appConfig.theme.color.secondary.get(): appConfig.theme.color.backdrop.get()
             self.effect = self.isBackgroundVisible ? MPEffectView.effect( dark: self.isBackgroundDark ): nil
+            self.layer.borderWidth = self.isBackgroundVisible ? self.borderWidth: 0
         }
     }
 

@@ -82,27 +82,27 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
 
     // MARK: --- mpw ---
 
-    public func mpw_result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                           resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<String> {
-        self.site.mpw_result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                              resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
+    public func result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        self.site.result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                          resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
     }
 
-    public func mpw_state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                          resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<String> {
-        self.site.mpw_state( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                             resultType: resultType, resultParam: resultParam, algorithm: algorithm )
+    public func state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        self.site.state( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                         resultType: resultType, resultParam: resultParam, algorithm: algorithm )
     }
 
     @discardableResult
-    public func mpw_copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                         resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
-                         for host: UIView? = nil) -> Promise<String> {
-        self.site.mpw_copy( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                            resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm,
-                            for: host )
+    public func copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
+                     for host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        self.site.copy( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                        resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm,
+                        for: host )
     }
 }
 

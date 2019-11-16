@@ -6,7 +6,9 @@
 import UIKit
 import os
 
-let productName = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) ?? "Volto"
+let productName    = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) as? String ?? "Volto"
+let productVersion = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
+let productBuild   = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String ?? "0"
 
 let resultTypes = [
     MPResultType.templateMaximum, MPResultType.templateLong, MPResultType.templateMedium, MPResultType.templateShort,
@@ -65,8 +67,8 @@ func withVaStrings<R>(_ strings: [String], terminate: Bool = true, body: (CVaLis
     return withVaList( va, body )
 }
 
-extension MPKeyPurpose {
-    var result: String {
+extension MPKeyPurpose : CustomStringConvertible {
+    public var description: String {
         switch self {
             case .authentication:
                 return "password"
@@ -80,7 +82,14 @@ extension MPKeyPurpose {
     }
 }
 
-extension MPResultType {
+extension MPResultType: CustomStringConvertible {
+    public var description: String {
+        String( safeUTF8: mpw_type_short_name( self ) ) ?? "?"
+    }
+    public var localizedDescription: String {
+        String( safeUTF8: mpw_type_long_name( self ) ) ?? "?"
+    }
+
     func `in`(class c: MPResultTypeClass) -> Bool {
         self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
     }
@@ -300,17 +309,17 @@ extension String.StringInterpolation {
     }
 
     mutating func appendInterpolation(amount value: Decimal) {
-        if value >= 1000000000000 {
-            appendLiteral( "\(value / 1000000000000, numeric: "#,##0")T" )
+        if value >= 1_000_000_000_000 {
+            appendLiteral( "\(value / 1_000_000_000_000, numeric: "#,##0")T" )
         }
-        else if value >= 1000000000 {
-            appendLiteral( "\(value / 1000000000, numeric: "#,##0")B" )
+        else if value >= 1_000_000_000 {
+            appendLiteral( "\(value / 1_000_000_000, numeric: "#,##0")B" )
         }
-        else if value >= 1000000 {
-            appendLiteral( "\(value / 1000000, numeric: "#,##0")M" )
+        else if value >= 1_000_000 {
+            appendLiteral( "\(value / 1_000_000, numeric: "#,##0")M" )
         }
-        else if value >= 1000 {
-            appendLiteral( "\(value / 1000, numeric: "#,##0")k" )
+        else if value >= 1_000 {
+            appendLiteral( "\(value / 1_000, numeric: "#,##0")k" )
         }
         else {
             appendLiteral( "\(value, numeric: "#,##0")" )
@@ -549,6 +558,62 @@ extension Data {
         self.forEach { hex.appendFormat( "%02hhX", $0 ) }
 
         return hex as String
+    }
+}
+
+extension Decimal {
+    static let e = Decimal( string: "2.7182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664" )!
+
+    func log(base: Decimal) -> Decimal {
+        self.ln() / base.ln()
+    }
+
+    func ln() -> Decimal {
+        // https://en.wikipedia.org/wiki/Logarithm#Power_series -- "More efficient series"
+
+        // To speed convergence, using ln(z) = y + ln(A), A = z / e^y approximation for values larger than 1.5
+        let approximateInput = Double( truncating: self as NSNumber )
+        if approximateInput > 1.5 {
+            let y = Int( ceil( Darwin.log( approximateInput ) ) );
+            // Using integer because of more precise powers for integers
+            let smaller = self / pow( Decimal.e, y )
+            return Decimal( y ) + smaller.ln()
+        }
+        if approximateInput < 0.4 {
+            let y = Int( floor( Darwin.log( approximateInput ) ) );
+            // Using integer because of more precise powers for integers
+            let smaller = self / pow( Decimal.e, y )
+            return Decimal( y ) + smaller.ln()
+        }
+
+        let seriesConstant       = (self - 1) / (self + 1)
+        var currentConstantValue = seriesConstant, final = seriesConstant;
+        for i in stride( from: 3, through: 93, by: 2 ) {
+            currentConstantValue *= seriesConstant
+
+            // For some reason, underflow never triggers an error on NSDecimalMultiply, so you need to check for when values get too small and abort convergence manually at that point
+            var rounded: Decimal = 0;
+            NSDecimalRound( &rounded, &currentConstantValue, 80, .bankers );
+            if rounded == 0 {
+                break;
+            }
+
+            currentConstantValue *= seriesConstant
+            NSDecimalRound( &rounded, &currentConstantValue, 80, .bankers );
+            if rounded == 0 {
+                break;
+            }
+
+            var currentFactor = currentConstantValue / Decimal( i )
+            NSDecimalRound( &rounded, &currentFactor, 80, .bankers );
+            if rounded == 0 {
+                break;
+            }
+
+            final += currentFactor
+        }
+
+        return 2 * final
     }
 }
 

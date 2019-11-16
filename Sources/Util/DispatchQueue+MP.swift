@@ -78,7 +78,7 @@ extension DispatchQueue {
         let promise = Promise<V>()
 
         self.perform( flags: flags ) {
-            do { try work().then { promise.finish( $0 ) } }
+            do { try work().finishes( promise ) }
             catch { promise.finish( .failure( error ) ) }
         }
 
@@ -125,7 +125,8 @@ public class Promise<V> {
         }
     }
 
-    public func finish(_ result: Result<V, Error>) {
+    @discardableResult
+    public func finish(_ result: Result<V, Error>) -> Self {
         self.result = result
 
         self.targets.forEach { target in
@@ -136,10 +137,19 @@ public class Promise<V> {
                 target.consumer( result )
             }
         }
+
+        return self
     }
 
     @discardableResult
-    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void) -> Promise<V> {
+    public func finishes(_ promise: Promise<V>) -> Self {
+        self.then { (result: Result<V, Error>) in
+            promise.finish( result )
+        }
+    }
+
+    @discardableResult
+    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void) -> Self {
         if let result = self.result, queue?.isActive ?? true {
             consumer( result )
         }
@@ -184,7 +194,7 @@ public class Promise<V> {
         self.then( on: queue, {
             switch $0 {
                 case .success:
-                    do { try consumer().then { promise.finish( $0 ) } }
+                    do { try consumer().finishes( promise ) }
                     catch { promise.finish( .failure( error ) ) }
 
                 case .failure(let error):
@@ -199,7 +209,7 @@ public class Promise<V> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
-            do { try consumer( $0 ).then { promise.finish( $0 ) } }
+            do { try consumer( $0 ).finishes( promise ) }
             catch { promise.finish( .failure( error ) ) }
         } )
 
@@ -243,7 +253,7 @@ public class Promise<V> {
     }
 
     public func await() throws -> V {
-        if let result = result {
+        if let result = self.result {
             switch result {
                 case .success(let value):
                     return value
@@ -256,23 +266,10 @@ public class Promise<V> {
         // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         let group = DispatchGroup()
         group.enter()
-        var result: Result<V, Error>?
-        self.then {
-            result = $0
-            group.leave()
-        }
+        self.targets.append( (queue: nil, consumer: { _ in group.leave() }) )
         group.wait()
 
-        switch result {
-            case .success(let value):
-                return value
-
-            case .failure(let error):
-                throw error
-
-            case .none:
-                throw MPError.internal( details: "Couldn't obtain result" )
-        }
+        return try self.await()
     }
 }
 

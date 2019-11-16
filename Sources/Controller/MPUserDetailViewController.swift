@@ -51,7 +51,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class AvatarItem: PickerItem<MPUser, MPUser.Avatar> {
         init() {
-            super.init( title: "Avatar",
+            super.init( identifier: "user >avatar", title: "Avatar",
                         values: { _ in MPUser.Avatar.allCases },
                         value: { $0.avatar },
                         update: { $0.avatar = $1 } )
@@ -70,7 +70,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class DefaultTypeItem: PickerItem<MPUser, MPResultType> {
         init() {
-            super.init( title: "Default Type",
+            super.init( identifier: "user >defaultType", title: "Default Type",
                         values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.defaultType },
                         update: { $0.defaultType = $1 } )
@@ -89,7 +89,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class AttackerItem: PickerItem<MPUser, MPAttacker?> {
         init() {
-            super.init( title: "Defense Strategy 🅿",
+            super.init( identifier: "user >attacker", title: "Defense Strategy 🅿",
                         values: { _ in MPAttacker.allCases },
                         value: { $0.attacker },
                         update: { $0.attacker = $1 },
@@ -117,7 +117,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                     DispatchQueue.main.perform {
                         if let attacker = self.attacker {
                             self.nameLabel.text = "\(amount: attacker.fixed_budget + attacker.monthly_budget * 12)$"
-                            self.classLabel.text = attacker.identifier
+                            self.classLabel.text = "\(attacker)"
                         } else {
                             self.nameLabel.text = "Off"
                             self.classLabel.text = ""
@@ -132,6 +132,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         init() {
             super.init( subitems: [
                 ToggleItem<MPUser>(
+                        identifier: "user >maskPasswords",
                         title: "Mask Passwords",
                         value: {
                             (icon: UIImage( named: "icon_tripledot" ),
@@ -146,12 +147,13 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             """
                         } ),
                 ToggleItem(
+                        identifier: "user >biometricLock",
                         title: "Biometric Lock 🅿",
                         value: {
                             let keychainKeyFactory = MPKeychainKeyFactory( fullName: $0.fullName )
                             return (icon: keychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon,
                                     selected: $0.biometricLock,
-                                    enabled: keychainKeyFactory.factor != .none)
+                                    enabled: keychainKeyFactory.factor != .biometricNone)
                         },
                         update: { $0.biometricLock = $1 },
                         caption: { _ in
@@ -167,7 +169,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class ActionsItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ButtonItem( value: { _ in (label: "Export", image: nil) } ) { item in
+                ButtonItem( identifier: "user #export", value: { _ in (label: "Export", image: nil) } ) { item in
                     trc( "Exporting: %@", item.model )
 
                     if let user = item.model {
@@ -177,7 +179,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         item.viewController?.present( controller, animated: true )
                     }
                 },
-                ButtonItem( value: { _ in (label: "Log out", image: nil) } ) { item in
+                ButtonItem( identifier: "user #logout", value: { _ in (label: "Log out", image: nil) } ) { item in
                     trc( "Logging out: %@", item.model )
 
                     item.model?.logout()

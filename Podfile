@@ -8,7 +8,8 @@ target 'MasterPassword' do
 
   pod 'Stellar', :git => 'https://github.com/AugustRush/Stellar.git'
   pod 'SwiftLinkPreview', '~> 2.3.0'
-  pod 'Firebase/Core'
-  pod 'Fabric'
-  pod 'Crashlytics'
+  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '4.4.1'
+  pod 'Heap'
+  pod 'Amplitude-iOS', '~> 4.0.4'
+  pod 'Mixpanel-swift'
 end

@@ -252,13 +252,15 @@ class LabelItem<M>: ValueItem<M, Any> {
 }
 
 class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool)> {
-    let update: (M, Bool) -> Void
+    let identifier: String
+    let update:     (M, Bool) -> Void
 
-    init(title: String? = nil, subitems: [Item<M>] = [],
+    init(identifier: String, title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (icon: UIImage?, selected: Bool, enabled: Bool),
          update: @escaping (M, Bool) -> Void = { _, _ in },
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
          hidden: @escaping (M) -> Bool = { _ in false }) {
+        self.identifier = identifier
         self.update = update
 
         super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
@@ -270,7 +272,7 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
 
     class ToggleItemView<M>: ItemView<M> {
         let item: ToggleItem
-        let button = MPToggleButton()
+        lazy var button = MPToggleButton( identifier: self.item.identifier )
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -282,9 +284,8 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         }
 
         override func createValueView() -> UIView? {
-            self.button.action( for: .touchUpInside ) { [unowned self] in
+            self.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let model = self.item.model {
-                    self.button.isSelected = !self.button.isSelected
                     self.item.update( model, self.button.isSelected )
                     self.item.setNeedsUpdate()
                 }
@@ -303,13 +304,15 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
 }
 
 class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
-    let action: (ButtonItem<M>) -> Void
+    let identifier: String
+    let action:     (ButtonItem<M>) -> Void
 
-    init(title: String? = nil, subitems: [Item<M>] = [],
+    init(identifier: String, title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (label: String?, image: UIImage?),
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
          hidden: @escaping (M) -> Bool = { _ in false },
          action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
+        self.identifier = identifier
         self.action = action
 
         super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
@@ -321,7 +324,10 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
 
     class ButtonItemView<M>: ItemView<M> {
         let item: ButtonItem
-        let button = MPButton()
+
+        lazy var button = MPButton( identifier: self.item.identifier ) { [unowned self] _ in
+            self.item.action( self.item )
+        }
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -333,10 +339,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
         }
 
         override func createValueView() -> UIView? {
-            self.button.button.action( for: .touchUpInside ) { [unowned self] in
-                self.item.action( self.item )
-            }
-            return self.button
+            self.button
         }
 
         override func update() {
@@ -505,7 +508,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 
             if let window = self.valueView.window {
                 self.valueView.heightAnchor.constraint( equalTo: window.heightAnchor, multiplier: 0.618 )
-                                           .with(priority: .defaultHigh).isActive = true
+                                           .with( priority: .defaultHigh ).isActive = true
             }
         }
 
@@ -532,8 +535,8 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 }
 
 class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
-    let update: (M, V) -> Void
-    let step:   V, min: V, max: V
+    let update:     (M, V) -> Void
+    let step:       V, min: V, max: V
 
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> V? = { _ in nil },
@@ -556,8 +559,20 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         let item: StepperItem
         let valueView  = UIView()
         let valueLabel = UILabel()
-        let downButton = MPButton( title: "-" )
-        let upButton   = MPButton( title: "+" )
+        lazy var downButton = MPButton( title: "-" ) { [unowned self]  _ in
+            if let model = self.item.model,
+               let value = self.item.value,
+               value > self.item.min {
+                self.item.update( model, value - self.item.step )
+            }
+        }
+        lazy var upButton = MPButton( title: "+" ) { [unowned self] _ in
+            if let model = self.item.model,
+               let value = self.item.value,
+               value < self.item.max {
+                self.item.update( model, value + self.item.step )
+            }
+        }
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -570,22 +585,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
 
         override func createValueView() -> UIView? {
             self.downButton.isBackgroundVisible = false
-            self.downButton.button.action( for: .touchUpInside ) { [unowned self] in
-                if let model = self.item.model,
-                   let value = self.item.value,
-                   value > self.item.min {
-                    self.item.update( model, value - self.item.step )
-                }
-            }
-
             self.upButton.isBackgroundVisible = false
-            self.upButton.button.action( for: .touchUpInside ) { [unowned self] in
-                if let model = self.item.model,
-                   let value = self.item.value,
-                   value < self.item.max {
-                    self.item.update( model, value + self.item.step )
-                }
-            }
 
             self.valueLabel.font = appConfig.theme.font.largeTitle.get()
             self.valueLabel.textAlignment = .center
@@ -631,13 +631,15 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
 }
 
 class PickerItem<M, V: Hashable>: ValueItem<M, V> {
-    let values: (M) -> [V]
-    let update: (M, V) -> Void
+    let identifier: String
+    let values:     (M) -> [V]
+    let update:     (M, V) -> Void
 
-    init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
+    init(identifier: String, title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
          value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in },
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
          hidden: @escaping (M) -> Bool = { _ in false }) {
+        self.identifier = identifier
         self.values = values
         self.update = update
 
@@ -653,6 +655,10 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
     func cell(collectionView: UICollectionView, indexPath: IndexPath, model: M, value: V) -> UICollectionViewCell? {
         nil
+    }
+
+    func identifier(indexPath: IndexPath, model: M, value: V) -> String? {
+        (value as? CustomStringConvertible)?.description
     }
 
     class PickerItemView<M>: ItemView<M>, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
@@ -719,6 +725,10 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             if let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
+                if let itemIdentifier = self.item.identifier( indexPath: indexPath, model: model, value: value ) {
+                    MPTracker.shared.event( named: self.item.identifier, [ "value": itemIdentifier ] )
+                }
+
                 self.item.update( model, value )
             }
         }
@@ -905,7 +915,7 @@ class ListItem<M, V: Hashable>: Item<M> {
                 CGSize( width: UIView.noIntrinsicMetric, height: self.contentSize.height )
             }
 
-            override var bounds: CGRect {
+            override var bounds:      CGRect {
                 didSet {
                     if self.bounds.size.height < self.contentSize.height {
                         if !self.isScrollEnabled {

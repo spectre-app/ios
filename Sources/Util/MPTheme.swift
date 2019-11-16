@@ -65,7 +65,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
         }
     }
     public var  description: String {
-        "Theme[\(self.path)]"
+        self.path
     }
 
     private init() {

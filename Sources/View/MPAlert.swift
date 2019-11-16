@@ -118,7 +118,7 @@ class MPAlert {
         contentStack.alignment = .center
         contentStack.spacing = 8
 
-        let view = MPButton( content: contentStack )
+        let view = MPEffectView( content: contentStack )
         view.isBackgroundDark = true
         if #available( iOS 11.0, * ) {
             view.insetsLayoutMarginsFromSafeArea = true

@@ -146,19 +146,24 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         (self.resultSource.element( at: indexPath )?.value).flatMap { site in
-            UIContextMenuConfiguration( identifier: indexPath as NSIndexPath, previewProvider: { MPSitePreviewController( site: site ) }, actionProvider: { elements in
+            UIContextMenuConfiguration(
+                    indexPath: indexPath, previewProvider: { _ in MPSitePreviewController( site: site ) }, actionProvider: { _, configuration in
                 UIMenu( title: site.siteName, children: [
-                    UIAction( title: "Delete", image: UIImage( named: "icon_delete" ), attributes: .destructive ) { _ in
+                    UIAction( title: "Delete", image: UIImage( named: "icon_delete" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
+                        configuration.action = action
                         site.user.sites.removeAll { $0 === site }
                     },
-                    UIAction( title: "Details", image: UIImage( named: "icon_sliders" ) ) { _ in
+                    UIAction( title: "Details", image: UIImage( named: "icon_sliders" ), identifier: UIAction.Identifier( "settings" ) ) { action in
+                        configuration.action = action
                         self.observers.notify { $0.siteDetailsAction( site: site ) }
                     },
-                    UIAction( title: "Copy Login Name 🅿", image: UIImage( named: "icon_user" ), attributes: appConfig.premium ? []: .hidden ) { _ in
-                        site.mpw_copy( keyPurpose: .identification, for: self )
+                    UIAction( title: "Copy Login Name 🅿", image: UIImage( named: "icon_user" ), identifier: UIAction.Identifier( "login" ), attributes: appConfig.premium ? []: .hidden ) { action in
+                        configuration.action = action
+                        site.copy( keyPurpose: .identification, for: self )
                     },
-                    UIAction( title: "Copy Password", image: UIImage( named: "icon_tripledot" ) ) { _ in
-                        site.mpw_copy( keyPurpose: .authentication, for: self )
+                    UIAction( title: "Copy Password", image: UIImage( named: "icon_tripledot" ), identifier: UIAction.Identifier( "password" ) ) { action in
+                        configuration.action = action
+                        site.copy( keyPurpose: .authentication, for: self )
                     },
                 ] )
             } )
@@ -167,10 +172,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath
+        guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
-        guard let view = self.cellForRow( at: indexPath )
-        else { return nil }
+
+        MPTracker.shared.begin( named: "site #menu" )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
@@ -179,10 +184,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath
+        guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
-        guard let view = self.cellForRow( at: indexPath )
-        else { return nil }
+
+        MPTracker.shared.event( named: "site #menu", [
+            "action": configuration.action?.identifier.rawValue ?? "none"
+        ] )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
@@ -191,15 +198,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
-        self.selectedSite = self.resultSource.element( at: configuration.identifier as? IndexPath )?.value
-    }
-
-    @available(iOS 13, *)
-    func tableView(_ tableView: UITableView, willCommitMenuWithAnimator animator: UIContextMenuInteractionCommitAnimating) {
+        self.selectedSite = self.resultSource.element( at: configuration.indexPath )?.value
     }
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if let site = self.resultSource.element( at: indexPath )?.value, editingStyle == .delete {
+            MPTracker.shared.event( named: "site #delete" )
+
             site.user.sites.removeAll { $0 === site }
         }
     }
@@ -275,9 +280,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         private let resultLabel    = UITextField()
         private let captionLabel   = UILabel()
-        private let modeButton     = MPButton( image: UIImage( named: "icon_person" ) )
-        private let settingsButton = MPButton( image: UIImage( named: "icon_sliders" ) )
-        private let newButton      = MPButton( image: UIImage( named: "icon_btn_plus" ) )
+        private let modeButton     = MPButton( identifier: "sites.site #mode", image: UIImage( named: "icon_person" ) )
+        private let settingsButton = MPButton( identifier: "sites.site #site_settings", image: UIImage( named: "icon_sliders" ) )
+        private let newButton      = MPButton( identifier: "sites.site #add", image: UIImage( named: "icon_btn_plus" ) )
 
         // MARK: --- Life ---
 
@@ -316,7 +321,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.captionLabel.shadowColor = appConfig.theme.color.shadow.get()
             self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
-            self.settingsButton.button.addTarget( self, action: #selector( settingsAction ), for: .touchUpInside )
+            self.settingsButton.button.addTarget( self, action: #selector( settingsAction ), for: .primaryActionTriggered )
 
             self.newButton.tapEffect = false
             self.newButton.isBackgroundVisible = false
@@ -324,7 +329,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             self.modeButton.tapEffect = false
             self.modeButton.isBackgroundVisible = false
-            self.modeButton.button.addTarget( self, action: #selector( modeAction ), for: .touchUpInside )
+            self.modeButton.button.addTarget( self, action: #selector( modeAction ), for: .primaryActionTriggered )
 
             // - Hierarchy
             self.contentView.addSubview( self.resultLabel )
@@ -395,7 +400,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         func cellAction() {
             self.sitesView?.selectedSite = self.site
 
-            _ = self.site?.mpw_copy( keyPurpose: self.mode, for: self ).then { _ in
+            _ = self.site?.copy( keyPurpose: self.mode, for: self ).then { _ in
                 if let site = self.site, self.new {
                     site.user.sites.append( site )
                 }
@@ -437,6 +442,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- Private ---
 
         private func update() {
+            guard let site = self.site
+            else { return }
+
             DispatchQueue.main.promise {
                 self.modeButton.size = .small
                 switch self.mode {
@@ -454,14 +462,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
             }.promised {
-                self.site?.mpw_result( keyPurpose: self.mode ) ?? Promise( .success( "" ) )
+                site.result( keyPurpose: self.mode )
             }.then( on: DispatchQueue.main ) {
                 switch $0 {
                     case .success(let result):
-                        self.resultLabel.text = result
+                        self.resultLabel.text = result.token
 
                     case .failure(let error):
-                        mperror( title: "Couldn't calculate site \(self.mode.result)", error: error )
+                        mperror( title: "Couldn't calculate site \(self.mode)", error: error )
                 }
             }
         }
@@ -519,6 +527,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
 
         func willDisplay() {
+            MPTracker.shared.event( named: "liefste" )
+
             self.player = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
             self.player?.play()
             self.emitterView.emit( with: [

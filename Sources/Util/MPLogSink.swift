@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import Firebase
 
 public class MPLogSink {
     public static let shared = MPLogSink()
