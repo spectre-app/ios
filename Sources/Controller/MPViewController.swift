@@ -6,6 +6,7 @@
 import UIKit
 
 class MPViewController: UIViewController {
+    var trackScreen = true
     var screen: MPTracker.Screen? {
         willSet {
             self.screen?.dismiss()
@@ -23,7 +24,9 @@ class MPViewController: UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        self.screen = MPTracker.shared.screen( named: type( of: self ).description() )
+        if self.trackScreen {
+            self.screen = MPTracker.shared.screen( named: type( of: self ).description() )
+        }
 
         super.viewWillAppear( animated )
     }

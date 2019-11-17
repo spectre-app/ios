@@ -45,6 +45,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.trackScreen = false
 
         // - View
         self.detailRecognizer.delegate = self
