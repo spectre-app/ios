@@ -53,8 +53,9 @@ class MPTracker {
         return screen
     }
 
+    @discardableResult
     func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               named name: String) {
+               named name: String) -> Event {
         dbg( file: file, line: line, function: function, dso: dso, "> %@", name )
 
         Mixpanel.mainInstance().time( event: name )
@@ -62,6 +63,8 @@ class MPTracker {
         Flurry.logEvent( name, timed: true )
 
         self.pending[name] = (start: Date(), smartlook: smartlook)
+
+        return Event( pending: name )
     }
 
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
@@ -102,12 +105,15 @@ class MPTracker {
             self.tracker = tracker
         }
 
-        fileprivate func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
+        @discardableResult
+        fileprivate func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle)
+                        -> Event {
             self.tracker.begin( file: file, line: line, function: function, dso: dso, named: self.name )
         }
 
+        @discardableResult
         func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   event: String) {
+                   event: String) -> Event {
             self.tracker.begin( file: file, line: line, function: function, dso: dso, named: "\(self.name) #\(event)" )
         }
 
@@ -121,6 +127,24 @@ class MPTracker {
             self.tracker.event( file: file, line: line, function: function, dso: dso, named: self.name )
 
             self.tracker.screens.removeAll { $0 === self }
+        }
+    }
+
+    class Event {
+        let pending: String
+        private var ended = false
+
+        init(pending: String) {
+            self.pending = pending
+        }
+
+        func end(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                 _ parameters: [String: Value] = [:]) {
+            guard !self.ended
+            else { return }
+
+            MPTracker.shared.event( file: file, line: line, function: function, dso: dso, named: self.pending, parameters )
+            self.ended = true
         }
     }
 }

@@ -12,7 +12,28 @@ import Stellar
 class MPUsersViewController: MPViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
     public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
     public var selectedFile: MPMarshal.UserFile? {
-        self.fileSource.element( item: self.usersSpinner.selectedItem )
+        didSet {
+            if oldValue != self.selectedFile {
+                trc( "Selected user: %@", self.selectedFile )
+
+                UIView.animate( withDuration: 0.382 ) {
+                    self.userToolbarConfiguration.activated = self.selectedFile != nil
+
+                    if let selectedItem = self.usersSpinner.selectedItem {
+                        MPFeedback.shared.play( .activate )
+
+                        MPTracker.shared.event( named: "users >user", [
+                            "value": selectedItem,
+                            "count": self.usersSpinner.numberOfItems( inSection: 0 ),
+                        ] )
+                        self.userEvent = MPTracker.shared.begin( named: "users #user" )
+                    }
+                    else {
+                        self.userEvent?.end( [ "result": "deselected" ] )
+                    }
+                }
+            }
+        }
     }
 
     private let appToolbar   = UIStackView()
@@ -21,6 +42,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     private let detailsHost  = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
     private var keyboardLayoutGuide:      KeyboardLayoutGuide!
+    private var userEvent:                MPTracker.Event?
 
     // MARK: --- Life ---
 
@@ -82,6 +104,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     switch result {
                         case .success(let user):
                             MPFeedback.shared.play( .trigger )
+                            self.userEvent?.end( [ "result": "incognito" ] )
                             self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                         case .failure(let error):
@@ -175,19 +198,19 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     @objc
     private func didTrashUser() {
-        if let user = self.selectedFile {
+        if let userFile = self.selectedFile {
             let alert = UIAlertController( title: "Delete User?", message:
             """
             This will delete the user and all of its recorded state:
-            \(user)
+            \(userFile)
 
             Note: You can re-create the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
             When re-creating the user, make sure to use the exact same name and master password.
-            The user's identicon (\(user.identicon.text() ?? "-")) is a good manual check that you got this right.
+            The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak self, weak user] _ in
-                guard let self = self, let user = user
+            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak self, weak userFile] _ in
+                guard let self = self, let user = userFile
                 else { return }
                 trc( "Trashing user: %@", user )
 
@@ -201,22 +224,20 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     @objc
     private func didResetUser() {
-        if let user = self.selectedFile {
+        if let userFile = self.selectedFile {
             let alert = UIAlertController( title: "Reset Master Password?", message:
             """
             This will allow you to change the master password for:
-            \(user)
+            \(userFile)
 
             Note: When the user's master password changes, its site passwords and other generated content will also change accordingly.
             The master password can always be changed back to revert to the user's current site passwords and generated content.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak user] _ in
-                guard let user = user
-                else { return }
-                trc( "Resetting user: %@", user )
+            alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in
+                trc( "Resetting user: %@", userFile )
 
-                user.resetKey = true
+                userFile?.resetKey = true
             } )
             self.present( alert, animated: true )
         }
@@ -247,25 +268,12 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        UIView.animate( withDuration: 0.382 ) {
-            trc( "Selected user: %@", self.selectedFile )
-
-            self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
-            if self.userToolbarConfiguration.activated {
-                MPTracker.shared.event( named: "users >user", [
-                    "value": indexPath.item,
-                    "count": collectionView.numberOfItems( inSection: indexPath.section ),
-                ] )
-
-                MPFeedback.shared.play( .activate )
-            }
-        }
+        self.selectedFile = self.fileSource.element( item: self.usersSpinner.selectedItem )
+        (self.usersSpinner.cellForItem( at: indexPath ) as? UserCell)?.userEvent = self.userEvent
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        UIView.animate( withDuration: 0.382 ) {
-            self.userToolbarConfiguration.activated = self.usersSpinner.selectedItem != nil
-        }
+        self.selectedFile = self.fileSource.element( item: self.usersSpinner.selectedItem )
     }
 
     // MARK: --- MPMarshalObserver ---
@@ -308,6 +316,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         }
 
         public var new: Bool = false
+        public weak var userEvent:            MPTracker.Event?
         public weak var userFile:             MPMarshal.UserFile? {
             didSet {
                 self.passwordField.userFile = self.userFile
@@ -371,6 +380,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.rightViewMode = .always
             self.passwordField.authenticater = { keyFactory in
                 MPTracker.shared.begin( named: "users #auth_password" )
+
                 return self.userFile?.authenticate( keyFactory: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
@@ -385,6 +395,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 switch result {
                     case .success(let user):
                         MPFeedback.shared.play( .trigger )
+                        self.userEvent?.end( [ "result": "password" ] )
                         self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                     case .failure(let error):
@@ -418,6 +429,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     switch result {
                         case .success(let user):
                             MPFeedback.shared.play( .trigger )
+                            self.userEvent?.end( [ "result": "biometric" ] )
                             self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                         case .failure:
