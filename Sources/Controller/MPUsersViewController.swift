@@ -79,6 +79,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         settingsButton.isBackgroundVisible = false
         self.appToolbar.addArrangedSubview( settingsButton )
         let incognitoButton = MPTimedButton( identifier: "users #auth_incognito", image: UIImage( named: "icon_shield" ) ) { _ in
+            self.userEvent = self.userEvent ?? MPTracker.shared.begin( named: "users #user" )
+
             let controller = UIAlertController( title: "Incognito Login", message:
             """
             While in incognito mode, no user information is kept on the device.
@@ -174,7 +176,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         self.keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
             [
                 self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
-                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 )
+                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 ),
             ]
         }
     }
@@ -333,8 +335,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         }
         private let nameLabel       = UILabel()
         private let nameField       = UITextField()
-        private let avatarButton    = UIButton()
-        private let biometricButton = MPTimedButton( identifier: "users #auth_biometric", image: UIImage( named: "icon_man" ) )
+        private let avatarButton    = MPButton( identifier: "users.user #avatar" )
+        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: UIImage( named: "icon_man" ) )
         private let passwordField   = MPMasterPasswordField()
         private let idBadgeView     = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView   = UIImageView( image: UIImage( named: "icon_key" ) )
@@ -366,9 +368,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameLabel.preferredMaxLayoutWidth = .infinity
             self.nameLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
-            self.avatarButton.contentMode = .center
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.action( for: .primaryActionTriggered ) { [unowned self] in
+            self.avatarButton.isBackgroundVisible = false
+            self.avatarButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.avatar.next()
             }
 
@@ -379,14 +381,14 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.rightView = self.biometricButton
             self.passwordField.rightViewMode = .always
             self.passwordField.authenticater = { keyFactory in
-                MPTracker.shared.begin( named: "users #auth_password" )
+                MPTracker.shared.begin( named: "users.user #auth_password" )
 
                 return self.userFile?.authenticate( keyFactory: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
             self.passwordField.authenticated = { result in
                 trc( "User password authentication: %@", result )
-                MPTracker.shared.event( named: "users #auth_password", [
+                MPTracker.shared.event( named: "users.user #auth_password", [
                     "result": result.name,
                     "length": self.passwordField.text?.count ?? 0,
                     "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
@@ -421,7 +423,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
                 userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { result in
                     trc( "User biometric authentication: %@", result )
-                    MPTracker.shared.event( named: "users #auth_biometric", [
+                    MPTracker.shared.event( named: "users.user #auth_biometric", [
                         "result": result.name,
                         "factor": keychainKeyFactory.factor.description,
                     ] )
@@ -547,7 +549,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.nameField.alpha = 1 - self.nameLabel.alpha
 
                     self.avatarButton.isUserInteractionEnabled = self.isSelected
-                    self.avatarButton.setImage( self.avatar.image, for: .normal )
+                    self.avatarButton.image = self.avatar.image
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }
