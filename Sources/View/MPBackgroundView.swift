@@ -6,27 +6,49 @@
 import UIKit
 
 class MPBackgroundView: UIView {
+    var mode: Mode {
+        didSet {
+            self.update()
+        }
+    }
+
     private var gradientColor: CGGradient?
     private var gradientPoint  = CGPoint()
     private var gradientRadius = CGFloat( 0 )
 
+    // MARK: --- Life ---
+
+    init(mode: Mode = .panel) {
+        self.mode = mode
+        super.init( frame: .zero )
+
+        self.update()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError( "init(coder:) is not supported for this class" )
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        self.gradientPoint = self.bounds.top
-        self.gradientRadius = max( self.bounds.size.width, self.bounds.size.height )
-        self.setNeedsDisplay()
+        if case .gradient = self.mode {
+            self.gradientPoint = self.bounds.top
+            self.gradientRadius = max( self.bounds.size.width, self.bounds.size.height )
+            self.setNeedsDisplay()
+        }
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange( previousTraitCollection )
+
+        self.update()
     }
 
     override func tintColorDidChange() {
         super.tintColorDidChange()
 
-        self.backgroundColor = appConfig.theme.color.backdrop.get()
-        self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-            self.tintColor.withAlphaComponent( 0.618 ).cgColor,
-            self.tintColor.withAlphaComponent( 1 ).cgColor,
-        ] as CFArray, locations: nil )
-        self.setNeedsDisplay()
+        self.update()
     }
 
     override func draw(_ rect: CGRect) {
@@ -36,5 +58,37 @@ class MPBackgroundView: UIView {
         UIGraphicsGetCurrentContext()?.drawRadialGradient(
                 gradientColor, startCenter: self.gradientPoint, startRadius: 0,
                 endCenter: self.gradientPoint, endRadius: self.gradientRadius, options: .drawsAfterEndLocation )
+    }
+
+    // MARK: --- Private ---
+
+    private func update() {
+        switch self.mode {
+            case .gradient:
+                self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
+                    appConfig.theme.color.panel.get()!.cgColor,
+                    appConfig.theme.color.backdrop.get()!.cgColor,
+                ] as CFArray, locations: nil )
+
+            case .backdrop:
+                self.backgroundColor = appConfig.theme.color.backdrop.get()
+                self.gradientColor = nil
+
+            case .panel:
+                self.backgroundColor = appConfig.theme.color.panel.get()
+                self.gradientColor = nil
+
+            case .tint:
+                self.backgroundColor = self.tintColor
+                self.gradientColor = nil
+        }
+
+        self.setNeedsDisplay()
+    }
+
+    // MARK: --- Types ---
+
+    enum Mode {
+        case gradient, backdrop, panel, tint
     }
 }

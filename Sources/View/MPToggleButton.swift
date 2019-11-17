@@ -16,6 +16,7 @@ class MPToggleButton: UIButton {
                 UIView.animate( withDuration: 0.382 ) {
                     self.imageView?.alpha = self.isSelected ? 1: 0.382
                     self.checkLabel.alpha = self.isSelected ? 1: 0
+                    self.setNeedsDisplay()
                 }
             }
         }
@@ -73,7 +74,7 @@ class MPToggleButton: UIButton {
 
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
-           let borderColor = self.checkLabel.textColor?.cgColor,
+           let borderColor = appConfig.theme.color.body.get()?.cgColor,
            let backgroundColor = appConfig.theme.color.mute.get()?.cgColor {
 
             let content = self.bounds.inset( by: self.contentEdgeInsets )
@@ -87,12 +88,12 @@ class MPToggleButton: UIButton {
             context.setFillColor( backgroundColor )
             context.fillEllipse( in: content )
 
-            context.setLineWidth( 1.5 )
+            context.setLineWidth( 1 )
             context.setStrokeColor( borderColor )
             context.strokeEllipse( in: content )
 
             context.resetClip()
-            context.setLineWidth( 1 )
+            context.setLineWidth( self.isSelected ? 1.5: 1 )
             context.strokeEllipse( in: circle )
         }
     }
@@ -102,9 +103,9 @@ class MPToggleButton: UIButton {
         self.isSelected = !self.isSelected
         self.track()
 
-//        if self.tapEffect {
-//            MPTapEffectView( for: self ).run()
-//        }
+        if self.tapEffect {
+            MPTapEffectView().run( for: self )
+        }
 
         MPFeedback.shared.play( .trigger )
     }

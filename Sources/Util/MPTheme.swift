@@ -6,17 +6,26 @@
 import UIKit
 
 public class MPTheme: Hashable, CustomStringConvertible {
-    public static let  all    = [ MPTheme.default, MPTheme.dark ]
     private static var byPath = [ String: MPTheme ]()
 
-    public static let `default` = MPTheme()
-    public static let dark = MPTheme( path: ".dark" ) {
-        $0.color.brand.set( UIColor( hex: "1C343B" ) )
-        $0.color.selection.set( UIColor( hex: "78DDFB" )?.withAlphaComponent( 0.382 ) )
+    public static let all = [ MPTheme.default, MPTheme.dark ] // Register all theme objects
+
+    public static let base = MPTheme()
+    public static let `default` = MPTheme( path: ".volto" ) {
+        $0.color.backdrop.set( UIColor( hex: "00A99C" ) )
+        $0.color.panel.set( UIColor( hex: "00A99C" ) )
+        $0.color.selection.set( UIColor( hex: "66CCFF", alpha: 0.382 ) )
+        $0.color.tint.set( UIColor( hex: "00A99D" ) )
+    }
+    public static let dark = MPTheme( path: ".volto.dark" ) {
+        $0.color.backdrop.set( UIColor( hex: "1C343B" ) )
+        $0.color.panel.set( UIColor( hex: "1C343B" ) )
+        $0.color.selection.set( UIColor( hex: "78DDFB", alpha: 0.382 ) )
+        $0.color.tint.set( UIColor( hex: "00A99E" ) )
     }
 
     public class func with(path: String?) -> MPTheme? {
-        path.flatMap { MPTheme.byPath[$0] }
+        self.all.first { $0.path == path } ?? path<.flatMap { MPTheme.byPath[$0] } ?? .base
     }
 
     public let font:  Fonts
@@ -39,17 +48,16 @@ public class MPTheme: Hashable, CustomStringConvertible {
     }
 
     public struct Colors {
-        public let body:      Value<UIColor>
-        public let secondary: Value<UIColor>
-        public let backbody:  Value<UIColor>
-        public let backdrop:  Value<UIColor>
-        public let panel:     Value<UIColor>
-        public let shade:     Value<UIColor>
-        public let shadow:    Value<UIColor>
-        public let glow:      Value<UIColor>
-        public let mute:      Value<UIColor>
-        public let selection: Value<UIColor>
-        public let brand:     Value<UIColor>
+        public let body:        Value<UIColor>
+        public let secondary:   Value<UIColor>
+        public let placeholder: Value<UIColor>
+        public let backdrop:    Value<UIColor>
+        public let panel:       Value<UIColor>
+        public let shade:       Value<UIColor>
+        public let shadow:      Value<UIColor>
+        public let mute:        Value<UIColor>
+        public let selection:   Value<UIColor>
+        public let tint:        Value<UIColor>
     }
 
     // MARK: --- Life ---
@@ -74,14 +82,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
 
         // Global default style
         self.font = Fonts(
-                largeTitle: {
-                    if #available( iOS 11, * ) {
-                        return Value( UIFont.preferredFont( forTextStyle: .largeTitle ) )
-                    }
-                    else {
-                        return Value( UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold ) )
-                    }
-                }(),
+                largeTitle: Value( UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold ) ),
                 title1: Value( UIFont.preferredFont( forTextStyle: .title1 ) ),
                 title2: Value( UIFont.preferredFont( forTextStyle: .title2 ) ),
                 title3: Value( UIFont.preferredFont( forTextStyle: .title3 ) ),
@@ -92,34 +93,42 @@ public class MPTheme: Hashable, CustomStringConvertible {
                 caption1: Value( UIFont.preferredFont( forTextStyle: .caption1 ) ),
                 caption2: Value( UIFont.preferredFont( forTextStyle: .caption2 ) ),
                 footnote: Value( UIFont.preferredFont( forTextStyle: .footnote ) ),
-                password: Value( .monospacedDigitSystemFont( ofSize: 22, weight: .black ) ),
-                mono: {
-                    if #available( iOS 13, * ) {
-                        return Value( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
-                    }
-                    else {
-                        return Value( .monospacedDigitSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
-                    }
-                }() )
+                password: Value( .monospacedDigitSystemFont( ofSize: 22, weight: .bold ) ),
+                mono: Value( .monospacedDigitSystemFont( ofSize: UIFont.systemFontSize, weight: .thin ) ) )
         self.color = Colors(
                 body: Value( UIColor.white ),
                 secondary: Value( UIColor.lightText ),
-                backbody: Value( UIColor.darkText ),
+                placeholder: Value( UIColor.lightText.withAlphaComponent( 0.382 ) ),
                 backdrop: Value( UIColor.darkGray ),
                 panel: Value( UIColor.black ),
                 shade: Value( UIColor.black.withAlphaComponent( 0.618 ) ),
                 shadow: Value( UIColor.black.withAlphaComponent( 0.382 ) ),
-                glow: Value( UIColor.white ),
                 mute: Value( UIColor.white.withAlphaComponent( 0.382 ) ),
-                selection: Value( UIColor( red: 0.4, green: 0.8, blue: 1, alpha: 0.382 ) ),
-                brand: Value( UIColor( hex: "00A99C" ) ) )
+                selection: Value( UIColor.lightGray ),
+                tint: Value( UIColor( hex: "00A99C" ) ) )
+
+        if #available( iOS 11, * ) {
+            self.font.largeTitle.set( UIFont.preferredFont( forTextStyle: .largeTitle ) )
+        }
+        if #available( iOS 13, * ) {
+            self.font.mono.set( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
+
+            self.color.body.set( UIColor.label )
+            self.color.secondary.set( UIColor.secondaryLabel )
+            self.color.placeholder.set( UIColor.placeholderText )
+            self.color.backdrop.set( UIColor.systemBackground )
+            self.color.panel.set( UIColor.secondarySystemBackground )
+            self.color.shadow.set( UIColor.secondarySystemFill )
+            self.color.mute.set( UIColor.systemFill )
+            self.color.selection.set( UIColor.link )
+        }
 
         MPTheme.byPath[""] = self
     }
 
     private init(path: String, override: (MPTheme) -> ()) {
         if let lastDot = path.lastIndex( of: "." ) {
-            self.parent = MPTheme.with( path: String( path[path.startIndex..<lastDot] ) )
+            self.parent = String( path[path.startIndex..<lastDot] )<.flatMap { MPTheme.byPath[$0] } ?? .base
             self.name = String( path[path.index( after: lastDot )..<path.endIndex] )
         }
         else {
@@ -143,15 +152,14 @@ public class MPTheme: Hashable, CustomStringConvertible {
                            mono: Value( parent: self.parent?.font.mono ) )
         self.color = Colors( body: Value( parent: self.parent?.color.body ),
                              secondary: Value( parent: self.parent?.color.secondary ),
-                             backbody: Value( parent: self.parent?.color.backbody ),
+                             placeholder: Value( parent: self.parent?.color.placeholder ),
                              backdrop: Value( parent: self.parent?.color.backdrop ),
                              panel: Value( parent: self.parent?.color.panel ),
                              shade: Value( parent: self.parent?.color.shade ),
                              shadow: Value( parent: self.parent?.color.shadow ),
-                             glow: Value( parent: self.parent?.color.glow ),
                              mute: Value( parent: self.parent?.color.mute ),
                              selection: Value( parent: self.parent?.color.selection ),
-                             brand: Value( parent: self.parent?.color.brand ) )
+                             tint: Value( parent: self.parent?.color.tint ) )
 
         MPTheme.byPath[path] = self
 

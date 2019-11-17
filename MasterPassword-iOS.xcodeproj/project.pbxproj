@@ -42,7 +42,6 @@
 		93D3966D42931E3DE106DE04 /* UICollectionView+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396BDE67A6BC9E1A1A6A0 /* UICollectionView+MP.swift */; };
 		93D39676011DF46822C3BEAC /* MPFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909E003FF5E936687AA6 /* MPFeedback.swift */; };
 		93D396BC81D6634C478E0881 /* Persisting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CB804B95B268383FCB2 /* Persisting.swift */; };
-		93D396CEFCFCA9BF0DB66DF8 /* MPTintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3995755BB75535CC37A47 /* MPTintView.swift */; };
 		93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */; };
 		93D396F895C0A16CF1FDAB79 /* UIContextMenuConfiguration+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39242076F89C40E7B292C /* UIContextMenuConfiguration+MP.swift */; };
 		93D39707EDA5669AB5A96ECB /* MPLogDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */; };
@@ -294,7 +293,6 @@
 		93D3990D850D76A94C6B7A4D /* mpw-algorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm.h"; sourceTree = "<group>"; };
 		93D39941059143124D09AE05 /* MPLogSink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPLogSink.swift; sourceTree = "<group>"; };
 		93D39949A9E5C95F193F4315 /* MPItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPItemView.swift; sourceTree = "<group>"; };
-		93D3995755BB75535CC37A47 /* MPTintView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintView.swift; sourceTree = "<group>"; };
 		93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UILabel+MPFontSize.h"; sourceTree = "<group>"; };
 		93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUntouchableView.swift; sourceTree = "<group>"; };
 		93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTapEffectView.swift; sourceTree = "<group>"; };
@@ -657,7 +655,6 @@
 				93D39865ECFD34CF3ADF930D /* MPItemCell.swift */,
 				93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */,
 				93D39B3112D0D128E6369596 /* MPTintLabel.swift */,
-				93D3995755BB75535CC37A47 /* MPTintView.swift */,
 				93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */,
 				93D3985EDA6E3B7A05799E2C /* MPTintField.swift */,
 				93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */,
@@ -1526,6 +1523,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Amplitude-iOS/Amplitude_iOS.framework",
+				"${BUILT_PRODUCTS_DIR}/Flurry-iOS-SDK/Flurry_iOS_SDK.framework",
 				"${BUILT_PRODUCTS_DIR}/Mixpanel-swift/Mixpanel.framework",
 				"${BUILT_PRODUCTS_DIR}/Sentry/Sentry.framework",
 				"${BUILT_PRODUCTS_DIR}/Stellar/Stellar.framework",
@@ -1534,6 +1532,7 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Amplitude_iOS.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Flurry_iOS_SDK.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mixpanel.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Sentry.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stellar.framework",
@@ -1611,7 +1610,6 @@
 				93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */,
 				93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */,
 				93D39B58BB6046893F274C8D /* MPAppDetailsViewController.swift in Sources */,
-				93D396CEFCFCA9BF0DB66DF8 /* MPTintView.swift in Sources */,
 				93D39AA18A00A587610444F4 /* MPToggleButton.swift in Sources */,
 				93D39C0E969D1194203D5B9C /* ConstraintResolver.swift in Sources */,
 				93D3958E8F03ACE57445E833 /* Graph.swift in Sources */,

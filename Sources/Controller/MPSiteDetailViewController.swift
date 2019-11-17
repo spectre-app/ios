@@ -30,18 +30,12 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         appConfig.observers.register( observer: self )
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        self.view.tintColor = self.model.color
-        self.imageView.image = self.model.image
-    }
-
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
-            self.viewIfLoaded?.tintColor = self.model.color
+            self.backgroundView.backgroundColor = self.model.color
+            self.imageView.image = self.model.image
         }
 
         self.setNeedsUpdate()

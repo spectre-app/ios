@@ -301,7 +301,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                                     UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
                                 ] )
 
-                        MPAlert( title: self.siteName, message: "Copied \(keyPurpose) (3 min)", details:
+                        MPAlert( title: "Copied \(keyPurpose) (3 min)", message: self.siteName, details:
                         """
                         Your \(keyPurpose) for \(self.siteName) is:
                         \(token)
@@ -314,7 +314,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     else {
                         UIPasteboard.general.string = token
 
-                        MPAlert( title: self.siteName, message: "Copied \(keyPurpose)", details:
+                        MPAlert( title: "Copied \(keyPurpose)", message: self.siteName, details:
                         """
                         Your \(keyPurpose) for \(self.siteName) is:
                         \(token)

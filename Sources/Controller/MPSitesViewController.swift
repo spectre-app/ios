@@ -8,7 +8,7 @@ import UIKit
 class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
     private lazy var topContainer = MPEffectView( content: self.searchField )
     private let searchField              = UITextField()
-    private let userButton               = UIButton( type: .custom )
+    private let userButton               = MPButton(identifier: "sites #user_settings")
     private let sitesTableView           = MPSitesTableView()
     private let sitePreviewController    = MPSitePreviewController()
     private let sitePreviewConfiguration = LayoutConfiguration()
@@ -19,7 +19,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
             DispatchQueue.main.perform {
                 var userButtonTitle = ""
                 self.user.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
-                self.userButton.setTitle( userButtonTitle.uppercased(), for: .normal )
+                self.userButton.title = userButtonTitle.uppercased()
                 self.userButton.sizeToFit()
 
                 self.sitesTableView.user = self.user
@@ -57,7 +57,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.topContainer.isBackgroundDark = true
 
         self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name", attributes: [
-            NSAttributedString.Key.foregroundColor: appConfig.theme.color.secondary.get()!.withAlphaComponent( 0.382 )
+            NSAttributedString.Key.foregroundColor: appConfig.theme.color.placeholder.get()!
         ] )
         self.searchField.textColor = appConfig.theme.color.body.get()
         self.searchField.rightView = self.userButton
@@ -76,7 +76,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
             self.sitesTableView.query = self.searchField.text
         }
 
-        self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
+        self.userButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.detailsHost.show( MPUserDetailsViewController( model: self.user ) )
             self.setNeedsStatusBarAppearanceUpdate()
         }

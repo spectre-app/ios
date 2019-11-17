@@ -22,11 +22,13 @@ extension UIContextMenuConfiguration {
     convenience init(indexPath: IndexPath,
                      previewProvider: ((UIContextMenuConfiguration) -> UIViewController?)? = nil,
                      actionProvider: (([UIMenuElement], UIContextMenuConfiguration) -> UIMenu?)? = nil) {
-        let previewProvider = PreviewProvider( provider: previewProvider )
-        let actionProvider  = ActionProvider( provider: actionProvider )
+        var previewProvider = PreviewProvider( provider: previewProvider )
+        var actionProvider  = ActionProvider( provider: actionProvider )
         self.init( identifier: indexPath as NSIndexPath,
                    previewProvider: { previewProvider.provide() },
                    actionProvider: { actionProvider.provide( $0 ) } )
+        previewProvider.configuration = self
+        actionProvider.configuration = self
     }
 
     // MARK: --- Types ---

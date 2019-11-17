@@ -31,21 +31,20 @@ class MPEffectView: UIVisualEffectView {
             self.updateRounding()
         }
     }
-    public var isSelected          = true {
+    public var isSelected          = false {
         didSet {
-            self.updateDimming()
+            self.updateContent()
         }
     }
     public var isDimmedBySelection = false {
         didSet {
-            self.updateDimming()
+            self.updateContent()
         }
     }
 
     init() {
         super.init( effect: nil )
 
-        self.layer.borderColor = appConfig.theme.color.body.get()?.cgColor
         self.layer.masksToBounds = true
 
         self.contentView.layer.shadowRadius = 0
@@ -78,6 +77,18 @@ class MPEffectView: UIVisualEffectView {
         super.layoutSubviews()
     }
 
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange( previousTraitCollection )
+
+        self.updateContent()
+    }
+
+    override func tintColorDidChange() {
+        super.tintColorDidChange()
+
+        self.updateContent()
+    }
+
     // MARK: Private
 
     private static func effect(dark: Bool) -> UIVisualEffect {
@@ -91,7 +102,7 @@ class MPEffectView: UIVisualEffectView {
 
     func updateBackground() {
         DispatchQueue.main.perform {
-            self.tintColor = self.isBackgroundDark ? appConfig.theme.color.secondary.get(): appConfig.theme.color.backdrop.get()
+            //self.tintColor = self.isBackgroundDark ? appConfig.theme.color.secondary.get(): appConfig.theme.color.backdrop.get()
             self.effect = self.isBackgroundVisible ? MPEffectView.effect( dark: self.isBackgroundDark ): nil
             self.layer.borderWidth = self.isBackgroundVisible ? self.borderWidth: 0
         }
@@ -103,14 +114,15 @@ class MPEffectView: UIVisualEffectView {
         }
     }
 
-    func updateDimming() {
+    func updateContent() {
         DispatchQueue.main.perform {
+            self.layer.borderColor = appConfig.theme.color.body.get()?.cgColor
+
             if self.isDimmedBySelection && !self.isSelected {
                 self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
                 self.contentView.alpha = 0.618
             }
             else {
-                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 1 )
                 self.contentView.alpha = 1
             }
         }

@@ -10,7 +10,7 @@ import UIKit
 import Stellar
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
-    private let backgroundView = MPBackgroundView()
+    private let backgroundView = MPBackgroundView( mode: .gradient )
     private let transition     = MPNavigationTransition()
 
     // MARK: --- Life ---

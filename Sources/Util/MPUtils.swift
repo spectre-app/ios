@@ -328,14 +328,14 @@ extension String.StringInterpolation {
 }
 
 extension UIColor {
-    convenience init?(hex: String) {
+    convenience init?(hex: String, alpha: CGFloat = 1) {
         var hexSanitized = hex.trimmingCharacters( in: .whitespacesAndNewlines )
         hexSanitized = hexSanitized.replacingOccurrences( of: "#", with: "" )
         var rgb: UInt32  = 0
         var r:   CGFloat = 0.0
         var g:   CGFloat = 0.0
         var b:   CGFloat = 0.0
-        var a:   CGFloat = 1.0
+        var a:   CGFloat = alpha
         guard Scanner( string: hexSanitized ).scanHexInt32( &rgb )
         else { return nil }
         if hexSanitized.count == 6 {
@@ -353,6 +353,13 @@ extension UIColor {
             return nil
         }
         self.init( red: r, green: g, blue: b, alpha: a )
+    }
+
+    var hex: String {
+        var r = CGFloat( 0 ), g = CGFloat( 0 ), b = CGFloat( 0 ), a = CGFloat( 0 )
+        self.getRed( &r, green: &g, blue: &b, alpha: &a )
+
+        return String( format: "%0.2lX%0.2lX%0.2lX,%0.2lX", Int( r * 255 ), Int( g * 255 ), Int( b * 255 ), Int( a * 255 ) )
     }
 
     // Determine how common a color is in a list of colors.

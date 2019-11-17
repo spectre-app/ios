@@ -398,7 +398,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameField.borderStyle = .none
             self.nameField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
             self.nameField.attributedPlaceholder = NSAttributedString( string: "Your Full Name", attributes: [
-                NSAttributedString.Key.foregroundColor: appConfig.theme.color.secondary.get()!.withAlphaComponent( 0.382 )
+                NSAttributedString.Key.foregroundColor: appConfig.theme.color.placeholder.get()!
             ] )
             self.nameField.alpha = 0
 

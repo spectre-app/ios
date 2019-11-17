@@ -95,8 +95,6 @@ public class MPConfig: Observable {
     // MARK: --- Private ---
 
     private func load() {
-        _ = MPTheme.all // Register all theme objects
-
         self.sendInfo = UserDefaults.standard.bool( forKey: "sendInfo" )
         self.premium = UserDefaults.standard.bool( forKey: "premium" )
         self.theme = !self.premium ? .default: MPTheme.with( path: UserDefaults.standard.string( forKey: "theme" ) ) ?? .default

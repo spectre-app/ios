@@ -12,4 +12,6 @@ target 'MasterPassword' do
   pod 'Heap'
   pod 'Amplitude-iOS', '~> 4.0.4'
   pod 'Mixpanel-swift'
+  pod 'Smartlook'
+  pod 'Flurry-iOS-SDK/FlurrySDK'
 end

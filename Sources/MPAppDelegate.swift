@@ -74,7 +74,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
 
         // Start
         MPTracker.shared.startup()
-        self.window?.tintColor = appConfig.theme.color.brand.get()
+        self.window?.tintColor = appConfig.theme.color.tint.get()
         self.window?.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window?.makeKeyAndVisible()
 
@@ -115,9 +115,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
         Client.shared?.enabled = appConfig.sendInfo as NSNumber
 
         DispatchQueue.main.perform {
-            if self.window?.tintColor != appConfig.theme.color.brand.get() {
-                self.window?.tintColor = appConfig.theme.color.brand.get()
-            }
+            self.window?.tintColor = appConfig.theme.color.tint.get()
         }
     }
 }

@@ -12,7 +12,7 @@ class AnyMPDetailsViewController: MPViewController {
 class MPDetailsViewController<M>: AnyMPDetailsViewController {
     public let model: M
 
-    let backgroundView = MPTintView()
+    let backgroundView = MPBackgroundView()
     let imageView      = UIImageView()
     let itemsView      = UIStackView()
     lazy var items         = self.loadItems()
@@ -54,11 +54,12 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         self.imageView.clipsToBounds = true
 
         self.backgroundView.layoutMargins = UIEdgeInsets( top: 20, left: 8, bottom: 20, right: 8 )
-        self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = 1
         self.backgroundView.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
         self.backgroundView.layer.shadowOffset = .zero
+        self.backgroundView.layer.cornerRadius = 8
+        self.backgroundView.layer.masksToBounds = true
 
         self.itemsView.axis = .vertical
         self.itemsView.spacing = 20

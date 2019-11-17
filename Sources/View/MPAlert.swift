@@ -60,7 +60,8 @@ class MPAlert {
 
     @discardableResult
     public func show(in view: UIView? = nil, dismissAutomatically: Bool = true) -> Self {
-        log( level: self.level, "[%@]: %@", [ self.title, self.message ] )
+        log( level: self.level, "[ %@ ]", [ self.title ] )
+        trc( "> %@: %@", self.message, self.details )
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {

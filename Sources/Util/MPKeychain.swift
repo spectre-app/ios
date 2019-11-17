@@ -13,7 +13,7 @@ public class MPKeychain {
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: "\(String( safeUTF8: mpw_purpose_scope( .authentication ) )!).\(algorithm)",
             kSecAttrAccount: fullName,
-            kSecUseOperationPrompt: "Access \(fullName)'s master key (\(algorithm)). [query]",
+            kSecUseOperationPrompt: "Access \(fullName)'s master key.",
         ]
         if #available( iOS 13, * ) {
             query[kSecUseDataProtectionKeychain] = true
@@ -114,7 +114,7 @@ public class MPKeychain {
             var query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
             query[kSecReturnData] = true
 
-            let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access key for:\n\(fullName)",
+            let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access master key for:\n\(fullName)",
                                    content: UIActivityIndicatorView( style: .white ) )
             spinner.show( dismissAutomatically: false )
             defer { spinner.dismiss() }

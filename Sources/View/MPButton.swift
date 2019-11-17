@@ -88,6 +88,7 @@ class MPButton: MPEffectView {
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
+        self.button.setTitleColor( appConfig.theme.color.body.get(), for: .normal )
         self.button.titleLabel?.font = appConfig.theme.font.callout.get()
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
@@ -121,7 +122,7 @@ class MPButton: MPEffectView {
         self.track()
 
         if self.tapEffect {
-            MPTapEffectView( for: self ).run()
+            MPTapEffectView().run( for: self )
         }
 
         self.action?( event )

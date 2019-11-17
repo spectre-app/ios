@@ -506,7 +506,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.propLabel.font = appConfig.theme.font.largeTitle.get()
             self.propLabel.layer.shadowRadius = 8
             self.propLabel.layer.shadowOpacity = 0.618
-            self.propLabel.layer.shadowColor = appConfig.theme.color.glow.get()?.cgColor
+            self.propLabel.layer.shadowColor = appConfig.theme.color.body.get()?.cgColor
             self.propLabel.layer.shadowOffset = .zero
 
             // - Hierarchy
