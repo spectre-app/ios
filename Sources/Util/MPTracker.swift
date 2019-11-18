@@ -47,7 +47,7 @@ class MPTracker {
         let screen = Screen( name: name, tracker: self )
         self.screens.append( screen )
 
-        screen.begin()
+        screen.begin( file: file, line: line, function: function, dso: dso )
         screen.event( file: file, line: line, function: function, dso: dso, event: "open" )
 
         return screen
