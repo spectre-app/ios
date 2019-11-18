@@ -13,6 +13,7 @@ class MPButton: MPEffectView {
         didSet {
             DispatchQueue.main.perform {
                 self.button.setImage( self.image, for: .normal )
+                self.button.sizeToFit()
             }
         }
     }
@@ -33,6 +34,7 @@ class MPButton: MPEffectView {
                 }
 
                 self.button.setTitle( self.title, for: .normal )
+                self.button.sizeToFit()
             }
         }
     }
@@ -53,6 +55,7 @@ class MPButton: MPEffectView {
                         self.button.contentEdgeInsets = UIEdgeInsets( top: 3, left: 5, bottom: 3, right: 5 )
                         self.squareButtonConstraint.isActive = false
                 }
+                self.button.sizeToFit()
             }
         }
     }
@@ -92,6 +95,8 @@ class MPButton: MPEffectView {
         self.button.titleLabel?.font = appConfig.theme.font.callout.get()
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
+        self.button.sizeToFit()
+
         self.stateObserver = self.button.observe( \UIButton.isSelected, options: .initial ) { _, _ in
             self.isSelected = self.button.isSelected
         }
