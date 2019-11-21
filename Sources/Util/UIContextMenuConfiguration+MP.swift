@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Lyndir. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 @available(iOS 13, *)
 extension UIContextMenuConfiguration {

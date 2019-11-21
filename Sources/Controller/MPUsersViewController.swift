@@ -131,6 +131,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             } )
             self.present( controller, animated: true )
         } )
+        self.appToolbar.addArrangedSubview( MPButton( identifier: "lab", image: UIImage( named: "icon_lab" ), background: false ) { _, _ in
+        } )
 
         self.userToolbar.barStyle = .black
         self.userToolbar.items = [

@@ -5,21 +5,15 @@
 
 import Foundation
 import Sentry
-import Amplitude_iOS
-import Mixpanel
 import Smartlook
-import Flurry_iOS_SDK
 import Countly
-import Analytics
-import Woopra
 
-typealias Value = MixpanelType
+typealias Value = Any
 
 class MPTracker {
     static let shared = MPTracker()
 
     private var screens = [ Screen ]()
-    private var pending = [ String: (start: Date, smartlook: Any) ]()
 
     private init() {
 
@@ -75,23 +69,9 @@ class MPTracker {
             trc( "[>] %@", error )
         }
 
-        // Heap
-        Heap.setAppId( "" )
-        Heap.startEVPairing()
-
-        // Amplitude
-        Amplitude.instance().initializeApiKey( "" )
-
-        // Mixpanel
-        Mixpanel.initialize( token: "" )
-
         // Smartlook
         Smartlook.setup( key: "" )
         Smartlook.startRecording()
-
-        // Flurry
-        Flurry.startSession( "", with: FlurrySessionBuilder()
-                .withCrashReporting( true ).withIAPReportingEnabled( true ) )
 
         // Countly
         let config = CountlyConfig()
@@ -105,9 +85,6 @@ class MPTracker {
         config.secretSalt = ""
         Countly.sharedInstance().start( with: config )
         Countly.sharedInstance().giveConsentForAllFeatures()
-
-        // Woopra
-        WTracker.sharedInstance().domain = "volto.app"
     }
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
@@ -131,23 +108,15 @@ class MPTracker {
                named name: String) -> TimedEvent {
         dbg( file: file, line: line, function: function, dso: dso, "> %@", name )
 
-        Mixpanel.mainInstance().time( event: name )
-        let smartlook = Smartlook.startTimedCustomEvent( name: name, props: nil )
-        Flurry.logEvent( name, timed: true )
-
-        self.pending[name] = (start: Date(), smartlook: smartlook)
-
-        return TimedEvent( pending: name )
+        return TimedEvent( named: name, start: Date(), smartlook: Smartlook.startTimedCustomEvent( name: name, props: nil ) )
     }
 
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               named name: String, _ parameters: [String: Value] = [:]) {
-        let pending = self.pending.removeValue( forKey: name )
-
+               named name: String, _ parameters: [String: Value] = [:], timing: TimedEvent? = nil) {
         var duration        = TimeInterval( 0 )
         var eventParameters = parameters
-        if let pending = pending {
-            duration = Date().timeIntervalSince( pending.start )
+        if let timing = timing {
+            duration = Date().timeIntervalSince( timing.start )
             eventParameters["duration"] = Int( duration )
         }
         let stringParameters = eventParameters.mapValues { String( describing: $0 ) }
@@ -159,32 +128,21 @@ class MPTracker {
             dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", name, eventParameters )
         }
 
-        Heap.track( name, withProperties: eventParameters )
-        Amplitude.instance().logEvent( name, withEventProperties: eventParameters )
-        Mixpanel.mainInstance().track( event: name, properties: eventParameters )
         Countly.sharedInstance().recordEvent(
                 name, segmentation: stringParameters,
                 count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
-        if let wevent = WEvent( name: name ) {
-            wevent.addProperties( eventParameters )
-            WTracker.sharedInstance().trackEvent( wevent )
-        }
-        if let pending = pending {
-            Smartlook.trackTimedCustomEvent( eventId: pending.smartlook, props: stringParameters )
-            Flurry.endTimedEvent( name, withParameters: eventParameters )
+        if let timing = timing {
+            Smartlook.trackTimedCustomEvent( eventId: timing.smartlook, props: stringParameters )
         }
         else {
             Smartlook.trackCustomEvent( name: name, props: stringParameters )
-            Flurry.logEvent( name, withParameters: eventParameters )
         }
     }
 
     func cancel(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                named name: String) {
-        if let pending = self.pending.removeValue( forKey: name ) {
-            Smartlook.trackTimedCustomEventCancel( eventId: pending.smartlook, reason: nil, props: nil )
-            dbg( file: file, line: line, function: function, dso: dso, "X %@", name )
-        }
+                timing: TimedEvent) {
+        Smartlook.trackTimedCustomEventCancel( eventId: timing.smartlook, reason: nil, props: nil )
+        dbg( file: file, line: line, function: function, dso: dso, "X %@", timing.name )
     }
 
     class Screen {
@@ -221,11 +179,16 @@ class MPTracker {
     }
 
     class TimedEvent {
-        let pending: String
+        let name: String
+        let start : Date
+        let smartlook : Any
+
         private var ended = false
 
-        init(pending: String) {
-            self.pending = pending
+        init(named name: String, start: Date, smartlook: Any) {
+            self.name = name
+            self.start = start
+            self.smartlook = smartlook
         }
 
         deinit {
@@ -237,7 +200,7 @@ class MPTracker {
             guard !self.ended
             else { return }
 
-            MPTracker.shared.event( file: file, line: line, function: function, dso: dso, named: self.pending, parameters )
+            MPTracker.shared.event( file: file, line: line, function: function, dso: dso, named: self.name, parameters, timing: self )
             self.ended = true
         }
 
@@ -245,7 +208,7 @@ class MPTracker {
             guard !self.ended
             else { return }
 
-            MPTracker.shared.cancel( named: self.pending )
+            MPTracker.shared.cancel( timing: self )
             self.ended = true
         }
     }
