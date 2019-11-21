@@ -31,14 +31,13 @@ class MPDateView: MPEffectView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override init() {
-        super.init()
+    init() {
+        super.init( rounding: 8 )
 
         // - View
         self.monthFormatter.dateFormat = "MMM"
         self.dayFormatter.dateFormat = "dd"
 
-        self.rounding = 8
         self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
         self.separatorView.backgroundColor = appConfig.theme.color.body.get()

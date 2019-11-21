@@ -24,7 +24,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
                         MPTracker.shared.event( named: "users >user", [
                             "value": selectedItem,
-                            "count": self.usersSpinner.numberOfItems( inSection: 0 ),
+                            "items": self.usersSpinner.numberOfItems( inSection: 0 ),
                         ] )
                         self.userEvent = MPTracker.shared.begin( named: "users #user" )
                     }
@@ -42,7 +42,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     private let detailsHost  = MPDetailsHostController()
     private var userToolbarConfiguration: LayoutConfiguration!
     private var keyboardLayoutGuide:      KeyboardLayoutGuide!
-    private var userEvent:                MPTracker.Event?
+    private var userEvent:                MPTracker.TimedEvent?
 
     // MARK: --- Life ---
 
@@ -73,13 +73,13 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         self.appToolbar.axis = .horizontal
         self.appToolbar.spacing = 12
-        let settingsButton = MPButton( identifier: "users #app_settings", image: UIImage( named: "icon_gears" ) ) { _ in
+        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: UIImage( named: "icon_gears" ), background: false ) { _, _ in
             self.detailsHost.show( MPAppDetailsViewController() )
-        }
-        settingsButton.isBackgroundVisible = false
-        self.appToolbar.addArrangedSubview( settingsButton )
-        let incognitoButton = MPTimedButton( identifier: "users #auth_incognito", image: UIImage( named: "icon_shield" ) ) { _ in
-            self.userEvent = self.userEvent ?? MPTracker.shared.begin( named: "users #user" )
+        } )
+        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: UIImage( named: "icon_shield" ), background: false ) { _, incognitoButton in
+            guard let incognitoButton = incognitoButton as? MPTimedButton
+            else { return }
+            let incognitoEvent = MPTracker.shared.begin( named: "users #user" )
 
             let controller = UIAlertController( title: "Incognito Login", message:
             """
@@ -95,18 +95,18 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             }
             passwordField.authenticated = { result in
                 trc( "Incognito authentication: %@", result )
-                MPTracker.shared.event( named: "users #auth_incognito", [
-                    "result": result.name,
-                    "length": passwordField.text?.count ?? 0,
-                    "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
-                ] )
+                incognitoButton.timing?.end( [
+                                                 "result": result.name,
+                                                 "length": passwordField.text?.count ?? 0,
+                                                 "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
+                                             ] )
 
                 spinner.dismiss()
                 controller.dismiss( animated: true ) {
                     switch result {
                         case .success(let user):
                             MPFeedback.shared.play( .trigger )
-                            self.userEvent?.end( [ "result": "incognito" ] )
+                            incognitoEvent.end( [ "result": "incognito" ] )
                             self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
 
                         case .failure(let error):
@@ -118,7 +118,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             controller.addTextField { passwordField.nameField = $0 }
             controller.addTextField { passwordField.passwordField = $0 }
             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                MPTracker.shared.event( named: "users #auth_incognito", [ "result": "cancel" ] )
+                incognitoButton.timing?.end( [ "result": "cancel" ] )
             } )
             controller.addAction( UIAlertAction( title: "Log In", style: .default ) { [weak self] _ in
                 guard let self = self
@@ -130,9 +130,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 }
             } )
             self.present( controller, animated: true )
-        }
-        incognitoButton.isBackgroundVisible = false
-        self.appToolbar.addArrangedSubview( incognitoButton )
+        } )
 
         self.userToolbar.barStyle = .black
         self.userToolbar.items = [
@@ -318,7 +316,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         }
 
         public var new: Bool = false
-        public weak var userEvent:            MPTracker.Event?
+        public weak var userEvent:            MPTracker.TimedEvent?
         public weak var userFile:             MPMarshal.UserFile? {
             didSet {
                 self.passwordField.userFile = self.userFile
@@ -335,8 +333,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         }
         private let nameLabel       = UILabel()
         private let nameField       = UITextField()
-        private let avatarButton    = MPButton( identifier: "users.user #avatar" )
-        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: UIImage( named: "icon_man" ) )
+        private let avatarButton    = MPButton( identifier: "users.user #avatar", background: false )
+        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: UIImage( named: "icon_man" ), background: false )
+        private var passwordEvent:               MPTracker.TimedEvent?
         private let passwordField   = MPMasterPasswordField()
         private let idBadgeView     = UIImageView( image: UIImage( named: "icon_user" ) )
         private let authBadgeView   = UIImageView( image: UIImage( named: "icon_key" ) )
@@ -369,7 +368,6 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.isBackgroundVisible = false
             self.avatarButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.avatar.next()
             }
@@ -381,18 +379,18 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.rightView = self.biometricButton
             self.passwordField.rightViewMode = .always
             self.passwordField.authenticater = { keyFactory in
-                MPTracker.shared.begin( named: "users.user #auth_password" )
+                self.passwordEvent = MPTracker.shared.begin( named: "users.user #auth_password" )
 
                 return self.userFile?.authenticate( keyFactory: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
             }
             self.passwordField.authenticated = { result in
                 trc( "User password authentication: %@", result )
-                MPTracker.shared.event( named: "users.user #auth_password", [
-                    "result": result.name,
-                    "length": self.passwordField.text?.count ?? 0,
-                    "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
-                ] )
+                self.passwordEvent?.end( [
+                                             "result": result.name,
+                                             "length": self.passwordField.text?.count ?? 0,
+                                             "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
+                                         ] )
 
                 switch result {
                     case .success(let user):
@@ -415,7 +413,6 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             ] )
             self.nameField.alpha = 0
 
-            self.biometricButton.isBackgroundVisible = false
             self.biometricButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 guard let userFile = self.userFile
                 else { return }
@@ -423,10 +420,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
                 userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { result in
                     trc( "User biometric authentication: %@", result )
-                    MPTracker.shared.event( named: "users.user #auth_biometric", [
-                        "result": result.name,
-                        "factor": keychainKeyFactory.factor.description,
-                    ] )
+                    self.biometricButton.timing?.end( [
+                                                          "result": result.name,
+                                                          "factor": keychainKeyFactory.factor.description,
+                                                      ] )
 
                     switch result {
                         case .success(let user):

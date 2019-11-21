@@ -20,7 +20,7 @@ class MPItemCell: UICollectionViewCell {
         }
     }
 
-    let effectView = MPEffectView()
+    let effectView = MPEffectView( round: true, dims: true )
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -29,15 +29,13 @@ class MPItemCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.effectView.isRound = true
-        self.effectView.isDimmedBySelection = true
         self.effectView.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
         self.contentView.addSubview( self.effectView )
 
         LayoutConfiguration( view: self.contentView )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).with(priority: .defaultHigh) }
+                .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ) }
                 .constrain()
                 .activate()
         LayoutConfiguration( view: self.effectView )

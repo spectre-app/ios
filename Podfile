@@ -7,11 +7,14 @@ target 'MasterPassword' do
   use_frameworks!
 
   pod 'Stellar', :git => 'https://github.com/AugustRush/Stellar.git'
-  pod 'SwiftLinkPreview', '~> 2.3.0'
-  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '4.4.1'
+  pod 'SwiftLinkPreview'
+  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
   pod 'Heap'
-  pod 'Amplitude-iOS', '~> 4.0.4'
+  pod 'Amplitude-iOS'
   pod 'Mixpanel-swift'
   pod 'Smartlook'
   pod 'Flurry-iOS-SDK/FlurrySDK'
+  pod 'Countly'
+  pod 'Analytics'
+  pod 'Woopra'
 end

@@ -113,17 +113,17 @@ class MPMarshal: Observable {
 
     @discardableResult
     public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
-        self.marshalQueue.promised {
-            MPTracker.shared.begin( named: "marshal #save" )
+        let saveEvent = MPTracker.shared.begin( named: "marshal #save" )
 
+        return self.marshalQueue.promised {
             guard let documentURL = self.url( for: user, in: directory, format: format )
             else {
-                MPTracker.shared.event( named: "marshal #save", [ "result": "!url" ] )
+                saveEvent.end( [ "result": "!url" ] )
                 throw MPError.internal( details: "No path to marshal \(user)" )
             }
 
             return self.export( user: user, format: format, redacted: redacted ).then { (result: Result<Data, Error>) in
-                MPTracker.shared.event( named: "marshal #save", [ "result": result.name ] )
+                saveEvent.end( [ "result": result.name ] )
 
                 if !FileManager.default.createFile( atPath: documentURL.path, contents: try result.get() ) {
                     throw MPError.internal( details: "Couldn't save \(documentURL)" )
@@ -136,22 +136,22 @@ class MPMarshal: Observable {
     }
 
     public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
-        DispatchQueue.mpw.promise {
-            MPTracker.shared.begin( named: "marshal #export" )
+        let exportEvent = MPTracker.shared.begin( named: "marshal #export" )
 
+        return DispatchQueue.mpw.promise {
             guard let file = user.file
             else {
-                MPTracker.shared.event( named: "marshal #export", [ "result": "!file" ] )
+                exportEvent.end( [ "result": "!file" ] )
                 throw MPError.state( details: "Cannot export incognito user: \(user)." )
             }
             guard let keyFactory = user.masterKeyFactory
             else {
-                MPTracker.shared.event( named: "marshal #export", [ "result": "!keyFactory" ] )
+                exportEvent.end( [ "result": "!keyFactory" ] )
                 throw MPError.state( details: "Not authenticated: \(user)." )
             }
             guard let marshalledUser = mpw_marshal_user( user.fullName, keyFactory.provide(), user.algorithm )
             else {
-                MPTracker.shared.event( named: "marshal #export", [ "result": "!marshal_user" ] )
+                exportEvent.end( [ "result": "!marshal_user" ] )
                 throw MPError.internal( details: "Couldn't allocate for marshalling: \(user)" )
             }
 
@@ -165,7 +165,7 @@ class MPMarshal: Observable {
             for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
                 guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                 else {
-                    MPTracker.shared.event( named: "marshal #export", [ "result": "!marshal_site" ] )
+                    exportEvent.end( [ "result": "!marshal_site" ] )
                     throw MPError.internal( details: "Couldn't marshal \(user.fullName): \(site)" )
                 }
 
@@ -179,7 +179,7 @@ class MPMarshal: Observable {
                 for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
                     guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
                     else {
-                        MPTracker.shared.event( named: "marshal #export", [ "result": "!marshal_question" ] )
+                        exportEvent.end( [ "result": "!marshal_question" ] )
                         throw MPError.internal( details: "Couldn't marshal: \(user.fullName): \(site.siteName): \(question)" )
                     }
 
@@ -190,55 +190,55 @@ class MPMarshal: Observable {
 
             if let data = String( safeUTF8: mpw_marshal_write( format, file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
                file.pointee.error.type == .success {
-                MPTracker.shared.event( named: "marshal #export", [ "result": "success: data" ] )
+                exportEvent.end( [ "result": "success: data" ] )
                 return data
             }
 
-            MPTracker.shared.event( named: "marshal #export", [ "result": "!marshal_write" ] )
+            exportEvent.end( [ "result": "!marshal_write" ] )
             throw MPError.marshal( file.pointee.error, title: "Issue Writing User" )
         }
     }
 
     @discardableResult
     public func `import`(data: Data) -> Promise<Bool> {
-        DispatchQueue.mpw.promised {
-            MPTracker.shared.begin( named: "marshal #importData" )
+        let importEvent = MPTracker.shared.begin( named: "marshal #importData" )
 
+        return DispatchQueue.mpw.promised {
             guard let importingFile = self.userFile( for: data )
             else {
                 mperror( title: "Couldn't import user", message: "Import is no \(productName) document" )
-                MPTracker.shared.event( named: "marshal #importData", [ "result": "!parse" ] )
+                importEvent.end( [ "result": "!parse" ] )
                 return Promise( .success( false ) )
             }
             guard let importingName = String( safeUTF8: importingFile.fullName )
             else {
                 mperror( title: "Couldn't import user", message: "Import missing user's full name" )
-                MPTracker.shared.event( named: "marshal #importData", [ "result": "!fullName" ] )
+                importEvent.end( [ "result": "!fullName" ] )
                 return Promise( .success( false ) )
             }
             guard let importingURL = self.url( for: importingName, format: importingFile.format )
             else {
                 mperror( title: "Couldn't import user", message: "Not a savable document", details: importingFile )
-                MPTracker.shared.event( named: "marshal #importData", [ "result": "!url" ] )
+                importEvent.end( [ "result": "!url" ] )
                 return Promise( .success( false ) )
             }
 
             if FileManager.default.fileExists( atPath: importingURL.path ),
                let existingFile = self.userFile( at: importingURL ) {
                 return self.import( data: data, from: importingFile, into: existingFile ).then {
-                    MPTracker.shared.event( named: "marshal #importData", [ "result": $0.name ] )
+                    importEvent.end( [ "result": $0.name ] )
                 }
             }
             else {
                 return self.import( data: data, from: importingFile, into: importingURL ).then {
-                    MPTracker.shared.event( named: "marshal #importData", [ "result": $0.name ] )
+                    importEvent.end( [ "result": $0.name ] )
                 }
             }
         }
     }
 
     private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile) -> Promise<Bool> {
-        MPTracker.shared.begin( named: "marshal #importIntoFile" )
+        let importEvent = MPTracker.shared.begin( named: "marshal #importIntoFile" )
 
         return DispatchQueue.main.promised {
             let promise = Promise<Bool>()
@@ -246,7 +246,7 @@ class MPMarshal: Observable {
             guard let viewController = UIApplication.shared.keyWindow?.rootViewController
             else {
                 mperror( title: "Couldn't import user", message: "No window for user interface" )
-                MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": "!view" ] )
+                importEvent.end( [ "result": "!view" ] )
                 return promise.finish( .success( false ) )
             }
 
@@ -263,19 +263,19 @@ class MPMarshal: Observable {
             """, preferredStyle: .alert )
             controller.addTextField { passwordField.passwordField = $0 }
             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": "cancel" ] )
+                importEvent.end( [ "result": "cancel" ] )
 
                 promise.finish( .success( false ) )
             } )
             controller.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
-                MPTracker.shared.begin( named: "marshal.importIntoFile #replace" )
+                let replaceEvent = MPTracker.shared.begin( named: "marshal.importIntoFile #replace" )
 
                 guard let authentication = passwordField.authenticate( { keyFactory in
                     importingFile.authenticate( keyFactory: keyFactory )
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Missing master password" )
-                    MPTracker.shared.event( named: "marshal.importIntoFile #replace", [ "result": "!masterPassword" ] )
+                    replaceEvent.end( [ "result": "!masterPassword" ] )
                     viewController.present( controller, animated: true )
                     return
                 }
@@ -297,26 +297,26 @@ class MPMarshal: Observable {
                                 }
 
                                 self.import( data: data, from: importingFile, into: existingURL ).finishes( promise ).then {
-                                    MPTracker.shared.event( named: "marshal.importIntoFile #replace", [ "result": $0.name ] )
-                                    MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": $0.name ] )
+                                    replaceEvent.end( [ "result": $0.name ] )
+                                    importEvent.end( [ "result": $0.name ] )
                                 }
                             }
                             else {
                                 mperror( title: "Migration issue", message: "Replaced user has no document", details: existingFile )
-                                MPTracker.shared.event( named: "marshal.importIntoFile #replace", [ "result": "!url" ] )
-                                MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": "failed" ] )
+                                replaceEvent.end( [ "result": "!url" ] )
+                                importEvent.end( [ "result": "failed" ] )
                                 promise.finish( .success( false ) )
                             }
 
                         case .failure(let error):
                             mperror( title: "Couldn't import user", message: "User authentication failed", error: error )
-                            MPTracker.shared.event( named: "marshal.importIntoFile #replace", [ "result": "!masterKey" ] )
+                            replaceEvent.end( [ "result": "!masterKey" ] )
                             viewController.present( controller, animated: true )
                     }
                 } )
             } )
             controller.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                MPTracker.shared.begin( named: "marshal.importIntoFile #merge" )
+                let mergeEvent = MPTracker.shared.begin( named: "marshal.importIntoFile #merge" )
 
                 guard let authentication = passwordField.authenticate( { keyFactory in
                     Promise( .success(
@@ -325,7 +325,7 @@ class MPMarshal: Observable {
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Missing master password" )
-                    MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": "!masterPassword" ] )
+                    mergeEvent.end( [ "result": "!masterPassword" ] )
                     viewController.present( controller, animated: true )
                     return
                 }
@@ -340,12 +340,12 @@ class MPMarshal: Observable {
                             if let importedUser = importedUser,
                                let existedUser = existedUser {
                                 self.import( from: importedUser, into: existedUser ).finishes( promise ).then {
-                                    MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": $0.name ] )
-                                    MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": $0.name ] )
+                                    mergeEvent.end( [ "result": $0.name ] )
+                                    importEvent.end( [ "result": $0.name ] )
                                 }
                             }
                             else if let importedUser = importedUser {
-                                MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockUser" )
+                                let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockUser" )
 
                                 let controller = UIAlertController( title: "Unlock Existing User", message:
                                 """
@@ -369,37 +369,37 @@ class MPMarshal: Observable {
                                         switch result {
                                             case .success(let existedUser):
                                                 self.import( from: importedUser, into: existedUser ).finishes( promise ).then {
-                                                    MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockUser", [ "result": $0.name ] )
-                                                    MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": $0.name ] )
-                                                    MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": $0.name ] )
+                                                    unlockEvent.end( [ "result": $0.name ] )
+                                                    mergeEvent.end( [ "result": $0.name ] )
+                                                    importEvent.end( [ "result": $0.name ] )
                                                 }
 
                                             case .failure(let error):
                                                 mperror( title: "Couldn't import user", message: "User authentication failed",
                                                          details: existingFile, error: error )
-                                                MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockUser", [ "result": "!masterKey" ] )
+                                                unlockEvent.end( [ "result": "!masterKey" ] )
                                                 viewController.present( controller, animated: true )
                                         }
                                     }
                                 }
                                 controller.addTextField { passwordField.passwordField = $0 }
                                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockUser", [ "result": "cancel" ] )
-                                    MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": "failed: cancel" ] )
-                                    MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": "failed: cancel" ] )
+                                    unlockEvent.end( [ "result": "cancel" ] )
+                                    mergeEvent.end( [ "result": "failed: cancel" ] )
+                                    importEvent.end( [ "result": "failed: cancel" ] )
                                     promise.finish( .success( false ) )
                                 } )
                                 controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
                                     if !passwordField.try() {
                                         mperror( title: "Couldn't import user", message: "Missing master password" )
-                                        MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockUser", [ "result": "!masterPassword" ] )
+                                        unlockEvent.end( [ "result": "!masterPassword" ] )
                                         viewController.present( controller, animated: true )
                                     }
                                 } )
                                 viewController.present( controller, animated: true )
                             }
                             else if let existedUser = existedUser {
-                                MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockImport" )
+                                let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockImport" )
 
                                 let controller = UIAlertController( title: "Unlock Import", message:
                                 """
@@ -421,30 +421,30 @@ class MPMarshal: Observable {
                                         switch result {
                                             case .success(let importedUser):
                                                 self.import( from: importedUser, into: existedUser ).finishes( promise ).then {
-                                                    MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockImport", [ "result": $0.name ] )
-                                                    MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": $0.name ] )
-                                                    MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": $0.name ] )
+                                                    unlockEvent.end( [ "result": $0.name ] )
+                                                    mergeEvent.end( [ "result": $0.name ] )
+                                                    importEvent.end( [ "result": $0.name ] )
                                                 }
 
                                             case .failure(let error):
                                                 mperror( title: "Couldn't import user", message: "User authentication failed",
                                                          details: importingFile, error: error )
-                                                MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockImport", [ "result": "!masterKey" ] )
+                                                unlockEvent.end( [ "result": "!masterKey" ] )
                                                 viewController.present( controller, animated: true )
                                         }
                                     }
                                 }
                                 controller.addTextField { passwordField.passwordField = $0 }
                                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockImport", [ "result": "cancel" ] )
-                                    MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": "failed: cancel" ] )
-                                    MPTracker.shared.event( named: "marshal #importIntoFile", [ "result": "failed: cancel" ] )
+                                    unlockEvent.end( [ "result": "cancel" ] )
+                                    mergeEvent.end( [ "result": "failed: cancel" ] )
+                                    importEvent.end( [ "result": "failed: cancel" ] )
                                     promise.finish( .success( false ) )
                                 } )
                                 controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
                                     if !passwordField.try() {
                                         mperror( title: "Couldn't import user", message: "Missing master password" )
-                                        MPTracker.shared.event( named: "marshal.importIntoFile.merge #unlockImport", [ "result": "!masterPassword" ] )
+                                        unlockEvent.end( [ "result": "!masterPassword" ] )
                                         viewController.present( controller, animated: true )
                                     }
                                 } )
@@ -452,13 +452,13 @@ class MPMarshal: Observable {
                             }
                             else {
                                 mperror( title: "Couldn't import user", message: "User authentication failed" )
-                                MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": "!masterKey" ] )
+                                mergeEvent.end( [ "result": "!masterKey" ] )
                                 viewController.present( controller, animated: true )
                             }
 
                         case .failure(let error):
                             mperror( title: "Couldn't import user", error: error )
-                            MPTracker.shared.event( named: "marshal.importIntoFile #merge", [ "result": "unexpected" ] )
+                            mergeEvent.end( [ "result": "unexpected" ] )
                             viewController.present( controller, animated: true )
                     }
                 }
@@ -470,7 +470,7 @@ class MPMarshal: Observable {
     }
 
     private func `import`(from importedUser: MPUser, into existedUser: MPUser) -> Promise<Bool> {
-        MPTracker.shared.begin( named: "marshal #importIntoUser" )
+        let importEvent = MPTracker.shared.begin( named: "marshal #importIntoUser" )
 
         let spinner = MPAlert( title: "Merging", message: existedUser.description,
                                content: UIActivityIndicatorView( style: .whiteLarge ) )
@@ -509,7 +509,7 @@ class MPMarshal: Observable {
                 spinner.dismiss()
 
                 if !updatedUser && replacedSites + newSites == 0 {
-                    MPTracker.shared.event( named: "marshal #importIntoUser", [ "result": "success: skipped" ] )
+                    importEvent.end( [ "result": "success: skipped" ] )
                     MPAlert( title: "Import Skipped", message: existedUser.description, details:
                     """
                     The import into \(existedUser) was skipped.
@@ -518,7 +518,7 @@ class MPMarshal: Observable {
                     """ ).show()
                 }
                 else {
-                    MPTracker.shared.event( named: "marshal #importIntoUser", [ "result": "success: complete" ] )
+                    importEvent.end( [ "result": "success: complete" ] )
                     MPAlert( title: "Import Complete", message: existedUser.description, details:
                     """
                     Completed the import of sites into \(existedUser).
@@ -537,7 +537,7 @@ class MPMarshal: Observable {
     }
 
     private func `import`(data: Data, from importingFile: UserFile, into documentURL: URL) -> Promise<Bool> {
-        MPTracker.shared.begin( named: "marshal #importIntoURL" )
+        let importEvent = MPTracker.shared.begin( named: "marshal #importIntoURL" )
 
         let spinner = MPAlert( title: "Replacing", message: documentURL.lastPathComponent,
                                content: UIActivityIndicatorView( style: .whiteLarge ) )
@@ -552,7 +552,7 @@ class MPMarshal: Observable {
             switch ($0) {
                 case .success(let success):
                     if success {
-                        MPTracker.shared.event( named: "marshal #importIntoURL", [ "result": "success: complete" ] )
+                        importEvent.end( [ "result": "success: complete" ] )
                         MPAlert( title: "Import Complete", message: documentURL.lastPathComponent, details:
                         """
                         Completed the import of \(importingFile) (\(importingFile.format)).
@@ -564,22 +564,22 @@ class MPMarshal: Observable {
                     }
                     else {
                         mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL )
-                        MPTracker.shared.event( named: "marshal #importIntoURL", [ "result": "!createFile" ] )
+                        importEvent.end( [ "result": "!createFile" ] )
                     }
 
                 case .failure(let error):
                     mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL, error: error )
-                    MPTracker.shared.event( named: "marshal #importIntoURL", [ "result": $0.name ] )
+                    importEvent.end( [ "result": $0.name ] )
             }
         }
     }
 
     @discardableResult
     public func importLegacy(force: Bool = false) -> Promise<Bool?> {
-        MPCoreData.shared.promised {
-            MPTracker.shared.begin( named: "marshal #importLegacy" )
-            var promise = Promise( .success( true ) )
+        let importEvent = MPTracker.shared.begin( named: "marshal #importLegacy" )
 
+        return MPCoreData.shared.promised {
+            var promise = Promise( .success( true ) )
             for user: MPUserEntity_CoreData in try $0.fetch( MPUserEntity.fetchRequest() ) {
                 guard let objectID = (user as? NSManagedObject)?.objectID, !objectID.isTemporaryID
                 else { continue } // Not a (saved) object.
@@ -606,7 +606,7 @@ class MPMarshal: Observable {
 
                 guard let marshalledUser = mpw_marshal_user( fullName, nil, algorithm )
                 else {
-                    MPTracker.shared.event( named: "marshal #importLegacy", [ "result": "!marshal_user" ] )
+                    importEvent.end( [ "result": "!marshal_user" ] )
                     throw MPError.internal( details: "Couldn't allocate to marshal \(fullName)" )
                 }
                 marshalledUser.pointee.redacted = true
@@ -638,7 +638,7 @@ class MPMarshal: Observable {
 
                     guard let marshalledSite = mpw_marshal_site( marshalledUser, siteName, type, counter, algorithm )
                     else {
-                        MPTracker.shared.event( named: "marshal #importLegacy", [ "result": "!marshal_site" ] )
+                        importEvent.end( [ "result": "!marshal_site" ] )
                         throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName)" )
                     }
                     marshalledSite.pointee.resultState =
@@ -654,7 +654,7 @@ class MPMarshal: Observable {
                                             .sorted( by: { $0.keyword ?? "" < $1.keyword ?? "" } ) ?? [] {
                         guard mpw_marshal_question( marshalledSite, siteQuestion.keyword ) != nil
                         else {
-                            MPTracker.shared.event( named: "marshal #importLegacy", [ "result": "!marshal_question" ] )
+                            importEvent.end( [ "result": "!marshal_question" ] )
                             throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
                         }
                     }
@@ -664,7 +664,7 @@ class MPMarshal: Observable {
                 defer { mpw_marshal_file_free( &file_ptr ) }
                 guard let file = file_ptr
                 else {
-                    MPTracker.shared.event( named: "marshal #importLegacy", [ "result": "!marshal_file" ] )
+                    importEvent.end( [ "result": "!marshal_file" ] )
                     throw MPError.internal( details: "Couldn't allocate import file." )
                 }
 
@@ -678,13 +678,13 @@ class MPMarshal: Observable {
                     }, reducing: { $0 && $1 } )
                 }
                 else {
-                    MPTracker.shared.event( named: "marshal #importLegacy", [ "result": "!marshal_write" ] )
+                    importEvent.end( [ "result": "!marshal_write" ] )
                     throw MPError.marshal( file.pointee.error, title: "Issue Importing User" )
                 }
             }
 
             return promise.then {
-                MPTracker.shared.event( named: "marshal #importLegacy", [ "result": $0.name ] )
+                importEvent.end( [ "result": $0.name ] )
             }
         }
     }

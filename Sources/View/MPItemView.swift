@@ -325,7 +325,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
     class ButtonItemView<M>: ItemView<M> {
         let item: ButtonItem
 
-        lazy var button = MPButton( identifier: self.item.identifier ) { [unowned self] _ in
+        lazy var button = MPButton( identifier: self.item.identifier ) { [unowned self] _, _ in
             self.item.action( self.item )
         }
 
@@ -559,14 +559,14 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         let item: StepperItem
         let valueView  = UIView()
         let valueLabel = UILabel()
-        lazy var downButton = MPButton( title: "-" ) { [unowned self]  _ in
+        lazy var downButton = MPButton( title: "-", background: false ) { [unowned self]  _, _ in
             if let model = self.item.model,
                let value = self.item.value,
                value > self.item.min {
                 self.item.update( model, value - self.item.step )
             }
         }
-        lazy var upButton = MPButton( title: "+" ) { [unowned self] _ in
+        lazy var upButton = MPButton( title: "+", background: false) { [unowned self] _, _ in
             if let model = self.item.model,
                let value = self.item.value,
                value < self.item.max {
@@ -584,9 +584,6 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         }
 
         override func createValueView() -> UIView? {
-            self.downButton.isBackgroundVisible = false
-            self.upButton.isBackgroundVisible = false
-
             self.valueLabel.font = appConfig.theme.font.largeTitle.get()
             self.valueLabel.textAlignment = .center
             self.valueLabel.textColor = appConfig.theme.color.body.get()

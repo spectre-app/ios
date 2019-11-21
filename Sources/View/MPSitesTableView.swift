@@ -280,9 +280,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         private let resultLabel    = UITextField()
         private let captionLabel   = UILabel()
-        private let modeButton     = MPButton( identifier: "sites.site #mode", image: UIImage( named: "icon_person" ) )
+        private let modeButton     = MPButton( identifier: "sites.site #mode", image: UIImage( named: "icon_person" ), background: false )
         private let settingsButton = MPButton( identifier: "sites.site #site_settings", image: UIImage( named: "icon_sliders" ) )
-        private let newButton      = MPButton( identifier: "sites.site #add", image: UIImage( named: "icon_btn_plus" ) )
+        private let newButton      = MPButton( identifier: "sites.site #add", image: UIImage( named: "icon_btn_plus" ), background: false )
 
         // MARK: --- Life ---
 
@@ -324,11 +324,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.settingsButton.button.addTarget( self, action: #selector( settingsAction ), for: .primaryActionTriggered )
 
             self.newButton.tapEffect = false
-            self.newButton.isBackgroundVisible = false
             self.newButton.isUserInteractionEnabled = false
 
             self.modeButton.tapEffect = false
-            self.modeButton.isBackgroundVisible = false
             self.modeButton.button.addTarget( self, action: #selector( modeAction ), for: .primaryActionTriggered )
 
             // - Hierarchy

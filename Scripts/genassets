@@ -78,10 +78,10 @@ xcassets=Resources/Media/Images.xcassets
 appiconset="$xcassets/AppIcon.appiconset"
 launchimage="$xcassets/LaunchImage.launchimage"
 ios_icon=Resources/Media/ios/icon
-ios_launch=Resources/Media/ios/launch
+#ios_launch=Resources/Media/ios/launch
 mac_icon=Resources/Media/mac/icon
 
-if [[ "$(latest "$ios_icon"/*)" -nt "$appiconset/Contents.json" ]] ||
+if [[ $ios_icon && $appiconset && "$(latest "$ios_icon"/*)" -nt "$appiconset/Contents.json" ]] ||
    [[ "$(latest "$mac_icon"/*)" -nt "$appiconset/Contents.json" ]]; then
     rm -rf "$appiconset"; mkdir -p "$appiconset"
     {
@@ -115,7 +115,7 @@ if [[ "$(latest "$ios_icon"/*)" -nt "$appiconset/Contents.json" ]] ||
     } > "$appiconset/Contents.json"
 fi
 
-if [[ "$(latest "$ios_launch"/*)" -nt "$launchimage/Contents.json" ]]; then
+if [[ $ios_launch && $launchimage && "$(latest "$ios_launch"/*)" -nt "$launchimage/Contents.json" ]]; then
     rm -rf "$launchimage"; mkdir -p "$launchimage"
     {
         comma=

@@ -6,10 +6,10 @@
 import UIKit
 
 class MPButton: MPEffectView {
-    public var identifier: String?
-    public var action:     ((UIEvent) -> Void)?
-    public var tapEffect = true
-    public var image: UIImage? {
+    var identifier: String?
+    var action:     ((UIEvent, MPButton) -> Void)?
+    var tapEffect = true
+    var image: UIImage? {
         didSet {
             DispatchQueue.main.perform {
                 self.button.setImage( self.image, for: .normal )
@@ -17,7 +17,7 @@ class MPButton: MPEffectView {
             }
         }
     }
-    public var title: String? {
+    var title: String? {
         didSet {
             DispatchQueue.main.perform {
                 if self.title?.count ?? 0 > 1 {
@@ -38,7 +38,7 @@ class MPButton: MPEffectView {
             }
         }
     }
-    public var size = Size.image_icon {
+    var size = Size.image_icon {
         didSet {
             DispatchQueue.main.perform {
                 switch self.size {
@@ -59,7 +59,7 @@ class MPButton: MPEffectView {
             }
         }
     }
-    public let button = UIButton( type: .custom )
+    let button = UIButton( type: .custom )
 
     private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
@@ -80,12 +80,12 @@ class MPButton: MPEffectView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(identifier: String? = nil, image: UIImage? = nil, title: String? = nil, action: ((UIEvent) -> Void)? = nil) {
+    init(identifier: String? = nil, image: UIImage? = nil, title: String? = nil,
+         border: CGFloat = 1, background: Bool = true, dark: Bool = false, round: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
+         action: ((UIEvent, MPButton) -> Void)? = nil) {
         self.identifier = identifier
         self.action = action
-        super.init()
-        self.borderWidth = 1
-        self.isRound = true
+        super.init( border: border, background: background, dark: dark, round: round, rounding: rounding, dims: false )
 
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
@@ -130,7 +130,7 @@ class MPButton: MPEffectView {
             MPTapEffectView().run( for: self )
         }
 
-        self.action?( event )
+        self.action?( event, self )
     }
 
     func track() {
@@ -147,9 +147,11 @@ class MPButton: MPEffectView {
 }
 
 class MPTimedButton: MPButton {
+    var timing: MPTracker.TimedEvent?
+
     override func track() {
         if let identifier = self.identifier {
-            MPTracker.shared.begin( named: identifier )
+            self.timing = MPTracker.shared.begin( named: identifier )
         }
     }
 }

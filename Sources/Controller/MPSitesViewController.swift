@@ -6,7 +6,7 @@
 import UIKit
 
 class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
-    private lazy var topContainer = MPEffectView( content: self.searchField )
+    private lazy var topContainer = MPEffectView( content: self.searchField, dark: true )
     private let searchField              = UITextField()
     private let userButton               = MPButton(identifier: "sites #user_settings")
     private let sitesTableView           = MPSitesTableView()
@@ -54,8 +54,6 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     override func viewDidLoad() {
 
         // - View
-        self.topContainer.isBackgroundDark = true
-
         self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name", attributes: [
             NSAttributedString.Key.foregroundColor: appConfig.theme.color.placeholder.get()!
         ] )

@@ -6,43 +6,49 @@
 import UIKit
 
 class MPEffectView: UIVisualEffectView {
-    public var borderWidth         = CGFloat( 2 ) {
+    public var borderWidth : CGFloat {
         didSet {
             self.updateBackground()
         }
     }
-    public var isBackgroundVisible = true {
+    public var isBackground:        Bool {
         didSet {
             self.updateBackground()
         }
     }
-    public var isBackgroundDark    = false {
+    public var isDark:              Bool {
         didSet {
             self.updateBackground()
         }
     }
-    public var isRound             = false {
+    public var isRound:             Bool {
         didSet {
             self.updateRounding()
         }
     }
-    public var rounding            = CGFloat( 4 ) {
+    public var rounding:            CGFloat {
         didSet {
             self.updateRounding()
         }
     }
-    public var isSelected          = false {
+    public var isDimmedBySelection: Bool {
         didSet {
             self.updateContent()
         }
     }
-    public var isDimmedBySelection = false {
+    public var isSelected  = false {
         didSet {
             self.updateContent()
         }
     }
 
-    init() {
+    init(border: CGFloat = 2, background: Bool = true, dark: Bool = false, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+        self.borderWidth = border
+        self.isBackground = background
+        self.isDark = dark
+        self.isRound = round
+        self.rounding = rounding
+        self.isDimmedBySelection = dims
         super.init( effect: nil )
 
         self.layer.masksToBounds = true
@@ -55,8 +61,8 @@ class MPEffectView: UIVisualEffectView {
         self.updateBackground()
     }
 
-    convenience init(content: UIView) {
-        self.init()
+    convenience init(content: UIView, border: CGFloat = 2, background: Bool = true, dark: Bool = false, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+        self.init( border: border, background: background, dark: dark, round: round, rounding: rounding, dims: false )
 
         // - View
         self.contentView.addSubview( content )
@@ -103,8 +109,8 @@ class MPEffectView: UIVisualEffectView {
     func updateBackground() {
         DispatchQueue.main.perform {
             //self.tintColor = self.isBackgroundDark ? appConfig.theme.color.secondary.get(): appConfig.theme.color.backdrop.get()
-            self.effect = self.isBackgroundVisible ? MPEffectView.effect( dark: self.isBackgroundDark ): nil
-            self.layer.borderWidth = self.isBackgroundVisible ? self.borderWidth: 0
+            self.effect = self.isBackground ? MPEffectView.effect( dark: self.isDark ): nil
+            self.layer.borderWidth = self.isBackground ? self.borderWidth: 0
         }
     }
 

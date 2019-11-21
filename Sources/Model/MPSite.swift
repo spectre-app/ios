@@ -281,7 +281,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     public func copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                      resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
                      for host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        MPTracker.shared.begin( named: "site #copy" )
+        let copyEvent = MPTracker.shared.begin( named: "site #copy" )
 
         return self.result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                             resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then {
@@ -323,7 +323,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                         """ ).show( in: host )
                     }
 
-                    MPTracker.shared.event( named: "site #copy", [
+                    copyEvent.end( [
                         "result": $0.name,
                         "counter": "\(result.counter)",
                         "purpose": "\(result.purpose)",
@@ -333,7 +333,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     ] )
 
                 case .failure(let error):
-                    MPTracker.shared.event( named: "site #copy", [ "result": $0.name ] )
+                    copyEvent.end( [ "result": $0.name ] )
                     mperror( title: "Couldn't copy site", message: "Site value could not be calculated", error: error )
             }
         }
