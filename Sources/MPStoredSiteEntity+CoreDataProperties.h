@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface MPStoredSiteEntity(CoreData)<MPStoredSiteEntity_CoreData>
+@interface MPStoredSiteEntity (CoreData) <MPStoredSiteEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

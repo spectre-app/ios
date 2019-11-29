@@ -11,7 +11,7 @@
 @implementation MPGeneratedSiteEntity (CoreData)
 
 + (NSFetchRequest<MPGeneratedSiteEntity *> *)fetchRequest {
-	return [[NSFetchRequest alloc] initWithEntityName:@"MPGeneratedSiteEntity"];
+	return [NSFetchRequest fetchRequestWithEntityName:@"MPGeneratedSiteEntity"];
 }
 
 @dynamic counter_;

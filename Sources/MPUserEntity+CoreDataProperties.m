@@ -11,7 +11,7 @@
 @implementation MPUserEntity (CoreData)
 
 + (NSFetchRequest<MPUserEntity *> *)fetchRequest {
-	return [[NSFetchRequest alloc] initWithEntityName:@"MPUserEntity"];
+	return [NSFetchRequest fetchRequestWithEntityName:@"MPUserEntity"];
 }
 
 @dynamic avatar_;

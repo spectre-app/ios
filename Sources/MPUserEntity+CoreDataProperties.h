@@ -20,20 +20,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, copy) NSDate *lastUsed;
 @property(nullable, nonatomic, copy) NSString *name;
 @property(nullable, nonatomic, copy) NSNumber *saveKey_;
-@property(nullable, nonatomic, retain) NSSet<MPSiteEntity *> *sites;
-
-@optional
 @property(nullable, nonatomic, copy) NSNumber *touchID_;
 @property(nullable, nonatomic, copy) NSNumber *version_;
+@property(nullable, nonatomic, retain) NSSet<MPSiteEntity *> *sites;
+
+@end
+
+@interface MPUserEntity (CoreData) <MPUserEntity_CoreData>
+@end
+
+@interface MPUserEntity (CoreDataGeneratedAccessors)
 
 - (void)addSitesObject:(MPSiteEntity *)value;
 - (void)removeSitesObject:(MPSiteEntity *)value;
 - (void)addSites:(NSSet<MPSiteEntity *> *)values;
 - (void)removeSites:(NSSet<MPSiteEntity *> *)values;
 
-@end
-
-@interface MPUserEntity(CoreData)<MPUserEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

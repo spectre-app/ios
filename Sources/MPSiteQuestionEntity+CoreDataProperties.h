@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface MPSiteQuestionEntity(CoreData)<MPSiteQuestionEntity_CoreData>
+@interface MPSiteQuestionEntity (CoreData) <MPSiteQuestionEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

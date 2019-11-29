@@ -11,7 +11,7 @@
 @implementation MPSiteQuestionEntity (CoreData)
 
 + (NSFetchRequest<MPSiteQuestionEntity *> *)fetchRequest {
-	return [[NSFetchRequest alloc] initWithEntityName:@"MPSiteQuestionEntity"];
+	return [NSFetchRequest fetchRequestWithEntityName:@"MPSiteQuestionEntity"];
 }
 
 @dynamic keyword;

@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface MPGeneratedSiteEntity(CoreData)<MPGeneratedSiteEntity_CoreData>
+@interface MPGeneratedSiteEntity (CoreData) <MPGeneratedSiteEntity_CoreData>
 @end
 
 NS_ASSUME_NONNULL_END

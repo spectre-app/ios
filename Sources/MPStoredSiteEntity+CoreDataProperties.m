@@ -11,8 +11,7 @@
 @implementation MPStoredSiteEntity(CoreData)
 
 + (NSFetchRequest<MPStoredSiteEntity *> *)fetchRequest {
-
-    return [[NSFetchRequest alloc] initWithEntityName:@"MPStoredSiteEntity"];
+	return [NSFetchRequest fetchRequestWithEntityName:@"MPStoredSiteEntity"];
 }
 
 @dynamic contentObject;

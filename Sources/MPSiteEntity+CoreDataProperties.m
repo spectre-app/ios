@@ -11,7 +11,7 @@
 @implementation MPSiteEntity (CoreData)
 
 + (NSFetchRequest<MPSiteEntity *> *)fetchRequest {
-	return [[NSFetchRequest alloc] initWithEntityName:@"MPSiteEntity"];
+	return [NSFetchRequest fetchRequestWithEntityName:@"MPSiteEntity"];
 }
 
 @dynamic content;
@@ -21,9 +21,9 @@
 @dynamic name;
 @dynamic requiresExplicitMigration_;
 @dynamic type_;
+@dynamic url;
 @dynamic uses_;
 @dynamic version_;
-@dynamic url;
 @dynamic questions;
 @dynamic user;
 

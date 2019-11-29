@@ -594,7 +594,7 @@ class MPMarshal: Observable {
                         at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
 
                 var algorithm = MPAlgorithmVersion.current
-                if let userAlgorithm = user.version_??.uint32Value,
+                if let userAlgorithm = user.version_?.uint32Value,
                    let userAlgorithmValue = MPAlgorithmVersion( rawValue: userAlgorithm ) {
                     algorithm = userAlgorithmValue
                 }
@@ -646,7 +646,7 @@ class MPMarshal: Observable {
                     marshalledSite.pointee.loginType =
                             (site.loginGenerated_?.boolValue ?? true || site.loginName == nil) ? .templateName: .statefulPersonal
                     marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( site.loginName ) )
-                    // TODO: marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url?() ?? nil ) )
+                    marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ) )
                     marshalledSite.pointee.uses = site.uses_?.uint32Value ?? 0
                     marshalledSite.pointee.lastUsed = Int( site.lastUsed?.timeIntervalSince1970 ?? 0 )
 

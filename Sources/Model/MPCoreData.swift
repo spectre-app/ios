@@ -84,17 +84,14 @@ class MPCoreData {
             }
 
             let storeOptions: [AnyHashable: Any] = [
-                NSReadOnlyPersistentStoreOption: true,
                 NSInferMappingModelAutomaticallyOption: true,
-                NSMigratePersistentStoresAutomaticallyOption: false,
+                NSMigratePersistentStoresAutomaticallyOption: true,
                 NSPersistentStoreFileProtectionKey: FileProtectionType.complete,
             ]
 
-            // Open the store and find the model.
-            let storeMetadata                    = try NSPersistentStoreCoordinator.metadataForPersistentStore(
-                    ofType: NSSQLiteStoreType, at: storeURL, options: storeOptions )
-            guard let storeModel = NSManagedObjectModel.mergedModel( from: nil, forStoreMetadata: storeMetadata )
-            else { throw MPError.state( details: "Unsupported data model" ) }
+            // Load the supported data models.
+            guard let storeModel = NSManagedObjectModel.mergedModel( from: nil )
+            else { throw MPError.internal( details: "Missing data model" ) }
 
             // Create a new store coordinator.
             self.storeCoordinator = NSPersistentStoreCoordinator( managedObjectModel: storeModel )

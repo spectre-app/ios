@@ -21,13 +21,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, copy) NSString *name;
 @property(nullable, nonatomic, copy) NSNumber *requiresExplicitMigration_;
 @property(nullable, nonatomic, copy) NSNumber *type_;
+@property(nullable, nonatomic, copy) NSString *url;
 @property(nullable, nonatomic, copy) NSNumber *uses_;
 @property(nullable, nonatomic, copy) NSNumber *version_;
 @property(nullable, nonatomic, retain) NSOrderedSet<MPSiteQuestionEntity *> *questions;
 @property(nullable, nonatomic, retain) MPUserEntity *user;
 
-@optional
-@property(nullable, nonatomic, copy) NSString *url;
+@end
+
+@interface MPSiteEntity (CoreData) <MPSiteEntity_CoreData>
+@end
+
+@interface MPSiteEntity (CoreDataGeneratedAccessors)
 
 - (void)insertObject:(MPSiteQuestionEntity *)value inQuestionsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromQuestionsAtIndex:(NSUInteger)idx;
@@ -42,7 +47,5 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface MPSiteEntity(CoreData)<MPSiteEntity_CoreData>
-@end
 
 NS_ASSUME_NONNULL_END
