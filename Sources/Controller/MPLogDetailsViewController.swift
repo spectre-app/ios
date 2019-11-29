@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import Countly
 
 class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewController.Model>, ModelObserver {
 
@@ -20,7 +21,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     }
 
     override func loadItems() -> [Item<Model>] {
-        [ LogLevelPicker(), SeparatorItem(), LogsItem() ]
+        [ LogLevelPicker(), SeparatorItem(), FeedbackItem(), LogsItem() ]
     }
 
     // MARK: --- ModelObserver ---
@@ -34,7 +35,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     class LogLevelPicker: PickerItem<Model, LogLevel> {
         init() {
             super.init(
-                    identifier: "app >logbookLevel",
+                    identifier: "logbook >level",
                     title: "Logbook",
                     values: { _ in LogLevel.allCases.reversed() },
                     value: { $0.logbookLevel },
@@ -91,6 +92,16 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                         .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                         .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                         .activate()
+            }
+        }
+    }
+
+    class FeedbackItem: ButtonItem<Model> {
+        init() {
+            super.init( identifier: "logbook #feedback", value: { _ in (label: "Submit Feedback", image: nil) } ) { _ in
+                Countly.sharedInstance().presentFeedbackWidget( withID: "5dddad1927e4dac9a57489f4" ) {
+                    mperror( title: "Couldn't submit feedback", error: $0 )
+                }
             }
         }
     }

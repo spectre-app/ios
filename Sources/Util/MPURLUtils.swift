@@ -66,7 +66,7 @@ class MPURLUtils {
         }
 
         self.preview.preview( url, onSuccess: { response in
-            guard let imageURL = self.validImageURL( response[.image] as? String ) ?? self.validImageURL( response[.icon] as? String )
+            guard let imageURL = self.validImageURL( response.image ) ?? self.validImageURL( response.icon )
             else { return }
 
             session.dataTask( with: imageURL ) { responseData, response, error in

@@ -1,9 +1,10 @@
 workspace 'MasterPassword'
 project 'MasterPassword-iOS'
 
-platform :ios, '9.0'
+platform :ios, '9.3'
 
 target 'MasterPassword' do
+  use_modular_headers!
   use_frameworks!
 
   pod 'Stellar', :git => 'https://github.com/AugustRush/Stellar.git'

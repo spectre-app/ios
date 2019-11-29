@@ -175,7 +175,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        MPTracker.shared.begin( named: "site #menu" )
+        configuration.event = MPTracker.shared.begin( named: "site #menu" )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
@@ -187,7 +187,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        MPTracker.shared.event( named: "site #menu", [
+        configuration.event?.end( [
             "action": configuration.action?.identifier.rawValue ?? "none"
         ] )
 

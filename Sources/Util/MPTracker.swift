@@ -13,10 +13,9 @@ typealias Value = Any
 class MPTracker {
     static let shared = MPTracker()
 
-    private var screens = [ Screen ]()
+    var screens = [ Screen ]()
 
     private init() {
-
         // Sentry
         do {
             Client.shared = try Client( dsn: "" )
@@ -71,18 +70,18 @@ class MPTracker {
 
         // Smartlook
         Smartlook.setup( key: "" )
-        Smartlook.startRecording()
+//        Smartlook.startRecording()
 
         // Countly
         let config = CountlyConfig()
-        config.host = "https://try.count.ly"
+        config.host = "https://countly.volto.app"
         config.appKey = ""
-        config.enableDebug = true
-        config.features = [ CLYPushNotifications, CLYCrashReporting, CLYAutoViewTracking ]
+        config.features = [ CLYPushNotifications, CLYCrashReporting ]
         config.requiresConsent = true
         config.pushTestMode = CLYPushTestModeDevelopment
         config.alwaysUsePOST = true
         config.secretSalt = ""
+//        Countly.sharedInstance().isAutoViewTrackingActive = false
         Countly.sharedInstance().start( with: config )
         Countly.sharedInstance().giveConsentForAllFeatures()
     }
@@ -93,17 +92,10 @@ class MPTracker {
     }
 
     func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                named name: String) -> Screen {
-        let screen = Screen( name: name, tracker: self )
-        self.screens.append( screen )
-
-        screen.begin( file: file, line: line, function: function, dso: dso )
-        screen.event( file: file, line: line, function: function, dso: dso, event: "open" )
-
-        return screen
+                named name: String, _ parameters: [String: Value] = [:]) -> Screen {
+        Screen( name: name, tracker: self )
     }
 
-    @discardableResult
     func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                named name: String) -> TimedEvent {
         dbg( file: file, line: line, function: function, dso: dso, "> %@", name )
@@ -122,10 +114,10 @@ class MPTracker {
         let stringParameters = eventParameters.mapValues { String( describing: $0 ) }
 
         if eventParameters.isEmpty {
-            dbg( file: file, line: line, function: function, dso: dso, "@ %@", name )
+            dbg( file: file, line: line, function: function, dso: dso, "# %@", name )
         }
         else {
-            dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", name, eventParameters )
+            dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, eventParameters )
         }
 
         Countly.sharedInstance().recordEvent(
@@ -139,49 +131,48 @@ class MPTracker {
         }
     }
 
-    func cancel(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                timing: TimedEvent) {
-        Smartlook.trackTimedCustomEventCancel( eventId: timing.smartlook, reason: nil, props: nil )
-        dbg( file: file, line: line, function: function, dso: dso, "X %@", timing.name )
-    }
-
     class Screen {
         let name: String
         private let tracker: MPTracker
-        private var timing:  MPTracker.TimedEvent?
 
         init(name: String, tracker: MPTracker) {
             self.name = name
             self.tracker = tracker
         }
 
-        fileprivate func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-            self.timing = self.tracker.begin( file: file, line: line, function: function, dso: dso, named: self.name )
+        func open(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                  _ parameters: [String: Value] = [:]) {
+            if parameters.isEmpty {
+                dbg( file: file, line: line, function: function, dso: dso, "@ %@", self.name )
+            }
+            else {
+                dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", self.name, parameters )
+            }
+
+            let stringParameters = parameters.mapValues { String( describing: $0 ) }
+            Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )
+            Smartlook.trackNavigationEvent( withControllerId: self.name, type: .enter )
         }
 
-        @discardableResult
         func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                    event: String) -> TimedEvent {
             self.tracker.begin( file: file, line: line, function: function, dso: dso, named: "\(self.name) #\(event)" )
         }
 
         func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   event: String) {
-            self.tracker.event( file: file, line: line, function: function, dso: dso, named: "\(self.name) #\(event)" )
+                   event: String, _ parameters: [String: Value] = [:]) {
+            self.tracker.event( file: file, line: line, function: function, dso: dso, named: "\(self.name) #\(event)", parameters )
         }
 
         func dismiss(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-            self.event( file: file, line: line, function: function, dso: dso, event: "close" )
-            self.timing?.end( file: file, line: line, function: function, dso: dso )
-
-            self.tracker.screens.removeAll { $0 === self }
+            Smartlook.trackNavigationEvent( withControllerId: self.name, type: .exit )
         }
     }
 
     class TimedEvent {
-        let name: String
-        let start : Date
-        let smartlook : Any
+        let name:      String
+        let start:     Date
+        let smartlook: Any
 
         private var ended = false
 
@@ -204,11 +195,12 @@ class MPTracker {
             self.ended = true
         }
 
-        func cancel() {
+        func cancel(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
             guard !self.ended
             else { return }
 
-            MPTracker.shared.cancel( timing: self )
+            Smartlook.trackTimedCustomEventCancel( eventId: self.smartlook, reason: nil, props: nil )
+            dbg( file: file, line: line, function: function, dso: dso, "X %@", self.name )
             self.ended = true
         }
     }

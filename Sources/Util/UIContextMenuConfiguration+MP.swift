@@ -10,12 +10,21 @@ extension UIContextMenuConfiguration {
     var indexPath: IndexPath? {
         self.identifier as? IndexPath
     }
-    var action: UIAction? {
+    var action:    UIAction? {
         get {
             objc_getAssociatedObject( self, &Key.action ) as? UIAction
         }
         set {
             objc_setAssociatedObject( self, &Key.action, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN )
+        }
+    }
+
+    var event: MPTracker.TimedEvent? {
+        get {
+            objc_getAssociatedObject( self, &Key.event ) as? MPTracker.TimedEvent
+        }
+        set {
+            objc_setAssociatedObject( self, &Key.event, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN )
         }
     }
 
@@ -35,6 +44,7 @@ extension UIContextMenuConfiguration {
 
     private struct Key {
         static var action = 0
+        static var event  = 1
     }
 }
 
