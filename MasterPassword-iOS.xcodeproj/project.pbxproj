@@ -3,11 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		85CD8F96F4AF2E32ECC42FA9 /* Pods_MasterPassword.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B187A357B4ACE4B9C8631D9 /* Pods_MasterPassword.framework */; };
+		4C1B6DF9157D56965140EAD1 /* Pods_MasterPassword.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B187A357B4ACE4B9C8631D9 /* Pods_MasterPassword.framework */; };
 		93D3902220F6DB4564F5FE6D /* NSLayoutConstraint+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E47D47CD353F4E0C94D /* NSLayoutConstraint+MP.swift */; };
 		93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
 		93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
@@ -81,7 +81,6 @@
 		93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */; };
 		93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */; };
 		93D39F69D0EDD80B5DCAF0BB /* MPConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C3FA9FA2CA5B234741E /* MPConfig.swift */; };
-		DA04E33E14B1E70400ECA4F3 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */; };
 		DA071BF3190187FE00179766 /* empty@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA071BF1190187FE00179766 /* empty@2x.png */; };
 		DA071BF4190187FE00179766 /* empty.png in Resources */ = {isa = PBXBuildFile; fileRef = DA071BF2190187FE00179766 /* empty.png */; };
 		DA24EBE819DAD6DE00FF010B /* Icon-320.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBE619DAD6DE00FF010B /* Icon-320.png */; };
@@ -89,8 +88,6 @@
 		DA24EBEA19DAD6EE00FF010B /* Icon-Small.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBBA19DAD4D000FF010B /* Icon-Small.png */; };
 		DA24EBEB19DAD6EE00FF010B /* Icon-Small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBBB19DAD4D000FF010B /* Icon-Small@2x.png */; };
 		DA24EBEC19DAD6EE00FF010B /* Icon-Small@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBBC19DAD4D000FF010B /* Icon-Small@3x.png */; };
-		DA2C3D631BD96126001137B3 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DA2C3D621BD96126001137B3 /* libc++.tbd */; };
-		DA2C3D651BD9612F001137B3 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DA2C3D641BD9612F001137B3 /* libz.tbd */; };
 		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
 		DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
 		DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
@@ -103,32 +100,17 @@
 		DA5A09EA171BB0F7005284AB /* unlocked.png in Resources */ = {isa = PBXBuildFile; fileRef = DA5A09E8171BB0F7005284AB /* unlocked.png */; };
 		DA5A09EB171BB0F7005284AB /* unlocked@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA5A09E9171BB0F7005284AB /* unlocked@2x.png */; };
 		DA5B0B401F36469400B663F0 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = DA5B0B3E1F36469400B663F0 /* base64.c */; };
-		DA5BFA49147E415C00F98B1E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5BFA48147E415C00F98B1E /* UIKit.framework */; };
-		DA5BFA4B147E415C00F98B1E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5BFA4A147E415C00F98B1E /* Foundation.framework */; };
-		DA5BFA4D147E415C00F98B1E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5BFA4C147E415C00F98B1E /* CoreGraphics.framework */; };
-		DA5BFA4F147E415C00F98B1E /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5BFA4E147E415C00F98B1E /* CoreData.framework */; };
-		DA6701B816406A4100B61001 /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6701B716406A4100B61001 /* Accounts.framework */; settings = {ATTRIBUTES = (Required, ); }; };
-		DA6701DE16406B7300B61001 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6701DD16406B7300B61001 /* Social.framework */; settings = {ATTRIBUTES = (Required, ); }; };
-		DA6701E016406BB400B61001 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6701DF16406BB400B61001 /* AdSupport.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		DA67460D18DE7F0C00DFE240 /* Exo2.0-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460918DE7F0C00DFE240 /* Exo2.0-Thin.otf */; };
 		DA67460E18DE7F0C00DFE240 /* Exo2.0-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460A18DE7F0C00DFE240 /* Exo2.0-Regular.otf */; };
 		DA67460F18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460B18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf */; };
 		DA67461018DE7F0C00DFE240 /* Exo2.0-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460C18DE7F0C00DFE240 /* Exo2.0-Bold.otf */; };
-		DA6A72E82371E63A006C1AD3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6A72E72371E63A006C1AD3 /* CoreHaptics.framework */; };
 		DA854C8318D4CFBF00106317 /* avatar-add@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA854C8118D4CFBF00106317 /* avatar-add@2x.png */; };
 		DA854C8418D4CFBF00106317 /* avatar-add.png in Resources */ = {isa = PBXBuildFile; fileRef = DA854C8218D4CFBF00106317 /* avatar-add.png */; };
 		DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA945C8617E3F3FD0053236B /* Images.xcassets */; };
-		DA95B50C1C476B6A0067F5EF /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA95B50B1C476B6A0067F5EF /* LocalAuthentication.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		DA95D5F214DF0B2C008D1B94 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA95D5F014DF0B1E008D1B94 /* MessageUI.framework */; };
-		DA9986F6237C56FF001FD155 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA9986F5237C56FF001FD155 /* CFNetwork.framework */; };
-		DA9986F8237C5710001FD155 /* libicucore.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DA9986F7237C5710001FD155 /* libicucore.tbd */; };
 		DAA449D21EEC4B5800E7BDD5 /* mpw-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* mpw-marshal.c */; };
-		DAA7BC2720C4C27100101DC7 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
 		DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* mpw-algorithm.c */; };
 		DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
-		DAB7AE5D1F3D752900C856B1 /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAB7AE5C1F3D752900C856B1 /* libjson-c.a */; };
 		DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
-		DABB981615100B4000B05417 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DABB981515100B4000B05417 /* SystemConfiguration.framework */; };
 		DABD39371711E29700CF925C /* avatar-0.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD366C1711E29400CF925C /* avatar-0.png */; };
 		DABD39381711E29700CF925C /* avatar-0@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD366D1711E29400CF925C /* avatar-0@2x.png */; };
 		DABD39391711E29700CF925C /* avatar-1.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD366E1711E29400CF925C /* avatar-1.png */; };
@@ -173,11 +155,9 @@
 		DABD3FCB1712446200CF925C /* cloud@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FC91712446200CF925C /* cloud@2x.png */; };
 		DABD3FCE1714F45C00CF925C /* identity.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FCC1714F45B00CF925C /* identity.png */; };
 		DABD3FCF1714F45C00CF925C /* identity@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FCD1714F45B00CF925C /* identity@2x.png */; };
-		DAC632891486D9690075AEA5 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC632871486D95D0075AEA5 /* Security.framework */; };
 		DAC793DA204CE76B00EC597C /* lock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D8204CE76A00EC597C /* lock@2x.png */; };
 		DAC793DB204CE76B00EC597C /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D9204CE76B00EC597C /* lock.png */; };
 		DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */ = {isa = PBXBuildFile; fileRef = DACA29721705E1A8002C6C22 /* dictionary.lst */; };
-		DAE2725A19C93B8E007C5262 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA70EC7F1811B13C00F65DB2 /* StoreKit.framework */; };
 		DAE6E19622CC3CE100DE0342 /* MasterPassword.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E18C22CC3CE100DE0342 /* MasterPassword.xcdatamodeld */; };
 		DAE6E1B722CC3D1D00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E19722CC3D1B00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m */; };
 		DAE6E1B822CC3D1D00DE0342 /* MPUserEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E19822CC3D1B00DE0342 /* MPUserEntity+CoreDataClass.m */; };
@@ -189,7 +169,9 @@
 		DAE6E1BE22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1AA22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m */; };
 		DAE6E1BF22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1AC22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataClass.m */; };
 		DAE6E1C622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1B622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m */; };
-		DAEBC45314F6364500987BF6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAEBC45214F6364500987BF6 /* QuartzCore.framework */; };
+		DAF560502393411A000475BA /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
+		DAF5605123934134000475BA /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
+		DAF5605223934176000475BA /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -542,28 +524,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DA9986F8237C5710001FD155 /* libicucore.tbd in Frameworks */,
-				DA9986F6237C56FF001FD155 /* CFNetwork.framework in Frameworks */,
-				DAA7BC2720C4C27100101DC7 /* libsodium.a in Frameworks */,
-				DAB7AE5D1F3D752900C856B1 /* libjson-c.a in Frameworks */,
-				DA95B50C1C476B6A0067F5EF /* LocalAuthentication.framework in Frameworks */,
-				DA2C3D651BD9612F001137B3 /* libz.tbd in Frameworks */,
-				DA2C3D631BD96126001137B3 /* libc++.tbd in Frameworks */,
-				DA04E33E14B1E70400ECA4F3 /* MobileCoreServices.framework in Frameworks */,
-				DAE2725A19C93B8E007C5262 /* StoreKit.framework in Frameworks */,
-				DA6A72E82371E63A006C1AD3 /* CoreHaptics.framework in Frameworks */,
-				DA6701E016406BB400B61001 /* AdSupport.framework in Frameworks */,
-				DA6701DE16406B7300B61001 /* Social.framework in Frameworks */,
-				DA6701B816406A4100B61001 /* Accounts.framework in Frameworks */,
-				DABB981615100B4000B05417 /* SystemConfiguration.framework in Frameworks */,
-				DAEBC45314F6364500987BF6 /* QuartzCore.framework in Frameworks */,
-				DA95D5F214DF0B2C008D1B94 /* MessageUI.framework in Frameworks */,
-				DAC632891486D9690075AEA5 /* Security.framework in Frameworks */,
-				DA5BFA49147E415C00F98B1E /* UIKit.framework in Frameworks */,
-				DA5BFA4B147E415C00F98B1E /* Foundation.framework in Frameworks */,
-				DA5BFA4D147E415C00F98B1E /* CoreGraphics.framework in Frameworks */,
-				DA5BFA4F147E415C00F98B1E /* CoreData.framework in Frameworks */,
-				85CD8F96F4AF2E32ECC42FA9 /* Pods_MasterPassword.framework in Frameworks */,
+				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
+				DAF5605223934176000475BA /* MobileCoreServices.framework in Frameworks */,
+				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
+				4C1B6DF9157D56965140EAD1 /* Pods_MasterPassword.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1139,7 +1103,6 @@
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
 				F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */,
-				DA6556E314D55F3000841C99 /* Run Script: GIT version -> Info.plist */,
 			);
 			buildRules = (
 			);
@@ -1394,39 +1357,17 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		DA6556E314D55F3000841C99 /* Run Script: GIT version -> Info.plist */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script: GIT version -> Info.plist";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = "/bin/sh -e";
-			shellScript = "exec Scripts/updatePlist\n";
-			showEnvVarsInLog = 0;
-		};
 		F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/Countly/Countly.framework",
-				"${BUILT_PRODUCTS_DIR}/Sentry/Sentry.framework",
-				"${BUILT_PRODUCTS_DIR}/Stellar/Stellar.framework",
-				"${BUILT_PRODUCTS_DIR}/SwiftLinkPreview/SwiftLinkPreview.framework",
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Countly.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Sentry.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stellar.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftLinkPreview.framework",
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1684,7 +1625,7 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LINKER_DISPLAYS_MANGLED_NAMES = NO;
 				LLVM_LTO = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1712,6 +1653,7 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				CODE_SIGN_IDENTITY = "-";
+				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
@@ -1729,7 +1671,6 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
 				);
 				INFOPLIST_FILE = "Source/iOS/MasterPassword-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1739,6 +1680,7 @@
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
+				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
 				PRODUCT_NAME = Volto;
 				SKIP_INSTALL = NO;
@@ -1876,7 +1818,7 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LINKER_DISPLAYS_MANGLED_NAMES = YES;
 				LLVM_LTO = YES_THIN;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -2029,7 +1971,7 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LINKER_DISPLAYS_MANGLED_NAMES = NO;
 				LLVM_LTO = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -2057,6 +1999,7 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
@@ -2074,7 +2017,6 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
 				);
 				INFOPLIST_FILE = "Source/iOS/MasterPassword-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2084,6 +2026,7 @@
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
+				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
 				PRODUCT_NAME = Volto;
 				SKIP_INSTALL = NO;
@@ -2099,6 +2042,7 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/MasterPassword.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_PREFIX_HEADER = "Source/MasterPassword-Prefix.pch";
@@ -2116,7 +2060,6 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
 				);
 				INFOPLIST_FILE = "Source/iOS/MasterPassword-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2126,6 +2069,7 @@
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
+				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lyndir.lhunath.MasterPassword;
 				PRODUCT_NAME = Volto;
 				SKIP_INSTALL = NO;
