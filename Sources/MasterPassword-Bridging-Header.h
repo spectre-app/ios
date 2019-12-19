@@ -3,6 +3,7 @@
 //
 
 #import <CommonCrypto/CommonCrypto.h>
+#import <FreshchatSDK/FreshchatSDK.h>
 
 #import "MPUserEntity+CoreDataClass.h"
 #import "MPSiteEntity+CoreDataClass.h"

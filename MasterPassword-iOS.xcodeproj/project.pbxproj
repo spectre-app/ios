@@ -1103,6 +1103,7 @@
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
 				F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */,
+				F547257C29D473EBD10587B5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1372,6 +1373,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F547257C29D473EBD10587B5 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MasterPassword/Pods-MasterPassword-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

@@ -5,12 +5,13 @@
 
 import Foundation
 import Sentry
+import Bugsnag
 import Smartlook
 import Countly
 
 typealias Value = Any
 
-class MPTracker {
+class MPTracker : MPConfigObserver {
     static let shared = MPTracker()
 
     var screens = [ Screen ]()
@@ -19,54 +20,65 @@ class MPTracker {
         // Sentry
         do {
             Client.shared = try Client( dsn: "" )
-            Client.shared?.enabled = appConfig.sendInfo as NSNumber
-            try Client.shared?.startCrashHandler()
+            Client.shared?.enabled = false
             Client.shared?.enableAutomaticBreadcrumbTracking()
-
-            mpw_log_sink_register( { event in
-                if let event: MPLogEvent = event?.pointee, event.level <= .info,
-                   let message = String( safeUTF8: event.message ) {
-                    var severity = SentrySeverity.debug
-                    switch event.level {
-                        case .info:
-                            severity = .info
-                        case .warning:
-                            severity = .warning
-                        case .error:
-                            severity = .error
-                        case .fatal:
-                            severity = .fatal
-                        default: ()
-                    }
-
-                    if event.level <= .error {
-                        let sentryEvent = Event( level: severity )
-                        sentryEvent.message = message
-                        sentryEvent.logger = "mpw"
-                        sentryEvent.timestamp = Date( timeIntervalSince1970: TimeInterval( event.occurrence ) )
-                        var file = String( safeUTF8: event.file ) ?? "-"
-                        file = file.lastIndex( of: "/" ).flatMap( { String( file.suffix( from: file.index( after: $0 ) ) ) } ) ?? file
-                        sentryEvent.tags = [ "file": file, "line": "\(event.line)", "function": String( safeUTF8: event.function ) ?? "-" ]
-                        Client.shared?.appendStacktrace( to: sentryEvent )
-                        Client.shared?.send( event: sentryEvent )
-                    }
-                    else {
-                        let breadcrumb = Breadcrumb( level: severity, category: "mpw" )
-                        breadcrumb.type = message
-                        breadcrumb.message = message
-                        breadcrumb.timestamp = Date( timeIntervalSince1970: TimeInterval( event.occurrence ) )
-                        var file = String( safeUTF8: event.file ) ?? "-"
-                        file = file.lastIndex( of: "/" ).flatMap( { String( file.suffix( from: file.index( after: $0 ) ) ) } ) ?? file
-                        breadcrumb.data = [ "file": file, "line": "\(event.line)", "function": String( safeUTF8: event.function ) ?? "-" ]
-                        Client.shared?.breadcrumbs.add( breadcrumb )
-                    }
-                }
-            } )
+            try Client.shared?.startCrashHandler()
         }
         catch {
             err( "Couldn't install Sentry [>TRC]" )
             trc( "[>] %@", error )
         }
+
+        // Bugsnag
+        let configuration = BugsnagConfiguration()
+        configuration.apiKey = ""
+        configuration.add( beforeSend: { (rawData, report) -> Bool in appConfig.sendInfo } )
+        Bugsnag.start( with: configuration )
+
+        // Breadcrumbs & errors
+        mpw_log_sink_register( { event in
+            if let event = event?.pointee, event.level <= .info,
+               let record = MPLogRecord( event ) {
+                var severity = SentrySeverity.debug
+                switch event.level {
+                    case .info:
+                        severity = .info
+                    case .warning:
+                        severity = .warning
+                    case .error:
+                        severity = .error
+                    case .fatal:
+                        severity = .fatal
+                    default: ()
+                }
+
+                if record.level <= .error {
+                    let sentryEvent = Event( level: severity )
+                    sentryEvent.message = record.message
+                    sentryEvent.logger = "mpw"
+                    sentryEvent.timestamp = record.occurrence
+                    sentryEvent.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                    Client.shared?.appendStacktrace( to: sentryEvent )
+                    Client.shared?.send( event: sentryEvent )
+
+                    Bugsnag.notifyError( NSError( domain: "mpw", code: 0, userInfo: [ NSLocalizedDescriptionKey: record.message ] ) )
+                }
+                else {
+                    let breadcrumb = Breadcrumb( level: severity, category: "mpw" )
+                    breadcrumb.type = "log"
+                    breadcrumb.message = record.message
+                    breadcrumb.timestamp = record.occurrence
+                    breadcrumb.data = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                    Client.shared?.breadcrumbs.add( breadcrumb )
+
+                    Bugsnag.leaveBreadcrumb {
+                        $0.name = record.message
+                        $0.type = .log
+                        $0.metadata = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                    }
+                }
+            }
+        } )
 
         // Smartlook
         Smartlook.setup( key: "" )
@@ -83,7 +95,8 @@ class MPTracker {
         config.secretSalt = ""
 //        Countly.sharedInstance().isAutoViewTrackingActive = false
         Countly.sharedInstance().start( with: config )
-        Countly.sharedInstance().giveConsentForAllFeatures()
+
+        appConfig.observers.register( observer: self ).didChangeConfig()
     }
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
@@ -128,6 +141,18 @@ class MPTracker {
         }
         else {
             Smartlook.trackCustomEvent( name: name, props: stringParameters )
+        }
+    }
+
+    // MARK: --- MPConfigObserver ---
+
+    public func didChangeConfig() {
+        if appConfig.sendInfo {
+            Client.shared?.enabled = true
+            Countly.sharedInstance().giveConsentForAllFeatures()
+        } else {
+            Client.shared?.enabled = false
+            Countly.sharedInstance().cancelConsentForAllFeatures()
         }
     }
 

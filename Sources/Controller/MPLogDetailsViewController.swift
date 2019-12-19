@@ -21,7 +21,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     }
 
     override func loadItems() -> [Item<Model>] {
-        [ LogLevelPicker(), SeparatorItem(), FeedbackItem(), LogsItem() ]
+        [ FeedbackItem(), SeparatorItem(), LogLevelPicker(), LogsItem() ]
     }
 
     // MARK: --- ModelObserver ---
@@ -31,6 +31,18 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     }
 
     // MARK: --- Types ---
+
+    class FeedbackItem: ButtonItem<Model> {
+        init() {
+            super.init( identifier: "logbook #feedback",
+                        value: { _ in (label: "Let's Talk 🅿", image: nil) },
+                        caption: { _ in "We're here to help.  You can also reach us at:\nsupport@volto.app" } ) {
+                let options = ConversationOptions()
+                options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
+                Freshchat.sharedInstance().showConversations( $0.viewController, with: options )
+            }
+        }
+    }
 
     class LogLevelPicker: PickerItem<Model, LogLevel> {
         init() {
@@ -92,16 +104,6 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                         .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                         .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
                         .activate()
-            }
-        }
-    }
-
-    class FeedbackItem: ButtonItem<Model> {
-        init() {
-            super.init( identifier: "logbook #feedback", value: { _ in (label: "Submit Feedback", image: nil) } ) { _ in
-                Countly.sharedInstance().presentFeedbackWidget( withID: "5dddad1927e4dac9a57489f4" ) {
-                    mperror( title: "Couldn't submit feedback", error: $0 )
-                }
             }
         }
     }

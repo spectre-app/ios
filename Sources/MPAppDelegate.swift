@@ -23,6 +23,9 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
         self.window?.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window?.makeKeyAndVisible()
 
+        Freshchat.sharedInstance().initWith(
+                FreshchatConfig( appID: "***REMOVED***", andAppKey: "" ) )
+
         appConfig.observers.register( observer: self )
 
         return true
