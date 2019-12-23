@@ -9,20 +9,25 @@ import Bugsnag
 import Smartlook
 import Countly
 
-typealias Value = Any
+let appSecret    = ""
+let sentryDSN    = ""
+let bugsnagKey   = ""
+let smartlookKey = ""
+let countlyKey   = ""
+let countlySalt  = ""
 
-class MPTracker : MPConfigObserver {
+class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
-
-    var screens = [ Screen ]()
 
     private init() {
         // Sentry
         do {
-            Client.shared = try Client( dsn: "" )
-            Client.shared?.enabled = false
-            Client.shared?.enableAutomaticBreadcrumbTracking()
-            try Client.shared?.startCrashHandler()
+            let sentry = try Sentry.Client( dsn: sentryDSN )
+            Sentry.Client.shared = sentry
+
+            sentry.enabled = false
+            sentry.enableAutomaticBreadcrumbTracking()
+            try sentry.startCrashHandler()
         }
         catch {
             err( "Couldn't install Sentry [>TRC]" )
@@ -30,46 +35,62 @@ class MPTracker : MPConfigObserver {
         }
 
         // Bugsnag
-        let configuration = BugsnagConfiguration()
-        configuration.apiKey = ""
-        configuration.add( beforeSend: { (rawData, report) -> Bool in appConfig.sendInfo } )
-        Bugsnag.start( with: configuration )
+        let bugsnagConfig = BugsnagConfiguration()
+        bugsnagConfig.apiKey = bugsnagKey
+        bugsnagConfig.add( beforeSend: { (rawData, report) -> Bool in appConfig.sendInfo } )
+        Bugsnag.start( with: bugsnagConfig )
+
+        // Countly
+        let countlyConfig = CountlyConfig()
+        countlyConfig.host = "https://countly.volto.app"
+        countlyConfig.appKey = countlyKey
+        countlyConfig.features = [ CLYPushNotifications, CLYCrashReporting ]
+        countlyConfig.requiresConsent = true
+        countlyConfig.pushTestMode = CLYPushTestModeDevelopment
+        countlyConfig.alwaysUsePOST = true
+        countlyConfig.secretSalt = countlySalt
+        Countly.sharedInstance().start( with: countlyConfig )
+
+        // Smartlook
+        Smartlook.setup( key: smartlookKey )
+//        Smartlook.startRecording()
 
         // Breadcrumbs & errors
-        mpw_log_sink_register( { event in
-            if let event = event?.pointee, event.level <= .info,
-               let record = MPLogRecord( event ) {
-                var severity = SentrySeverity.debug
-                switch event.level {
+        mpw_log_sink_register( {
+            if let logEvent = $0?.pointee, logEvent.level <= .info,
+               let record = MPLogRecord( logEvent ) {
+
+                var sentrySeverity = SentrySeverity.debug
+                switch record.level {
                     case .info:
-                        severity = .info
+                        sentrySeverity = .info
                     case .warning:
-                        severity = .warning
+                        sentrySeverity = .warning
                     case .error:
-                        severity = .error
+                        sentrySeverity = .error
                     case .fatal:
-                        severity = .fatal
+                        sentrySeverity = .fatal
                     default: ()
                 }
 
                 if record.level <= .error {
-                    let sentryEvent = Event( level: severity )
-                    sentryEvent.message = record.message
-                    sentryEvent.logger = "mpw"
-                    sentryEvent.timestamp = record.occurrence
-                    sentryEvent.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
-                    Client.shared?.appendStacktrace( to: sentryEvent )
-                    Client.shared?.send( event: sentryEvent )
+                    let event = Event( level: sentrySeverity )
+                    event.message = record.message
+                    event.logger = "mpw"
+                    event.timestamp = record.occurrence
+                    event.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                    Sentry.Client.shared?.appendStacktrace( to: event )
+                    Sentry.Client.shared?.send( event: event )
 
                     Bugsnag.notifyError( NSError( domain: "mpw", code: 0, userInfo: [ NSLocalizedDescriptionKey: record.message ] ) )
                 }
                 else {
-                    let breadcrumb = Breadcrumb( level: severity, category: "mpw" )
+                    let breadcrumb = Breadcrumb( level: sentrySeverity, category: "mpw" )
                     breadcrumb.type = "log"
                     breadcrumb.message = record.message
                     breadcrumb.timestamp = record.occurrence
                     breadcrumb.data = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
-                    Client.shared?.breadcrumbs.add( breadcrumb )
+                    Sentry.Client.shared?.breadcrumbs.add( breadcrumb )
 
                     Bugsnag.leaveBreadcrumb {
                         $0.name = record.message
@@ -80,23 +101,46 @@ class MPTracker : MPConfigObserver {
             }
         } )
 
-        // Smartlook
-        Smartlook.setup( key: "" )
-//        Smartlook.startRecording()
-
-        // Countly
-        let config = CountlyConfig()
-        config.host = "https://countly.volto.app"
-        config.appKey = ""
-        config.features = [ CLYPushNotifications, CLYCrashReporting ]
-        config.requiresConsent = true
-        config.pushTestMode = CLYPushTestModeDevelopment
-        config.alwaysUsePOST = true
-        config.secretSalt = ""
-//        Countly.sharedInstance().isAutoViewTrackingActive = false
-        Countly.sharedInstance().start( with: config )
-
         appConfig.observers.register( observer: self ).didChangeConfig()
+    }
+
+    lazy var deviceIdentifier = self.identifier( for: "device", attributes: [
+        kSecAttrDescription: "Unique identifier for the device on this app.",
+        kSecAttrAccessible: kSecAttrAccessibleAlwaysThisDeviceOnly,
+        kSecAttrSynchronizable: false,
+    ] )
+
+    lazy var userIdentifier = self.identifier( for: "user", attributes: [
+        kSecAttrDescription: "Unique identifier for the user of this app.",
+        kSecAttrAccessible: kSecAttrAccessibleAlways,
+        kSecAttrSynchronizable: true,
+    ] )
+
+    func identifier(for named: String, attributes: [CFString: Any] = [:]) -> String {
+        let query:    [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: "identifier",
+            kSecAttrAccount: named,
+            kSecReturnData: true
+        ]
+        var cfResult: CFTypeRef?
+        var status                    = SecItemCopyMatching( query as CFDictionary, &cfResult )
+        if status == errSecSuccess, let data = cfResult as? Data {
+            return data.withUnsafeBytes( { NSUUID( uuidBytes: $0.baseAddress?.assumingMemoryBound( to: UInt8.self ) ).uuidString } )
+        }
+
+        let uuid      = NSUUID()
+        let uuidBytes = UnsafeMutablePointer<UInt8>.allocate( capacity: 16 )
+        uuidBytes.initialize( repeating: 0, count: 16 )
+        uuid.getBytes( uuidBytes )
+
+        let value = attributes.merging( [ kSecValueData: uuidBytes ], uniquingKeysWith: { $1 } )
+        status = SecItemAdd( query.merging( value, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
+        if status != errSecSuccess {
+            mperror( title: "Couldn't save device identifier.", error: status )
+        }
+
+        return uuid.uuidString
     }
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
@@ -104,8 +148,30 @@ class MPTracker : MPConfigObserver {
                     named: "\(productName) #launch", [ "version": productVersion, "build": productBuild ] )
     }
 
+    func login(userId: String) {
+        guard let saltedUser = mpw_hash_hmac_sha256( appSecret, appSecret.lengthOfBytes( using: .utf8 ),
+                                                     userId, userId.lengthOfBytes( using: .utf8 ) )
+        else { return }
+        defer { saltedUser.deallocate() }
+        guard let saltedUserId = String( safeUTF8: mpw_hex( saltedUser, 32 ) )
+        else { return }
+
+        Sentry.Client.shared?.user = Sentry.User( userId: saltedUserId )
+        Bugsnag.configuration()?.setUser( saltedUserId, withName: nil, andEmail: nil )
+        Countly.sharedInstance().userLogged( in: saltedUserId )
+        Smartlook.setUserIdentifier( saltedUserId )
+        saltedUser.deallocate()
+    }
+
+    func logout() {
+        Sentry.Client.shared?.user = nil
+        Bugsnag.configuration()?.setUser( nil, withName: nil, andEmail: nil )
+        Countly.sharedInstance().userLoggedOut()
+        Smartlook.setUserIdentifier( nil )
+    }
+
     func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                named name: String, _ parameters: [String: Value] = [:]) -> Screen {
+                named name: String, _ parameters: [String: Any] = [:]) -> Screen {
         Screen( name: name, tracker: self )
     }
 
@@ -117,15 +183,19 @@ class MPTracker : MPConfigObserver {
     }
 
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               named name: String, _ parameters: [String: Value] = [:], timing: TimedEvent? = nil) {
-        var duration        = TimeInterval( 0 )
-        var eventParameters = parameters
+               named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
+        var eventParameters: [String: Any] = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
+
+        var duration = TimeInterval( 0 )
         if let timing = timing {
             duration = Date().timeIntervalSince( timing.start )
-            eventParameters["duration"] = Int( duration )
+            eventParameters["duration"] = "\(duration, numeric: "0.#")"
         }
+
+        eventParameters.merge( parameters, uniquingKeysWith: { $1 } )
         let stringParameters = eventParameters.mapValues { String( describing: $0 ) }
 
+        // Log
         if eventParameters.isEmpty {
             dbg( file: file, line: line, function: function, dso: dso, "# %@", name )
         }
@@ -133,9 +203,26 @@ class MPTracker : MPConfigObserver {
             dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, eventParameters )
         }
 
+        // Sentry
+        let sentryBreadcrumb = Breadcrumb( level: .info, category: "event" )
+        sentryBreadcrumb.type = "user"
+        sentryBreadcrumb.message = name
+        sentryBreadcrumb.data = eventParameters
+        Sentry.Client.shared?.breadcrumbs.add( sentryBreadcrumb )
+
+        // Bugsnag
+        Bugsnag.leaveBreadcrumb {
+            $0.name = name
+            $0.type = .user
+            $0.metadata = eventParameters
+        }
+
+        // Countly
         Countly.sharedInstance().recordEvent(
                 name, segmentation: stringParameters,
                 count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
+
+        // Smartlook
         if let timing = timing {
             Smartlook.trackTimedCustomEvent( eventId: timing.smartlook, props: stringParameters )
         }
@@ -148,10 +235,11 @@ class MPTracker : MPConfigObserver {
 
     public func didChangeConfig() {
         if appConfig.sendInfo {
-            Client.shared?.enabled = true
+            Sentry.Client.shared?.enabled = true
             Countly.sharedInstance().giveConsentForAllFeatures()
-        } else {
-            Client.shared?.enabled = false
+        }
+        else {
+            Sentry.Client.shared?.enabled = false
             Countly.sharedInstance().cancelConsentForAllFeatures()
         }
     }
@@ -166,16 +254,37 @@ class MPTracker : MPConfigObserver {
         }
 
         func open(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                  _ parameters: [String: Value] = [:]) {
-            if parameters.isEmpty {
+                  _ parameters: [String: Any] = [:]) {
+            let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
+                    .merging( parameters, uniquingKeysWith: { $1 } )
+            let stringParameters = eventParameters.mapValues { String( describing: $0 ) }
+
+            // Log
+            if eventParameters.isEmpty {
                 dbg( file: file, line: line, function: function, dso: dso, "@ %@", self.name )
             }
             else {
-                dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", self.name, parameters )
+                dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", self.name, eventParameters )
             }
 
-            let stringParameters = parameters.mapValues { String( describing: $0 ) }
+            // Sentry
+            let sentryBreadcrumb = Breadcrumb( level: .info, category: "screen" )
+            sentryBreadcrumb.type = "navigation"
+            sentryBreadcrumb.message = self.name
+            sentryBreadcrumb.data = eventParameters
+            Sentry.Client.shared?.breadcrumbs.add( sentryBreadcrumb )
+
+            // Bugsnag
+            Bugsnag.leaveBreadcrumb {
+                $0.name = self.name
+                $0.type = .navigation
+                $0.metadata = eventParameters
+            }
+
+            // Countly
             Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )
+
+            // Smartlook
             Smartlook.trackNavigationEvent( withControllerId: self.name, type: .enter )
         }
 
@@ -185,7 +294,7 @@ class MPTracker : MPConfigObserver {
         }
 
         func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   event: String, _ parameters: [String: Value] = [:]) {
+                   event: String, _ parameters: [String: Any] = [:]) {
             self.tracker.event( file: file, line: line, function: function, dso: dso, named: "\(self.name) #\(event)", parameters )
         }
 
@@ -212,7 +321,7 @@ class MPTracker : MPConfigObserver {
         }
 
         func end(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                 _ parameters: [String: Value] = [:]) {
+                 _ parameters: [String: Any] = [:]) {
             guard !self.ended
             else { return }
 

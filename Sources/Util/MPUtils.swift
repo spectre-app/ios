@@ -309,8 +309,8 @@ extension String.StringInterpolation {
     }
 
     mutating func appendInterpolation(amount value: Decimal) {
-        if value >= 1_000_000_000_000 {
-            appendLiteral( "\(value / 1_000_000_000_000, numeric: "#,##0")T" )
+        if value >= 1_000_000_000_000.0 {
+            appendLiteral( "\(value / 1_000_000_000_000.0, numeric: "#,##0")T" )
         }
         else if value >= 1_000_000_000 {
             appendLiteral( "\(value / 1_000_000_000, numeric: "#,##0")B" )
@@ -450,6 +450,11 @@ extension UIFont {
     }
 }
 
+extension String {
+    public var lastPathComponent : String {
+        (self as NSString).lastPathComponent
+    }
+}
 extension CGSize {
     public static func +(lhs: CGSize, rhs: CGSize) -> CGSize {
         CGSize( width: lhs.width + rhs.width, height: lhs.height + rhs.height )

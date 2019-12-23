@@ -58,7 +58,7 @@ public struct MPLogRecord: Comparable {
     public let function:   String
     public let message:    String
     public var fileName: String {
-        self.file.lastIndex( of: "/" ).flatMap( { String( self.file.suffix( from: self.file.index( after: $0 ) ) ) } ) ?? self.file
+        self.file.lastPathComponent
     }
     public var source: String {
         "\(self.fileName):\(self.line)"

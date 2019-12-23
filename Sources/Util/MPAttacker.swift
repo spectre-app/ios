@@ -44,7 +44,7 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
                 return 20_000_000
 
             case .state:
-                return 5_000_000_000
+                return 5_000_000_000.0
         }
     }
     var monthly_budget:       Decimal {
@@ -153,7 +153,7 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         time.inWeeks = time.inDays / 7
         time.inMonths = time.inDays / 30
         time.inYears = time.inDays / 356
-        time.inUniverses = time.inYears / 14000000000
+        time.inUniverses = time.inYears / 14_000_000_000.0
 
         return time
     }
