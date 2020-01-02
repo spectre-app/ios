@@ -13,7 +13,7 @@ extension NSObject {
         defer { free( properties ) }
 
         for p in 0..<Int( count ) {
-            guard let currentPropertyName = String( safeUTF8: property_getName( properties[p] ) )
+            guard let currentPropertyName = String( validate: property_getName( properties[p] ) )
             else { continue }
 
             if let ival = self.value( forKey: currentPropertyName ) as AnyObject?, ival === value {
@@ -34,7 +34,7 @@ extension NSObject {
 
             for i in 0..<Int( count ) {
                 if let ival = object_getIvar( self, ivars[i] ) as AnyObject?, ival === value {
-                    return String( safeUTF8: ivar_getName( ivars[i] ) )
+                    return String( validate: ivar_getName( ivars[i] ) )
                 }
             }
 

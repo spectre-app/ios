@@ -24,7 +24,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
         self.window?.makeKeyAndVisible()
 
         Freshchat.sharedInstance().initWith(
-                FreshchatConfig( appID: "***REMOVED***", andAppKey: "" ) )
+                FreshchatConfig( appID: "***REMOVED***", andAppKey: decrypt( secret: freshchatKey ) ) )
 
         appConfig.observers.register( observer: self )
 

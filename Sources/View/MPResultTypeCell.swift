@@ -53,7 +53,7 @@ class MPResultTypeCell: MPClassItemCell {
         didSet {
             DispatchQueue.main.perform {
                 if let resultType = self.resultType {
-                    self.nameLabel.text = String( safeUTF8: mpw_type_abbreviation( resultType ) )
+                    self.nameLabel.text = String( validate: mpw_type_abbreviation( resultType ) )
 
                     if 0 != resultType.rawValue & UInt32( MPResultTypeClass.template.rawValue ) {
                         self.classLabel.text = "Template"

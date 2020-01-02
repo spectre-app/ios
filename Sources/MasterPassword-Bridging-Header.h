@@ -14,3 +14,4 @@
 #import "mpw-algorithm.h"
 #import "mpw-util.h"
 #import "mpw-marshal.h"
+#import "base64.h"

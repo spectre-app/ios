@@ -188,7 +188,7 @@ class MPMarshal: Observable {
                 }
             }
 
-            if let data = String( safeUTF8: mpw_marshal_write( format, file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
+            if let data = String( validate: mpw_marshal_write( format, file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
                file.pointee.error.type == .success {
                 exportEvent.end( [ "result": "success: data" ] )
                 return data
@@ -210,7 +210,7 @@ class MPMarshal: Observable {
                 importEvent.end( [ "result": "!parse" ] )
                 return Promise( .success( false ) )
             }
-            guard let importingName = String( safeUTF8: importingFile.fullName )
+            guard let importingName = String( validate: importingFile.fullName )
             else {
                 mperror( title: "Couldn't import user", message: "Import missing user's full name" )
                 importEvent.end( [ "result": "!fullName" ] )
@@ -655,7 +655,7 @@ class MPMarshal: Observable {
                         guard mpw_marshal_question( marshalledSite, siteQuestion.keyword ) != nil
                         else {
                             importEvent.end( [ "result": "!marshal_question" ] )
-                            throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( safeUTF8: siteQuestion.keyword ) ?? "-")" )
+                            throw MPError.internal( details: "Couldn't allocate to marshal \(fullName): \(siteName): \(String( validate: siteQuestion.keyword ) ?? "-")" )
                         }
                     }
                 }
@@ -668,7 +668,7 @@ class MPMarshal: Observable {
                     throw MPError.internal( details: "Couldn't allocate import file." )
                 }
 
-                if let data = String( safeUTF8: mpw_marshal_write( .default, file, marshalledUser ),
+                if let data = String( validate: mpw_marshal_write( .default, file, marshalledUser ),
                                       deallocate: true )?.data( using: .utf8 ),
                    file.pointee.error.type == .success {
                     promise = promise.and( self.import( data: data ).then { (result: Result<Bool, Error>) -> Void in
@@ -710,7 +710,7 @@ class MPMarshal: Observable {
 
     private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
         DispatchQueue.mpw.await {
-            if let formatExtension = String( safeUTF8: mpw_marshal_format_extension( format ) ),
+            if let formatExtension = String( validate: mpw_marshal_format_extension( format ) ),
                let directory = directory ?? self.documentDirectory {
                 return directory.appendingPathComponent( name, isDirectory: false )
                                 .appendingPathExtension( formatExtension )
@@ -812,7 +812,7 @@ class MPMarshal: Observable {
         init?(origin: URL?, document: String?) {
             guard let document = document, let file = mpw_marshal_read( nil, document ), file.pointee.error.type == .success
             else { return nil }
-            guard let info = file.pointee.info?.pointee, info.format != .none, let fullName = String( safeUTF8: info.fullName )
+            guard let info = file.pointee.info?.pointee, info.format != .none, let fullName = String( validate: info.fullName )
             else { return nil }
 
             self.origin = origin
@@ -824,7 +824,7 @@ class MPMarshal: Observable {
             self.avatar = MPUser.Avatar( rawValue: info.avatar ) ?? .avatar_0
             self.fullName = fullName
             self.identicon = info.identicon
-            self.keyID = String( safeUTF8: info.keyID )
+            self.keyID = String( validate: info.keyID )
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
@@ -837,7 +837,7 @@ class MPMarshal: Observable {
                     return MPUser(
                             algorithm: marshalledUser.algorithm,
                             avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
-                            fullName: String( safeUTF8: marshalledUser.fullName ) ?? self.fullName,
+                            fullName: String( validate: marshalledUser.fullName ) ?? self.fullName,
                             identicon: marshalledUser.identicon,
                             masterKeyID: self.resetKey ? nil: self.keyID,
                             defaultType: marshalledUser.defaultType,
@@ -847,29 +847,29 @@ class MPMarshal: Observable {
 
                         for s in 0..<marshalledUser.sites_count {
                             let marshalledSite = (marshalledUser.sites + s).pointee
-                            if let siteName = String( safeUTF8: marshalledSite.siteName ) {
+                            if let siteName = String( validate: marshalledSite.siteName ) {
                                 user.sites.append( MPSite(
                                         user: user,
                                         siteName: siteName,
                                         algorithm: marshalledSite.algorithm,
                                         counter: marshalledSite.counter,
                                         resultType: marshalledSite.resultType,
-                                        resultState: String( safeUTF8: marshalledSite.resultState ),
+                                        resultState: String( validate: marshalledSite.resultState ),
                                         loginType: marshalledSite.loginType,
-                                        loginState: String( safeUTF8: marshalledSite.loginState ),
-                                        url: String( safeUTF8: marshalledSite.url ),
+                                        loginState: String( validate: marshalledSite.loginState ),
+                                        url: String( validate: marshalledSite.url ),
                                         uses: marshalledSite.uses,
                                         lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
                                 ) { site in
 
                                     for q in 0..<marshalledSite.questions_count {
                                         let marshalledQuestion = (marshalledSite.questions + q).pointee
-                                        if let keyword = String( safeUTF8: marshalledQuestion.keyword ) {
+                                        if let keyword = String( validate: marshalledQuestion.keyword ) {
                                             site.questions.append( MPQuestion(
                                                     site: site,
                                                     keyword: keyword,
                                                     resultType: marshalledQuestion.type,
-                                                    resultState: String( safeUTF8: marshalledQuestion.state )
+                                                    resultState: String( validate: marshalledQuestion.state )
                                             ) )
                                         }
                                     }
@@ -923,7 +923,7 @@ class MPMarshal: Observable {
 
 extension MPMarshalError: CustomStringConvertible {
     public var description: String {
-        "\(self.type.rawValue): \(String( safeUTF8: self.message ) ?? "-")"
+        "\(self.type.rawValue): \(String( validate: self.message ) ?? "-")"
     }
 }
 

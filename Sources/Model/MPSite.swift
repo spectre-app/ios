@@ -347,7 +347,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
             defer { masterKey.deallocate() }
 
-            return (token: String( safeUTF8: mpw_site_result(
+            return (token: String( validate: mpw_site_result(
                     masterKey, self.siteName, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
                                    deallocate: true ),
                     counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
@@ -362,7 +362,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
             defer { masterKey.deallocate() }
 
-            return (token: String( safeUTF8: mpw_site_state(
+            return (token: String( validate: mpw_site_state(
                     masterKey, self.siteName, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
                                    deallocate: true ),
                     counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)

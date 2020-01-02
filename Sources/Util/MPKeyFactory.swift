@@ -10,7 +10,7 @@ private var masterKeyFactories = [ String: MPKeyFactory ]()
 
 private func __masterKeyProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
     DispatchQueue.mpw.await {
-        String( safeUTF8: fullName ).flatMap { masterKeyFactories[$0] }?.newMasterKey( algorithm: algorithm )
+        String( validate: fullName ).flatMap { masterKeyFactories[$0] }?.newMasterKey( algorithm: algorithm )
     }
 }
 

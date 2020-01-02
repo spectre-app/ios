@@ -84,10 +84,10 @@ extension MPKeyPurpose : CustomStringConvertible {
 
 extension MPResultType: CustomStringConvertible {
     public var description: String {
-        String( safeUTF8: mpw_type_short_name( self ) ) ?? "?"
+        String( validate: mpw_type_short_name( self ) ) ?? "?"
     }
     public var localizedDescription: String {
-        String( safeUTF8: mpw_type_long_name( self ) ) ?? "?"
+        String( validate: mpw_type_long_name( self ) ) ?? "?"
     }
 
     func `in`(class c: MPResultTypeClass) -> Bool {
@@ -110,7 +110,7 @@ extension MPIdenticon: Equatable {
             return nil
         }
 
-        return String( safeUTF8: mpw_identicon_encode( self ) )
+        return String( validate: mpw_identicon_encode( self ) )
     }
 
     public func text() -> String? {
@@ -194,7 +194,7 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     }
 
     public var name: String? {
-        String( safeUTF8: mpw_format_name( self ) )
+        String( validate: mpw_format_name( self ) )
     }
 
     public var uti:         String? {
@@ -264,7 +264,7 @@ extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
     }
 
     public func mpw_get(path: String...) -> String? {
-        withVaStrings( path ) { String( safeUTF8: mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
+        withVaStrings( path ) { String( validate: mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
     }
 
     public func mpw_set(_ value: Bool, path: String...) -> Bool {
@@ -753,4 +753,26 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
     }
 
     mpw_log_ssink( level, file, line, function, message )
+}
+
+func decrypt(secret: String?) -> String? {
+    guard let secret = secret
+    else { return nil }
+
+    var length = mpw_base64_decode_max( secret )
+    guard length > 0
+    else { return nil }
+
+    guard let key = mpw_unhex( appSecret )
+    else { return nil }
+    defer { key.deallocate() }
+
+    let base64 = UnsafeMutableBufferPointer<UInt8>.allocate( capacity: length )
+    defer { base64.deallocate() }
+
+    base64.initialize( repeating: 0 )
+    length = mpw_base64_decode( base64.baseAddress, secret )
+
+    return String( decode: mpw_aes_decrypt( key, appSecret.lengthOfBytes( using: .utf8 ) / 2, base64.baseAddress, &length ),
+                   length: length, deallocate: true )
 }

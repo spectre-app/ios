@@ -9,51 +9,52 @@ import Bugsnag
 import Smartlook
 import Countly
 
-let appSecret    = ""
-let sentryDSN    = ""
-let bugsnagKey   = ""
-let smartlookKey = ""
-let countlyKey   = ""
-let countlySalt  = ""
-
 class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
 
     private init() {
         // Sentry
-        do {
-            let sentry = try Sentry.Client( dsn: sentryDSN )
-            Sentry.Client.shared = sentry
+        if let sentryDSN = decrypt( secret: sentryDSN ) {
+            do {
+                let sentry = try Sentry.Client( dsn: sentryDSN )
+                Sentry.Client.shared = sentry
 
-            sentry.enabled = false
-            sentry.enableAutomaticBreadcrumbTracking()
-            try sentry.startCrashHandler()
-        }
-        catch {
-            err( "Couldn't install Sentry [>TRC]" )
-            trc( "[>] %@", error )
+                sentry.enabled = false
+                sentry.enableAutomaticBreadcrumbTracking()
+                try sentry.startCrashHandler()
+            }
+            catch {
+                err( "Couldn't install Sentry [>TRC]" )
+                trc( "[>] %@", error )
+            }
         }
 
         // Bugsnag
-        let bugsnagConfig = BugsnagConfiguration()
-        bugsnagConfig.apiKey = bugsnagKey
-        bugsnagConfig.add( beforeSend: { (rawData, report) -> Bool in appConfig.sendInfo } )
-        Bugsnag.start( with: bugsnagConfig )
+        if let bugsnagKey = decrypt( secret: bugsnagKey ) {
+            let bugsnagConfig = BugsnagConfiguration()
+            bugsnagConfig.apiKey = bugsnagKey
+            bugsnagConfig.add( beforeSend: { (rawData, report) -> Bool in appConfig.sendInfo } )
+            Bugsnag.start( with: bugsnagConfig )
+        }
 
         // Countly
-        let countlyConfig = CountlyConfig()
-        countlyConfig.host = "https://countly.volto.app"
-        countlyConfig.appKey = countlyKey
-        countlyConfig.features = [ CLYPushNotifications, CLYCrashReporting ]
-        countlyConfig.requiresConsent = true
-        countlyConfig.pushTestMode = CLYPushTestModeDevelopment
-        countlyConfig.alwaysUsePOST = true
-        countlyConfig.secretSalt = countlySalt
-        Countly.sharedInstance().start( with: countlyConfig )
+        if let countlyKey = decrypt( secret: countlyKey ), let countlySalt = decrypt( secret: countlySalt ) {
+            let countlyConfig = CountlyConfig()
+            countlyConfig.host = "https://countly.volto.app"
+            countlyConfig.appKey = countlyKey
+            countlyConfig.features = [ CLYPushNotifications, CLYCrashReporting ]
+            countlyConfig.requiresConsent = true
+            countlyConfig.pushTestMode = CLYPushTestModeDevelopment
+            countlyConfig.alwaysUsePOST = true
+            countlyConfig.secretSalt = countlySalt
+            Countly.sharedInstance().start( with: countlyConfig )
+        }
 
         // Smartlook
-        Smartlook.setup( key: smartlookKey )
-//        Smartlook.startRecording()
+        if let smartlookKey = decrypt( secret: smartlookKey ) {
+            Smartlook.setup( key: smartlookKey )
+            //Smartlook.startRecording()
+        }
 
         // Breadcrumbs & errors
         mpw_log_sink_register( {
@@ -150,16 +151,16 @@ class MPTracker: MPConfigObserver {
 
     func login(user: MPUser) {
         guard let keyId = user.masterKeyID,
-              let saltedUser = mpw_hash_hmac_sha256( appSecret, appSecret.lengthOfBytes( using: .utf8 ),
+              let saltedUser = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ),
                                                      keyId, keyId.lengthOfBytes( using: .utf8 ) )
         else { return }
         defer { saltedUser.deallocate() }
-        guard let saltedUserId = String( safeUTF8: mpw_hex( saltedUser, 32 ) )
+        guard let saltedUserId = String( validate: mpw_hex( saltedUser, 32 ) )
         else { return }
 
         if let activeUserId = Sentry.Client.shared?.user?.userId {
             err( "User logged in while another still active. [>TRC]" )
-            trc( "Active user: %s, login user: %s", activeUserId, saltedUserId )
+            trc( "Active user: %s, will replace by login user: %s", activeUserId, saltedUserId )
         }
 
         Sentry.Client.shared?.user = Sentry.User( userId: saltedUserId )

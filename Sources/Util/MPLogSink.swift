@@ -65,9 +65,9 @@ public struct MPLogRecord: Comparable {
     }
 
     public init?(_ event: MPLogEvent) {
-        guard let file = String( safeUTF8: event.file ),
-              let function = String( safeUTF8: event.function ),
-              let message = String( safeUTF8: event.message )
+        guard let file = String( validate: event.file ),
+              let function = String( validate: event.function ),
+              let message = String( validate: event.message )
         else { return nil }
 
         self.occurrence = Date( timeIntervalSince1970: TimeInterval( event.occurrence ) )

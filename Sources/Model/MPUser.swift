@@ -192,7 +192,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             guard let authKey = keyFactory.newMasterKey( algorithm: self.algorithm )
             else { throw MPError.internal( details: "Cannot authenticate user since master key is missing." ) }
             defer { authKey.deallocate() }
-            guard let authKeyID = String( safeUTF8: mpw_id_buf( authKey, MPMasterKeySize ) )
+            guard let authKeyID = String( validate: mpw_id_buf( authKey, MPMasterKeySize ) )
             else { throw MPError.internal( details: "Could not determine key ID for authentication key." ) }
 
             if self.masterKeyID == nil {
