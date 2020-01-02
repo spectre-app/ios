@@ -43,10 +43,10 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public private(set) var masterKeyFactory: MPKeyFactory? {
         didSet {
-            if self.masterKeyFactory != nil {
+            if self.masterKeyFactory != nil, oldValue == nil {
                 self.observers.notify { $0.userDidLogin( self ) }
             }
-            else {
+            if self.masterKeyFactory == nil, oldValue != nil {
                 self.observers.notify { $0.userDidLogout( self ) }
             }
         }
@@ -245,6 +245,14 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     // MARK: --- MPUserObserver ---
 
     func userDidChange(_ user: MPUser) {
+    }
+
+    func userDidLogin(_ user: MPUser) {
+        MPTracker.shared.login( user: self )
+    }
+
+    func userDidLogout(_ user: MPUser) {
+        MPTracker.shared.logout()
     }
 
     // MARK: --- MPSiteObserver ---

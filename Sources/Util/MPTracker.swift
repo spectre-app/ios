@@ -148,19 +148,24 @@ class MPTracker: MPConfigObserver {
                     named: "\(productName) #launch", [ "version": productVersion, "build": productBuild ] )
     }
 
-    func login(userId: String) {
-        guard let saltedUser = mpw_hash_hmac_sha256( appSecret, appSecret.lengthOfBytes( using: .utf8 ),
-                                                     userId, userId.lengthOfBytes( using: .utf8 ) )
+    func login(user: MPUser) {
+        guard let keyId = user.masterKeyID,
+              let saltedUser = mpw_hash_hmac_sha256( appSecret, appSecret.lengthOfBytes( using: .utf8 ),
+                                                     keyId, keyId.lengthOfBytes( using: .utf8 ) )
         else { return }
         defer { saltedUser.deallocate() }
         guard let saltedUserId = String( safeUTF8: mpw_hex( saltedUser, 32 ) )
         else { return }
 
+        if let activeUserId = Sentry.Client.shared?.user?.userId {
+            err( "User logged in while another still active. [>TRC]" )
+            trc( "Active user: %s, login user: %s", activeUserId, saltedUserId )
+        }
+
         Sentry.Client.shared?.user = Sentry.User( userId: saltedUserId )
         Bugsnag.configuration()?.setUser( saltedUserId, withName: nil, andEmail: nil )
         Countly.sharedInstance().userLogged( in: saltedUserId )
         Smartlook.setUserIdentifier( saltedUserId )
-        saltedUser.deallocate()
     }
 
     func logout() {
