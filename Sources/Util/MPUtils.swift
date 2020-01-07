@@ -832,21 +832,20 @@ func decrypt(secret: String?) -> String? {
     else { return nil }
     defer { key.deallocate() }
 
-    let base64 = UnsafeMutableBufferPointer<UInt8>.allocate( capacity: length )
-    defer { base64.deallocate() }
+    var base64 = Data( count: length )
+    length = base64.withUnsafeMutableBytes { mpw_base64_decode( $0.bindMemory( to: UInt8.self ).baseAddress!, secret ) }
 
-    base64.initialize( repeating: 0 )
-    length = mpw_base64_decode( base64.baseAddress, secret )
-
-    return String( decode: mpw_aes_decrypt( key, appSecret.lengthOfBytes( using: .utf8 ) / 2, base64.baseAddress, &length ),
-                   length: length, deallocate: true )
+    return base64.withUnsafeBytes {
+        String( decode: mpw_aes_decrypt( key, appSecret.lengthOfBytes( using: .utf8 ) / 2,
+                                         $0.bindMemory( to: UInt8.self ).baseAddress!, &length ),
+                length: length, deallocate: true )
+    }
 }
 
 func digest(value: String?) -> String? {
-    guard let value = value
-    else { return nil }
-
-    guard let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), value, value.lengthOfBytes( using: .utf8 ) )
+    guard let value = value, let appSalt = decrypt( secret: appSalt ),
+          let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ),
+                                             value, value.lengthOfBytes( using: .utf8 ) )
     else { return nil }
     defer { digest.deallocate() }
 
