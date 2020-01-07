@@ -21,6 +21,7 @@ class MPTracker: MPConfigObserver {
 
                 sentry.enabled = false
                 sentry.enableAutomaticBreadcrumbTracking()
+                sentry.extra = [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ]
                 try sentry.startCrashHandler()
             }
             catch {
@@ -34,6 +35,8 @@ class MPTracker: MPConfigObserver {
             let bugsnagConfig = BugsnagConfiguration()
             bugsnagConfig.apiKey = bugsnagKey
             bugsnagConfig.add( beforeSend: { (rawData, report) -> Bool in appConfig.sendInfo } )
+            bugsnagConfig.metaData?.addAttribute( "device", withValue: self.deviceIdentifier, toTabWithName: "global" )
+            bugsnagConfig.metaData?.addAttribute( "owner", withValue: self.ownerIdentifier, toTabWithName: "global" )
             Bugsnag.start( with: bugsnagConfig )
         }
 
@@ -47,13 +50,23 @@ class MPTracker: MPConfigObserver {
             countlyConfig.pushTestMode = CLYPushTestModeDevelopment
             countlyConfig.alwaysUsePOST = true
             countlyConfig.secretSalt = countlySalt
+            countlyConfig.resetStoredDeviceID = true
+            countlyConfig.deviceID = self.deviceIdentifier
             Countly.sharedInstance().start( with: countlyConfig )
         }
 
         // Smartlook
         if let smartlookKey = decrypt( secret: smartlookKey ) {
+            Smartlook.setSessionProperty( value: self.deviceIdentifier, forName: "device" )
+            Smartlook.setSessionProperty( value: self.ownerIdentifier, forName: "owner" )
             Smartlook.setup( key: smartlookKey )
             //Smartlook.startRecording()
+        }
+
+        // Link trackers
+        if let smartlook = Smartlook.getDashboardSessionURL() {
+            Bugsnag.configuration()?.metaData?.addAttribute( "smartlook", withValue: smartlook, toTabWithName: "trackers" )
+            Sentry.Client.shared?.extra?["smartlook"] = smartlook
         }
 
         // Breadcrumbs & errors
@@ -102,6 +115,7 @@ class MPTracker: MPConfigObserver {
             }
         } )
 
+        self.logout()
         appConfig.observers.register( observer: self ).didChangeConfig()
     }
 
@@ -111,34 +125,37 @@ class MPTracker: MPConfigObserver {
         kSecAttrSynchronizable: false,
     ] )
 
-    lazy var userIdentifier = self.identifier( for: "user", attributes: [
-        kSecAttrDescription: "Unique identifier for the user of this app.",
+    lazy var ownerIdentifier = self.identifier( for: "owner", attributes: [
+        kSecAttrDescription: "Unique identifier for the owner of this app.",
         kSecAttrAccessible: kSecAttrAccessibleAlways,
         kSecAttrSynchronizable: true,
     ] )
 
     func identifier(for named: String, attributes: [CFString: Any] = [:]) -> String {
-        let query:    [CFString: Any] = [
+        let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: "identifier",
             kSecAttrAccount: named,
-            kSecReturnData: true
+            kSecAttrSynchronizable: kSecAttrSynchronizableAny,
         ]
+
         var cfResult: CFTypeRef?
-        var status                    = SecItemCopyMatching( query as CFDictionary, &cfResult )
-        if status == errSecSuccess, let data = cfResult as? Data {
-            return data.withUnsafeBytes( { NSUUID( uuidBytes: $0.baseAddress?.assumingMemoryBound( to: UInt8.self ) ).uuidString } )
+        var status = SecItemCopyMatching( query.merging( [ kSecReturnData: true ] ) as CFDictionary, &cfResult )
+        if status == errSecSuccess, let data = cfResult as? Data, !data.isEmpty {
+            return data.withUnsafeBytes {
+                NSUUID( uuidBytes: $0.bindMemory( to: UInt8.self ).baseAddress! ).uuidString
+            }
         }
 
-        let uuid      = NSUUID()
-        let uuidBytes = UnsafeMutablePointer<UInt8>.allocate( capacity: 16 )
-        uuidBytes.initialize( repeating: 0, count: 16 )
-        uuid.getBytes( uuidBytes )
-
-        let value = attributes.merging( [ kSecValueData: uuidBytes ], uniquingKeysWith: { $1 } )
-        status = SecItemAdd( query.merging( value, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
+        let uuid     = NSUUID()
+        var uuidData = Data( count: 16 )
+        uuidData.withUnsafeMutableBytes {
+            uuid.getBytes( $0.bindMemory( to: UInt8.self ).baseAddress! )
+        }
+        SecItemDelete( query as CFDictionary )
+        status = SecItemAdd( query.merging( attributes ).merging( [ kSecValueData: uuidData ] ) as CFDictionary, nil )
         if status != errSecSuccess {
-            mperror( title: "Couldn't save device identifier.", error: status )
+            mperror( title: "Couldn't save \(named) identifier.", error: status )
         }
 
         return uuid.uuidString
@@ -150,30 +167,42 @@ class MPTracker: MPConfigObserver {
     }
 
     func login(user: MPUser) {
-        guard let keyId = user.masterKeyID,
-              let saltedUser = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ),
-                                                     keyId, keyId.lengthOfBytes( using: .utf8 ) )
-        else { return }
-        defer { saltedUser.deallocate() }
-        guard let saltedUserId = String( validate: mpw_hex( saltedUser, 32 ) )
+        guard let keyId = user.masterKeyID, let userId = digest( value: keyId ), let userName = digest( value: user.fullName )
         else { return }
 
         if let activeUserId = Sentry.Client.shared?.user?.userId {
             err( "User logged in while another still active. [>TRC]" )
-            trc( "Active user: %s, will replace by login user: %s", activeUserId, saltedUserId )
+            trc( "Active user: %s, will replace by login user: %s", activeUserId, userId )
         }
 
-        Sentry.Client.shared?.user = Sentry.User( userId: saltedUserId )
-        Bugsnag.configuration()?.setUser( saltedUserId, withName: nil, andEmail: nil )
-        Countly.sharedInstance().userLogged( in: saltedUserId )
-        Smartlook.setUserIdentifier( saltedUserId )
+        let userConfig: [String: Any] = [
+            "algorithm": user.algorithm,
+            "avatar": user.avatar,
+            "biometricLock": user.biometricLock,
+            "maskPasswords": user.maskPasswords,
+            "defaultType": user.defaultType,
+            "sites": user.sites.count,
+        ]
+
+        Sentry.Client.shared?.user = Sentry.User( userId: userId )
+        Sentry.Client.shared?.user?.username = userName
+        Sentry.Client.shared?.user?.extra = userConfig
+        Bugsnag.configuration()?.setUser( userId, withName: userName, andEmail: nil )
+        userConfig.forEach { key, value in
+            Bugsnag.configuration()?.metaData?.addAttribute( key, withValue: value, toTabWithName: "user" )
+        }
+        Countly.sharedInstance().userLogged( in: userId )
+        Countly.user().name = userName as NSString
+        Countly.user().custom = userConfig as NSDictionary
+        Smartlook.setUserIdentifier( userId )
     }
 
     func logout() {
         Sentry.Client.shared?.user = nil
         Bugsnag.configuration()?.setUser( nil, withName: nil, andEmail: nil )
+        Bugsnag.configuration()?.metaData?.clearTab( "user" )
         Countly.sharedInstance().userLoggedOut()
-        Smartlook.setUserIdentifier( nil )
+        Smartlook.setUserIdentifier( "n/a" )
     }
 
     func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,

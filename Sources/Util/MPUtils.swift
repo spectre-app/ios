@@ -67,7 +67,7 @@ func withVaStrings<R>(_ strings: [String], terminate: Bool = true, body: (CVaLis
     return withVaList( va, body )
 }
 
-extension MPKeyPurpose : CustomStringConvertible {
+extension MPKeyPurpose: CustomStringConvertible {
     public var description: String {
         switch self {
             case .authentication:
@@ -83,7 +83,7 @@ extension MPKeyPurpose : CustomStringConvertible {
 }
 
 extension MPResultType: CustomStringConvertible {
-    public var description: String {
+    public var description:          String {
         String( validate: mpw_type_short_name( self ) ) ?? "?"
     }
     public var localizedDescription: String {
@@ -451,10 +451,17 @@ extension UIFont {
 }
 
 extension String {
-    public var lastPathComponent : String {
+    public var lastPathComponent: String {
         (self as NSString).lastPathComponent
     }
 }
+
+extension Dictionary {
+    @inlinable public func merging(_ other: [Key: Value]) -> [Key: Value] {
+        self.merging( other, uniquingKeysWith: { $1 } )
+    }
+}
+
 extension CGSize {
     public static func +(lhs: CGSize, rhs: CGSize) -> CGSize {
         CGSize( width: lhs.width + rhs.width, height: lhs.height + rhs.height )
@@ -775,4 +782,15 @@ func decrypt(secret: String?) -> String? {
 
     return String( decode: mpw_aes_decrypt( key, appSecret.lengthOfBytes( using: .utf8 ) / 2, base64.baseAddress, &length ),
                    length: length, deallocate: true )
+}
+
+func digest(value: String?) -> String? {
+    guard let value = value
+    else { return nil }
+
+    guard let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), value, value.lengthOfBytes( using: .utf8 ) )
+    else { return nil }
+    defer { digest.deallocate() }
+
+    return String( validate: mpw_hex( digest, 32 ) )
 }
