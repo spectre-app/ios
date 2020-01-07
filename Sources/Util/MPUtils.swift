@@ -327,6 +327,64 @@ extension String.StringInterpolation {
     }
 }
 
+enum IconStyle {
+    case brands, duotone, solid, light, regular
+
+    var fontName: String {
+        switch self {
+            case .brands:
+                return "FontAwesome5Brands-Regular"
+            case .duotone:
+                return "FontAwesome5Duotone-Solid"
+            case .solid:
+                return "FontAwesome5Pro-Solid"
+            case .light:
+                return "FontAwesome5Pro-Light"
+            case .regular:
+                return "FontAwesome5Pro-Regular"
+        }
+    }
+}
+
+extension UIImage {
+    static func icon(_ icon: String, style: IconStyle = .duotone, fontSize: CGFloat = 22,
+                     textColor: UIColor = appConfig.theme.color.body.get() ?? .white, toneColor: UIColor = appConfig.theme.color.secondary.get() ?? .white,
+                     backgroundColor: UIColor = .clear, borderWidth: CGFloat = 0, borderColor: UIColor = .clear) -> UIImage? {
+        guard let font = UIFont( name: style.fontName, size: fontSize )
+        else { return nil }
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = NSTextAlignment.center
+        let attributedIcon = NSAttributedString( string: icon, attributes: [
+            NSAttributedString.Key.font: font,
+            NSAttributedString.Key.foregroundColor: textColor,
+            NSAttributedString.Key.backgroundColor: backgroundColor,
+            NSAttributedString.Key.paragraphStyle: paragraph,
+            NSAttributedString.Key.strokeWidth: fontSize == 0 ? 0: (-100 * borderWidth / fontSize),
+            NSAttributedString.Key.strokeColor: borderColor
+        ] )
+        var attributedTone: NSAttributedString?
+        if style == .duotone, let iconScalar = icon.unicodeScalars.first, let toneScalar = Unicode.Scalar( 0x100000 + iconScalar.value ) {
+            attributedTone = NSAttributedString( string: String( String.UnicodeScalarView( [ toneScalar ] ) ), attributes: [
+                NSAttributedString.Key.font: font,
+                NSAttributedString.Key.foregroundColor: toneColor,
+                NSAttributedString.Key.backgroundColor: backgroundColor,
+                NSAttributedString.Key.paragraphStyle: paragraph,
+                NSAttributedString.Key.strokeWidth: fontSize == 0 ? 0: (-100 * borderWidth / fontSize),
+                NSAttributedString.Key.strokeColor: borderColor
+            ] )
+        }
+
+        let size = attributedIcon.size().union( attributedTone?.size() ?? .zero )
+        UIGraphicsBeginImageContextWithOptions( size, false, 0 )
+        defer { UIGraphicsEndImageContext() }
+        attributedIcon.draw( in: CGRect( origin: .zero, size: size ) )
+        attributedTone?.draw( in: CGRect( origin: .zero, size: size ) )
+
+        return UIGraphicsGetImageFromCurrentImageContext()
+    }
+}
+
 extension UIColor {
     convenience init?(hex: String, alpha: CGFloat = 1) {
         var hexSanitized = hex.trimmingCharacters( in: .whitespacesAndNewlines )

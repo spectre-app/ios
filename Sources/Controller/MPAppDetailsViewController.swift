@@ -52,7 +52,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     identifier: "app >sendInfo",
                     title: "Diagnostics",
                     value: {
-                        (icon: UIImage( named: "icon_bandage" ),
+                        (icon: UIImage.icon( "" ),
                          selected: $0.sendInfo,
                          enabled: true)
                     },
@@ -73,7 +73,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                            Premium 🅿
                            """,
                     value: {
-                        (icon: UIImage( named: "icon_manage" ),
+                        (icon: UIImage.icon( "" ),
                          selected: $0.premium,
                          enabled: true)
                     },
@@ -92,14 +92,14 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     identifier: "app >theme",
                     title: "Application Themes 🅿",
                     values: { _ in MPTheme.all },
-                        value: { $0.theme },
-                        update: { $0.theme = $1 },
-                        caption: { _ in
-                            """
-                            Personalize the application's appearance.
-                            """
-                        },
-                        hidden: { !$0.premium } )
+                    value: { $0.theme },
+                    update: { $0.theme = $1 },
+                    caption: { _ in
+                        """
+                        Personalize the application's appearance.
+                        """
+                    },
+                    hidden: { !$0.premium } )
         }
 
         override func didLoad(collectionView: UICollectionView) {

@@ -73,10 +73,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         self.appToolbar.axis = .horizontal
         self.appToolbar.spacing = 12
-        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: UIImage( named: "icon_gears" ), background: false ) { _, _ in
+        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: UIImage.icon( "" ), background: false ) { _, _ in
             self.detailsHost.show( MPAppDetailsViewController() )
         } )
-        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: UIImage( named: "icon_shield" ), background: false ) { _, incognitoButton in
+        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: UIImage.icon( "" ), background: false ) { _, incognitoButton in
             guard let incognitoButton = incognitoButton as? MPTimedButton
             else { return }
             let incognitoEvent = MPTracker.shared.begin( named: "users #user" )
@@ -130,8 +130,6 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 }
             } )
             self.present( controller, animated: true )
-        } )
-        self.appToolbar.addArrangedSubview( MPButton( identifier: "lab", image: UIImage( named: "icon_lab" ), background: false ) { _, _ in
         } )
 
         self.userToolbar.barStyle = .black
@@ -336,11 +334,11 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         private let nameLabel       = UILabel()
         private let nameField       = UITextField()
         private let avatarButton    = MPButton( identifier: "users.user #avatar", background: false )
-        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: UIImage( named: "icon_man" ), background: false )
+        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: UIImage.icon( "" ), background: false ) // TODO: biometry-specific icon
         private var passwordEvent:               MPTracker.TimedEvent?
         private let passwordField   = MPMasterPasswordField()
-        private let idBadgeView     = UIImageView( image: UIImage( named: "icon_user" ) )
-        private let authBadgeView   = UIImageView( image: UIImage( named: "icon_key" ) )
+        private let idBadgeView     = UIImageView( image: UIImage.icon( "" ) )
+        private let authBadgeView   = UIImageView( image: UIImage.icon( "" ) )
         private var authenticationConfiguration: LayoutConfiguration!
         private var path:                        CGPath? {
             didSet {

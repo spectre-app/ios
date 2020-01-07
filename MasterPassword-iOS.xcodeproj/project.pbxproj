@@ -159,6 +159,11 @@
 		DAC793DA204CE76B00EC597C /* lock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D8204CE76A00EC597C /* lock@2x.png */; };
 		DAC793DB204CE76B00EC597C /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D9204CE76B00EC597C /* lock.png */; };
 		DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */ = {isa = PBXBuildFile; fileRef = DACA29721705E1A8002C6C22 /* dictionary.lst */; };
+		DAD8046C23BED8BB000A4E86 /* Font Awesome 5 Pro-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAD8046723BED8BB000A4E86 /* Font Awesome 5 Pro-Regular-400.otf */; };
+		DAD8046D23BED8BB000A4E86 /* Font Awesome 5 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAD8046823BED8BB000A4E86 /* Font Awesome 5 Brands-Regular-400.otf */; };
+		DAD8046E23BED8BB000A4E86 /* Font Awesome 5 Pro-Light-300.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAD8046923BED8BB000A4E86 /* Font Awesome 5 Pro-Light-300.otf */; };
+		DAD8046F23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAD8046A23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf */; };
+		DAD8047023BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAD8046B23BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf */; };
 		DAE6E19622CC3CE100DE0342 /* MasterPassword.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E18C22CC3CE100DE0342 /* MasterPassword.xcdatamodeld */; };
 		DAE6E1B722CC3D1D00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E19722CC3D1B00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m */; };
 		DAE6E1B822CC3D1D00DE0342 /* MPUserEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E19822CC3D1B00DE0342 /* MPUserEntity+CoreDataClass.m */; };
@@ -488,6 +493,11 @@
 		DAC793D8204CE76A00EC597C /* lock@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock@2x.png"; sourceTree = "<group>"; };
 		DAC793D9204CE76B00EC597C /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock.png; sourceTree = "<group>"; };
 		DACA29721705E1A8002C6C22 /* dictionary.lst */ = {isa = PBXFileReference; fileEncoding = 1; lastKnownFileType = text; path = dictionary.lst; sourceTree = "<group>"; };
+		DAD8046723BED8BB000A4E86 /* Font Awesome 5 Pro-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Regular-400.otf"; sourceTree = "<group>"; };
+		DAD8046823BED8BB000A4E86 /* Font Awesome 5 Brands-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Brands-Regular-400.otf"; sourceTree = "<group>"; };
+		DAD8046923BED8BB000A4E86 /* Font Awesome 5 Pro-Light-300.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Light-300.otf"; sourceTree = "<group>"; };
+		DAD8046A23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Duotone-Solid-900.otf"; sourceTree = "<group>"; };
+		DAD8046B23BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Solid-900.otf"; sourceTree = "<group>"; };
 		DAE4AC30235B623000CDD88A /* MasterPassword.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MasterPassword.entitlements; sourceTree = "<group>"; };
 		DAE6E18D22CC3CE100DE0342 /* MasterPassword 5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 5.xcdatamodel"; sourceTree = "<group>"; };
 		DAE6E18E22CC3CE100DE0342 /* MasterPassword 9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 9.xcdatamodel"; sourceTree = "<group>"; };
@@ -998,6 +1008,11 @@
 				DA67460B18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf */,
 				DA67460A18DE7F0C00DFE240 /* Exo2.0-Regular.otf */,
 				DA67460918DE7F0C00DFE240 /* Exo2.0-Thin.otf */,
+				DAD8046823BED8BB000A4E86 /* Font Awesome 5 Brands-Regular-400.otf */,
+				DAD8046A23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf */,
+				DAD8046923BED8BB000A4E86 /* Font Awesome 5 Pro-Light-300.otf */,
+				DAD8046723BED8BB000A4E86 /* Font Awesome 5 Pro-Regular-400.otf */,
+				DAD8046B23BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf */,
 				DABD36BF1711E29500CF925C /* SourceCodePro-Black.otf */,
 				DABD36C01711E29500CF925C /* SourceCodePro-ExtraLight.otf */,
 				DA3BCFCA19BD09D5006B2681 /* SourceCodePro-Regular.otf */,
@@ -1284,6 +1299,8 @@
 				DABD393D1711E29700CF925C /* avatar-11@2x.png in Resources */,
 				DABD393E1711E29700CF925C /* avatar-12.png in Resources */,
 				DABD393F1711E29700CF925C /* avatar-12@2x.png in Resources */,
+				DAD8047023BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf in Resources */,
+				DAD8046E23BED8BB000A4E86 /* Font Awesome 5 Pro-Light-300.otf in Resources */,
 				DA67461018DE7F0C00DFE240 /* Exo2.0-Bold.otf in Resources */,
 				DABD39401711E29700CF925C /* avatar-13.png in Resources */,
 				DA24EBE919DAD6DE00FF010B /* Icon-64.png in Resources */,
@@ -1297,6 +1314,7 @@
 				DABD39471711E29700CF925C /* avatar-16@2x.png in Resources */,
 				DABD39481711E29700CF925C /* avatar-17.png in Resources */,
 				DABD39491711E29700CF925C /* avatar-17@2x.png in Resources */,
+				DAD8046C23BED8BB000A4E86 /* Font Awesome 5 Pro-Regular-400.otf in Resources */,
 				DABD394A1711E29700CF925C /* avatar-18.png in Resources */,
 				DABD394B1711E29700CF925C /* avatar-18@2x.png in Resources */,
 				DABD394C1711E29700CF925C /* avatar-1@2x.png in Resources */,
@@ -1317,6 +1335,7 @@
 				DABD39581711E29700CF925C /* avatar-7@2x.png in Resources */,
 				DABD39591711E29700CF925C /* avatar-8.png in Resources */,
 				DAC793DA204CE76B00EC597C /* lock@2x.png in Resources */,
+				DAD8046F23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf in Resources */,
 				DABD395A1711E29700CF925C /* avatar-8@2x.png in Resources */,
 				DABD395B1711E29700CF925C /* avatar-9.png in Resources */,
 				DABD395C1711E29700CF925C /* avatar-9@2x.png in Resources */,
@@ -1327,6 +1346,7 @@
 				DA24EBEA19DAD6EE00FF010B /* Icon-Small.png in Resources */,
 				DA854C8418D4CFBF00106317 /* avatar-add.png in Resources */,
 				DA24EBEB19DAD6EE00FF010B /* Icon-Small@2x.png in Resources */,
+				DAD8046D23BED8BB000A4E86 /* Font Awesome 5 Brands-Regular-400.otf in Resources */,
 				DABD3FCA1712446200CF925C /* cloud.png in Resources */,
 				DABD3FCB1712446200CF925C /* cloud@2x.png in Resources */,
 				DAC793DB204CE76B00EC597C /* lock.png in Resources */,

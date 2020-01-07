@@ -230,10 +230,10 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         var icon: UIImage? {
             switch self {
                 case .biometricTouch:
-                    return UIImage( named: "icon_key" )
+                    return UIImage.icon( "" )
 
                 case .biometricFace:
-                    return UIImage( named: "icon_watched" )
+                    return UIImage.icon( "" )
 
                 case .biometricNone:
                     return nil

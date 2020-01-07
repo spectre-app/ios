@@ -135,7 +135,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         identifier: "user >maskPasswords",
                         title: "Mask Passwords",
                         value: {
-                            (icon: UIImage( named: "icon_tripledot" ),
+                            (icon: UIImage.icon( "" ),
                              selected: $0.maskPasswords,
                              enabled: true)
                         },

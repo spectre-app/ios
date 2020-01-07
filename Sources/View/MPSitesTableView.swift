@@ -149,19 +149,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in MPSitePreviewController( site: site ) }, actionProvider: { _, configuration in
                 UIMenu( title: site.siteName, children: [
-                    UIAction( title: "Delete", image: UIImage( named: "icon_delete" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
+                    UIAction( title: "Delete", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
                         configuration.action = action
                         site.user.sites.removeAll { $0 === site }
                     },
-                    UIAction( title: "Details", image: UIImage( named: "icon_sliders" ), identifier: UIAction.Identifier( "settings" ) ) { action in
+                    UIAction( title: "Details", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "settings" ) ) { action in
                         configuration.action = action
                         self.observers.notify { $0.siteDetailsAction( site: site ) }
                     },
-                    UIAction( title: "Copy Login Name 🅿", image: UIImage( named: "icon_user" ), identifier: UIAction.Identifier( "login" ), attributes: appConfig.premium ? []: .hidden ) { action in
+                    UIAction( title: "Copy Login Name 🅿", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: appConfig.premium ? []: .hidden ) { action in
                         configuration.action = action
                         site.copy( keyPurpose: .identification, for: self )
                     },
-                    UIAction( title: "Copy Password", image: UIImage( named: "icon_tripledot" ), identifier: UIAction.Identifier( "password" ) ) { action in
+                    UIAction( title: "Copy Password", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "password" ) ) { action in
                         configuration.action = action
                         site.copy( keyPurpose: .authentication, for: self )
                     },
@@ -280,9 +280,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
         private let resultLabel    = UITextField()
         private let captionLabel   = UILabel()
-        private let modeButton     = MPButton( identifier: "sites.site #mode", image: UIImage( named: "icon_person" ), background: false )
-        private let settingsButton = MPButton( identifier: "sites.site #site_settings", image: UIImage( named: "icon_sliders" ) )
-        private let newButton      = MPButton( identifier: "sites.site #add", image: UIImage( named: "icon_btn_plus" ), background: false )
+        private let modeButton     = MPButton( identifier: "sites.site #mode", image: UIImage.icon( "" ), background: false )
+        private let settingsButton = MPButton( identifier: "sites.site #site_settings", image: UIImage.icon( "" ) )
+        private let newButton      = MPButton( identifier: "sites.site #add", image: UIImage.icon( "" ), background: false )
 
         // MARK: --- Life ---
 
@@ -447,11 +447,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.modeButton.size = .small
                 switch self.mode {
                     case .authentication:
-                        self.modeButton.image = UIImage( named: "icon_tripledot" )
+                        self.modeButton.image = UIImage.icon( "" )
                     case .identification:
-                        self.modeButton.image = UIImage( named: "icon_user" )
+                        self.modeButton.image = UIImage.icon( "" )
                     case .recovery:
-                        self.modeButton.image = UIImage( named: "icon_btn_question" )
+                        self.modeButton.image = UIImage.icon( "" )
                     @unknown default:
                         self.modeButton.image = nil
                 }
