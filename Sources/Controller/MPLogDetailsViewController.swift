@@ -21,7 +21,8 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     }
 
     override func loadItems() -> [Item<Model>] {
-        [ FeedbackItem(), SeparatorItem(), LogLevelPicker(), LogsItem() ]
+        [ FeedbackItem(), CrashItem(), SeparatorItem(),
+          LogLevelPicker(), LogsItem(), SeparatorItem() ]
     }
 
     // MARK: --- ModelObserver ---
@@ -40,6 +41,17 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                 let options = ConversationOptions()
                 options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
                 Freshchat.sharedInstance().showConversations( $0.viewController, with: options )
+            }
+        }
+    }
+
+    class CrashItem: ButtonItem<Model> {
+        init() {
+            super.init( identifier: "logbook #crash",
+                        value: { _ in (label: "Force Crash", image: nil) },
+                        caption: { _ in "Terminate the app with a crash, triggering a crash report on the next launch." },
+                        hidden: { _ in !appConfig.isDebug }) { _ in
+                fatalError( "Forced Crash" )
             }
         }
     }
