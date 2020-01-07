@@ -177,10 +177,10 @@ public func mperror(title: String, message: CustomStringConvertible? = nil, deta
     var errorDetails = details?.description
     if let error = error {
         if let errorDetails_ = errorDetails {
-            errorDetails = "\(errorDetails_)\n\n\(error)"
+            errorDetails = "\(errorDetails_)\n\n\(error.localizedDescription)"
         }
         else {
-            errorDetails = "\(error)"
+            errorDetails = "\(error.localizedDescription)"
         }
     }
 
