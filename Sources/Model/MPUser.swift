@@ -43,11 +43,15 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public private(set) var masterKeyFactory: MPKeyFactory? {
         didSet {
-            if self.masterKeyFactory != nil, oldValue == nil {
-                self.observers.notify { $0.userDidLogin( self ) }
-            }
-            if self.masterKeyFactory == nil, oldValue != nil {
-                self.observers.notify { $0.userDidLogout( self ) }
+            if self.masterKeyFactory !== oldValue {
+                if self.masterKeyFactory != nil, oldValue == nil {
+                    self.observers.notify { $0.userDidLogin( self ) }
+                }
+                if self.masterKeyFactory == nil, oldValue != nil {
+                    self.observers.notify { $0.userDidLogout( self ) }
+                }
+
+                self.tryKeyFactoryMigration()
             }
         }
     }
@@ -79,25 +83,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public var biometricLock = false {
         didSet {
-            if self.biometricLock {
-                if let passwordKeyFactory = self.masterKeyFactory as? MPPasswordKeyFactory {
-                    passwordKeyFactory.toKeychain().then {
-                        switch $0 {
-                            case .success(let keychainKeyFactory):
-                                self.masterKeyFactory = keychainKeyFactory
-
-                            case .failure(let error):
-                                mperror( title: "Couldn't migrate to biometrics", error: error )
-                        }
-                    }
-                }
-            }
-            else {
-                if let keychainKeyFactory = self.masterKeyFactory as? MPKeychainKeyFactory {
-                    keychainKeyFactory.purgeKeys()
-                    self.masterKeyFactory = nil
-                }
-            }
+            self.tryKeyFactoryMigration()
 
             if oldValue != self.biometricLock, !self.initializing,
                self.file?.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) ?? true {
@@ -240,6 +226,28 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         }
 
         return lhs.fullName > rhs.fullName
+    }
+
+    // MARK: --- Private ---
+
+    private func tryKeyFactoryMigration() {
+        if self.biometricLock {
+            // biometric lock is on; if key factory is password, migrate it to keychain.
+            (self.masterKeyFactory as? MPPasswordKeyFactory)?.toKeychain().then {
+                switch $0 {
+                    case .success(let keychainKeyFactory):
+                        self.masterKeyFactory = keychainKeyFactory
+
+                    case .failure(let error):
+                        mperror( title: "Couldn't migrate to biometrics", error: error )
+                }
+            }
+        }
+        else if let keychainKeyFactory = self.masterKeyFactory as? MPKeychainKeyFactory {
+            // biometric lock is off; if key factory is keychain, purge and unset it.
+            keychainKeyFactory.purgeKeys()
+            self.masterKeyFactory = nil
+        }
     }
 
     // MARK: --- MPUserObserver ---
