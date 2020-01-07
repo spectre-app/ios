@@ -1,6 +1,3 @@
-[submodule "External/Pearl"]
-	path = platform-darwin/External/Pearl
-	url = git://github.com/Lyndir/Pearl.git
 [submodule "External/AttributedMarkdown"]
 	path = platform-darwin/External/AttributedMarkdown
 	url = https://github.com/dreamwieber/AttributedMarkdown.git

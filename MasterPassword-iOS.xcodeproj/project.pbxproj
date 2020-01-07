@@ -199,7 +199,6 @@
 
 /* Begin PBXFileReference section */
 		1B187A357B4ACE4B9C8631D9 /* Pods_MasterPassword.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MasterPassword.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1BD89466760B83CE30B9ECED /* Pods_Pearl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pearl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F5740BEFF88DA7457A3AE61 /* Pods-MasterPassword.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.debug.xcconfig"; sourceTree = "<group>"; };
 		8673E273737E67D2A774177F /* Pods-MasterPassword.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.release.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.release.xcconfig"; sourceTree = "<group>"; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
@@ -794,7 +793,6 @@
 				93D394077F8FAB8167647187 /* Twitter.framework */,
 				DA5BFA48147E415C00F98B1E /* UIKit.framework */,
 				1B187A357B4ACE4B9C8631D9 /* Pods_MasterPassword.framework */,
-				1BD89466760B83CE30B9ECED /* Pods_Pearl.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
