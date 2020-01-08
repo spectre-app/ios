@@ -1421,7 +1421,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = "/bin/sh -e";
-			shellScript = "if which sentry-cli >/dev/null; then\n    export SENTRY_ORG=lyndir\n    export SENTRY_PROJECT=volto\n    ERROR=$(sentry-cli upload-dif \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null)\n    if [ ! $? -eq 0 ]; then\n        echo \"warning: sentry-cli - $ERROR\"\n    fi\nelse\n    echo \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
+			shellScript = "if hash sentry-cli 2>/dev/null; then\n    if ! ERROR=$(SENTRY_ORG=lyndir SENTRY_PROJECT=volto sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null); then\n        echo \"warning: sentry-cli - $ERROR\"\n    fi\nelse\n    echo \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */ = {
