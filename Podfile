@@ -10,7 +10,6 @@ target 'MasterPassword' do
   pod 'Stellar', :git => 'https://github.com/AugustRush/Stellar.git'
   pod 'SwiftLinkPreview'
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
-  pod 'Bugsnag'
   pod 'Smartlook'
   pod 'Countly'
   pod 'FreshchatSDK'

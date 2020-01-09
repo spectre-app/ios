@@ -5,7 +5,6 @@
 
 import Foundation
 import Sentry
-import Bugsnag
 import Smartlook
 import Countly
 
@@ -28,22 +27,12 @@ class MPTracker: MPConfigObserver {
             }
         }
 
-        // Bugsnag
-        if let bugsnagKey = decrypt( secret: bugsnagKey ) {
-            let bugsnagConfig = BugsnagConfiguration()
-            bugsnagConfig.apiKey = bugsnagKey
-            bugsnagConfig.add( beforeSend: { (rawData, report) -> Bool in appConfig.sendInfo } )
-            bugsnagConfig.metaData?.addAttribute( "device", withValue: self.deviceIdentifier, toTabWithName: "global" )
-            bugsnagConfig.metaData?.addAttribute( "owner", withValue: self.ownerIdentifier, toTabWithName: "global" )
-            Bugsnag.start( with: bugsnagConfig )
-        }
-
         // Countly
         if let countlyKey = decrypt( secret: countlyKey ), let countlySalt = decrypt( secret: countlySalt ) {
             let countlyConfig = CountlyConfig()
             countlyConfig.host = "https://countly.volto.app"
             countlyConfig.appKey = countlyKey
-            countlyConfig.features = [ CLYPushNotifications, CLYCrashReporting ]
+            countlyConfig.features = [ CLYPushNotifications ]
             countlyConfig.requiresConsent = true
             countlyConfig.pushTestMode = CLYPushTestModeDevelopment
             countlyConfig.alwaysUsePOST = true
@@ -63,7 +52,6 @@ class MPTracker: MPConfigObserver {
 
         // Link trackers
         if let smartlook = Smartlook.getDashboardSessionURL() {
-            Bugsnag.configuration()?.metaData?.addAttribute( "smartlook", withValue: smartlook, toTabWithName: "trackers" )
             Sentry.Client.shared?.extra?["smartlook"] = smartlook
         }
 
@@ -93,8 +81,6 @@ class MPTracker: MPConfigObserver {
                     event.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
                     Sentry.Client.shared?.appendStacktrace( to: event )
                     Sentry.Client.shared?.send( event: event )
-
-                    Bugsnag.notifyError( NSError( domain: "mpw", code: 0, userInfo: [ NSLocalizedDescriptionKey: record.message ] ) )
                 }
                 else {
                     let breadcrumb = Breadcrumb( level: sentrySeverity, category: "mpw" )
@@ -103,12 +89,6 @@ class MPTracker: MPConfigObserver {
                     breadcrumb.timestamp = record.occurrence
                     breadcrumb.data = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
                     Sentry.Client.shared?.breadcrumbs.add( breadcrumb )
-
-                    Bugsnag.leaveBreadcrumb {
-                        $0.name = record.message
-                        $0.type = .log
-                        $0.metadata = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
-                    }
                 }
             }
         } )
@@ -185,10 +165,6 @@ class MPTracker: MPConfigObserver {
         Sentry.Client.shared?.user = Sentry.User( userId: userId )
         Sentry.Client.shared?.user?.username = userName
         Sentry.Client.shared?.user?.extra = userConfig
-        Bugsnag.configuration()?.setUser( userId, withName: userName, andEmail: nil )
-        userConfig.forEach { key, value in
-            Bugsnag.configuration()?.metaData?.addAttribute( key, withValue: value, toTabWithName: "user" )
-        }
         Countly.sharedInstance().userLogged( in: userId )
         Countly.user().name = userName as NSString
         Countly.user().custom = userConfig as NSDictionary
@@ -197,8 +173,6 @@ class MPTracker: MPConfigObserver {
 
     func logout() {
         Sentry.Client.shared?.user = nil
-        Bugsnag.configuration()?.setUser( nil, withName: nil, andEmail: nil )
-        Bugsnag.configuration()?.metaData?.clearTab( "user" )
         Countly.sharedInstance().userLoggedOut()
         Smartlook.setUserIdentifier( "n/a" )
     }
@@ -242,13 +216,6 @@ class MPTracker: MPConfigObserver {
         sentryBreadcrumb.message = name
         sentryBreadcrumb.data = eventParameters
         Sentry.Client.shared?.breadcrumbs.add( sentryBreadcrumb )
-
-        // Bugsnag
-        Bugsnag.leaveBreadcrumb {
-            $0.name = name
-            $0.type = .user
-            $0.metadata = eventParameters
-        }
 
         // Countly
         Countly.sharedInstance().recordEvent(
@@ -312,13 +279,6 @@ class MPTracker: MPConfigObserver {
             sentryBreadcrumb.message = self.name
             sentryBreadcrumb.data = eventParameters
             Sentry.Client.shared?.breadcrumbs.add( sentryBreadcrumb )
-
-            // Bugsnag
-            Bugsnag.leaveBreadcrumb {
-                $0.name = self.name
-                $0.type = .navigation
-                $0.metadata = eventParameters
-            }
 
             // Countly
             Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )

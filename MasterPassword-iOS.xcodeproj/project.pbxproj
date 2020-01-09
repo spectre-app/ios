@@ -1123,7 +1123,6 @@
 				DA5BFA42147E415C00F98B1E /* Resources */,
 				F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */,
 				F547257C29D473EBD10587B5 /* [CP] Copy Pods Resources */,
-				B90BA552072515657B55C4BC /* Upload Bugsnag dSYM */,
 				DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */,
 			);
 			buildRules = (
@@ -1385,25 +1384,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B90BA552072515657B55C4BC /* Upload Bugsnag dSYM */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Upload Bugsnag dSYM";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = "/usr/bin/env ruby";
-			shellScript = "# First, attempt to get the API key from an environment variable\napi_key = ENV[\"BUGSNAG_API_KEY\"]\n\n# If not present, attempt to lookup the value from the Info.plist\nif !api_key\n  default_info_plist_location = Dir.glob(\"./{ios/,}*/Info.plist\").reject {|path| path =~ /build|test/i }\n  plist_buddy_response = `/usr/libexec/PlistBuddy -c \"print :BugsnagAPIKey\" \"#{default_info_plist_location.first}\"`\n  api_key = plist_buddy_response if $?.success?\nend\n\nfork do\n  Process.setsid\n  STDIN.reopen(\"/dev/null\")\n  STDOUT.reopen(\"/dev/null\", \"a\")\n  STDERR.reopen(\"/dev/null\", \"a\")\n\n  require 'shellwords'\n\n  Dir[\"#{ENV[\"DWARF_DSYM_FOLDER_PATH\"]}/*/Contents/Resources/DWARF/*\"].each do |dsym|\n    curl_command = \"curl -F dsym=@#{Shellwords.escape(dsym)} -F projectRoot=#{Shellwords.escape(ENV[\"PROJECT_DIR\"])} \"\n    curl_command += \"-F apiKey=#{Shellwords.escape(api_key)} \" if api_key\n    curl_command += \"https://upload.bugsnag.com/\"\n    system(curl_command)\n  end\nend\n";
-			showEnvVarsInLog = 0;
-		};
 		DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1421,7 +1401,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = "/bin/sh -e";
-			shellScript = "if hash sentry-cli 2>/dev/null; then\n    if ! ERROR=$(SENTRY_ORG=lyndir SENTRY_PROJECT=volto sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null); then\n        echo \"warning: sentry-cli - $ERROR\"\n    fi\nelse\n    echo \"warning: sentry-cli not installed, download from https://github.com/getsentry/sentry-cli/releases\"\nfi\n";
+			shellScript = "if hash sentry-cli 2>/dev/null; then\n    if ! ERROR=$(SENTRY_ORG=lyndir SENTRY_PROJECT=volto sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null); then\n        echo >&2 \"warning: sentry-cli: $ERROR\"\n    fi\nelse\n    echo >&2 \"warning: sentry-cli not installed: try brew install getsentry/tools/sentry-cli\"\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */ = {
