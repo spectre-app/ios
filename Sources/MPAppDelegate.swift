@@ -26,6 +26,26 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
         Freshchat.sharedInstance().initWith(
                 FreshchatConfig( appID: "***REMOVED***", andAppKey: decrypt( secret: freshchatKey ) ) )
 
+        if !appConfig.diagnosticsDecided {
+            let controller = UIAlertController( title: "Welcome to \(productName)!", message:
+            """
+            We want this to be a top-notch experience for you.
+            Diagnostics ensures the app performs perfectly on your device and adds 1 to our number of active users.
+
+            We watch out for application bugs, issues, crashes, active user & usage counters.
+            Obviously, personal details or secrets never ever leave your device.
+            """, preferredStyle: .actionSheet )
+            controller.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
+                appConfig.diagnostics = false
+                appConfig.diagnosticsDecided = true
+            } )
+            controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
+                appConfig.diagnostics = true
+                appConfig.diagnosticsDecided = true
+            } )
+            self.window?.rootViewController?.present( controller, animated: true )
+        }
+
         appConfig.observers.register( observer: self )
 
         return true

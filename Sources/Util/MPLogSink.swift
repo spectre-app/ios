@@ -46,7 +46,7 @@ public class MPLogSink: MPConfigObserver {
     // MARK: --- MPConfigObserver ---
 
     public func didChangeConfig() {
-        self.level = appConfig.isDebug ? .debug: appConfig.sendInfo ? .info: .warning
+        self.level = appConfig.isDebug ? .debug: appConfig.diagnostics ? .info: .warning
     }
 }
 

@@ -22,7 +22,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
     override func loadItems() -> [Item<MPConfig>] {
         [ VersionItem(), SeparatorItem(),
           Item<MPConfig>( subitems: [
-              DiagnisticsItem(),
+              DiagnosticsItem(),
               ProItem(),
           ] ), SeparatorItem(),
           ThemeItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
@@ -46,17 +46,17 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
     }
 
-    class DiagnisticsItem: ToggleItem<MPConfig> {
+    class DiagnosticsItem: ToggleItem<MPConfig> {
         init() {
             super.init(
-                    identifier: "app >sendInfo",
+                    identifier: "app >diagnostics",
                     title: "Diagnostics",
                     value: {
                         (icon: UIImage.icon( "" ),
-                         selected: $0.sendInfo,
+                         selected: $0.diagnostics,
                          enabled: true)
                     },
-                    update: { $0.sendInfo = $1 },
+                    update: { $0.diagnostics = $1 },
                     caption: { _ in
                         """
                         Share anonymized issue information to enable quick resolution.

@@ -16,13 +16,11 @@ class MPTracker: MPConfigObserver {
         // Sentry
         if let sentryDSN = decrypt( secret: sentryDSN ) {
             do {
-                let sentry = try Sentry.Client( dsn: sentryDSN )
-                Sentry.Client.shared = sentry
-
-                sentry.enabled = false
-                sentry.enableAutomaticBreadcrumbTracking()
-                sentry.extra = [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ]
-                try sentry.startCrashHandler()
+                Sentry.Client.shared = try Sentry.Client( dsn: sentryDSN )
+                Sentry.Client.shared?.enabled = appConfig.diagnostics as NSNumber
+                Sentry.Client.shared?.enableAutomaticBreadcrumbTracking()
+                Sentry.Client.shared?.tags = [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ]
+                try Sentry.Client.shared?.startCrashHandler()
             }
             catch {
                 err( "Couldn't install Sentry [>TRC]" )
@@ -269,13 +267,19 @@ class MPTracker: MPConfigObserver {
     // MARK: --- MPConfigObserver ---
 
     public func didChangeConfig() {
-        if appConfig.sendInfo {
+        if appConfig.diagnostics {
             Sentry.Client.shared?.enabled = true
             Countly.sharedInstance().giveConsentForAllFeatures()
+            if !Smartlook.isRecording() {
+                Smartlook.startRecording()
+            }
         }
         else {
             Sentry.Client.shared?.enabled = false
             Countly.sharedInstance().cancelConsentForAllFeatures()
+            if Smartlook.isRecording() {
+                Smartlook.stopRecording()
+            }
         }
     }
 

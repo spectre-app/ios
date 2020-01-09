@@ -11,13 +11,20 @@ public class MPConfig: Observable {
     public let observers = Observers<MPConfigObserver>()
 
     public var isDebug = false
-    public var sendInfo = false {
+    public var diagnostics = false {
         didSet {
-            if self.sendInfo != UserDefaults.standard.bool( forKey: "sendInfo" ) {
-                UserDefaults.standard.set( self.sendInfo, forKey: "sendInfo" )
+            if self.diagnostics != UserDefaults.standard.bool( forKey: "diagnostics" ) {
+                UserDefaults.standard.set( self.diagnostics, forKey: "diagnostics" )
             }
-            if oldValue != self.sendInfo {
+            if oldValue != self.diagnostics {
                 self.observers.notify { $0.didChangeConfig() }
+            }
+        }
+    }
+    public var diagnosticsDecided = false {
+        didSet {
+            if self.diagnosticsDecided != UserDefaults.standard.bool( forKey: "diagnosticsDecided" ) {
+                UserDefaults.standard.set( self.diagnosticsDecided, forKey: "diagnosticsDecided" )
             }
         }
     }
@@ -54,10 +61,6 @@ public class MPConfig: Observable {
     // MARK: --- Life ---
 
     init() {
-        UserDefaults.standard.register( defaults: [
-            "sendInfo": true
-        ] )
-
         assert( {
                     self.isDebug = true
                     return true
@@ -66,7 +69,8 @@ public class MPConfig: Observable {
         self.load()
         self.checkLegacy()
 
-        self.observer = NotificationCenter.default.addObserver( forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
+        self.observer = NotificationCenter.default.addObserver(
+                forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
             self.load()
         }
     }
@@ -95,7 +99,8 @@ public class MPConfig: Observable {
     // MARK: --- Private ---
 
     private func load() {
-        self.sendInfo = UserDefaults.standard.bool( forKey: "sendInfo" )
+        self.diagnostics = UserDefaults.standard.bool( forKey: "diagnostics" )
+        self.diagnosticsDecided = UserDefaults.standard.bool( forKey: "diagnosticsDecided" )
         self.premium = UserDefaults.standard.bool( forKey: "premium" )
         self.theme = !self.premium ? .default: MPTheme.with( path: UserDefaults.standard.string( forKey: "theme" ) ) ?? .default
     }
