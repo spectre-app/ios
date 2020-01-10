@@ -1,9 +1,9 @@
-workspace 'MasterPassword'
-project 'MasterPassword-iOS'
+workspace 'Volto'
+project 'Volto-iOS'
 
 platform :ios, '9.3'
 
-target 'MasterPassword' do
+target 'Volto' do
   use_modular_headers!
   use_frameworks!
 

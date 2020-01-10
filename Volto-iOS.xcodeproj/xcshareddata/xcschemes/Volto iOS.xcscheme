@@ -7,7 +7,7 @@
       buildImplicitDependencies = "YES">
       <BuildActionEntries>
          <BuildActionEntry
-            buildForTesting = "NO"
+            buildForTesting = "YES"
             buildForRunning = "YES"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
@@ -16,8 +16,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
                BuildableName = "Volto.app"
-               BlueprintName = "MasterPassword"
-               ReferencedContainer = "container:MasterPassword-iOS.xcodeproj">
+               BlueprintName = "Volto"
+               ReferencedContainer = "container:Volto-iOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -58,8 +58,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
             BuildableName = "Volto.app"
-            BlueprintName = "MasterPassword"
-            ReferencedContainer = "container:MasterPassword-iOS.xcodeproj">
+            BlueprintName = "Volto"
+            ReferencedContainer = "container:Volto-iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -116,8 +116,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
             BuildableName = "Volto.app"
-            BlueprintName = "MasterPassword"
-            ReferencedContainer = "container:MasterPassword-iOS.xcodeproj">
+            BlueprintName = "Volto"
+            ReferencedContainer = "container:Volto-iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -11,6 +11,7 @@ public class MPConfig: Observable {
     public let observers = Observers<MPConfigObserver>()
 
     public var isDebug = false
+    public var isPublic = false
     public var diagnostics = false {
         didSet {
             if self.diagnostics != UserDefaults.standard.bool( forKey: "diagnostics" ) {
@@ -61,10 +62,12 @@ public class MPConfig: Observable {
     // MARK: --- Life ---
 
     init() {
-        assert( {
-                    self.isDebug = true
-                    return true
-                }() )
+        #if DEBUG
+        self.isDebug = true
+        #endif
+        #if PUBLIC
+        self.isPublic = true
+        #endif
 
         self.load()
         self.checkLegacy()

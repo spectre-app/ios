@@ -34,25 +34,24 @@ class MPTracker: MPConfigObserver {
             countlyConfig.appKey = countlyKey
             countlyConfig.features = [ CLYPushNotifications ]
             countlyConfig.requiresConsent = true
-            countlyConfig.pushTestMode = CLYPushTestModeDevelopment
+            #if PUBLIC
+            countlyConfig.pushTestMode = nil
+            #else
+            countlyConfig.pushTestMode = appConfig.isDebug ? CLYPushTestModeDevelopment: CLYPushTestModeTestFlightOrAdHoc
+            #endif
             countlyConfig.alwaysUsePOST = true
             countlyConfig.secretSalt = countlySalt
-            countlyConfig.resetStoredDeviceID = true
             countlyConfig.deviceID = self.deviceIdentifier
             Countly.sharedInstance().start( with: countlyConfig )
         }
 
         // Smartlook
-        if let smartlookKey = decrypt( secret: smartlookKey ) {
+        if !appConfig.isPublic, let smartlookKey = decrypt( secret: smartlookKey ) {
             Smartlook.setSessionProperty( value: self.deviceIdentifier, forName: "device" )
             Smartlook.setSessionProperty( value: self.ownerIdentifier, forName: "owner" )
             Smartlook.setup( key: smartlookKey )
-            //Smartlook.startRecording()
-        }
 
-        // Link trackers
-        if let smartlook = Smartlook.getDashboardSessionURL() {
-            Sentry.Client.shared?.extra?["smartlook"] = smartlook
+            Sentry.Client.shared?.extra?["smartlook"] = Smartlook.getDashboardSessionURL()
         }
 
         // Breadcrumbs & errors
@@ -237,14 +236,15 @@ class MPTracker: MPConfigObserver {
         if appConfig.diagnostics {
             Sentry.Client.shared?.enabled = true
             Countly.sharedInstance().giveConsentForAllFeatures()
-            if !Smartlook.isRecording() {
+
+            if !appConfig.isPublic && !Smartlook.isRecording() {
                 Smartlook.startRecording()
             }
         }
         else {
             Sentry.Client.shared?.enabled = false
             Countly.sharedInstance().cancelConsentForAllFeatures()
-            if Smartlook.isRecording() {
+            if !appConfig.isPublic && Smartlook.isRecording() {
                 Smartlook.stopRecording()
             }
         }
