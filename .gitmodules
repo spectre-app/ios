@@ -10,9 +10,3 @@
 [submodule "lib/libjson-c"]
 	path = lib/libjson-c
 	url = https://github.com/json-c/json-c.git
-[submodule "public/site"]
-	path = public/site
-	url = https://gitlab.com/MasterPassword/MasterPassword.git
-	branch = gh-pages
-	shallow = true
-	update = none

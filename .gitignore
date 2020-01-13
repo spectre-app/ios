@@ -1,4 +1,11 @@
-# OS-Specific junk.
+# Personal
+/local
+
+# Generated
+/platform-darwin/Podfile.lock
+/platform-darwin/Pods/
+
+# Junk
 .DS_Store
 Thumbs.db
 
@@ -12,10 +19,6 @@ out
 # Xcode IDE
 xcuserdata/
 DerivedData/
-
-# Generated
-/platform-darwin/Podfile.lock
-/platform-darwin/Pods/
 
 # Gradle
 build
