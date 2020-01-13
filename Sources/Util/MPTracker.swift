@@ -96,6 +96,43 @@ class MPTracker: MPConfigObserver {
         appConfig.observers.register( observer: self ).didChangeConfig()
     }
 
+    static func enabledNotifications() -> Bool {
+        UIApplication.shared.isRegisteredForRemoteNotifications &&
+                !(UIApplication.shared.currentUserNotificationSettings?.types.isEmpty ?? true)
+    }
+
+    static func enableNotifications() {
+        appConfig.notificationsDecided = true
+        UIApplication.shared.registerForRemoteNotifications()
+
+        if #available( iOS 10, * ) {
+            Countly.sharedInstance().askForNotificationPermission { _, _ in
+                UNUserNotificationCenter.current().getNotificationSettings {
+                    if $0.authorizationStatus != .authorized {
+                        if let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+                            UIApplication.shared.open( settingsURL )
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            Countly.sharedInstance().askForNotificationPermission()
+            if !self.enabledNotifications(), let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+                UIApplication.shared.openURL( settingsURL )
+            }
+        }
+    }
+
+    static func disableNotifications() {
+        appConfig.notificationsDecided = true
+        UIApplication.shared.unregisterForRemoteNotifications()
+
+        if self.enabledNotifications(), let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+            UIApplication.shared.openURL( settingsURL )
+        }
+    }
+
     lazy var deviceIdentifier = self.identifier( for: "device", attributes: [
         kSecAttrDescription: "Unique identifier for the device on this app.",
         kSecAttrAccessible: kSecAttrAccessibleAlwaysThisDeviceOnly,
@@ -149,7 +186,7 @@ class MPTracker: MPConfigObserver {
 
         if let activeUserId = Sentry.Client.shared?.user?.userId {
             err( "User logged in while another still active. [>TRC]" )
-            trc( "Active user: %s, will replace by login user: %s", activeUserId, userId )
+            trc( "[>] Active user: %s, will replace by login user: %s", activeUserId, userId )
         }
 
         let userConfig: [String: Any] = [
@@ -236,7 +273,6 @@ class MPTracker: MPConfigObserver {
         if appConfig.diagnostics {
             Sentry.Client.shared?.enabled = true
             Countly.sharedInstance().giveConsentForAllFeatures()
-
             if !appConfig.isPublic && !Smartlook.isRecording() {
                 Smartlook.startRecording()
             }

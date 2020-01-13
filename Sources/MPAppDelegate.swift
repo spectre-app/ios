@@ -26,6 +26,20 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
         Freshchat.sharedInstance().initWith(
                 FreshchatConfig( appID: "***REMOVED***", andAppKey: decrypt( secret: freshchatKey ) ) )
 
+        appConfig.observers.register( observer: self )
+
+        return true
+    }
+
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        dbg("isRegisteredForRemoteNotifications: %d", UIApplication.shared.isRegisteredForRemoteNotifications)
+        dbg("currentUserNotificationSettings: %@", UIApplication.shared.currentUserNotificationSettings)
+        self.tryDecisions()
+
+        return true
+    }
+
+    func tryDecisions() {
         if !appConfig.diagnosticsDecided {
             let controller = UIAlertController( title: "Welcome to \(productName)!", message:
             """
@@ -38,17 +52,31 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
             controller.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
                 appConfig.diagnostics = false
                 appConfig.diagnosticsDecided = true
+                self.tryDecisions()
             } )
             controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
                 appConfig.diagnostics = true
                 appConfig.diagnosticsDecided = true
+                self.tryDecisions()
+            } )
+            self.window?.rootViewController?.present( controller, animated: true )
+            return
+        }
+
+        if !appConfig.notificationsDecided && MPTracker.enabledNotifications() {
+            let controller = UIAlertController( title: "Keeping Safe", message:
+            """
+            Things move fast in the online world.
+            To keep you safe from password breaches and current on important security news, we inform our users with notifications.
+
+            Enable notifications to be informed of these important events.
+            """, preferredStyle: .actionSheet )
+            controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
+                MPTracker.enableNotifications()
+                self.tryDecisions()
             } )
             self.window?.rootViewController?.present( controller, animated: true )
         }
-
-        appConfig.observers.register( observer: self )
-
-        return true
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
@@ -74,6 +102,11 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
         }
 
         return false
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        err( "Couldn't register for remote notifications. [>TRC]" )
+        trc( "[>] %@", error )
     }
 
     // MARK: --- MPConfigObserver ---

@@ -29,6 +29,13 @@ public class MPConfig: Observable {
             }
         }
     }
+    public var notificationsDecided = false {
+        didSet {
+            if self.notificationsDecided != UserDefaults.standard.bool( forKey: "notificationsDecided" ) {
+                UserDefaults.standard.set( self.notificationsDecided, forKey: "notificationsDecided" )
+            }
+        }
+    }
     public var premium = false {
         didSet {
             if self.premium != UserDefaults.standard.bool( forKey: "premium" ) {
@@ -57,7 +64,7 @@ public class MPConfig: Observable {
         }
     }
 
-    private var observer: NSObjectProtocol?
+    private var didChangeObserver: NSObjectProtocol?
 
     // MARK: --- Life ---
 
@@ -72,14 +79,14 @@ public class MPConfig: Observable {
         self.load()
         self.checkLegacy()
 
-        self.observer = NotificationCenter.default.addObserver(
+        self.didChangeObserver = NotificationCenter.default.addObserver(
                 forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
             self.load()
         }
     }
 
     deinit {
-        self.observer.flatMap { NotificationCenter.default.removeObserver( $0 ) }
+        self.didChangeObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 
     // MARK: --- Interface ---
@@ -104,6 +111,7 @@ public class MPConfig: Observable {
     private func load() {
         self.diagnostics = UserDefaults.standard.bool( forKey: "diagnostics" )
         self.diagnosticsDecided = UserDefaults.standard.bool( forKey: "diagnosticsDecided" )
+        self.notificationsDecided = UserDefaults.standard.bool( forKey: "notificationsDecided" )
         self.premium = UserDefaults.standard.bool( forKey: "premium" )
         self.theme = !self.premium ? .default: MPTheme.with( path: UserDefaults.standard.string( forKey: "theme" ) ) ?? .default
     }

@@ -4,8 +4,11 @@
 //
 
 import UIKit
+import Countly
 
 class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObserver {
+
+    private var didBecomeActiveObserver: NSObjectProtocol?
 
     // MARK: --- Life ---
 
@@ -17,13 +20,25 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         super.init( model: appConfig )
 
         self.model.observers.register( observer: self )
+
+        self.didBecomeActiveObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil ) { _ in
+            self.setNeedsUpdate()
+        }
+    }
+
+    deinit {
+        self.didBecomeActiveObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 
     override func loadItems() -> [Item<MPConfig>] {
         [ VersionItem(), SeparatorItem(),
           Item<MPConfig>( subitems: [
               DiagnosticsItem(),
-              ProItem(),
+              NotificationsItem(),
+          ] ),
+          Item<MPConfig>( subitems: [
+              PremiumItem(),
           ] ), SeparatorItem(),
           ThemeItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
           LegacyItem(), SeparatorItem(),
@@ -65,7 +80,32 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
     }
 
-    class ProItem: ToggleItem<MPConfig> {
+    class NotificationsItem: ToggleItem<MPConfig> {
+        init() {
+            super.init(
+                    identifier: "app >notifications",
+                    title: "Notifications",
+                    value: { _ in
+                        (icon: UIImage.icon( "" ),
+                         selected: MPTracker.enabledNotifications(),
+                         enabled: true)
+                    },
+                    update: {
+                        if $1 {
+                            MPTracker.enableNotifications()
+                        } else {
+                            MPTracker.disableNotifications()
+                        }
+                    },
+                    caption: { _ in
+                        """
+                        Be notified of important events that may affect your online security.
+                        """
+                    } )
+        }
+    }
+
+    class PremiumItem: ToggleItem<MPConfig> {
         init() {
             super.init(
                     identifier: "app >premium",
