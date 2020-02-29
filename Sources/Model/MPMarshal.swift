@@ -139,11 +139,6 @@ class MPMarshal: Observable {
         let exportEvent = MPTracker.shared.begin( named: "marshal #export" )
 
         return DispatchQueue.mpw.promise {
-            guard let file = user.file
-            else {
-                exportEvent.end( [ "result": "!file" ] )
-                throw MPError.state( details: "Cannot export incognito user: \(user)." )
-            }
             guard let keyFactory = user.masterKeyFactory
             else {
                 exportEvent.end( [ "result": "!keyFactory" ] )
@@ -188,14 +183,15 @@ class MPMarshal: Observable {
                 }
             }
 
-            if let data = String( validate: mpw_marshal_write( format, file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
-               file.pointee.error.type == .success {
+            if let data = String( validate: mpw_marshal_write( format, &user.file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
+               user.file?.pointee.error.type == .success {
                 exportEvent.end( [ "result": "success: data" ] )
                 return data
             }
 
             exportEvent.end( [ "result": "!marshal_write" ] )
-            throw MPError.marshal( file.pointee.error, title: "Issue Writing User" )
+            throw MPError.marshal( user.file?.pointee.error ?? MPMarshalError( type: .errorInternal, message: "Couldn't allocate export file" ),
+                                   title: "Issue Writing User" )
         }
     }
 
@@ -660,26 +656,25 @@ class MPMarshal: Observable {
                     }
                 }
 
-                var file_ptr = mpw_marshal_file( nil, nil, nil )
-                defer { mpw_marshal_file_free( &file_ptr ) }
-                guard let file = file_ptr
+                var file : UnsafeMutablePointer<MPMarshalledFile>?
+                defer { mpw_marshal_file_free( &file ) }
+                let export = String( validate: mpw_marshal_write( .default, &file, marshalledUser ), deallocate: true )
+                if let file = file {
+                    if file.pointee.error.type == .success, let data = export?.data(using: .utf8) {
+                        promise = promise.and( self.import( data: data ).then { (result: Result<Bool, Error>) -> Void in
+                            if (try? result.get()) ?? false {
+                                self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
+                            }
+                        }, reducing: { $0 && $1 } )
+                    }
+                    else {
+                        importEvent.end( [ "result": "!marshal_write" ] )
+                        throw MPError.marshal( file.pointee.error, title: "Issue Importing User" )
+                    }
+                }
                 else {
                     importEvent.end( [ "result": "!marshal_file" ] )
                     throw MPError.internal( details: "Couldn't allocate import file." )
-                }
-
-                if let data = String( validate: mpw_marshal_write( .default, file, marshalledUser ),
-                                      deallocate: true )?.data( using: .utf8 ),
-                   file.pointee.error.type == .success {
-                    promise = promise.and( self.import( data: data ).then { (result: Result<Bool, Error>) -> Void in
-                        if (try? result.get()) ?? false {
-                            self.defaults?.set( true, forKey: objectID.uriRepresentation().absoluteString )
-                        }
-                    }, reducing: { $0 && $1 } )
-                }
-                else {
-                    importEvent.end( [ "result": "!marshal_write" ] )
-                    throw MPError.marshal( file.pointee.error, title: "Issue Importing User" )
                 }
             }
 

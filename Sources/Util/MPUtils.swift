@@ -820,25 +820,24 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
     mpw_log_ssink( level, file, line, function, message )
 }
 
-func decrypt(secret: String?) -> String? {
-    guard let secret = secret
+func decrypt(secret secretBase64: String?) -> String? {
+    guard let secretBase64 = secretBase64
     else { return nil }
 
-    var length = mpw_base64_decode_max( secret )
-    guard length > 0
+    var secretLength = mpw_base64_decode_max( secretBase64 ), keyLength = 0
+    guard secretLength > 0
     else { return nil }
 
-    guard let key = mpw_unhex( appSecret )
+    guard let key = mpw_unhex( appSecret, &keyLength )
     else { return nil }
     defer { key.deallocate() }
 
-    var base64 = Data( count: length )
-    length = base64.withUnsafeMutableBytes { mpw_base64_decode( $0.bindMemory( to: UInt8.self ).baseAddress!, secret ) }
+    var secretData = Data( count: secretLength )
+    secretLength = secretData.withUnsafeMutableBytes { mpw_base64_decode( $0.bindMemory( to: UInt8.self ).baseAddress!, secretBase64 ) }
 
-    return base64.withUnsafeBytes {
-        String( decode: mpw_aes_decrypt( key, appSecret.lengthOfBytes( using: .utf8 ) / 2,
-                                         $0.bindMemory( to: UInt8.self ).baseAddress!, &length ),
-                length: length, deallocate: true )
+    return secretData.withUnsafeBytes {
+        String( decode: mpw_aes_decrypt( key, keyLength, $0.bindMemory( to: UInt8.self ).baseAddress!, &secretLength ),
+                length: secretLength, deallocate: true )
     }
 }
 
