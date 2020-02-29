@@ -32,22 +32,24 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        dbg("isRegisteredForRemoteNotifications: %d", UIApplication.shared.isRegisteredForRemoteNotifications)
-        dbg("currentUserNotificationSettings: %@", UIApplication.shared.currentUserNotificationSettings)
+        dbg( "isRegisteredForRemoteNotifications: %d", UIApplication.shared.isRegisteredForRemoteNotifications )
+        dbg( "currentUserNotificationSettings: %@", UIApplication.shared.currentUserNotificationSettings )
         self.tryDecisions()
 
         return true
     }
 
     func tryDecisions() {
+
+        // Diagnostics decision
         if !appConfig.diagnosticsDecided {
             let controller = UIAlertController( title: "Welcome to \(productName)!", message:
             """
             We want this to be a top-notch experience for you.
-            Diagnostics ensures the app performs perfectly on your device and adds 1 to our number of active users.
+            Diagnostics helps ensure us your app performs ideally and adds 1 to our count of active users.
 
-            We watch out for application bugs, issues, crashes, active user & usage counters.
-            Obviously, personal details or secrets never ever leave your device.
+            We look out for application bugs, issues, crashes & usage counters.
+            Needless to say, no personal details or secrets ever leave your device.
             """, preferredStyle: .actionSheet )
             controller.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
                 appConfig.diagnostics = false
@@ -63,11 +65,12 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
             return
         }
 
-        if !appConfig.notificationsDecided && MPTracker.enabledNotifications() {
+        // Notifications decision
+        if !appConfig.notificationsDecided {
             let controller = UIAlertController( title: "Keeping Safe", message:
             """
             Things move fast in the online world.
-            To keep you safe from password breaches and current on important security news, we inform our users with notifications.
+            To help keep you safe from password breaches and current on important security events, we inform our users through notifications.
 
             Enable notifications to be informed of these important events.
             """, preferredStyle: .actionSheet )
@@ -81,9 +84,15 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
         dbg( "opening: %@, options: %@", url, options )
-        if let utisValue = UTTypeCreateAllIdentifiersForTag(
+        if let components = URLComponents( url: url, resolvingAgainstBaseURL: false ),
+           components.scheme == "volto", components.path == "import" {
+            if let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 ) {
+                MPMarshal.shared.import( data: data )
+            }
+        }
+        else if let utisValue = UTTypeCreateAllIdentifiersForTag(
                 kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
-           let utis = utisValue as? Array<String> {
+                let utis = utisValue as? Array<String> {
             for format in MPMarshalFormat.allCases {
                 if let uti = format.uti, utis.contains( uti ) {
                     dbg( "connecting to: %@", url )

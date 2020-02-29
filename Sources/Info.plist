@@ -10,9 +10,12 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeIconFiles</key>
-			<array/>
+			<array>
+				<string>Icon-320.png</string>
+				<string>Icon-64.png</string>
+			</array>
 			<key>CFBundleTypeName</key>
-			<string>mPass sites export</string>
+			<string>Volto sites export</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
@@ -22,9 +25,12 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeIconFiles</key>
-			<array/>
+			<array>
+				<string>Icon-320.png</string>
+				<string>Icon-64.png</string>
+			</array>
 			<key>CFBundleTypeName</key>
-			<string>mPass JSON export</string>
+			<string>Volto JSON export</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
@@ -45,6 +51,21 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLIconFile</key>
+			<string>Icon-320</string>
+			<key>CFBundleURLName</key>
+			<string>app.volto</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>volto</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -97,13 +118,14 @@
 				<string>public.utf8-plain-text</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>mPass sites export</string>
+			<string>Volto sites export</string>
+			<key>UTTypeIconFiles</key>
+			<array>
+				<string>Icon-320.png</string>
+				<string>Icon-64.png</string>
+			</array>
 			<key>UTTypeIdentifier</key>
 			<string>com.lyndir.masterpassword.sites</string>
-			<key>UTTypeSize320IconFile</key>
-			<string>Icon-320.png</string>
-			<key>UTTypeSize64IconFile</key>
-			<string>Icon-64.png</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -111,21 +133,26 @@
 					<string>mpsites</string>
 					<string>mpsites.txt</string>
 				</array>
+				<key>public.mime-type</key>
+				<string>text/plain</string>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.utf8-plain-text</string>
+				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>mPass JSON export</string>
+			<string>Volto JSON export</string>
+			<key>UTTypeIconFiles</key>
+			<array>
+				<string>Icon-320.png</string>
+				<string>Icon-64.png</string>
+			</array>
 			<key>UTTypeIdentifier</key>
 			<string>com.lyndir.masterpassword.json</string>
-			<key>UTTypeSize320IconFile</key>
-			<string>Icon-320.png</string>
-			<key>UTTypeSize64IconFile</key>
-			<string>Icon-64.png</string>
+			<key>UTTypeReferenceURL</key>
+			<string>https://gitlab.com/MasterPassword/MasterPassword/-/wikis/File-Format</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -133,6 +160,8 @@
 					<string>mpjson</string>
 					<string>mpsites.json</string>
 				</array>
+				<key>public.mime-type</key>
+				<string>text/plain</string>
 			</dict>
 		</dict>
 	</array>
