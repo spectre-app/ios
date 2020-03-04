@@ -100,6 +100,26 @@
 		DA67460E18DE7F0C00DFE240 /* Exo2.0-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460A18DE7F0C00DFE240 /* Exo2.0-Regular.otf */; };
 		DA67460F18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460B18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf */; };
 		DA67461018DE7F0C00DFE240 /* Exo2.0-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA67460C18DE7F0C00DFE240 /* Exo2.0-Bold.otf */; };
+		DA721741240F81EB00673153 /* Icon-16.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DC12407515000000F77 /* Icon-16.png */; };
+		DA721742240F81EB00673153 /* Icon-20.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DB92407514F00000F77 /* Icon-20.png */; };
+		DA721743240F81EB00673153 /* Icon-29.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DBA2407514F00000F77 /* Icon-29.png */; };
+		DA721744240F81EB00673153 /* Icon-32.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DC22407515000000F77 /* Icon-32.png */; };
+		DA721745240F81EB00673153 /* Icon-40.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DB72407514F00000F77 /* Icon-40.png */; };
+		DA721746240F81EB00673153 /* Icon-58.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DBF2407515000000F77 /* Icon-58.png */; };
+		DA721747240F81EB00673153 /* Icon-60.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBB219DAD4D000FF010B /* Icon-60.png */; };
+		DA721748240F81EB00673153 /* Icon-64.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBE719DAD6DE00FF010B /* Icon-64.png */; };
+		DA721749240F81EB00673153 /* Icon-76.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBB519DAD4D000FF010B /* Icon-76.png */; };
+		DA72174A240F81EB00673153 /* Icon-80.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DB52407514E00000F77 /* Icon-80.png */; };
+		DA72174B240F81EB00673153 /* Icon-87.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DC42407515000000F77 /* Icon-87.png */; };
+		DA72174C240F81EB00673153 /* Icon-120.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DB62407514F00000F77 /* Icon-120.png */; };
+		DA72174D240F81EB00673153 /* Icon-128.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DC02407515000000F77 /* Icon-128.png */; };
+		DA72174E240F81EB00673153 /* Icon-152.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DBB2407514F00000F77 /* Icon-152.png */; };
+		DA72174F240F81EB00673153 /* Icon-167.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DBE2407515000000F77 /* Icon-167.png */; };
+		DA721750240F81EB00673153 /* Icon-180.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DBC2407514F00000F77 /* Icon-180.png */; };
+		DA721751240F81EB00673153 /* Icon-256.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DB82407514F00000F77 /* Icon-256.png */; };
+		DA721752240F81EB00673153 /* Icon-320.png in Resources */ = {isa = PBXBuildFile; fileRef = DA24EBE619DAD6DE00FF010B /* Icon-320.png */; };
+		DA721753240F81EB00673153 /* Icon-512.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DC32407515000000F77 /* Icon-512.png */; };
+		DA721754240F81EB00673153 /* Icon-1024.png in Resources */ = {isa = PBXBuildFile; fileRef = DA742DBD2407515000000F77 /* Icon-1024.png */; };
 		DA854C8318D4CFBF00106317 /* avatar-add@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA854C8118D4CFBF00106317 /* avatar-add@2x.png */; };
 		DA854C8418D4CFBF00106317 /* avatar-add.png in Resources */ = {isa = PBXBuildFile; fileRef = DA854C8218D4CFBF00106317 /* avatar-add.png */; };
 		DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA945C8617E3F3FD0053236B /* Images.xcassets */; };
@@ -1305,20 +1325,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */,
+				DA721753240F81EB00673153 /* Icon-512.png in Resources */,
 				DA854C8318D4CFBF00106317 /* avatar-add@2x.png in Resources */,
 				DA071BF4190187FE00179766 /* empty.png in Resources */,
+				DA721751240F81EB00673153 /* Icon-256.png in Resources */,
 				DA67460D18DE7F0C00DFE240 /* Exo2.0-Thin.otf in Resources */,
 				DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */,
 				DABD39371711E29700CF925C /* avatar-0.png in Resources */,
 				DABD39381711E29700CF925C /* avatar-0@2x.png in Resources */,
 				DABD39391711E29700CF925C /* avatar-1.png in Resources */,
+				DA72174C240F81EB00673153 /* Icon-120.png in Resources */,
+				DA721742240F81EB00673153 /* Icon-20.png in Resources */,
 				DABD393A1711E29700CF925C /* avatar-10.png in Resources */,
 				DABD393B1711E29700CF925C /* avatar-10@2x.png in Resources */,
 				DABD393C1711E29700CF925C /* avatar-11.png in Resources */,
 				DABD393D1711E29700CF925C /* avatar-11@2x.png in Resources */,
+				DA721743240F81EB00673153 /* Icon-29.png in Resources */,
 				DABD393E1711E29700CF925C /* avatar-12.png in Resources */,
 				DABD393F1711E29700CF925C /* avatar-12@2x.png in Resources */,
 				DAD8047023BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf in Resources */,
+				DA721749240F81EB00673153 /* Icon-76.png in Resources */,
+				DA721744240F81EB00673153 /* Icon-32.png in Resources */,
 				DAD8046E23BED8BB000A4E86 /* Font Awesome 5 Pro-Light-300.otf in Resources */,
 				DA67461018DE7F0C00DFE240 /* Exo2.0-Bold.otf in Resources */,
 				DABD39401711E29700CF925C /* avatar-13.png in Resources */,
@@ -1326,28 +1353,39 @@
 				DABD39421711E29700CF925C /* avatar-14.png in Resources */,
 				DABD39431711E29700CF925C /* avatar-14@2x.png in Resources */,
 				DABD39441711E29700CF925C /* avatar-15.png in Resources */,
+				DA721754240F81EB00673153 /* Icon-1024.png in Resources */,
 				DABD39451711E29700CF925C /* avatar-15@2x.png in Resources */,
 				DABD39461711E29700CF925C /* avatar-16.png in Resources */,
 				DABD39471711E29700CF925C /* avatar-16@2x.png in Resources */,
 				DAD8047323C52D69000A4E86 /* MPSecrets.xcconfig in Resources */,
 				DABD39481711E29700CF925C /* avatar-17.png in Resources */,
 				DABD39491711E29700CF925C /* avatar-17@2x.png in Resources */,
+				DA72174A240F81EB00673153 /* Icon-80.png in Resources */,
+				DA721750240F81EB00673153 /* Icon-180.png in Resources */,
+				DA721745240F81EB00673153 /* Icon-40.png in Resources */,
 				DAD8046C23BED8BB000A4E86 /* Font Awesome 5 Pro-Regular-400.otf in Resources */,
 				DABD394A1711E29700CF925C /* avatar-18.png in Resources */,
 				DABD394B1711E29700CF925C /* avatar-18@2x.png in Resources */,
+				DA72174B240F81EB00673153 /* Icon-87.png in Resources */,
+				DA721747240F81EB00673153 /* Icon-60.png in Resources */,
 				DABD394C1711E29700CF925C /* avatar-1@2x.png in Resources */,
 				DA071BF3190187FE00179766 /* empty@2x.png in Resources */,
 				DA67460E18DE7F0C00DFE240 /* Exo2.0-Regular.otf in Resources */,
 				DABD394D1711E29700CF925C /* avatar-2.png in Resources */,
 				DABD394E1711E29700CF925C /* avatar-2@2x.png in Resources */,
 				DABD394F1711E29700CF925C /* avatar-3.png in Resources */,
+				DA721748240F81EB00673153 /* Icon-64.png in Resources */,
 				DA67460F18DE7F0C00DFE240 /* Exo2.0-ExtraBold.otf in Resources */,
 				DABD39501711E29700CF925C /* avatar-3@2x.png in Resources */,
 				DABD39511711E29700CF925C /* avatar-4.png in Resources */,
 				DABD39521711E29700CF925C /* avatar-4@2x.png in Resources */,
 				DABD39531711E29700CF925C /* avatar-5.png in Resources */,
+				DA72174D240F81EB00673153 /* Icon-128.png in Resources */,
 				DABD39541711E29700CF925C /* avatar-5@2x.png in Resources */,
 				DABD39551711E29700CF925C /* avatar-6.png in Resources */,
+				DA721741240F81EB00673153 /* Icon-16.png in Resources */,
+				DA721752240F81EB00673153 /* Icon-320.png in Resources */,
+				DA721746240F81EB00673153 /* Icon-58.png in Resources */,
 				DABD39561711E29700CF925C /* avatar-6@2x.png in Resources */,
 				DABD39571711E29700CF925C /* avatar-7.png in Resources */,
 				DABD39581711E29700CF925C /* avatar-7@2x.png in Resources */,
@@ -1358,9 +1396,11 @@
 				DABD395B1711E29700CF925C /* avatar-9.png in Resources */,
 				DABD395C1711E29700CF925C /* avatar-9@2x.png in Resources */,
 				DA945C8717E3F3FD0053236B /* Images.xcassets in Resources */,
+				DA72174E240F81EB00673153 /* Icon-152.png in Resources */,
 				DABD39871711E29700CF925C /* SourceCodePro-Black.otf in Resources */,
 				DABD39881711E29700CF925C /* SourceCodePro-ExtraLight.otf in Resources */,
 				DA3BCFCB19BD09D5006B2681 /* SourceCodePro-Regular.otf in Resources */,
+				DA72174F240F81EB00673153 /* Icon-167.png in Resources */,
 				DA854C8418D4CFBF00106317 /* avatar-add.png in Resources */,
 				DAD8046D23BED8BB000A4E86 /* Font Awesome 5 Brands-Regular-400.otf in Resources */,
 				DABD3FCA1712446200CF925C /* cloud.png in Resources */,

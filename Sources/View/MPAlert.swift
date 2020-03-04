@@ -59,9 +59,10 @@ class MPAlert {
     // MARK: --- Interface ---
 
     @discardableResult
-    public func show(in view: UIView? = nil, dismissAutomatically: Bool = true) -> Self {
-        log( level: self.level, "[ %@ ]", [ self.title ] )
-        trc( "> %@: %@", self.message, self.details )
+    public func show(in view: UIView? = nil, dismissAutomatically: Bool = true,
+                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) -> Self {
+        log( file: file, line: line, function: function, dso: dso, level: self.level, "[ %@ ]", [ self.title ] )
+        trc( file: file, line: line, function: function, dso: dso, "> %@: %@", self.message, self.details )
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
@@ -173,7 +174,8 @@ class MPAlert {
     }
 }
 
-public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil) {
+public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil,
+                    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
     var errorDetails = details?.description
     if let error = error {
         if let errorDetails_ = errorDetails {
@@ -184,5 +186,6 @@ public func mperror(title: String, message: CustomStringConvertible? = nil, deta
         }
     }
 
-    MPAlert( title: title, message: message?.description, details: errorDetails, level: .error ).show()
+    MPAlert( title: title, message: message?.description, details: errorDetails, level: .error )
+            .show( file: file, line: line, function: function, dso: dso )
 }

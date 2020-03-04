@@ -19,6 +19,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 UIView.animate( withDuration: 0.382 ) {
                     self.userToolbarConfiguration.activated = self.selectedFile != nil
 
+                    self.userEvent?.end( [ "result": "deselected" ] )
                     if let selectedItem = self.usersSpinner.selectedItem {
                         MPFeedback.shared.play( .activate )
 
@@ -27,9 +28,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                             "items": self.usersSpinner.numberOfItems( inSection: 0 ),
                         ] )
                         self.userEvent = MPTracker.shared.begin( named: "users #user" )
-                    }
-                    else {
-                        self.userEvent?.end( [ "result": "deselected" ] )
+                    } else {
+                        self.userEvent = nil
                     }
                 }
             }

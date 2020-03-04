@@ -35,7 +35,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public var masterKeyID: String? {
         didSet {
-            if oldValue != self.masterKeyID {
+            if !mpw_id_buf_equals( oldValue, self.masterKeyID ) {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -184,7 +184,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             if self.masterKeyID == nil {
                 self.masterKeyID = authKeyID
             }
-            if self.masterKeyID != authKeyID {
+            if !mpw_id_buf_equals( self.masterKeyID, authKeyID ) {
                 throw MPError.state( details: "Incorrect master key for user." )
             }
         }.then { (result: Result<Void, Error>) -> MPUser in

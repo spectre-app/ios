@@ -181,7 +181,7 @@ class MPTracker: MPConfigObserver {
     }
 
     func login(user: MPUser) {
-        guard let keyId = user.masterKeyID, let userId = digest( value: keyId ), let userName = digest( value: user.fullName )
+        guard let keyId = user.masterKeyID?.uppercased(), let userId = digest( value: keyId ), let userName = digest( value: user.fullName )
         else { return }
 
         if let activeUserId = Sentry.Client.shared?.user?.userId {
