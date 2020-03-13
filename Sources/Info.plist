@@ -11,8 +11,9 @@
 		<dict>
 			<key>CFBundleTypeIconFiles</key>
 			<array>
-				<string>Icon-320.png</string>
 				<string>Icon-64.png</string>
+				<string>Icon-320.png</string>
+				<string>Icon-1024.png</string>
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Volto sites export</string>
@@ -26,8 +27,9 @@
 		<dict>
 			<key>CFBundleTypeIconFiles</key>
 			<array>
-				<string>Icon-320.png</string>
 				<string>Icon-64.png</string>
+				<string>Icon-320.png</string>
+				<string>Icon-1024.png</string>
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Volto JSON export</string>
@@ -57,7 +59,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLIconFile</key>
-			<string>Icon-320</string>
+			<string>Icon-1024</string>
 			<key>CFBundleURLName</key>
 			<string>app.volto</string>
 			<key>CFBundleURLSchemes</key>
@@ -80,7 +82,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>faceidstring</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2011-2019, Maarten Billemont</string>
+	<string>© 2011-2020, Maarten Billemont</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Exo2.0-Bold.otf</string>
@@ -121,8 +123,9 @@
 			<string>Volto sites export</string>
 			<key>UTTypeIconFiles</key>
 			<array>
-				<string>Icon-320.png</string>
 				<string>Icon-64.png</string>
+				<string>Icon-320.png</string>
+				<string>Icon-1024.png</string>
 			</array>
 			<key>UTTypeIdentifier</key>
 			<string>com.lyndir.masterpassword.sites</string>
@@ -146,8 +149,9 @@
 			<string>Volto JSON export</string>
 			<key>UTTypeIconFiles</key>
 			<array>
-				<string>Icon-320.png</string>
 				<string>Icon-64.png</string>
+				<string>Icon-320.png</string>
+				<string>Icon-1024.png</string>
 			</array>
 			<key>UTTypeIdentifier</key>
 			<string>com.lyndir.masterpassword.json</string>

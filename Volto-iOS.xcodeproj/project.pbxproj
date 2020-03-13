@@ -515,6 +515,7 @@
 		DABD3FC91712446200CF925C /* cloud@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cloud@2x.png"; sourceTree = "<group>"; };
 		DABD3FCC1714F45B00CF925C /* identity.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = identity.png; sourceTree = "<group>"; };
 		DABD3FCD1714F45B00CF925C /* identity@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "identity@2x.png"; sourceTree = "<group>"; };
+		DABD5EF0241BE6BE00200755 /* Volto.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Volto.entitlements; sourceTree = "<group>"; };
 		DAC632871486D95D0075AEA5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		DAC793D8204CE76A00EC597C /* lock@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock@2x.png"; sourceTree = "<group>"; };
 		DAC793D9204CE76B00EC597C /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock.png; sourceTree = "<group>"; };
@@ -525,7 +526,6 @@
 		DAD8046A23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Duotone-Solid-900.otf"; sourceTree = "<group>"; };
 		DAD8046B23BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Solid-900.otf"; sourceTree = "<group>"; };
 		DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MPSecrets.xcconfig; sourceTree = "<group>"; };
-		DAE4AC30235B623000CDD88A /* Entitlements.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Entitlements.entitlements; sourceTree = "<group>"; };
 		DAE6E18D22CC3CE100DE0342 /* MasterPassword 5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 5.xcdatamodel"; sourceTree = "<group>"; };
 		DAE6E18E22CC3CE100DE0342 /* MasterPassword 9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 9.xcdatamodel"; sourceTree = "<group>"; };
 		DAE6E18F22CC3CE100DE0342 /* MasterPassword 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 3.xcdatamodel"; sourceTree = "<group>"; };
@@ -773,7 +773,6 @@
 		DA4A0BDE201443F4004E2CE5 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				DAE4AC30235B623000CDD88A /* Entitlements.entitlements */,
 				DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */,
 				DA4A0C1F201531B9004E2CE5 /* Info.plist */,
 				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
@@ -787,6 +786,7 @@
 		DA5BFA39147E415C00F98B1E = {
 			isa = PBXGroup;
 			children = (
+				DABD5EF0241BE6BE00200755 /* Volto.entitlements */,
 				93D39A2239FFFE6BEC83E191 /* core */,
 				DACA22121705DDC5002C6C22 /* External */,
 				DA5BFA47147E415C00F98B1E /* Frameworks */,
@@ -1770,7 +1770,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Entitlements.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/Volto.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
@@ -2118,7 +2118,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Entitlements.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/Volto.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
@@ -2161,7 +2161,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Entitlements.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/Volto.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
