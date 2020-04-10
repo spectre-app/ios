@@ -8,6 +8,7 @@
 # Junk
 .DS_Store
 Thumbs.db
+*~
 
 # IntelliJ
 .idea
