@@ -17,4 +17,4 @@ build_project:
     - brew
     - cocoapods
     - java_9
-    - xcode_9
+    - xcode_11
