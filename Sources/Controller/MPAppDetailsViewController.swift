@@ -92,7 +92,8 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     update: {
                         if $1 {
                             MPTracker.enableNotifications()
-                        } else {
+                        }
+                        else {
                             MPTracker.disableNotifications()
                         }
                     },
@@ -221,7 +222,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     if let url = self.link?.url {
                         trc( "Opening link: %@", url )
 
-                        UIApplication.shared.openURL( url )
+                        UIApplication.shared.open( url )
                     }
                 }
 

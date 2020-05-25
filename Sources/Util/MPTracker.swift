@@ -56,40 +56,42 @@ class MPTracker: MPConfigObserver {
 
         // Breadcrumbs & errors
         mpw_log_sink_register( {
-            if let logEvent = $0?.pointee, logEvent.level <= .info,
-               let record = MPLogRecord( logEvent ) {
+            guard let logEvent = $0?.pointee, logEvent.level <= .info,
+                  let record = MPLogRecord( logEvent )
+            else { return false }
 
-                var sentrySeverity = SentrySeverity.debug
-                switch record.level {
-                    case .info:
-                        sentrySeverity = .info
-                    case .warning:
-                        sentrySeverity = .warning
-                    case .error:
-                        sentrySeverity = .error
-                    case .fatal:
-                        sentrySeverity = .fatal
-                    default: ()
-                }
-
-                if record.level <= .error {
-                    let event = Event( level: sentrySeverity )
-                    event.message = record.message
-                    event.logger = "mpw"
-                    event.timestamp = record.occurrence
-                    event.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
-                    Sentry.Client.shared?.appendStacktrace( to: event )
-                    Sentry.Client.shared?.send( event: event )
-                }
-                else {
-                    let breadcrumb = Breadcrumb( level: sentrySeverity, category: "mpw" )
-                    breadcrumb.type = "log"
-                    breadcrumb.message = record.message
-                    breadcrumb.timestamp = record.occurrence
-                    breadcrumb.data = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
-                    Sentry.Client.shared?.breadcrumbs.add( breadcrumb )
-                }
+            var sentrySeverity = SentrySeverity.debug
+            switch record.level {
+                case .info:
+                    sentrySeverity = .info
+                case .warning:
+                    sentrySeverity = .warning
+                case .error:
+                    sentrySeverity = .error
+                case .fatal:
+                    sentrySeverity = .fatal
+                default: ()
             }
+
+            if record.level <= .error {
+                let event = Event( level: sentrySeverity )
+                event.message = record.message
+                event.logger = "mpw"
+                event.timestamp = record.occurrence
+                event.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                Sentry.Client.shared?.appendStacktrace( to: event )
+                Sentry.Client.shared?.send( event: event )
+            }
+            else {
+                let breadcrumb = Breadcrumb( level: sentrySeverity, category: "mpw" )
+                breadcrumb.type = "log"
+                breadcrumb.message = record.message
+                breadcrumb.timestamp = record.occurrence
+                breadcrumb.data = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                Sentry.Client.shared?.breadcrumbs.add( breadcrumb )
+            }
+
+            return true
         } )
 
         self.logout()
@@ -97,29 +99,20 @@ class MPTracker: MPConfigObserver {
     }
 
     static func enabledNotifications() -> Bool {
-        UIApplication.shared.isRegisteredForRemoteNotifications &&
-                !(UIApplication.shared.currentUserNotificationSettings?.types.isEmpty ?? true)
+        UIApplication.shared.isRegisteredForRemoteNotifications
     }
 
     static func enableNotifications() {
         appConfig.notificationsDecided = true
         UIApplication.shared.registerForRemoteNotifications()
 
-        if #available( iOS 10, * ) {
-            Countly.sharedInstance().askForNotificationPermission { _, _ in
-                UNUserNotificationCenter.current().getNotificationSettings {
-                    if $0.authorizationStatus != .authorized {
-                        if let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
-                            UIApplication.shared.open( settingsURL )
-                        }
+        Countly.sharedInstance().askForNotificationPermission { _, _ in
+            UNUserNotificationCenter.current().getNotificationSettings {
+                if $0.authorizationStatus != .authorized {
+                    if let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+                        UIApplication.shared.open( settingsURL )
                     }
                 }
-            }
-        }
-        else {
-            Countly.sharedInstance().askForNotificationPermission()
-            if !self.enabledNotifications(), let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
-                UIApplication.shared.openURL( settingsURL )
             }
         }
     }
@@ -127,21 +120,17 @@ class MPTracker: MPConfigObserver {
     static func disableNotifications() {
         appConfig.notificationsDecided = true
         UIApplication.shared.unregisterForRemoteNotifications()
-
-        if self.enabledNotifications(), let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
-            UIApplication.shared.openURL( settingsURL )
-        }
     }
 
     lazy var deviceIdentifier = self.identifier( for: "device", attributes: [
         kSecAttrDescription: "Unique identifier for the device on this app.",
-        kSecAttrAccessible: kSecAttrAccessibleAlwaysThisDeviceOnly,
+        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: false,
     ] )
 
     lazy var ownerIdentifier = self.identifier( for: "owner", attributes: [
         kSecAttrDescription: "Unique identifier for the owner of this app.",
-        kSecAttrAccessible: kSecAttrAccessibleAlways,
+        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: true,
     ] )
 

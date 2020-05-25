@@ -144,8 +144,8 @@ extension MPIdenticon: Equatable {
 extension MPIdenticonColor {
     public func ui() -> UIColor {
         switch self {
-            case .black:
-                return .black
+            case .unset:
+                return .clear
             case .red:
                 return .red
             case .green:
@@ -158,8 +158,13 @@ extension MPIdenticonColor {
                 return .magenta
             case .cyan:
                 return .cyan
-            case .white:
-                return .white
+            case .mono:
+                if #available( iOS 13, * ) {
+                    return .label
+                }
+                else {
+                    return .lightText
+                }
             default:
                 fatalError( "Unsupported color: \(self)" )
         }

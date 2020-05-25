@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -172,6 +172,8 @@
 		DABD3FCB1712446200CF925C /* cloud@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FC91712446200CF925C /* cloud@2x.png */; };
 		DABD3FCE1714F45C00CF925C /* identity.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FCC1714F45B00CF925C /* identity.png */; };
 		DABD3FCF1714F45C00CF925C /* identity@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FCD1714F45B00CF925C /* identity@2x.png */; };
+		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
+		DAC51056247C6FE9006CC5D6 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = DAC51055247C6FE9006CC5D6 /* Logging */; };
 		DAC793DA204CE76B00EC597C /* lock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D8204CE76A00EC597C /* lock@2x.png */; };
 		DAC793DB204CE76B00EC597C /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D9204CE76B00EC597C /* lock.png */; };
 		DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */ = {isa = PBXBuildFile; fileRef = DACA29721705E1A8002C6C22 /* dictionary.lst */; };
@@ -183,7 +185,6 @@
 		DAD8047323C52D69000A4E86 /* MPSecrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */; };
 		DAF560502393411A000475BA /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DAF5605123934134000475BA /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
-		DAF5605223934176000475BA /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -366,90 +367,8 @@
 		DA9986F7237C5710001FD155 /* libicucore.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libicucore.tbd; path = usr/lib/libicucore.tbd; sourceTree = SDKROOT; };
 		DAA449D01EEC4B5800E7BDD5 /* mpw-marshal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-marshal.c"; sourceTree = "<group>"; };
 		DAA449D11EEC4B5800E7BDD5 /* mpw-marshal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-marshal.h"; sourceTree = "<group>"; };
-		DAA7BB7020C4C0C400101DC7 /* printbuf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = printbuf.h; sourceTree = "<group>"; };
-		DAA7BB7120C4C0C400101DC7 /* math_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math_compat.h; sourceTree = "<group>"; };
-		DAA7BB7220C4C0C400101DC7 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
-		DAA7BB7320C4C0C400101DC7 /* vasprintf_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vasprintf_compat.h; sourceTree = "<group>"; };
-		DAA7BB7420C4C0C400101DC7 /* json_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_util.h; sourceTree = "<group>"; };
-		DAA7BB7520C4C0C400101DC7 /* json_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_config.h; sourceTree = "<group>"; };
-		DAA7BB7620C4C0C400101DC7 /* json_pointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_pointer.h; sourceTree = "<group>"; };
-		DAA7BB7720C4C0C400101DC7 /* json_visit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_visit.h; sourceTree = "<group>"; };
-		DAA7BB7820C4C0C400101DC7 /* random_seed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = random_seed.h; sourceTree = "<group>"; };
-		DAA7BB7920C4C0C400101DC7 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
-		DAA7BB7A20C4C0C400101DC7 /* json_c_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_c_version.h; sourceTree = "<group>"; };
-		DAA7BB7B20C4C0C400101DC7 /* json_object_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object_private.h; sourceTree = "<group>"; };
-		DAA7BB7C20C4C0C400101DC7 /* strerror_override.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = strerror_override.h; sourceTree = "<group>"; };
-		DAA7BB7D20C4C0C400101DC7 /* arraylist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arraylist.h; sourceTree = "<group>"; };
-		DAA7BB7E20C4C0C400101DC7 /* linkhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linkhash.h; sourceTree = "<group>"; };
-		DAA7BB7F20C4C0C400101DC7 /* json_tokener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_tokener.h; sourceTree = "<group>"; };
-		DAA7BB8020C4C0C400101DC7 /* json_object_iterator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object_iterator.h; sourceTree = "<group>"; };
-		DAA7BB8120C4C0C400101DC7 /* json_inttypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_inttypes.h; sourceTree = "<group>"; };
-		DAA7BB8220C4C0C400101DC7 /* bits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bits.h; sourceTree = "<group>"; };
-		DAA7BB8320C4C0C400101DC7 /* strdup_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = strdup_compat.h; sourceTree = "<group>"; };
-		DAA7BB8420C4C0C400101DC7 /* json_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object.h; sourceTree = "<group>"; };
 		DAA7BB8620C4C0C400101DC7 /* libjson-c.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libjson-c.a"; sourceTree = "<group>"; };
 		DAA7BB8A20C4C10F00101DC7 /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsodium.a; sourceTree = "<group>"; };
-		DAA7BB8C20C4C10F00101DC7 /* crypto_stream_salsa2012.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa2012.h; sourceTree = "<group>"; };
-		DAA7BB8D20C4C10F00101DC7 /* crypto_auth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth.h; sourceTree = "<group>"; };
-		DAA7BB8E20C4C10F00101DC7 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
-		DAA7BB8F20C4C10F00101DC7 /* crypto_core_hchacha20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_hchacha20.h; sourceTree = "<group>"; };
-		DAA7BB9020C4C10F00101DC7 /* crypto_hash_sha512.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_hash_sha512.h; sourceTree = "<group>"; };
-		DAA7BB9120C4C10F00101DC7 /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
-		DAA7BB9220C4C10F00101DC7 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
-		DAA7BB9320C4C10F00101DC7 /* export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = export.h; sourceTree = "<group>"; };
-		DAA7BB9420C4C10F00101DC7 /* randombytes_salsa20_random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = randombytes_salsa20_random.h; sourceTree = "<group>"; };
-		DAA7BB9520C4C10F00101DC7 /* crypto_core_salsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_salsa20.h; sourceTree = "<group>"; };
-		DAA7BB9620C4C10F00101DC7 /* crypto_shorthash_siphash24.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_shorthash_siphash24.h; sourceTree = "<group>"; };
-		DAA7BB9720C4C10F00101DC7 /* randombytes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = randombytes.h; sourceTree = "<group>"; };
-		DAA7BB9820C4C10F00101DC7 /* crypto_hash_sha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_hash_sha256.h; sourceTree = "<group>"; };
-		DAA7BB9920C4C10F00101DC7 /* crypto_stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream.h; sourceTree = "<group>"; };
-		DAA7BB9A20C4C10F00101DC7 /* crypto_auth_hmacsha512.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth_hmacsha512.h; sourceTree = "<group>"; };
-		DAA7BB9B20C4C10F00101DC7 /* crypto_aead_xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_aead_xchacha20poly1305.h; sourceTree = "<group>"; };
-		DAA7BB9C20C4C10F00101DC7 /* crypto_stream_salsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa20.h; sourceTree = "<group>"; };
-		DAA7BB9D20C4C10F00101DC7 /* crypto_onetimeauth_poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_onetimeauth_poly1305.h; sourceTree = "<group>"; };
-		DAA7BB9E20C4C10F00101DC7 /* crypto_kx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_kx.h; sourceTree = "<group>"; };
-		DAA7BB9F20C4C10F00101DC7 /* crypto_hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_hash.h; sourceTree = "<group>"; };
-		DAA7BBA020C4C10F00101DC7 /* crypto_sign.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_sign.h; sourceTree = "<group>"; };
-		DAA7BBA120C4C10F00101DC7 /* crypto_kdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_kdf.h; sourceTree = "<group>"; };
-		DAA7BBA220C4C10F00101DC7 /* crypto_auth_hmacsha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth_hmacsha256.h; sourceTree = "<group>"; };
-		DAA7BBA320C4C10F00101DC7 /* crypto_box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_box.h; sourceTree = "<group>"; };
-		DAA7BBA420C4C10F00101DC7 /* crypto_verify_32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_verify_32.h; sourceTree = "<group>"; };
-		DAA7BBA520C4C10F00101DC7 /* crypto_stream_xchacha20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_xchacha20.h; sourceTree = "<group>"; };
-		DAA7BBA620C4C10F00101DC7 /* crypto_core_salsa208.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_salsa208.h; sourceTree = "<group>"; };
-		DAA7BBA720C4C10F00101DC7 /* crypto_auth_hmacsha512256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth_hmacsha512256.h; sourceTree = "<group>"; };
-		DAA7BBA820C4C10F00101DC7 /* crypto_aead_chacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_aead_chacha20poly1305.h; sourceTree = "<group>"; };
-		DAA7BBA920C4C10F00101DC7 /* randombytes_sysrandom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = randombytes_sysrandom.h; sourceTree = "<group>"; };
-		DAA7BBAA20C4C10F00101DC7 /* runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = runtime.h; sourceTree = "<group>"; };
-		DAA7BBAB20C4C10F00101DC7 /* crypto_stream_salsa208.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa208.h; sourceTree = "<group>"; };
-		DAA7BBAC20C4C10F00101DC7 /* crypto_aead_aes256gcm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_aead_aes256gcm.h; sourceTree = "<group>"; };
-		DAA7BBAD20C4C10F00101DC7 /* crypto_core_salsa2012.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_salsa2012.h; sourceTree = "<group>"; };
-		DAA7BBAE20C4C10F00101DC7 /* crypto_secretbox_xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_xchacha20poly1305.h; sourceTree = "<group>"; };
-		DAA7BBAF20C4C10F00101DC7 /* crypto_scalarmult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_scalarmult.h; sourceTree = "<group>"; };
-		DAA7BBB020C4C10F00101DC7 /* crypto_pwhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash.h; sourceTree = "<group>"; };
-		DAA7BBB120C4C10F00101DC7 /* crypto_verify_16.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_verify_16.h; sourceTree = "<group>"; };
-		DAA7BBB220C4C10F00101DC7 /* crypto_stream_chacha20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_chacha20.h; sourceTree = "<group>"; };
-		DAA7BBB320C4C10F00101DC7 /* crypto_stream_xsalsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_xsalsa20.h; sourceTree = "<group>"; };
-		DAA7BBB420C4C10F00101DC7 /* crypto_core_hsalsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_hsalsa20.h; sourceTree = "<group>"; };
-		DAA7BBB520C4C10F00101DC7 /* crypto_kdf_blake2b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_kdf_blake2b.h; sourceTree = "<group>"; };
-		DAA7BBB620C4C10F00101DC7 /* crypto_scalarmult_curve25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_scalarmult_curve25519.h; sourceTree = "<group>"; };
-		DAA7BBB720C4C10F00101DC7 /* crypto_shorthash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_shorthash.h; sourceTree = "<group>"; };
-		DAA7BBB820C4C10F00101DC7 /* crypto_pwhash_argon2id.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash_argon2id.h; sourceTree = "<group>"; };
-		DAA7BBB920C4C10F00101DC7 /* crypto_secretstream_xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretstream_xchacha20poly1305.h; sourceTree = "<group>"; };
-		DAA7BBBA20C4C10F00101DC7 /* crypto_pwhash_scryptsalsa208sha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash_scryptsalsa208sha256.h; sourceTree = "<group>"; };
-		DAA7BBBB20C4C10F00101DC7 /* crypto_sign_ed25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_sign_ed25519.h; sourceTree = "<group>"; };
-		DAA7BBBC20C4C10F00101DC7 /* crypto_onetimeauth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_onetimeauth.h; sourceTree = "<group>"; };
-		DAA7BBBD20C4C10F00101DC7 /* crypto_verify_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_verify_64.h; sourceTree = "<group>"; };
-		DAA7BBBE20C4C10F00101DC7 /* crypto_box_curve25519xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_box_curve25519xchacha20poly1305.h; sourceTree = "<group>"; };
-		DAA7BBBF20C4C10F00101DC7 /* crypto_core_ed25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_ed25519.h; sourceTree = "<group>"; };
-		DAA7BBC020C4C10F00101DC7 /* crypto_pwhash_argon2i.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash_argon2i.h; sourceTree = "<group>"; };
-		DAA7BBC120C4C10F00101DC7 /* crypto_generichash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_generichash.h; sourceTree = "<group>"; };
-		DAA7BBC220C4C10F00101DC7 /* crypto_secretbox_xsalsa20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_xsalsa20poly1305.h; sourceTree = "<group>"; };
-		DAA7BBC320C4C10F00101DC7 /* crypto_secretbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox.h; sourceTree = "<group>"; };
-		DAA7BBC420C4C10F00101DC7 /* crypto_scalarmult_ed25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_scalarmult_ed25519.h; sourceTree = "<group>"; };
-		DAA7BBC520C4C10F00101DC7 /* crypto_box_curve25519xsalsa20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_box_curve25519xsalsa20poly1305.h; sourceTree = "<group>"; };
-		DAA7BBC620C4C10F00101DC7 /* crypto_generichash_blake2b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_generichash_blake2b.h; sourceTree = "<group>"; };
-		DAA7BBC720C4C10F00101DC7 /* crypto_sign_edwards25519sha512batch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_sign_edwards25519sha512batch.h; sourceTree = "<group>"; };
-		DAA7BBC820C4C10F00101DC7 /* sodium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sodium.h; sourceTree = "<group>"; };
 		DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		DAAC35DD156BD77D00C5FD93 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		DAB07C9B1F7725C500CC6D43 /* aes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes.c; sourceTree = "<group>"; };
@@ -503,6 +422,82 @@
 		DABD3FCC1714F45B00CF925C /* identity.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = identity.png; sourceTree = "<group>"; };
 		DABD3FCD1714F45B00CF925C /* identity@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "identity@2x.png"; sourceTree = "<group>"; };
 		DABD5EF0241BE6BE00200755 /* Volto.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Volto.entitlements; sourceTree = "<group>"; };
+		DAC51052247C672C006CC5D6 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		DAC5106B247C7258006CC5D6 /* crypto_stream_salsa2012.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa2012.h; sourceTree = "<group>"; };
+		DAC5106C247C7258006CC5D6 /* crypto_auth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth.h; sourceTree = "<group>"; };
+		DAC5106D247C7258006CC5D6 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
+		DAC5106E247C7258006CC5D6 /* crypto_core_hchacha20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_hchacha20.h; sourceTree = "<group>"; };
+		DAC5106F247C7258006CC5D6 /* crypto_hash_sha512.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_hash_sha512.h; sourceTree = "<group>"; };
+		DAC51070247C7258006CC5D6 /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
+		DAC51071247C7258006CC5D6 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
+		DAC51072247C7258006CC5D6 /* export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = export.h; sourceTree = "<group>"; };
+		DAC51073247C7258006CC5D6 /* randombytes_salsa20_random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = randombytes_salsa20_random.h; sourceTree = "<group>"; };
+		DAC51074247C7258006CC5D6 /* crypto_core_salsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_salsa20.h; sourceTree = "<group>"; };
+		DAC51075247C7258006CC5D6 /* crypto_shorthash_siphash24.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_shorthash_siphash24.h; sourceTree = "<group>"; };
+		DAC51076247C7258006CC5D6 /* randombytes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = randombytes.h; sourceTree = "<group>"; };
+		DAC51077247C7258006CC5D6 /* crypto_hash_sha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_hash_sha256.h; sourceTree = "<group>"; };
+		DAC51078247C7258006CC5D6 /* crypto_stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream.h; sourceTree = "<group>"; };
+		DAC51079247C7258006CC5D6 /* crypto_auth_hmacsha512.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth_hmacsha512.h; sourceTree = "<group>"; };
+		DAC5107A247C7258006CC5D6 /* crypto_aead_xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_aead_xchacha20poly1305.h; sourceTree = "<group>"; };
+		DAC5107B247C7258006CC5D6 /* crypto_stream_salsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa20.h; sourceTree = "<group>"; };
+		DAC5107C247C7258006CC5D6 /* crypto_onetimeauth_poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_onetimeauth_poly1305.h; sourceTree = "<group>"; };
+		DAC5107D247C7258006CC5D6 /* crypto_kx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_kx.h; sourceTree = "<group>"; };
+		DAC5107E247C7258006CC5D6 /* crypto_hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_hash.h; sourceTree = "<group>"; };
+		DAC5107F247C7258006CC5D6 /* crypto_sign.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_sign.h; sourceTree = "<group>"; };
+		DAC51080247C7258006CC5D6 /* crypto_kdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_kdf.h; sourceTree = "<group>"; };
+		DAC51081247C7258006CC5D6 /* crypto_auth_hmacsha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth_hmacsha256.h; sourceTree = "<group>"; };
+		DAC51082247C7258006CC5D6 /* crypto_box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_box.h; sourceTree = "<group>"; };
+		DAC51083247C7258006CC5D6 /* crypto_verify_32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_verify_32.h; sourceTree = "<group>"; };
+		DAC51084247C7258006CC5D6 /* crypto_stream_xchacha20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_xchacha20.h; sourceTree = "<group>"; };
+		DAC51085247C7258006CC5D6 /* crypto_core_salsa208.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_salsa208.h; sourceTree = "<group>"; };
+		DAC51086247C7258006CC5D6 /* crypto_auth_hmacsha512256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth_hmacsha512256.h; sourceTree = "<group>"; };
+		DAC51087247C7258006CC5D6 /* crypto_aead_chacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_aead_chacha20poly1305.h; sourceTree = "<group>"; };
+		DAC51088247C7258006CC5D6 /* randombytes_sysrandom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = randombytes_sysrandom.h; sourceTree = "<group>"; };
+		DAC51089247C7258006CC5D6 /* runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = runtime.h; sourceTree = "<group>"; };
+		DAC5108A247C7258006CC5D6 /* crypto_stream_salsa208.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa208.h; sourceTree = "<group>"; };
+		DAC5108B247C7258006CC5D6 /* crypto_aead_aes256gcm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_aead_aes256gcm.h; sourceTree = "<group>"; };
+		DAC5108C247C7258006CC5D6 /* crypto_core_salsa2012.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_salsa2012.h; sourceTree = "<group>"; };
+		DAC5108D247C7258006CC5D6 /* crypto_secretbox_xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_xchacha20poly1305.h; sourceTree = "<group>"; };
+		DAC5108E247C7258006CC5D6 /* crypto_scalarmult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_scalarmult.h; sourceTree = "<group>"; };
+		DAC5108F247C7258006CC5D6 /* crypto_pwhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash.h; sourceTree = "<group>"; };
+		DAC51090247C7258006CC5D6 /* crypto_verify_16.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_verify_16.h; sourceTree = "<group>"; };
+		DAC51091247C7258006CC5D6 /* crypto_stream_chacha20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_chacha20.h; sourceTree = "<group>"; };
+		DAC51092247C7258006CC5D6 /* crypto_stream_xsalsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_xsalsa20.h; sourceTree = "<group>"; };
+		DAC51093247C7258006CC5D6 /* crypto_core_hsalsa20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_hsalsa20.h; sourceTree = "<group>"; };
+		DAC51094247C7258006CC5D6 /* crypto_kdf_blake2b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_kdf_blake2b.h; sourceTree = "<group>"; };
+		DAC51095247C7258006CC5D6 /* crypto_scalarmult_curve25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_scalarmult_curve25519.h; sourceTree = "<group>"; };
+		DAC51096247C7258006CC5D6 /* crypto_shorthash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_shorthash.h; sourceTree = "<group>"; };
+		DAC51097247C7258006CC5D6 /* crypto_pwhash_argon2id.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash_argon2id.h; sourceTree = "<group>"; };
+		DAC51098247C7258006CC5D6 /* crypto_secretstream_xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretstream_xchacha20poly1305.h; sourceTree = "<group>"; };
+		DAC51099247C7258006CC5D6 /* crypto_pwhash_scryptsalsa208sha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash_scryptsalsa208sha256.h; sourceTree = "<group>"; };
+		DAC5109A247C7258006CC5D6 /* crypto_sign_ed25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_sign_ed25519.h; sourceTree = "<group>"; };
+		DAC5109B247C7258006CC5D6 /* crypto_onetimeauth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_onetimeauth.h; sourceTree = "<group>"; };
+		DAC5109C247C7258006CC5D6 /* crypto_verify_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_verify_64.h; sourceTree = "<group>"; };
+		DAC5109D247C7258006CC5D6 /* crypto_box_curve25519xchacha20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_box_curve25519xchacha20poly1305.h; sourceTree = "<group>"; };
+		DAC5109E247C7258006CC5D6 /* crypto_core_ed25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_core_ed25519.h; sourceTree = "<group>"; };
+		DAC5109F247C7258006CC5D6 /* crypto_pwhash_argon2i.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_pwhash_argon2i.h; sourceTree = "<group>"; };
+		DAC510A0247C7258006CC5D6 /* crypto_generichash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_generichash.h; sourceTree = "<group>"; };
+		DAC510A1247C7258006CC5D6 /* crypto_secretbox_xsalsa20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_xsalsa20poly1305.h; sourceTree = "<group>"; };
+		DAC510A2247C7258006CC5D6 /* crypto_secretbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox.h; sourceTree = "<group>"; };
+		DAC510A3247C7258006CC5D6 /* crypto_scalarmult_ed25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_scalarmult_ed25519.h; sourceTree = "<group>"; };
+		DAC510A4247C7258006CC5D6 /* crypto_box_curve25519xsalsa20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_box_curve25519xsalsa20poly1305.h; sourceTree = "<group>"; };
+		DAC510A5247C7258006CC5D6 /* crypto_generichash_blake2b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_generichash_blake2b.h; sourceTree = "<group>"; };
+		DAC510A6247C7258006CC5D6 /* crypto_sign_edwards25519sha512batch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_sign_edwards25519sha512batch.h; sourceTree = "<group>"; };
+		DAC510A7247C7258006CC5D6 /* sodium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sodium.h; sourceTree = "<group>"; };
+		DAC510BA247C7286006CC5D6 /* printbuf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = printbuf.h; sourceTree = "<group>"; };
+		DAC510BB247C7286006CC5D6 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
+		DAC510BC247C7286006CC5D6 /* json_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_util.h; sourceTree = "<group>"; };
+		DAC510BD247C7286006CC5D6 /* json_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_config.h; sourceTree = "<group>"; };
+		DAC510BE247C7286006CC5D6 /* json_pointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_pointer.h; sourceTree = "<group>"; };
+		DAC510BF247C7286006CC5D6 /* json_visit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_visit.h; sourceTree = "<group>"; };
+		DAC510C0247C7286006CC5D6 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
+		DAC510C1247C7286006CC5D6 /* json_c_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_c_version.h; sourceTree = "<group>"; };
+		DAC510C2247C7286006CC5D6 /* arraylist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arraylist.h; sourceTree = "<group>"; };
+		DAC510C3247C7286006CC5D6 /* linkhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linkhash.h; sourceTree = "<group>"; };
+		DAC510C4247C7286006CC5D6 /* json_tokener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_tokener.h; sourceTree = "<group>"; };
+		DAC510C5247C7286006CC5D6 /* json_object_iterator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object_iterator.h; sourceTree = "<group>"; };
+		DAC510C6247C7286006CC5D6 /* json_inttypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_inttypes.h; sourceTree = "<group>"; };
+		DAC510C7247C7286006CC5D6 /* json_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object.h; sourceTree = "<group>"; };
 		DAC632871486D95D0075AEA5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		DAC793D8204CE76A00EC597C /* lock@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock@2x.png"; sourceTree = "<group>"; };
 		DAC793D9204CE76B00EC597C /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock.png; sourceTree = "<group>"; };
@@ -522,8 +517,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
+				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
+				DAC51056247C6FE9006CC5D6 /* Logging in Frameworks */,
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
-				DAF5605223934176000475BA /* MobileCoreServices.framework in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
 				D1034D80A3380493FA501237 /* Pods_Volto.framework in Frameworks */,
@@ -746,7 +742,7 @@
 				DABD5EF0241BE6BE00200755 /* Volto.entitlements */,
 				93D39A2239FFFE6BEC83E191 /* core */,
 				DABD3B9F1711E2DB00CF925C /* Source */,
-				DACA22121705DDC5002C6C22 /* External */,
+				DACA22121705DDC5002C6C22 /* Libraries */,
 				DACA23B41705DF7D002C6C22 /* Resources */,
 				DA5BFA47147E415C00F98B1E /* Frameworks */,
 				7FCBA1D987E722EC5E5809F1 /* Pods */,
@@ -765,6 +761,7 @@
 		DA5BFA47147E415C00F98B1E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DAC51052247C672C006CC5D6 /* CoreServices.framework */,
 				DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */,
 				DA9986F7237C5710001FD155 /* libicucore.tbd */,
 				DA9986F5237C56FF001FD155 /* CFNetwork.framework */,
@@ -796,39 +793,11 @@
 		DAA7BB6D20C4C0C400101DC7 /* libjson-c-ios */ = {
 			isa = PBXGroup;
 			children = (
-				DAA7BB6F20C4C0C400101DC7 /* json-c */,
+				DAC510B8247C7286006CC5D6 /* include */,
 				DAA7BB8520C4C0C400101DC7 /* lib */,
 			);
 			name = "libjson-c-ios";
-			path = "../../lib/libjson-c/build-ios~/out";
-			sourceTree = "<group>";
-		};
-		DAA7BB6F20C4C0C400101DC7 /* json-c */ = {
-			isa = PBXGroup;
-			children = (
-				DAA7BB7020C4C0C400101DC7 /* printbuf.h */,
-				DAA7BB7120C4C0C400101DC7 /* math_compat.h */,
-				DAA7BB7220C4C0C400101DC7 /* debug.h */,
-				DAA7BB7320C4C0C400101DC7 /* vasprintf_compat.h */,
-				DAA7BB7420C4C0C400101DC7 /* json_util.h */,
-				DAA7BB7520C4C0C400101DC7 /* json_config.h */,
-				DAA7BB7620C4C0C400101DC7 /* json_pointer.h */,
-				DAA7BB7720C4C0C400101DC7 /* json_visit.h */,
-				DAA7BB7820C4C0C400101DC7 /* random_seed.h */,
-				DAA7BB7920C4C0C400101DC7 /* json.h */,
-				DAA7BB7A20C4C0C400101DC7 /* json_c_version.h */,
-				DAA7BB7B20C4C0C400101DC7 /* json_object_private.h */,
-				DAA7BB7C20C4C0C400101DC7 /* strerror_override.h */,
-				DAA7BB7D20C4C0C400101DC7 /* arraylist.h */,
-				DAA7BB7E20C4C0C400101DC7 /* linkhash.h */,
-				DAA7BB7F20C4C0C400101DC7 /* json_tokener.h */,
-				DAA7BB8020C4C0C400101DC7 /* json_object_iterator.h */,
-				DAA7BB8120C4C0C400101DC7 /* json_inttypes.h */,
-				DAA7BB8220C4C0C400101DC7 /* bits.h */,
-				DAA7BB8320C4C0C400101DC7 /* strdup_compat.h */,
-				DAA7BB8420C4C0C400101DC7 /* json_object.h */,
-			);
-			path = "json-c";
+			path = "libjson-c/build-ios~/out";
 			sourceTree = "<group>";
 		};
 		DAA7BB8520C4C0C400101DC7 /* lib */ = {
@@ -842,12 +811,11 @@
 		DAA7BB8720C4C10F00101DC7 /* libsodium-ios */ = {
 			isa = PBXGroup;
 			children = (
+				DAC51069247C7258006CC5D6 /* include */,
 				DAA7BB8920C4C10F00101DC7 /* lib */,
-				DAA7BB8B20C4C10F00101DC7 /* sodium */,
-				DAA7BBC820C4C10F00101DC7 /* sodium.h */,
 			);
 			name = "libsodium-ios";
-			path = "../../lib/libsodium/build-ios~/out";
+			path = "libsodium/build-ios~/out";
 			sourceTree = "<group>";
 		};
 		DAA7BB8920C4C10F00101DC7 /* lib */ = {
@@ -856,73 +824,6 @@
 				DAA7BB8A20C4C10F00101DC7 /* libsodium.a */,
 			);
 			path = lib;
-			sourceTree = "<group>";
-		};
-		DAA7BB8B20C4C10F00101DC7 /* sodium */ = {
-			isa = PBXGroup;
-			children = (
-				DAA7BB8C20C4C10F00101DC7 /* crypto_stream_salsa2012.h */,
-				DAA7BB8D20C4C10F00101DC7 /* crypto_auth.h */,
-				DAA7BB8E20C4C10F00101DC7 /* utils.h */,
-				DAA7BB8F20C4C10F00101DC7 /* crypto_core_hchacha20.h */,
-				DAA7BB9020C4C10F00101DC7 /* crypto_hash_sha512.h */,
-				DAA7BB9120C4C10F00101DC7 /* core.h */,
-				DAA7BB9220C4C10F00101DC7 /* version.h */,
-				DAA7BB9320C4C10F00101DC7 /* export.h */,
-				DAA7BB9420C4C10F00101DC7 /* randombytes_salsa20_random.h */,
-				DAA7BB9520C4C10F00101DC7 /* crypto_core_salsa20.h */,
-				DAA7BB9620C4C10F00101DC7 /* crypto_shorthash_siphash24.h */,
-				DAA7BB9720C4C10F00101DC7 /* randombytes.h */,
-				DAA7BB9820C4C10F00101DC7 /* crypto_hash_sha256.h */,
-				DAA7BB9920C4C10F00101DC7 /* crypto_stream.h */,
-				DAA7BB9A20C4C10F00101DC7 /* crypto_auth_hmacsha512.h */,
-				DAA7BB9B20C4C10F00101DC7 /* crypto_aead_xchacha20poly1305.h */,
-				DAA7BB9C20C4C10F00101DC7 /* crypto_stream_salsa20.h */,
-				DAA7BB9D20C4C10F00101DC7 /* crypto_onetimeauth_poly1305.h */,
-				DAA7BB9E20C4C10F00101DC7 /* crypto_kx.h */,
-				DAA7BB9F20C4C10F00101DC7 /* crypto_hash.h */,
-				DAA7BBA020C4C10F00101DC7 /* crypto_sign.h */,
-				DAA7BBA120C4C10F00101DC7 /* crypto_kdf.h */,
-				DAA7BBA220C4C10F00101DC7 /* crypto_auth_hmacsha256.h */,
-				DAA7BBA320C4C10F00101DC7 /* crypto_box.h */,
-				DAA7BBA420C4C10F00101DC7 /* crypto_verify_32.h */,
-				DAA7BBA520C4C10F00101DC7 /* crypto_stream_xchacha20.h */,
-				DAA7BBA620C4C10F00101DC7 /* crypto_core_salsa208.h */,
-				DAA7BBA720C4C10F00101DC7 /* crypto_auth_hmacsha512256.h */,
-				DAA7BBA820C4C10F00101DC7 /* crypto_aead_chacha20poly1305.h */,
-				DAA7BBA920C4C10F00101DC7 /* randombytes_sysrandom.h */,
-				DAA7BBAA20C4C10F00101DC7 /* runtime.h */,
-				DAA7BBAB20C4C10F00101DC7 /* crypto_stream_salsa208.h */,
-				DAA7BBAC20C4C10F00101DC7 /* crypto_aead_aes256gcm.h */,
-				DAA7BBAD20C4C10F00101DC7 /* crypto_core_salsa2012.h */,
-				DAA7BBAE20C4C10F00101DC7 /* crypto_secretbox_xchacha20poly1305.h */,
-				DAA7BBAF20C4C10F00101DC7 /* crypto_scalarmult.h */,
-				DAA7BBB020C4C10F00101DC7 /* crypto_pwhash.h */,
-				DAA7BBB120C4C10F00101DC7 /* crypto_verify_16.h */,
-				DAA7BBB220C4C10F00101DC7 /* crypto_stream_chacha20.h */,
-				DAA7BBB320C4C10F00101DC7 /* crypto_stream_xsalsa20.h */,
-				DAA7BBB420C4C10F00101DC7 /* crypto_core_hsalsa20.h */,
-				DAA7BBB520C4C10F00101DC7 /* crypto_kdf_blake2b.h */,
-				DAA7BBB620C4C10F00101DC7 /* crypto_scalarmult_curve25519.h */,
-				DAA7BBB720C4C10F00101DC7 /* crypto_shorthash.h */,
-				DAA7BBB820C4C10F00101DC7 /* crypto_pwhash_argon2id.h */,
-				DAA7BBB920C4C10F00101DC7 /* crypto_secretstream_xchacha20poly1305.h */,
-				DAA7BBBA20C4C10F00101DC7 /* crypto_pwhash_scryptsalsa208sha256.h */,
-				DAA7BBBB20C4C10F00101DC7 /* crypto_sign_ed25519.h */,
-				DAA7BBBC20C4C10F00101DC7 /* crypto_onetimeauth.h */,
-				DAA7BBBD20C4C10F00101DC7 /* crypto_verify_64.h */,
-				DAA7BBBE20C4C10F00101DC7 /* crypto_box_curve25519xchacha20poly1305.h */,
-				DAA7BBBF20C4C10F00101DC7 /* crypto_core_ed25519.h */,
-				DAA7BBC020C4C10F00101DC7 /* crypto_pwhash_argon2i.h */,
-				DAA7BBC120C4C10F00101DC7 /* crypto_generichash.h */,
-				DAA7BBC220C4C10F00101DC7 /* crypto_secretbox_xsalsa20poly1305.h */,
-				DAA7BBC320C4C10F00101DC7 /* crypto_secretbox.h */,
-				DAA7BBC420C4C10F00101DC7 /* crypto_scalarmult_ed25519.h */,
-				DAA7BBC520C4C10F00101DC7 /* crypto_box_curve25519xsalsa20poly1305.h */,
-				DAA7BBC620C4C10F00101DC7 /* crypto_generichash_blake2b.h */,
-				DAA7BBC720C4C10F00101DC7 /* crypto_sign_edwards25519sha512batch.h */,
-			);
-			path = sodium;
 			sourceTree = "<group>";
 		};
 		DABD360D1711E29400CF925C /* Media */ = {
@@ -1025,13 +926,119 @@
 			path = Source;
 			sourceTree = "<group>";
 		};
-		DACA22121705DDC5002C6C22 /* External */ = {
+		DAC51069247C7258006CC5D6 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				DAC5106A247C7258006CC5D6 /* sodium */,
+				DAC510A7247C7258006CC5D6 /* sodium.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		DAC5106A247C7258006CC5D6 /* sodium */ = {
+			isa = PBXGroup;
+			children = (
+				DAC5106B247C7258006CC5D6 /* crypto_stream_salsa2012.h */,
+				DAC5106C247C7258006CC5D6 /* crypto_auth.h */,
+				DAC5106D247C7258006CC5D6 /* utils.h */,
+				DAC5106E247C7258006CC5D6 /* crypto_core_hchacha20.h */,
+				DAC5106F247C7258006CC5D6 /* crypto_hash_sha512.h */,
+				DAC51070247C7258006CC5D6 /* core.h */,
+				DAC51071247C7258006CC5D6 /* version.h */,
+				DAC51072247C7258006CC5D6 /* export.h */,
+				DAC51073247C7258006CC5D6 /* randombytes_salsa20_random.h */,
+				DAC51074247C7258006CC5D6 /* crypto_core_salsa20.h */,
+				DAC51075247C7258006CC5D6 /* crypto_shorthash_siphash24.h */,
+				DAC51076247C7258006CC5D6 /* randombytes.h */,
+				DAC51077247C7258006CC5D6 /* crypto_hash_sha256.h */,
+				DAC51078247C7258006CC5D6 /* crypto_stream.h */,
+				DAC51079247C7258006CC5D6 /* crypto_auth_hmacsha512.h */,
+				DAC5107A247C7258006CC5D6 /* crypto_aead_xchacha20poly1305.h */,
+				DAC5107B247C7258006CC5D6 /* crypto_stream_salsa20.h */,
+				DAC5107C247C7258006CC5D6 /* crypto_onetimeauth_poly1305.h */,
+				DAC5107D247C7258006CC5D6 /* crypto_kx.h */,
+				DAC5107E247C7258006CC5D6 /* crypto_hash.h */,
+				DAC5107F247C7258006CC5D6 /* crypto_sign.h */,
+				DAC51080247C7258006CC5D6 /* crypto_kdf.h */,
+				DAC51081247C7258006CC5D6 /* crypto_auth_hmacsha256.h */,
+				DAC51082247C7258006CC5D6 /* crypto_box.h */,
+				DAC51083247C7258006CC5D6 /* crypto_verify_32.h */,
+				DAC51084247C7258006CC5D6 /* crypto_stream_xchacha20.h */,
+				DAC51085247C7258006CC5D6 /* crypto_core_salsa208.h */,
+				DAC51086247C7258006CC5D6 /* crypto_auth_hmacsha512256.h */,
+				DAC51087247C7258006CC5D6 /* crypto_aead_chacha20poly1305.h */,
+				DAC51088247C7258006CC5D6 /* randombytes_sysrandom.h */,
+				DAC51089247C7258006CC5D6 /* runtime.h */,
+				DAC5108A247C7258006CC5D6 /* crypto_stream_salsa208.h */,
+				DAC5108B247C7258006CC5D6 /* crypto_aead_aes256gcm.h */,
+				DAC5108C247C7258006CC5D6 /* crypto_core_salsa2012.h */,
+				DAC5108D247C7258006CC5D6 /* crypto_secretbox_xchacha20poly1305.h */,
+				DAC5108E247C7258006CC5D6 /* crypto_scalarmult.h */,
+				DAC5108F247C7258006CC5D6 /* crypto_pwhash.h */,
+				DAC51090247C7258006CC5D6 /* crypto_verify_16.h */,
+				DAC51091247C7258006CC5D6 /* crypto_stream_chacha20.h */,
+				DAC51092247C7258006CC5D6 /* crypto_stream_xsalsa20.h */,
+				DAC51093247C7258006CC5D6 /* crypto_core_hsalsa20.h */,
+				DAC51094247C7258006CC5D6 /* crypto_kdf_blake2b.h */,
+				DAC51095247C7258006CC5D6 /* crypto_scalarmult_curve25519.h */,
+				DAC51096247C7258006CC5D6 /* crypto_shorthash.h */,
+				DAC51097247C7258006CC5D6 /* crypto_pwhash_argon2id.h */,
+				DAC51098247C7258006CC5D6 /* crypto_secretstream_xchacha20poly1305.h */,
+				DAC51099247C7258006CC5D6 /* crypto_pwhash_scryptsalsa208sha256.h */,
+				DAC5109A247C7258006CC5D6 /* crypto_sign_ed25519.h */,
+				DAC5109B247C7258006CC5D6 /* crypto_onetimeauth.h */,
+				DAC5109C247C7258006CC5D6 /* crypto_verify_64.h */,
+				DAC5109D247C7258006CC5D6 /* crypto_box_curve25519xchacha20poly1305.h */,
+				DAC5109E247C7258006CC5D6 /* crypto_core_ed25519.h */,
+				DAC5109F247C7258006CC5D6 /* crypto_pwhash_argon2i.h */,
+				DAC510A0247C7258006CC5D6 /* crypto_generichash.h */,
+				DAC510A1247C7258006CC5D6 /* crypto_secretbox_xsalsa20poly1305.h */,
+				DAC510A2247C7258006CC5D6 /* crypto_secretbox.h */,
+				DAC510A3247C7258006CC5D6 /* crypto_scalarmult_ed25519.h */,
+				DAC510A4247C7258006CC5D6 /* crypto_box_curve25519xsalsa20poly1305.h */,
+				DAC510A5247C7258006CC5D6 /* crypto_generichash_blake2b.h */,
+				DAC510A6247C7258006CC5D6 /* crypto_sign_edwards25519sha512batch.h */,
+			);
+			path = sodium;
+			sourceTree = "<group>";
+		};
+		DAC510B8247C7286006CC5D6 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				DAC510B9247C7286006CC5D6 /* json-c */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		DAC510B9247C7286006CC5D6 /* json-c */ = {
+			isa = PBXGroup;
+			children = (
+				DAC510BA247C7286006CC5D6 /* printbuf.h */,
+				DAC510BB247C7286006CC5D6 /* debug.h */,
+				DAC510BC247C7286006CC5D6 /* json_util.h */,
+				DAC510BD247C7286006CC5D6 /* json_config.h */,
+				DAC510BE247C7286006CC5D6 /* json_pointer.h */,
+				DAC510BF247C7286006CC5D6 /* json_visit.h */,
+				DAC510C0247C7286006CC5D6 /* json.h */,
+				DAC510C1247C7286006CC5D6 /* json_c_version.h */,
+				DAC510C2247C7286006CC5D6 /* arraylist.h */,
+				DAC510C3247C7286006CC5D6 /* linkhash.h */,
+				DAC510C4247C7286006CC5D6 /* json_tokener.h */,
+				DAC510C5247C7286006CC5D6 /* json_object_iterator.h */,
+				DAC510C6247C7286006CC5D6 /* json_inttypes.h */,
+				DAC510C7247C7286006CC5D6 /* json_object.h */,
+			);
+			path = "json-c";
+			sourceTree = "<group>";
+		};
+		DACA22121705DDC5002C6C22 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
 				DAA7BB6D20C4C0C400101DC7 /* libjson-c-ios */,
 				DAA7BB8720C4C10F00101DC7 /* libsodium-ios */,
 			);
-			path = External;
+			name = Libraries;
+			path = ../lib;
 			sourceTree = "<group>";
 		};
 		DACA23B41705DF7D002C6C22 /* Resources */ = {
@@ -1105,6 +1112,9 @@
 				DAB7AE501F3D618700C856B1 /* PBXTargetDependency */,
 			);
 			name = Volto;
+			packageProductDependencies = (
+				DAC51055247C6FE9006CC5D6 /* Logging */,
+			);
 			productName = MasterPassword;
 			productReference = DA5BFA44147E415C00F98B1E /* Volto.app */;
 			productType = "com.apple.product-type.application";
@@ -1244,6 +1254,9 @@
 				"pt-PT",
 			);
 			mainGroup = DA5BFA39147E415C00F98B1E;
+			packageReferences = (
+				DAC51054247C6FE9006CC5D6 /* XCRemoteSwiftPackageReference "swift-log" */,
+			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1374,7 +1387,7 @@
 		};
 		DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			files = (
 			);
 			inputFileListPaths = (
@@ -1387,9 +1400,9 @@
 			);
 			outputPaths = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = "/bin/sh -e";
-			shellScript = "if hash sentry-cli 2>/dev/null; then\n    if ! ERROR=$(SENTRY_ORG=lyndir SENTRY_PROJECT=volto sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\" 2>&1 >/dev/null); then\n        echo >&2 \"warning: sentry-cli: $ERROR\"\n    fi\nelse\n    echo >&2 \"warning: sentry-cli not installed: try brew install getsentry/tools/sentry-cli\"\nfi\n";
+			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nSENTRY_ORG=lyndir SENTRY_PROJECT=volto sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */ = {
@@ -1714,6 +1727,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
 				);
 				INFOPLIST_FILE = Source/iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2062,6 +2076,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
 				);
 				INFOPLIST_FILE = Source/iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2105,6 +2120,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
 				);
 				INFOPLIST_FILE = Source/iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2282,6 +2298,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DAC51054247C6FE9006CC5D6 /* XCRemoteSwiftPackageReference "swift-log" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-log.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DAC51055247C6FE9006CC5D6 /* Logging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAC51054247C6FE9006CC5D6 /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = Logging;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DA5BFA3B147E415C00F98B1E /* Project object */;
 }

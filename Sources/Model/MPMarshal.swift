@@ -182,8 +182,7 @@ class MPMarshal: Observable {
             }
 
             exportEvent.end( [ "result": "!marshal_write" ] )
-            throw MPError.marshal( user.file?.pointee.error ?? MPMarshalError( type: .errorInternal, message: "Couldn't allocate export file" ),
-                                   title: "Issue Writing User" )
+            throw MPError.marshal( user.file?.pointee.error ?? MPMarshalError( type: .errorInternal, message: nil ), title: "Issue Writing User" )
         }
     }
 
@@ -583,7 +582,7 @@ class MPMarshal: Observable {
 
     private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
         DispatchQueue.mpw.await {
-            if let formatExtension = String( validate: mpw_marshal_format_extension( format ) ),
+            if let formatExtension = String( validate: mpw_format_extension( format ) ),
                let directory = directory ?? self.documentDirectory {
                 return directory.appendingPathComponent( name, isDirectory: false )
                                 .appendingPathExtension( formatExtension )

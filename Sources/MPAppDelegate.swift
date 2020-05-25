@@ -32,8 +32,6 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        dbg( "isRegisteredForRemoteNotifications: %d", UIApplication.shared.isRegisteredForRemoteNotifications )
-        dbg( "currentUserNotificationSettings: %@", UIApplication.shared.currentUserNotificationSettings )
         self.tryDecisions()
 
         return true

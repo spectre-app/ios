@@ -24,7 +24,7 @@ public class MPFeedback {
     }
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13, *)
 public class MPHapticFeedback: MPFeedback {
     private var hapticEngine: CHHapticEngine?
     private var players = [ Effect: CHHapticPatternPlayer ]()

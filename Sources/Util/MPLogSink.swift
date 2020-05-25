@@ -27,9 +27,16 @@ public class MPLogSink: MPConfigObserver {
 
         mpw_log_sink_register( { event in
             guard let event = event
-            else { return }
+            else { return false }
 
-            MPLogSink.shared.record( event.pointee )
+            print( event.pointee.message! )
+            return true
+        } )
+        mpw_log_sink_register( { event in
+            guard let event = event
+            else { return false }
+
+            return MPLogSink.shared.record( event.pointee )
         } )
     }
 
@@ -37,10 +44,12 @@ public class MPLogSink: MPConfigObserver {
         self.records.filter( { $0.level <= level } ).sorted()
     }
 
-    fileprivate func record(_ event: MPLogEvent) {
-        if let record = MPLogRecord( event ) {
-            self.records.append( record )
-        }
+    fileprivate func record(_ event: MPLogEvent) -> Bool {
+        guard let record = MPLogRecord( event )
+        else { return false }
+        
+        self.records.append( record )
+        return true
     }
 
     // MARK: --- MPConfigObserver ---
