@@ -77,7 +77,6 @@ public class MPConfig: Observable {
         #endif
 
         self.load()
-        self.checkLegacy()
 
         self.didChangeObserver = NotificationCenter.default.addObserver(
                 forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
@@ -87,23 +86,6 @@ public class MPConfig: Observable {
 
     deinit {
         self.didChangeObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
-    }
-
-    // MARK: --- Interface ---
-
-    public func checkLegacy() {
-        MPCoreData.shared.promise {
-            (try $0.count( for: MPUserEntity.fetchRequest() )) > 0
-        }.then {
-            switch $0 {
-                case .success(let hasLegacy):
-                    self.hasLegacy = hasLegacy ?? false
-
-                case .failure(let error):
-                    err( "Couldn't determine legacy store state. [>TRC]" )
-                    trc( "[>] %@", error )
-            }
-        }
     }
 
     // MARK: --- Private ---

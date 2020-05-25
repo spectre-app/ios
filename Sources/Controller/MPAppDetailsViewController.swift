@@ -41,7 +41,6 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
               PremiumItem(),
           ] ), SeparatorItem(),
           ThemeItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
-          LegacyItem(), SeparatorItem(),
           InfoItem() ]
     }
 
@@ -160,27 +159,6 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     }
                 }
             }
-        }
-    }
-
-    class LegacyItem: Item<MPConfig> {
-        init() {
-            super.init( title: "Legacy Data",
-                        subitems: [
-                            ButtonItem<MPConfig>( identifier: "app.legacy #re-import", value: { _ in (label: "Re-import", image: nil) } ) { _ in
-                                MPMarshal.shared.importLegacy( force: true )
-                            },
-                            ButtonItem<MPConfig>( identifier: "app.legacy #clean", value: { _ in (label: "Clean up", image: nil) } ) { _ in
-                                // TODO: purge legacy data
-                            }
-                        ],
-                        caption: { _ in
-                            """
-                            User information from an older version of the app exists.
-                            You can leave it untouched or clean up to remove it.
-                            """
-                        },
-                        hidden: { !$0.hasLegacy } )
         }
     }
 

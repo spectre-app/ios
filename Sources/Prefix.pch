@@ -61,13 +61,3 @@ MP_LIBS_END
 #define MPW_LOG mpw_log_os
 
 #include "mpw-util.h"
-
-#ifdef __OBJC__
-
-#if TARGET_OS_IOS
-#import <UIKit/UIKit.h>
-#elif TARGET_OS_OSX
-#import <Cocoa/Cocoa.h>
-#endif
-
-#endif

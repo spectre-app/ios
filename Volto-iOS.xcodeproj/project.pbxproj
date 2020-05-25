@@ -75,7 +75,6 @@
 		93D39E31D32AFAF973C302E6 /* MPBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3911FED606FAE34608C50 /* MPBackgroundView.swift */; };
 		93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
 		93D39E4BA0810541D1A91953 /* MPMarshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* MPMarshal.swift */; };
-		93D39E689BAC56DC28A880CA /* MPCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395C767C420C02F11C44D /* MPCoreData.swift */; };
 		93D39EAA842D58A3306E6EFB /* DispatchQueue+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3940575E4CC62A8F6CE04 /* DispatchQueue+MP.swift */; };
 		93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */; };
 		93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */; };
@@ -182,17 +181,6 @@
 		DAD8046F23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAD8046A23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf */; };
 		DAD8047023BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAD8046B23BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf */; };
 		DAD8047323C52D69000A4E86 /* MPSecrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */; };
-		DAE6E19622CC3CE100DE0342 /* MasterPassword.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E18C22CC3CE100DE0342 /* MasterPassword.xcdatamodeld */; };
-		DAE6E1B722CC3D1D00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E19722CC3D1B00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m */; };
-		DAE6E1B822CC3D1D00DE0342 /* MPUserEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E19822CC3D1B00DE0342 /* MPUserEntity+CoreDataClass.m */; };
-		DAE6E1B922CC3D1D00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E19922CC3D1B00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.m */; };
-		DAE6E1BA22CC3D1D00DE0342 /* MPSiteEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1A022CC3D1C00DE0342 /* MPSiteEntity+CoreDataProperties.m */; };
-		DAE6E1BB22CC3D1D00DE0342 /* MPSiteQuestionEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1A122CC3D1C00DE0342 /* MPSiteQuestionEntity+CoreDataClass.m */; };
-		DAE6E1BC22CC3D1D00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1A222CC3D1C00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.m */; };
-		DAE6E1BD22CC3D1D00DE0342 /* MPSiteEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1A722CC3D1C00DE0342 /* MPSiteEntity+CoreDataClass.m */; };
-		DAE6E1BE22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1AA22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m */; };
-		DAE6E1BF22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1AC22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataClass.m */; };
-		DAE6E1C622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE6E1B622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m */; };
 		DAF560502393411A000475BA /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DAF5605123934134000475BA /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
 		DAF5605223934176000475BA /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */; };
@@ -251,7 +239,6 @@
 		93D39564D6408073D59CDB6A /* MPButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPButton.swift; sourceTree = "<group>"; };
 		93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPExportViewController.swift; sourceTree = "<group>"; };
 		93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailsHostController.swift; sourceTree = "<group>"; };
-		93D395C767C420C02F11C44D /* MPCoreData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCoreData.swift; sourceTree = "<group>"; };
 		93D395FD92D751588A645D15 /* MPKeyFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeyFactory.swift; sourceTree = "<group>"; };
 		93D395FE1BCF8420D297DFDE /* UIControl+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+MP.swift"; sourceTree = "<group>"; };
 		93D39613B68BCF56DD931C91 /* MPMarginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMarginView.swift; sourceTree = "<group>"; };
@@ -526,35 +513,6 @@
 		DAD8046A23BED8BB000A4E86 /* Font Awesome 5 Duotone-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Duotone-Solid-900.otf"; sourceTree = "<group>"; };
 		DAD8046B23BED8BB000A4E86 /* Font Awesome 5 Pro-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Solid-900.otf"; sourceTree = "<group>"; };
 		DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MPSecrets.xcconfig; sourceTree = "<group>"; };
-		DAE6E18D22CC3CE100DE0342 /* MasterPassword 5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 5.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E18E22CC3CE100DE0342 /* MasterPassword 9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 9.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E18F22CC3CE100DE0342 /* MasterPassword 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 3.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E19022CC3CE100DE0342 /* MasterPassword 6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 6.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E19122CC3CE100DE0342 /* MasterPassword 1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 1.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E19222CC3CE100DE0342 /* MasterPassword 8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 8.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E19322CC3CE100DE0342 /* MasterPassword 4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 4.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E19422CC3CE100DE0342 /* MasterPassword 7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 7.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E19522CC3CE100DE0342 /* MasterPassword 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MasterPassword 2.xcdatamodel"; sourceTree = "<group>"; };
-		DAE6E19722CC3D1B00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPSiteQuestionEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
-		DAE6E19822CC3D1B00DE0342 /* MPUserEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPUserEntity+CoreDataClass.m"; sourceTree = "<group>"; };
-		DAE6E19922CC3D1B00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPGeneratedSiteEntity+CoreDataClass.m"; sourceTree = "<group>"; };
-		DAE6E19A22CC3D1B00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPGeneratedSiteEntity+CoreDataClass.h"; sourceTree = "<group>"; };
-		DAE6E19B22CC3D1B00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPSiteQuestionEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
-		DAE6E19C22CC3D1B00DE0342 /* MPStoredSiteEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPStoredSiteEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
-		DAE6E19D22CC3D1B00DE0342 /* MPUserEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPUserEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
-		DAE6E19E22CC3D1B00DE0342 /* MPUserEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPUserEntity+CoreDataClass.h"; sourceTree = "<group>"; };
-		DAE6E19F22CC3D1C00DE0342 /* MPSiteQuestionEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPSiteQuestionEntity+CoreDataClass.h"; sourceTree = "<group>"; };
-		DAE6E1A022CC3D1C00DE0342 /* MPSiteEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPSiteEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
-		DAE6E1A122CC3D1C00DE0342 /* MPSiteQuestionEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPSiteQuestionEntity+CoreDataClass.m"; sourceTree = "<group>"; };
-		DAE6E1A222CC3D1C00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPGeneratedSiteEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
-		DAE6E1A422CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPStoredSiteEntity+CoreDataClass.h"; sourceTree = "<group>"; };
-		DAE6E1A722CC3D1C00DE0342 /* MPSiteEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPSiteEntity+CoreDataClass.m"; sourceTree = "<group>"; };
-		DAE6E1A822CC3D1C00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPGeneratedSiteEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
-		DAE6E1A922CC3D1C00DE0342 /* MPSiteEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPSiteEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
-		DAE6E1AA22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPStoredSiteEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
-		DAE6E1AC22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPStoredSiteEntity+CoreDataClass.m"; sourceTree = "<group>"; };
-		DAE6E1B022CC3D1D00DE0342 /* MPSiteEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPSiteEntity+CoreDataClass.h"; sourceTree = "<group>"; };
-		DAE6E1B622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPUserEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
 		DAEBC45214F6364500987BF6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -594,7 +552,6 @@
 				93D39F718C1C38C46D9D5078 /* MPSite.swift */,
 				93D39169E1BADEFA0517D4D2 /* MPUser.swift */,
 				93D399D8E0D5A547143642A7 /* MPMarshal.swift */,
-				93D395C767C420C02F11C44D /* MPCoreData.swift */,
 				93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */,
 			);
 			path = Model;
@@ -788,12 +745,12 @@
 			children = (
 				DABD5EF0241BE6BE00200755 /* Volto.entitlements */,
 				93D39A2239FFFE6BEC83E191 /* core */,
+				DABD3B9F1711E2DB00CF925C /* Source */,
 				DACA22121705DDC5002C6C22 /* External */,
+				DACA23B41705DF7D002C6C22 /* Resources */,
 				DA5BFA47147E415C00F98B1E /* Frameworks */,
 				7FCBA1D987E722EC5E5809F1 /* Pods */,
 				DA5BFA45147E415C00F98B1E /* Products */,
-				DACA23B41705DF7D002C6C22 /* Resources */,
-				DABD3B9F1711E2DB00CF925C /* Source */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1063,27 +1020,6 @@
 				DA4A0BDE201443F4004E2CE5 /* iOS */,
 				93D392613DA65A3C5867A2B1 /* Model */,
 				DA3954B32066D2B5004621DB /* Prefix.pch */,
-				DAE6E18C22CC3CE100DE0342 /* MasterPassword.xcdatamodeld */,
-				DAE6E19A22CC3D1B00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.h */,
-				DAE6E19922CC3D1B00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.m */,
-				DAE6E1A822CC3D1C00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.h */,
-				DAE6E1A222CC3D1C00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.m */,
-				DAE6E1B022CC3D1D00DE0342 /* MPSiteEntity+CoreDataClass.h */,
-				DAE6E1A722CC3D1C00DE0342 /* MPSiteEntity+CoreDataClass.m */,
-				DAE6E1A922CC3D1C00DE0342 /* MPSiteEntity+CoreDataProperties.h */,
-				DAE6E1A022CC3D1C00DE0342 /* MPSiteEntity+CoreDataProperties.m */,
-				DAE6E19F22CC3D1C00DE0342 /* MPSiteQuestionEntity+CoreDataClass.h */,
-				DAE6E1A122CC3D1C00DE0342 /* MPSiteQuestionEntity+CoreDataClass.m */,
-				DAE6E19B22CC3D1B00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.h */,
-				DAE6E19722CC3D1B00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m */,
-				DAE6E1A422CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataClass.h */,
-				DAE6E1AC22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataClass.m */,
-				DAE6E19C22CC3D1B00DE0342 /* MPStoredSiteEntity+CoreDataProperties.h */,
-				DAE6E1AA22CC3D1C00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m */,
-				DAE6E19E22CC3D1B00DE0342 /* MPUserEntity+CoreDataClass.h */,
-				DAE6E19822CC3D1B00DE0342 /* MPUserEntity+CoreDataClass.m */,
-				DAE6E19D22CC3D1B00DE0342 /* MPUserEntity+CoreDataProperties.h */,
-				DAE6E1B622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m */,
 				DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */,
 			);
 			path = Source;
@@ -1497,11 +1433,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DAE6E1B822CC3D1D00DE0342 /* MPUserEntity+CoreDataClass.m in Sources */,
 				DAA449D21EEC4B5800E7BDD5 /* mpw-marshal.c in Sources */,
-				DAE6E1BB22CC3D1D00DE0342 /* MPSiteQuestionEntity+CoreDataClass.m in Sources */,
 				DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */,
-				DAE6E1BE22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataProperties.m in Sources */,
 				DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */,
 				DA35148D233EF93400BCF504 /* mpw-algorithm_v3.c in Sources */,
 				DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */,
@@ -1511,13 +1444,9 @@
 				DA5B0B401F36469400B663F0 /* base64.c in Sources */,
 				DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */,
 				93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */,
-				DAE6E1BA22CC3D1D00DE0342 /* MPSiteEntity+CoreDataProperties.m in Sources */,
 				93D39BED3DFB61513B0D015D /* MPUsersViewController.swift in Sources */,
 				93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */,
-				DAE6E1B722CC3D1D00DE0342 /* MPSiteQuestionEntity+CoreDataProperties.m in Sources */,
-				DAE6E1BD22CC3D1D00DE0342 /* MPSiteEntity+CoreDataClass.m in Sources */,
 				93D3960D18CFE6BBCD31C84E /* MPSitesViewController.swift in Sources */,
-				DAE6E1B922CC3D1D00DE0342 /* MPGeneratedSiteEntity+CoreDataClass.m in Sources */,
 				93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */,
 				DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */,
 				93D39A2954B245FC0D925312 /* MPSite.swift in Sources */,
@@ -1527,14 +1456,12 @@
 				93D39139805FC516B6C2C181 /* MPButton.swift in Sources */,
 				93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */,
 				93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */,
-				DAE6E19622CC3CE100DE0342 /* MasterPassword.xcdatamodeld in Sources */,
 				93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */,
 				93D39470EC1F954780E354CB /* MPImageView.swift in Sources */,
 				93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */,
 				DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */,
 				93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */,
 				93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */,
-				DAE6E1BF22CC3D1D00DE0342 /* MPStoredSiteEntity+CoreDataClass.m in Sources */,
 				93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */,
 				93D3949F5F5BFEDA9E2B86CE /* MPDateView.swift in Sources */,
 				93D39EAA842D58A3306E6EFB /* DispatchQueue+MP.swift in Sources */,
@@ -1548,12 +1475,9 @@
 				93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */,
 				93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */,
 				93D39AB0E8841E744F4B6F4C /* MPItemCell.swift in Sources */,
-				DAE6E1BC22CC3D1D00DE0342 /* MPGeneratedSiteEntity+CoreDataProperties.m in Sources */,
 				93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */,
-				DAE6E1C622CC3D1D00DE0342 /* MPUserEntity+CoreDataProperties.m in Sources */,
 				93D391377514DB16467A3CDC /* MPUserViewController.swift in Sources */,
 				93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */,
-				93D39E689BAC56DC28A880CA /* MPCoreData.swift in Sources */,
 				93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */,
 				93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */,
 				93D39B58BB6046893F274C8D /* MPAppDetailsViewController.swift in Sources */,
@@ -2358,27 +2282,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		DAE6E18C22CC3CE100DE0342 /* MasterPassword.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				DAE6E19122CC3CE100DE0342 /* MasterPassword 1.xcdatamodel */,
-				DAE6E19522CC3CE100DE0342 /* MasterPassword 2.xcdatamodel */,
-				DAE6E18F22CC3CE100DE0342 /* MasterPassword 3.xcdatamodel */,
-				DAE6E19322CC3CE100DE0342 /* MasterPassword 4.xcdatamodel */,
-				DAE6E18D22CC3CE100DE0342 /* MasterPassword 5.xcdatamodel */,
-				DAE6E19022CC3CE100DE0342 /* MasterPassword 6.xcdatamodel */,
-				DAE6E19422CC3CE100DE0342 /* MasterPassword 7.xcdatamodel */,
-				DAE6E19222CC3CE100DE0342 /* MasterPassword 8.xcdatamodel */,
-				DAE6E18E22CC3CE100DE0342 /* MasterPassword 9.xcdatamodel */,
-			);
-			currentVersion = DAE6E18E22CC3CE100DE0342 /* MasterPassword 9.xcdatamodel */;
-			path = MasterPassword.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = DA5BFA3B147E415C00F98B1E /* Project object */;
 }
