@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Stellar
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
     private let backgroundView = MPBackgroundView( mode: .gradient )
@@ -26,19 +25,6 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
         LayoutConfiguration( view: self.backgroundView )
                 .constrain()
                 .activate()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        self.visibleViewController?.view.makeAlpha( 0 ).duration( 0 ).then()
-                                        .makeAlpha( 1 ).easing( .easeOut ).duration( 1.2 ).animate()
-
-        super.viewWillAppear( animated )
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        self.visibleViewController?.view?.makeAlpha( 0 ).duration( 1 ).animate()
-
-        super.viewWillDisappear( animated )
     }
 
     // MARK: --- UINavigationControllerDelegate ---

@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Stellar
 
 class MPUsersViewController: MPViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
     public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
@@ -305,10 +304,11 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                         self.passwordField.text = nil
                     }
 
-                    self.nameLabel.font.pointSize.animate(
-                            to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: 0.618, render: {
-                        self.nameLabel.font = self.nameLabel.font.withSize( $0 )
-                    } )
+                    self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.isSelected ? 2: 1) )
+//                    self.nameLabel.font.pointSize.animate(
+//                            to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: 0.618, render: {
+//                        self.nameLabel.font = self.nameLabel.font.withSize( $0 )
+//                    } )
 
                     self.update()
                 }

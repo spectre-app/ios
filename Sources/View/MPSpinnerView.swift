@@ -4,7 +4,6 @@
 //
 
 import UIKit
-import Stellar
 
 public class MPSpinnerView: UICollectionView {
     public var scrolledItem: Int {

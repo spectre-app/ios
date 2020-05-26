@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -173,7 +173,6 @@
 		DABD3FCE1714F45C00CF925C /* identity.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FCC1714F45B00CF925C /* identity.png */; };
 		DABD3FCF1714F45C00CF925C /* identity@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DABD3FCD1714F45B00CF925C /* identity@2x.png */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
-		DAC51056247C6FE9006CC5D6 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = DAC51055247C6FE9006CC5D6 /* Logging */; };
 		DAC793DA204CE76B00EC597C /* lock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D8204CE76A00EC597C /* lock@2x.png */; };
 		DAC793DB204CE76B00EC597C /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = DAC793D9204CE76B00EC597C /* lock.png */; };
 		DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */ = {isa = PBXBuildFile; fileRef = DACA29721705E1A8002C6C22 /* dictionary.lst */; };
@@ -518,7 +517,6 @@
 			files = (
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
 				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
-				DAC51056247C6FE9006CC5D6 /* Logging in Frameworks */,
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
@@ -1113,7 +1111,6 @@
 			);
 			name = Volto;
 			packageProductDependencies = (
-				DAC51055247C6FE9006CC5D6 /* Logging */,
 			);
 			productName = MasterPassword;
 			productReference = DA5BFA44147E415C00F98B1E /* Volto.app */;
@@ -1255,7 +1252,6 @@
 			);
 			mainGroup = DA5BFA39147E415C00F98B1E;
 			packageReferences = (
-				DAC51054247C6FE9006CC5D6 /* XCRemoteSwiftPackageReference "swift-log" */,
 			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
@@ -2298,25 +2294,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		DAC51054247C6FE9006CC5D6 /* XCRemoteSwiftPackageReference "swift-log" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-log.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		DAC51055247C6FE9006CC5D6 /* Logging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DAC51054247C6FE9006CC5D6 /* XCRemoteSwiftPackageReference "swift-log" */;
-			productName = Logging;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DA5BFA3B147E415C00F98B1E /* Project object */;
 }
