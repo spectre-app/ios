@@ -11,17 +11,22 @@ public class MPTheme: Hashable, CustomStringConvertible {
     public static let all = [ MPTheme.default, MPTheme.dark ] // Register all theme objects
 
     public static let base = MPTheme()
+
+    // VOLTO:
+    // 000F08 004A4F 3E8989 9AD5CA CCE3DE
     public static let `default` = MPTheme( path: ".volto" ) {
-        $0.color.backdrop.set( UIColor( hex: "00A99C" ) )
-        $0.color.panel.set( UIColor( hex: "00A99C" ) )
-        $0.color.selection.set( UIColor( hex: "66CCFF", alpha: 0.382 ) )
-        $0.color.tint.set( UIColor( hex: "00A99D" ) )
+        $0.color.backdrop.set( UIColor( hex: "CCE3DE" ) )
+        $0.color.panel.set( UIColor( hex: "CCE3DE" ) )
+        $0.color.selection.set( UIColor( hex: "9AD5CA", alpha: 0.382 ) )
+        $0.color.tint.set( UIColor( hex: "9AD5CA" ) )
+        $0.color.body.set( UIColor( hex: "000F08" ) )
     }
     public static let dark = MPTheme( path: ".volto.dark" ) {
-        $0.color.backdrop.set( UIColor( hex: "1C343B" ) )
-        $0.color.panel.set( UIColor( hex: "1C343B" ) )
-        $0.color.selection.set( UIColor( hex: "78DDFB", alpha: 0.382 ) )
-        $0.color.tint.set( UIColor( hex: "00A99E" ) )
+        $0.color.backdrop.set( UIColor( hex: "004A4F" ) )
+        $0.color.panel.set( UIColor( hex: "3E8989" ) )
+        $0.color.selection.set( UIColor( hex: "9AD5CA", alpha: 0.382 ) )
+        $0.color.tint.set( UIColor( hex: "3E8989" ) )
+        $0.color.body.set( UIColor( hex: "CCE3DE" ) )
     }
 
     public class func with(path: String?) -> MPTheme? {
