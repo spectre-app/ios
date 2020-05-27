@@ -42,7 +42,8 @@ class MPMarshal: Observable {
     }
 
     private func userFile(at documentURL: URL) -> UserFile? {
-        guard let document = FileManager.default.contents( atPath: documentURL.path )
+        guard FileManager.default.fileExists( atPath: documentURL.path ),
+              let document = FileManager.default.contents( atPath: documentURL.path )
         else { return nil }
 
         return self.userFile( for: document, at: documentURL )
@@ -210,8 +211,7 @@ class MPMarshal: Observable {
                 return Promise( .success( false ) )
             }
 
-            if FileManager.default.fileExists( atPath: importingURL.path ),
-               let existingFile = self.userFile( at: importingURL ) {
+            if let existingFile = self.userFile( at: importingURL ) {
                 return self.import( data: data, from: importingFile, into: existingFile ).then {
                     importEvent.end( [ "result": $0.name ] )
                 }

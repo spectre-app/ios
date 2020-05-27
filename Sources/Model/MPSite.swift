@@ -156,7 +156,9 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.algorithm = algorithm ?? user.algorithm
         self.counter = counter ?? MPCounterValue.default
         self.resultType = resultType ?? user.defaultType
+        self.resultState = resultState
         self.loginType = loginType ?? MPResultType.templateName
+        self.loginState = loginState
         self.url = url
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
