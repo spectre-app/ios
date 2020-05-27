@@ -315,7 +315,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
             self.captionLabel.font = appConfig.theme.font.caption1.get()
             self.captionLabel.textAlignment = .center
-            self.captionLabel.textColor = appConfig.theme.color.body.get()
+            self.captionLabel.textColor = appConfig.theme.color.secondary.get()
             self.captionLabel.shadowColor = appConfig.theme.color.shadow.get()
             self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 

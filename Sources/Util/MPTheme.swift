@@ -15,18 +15,28 @@ public class MPTheme: Hashable, CustomStringConvertible {
     // VOLTO:
     // 000F08 004A4F 3E8989 9AD5CA CCE3DE
     public static let `default` = MPTheme( path: ".volto" ) {
+        $0.color.body.set( UIColor( hex: "000F08" ) )
+        $0.color.secondary.set( UIColor( hex: "3E8989" ) )
+        $0.color.placeholder.set( UIColor( hex: "004A4F", alpha: 0.382 ) )
         $0.color.backdrop.set( UIColor( hex: "CCE3DE" ) )
-        $0.color.panel.set( UIColor( hex: "CCE3DE" ) )
+        $0.color.panel.set( UIColor( hex: "9AD5CA" ) )
+        $0.color.shade.set( UIColor( hex: "9AD5CA", alpha: 0.618 ) )
+        $0.color.shadow.set( UIColor( hex: "9AD5CA", alpha: 0.382 ) )
+        $0.color.mute.set( UIColor( hex: "004A4F", alpha: 0.382 ) )
         $0.color.selection.set( UIColor( hex: "9AD5CA", alpha: 0.382 ) )
         $0.color.tint.set( UIColor( hex: "9AD5CA" ) )
-        $0.color.body.set( UIColor( hex: "000F08" ) )
     }
     public static let dark = MPTheme( path: ".volto.dark" ) {
-        $0.color.backdrop.set( UIColor( hex: "004A4F" ) )
-        $0.color.panel.set( UIColor( hex: "3E8989" ) )
-        $0.color.selection.set( UIColor( hex: "9AD5CA", alpha: 0.382 ) )
-        $0.color.tint.set( UIColor( hex: "3E8989" ) )
         $0.color.body.set( UIColor( hex: "CCE3DE" ) )
+        $0.color.secondary.set( UIColor( hex: "3E8989" ) )
+        $0.color.placeholder.set( UIColor( hex: "9AD5CA", alpha: 0.382 ) )
+        $0.color.backdrop.set( UIColor( hex: "000F08" ) )
+        $0.color.panel.set( UIColor( hex: "004A4F" ) )
+        $0.color.shade.set( UIColor( hex: "004A4F", alpha: 0.618 ) )
+        $0.color.shadow.set( UIColor( hex: "004A4F", alpha: 0.382 ) )
+        $0.color.mute.set( UIColor( hex: "9AD5CA", alpha: 0.382 ) )
+        $0.color.selection.set( UIColor( hex: "004A4F", alpha: 0.382 ) )
+        $0.color.tint.set( UIColor( hex: "004A4F" ) )
     }
 
     public class func with(path: String?) -> MPTheme? {
@@ -53,16 +63,16 @@ public class MPTheme: Hashable, CustomStringConvertible {
     }
 
     public struct Colors {
-        public let body:        Value<UIColor>
-        public let secondary:   Value<UIColor>
-        public let placeholder: Value<UIColor>
-        public let backdrop:    Value<UIColor>
-        public let panel:       Value<UIColor>
-        public let shade:       Value<UIColor>
-        public let shadow:      Value<UIColor>
-        public let mute:        Value<UIColor>
-        public let selection:   Value<UIColor>
-        public let tint:        Value<UIColor>
+        public let body:        Value<UIColor> //! Text body
+        public let secondary:   Value<UIColor> //! Text accents / Captions
+        public let placeholder: Value<UIColor> //! Field hints
+        public let backdrop:    Value<UIColor> //! Main content background
+        public let panel:       Value<UIColor> //! Detail content background
+        public let shade:       Value<UIColor> //! Detail dimming background
+        public let shadow:      Value<UIColor> //! Text contrast
+        public let mute:        Value<UIColor> //! Dim content hinting
+        public let selection:   Value<UIColor> //! Selected content background
+        public let tint:        Value<UIColor> //! Control accents
     }
 
     // MARK: --- Life ---
