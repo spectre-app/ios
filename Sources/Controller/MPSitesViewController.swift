@@ -63,9 +63,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.searchField.clearButtonMode = .whileEditing
         self.searchField.keyboardAppearance = .dark
         self.searchField.keyboardType = .URL
-        if #available( iOS 10.0, * ) {
-            self.searchField.textContentType = .URL
-        }
+        self.searchField.textContentType = .URL
         self.searchField.autocapitalizationType = .none
         self.searchField.autocorrectionType = .no
         self.searchField.returnKeyType = .done
@@ -83,10 +81,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
         self.sitesTableView.observers.register( observer: self )
         self.sitesTableView.keyboardDismissMode = .onDrag
-
-        if #available( iOS 11.0, * ) {
-            self.sitesTableView.contentInsetAdjustmentBehavior = .never
-        }
+        self.sitesTableView.contentInsetAdjustmentBehavior = .never
 
         // - Hierarchy
         self.addChild( self.sitePreviewController )
@@ -149,17 +144,15 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 
         // Add space consumed by header and top container to details safe area.
-        if #available( iOS 11, * ) {
-            if self.sitePreviewController.view.frame.maxY <= 0 {
-                self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
-                        top: self.topContainer.frame.maxY
-                                - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
-            }
-            else {
-                self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
-                        top: self.sitePreviewController.view.frame.maxY + (self.topContainer.frame.size.height + 8) / 2
-                                - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
-            }
+        if self.sitePreviewController.view.frame.maxY <= 0 {
+            self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
+                    top: self.topContainer.frame.maxY
+                            - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
+        }
+        else {
+            self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
+                    top: self.sitePreviewController.view.frame.maxY + (self.topContainer.frame.size.height + 8) / 2
+                            - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
         }
     }
 

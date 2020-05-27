@@ -24,16 +24,9 @@ public class MPKeychain {
         }
 
         if biometrics {
-            let flags: SecAccessControlCreateFlags
-            if #available( iOS 11.3, * ) {
-                flags = .biometryCurrentSet
-            }
-            else {
-                flags = .touchIDCurrentSet
-            }
             var error: Unmanaged<CFError>?
             if let accessControl = SecAccessControlCreateWithFlags(
-                    kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, flags, &error ), error == nil {
+                    kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error ), error == nil {
                 query[kSecAttrAccessControl] = accessControl
             }
             else if let error = error?.takeRetainedValue() {

@@ -87,7 +87,7 @@ public class MPTheme: Hashable, CustomStringConvertible {
 
         // Global default style
         self.font = Fonts(
-                largeTitle: Value( UIFont.preferredFont( forTextStyle: .title1 ).withSymbolicTraits( .traitBold ) ),
+                largeTitle: Value( UIFont.preferredFont( forTextStyle: .largeTitle ) ),
                 title1: Value( UIFont.preferredFont( forTextStyle: .title1 ) ),
                 title2: Value( UIFont.preferredFont( forTextStyle: .title2 ) ),
                 title3: Value( UIFont.preferredFont( forTextStyle: .title3 ) ),
@@ -112,9 +112,6 @@ public class MPTheme: Hashable, CustomStringConvertible {
                 selection: Value( UIColor.lightGray ),
                 tint: Value( UIColor( hex: "00A99C" ) ) )
 
-        if #available( iOS 11, * ) {
-            self.font.largeTitle.set( UIFont.preferredFont( forTextStyle: .largeTitle ) )
-        }
         if #available( iOS 13, * ) {
             self.font.mono.set( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
 

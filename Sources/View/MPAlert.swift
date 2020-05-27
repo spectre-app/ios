@@ -120,11 +120,6 @@ class MPAlert {
         contentStack.alignment = .center
         contentStack.spacing = 8
 
-        let view = MPEffectView( content: contentStack, dark: true )
-        if #available( iOS 11.0, * ) {
-            view.insetsLayoutMarginsFromSafeArea = true
-        }
-
         self.titleLabel.text = self.title
         self.titleLabel.textColor = appConfig.theme.color.body.get()
         self.titleLabel.textAlignment = .center
@@ -151,6 +146,9 @@ class MPAlert {
         dismissRecognizer.direction = .up
         let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didActivateSwipe ) )
         activateRecognizer.direction = .down
+
+        let view = MPEffectView( content: contentStack, dark: true )
+        view.insetsLayoutMarginsFromSafeArea = true
         view.addGestureRecognizer( dismissRecognizer )
         view.addGestureRecognizer( activateRecognizer )
         view.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( self.didTap ) ) )

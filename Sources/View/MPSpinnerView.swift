@@ -29,11 +29,9 @@ public class MPSpinnerView: UICollectionView {
     public init() {
         super.init( frame: .zero, collectionViewLayout: Layout() )
 
-        if #available( iOS 11.0, * ) {
-            self.contentInsetAdjustmentBehavior = .never
-            self.insetsLayoutMarginsFromSafeArea = false
-        }
         self.isPagingEnabled = true
+        self.insetsLayoutMarginsFromSafeArea = false
+        self.contentInsetAdjustmentBehavior = .never
         self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
     }
 

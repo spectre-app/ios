@@ -195,15 +195,7 @@ open class DataSource<E: Hashable> {
             }
 
             let task = {
-                if #available( iOS 11.0, * ) {
-                    self.tableView?.performBatchUpdates( updates, completion: completion )
-                }
-                else {
-                    self.tableView?.beginUpdates()
-                    updates()
-                    self.tableView?.endUpdates()
-                    completion?( true )
-                }
+                self.tableView?.performBatchUpdates( updates, completion: completion )
 
                 self.collectionView?.layoutIfNeeded()
                 self.collectionView?.performBatchUpdates( updates, completion: completion )

@@ -299,10 +299,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.isOpaque = false
             self.clipsToBounds = true
             self.backgroundColor = .clear
-            if #available( iOS 11, * ) {
-                self.contentView.insetsLayoutMarginsFromSafeArea = false
-            }
 
+            self.contentView.insetsLayoutMarginsFromSafeArea = false
             self.contentView.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( cellAction ) ) )
 
             self.selectedBackgroundView = UIView()

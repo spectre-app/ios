@@ -137,13 +137,9 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         super.init( fullName: fullName )
 
         self.context.touchIDAuthenticationAllowableReuseDuration = 2
-        if #available( iOS 11.0, * ) {
-            self.context.localizedReason = "Authenticate for: \(fullName) [context]"
-        }
+        self.context.localizedReason = "Authenticate for: \(fullName) [context]"
         self.context.localizedFallbackTitle = "fallback"
-        if #available( iOS 10.0, * ) {
-            self.context.localizedCancelTitle = "cancel"
-        }
+        self.context.localizedCancelTitle = "cancel"
     }
 
     // MARK: --- Interface ---
@@ -151,9 +147,6 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     public var factor: Factor {
         guard self.context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: nil )
         else { return .biometricNone }
-
-        guard #available( iOS 11.0, * )
-        else { return .biometricTouch }
 
         switch self.context.biometryType {
             case .none:

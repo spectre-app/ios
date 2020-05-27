@@ -102,10 +102,7 @@ class MPButton: MPEffectView {
         }
 
         self.contentView.layoutMargins = .zero
-        if #available( iOS 11.0, * ) {
-            self.contentView.insetsLayoutMarginsFromSafeArea = false
-        }
-
+        self.contentView.insetsLayoutMarginsFromSafeArea = false
         self.contentView.addSubview( self.button )
 
         LayoutConfiguration( view: self.button )

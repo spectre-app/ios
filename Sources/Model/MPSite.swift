@@ -295,35 +295,22 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                     self.use()
                     MPFeedback.shared.play( .trigger )
 
-                    if #available( iOS 10.0, * ) {
-                        UIPasteboard.general.setItems(
-                                [ [ UIPasteboard.typeAutomatic: token ] ],
-                                options: [
-                                    UIPasteboard.OptionsKey.localOnly: true,
-                                    UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                                ] )
+                    UIPasteboard.general.setItems(
+                            [ [ UIPasteboard.typeAutomatic: token ] ],
+                            options: [
+                                UIPasteboard.OptionsKey.localOnly: true,
+                                UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
+                            ] )
 
-                        MPAlert( title: "Copied \(keyPurpose) (3 min)", message: self.siteName, details:
-                        """
-                        Your \(keyPurpose) for \(self.siteName) is:
-                        \(token)
+                    MPAlert( title: "Copied \(keyPurpose) (3 min)", message: self.siteName, details:
+                    """
+                    Your \(keyPurpose) for \(self.siteName) is:
+                    \(token)
 
-                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
+                    It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
 
-                        Note that after 3 minutes, the \(keyPurpose) will expire from the pasteboard for security reasons.
-                        """ ).show( in: host )
-                    }
-                    else {
-                        UIPasteboard.general.string = token
-
-                        MPAlert( title: "Copied \(keyPurpose)", message: self.siteName, details:
-                        """
-                        Your \(keyPurpose) for \(self.siteName) is:
-                        \(token)
-
-                        It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
-                        """ ).show( in: host )
-                    }
+                    Note that after 3 minutes, the \(keyPurpose) will expire from the pasteboard for security reasons.
+                    """ ).show( in: host )
 
                     copyEvent.end( [
                         "result": $0.name,

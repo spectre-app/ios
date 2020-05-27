@@ -69,7 +69,7 @@ class MPSitePreviewController: UIViewController, MPSiteObserver {
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        if #available( iOS 13.0, * ) {
+        if #available( iOS 13, * ) {
             return self.site?.color?.brightness() ?? 0 > 0.8 ? .darkContent: .lightContent
         }
         else {

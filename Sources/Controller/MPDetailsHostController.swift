@@ -49,11 +49,9 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
         // - View
         self.detailRecognizer.delegate = self
-        self.scrollView.addGestureRecognizer( self.detailRecognizer )
         self.scrollView.delegate = self
-        if #available( iOS 11.0, * ) {
-            self.scrollView.contentInsetAdjustmentBehavior = .always
-        }
+        self.scrollView.contentInsetAdjustmentBehavior = .always
+        self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
         self.closeButton.button.addTarget( self, action: #selector( hideAction ), for: .primaryActionTriggered )
 
@@ -64,10 +62,8 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     left: 0, bottom: 0, right: 0 )
 
             // Inset bottom to ensure content is large enough to enable scrolling.
-            if #available( iOS 11.0, * ) {
-                self.scrollView.contentInset.bottom = max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height
-                        - self.scrollView.adjustedContentInset.top - self.scrollView.adjustedContentInset.bottom + 1 )
-            }
+            self.scrollView.contentInset.bottom = max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height
+                    - self.scrollView.adjustedContentInset.top - self.scrollView.adjustedContentInset.bottom + 1 )
         }
 
         // - Hierarchy
@@ -185,10 +181,8 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     // MARK: --- UIScrollViewDelegate ---
 
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-        if #available( iOS 11, * ) {
-            if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -44 {
-                self.hide()
-            }
+        if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -44 {
+            self.hide()
         }
     }
 }

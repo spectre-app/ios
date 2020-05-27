@@ -85,14 +85,10 @@ class MPEmitterView: UIView, CAAnimationDelegate {
 
             func image(with color: UIColor) -> UIImage? {
                 let rect = CGRect( origin: .zero, size: CGSize( width: 12.0, height: 12.0 ) )
-                if #available(iOS 10.0, *) {
-                    return UIGraphicsImageRenderer( size: rect.size ).image { context in
-                        context.cgContext.setFillColor( color.cgColor )
-                        context.cgContext.addPath( path( in: rect ) )
-                        context.cgContext.fillPath()
-                    }
-                } else {
-                    return nil
+                return UIGraphicsImageRenderer( size: rect.size ).image { context in
+                    context.cgContext.setFillColor( color.cgColor )
+                    context.cgContext.addPath( path( in: rect ) )
+                    context.cgContext.fillPath()
                 }
             }
         }
@@ -130,12 +126,8 @@ class MPEmitterView: UIView, CAAnimationDelegate {
             ]
             let size                                      = string.size( withAttributes: attributes )
 
-            if #available(iOS 10.0, *) {
-                return UIGraphicsImageRenderer( size: size ).image { _ in
-                    string.draw( at: .zero, withAttributes: attributes )
-                }
-            } else {
-                return nil
+            return UIGraphicsImageRenderer( size: size ).image { _ in
+                string.draw( at: .zero, withAttributes: attributes )
             }
         }
     }
