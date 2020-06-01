@@ -5,24 +5,24 @@
 
 import Foundation
 
-let appConfig = MPConfig()
+public let appConfig = MPConfig()
 
-public class MPConfig: Observable {
+public class MPConfig: Observable, Updatable {
     public let observers = Observers<MPConfigObserver>()
 
-    public var isDebug = false
-    public var isPublic = false
-    public var diagnostics = false {
+    public var isDebug              = false
+    public var isPublic             = false
+    public var diagnostics          = false {
         didSet {
             if self.diagnostics != UserDefaults.standard.bool( forKey: "diagnostics" ) {
                 UserDefaults.standard.set( self.diagnostics, forKey: "diagnostics" )
             }
             if oldValue != self.diagnostics {
-                self.observers.notify { $0.didChangeConfig() }
+                self.update()
             }
         }
     }
-    public var diagnosticsDecided = false {
+    public var diagnosticsDecided   = false {
         didSet {
             if self.diagnosticsDecided != UserDefaults.standard.bool( forKey: "diagnosticsDecided" ) {
                 UserDefaults.standard.set( self.diagnosticsDecided, forKey: "diagnosticsDecided" )
@@ -36,30 +36,30 @@ public class MPConfig: Observable {
             }
         }
     }
-    public var premium = false {
+    public var premium              = false {
         didSet {
             if self.premium != UserDefaults.standard.bool( forKey: "premium" ) {
                 UserDefaults.standard.set( self.premium, forKey: "premium" )
             }
             if oldValue != self.premium {
-                self.observers.notify { $0.didChangeConfig() }
+                self.update()
             }
         }
     }
     public private(set) var hasLegacy = false {
         didSet {
             if oldValue != self.hasLegacy {
-                self.observers.notify { $0.didChangeConfig() }
+                self.update()
             }
         }
     }
-    public var theme = MPTheme.default {
+    public var theme = Theme.default.path {
         didSet {
-            if self.theme.path != UserDefaults.standard.string( forKey: "theme" ) {
-                UserDefaults.standard.set( self.theme.path, forKey: "theme" )
+            if self.theme != UserDefaults.standard.string( forKey: "theme" ) {
+                UserDefaults.standard.set( self.theme, forKey: "theme" )
             }
-            if oldValue != self.theme {
-                self.observers.notify { $0.didChangeConfig() }
+            if Theme.current.parent?.path != self.theme {
+                Theme.current.parent = Theme.with( path: self.theme ) ?? .default
             }
         }
     }
@@ -95,7 +95,11 @@ public class MPConfig: Observable {
         self.diagnosticsDecided = UserDefaults.standard.bool( forKey: "diagnosticsDecided" )
         self.notificationsDecided = UserDefaults.standard.bool( forKey: "notificationsDecided" )
         self.premium = UserDefaults.standard.bool( forKey: "premium" )
-        self.theme = !self.premium ? .default: MPTheme.with( path: UserDefaults.standard.string( forKey: "theme" ) ) ?? .default
+        self.theme = (self.premium ? UserDefaults.standard.string( forKey: "theme" ): nil) ?? Theme.default.path
+    }
+
+    public func update() {
+        self.observers.notify { $0.didChangeConfig() }
     }
 }
 

@@ -38,8 +38,6 @@ func ratio(of value: UInt8, from: Double, to: Double) -> Double {
     from + (to - from) * (Double( value ) / Double( UInt8.max ))
 }
 
-prefix operator -
-
 prefix public func -(a: UIEdgeInsets) -> UIEdgeInsets {
     UIEdgeInsets( top: -a.top, left: -a.left, bottom: -a.bottom, right: -a.right )
 }
@@ -130,7 +128,7 @@ extension MPIdenticon: Equatable {
         }
 
         let shadow = NSShadow()
-        shadow.shadowColor = appConfig.theme.color.shadow.get()
+        shadow.shadowColor = Theme.current.color.shadow.get()
         shadow.shadowOffset = CGSize( width: 0, height: 1 )
         return self.text().flatMap {
             NSAttributedString( string: $0, attributes: [
@@ -332,7 +330,7 @@ extension String.StringInterpolation {
     }
 }
 
-enum IconStyle {
+public enum IconStyle {
     case brands, duotone, solid, light, regular
 
     var fontName: String {
@@ -352,9 +350,8 @@ enum IconStyle {
 }
 
 extension UIImage {
-    static func icon(_ icon: String, style: IconStyle = .duotone, fontSize: CGFloat = 22,
-                     textColor: UIColor = appConfig.theme.color.body.get() ?? .white, toneColor: UIColor = appConfig.theme.color.secondary.get() ?? .white,
-                     backgroundColor: UIColor = .clear, borderWidth: CGFloat = 0, borderColor: UIColor = .clear) -> UIImage? {
+    private static func _icon(_ icon: String, style: IconStyle, fontSize: CGFloat, textColor: UIColor, toneColor: UIColor,
+                              backgroundColor: UIColor, borderWidth: CGFloat, borderColor: UIColor) -> UIImage? {
         guard let font = UIFont( name: style.fontName, size: fontSize )
         else { return nil }
 
@@ -387,6 +384,46 @@ extension UIImage {
         attributedTone?.draw( in: CGRect( origin: .zero, size: size ) )
 
         return UIGraphicsGetImageFromCurrentImageContext()
+    }
+
+    public static func icon(_ icon: String, style: IconStyle = .duotone, fontSize: CGFloat = 22,
+                            textColor: Property<UIColor> = Theme.current.color.body, toneColor: Property<UIColor> = Theme.current.color.secondary,
+                            backgroundColor: UIColor = .clear, borderWidth: CGFloat = 0, borderColor: UIColor = .clear) -> UIImage? {
+        let baseImage = self._icon( icon, style: style, fontSize: fontSize,
+                                    textColor: textColor.get() ?? .white, toneColor: toneColor.get() ?? .white,
+                                    backgroundColor: backgroundColor, borderWidth: borderWidth, borderColor: borderColor )
+
+        if let imageAsset = baseImage?.imageAsset, #available( iOS 13.0, * ) {
+            let darkConfiguration = UITraitCollection( userInterfaceStyle: .dark )
+            if let darkImage = darkConfiguration.resolveAsCurrent( {
+                self._icon( icon, style: style, fontSize: fontSize,
+                            textColor: textColor.get() ?? .white, toneColor: toneColor.get() ?? .white,
+                            backgroundColor: backgroundColor, borderWidth: borderWidth, borderColor: borderColor )
+            } ) {
+                imageAsset.register( darkImage, with: darkConfiguration )
+            }
+
+            let lightConfiguration = UITraitCollection( userInterfaceStyle: .light )
+            if let lightImage = lightConfiguration.resolveAsCurrent( {
+                self._icon( icon, style: style, fontSize: fontSize,
+                            textColor: textColor.get() ?? .white, toneColor: toneColor.get() ?? .white,
+                            backgroundColor: backgroundColor, borderWidth: borderWidth, borderColor: borderColor )
+            } ) {
+                imageAsset.register( lightImage, with: lightConfiguration )
+            }
+        }
+
+        return baseImage
+    }
+}
+
+extension UITraitCollection {
+    @available(iOS 13.0, *)
+    func resolveAsCurrent<R>(_ perform: () -> R) -> R {
+        var result: R!
+        self.performAsCurrent { result = perform() }
+
+        return result
     }
 }
 
@@ -542,7 +579,7 @@ extension CGSize {
     func union(_ size: CGSize) -> CGSize {
         size.width <= self.width && size.height <= self.height ? self:
                 size.width >= self.width && size.height >= self.height ? size:
-                        CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
+                CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
     }
 
     func grow(width: CGFloat = 0, height: CGFloat = 0, size: CGSize = .zero, point: CGPoint = .zero) -> CGSize {

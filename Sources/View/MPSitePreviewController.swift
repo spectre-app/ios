@@ -42,16 +42,16 @@ class MPSitePreviewController: UIViewController, MPSiteObserver {
         self.view.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
         self.view.layer.shadowRadius = 40
         self.view.layer.shadowOpacity = 1
-        self.view.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
+        self.view.layer & \.shadowColor <- Theme.current.color.shadow
         self.view.layer.shadowOffset = .zero
 
         self.siteButton.imageView?.contentMode = .scaleAspectFill
         self.siteButton.imageView?.layer.cornerRadius = 4
         self.siteButton.imageView?.layer.masksToBounds = true
-        self.siteButton.titleLabel?.font = appConfig.theme.font.largeTitle.get()
+        self.siteButton.titleLabel! & \.font <- Theme.current.font.largeTitle
         self.siteButton.layer.shadowRadius = 20
         self.siteButton.layer.shadowOpacity = 1
-        self.siteButton.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
+        self.siteButton.layer & \.shadowColor <- Theme.current.color.shadow
         self.siteButton.layer.shadowOffset = .zero
 
         // - Hierarchy

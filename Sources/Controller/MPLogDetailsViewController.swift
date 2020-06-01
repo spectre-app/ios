@@ -103,8 +103,8 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                 super.init( frame: frame )
 
                 // - View
-                self.titleLabel.font = appConfig.theme.font.headline.get()
-                self.titleLabel.textColor = appConfig.theme.color.body.get()
+                self.titleLabel & \.font <- Theme.current.font.headline
+                self.titleLabel & \.textColor <- Theme.current.color.body
                 self.titleLabel.textAlignment = .center
 
                 // - Hierarchy
@@ -129,17 +129,17 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                     logs.append( NSAttributedString(
                             string: "\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)\n",
                             attributes: [
-                                .font: appConfig.theme.font.mono.get()?.withSize( 11 ) as Any,
-                                .foregroundColor: appConfig.theme.color.secondary.get() as Any,
+                                .font: Theme.current.font.mono.get()?.withSize( 11 ) as Any,
+                                .foregroundColor: Theme.current.color.secondary.get() as Any,
                             ] ) )
                     logs.append( NSAttributedString(
                             string: "\(record.message)\n",
                             attributes: [
-                                .font: appConfig.theme.font.mono.get()?.withSize( 11 ).withSymbolicTraits(
+                                .font: Theme.current.font.mono.get()?.withSize( 11 ).withSymbolicTraits(
                                         record.level <= .warning ?
                                                 .traitBold:
                                                 [] ) as Any,
-                                .foregroundColor: appConfig.theme.color.body.get() as Any,
+                                .foregroundColor: Theme.current.color.body.get() as Any,
                             ] ) )
                     return logs
                 }

@@ -40,15 +40,15 @@ class MPDateView: MPEffectView {
 
         self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
-        self.separatorView.backgroundColor = appConfig.theme.color.body.get()
+        self.separatorView & \.backgroundColor <- Theme.current.color.body
 
-        self.monthLabel.textColor = appConfig.theme.color.body.get()
         self.monthLabel.textAlignment = .center
-        self.monthLabel.font = appConfig.theme.font.caption1.get()
+        self.monthLabel & \.textColor <- Theme.current.color.body
+        self.monthLabel & \.font <- Theme.current.font.caption1
 
-        self.dayLabel.textColor = appConfig.theme.color.body.get()
         self.dayLabel.textAlignment = .center
-        self.dayLabel.font = appConfig.theme.font.largeTitle.get()
+        self.dayLabel & \.textColor <- Theme.current.color.body
+        self.dayLabel & \.font <- Theme.current.font.largeTitle
 
         // - Hierarchy
         self.contentView.addSubview( self.separatorView )

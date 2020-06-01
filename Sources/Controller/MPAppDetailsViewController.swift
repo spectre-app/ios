@@ -126,14 +126,14 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
     }
 
-    class ThemeItem: PickerItem<MPConfig, MPTheme> {
+    class ThemeItem: PickerItem<MPConfig, Theme> {
         init() {
             super.init(
                     identifier: "app >theme",
                     title: "Application Themes 🅿",
-                    values: { _ in MPTheme.all },
-                    value: { $0.theme },
-                    update: { $0.theme = $1 },
+                    values: { _ in Theme.all },
+                    value: { Theme.with( path: $0.theme ) ?? .default },
+                    update: { $0.theme = $1.path },
                     caption: { _ in
                         """
                         Personalize the application's appearance.
@@ -146,17 +146,17 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
             collectionView.register( Cell.self )
         }
 
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPConfig, value: MPTheme) -> UICollectionViewCell? {
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPConfig, value: Theme) -> UICollectionViewCell? {
             Cell.dequeue( from: collectionView, indexPath: indexPath ) {
                 ($0 as? Cell)?.theme = value
             }
         }
 
         class Cell: MPItemCell {
-            weak var theme: MPTheme? = MPTheme.default {
+            weak var theme: Theme? = Theme.default {
                 didSet {
                     DispatchQueue.main.perform {
-                        self.effectView.contentView.backgroundColor = self.theme?.color.backdrop.get()
+                        self.effectView.contentView & \.backgroundColor <- self.theme?.color.backdrop
                     }
                 }
             }
@@ -214,10 +214,12 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-                self.button.setTitleColor( appConfig.theme.color.body.get(), for: .normal )
-                self.button.setTitleShadowColor( appConfig.theme.color.shadow.get(), for: .normal )
-                self.button.titleLabel?.shadowOffset = CGSize( width: 0, height: 1 )
-                self.button.titleLabel?.font = appConfig.theme.font.callout.get()
+//                self.button.setTitleColor( MPTheme.current.color.body.get(), for: .normal )
+//                self.button.setTitleShadowColor( MPTheme.current.color.shadow.get(), for: .normal )
+                self.button.titleLabel!.shadowOffset = CGSize( width: 0, height: 1 )
+                self.button & \UIButton.titleLabel!.font <- Theme.current.font.callout
+                self.button & \UIButton.titleLabel!.textColor <- Theme.current.color.body
+                self.button & \UIButton.titleLabel!.shadowColor <- Theme.current.color.shadow
                 self.button.action( for: .primaryActionTriggered ) { [unowned self] in
                     if let url = self.link?.url {
                         trc( "Opening link: %@", url )

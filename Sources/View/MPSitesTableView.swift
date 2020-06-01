@@ -60,7 +60,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         self.backgroundColor = .clear
         self.isOpaque = false
         self.separatorStyle = .singleLine
-        self.separatorColor = appConfig.theme.color.mute.get()
+        self & \.separatorColor <- Theme.current.color.mute
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -187,9 +187,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        configuration.event?.end( [
-            "action": configuration.action?.identifier.rawValue ?? "none"
-        ] )
+        configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
@@ -304,19 +302,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.contentView.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( cellAction ) ) )
 
             self.selectedBackgroundView = UIView()
-            self.selectedBackgroundView?.backgroundColor = appConfig.theme.color.selection.get()
+            self.selectedBackgroundView! & \.backgroundColor <- Theme.current.color.selection
 
             self.resultLabel.adjustsFontSizeToFitWidth = true
-            self.resultLabel.font = appConfig.theme.font.password.get()?.withSize( 32 )
+            self.resultLabel & \.font <- Theme.current.font.password.transform { $0?.withSize( 32 ) }
             self.resultLabel.text = " "
             self.resultLabel.textAlignment = .center
-            self.resultLabel.textColor = appConfig.theme.color.body.get()
+            self.resultLabel & \.textColor <- Theme.current.color.body
             self.resultLabel.isEnabled = false
 
-            self.captionLabel.font = appConfig.theme.font.caption1.get()
+            self.captionLabel & \.font <- Theme.current.font.caption1
             self.captionLabel.textAlignment = .center
-            self.captionLabel.textColor = appConfig.theme.color.secondary.get()
-            self.captionLabel.shadowColor = appConfig.theme.color.shadow.get()
+            self.captionLabel & \.textColor <- Theme.current.color.secondary
+            self.captionLabel & \.shadowColor <- Theme.current.color.shadow
             self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.settingsButton.button.addTarget( self, action: #selector( settingsAction ), for: .primaryActionTriggered )
@@ -494,16 +492,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.clipsToBounds = true
             self.backgroundColor = .clear
             self.selectedBackgroundView = UIView()
-            self.selectedBackgroundView?.backgroundColor = appConfig.theme.color.selection.get()
+            self.selectedBackgroundView! & \.backgroundColor <- Theme.current.color.selection
             self.contentView.layoutMargins = UIEdgeInsets( top: 80, left: 80, bottom: 80, right: 80 )
 
             self.propLabel.text = "💁"
             self.propLabel.textAlignment = .center
-            self.propLabel.font = appConfig.theme.font.largeTitle.get()
+            self.propLabel & \.font <- Theme.current.font.largeTitle
             self.propLabel.layer.shadowRadius = 8
             self.propLabel.layer.shadowOpacity = 0.618
-            self.propLabel.layer.shadowColor = appConfig.theme.color.body.get()?.cgColor
             self.propLabel.layer.shadowOffset = .zero
+            self.propLabel.layer & \.shadowColor <- Theme.current.color.body
 
             // - Hierarchy
             self.contentView.addSubview( self.emitterView )
@@ -528,8 +526,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.player = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
             self.player?.play()
             self.emitterView.emit( with: [
-                .shape( .circle, appConfig.theme.color.selection.get() ),
-                .shape( .triangle, appConfig.theme.color.shadow.get() ),
+                .shape( .circle, Theme.current.color.selection.get() ),
+                .shape( .triangle, Theme.current.color.shadow.get() ),
                 .emoji( "🎈" ),
                 .emoji( "❤️" ),
                 .emoji( "🎉" )

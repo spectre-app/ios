@@ -8,7 +8,7 @@ import UIKit
 class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
     private lazy var topContainer = MPEffectView( content: self.searchField, dark: true )
     private let searchField              = UITextField()
-    private let userButton               = MPButton(identifier: "sites #user_settings")
+    private let userButton               = MPButton( identifier: "sites #user_settings" )
     private let sitesTableView           = MPSitesTableView()
     private let sitePreviewController    = MPSitePreviewController()
     private let sitePreviewConfiguration = LayoutConfiguration()
@@ -54,10 +54,9 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     override func viewDidLoad() {
 
         // - View
-        self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name", attributes: [
-            NSAttributedString.Key.foregroundColor: appConfig.theme.color.placeholder.get()!
-        ] )
-        self.searchField.textColor = appConfig.theme.color.body.get()
+        self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name" )
+        Theme.current.color.placeholder.apply( to: self.searchField, at: \.attributedPlaceholder, attribute: .foregroundColor )
+        self.searchField & \.textColor <- Theme.current.color.body
         self.searchField.rightView = self.userButton
         self.searchField.rightViewMode = .unlessEditing
         self.searchField.clearButtonMode = .whileEditing

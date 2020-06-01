@@ -113,7 +113,7 @@ public class LayoutConfiguration: CustomStringConvertible {
     private var layoutViews        = [ WeakBox<UIView> ]()
     private var displayViews       = [ WeakBox<UIView> ]()
     private var actions            = [ (UIView) -> Void ]()
-    private var activeValues       = [ String: Any? ]()
+    private var activeValues       = [ String: () -> Any? ]()
     private var inactiveValues     = [ String: Any? ]()
     private var activeProperties   = [ String: Any ]()
     private var inactiveProperties = [ String: Any ]()
@@ -346,7 +346,7 @@ public class LayoutConfiguration: CustomStringConvertible {
     }
 
     //! Set a given value for the target at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.
-    @discardableResult func set(_ value: Any?, forKey keyPath: String, reverses: Bool = false) -> Self {
+    @discardableResult func set(_ value: @escaping @autoclosure () -> Any?, forKey keyPath: String, reverses: Bool = false) -> Self {
         self.activeValues[keyPath] = value
         if reverses {
             self.inactiveValues[keyPath] = self.target.view?.value( forKeyPath: keyPath )
@@ -425,8 +425,8 @@ public class LayoutConfiguration: CustomStringConvertible {
                     }
                 }
 
-                self.activeValues.forEach { keyPath, newValue in
-                    let oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
+                self.activeValues.forEach { keyPath, newSupplier in
+                    let newValue = newSupplier(), oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
                     if newValue as? NSObject == oldValue {
                         return
                     }

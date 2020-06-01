@@ -44,8 +44,8 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
     override init(user: MPUser) {
         super.init( user: user )
         self.modalPresentationStyle = .popover
-        self.popoverPresentationController?.delegate = self
-        self.popoverPresentationController?.backgroundColor = appConfig.theme.color.shade.get()
+        self.popoverPresentationController!.delegate = self
+        self.popoverPresentationController! & \.backgroundColor <- Theme.current.color.shade
     }
 
     override func viewDidLoad() {
@@ -55,20 +55,20 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.view.preservesSuperviewLayoutMargins = true
 
         self.titleLabel.numberOfLines = 0
-        self.titleLabel.font = appConfig.theme.font.title1.get()
+        self.titleLabel & \.font <- Theme.current.font.title1
         self.titleLabel.text = "Exporting"
         self.titleLabel.textAlignment = .center
-        self.titleLabel.textColor = appConfig.theme.color.body.get()
+        self.titleLabel & \.textColor <- Theme.current.color.body
         self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.subtitleLabel.numberOfLines = 0
-        self.subtitleLabel.font = appConfig.theme.font.title2.get()
+        self.subtitleLabel & \.font <- Theme.current.font.title2
         self.subtitleLabel.textAlignment = .center
-        self.subtitleLabel.textColor = appConfig.theme.color.body.get()
+        self.subtitleLabel & \.textColor <- Theme.current.color.body
         self.subtitleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.messageLabel.numberOfLines = 0
-        self.messageLabel.font = appConfig.theme.font.caption1.get()
+        self.messageLabel & \.font <- Theme.current.font.caption1
         self.messageLabel.textAlignment = .center
-        self.messageLabel.textColor = appConfig.theme.color.secondary.get()
+        self.messageLabel & \.textColor <- Theme.current.color.secondary
         self.messageLabel.text =
                 """
                 A "Secure Export" contains everything necessary to fully restore your user's history.

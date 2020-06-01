@@ -10,7 +10,7 @@ import UIKit
 import CoreServices
 
 @UIApplicationMain
-class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
+class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
     lazy var window: UIWindow? = UIWindow()
 
@@ -19,14 +19,12 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
         MPLogSink.shared.register()
         MPTracker.shared.startup()
 
-        self.window?.tintColor = appConfig.theme.color.tint.get()
-        self.window?.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
-        self.window?.makeKeyAndVisible()
+        self.window! & \.tintColor <- Theme.current.color.tint
+        self.window!.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
+        self.window!.makeKeyAndVisible()
 
         Freshchat.sharedInstance().initWith(
                 FreshchatConfig( appID: "***REMOVED***", andAppKey: decrypt( secret: freshchatKey ) ) )
-
-        appConfig.observers.register( observer: self )
 
         return true
     }
@@ -117,10 +115,4 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate, MPConfigObserver {
     }
 
     // MARK: --- MPConfigObserver ---
-
-    func didChangeConfig() {
-        DispatchQueue.main.perform {
-            self.window?.tintColor = appConfig.theme.color.tint.get()
-        }
-    }
 }

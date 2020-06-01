@@ -56,7 +56,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         self.backgroundView.layoutMargins = UIEdgeInsets( top: 20, left: 8, bottom: 20, right: 8 )
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = 1
-        self.backgroundView.layer.shadowColor = appConfig.theme.color.shadow.get()?.cgColor
+        self.backgroundView.layer & \.shadowColor <- Theme.current.color.shadow
         self.backgroundView.layer.shadowOffset = .zero
         self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.masksToBounds = true

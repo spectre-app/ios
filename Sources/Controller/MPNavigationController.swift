@@ -9,7 +9,7 @@
 import UIKit
 
 class MPNavigationController: UINavigationController, UINavigationControllerDelegate {
-    private let backgroundView = MPBackgroundView( mode: .gradient )
+    private let backgroundView = MPBackgroundView( mode: .backdrop )
     private let transition     = MPNavigationTransition()
 
     // MARK: --- Life ---
@@ -25,6 +25,12 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
         LayoutConfiguration( view: self.backgroundView )
                 .constrain()
                 .activate()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange( previousTraitCollection )
+
+        Theme.current.update()
     }
 
     // MARK: --- UINavigationControllerDelegate ---
