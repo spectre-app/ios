@@ -45,7 +45,7 @@ public func =><E, V>(attributedProperty: (E, ReferenceWritableKeyPath<E, NSAttri
     }
 }
 
-public class Theme: Hashable, CustomStringConvertible, Updatable {
+public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     private static var byPath = [ String: Theme ]()
     private static let base   = Theme()
 
@@ -71,8 +71,9 @@ public class Theme: Hashable, CustomStringConvertible, Updatable {
         self.all.first { $0.path == path } ?? path<.flatMap { Theme.byPath[$0] } ?? .base
     }
 
-    public let font  = Fonts()
-    public let color = Colors()
+    public let observers = Observers<ThemeObserver>()
+    public let font      = Fonts()
+    public let color     = Colors()
 
     public struct Fonts {
         public let largeTitle  = ValueProperty<UIFont>()
@@ -130,6 +131,8 @@ public class Theme: Hashable, CustomStringConvertible, Updatable {
             self.color.mute.parent = self.parent?.color.mute
             self.color.selection.parent = self.parent?.color.selection
             self.color.tint.parent = self.parent?.color.tint
+
+            self.update()
         }
     }
     private let name:        String
@@ -232,6 +235,8 @@ public class Theme: Hashable, CustomStringConvertible, Updatable {
         self.color.mute.update()
         self.color.selection.update()
         self.color.tint.update()
+
+        self.observers.notify( event: { $0.didChangeTheme() } )
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -241,6 +246,10 @@ public class Theme: Hashable, CustomStringConvertible, Updatable {
     public static func ==(lhs: Theme, rhs: Theme) -> Bool {
         lhs.path == rhs.path
     }
+}
+
+public protocol ThemeObserver {
+    func didChangeTheme()
 }
 
 public protocol Updatable {
@@ -282,10 +291,10 @@ public class Property<V>: Updatable, CustomStringConvertible {
         return transform
     }
 
-    public func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, V?>) {
+    func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, V?>) {
         let updater = Updater( {
             if let target = target {
-                dbg( "%@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
+                trc( "%@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
 
                 target[keyPath: keyPath] = self.get()
             }
@@ -295,10 +304,10 @@ public class Property<V>: Updatable, CustomStringConvertible {
         updater.update()
     }
 
-    public func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, NSAttributedString?>, attribute: NSAttributedString.Key) {
+    func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, NSAttributedString?>, attribute: NSAttributedString.Key) {
         let updater = Updater( {
             if let target = target, let string = target[keyPath: keyPath] {
-                dbg( "%@ => %@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, attribute.rawValue, self )
+                trc( "%@ => %@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, attribute.rawValue, self )
 
                 let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
                 if let value = self.get() {
@@ -435,19 +444,43 @@ public class TransformProperty<F, T>: Property<T> {
     }
 }
 
+public extension Property where V == UIFont {
+    func get(size: CGFloat? = nil, traits: UIFontDescriptor.SymbolicTraits? = nil) -> UIFont? {
+        var font = self.get()
+
+        if let traits = traits {
+            font = font?.withSymbolicTraits( traits )
+        }
+        if let size = size {
+            font = font?.withSize( size )
+        }
+
+        return font
+    }
+}
+
 public extension Property where V == UIColor {
-    func tint(_ color: UIColor?) -> UIColor? {
-        get()?.withHue( color )
+    func get(tint: UIColor? = nil, alpha: CGFloat? = nil) -> UIColor? {
+        var color: UIColor? = self.get()
+
+        if let tint = tint {
+            color = color?.withHueComponent( tint.hue() )
+        }
+        if let alpha = alpha {
+            color = color?.withAlphaComponent( alpha )
+        }
+
+        return color
     }
 
-    func get() -> CGColor? {
+    func get(x: Void = ()) -> CGColor? {
         self.parent?.get()?.cgColor
     }
 
     func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, CGColor?>) {
         let updater = Updater( {
             if let target = target {
-                dbg( "%@ @ %@ = %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
+                trc( "%@ @ %@ = %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
 
                 target[keyPath: keyPath] = self.get()
             }

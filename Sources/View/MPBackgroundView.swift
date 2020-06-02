@@ -5,14 +5,13 @@
 
 import UIKit
 
-class MPBackgroundView: UIView {
+class MPBackgroundView: UIView, ThemeObserver {
     var mode = Mode.backdrop {
         didSet {
             switch self.mode {
                 case .gradient:
                     self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-                        Theme.current.color.panel.get()!.cgColor,
-                        Theme.current.color.backdrop.get()!.cgColor,
+                        Theme.current.color.panel.get(), Theme.current.color.backdrop.get(),
                     ] as CFArray, locations: nil )
 
                 case .backdrop:
@@ -50,6 +49,17 @@ class MPBackgroundView: UIView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove( toSuperview: newSuperview )
+
+        if newSuperview != nil {
+            Theme.current.observers.register( observer: self )
+        }
+        else {
+            Theme.current.observers.unregister( observer: self )
+        }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
 
@@ -67,6 +77,12 @@ class MPBackgroundView: UIView {
         UIGraphicsGetCurrentContext()?.drawRadialGradient(
                 gradientColor, startCenter: self.gradientPoint, startRadius: 0,
                 endCenter: self.gradientPoint, endRadius: self.gradientRadius, options: .drawsAfterEndLocation )
+    }
+
+    // MARK: --- ThemeObserver ---
+
+    func didChangeTheme() {
+        self.setNeedsDisplay()
     }
 
     // MARK: --- Types ---

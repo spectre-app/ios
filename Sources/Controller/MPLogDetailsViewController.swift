@@ -50,7 +50,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
             super.init( identifier: "logbook #crash",
                         value: { _ in (label: "Force Crash", image: nil) },
                         caption: { _ in "Terminate the app with a crash, triggering a crash report on the next launch." },
-                        hidden: { _ in !appConfig.isDebug }) { _ in
+                        hidden: { _ in !appConfig.isDebug } ) { _ in
                 fatalError( "Forced Crash" )
             }
         }
@@ -129,16 +129,13 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                     logs.append( NSAttributedString(
                             string: "\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)\n",
                             attributes: [
-                                .font: Theme.current.font.mono.get()?.withSize( 11 ) as Any,
+                                .font: Theme.current.font.mono.get( size: 11 ) as Any,
                                 .foregroundColor: Theme.current.color.secondary.get() as Any,
                             ] ) )
                     logs.append( NSAttributedString(
                             string: "\(record.message)\n",
                             attributes: [
-                                .font: Theme.current.font.mono.get()?.withSize( 11 ).withSymbolicTraits(
-                                        record.level <= .warning ?
-                                                .traitBold:
-                                                [] ) as Any,
+                                .font: Theme.current.font.mono.get( size: 11, traits: record.level <= .warning ? .traitBold: [] ) as Any,
                                 .foregroundColor: Theme.current.color.body.get() as Any,
                             ] ) )
                     return logs

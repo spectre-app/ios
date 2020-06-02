@@ -27,7 +27,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                             "items": self.usersSpinner.numberOfItems( inSection: 0 ),
                         ] )
                         self.userEvent = MPTracker.shared.begin( named: "users #user" )
-                    } else {
+                    }
+                    else {
                         self.userEvent = nil
                     }
                 }
@@ -286,7 +287,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     // MARK: --- Types ---
 
-    class UserCell: UICollectionViewCell, MPConfigObserver {
+    class UserCell: UICollectionViewCell, MPConfigObserver, ThemeObserver {
         public override var isSelected: Bool {
             didSet {
                 if self.userFile == nil {
@@ -409,7 +410,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameField.borderStyle = .none
             self.nameField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
             self.nameField.attributedPlaceholder = NSAttributedString( string: "Your Full Name" )
-            Theme.current.color.placeholder.apply(to: self.nameField, at: \.attributedPlaceholder, attribute: .foregroundColor)
+            Theme.current.color.placeholder.apply( to: self.nameField, at: \.attributedPlaceholder, attribute: .foregroundColor )
             self.nameField.alpha = 0
 
             self.biometricButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
@@ -507,6 +508,17 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             fatalError( "init(coder:) is not supported for this class" )
         }
 
+        override func willMove(toSuperview newSuperview: UIView?) {
+            super.willMove( toSuperview: newSuperview )
+
+            if newSuperview != nil {
+                Theme.current.observers.register( observer: self )
+            }
+            else {
+                Theme.current.observers.unregister( observer: self )
+            }
+        }
+
         override func layoutSubviews() {
             super.layoutSubviews()
 
@@ -528,6 +540,12 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 context.addPath( path )
                 context.strokePath()
             }
+        }
+
+        // MARK: --- ThemeObserver ---
+
+        func didChangeTheme() {
+            self.setNeedsDisplay()
         }
 
         // MARK: --- MPConfigObserver ---

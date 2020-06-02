@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPToggleButton: UIButton {
+class MPToggleButton: UIButton, ThemeObserver {
     private let checkLabel = UILabel()
 
     var tapEffect = true
@@ -65,6 +65,17 @@ class MPToggleButton: UIButton {
         }
     }
 
+    override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove( toSuperview: newSuperview )
+
+        if newSuperview != nil {
+            Theme.current.observers.register( observer: self )
+        }
+        else {
+            Theme.current.observers.unregister( observer: self )
+        }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
 
@@ -114,5 +125,11 @@ class MPToggleButton: UIButton {
         if let identifier = self.identifier {
             MPTracker.shared.event( named: identifier, [ "value": self.isSelected ] )
         }
+    }
+
+    // MARK: --- ThemeObserver ---
+
+    func didChangeTheme() {
+        self.setNeedsDisplay()
     }
 }

@@ -507,10 +507,6 @@ extension UIColor {
         return UIColor( hue: newHue ?? hue, saturation: saturation, brightness: brightness, alpha: alpha )
     }
 
-    func withHue(_ color: UIColor?) -> UIColor {
-        self.withHueComponent( color?.hue() )
-    }
-
     func withSaturationComponent(_ newSaturation: CGFloat?) -> UIColor {
         var hue:        CGFloat = 0
         var saturation: CGFloat = 0

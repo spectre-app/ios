@@ -100,7 +100,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 } )
                 .apply { active, inactive in
                     active.set( Theme.current.color.shade.get(), forKey: "backgroundColor" )
-                    inactive.set( Theme.current.color.shade.get()?.withAlphaComponent( 0 ), forKey: "backgroundColor" )
+                    inactive.set( Theme.current.color.shade.get( alpha: 0 ), forKey: "backgroundColor" )
                 }
     }
 

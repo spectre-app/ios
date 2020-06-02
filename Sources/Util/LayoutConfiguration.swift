@@ -82,7 +82,7 @@ public struct LayoutTarget: CustomStringConvertible {
 /**
  * A layout configuration holds a set of operations that will be performed on the target when the configuration's active state changes.
  */
-public class LayoutConfiguration: CustomStringConvertible {
+public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
 
     //! The target upon which this configuration's operations operate.
     public let  target:    LayoutTarget
@@ -438,6 +438,7 @@ public class LayoutConfiguration: CustomStringConvertible {
                     trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
                     self.target.view?.setValue( newValue, forKeyPath: keyPath )
                 }
+                Theme.current.observers.register( observer: self )
 
                 targetView.flatMap { targetView in self.actions.forEach { $0( targetView ) } }
                 self.activeConfigurations.forEach {
@@ -471,60 +472,61 @@ public class LayoutConfiguration: CustomStringConvertible {
         trc( "%@: deactivate: %@", parent?.target, self )
 
         DispatchQueue.main.perform {
-                let owningView = self.target.owningView
-                let targetView = self.target.view ?? owningView
+            let owningView = self.target.owningView
+            let targetView = self.target.view ?? owningView
 
-                self.activeConfigurations.forEach {
-                    trc( "%@:%@: -> deactivate active child: %@", parent?.target, self.target, $0 )
-                    $0.deactivate( parent: self )
+            self.activeConfigurations.forEach {
+                trc( "%@:%@: -> deactivate active child: %@", parent?.target, self.target, $0 )
+                $0.deactivate( parent: self )
+            }
+
+            if let newPriority = self.inactiveProperties["compressionResistance.horizontal"] as? UILayoutPriority,
+               newPriority != targetView?.contentCompressionResistancePriority( for: .horizontal ) {
+                targetView?.setContentCompressionResistancePriority( newPriority, for: .horizontal )
+            }
+            if let newPriority = self.inactiveProperties["compressionResistance.vertical"] as? UILayoutPriority,
+               newPriority != targetView?.contentCompressionResistancePriority( for: .vertical ) {
+                targetView?.setContentCompressionResistancePriority( newPriority, for: .vertical )
+            }
+            if let newPriority = self.inactiveProperties["hugging.horizontal"] as? UILayoutPriority,
+               newPriority != targetView?.contentHuggingPriority( for: .horizontal ) {
+                targetView?.setContentHuggingPriority( newPriority, for: .horizontal )
+            }
+            if let newPriority = self.inactiveProperties["hugging.vertical"] as? UILayoutPriority,
+               newPriority != targetView?.contentHuggingPriority( for: .vertical ) {
+                targetView?.setContentHuggingPriority( newPriority, for: .vertical )
+            }
+
+            self.activeConstraints.forEach {
+                trc( "%@:%@: deactivating %@", parent?.target, self.target, $0 )
+                $0.isActive = false
+            }
+            self.activeConstraints.removeAll()
+
+            self.inactiveValues.forEach { keyPath, newValue in
+                let oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
+                if newValue as? NSObject == oldValue {
+                    return
                 }
 
-                if let newPriority = self.inactiveProperties["compressionResistance.horizontal"] as? UILayoutPriority,
-                   newPriority != targetView?.contentCompressionResistancePriority( for: .horizontal ) {
-                    targetView?.setContentCompressionResistancePriority( newPriority, for: .horizontal )
-                }
-                if let newPriority = self.inactiveProperties["compressionResistance.vertical"] as? UILayoutPriority,
-                   newPriority != targetView?.contentCompressionResistancePriority( for: .vertical ) {
-                    targetView?.setContentCompressionResistancePriority( newPriority, for: .vertical )
-                }
-                if let newPriority = self.inactiveProperties["hugging.horizontal"] as? UILayoutPriority,
-                   newPriority != targetView?.contentHuggingPriority( for: .horizontal ) {
-                    targetView?.setContentHuggingPriority( newPriority, for: .horizontal )
-                }
-                if let newPriority = self.inactiveProperties["hugging.vertical"] as? UILayoutPriority,
-                   newPriority != targetView?.contentHuggingPriority( for: .vertical ) {
-                    targetView?.setContentHuggingPriority( newPriority, for: .vertical )
-                }
+                trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
+                self.target.view?.setValue( newValue, forKeyPath: keyPath )
+            }
+            Theme.current.observers.unregister( observer: self )
 
-                self.activeConstraints.forEach {
-                    trc( "%@:%@: deactivating %@", parent?.target, self.target, $0 )
-                    $0.isActive = false
-                }
-                self.activeConstraints.removeAll()
+            self.inactiveConfigurations.forEach {
+                trc( "%@:%@: -> activate inactive child: %@", parent?.target, self.target, $0 )
+                $0.activate( parent: self )
+            }
 
-                self.inactiveValues.forEach { keyPath, newValue in
-                    let oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
-                    if newValue as? NSObject == oldValue {
-                        return
-                    }
+            self.activation = false
 
-                    trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
-                    self.target.view?.setValue( newValue, forKeyPath: keyPath )
-                }
+            self.layoutViews.forEach { $0.value?.setNeedsLayout() }
+            self.displayViews.forEach { $0.value?.setNeedsDisplay() }
 
-                self.inactiveConfigurations.forEach {
-                    trc( "%@:%@: -> activate inactive child: %@", parent?.target, self.target, $0 )
-                    $0.activate( parent: self )
-                }
-
-                self.activation = false
-
-                self.layoutViews.forEach { $0.value?.setNeedsLayout() }
-                self.displayViews.forEach { $0.value?.setNeedsDisplay() }
-
-                if parent == nil {
-                    self.layoutIfNeeded()
-                }
+            if parent == nil {
+                self.layoutIfNeeded()
+            }
         }
 
         return self
@@ -534,6 +536,23 @@ public class LayoutConfiguration: CustomStringConvertible {
         if let owningView = self.target.owningView,
            (owningView as? UIWindow ?? owningView.window) != nil {
             owningView.layoutIfNeeded()
+        }
+    }
+
+    // MARK: --- ThemeObserver ---
+
+    public func didChangeTheme() {
+        guard self.activated
+        else { return }
+
+        self.activeValues.forEach { keyPath, newSupplier in
+            let newValue = newSupplier(), oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
+            if newValue as? NSObject == oldValue {
+                return
+            }
+
+            trc( "[update] %@: %@, %@ -> %@", self.target, keyPath, oldValue.debugDescription, newValue.debugDescription )
+            self.target.view?.setValue( newValue, forKeyPath: keyPath )
         }
     }
 }
