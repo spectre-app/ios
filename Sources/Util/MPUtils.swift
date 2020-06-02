@@ -4,7 +4,6 @@
 //
 
 import UIKit
-import os
 
 let productName    = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) as? String ?? "Volto"
 let productVersion = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
@@ -837,21 +836,6 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
 
         return arg as? CVarArg ?? String( describing: arg )
     } )
-
-    let source = file.lastIndex( of: "/" ).flatMap { String( file.suffix( from: file.index( after: $0 ) ) ) } ?? file
-    switch level {
-        case .trace, .debug:
-            os_log( "%30@:%-3ld %-3@ | %@", dso: dso, type: .debug, source, line, level.description, message )
-        case .info:
-            os_log( "%30@:%-3ld %-3@ | %@", dso: dso, type: .info, source, line, level.description, message )
-        case .warning:
-            os_log( "%30@:%-3ld %-3@ | %@", dso: dso, type: .default, source, line, level.description, message )
-        case .error:
-            os_log( "%30@:%-3ld %-3@ | %@", dso: dso, type: .error, source, line, level.description, message )
-        case .fatal:
-            os_log( "%30@:%-3ld %-3@ | %@", dso: dso, type: .fault, source, line, level.description, message )
-        @unknown default: ()
-    }
 
     mpw_log_ssink( level, file, line, function, message )
 }
