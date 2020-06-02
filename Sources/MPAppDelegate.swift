@@ -19,7 +19,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         MPLogSink.shared.register()
         MPTracker.shared.startup()
 
-        self.window! & \.tintColor <- Theme.current.color.tint
+        self.window! => \.tintColor => Theme.current.color.tint
         self.window!.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window!.makeKeyAndVisible()
 

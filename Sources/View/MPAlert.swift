@@ -121,26 +121,26 @@ class MPAlert {
         contentStack.spacing = 8
 
         self.titleLabel.text = self.title
-        self.titleLabel & \.textColor <- Theme.current.color.body
+        self.titleLabel => \.textColor => Theme.current.color.body
         self.titleLabel.textAlignment = .center
         self.titleLabel.numberOfLines = 0
 
         self.messageLabel.text = self.message
-        self.messageLabel & \.textColor <- Theme.current.color.secondary
+        self.messageLabel => \.textColor => Theme.current.color.secondary
         self.messageLabel.textAlignment = .center
         self.messageLabel.numberOfLines = 0
 
         self.expandChevron.text = "▾"
-        self.expandChevron & \.textColor <- Theme.current.color.body
+        self.expandChevron => \.textColor => Theme.current.color.body
         self.expandChevron.textAlignment = .center
-        self.expandChevron & \.font <- Theme.current.font.callout
+        self.expandChevron => \.font => Theme.current.font.callout
         self.expandChevron.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 0, bottom: -8, right: 0 )
 
         self.detailLabel.text = self.details
-        self.detailLabel & \.textColor <- Theme.current.color.body
+        self.detailLabel => \.textColor => Theme.current.color.body
         self.detailLabel.textAlignment = .center
         self.detailLabel.numberOfLines = 0
-        self.detailLabel & \.font <- Theme.current.font.footnote
+        self.detailLabel => \.font => Theme.current.font.footnote
 
         let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
         dismissRecognizer.direction = .up

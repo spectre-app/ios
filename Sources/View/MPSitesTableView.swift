@@ -60,7 +60,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         self.backgroundColor = .clear
         self.isOpaque = false
         self.separatorStyle = .singleLine
-        self & \.separatorColor <- Theme.current.color.mute
+        self => \.separatorColor => Theme.current.color.mute
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -302,19 +302,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.contentView.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( cellAction ) ) )
 
             self.selectedBackgroundView = UIView()
-            self.selectedBackgroundView! & \.backgroundColor <- Theme.current.color.selection
+            self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
 
             self.resultLabel.adjustsFontSizeToFitWidth = true
-            self.resultLabel & \.font <- Theme.current.font.password.transform { $0?.withSize( 32 ) }
+            self.resultLabel => \.font => Theme.current.font.password.transform { $0?.withSize( 32 ) }
             self.resultLabel.text = " "
             self.resultLabel.textAlignment = .center
-            self.resultLabel & \.textColor <- Theme.current.color.body
+            self.resultLabel => \.textColor => Theme.current.color.body
             self.resultLabel.isEnabled = false
 
-            self.captionLabel & \.font <- Theme.current.font.caption1
+            self.captionLabel => \.font => Theme.current.font.caption1
             self.captionLabel.textAlignment = .center
-            self.captionLabel & \.textColor <- Theme.current.color.secondary
-            self.captionLabel & \.shadowColor <- Theme.current.color.shadow
+            self.captionLabel => \.textColor => Theme.current.color.secondary
+            self.captionLabel => \.shadowColor => Theme.current.color.shadow
             self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.settingsButton.button.addTarget( self, action: #selector( settingsAction ), for: .primaryActionTriggered )
@@ -492,16 +492,16 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.clipsToBounds = true
             self.backgroundColor = .clear
             self.selectedBackgroundView = UIView()
-            self.selectedBackgroundView! & \.backgroundColor <- Theme.current.color.selection
+            self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
             self.contentView.layoutMargins = UIEdgeInsets( top: 80, left: 80, bottom: 80, right: 80 )
 
             self.propLabel.text = "💁"
             self.propLabel.textAlignment = .center
-            self.propLabel & \.font <- Theme.current.font.largeTitle
+            self.propLabel => \.font => Theme.current.font.largeTitle
             self.propLabel.layer.shadowRadius = 8
             self.propLabel.layer.shadowOpacity = 0.618
             self.propLabel.layer.shadowOffset = .zero
-            self.propLabel.layer & \.shadowColor <- Theme.current.color.body
+            self.propLabel.layer => \.shadowColor => Theme.current.color.body
 
             // - Hierarchy
             self.contentView.addSubview( self.emitterView )

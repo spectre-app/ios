@@ -103,8 +103,8 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                 super.init( frame: frame )
 
                 // - View
-                self.titleLabel & \.font <- Theme.current.font.headline
-                self.titleLabel & \.textColor <- Theme.current.color.body
+                self.titleLabel => \.font => Theme.current.font.headline
+                self.titleLabel => \.textColor => Theme.current.color.body
                 self.titleLabel.textAlignment = .center
 
                 // - Hierarchy

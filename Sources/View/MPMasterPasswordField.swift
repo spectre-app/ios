@@ -88,9 +88,9 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
 
         self.passwordIndicator.frame = self.passwordIndicator.frame.insetBy( dx: -8, dy: 0 )
 
-        self.identiconLabel & \.font <- Theme.current.font.password.transform { $0?.withSize( UIFont.labelFontSize ) }
-        self.identiconLabel & \.textColor <- Theme.current.color.body
-        self.identiconLabel & \.shadowColor <- Theme.current.color.shadow
+        self.identiconLabel => \.font => Theme.current.font.password.transform { $0?.withSize( UIFont.labelFontSize ) }
+        self.identiconLabel => \.textColor => Theme.current.color.body
+        self.identiconLabel => \.shadowColor => Theme.current.color.shadow
         self.identiconLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
         self.identiconAccessory.allowsSelfSizing = true

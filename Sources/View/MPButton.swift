@@ -92,8 +92,8 @@ class MPButton: MPEffectView {
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
 //        self.button.setTitleColor( MPTheme.current.color.body.get(), for: .normal )
-        self.button.titleLabel! & \.textColor <- Theme.current.color.body
-        self.button.titleLabel! & \.font <- Theme.current.font.callout
+        self.button.titleLabel! => \.textColor => Theme.current.color.body
+        self.button.titleLabel! => \.font => Theme.current.font.callout
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
         self.button.sizeToFit()

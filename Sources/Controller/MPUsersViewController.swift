@@ -359,10 +359,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.isOpaque = false
             self.contentView.layoutMargins = UIEdgeInsets( top: 20, left: 20, bottom: 20, right: 20 )
 
-            self.nameLabel & \.font <- Theme.current.font.callout
+            self.nameLabel => \.font => Theme.current.font.callout
             self.nameLabel.adjustsFontSizeToFitWidth = true
             self.nameLabel.textAlignment = .center
-            self.nameLabel & \.textColor <- Theme.current.color.body
+            self.nameLabel => \.textColor => Theme.current.color.body
             self.nameLabel.numberOfLines = 0
             self.nameLabel.preferredMaxLayoutWidth = .infinity
             self.nameLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
@@ -373,7 +373,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             }
 
             self.passwordField.borderStyle = .roundedRect
-            self.passwordField & \.font <- Theme.current.font.callout
+            self.passwordField => \.font => Theme.current.font.callout
             self.passwordField.placeholder = "Your master password"
             self.passwordField.nameField = self.nameField
             self.passwordField.rightView = self.biometricButton
@@ -403,8 +403,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 }
             }
 
-            self.nameField & \.font <- Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
-            self.nameField & \.textColor <- Theme.current.color.body
+            self.nameField => \.font => Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
+            self.nameField => \.textColor => Theme.current.color.body
             self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.borderStyle = .none
             self.nameField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )

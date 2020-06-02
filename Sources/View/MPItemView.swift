@@ -82,9 +82,9 @@ class Item<M>: NSObject {
             self.contentView.spacing = 8
 
             self.titleLabel.numberOfLines = 0
-            self.titleLabel & \.textColor <- Theme.current.color.body
+            self.titleLabel => \.textColor => Theme.current.color.body
             self.titleLabel.textAlignment = .center
-            self.titleLabel & \.font <- Theme.current.font.headline
+            self.titleLabel => \.font => Theme.current.font.headline
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
             self.titleLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
@@ -95,9 +95,9 @@ class Item<M>: NSObject {
             self.subitemsView.preservesSuperviewLayoutMargins = true
             self.subitemsView.isLayoutMarginsRelativeArrangement = true
 
-            self.captionLabel & \.textColor <- Theme.current.color.secondary
+            self.captionLabel => \.textColor => Theme.current.color.secondary
             self.captionLabel.textAlignment = .center
-            self.captionLabel & \.font <- Theme.current.font.caption1
+            self.captionLabel => \.font => Theme.current.font.caption1
             self.captionLabel.numberOfLines = 0
             self.captionLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
             self.captionLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
@@ -181,7 +181,7 @@ class SeparatorItem<M>: Item<M> {
         }
 
         override func createValueView() -> UIView? {
-            self.separatorView & \.backgroundColor <- Theme.current.color.mute
+            self.separatorView => \.backgroundColor => Theme.current.color.mute
             self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).isActive = true
             return self.separatorView
         }
@@ -222,10 +222,10 @@ class LabelItem<M>: ValueItem<M, Any> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueLabel & \.font <- Theme.current.font.largeTitle
+            self.valueLabel => \.font => Theme.current.font.largeTitle
             self.valueLabel.textAlignment = .center
-            self.valueLabel & \.textColor <- Theme.current.color.body
-            self.valueLabel & \.shadowColor <- Theme.current.color.shadow
+            self.valueLabel => \.textColor => Theme.current.color.body
+            self.valueLabel => \.shadowColor => Theme.current.color.shadow
             self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             return self.valueLabel
@@ -432,7 +432,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
 
         override func createValueView() -> UIView? {
             self.valueField.delegate = self.item
-            self.valueField & \.textColor <- Theme.current.color.body
+            self.valueField => \.textColor => Theme.current.color.body
             self.valueField.textAlignment = .center
             self.valueField.action( for: .editingChanged ) { [unowned self] in
                 if let model = self.item.model,
@@ -497,8 +497,8 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 
         override func createValueView() -> UIView? {
             self.valueView.delegate = self.item
-            self.valueView & \.font <- Theme.current.font.mono
-            self.valueView & \.textColor <- Theme.current.color.body
+            self.valueView => \.font => Theme.current.font.mono
+            self.valueView => \.textColor => Theme.current.color.body
             self.valueView.backgroundColor = .clear
             return self.valueView
         }
@@ -584,10 +584,10 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         }
 
         override func createValueView() -> UIView? {
-            self.valueLabel & \.font <- Theme.current.font.largeTitle
+            self.valueLabel => \.font => Theme.current.font.largeTitle
             self.valueLabel.textAlignment = .center
-            self.valueLabel & \.textColor <- Theme.current.color.body
-            self.valueLabel & \.shadowColor <- Theme.current.color.shadow
+            self.valueLabel => \.textColor => Theme.current.color.body
+            self.valueLabel => \.shadowColor => Theme.current.color.shadow
             self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.valueView.addSubview( self.valueLabel )

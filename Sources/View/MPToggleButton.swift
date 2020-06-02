@@ -25,7 +25,7 @@ class MPToggleButton: UIButton {
         didSet {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: 0.382 ) {
-                    self.checkLabel & \.textColor <- (self.isEnabled ? Theme.current.color.body: Theme.current.color.secondary)
+                    self.checkLabel => \.textColor => (self.isEnabled ? Theme.current.color.body: Theme.current.color.secondary)
                 }
             }
         }
@@ -44,7 +44,7 @@ class MPToggleButton: UIButton {
         self.layoutMargins = self.contentEdgeInsets
         self.layer.needsDisplayOnBoundsChange = true
 
-        self.checkLabel & \.font <- Theme.current.font.callout
+        self.checkLabel => \.font => Theme.current.font.callout
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
 

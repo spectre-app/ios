@@ -55,8 +55,8 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
         // - View
         self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name" )
-        Theme.current.color.placeholder.apply( to: self.searchField, at: \.attributedPlaceholder, attribute: .foregroundColor )
-        self.searchField & \.textColor <- Theme.current.color.body
+        self.searchField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
+        self.searchField => \.textColor => Theme.current.color.body
         self.searchField.rightView = self.userButton
         self.searchField.rightViewMode = .unlessEditing
         self.searchField.clearButtonMode = .whileEditing

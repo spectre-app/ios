@@ -45,7 +45,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         super.init( user: user )
         self.modalPresentationStyle = .popover
         self.popoverPresentationController!.delegate = self
-        self.popoverPresentationController! & \.backgroundColor <- Theme.current.color.shade
+        self.popoverPresentationController! => \.backgroundColor => Theme.current.color.shade
     }
 
     override func viewDidLoad() {
@@ -55,20 +55,20 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.view.preservesSuperviewLayoutMargins = true
 
         self.titleLabel.numberOfLines = 0
-        self.titleLabel & \.font <- Theme.current.font.title1
+        self.titleLabel => \.font => Theme.current.font.title1
         self.titleLabel.text = "Exporting"
         self.titleLabel.textAlignment = .center
-        self.titleLabel & \.textColor <- Theme.current.color.body
+        self.titleLabel => \.textColor => Theme.current.color.body
         self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.subtitleLabel.numberOfLines = 0
-        self.subtitleLabel & \.font <- Theme.current.font.title2
+        self.subtitleLabel => \.font => Theme.current.font.title2
         self.subtitleLabel.textAlignment = .center
-        self.subtitleLabel & \.textColor <- Theme.current.color.body
+        self.subtitleLabel => \.textColor => Theme.current.color.body
         self.subtitleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.messageLabel.numberOfLines = 0
-        self.messageLabel & \.font <- Theme.current.font.caption1
+        self.messageLabel => \.font => Theme.current.font.caption1
         self.messageLabel.textAlignment = .center
-        self.messageLabel & \.textColor <- Theme.current.color.secondary
+        self.messageLabel => \.textColor => Theme.current.color.secondary
         self.messageLabel.text =
                 """
                 A "Secure Export" contains everything necessary to fully restore your user's history.

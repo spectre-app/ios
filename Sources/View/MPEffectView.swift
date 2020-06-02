@@ -55,7 +55,7 @@ class MPEffectView: UIVisualEffectView {
 
         self.contentView.layer.shadowRadius = 0
         self.contentView.layer.shadowOpacity = 0.382
-        self.contentView.layer & \.shadowColor <- Theme.current.color.shadow
+        self.contentView.layer => \.shadowColor => Theme.current.color.shadow
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
         self.updateBackground()
@@ -122,7 +122,7 @@ class MPEffectView: UIVisualEffectView {
 
     func updateContent() {
         DispatchQueue.main.perform {
-            self.layer & \.borderColor <- Theme.current.color.body
+            self.layer => \.borderColor => Theme.current.color.body
 
             if self.isDimmedBySelection && !self.isSelected {
                 self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )

@@ -16,11 +16,11 @@ class MPBackgroundView: UIView {
                     ] as CFArray, locations: nil )
 
                 case .backdrop:
-                    self & \.backgroundColor <- Theme.current.color.backdrop
+                    self => \.backgroundColor => Theme.current.color.backdrop
                     self.gradientColor = nil
 
                 case .panel:
-                    self & \.backgroundColor <- Theme.current.color.panel
+                    self => \.backgroundColor => Theme.current.color.panel
                     self.gradientColor = nil
 
                 case .tint:

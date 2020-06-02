@@ -5,18 +5,43 @@
 
 import UIKit
 
-infix operator <-: ComparisonPrecedence
+infix operator =>: MultiplicationPrecedence
 
-public func &<E, V>(a: E, b: ReferenceWritableKeyPath<E, V?>) -> (E, ReferenceWritableKeyPath<E, V?>) {
-    (a, b)
+public func =><E, V>(target: E, keyPath: ReferenceWritableKeyPath<E, V?>) -> (E, ReferenceWritableKeyPath<E, V?>) {
+    (target, keyPath)
 }
 
-public func <-<E, V>(lhs: (E, ReferenceWritableKeyPath<E, V?>), rhs: Property<V>?) {
-    if let rhs = rhs {
-        rhs.apply( to: lhs.0, at: lhs.1 )
+public func =><E>(property: (E, ReferenceWritableKeyPath<E, NSAttributedString?>), attribute: NSAttributedString.Key)
+                -> (E, ReferenceWritableKeyPath<E, NSAttributedString?>, NSAttributedString.Key) {
+    (property.0, property.1, attribute)
+}
+
+public func =><E, V>(objectProperty: (E, ReferenceWritableKeyPath<E, V?>), themeProperty: Property<V>?) {
+    if let themeProperty = themeProperty {
+        themeProperty.apply( to: objectProperty.0, at: objectProperty.1 )
     }
     else {
-        lhs.0[keyPath: lhs.1] = nil
+        objectProperty.0[keyPath: objectProperty.1] = nil
+    }
+}
+
+public func =><E>(objectProperty: (E, ReferenceWritableKeyPath<E, CGColor?>), themeProperty: Property<UIColor>?) {
+    if let themeProperty = themeProperty {
+        themeProperty.apply( to: objectProperty.0, at: objectProperty.1 )
+    }
+    else {
+        objectProperty.0[keyPath: objectProperty.1] = nil
+    }
+}
+
+public func =><E, V>(attributedProperty: (E, ReferenceWritableKeyPath<E, NSAttributedString?>, NSAttributedString.Key), themeProperty: Property<V>?) {
+    if let themeProperty = themeProperty {
+        themeProperty.apply( to: attributedProperty.0, at: attributedProperty.1, attribute: attributedProperty.2 )
+    }
+    else if let attributedString = attributedProperty.0[keyPath: attributedProperty.1] {
+        let attributedString = attributedString as? NSMutableAttributedString ?? .init( attributedString: attributedString )
+        attributedString.removeAttribute( attributedProperty.2, range: NSRange( location: 0, length: attributedString.length ) )
+        attributedProperty.0[keyPath: attributedProperty.1] = attributedString
     }
 }
 
@@ -260,22 +285,9 @@ public class Property<V>: Updatable, CustomStringConvertible {
     public func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, V?>) {
         let updater = Updater( {
             if let target = target {
-                dbg( "%@ @ %@ = %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
-            }
-            target?[keyPath: keyPath] = self.get()
-        } )
+                dbg( "%@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
 
-        self.dependants.append( updater )
-        updater.update()
-    }
-
-    public func apply(to string: NSMutableAttributedString, at attribute: NSAttributedString.Key) {
-        let updater = Updater( {
-            if let value = self.get() {
-                string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
-            }
-            else {
-                string.removeAttribute( attribute, range: NSRange( location: 0, length: string.length ) )
+                target[keyPath: keyPath] = self.get()
             }
         } )
 
@@ -284,11 +296,23 @@ public class Property<V>: Updatable, CustomStringConvertible {
     }
 
     public func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, NSAttributedString?>, attribute: NSAttributedString.Key) {
-        if let string = target?[keyPath: keyPath] {
-            let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
-            self.apply( to: string, at: attribute )
-            target?[keyPath: keyPath] = string
-        }
+        let updater = Updater( {
+            if let target = target, let string = target[keyPath: keyPath] {
+                dbg( "%@ => %@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, attribute.rawValue, self )
+
+                let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
+                if let value = self.get() {
+                    string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
+                }
+                else {
+                    string.removeAttribute( attribute, range: NSRange( location: 0, length: string.length ) )
+                }
+                target[keyPath: keyPath] = string
+            }
+        } )
+
+        self.dependants.append( updater )
+        updater.update()
     }
 
     public func update() {
@@ -416,11 +440,20 @@ public extension Property where V == UIColor {
         get()?.withHue( color )
     }
 
-    func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, CGColor?>) {
-        target?[keyPath: keyPath] = self.get()?.cgColor
+    func get() -> CGColor? {
+        self.parent?.get()?.cgColor
     }
 
-    static func <-<E>(lhs: (E, ReferenceWritableKeyPath<E, CGColor?>), rhs: Property<V>) {
-        rhs.apply( to: lhs.0, at: lhs.1 )
+    func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, CGColor?>) {
+        let updater = Updater( {
+            if let target = target {
+                dbg( "%@ @ %@ = %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
+
+                target[keyPath: keyPath] = self.get()
+            }
+        } )
+
+        self.dependants.append( updater )
+        updater.update()
     }
 }

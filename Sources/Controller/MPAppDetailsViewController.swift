@@ -156,7 +156,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
             weak var theme: Theme? = Theme.default {
                 didSet {
                     DispatchQueue.main.perform {
-                        self.effectView.contentView & \.backgroundColor <- self.theme?.color.backdrop
+                        self.effectView.contentView => \.backgroundColor => self.theme?.color.backdrop
                     }
                 }
             }
@@ -217,9 +217,9 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
 //                self.button.setTitleColor( MPTheme.current.color.body.get(), for: .normal )
 //                self.button.setTitleShadowColor( MPTheme.current.color.shadow.get(), for: .normal )
                 self.button.titleLabel!.shadowOffset = CGSize( width: 0, height: 1 )
-                self.button & \UIButton.titleLabel!.font <- Theme.current.font.callout
-                self.button & \UIButton.titleLabel!.textColor <- Theme.current.color.body
-                self.button & \UIButton.titleLabel!.shadowColor <- Theme.current.color.shadow
+                self.button => \.titleLabel!.font => Theme.current.font.callout
+                self.button => \.titleLabel!.textColor => Theme.current.color.body
+                self.button => \.titleLabel!.shadowColor => Theme.current.color.shadow
                 self.button.action( for: .primaryActionTriggered ) { [unowned self] in
                     if let url = self.link?.url {
                         trc( "Opening link: %@", url )

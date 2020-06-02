@@ -108,7 +108,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
         override func createItemView() -> FieldItemView<MPSite> {
             let view = super.createItemView()
-            view.valueField & \.font <- Theme.current.font.password
+            view.valueField => \.font => Theme.current.font.password
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .asciiCapable
@@ -167,7 +167,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
         override func createItemView() -> FieldItemView<MPSite> {
             let view = super.createItemView()
-            view.valueField & \.font <- Theme.current.font.password
+            view.valueField => \.font => Theme.current.font.password
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
@@ -265,15 +265,15 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-                self.keywordLabel & \.font <- Theme.current.font.caption1
-                self.keywordLabel & \.shadowColor <- Theme.current.color.shadow
+                self.keywordLabel => \.font => Theme.current.font.caption1
+                self.keywordLabel => \.shadowColor => Theme.current.color.shadow
                 self.keywordLabel.shadowOffset = CGSize( width: 0, height: 1 )
-                self.keywordLabel & \.textColor <- Theme.current.color.body
+                self.keywordLabel => \.textColor => Theme.current.color.body
 
-                self.resultLabel & \.font <- Theme.current.font.password
-                self.resultLabel & \.shadowColor <- Theme.current.color.shadow
+                self.resultLabel => \.font => Theme.current.font.password
+                self.resultLabel => \.shadowColor => Theme.current.color.shadow
                 self.resultLabel.shadowOffset = CGSize( width: 0, height: 1 )
-                self.resultLabel & \.textColor <- Theme.current.color.body
+                self.resultLabel => \.textColor => Theme.current.color.body
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
