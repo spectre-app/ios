@@ -7,41 +7,118 @@ import UIKit
 
 infix operator =>: MultiplicationPrecedence
 
-public func =><E, V>(target: E, keyPath: ReferenceWritableKeyPath<E, V?>) -> (E, ReferenceWritableKeyPath<E, V?>) {
-    (target, keyPath)
+public func =><E, V>(target: E, keyPath: KeyPath<E, V>) -> PropertyPath<E, V> {
+    PropertyPath( target: target, nonnullKeyPath: keyPath, nullableKeyPath: nil, attribute: nil )
 }
 
-public func =><E>(property: (E, ReferenceWritableKeyPath<E, NSAttributedString?>), attribute: NSAttributedString.Key)
-                -> (E, ReferenceWritableKeyPath<E, NSAttributedString?>, NSAttributedString.Key) {
-    (property.0, property.1, attribute)
+public func =><E, V>(target: E, keyPath: KeyPath<E, V?>) -> PropertyPath<E, V> {
+    PropertyPath( target: target, nonnullKeyPath: nil, nullableKeyPath: keyPath, attribute: nil )
 }
 
-public func =><E, V>(objectProperty: (E, ReferenceWritableKeyPath<E, V?>), themeProperty: Property<V>?) {
-    if let themeProperty = themeProperty {
-        themeProperty.apply( to: objectProperty.0, at: objectProperty.1 )
+public func =><E>(propertyPath: PropertyPath<E, NSAttributedString>, attribute: NSAttributedString.Key)
+                -> PropertyPath<E, NSAttributedString> {
+    PropertyPath( target: propertyPath.target, nonnullKeyPath: propertyPath.nonnullKeyPath, nullableKeyPath: propertyPath.nullableKeyPath,
+                  attribute: attribute )
+}
+
+public func =><E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
+    if let property = property {
+        property.apply( propertyPath: propertyPath )
     }
     else {
-        objectProperty.0[keyPath: objectProperty.1] = nil
+        propertyPath.apply( value: nil )
     }
 }
 
-public func =><E>(objectProperty: (E, ReferenceWritableKeyPath<E, CGColor?>), themeProperty: Property<UIColor>?) {
-    if let themeProperty = themeProperty {
-        themeProperty.apply( to: objectProperty.0, at: objectProperty.1 )
+public func =><E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
+    if let property = property {
+        property.apply( propertyPath: propertyPath )
     }
     else {
-        objectProperty.0[keyPath: objectProperty.1] = nil
+        propertyPath.apply( value: nil )
     }
 }
 
-public func =><E, V>(attributedProperty: (E, ReferenceWritableKeyPath<E, NSAttributedString?>, NSAttributedString.Key), themeProperty: Property<V>?) {
-    if let themeProperty = themeProperty {
-        themeProperty.apply( to: attributedProperty.0, at: attributedProperty.1, attribute: attributedProperty.2 )
+public func =><E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
+    if let property = property {
+        property.apply( propertyPath: propertyPath )
     }
-    else if let attributedString = attributedProperty.0[keyPath: attributedProperty.1] {
-        let attributedString = attributedString as? NSMutableAttributedString ?? .init( attributedString: attributedString )
-        attributedString.removeAttribute( attributedProperty.2, range: NSRange( location: 0, length: attributedString.length ) )
-        attributedProperty.0[keyPath: attributedProperty.1] = attributedString
+    else {
+        propertyPath.apply( value: nil )
+    }
+}
+
+public struct PropertyPath<E, V>: CustomStringConvertible {
+    let target:          E
+    let nonnullKeyPath:  KeyPath<E, V>?
+    let nullableKeyPath: KeyPath<E, V?>?
+    let attribute:       NSAttributedString.Key?
+
+    public var description: String {
+        if let attribute = self.attribute {
+            return "\(self.propertyDescription) => \(attribute)"
+        }
+        else {
+            return self.propertyDescription
+        }
+    }
+
+    var propertyDescription: String {
+        if let keyPath = self.nullableKeyPath {
+            return "\(type( of: self.target )) => \(NSExpression( forKeyPath: keyPath ).keyPath)"
+        }
+        else if let keyPath = self.nonnullKeyPath {
+            return "\(type( of: self.target )) => \(NSExpression( forKeyPath: keyPath ).keyPath)"
+        }
+        else {
+            return "\(type( of: self.target ))"
+        }
+    }
+
+    func apply(value: V?) {
+        if self.nonnullKeyPath == \UIButton.currentTitleColor,
+           let target = target as? UIButton, let value = value as? UIColor {
+            target.setTitleColor( value, for: .normal )
+        }
+        else if self.nullableKeyPath == \UIButton.currentTitleShadowColor,
+                let target = target as? UIButton, let value = value as? UIColor {
+            target.setTitleShadowColor( value, for: .normal )
+        }
+        else if self.nullableKeyPath == \UIButton.currentAttributedTitle,
+                let target = target as? UIButton, let value = value as? NSAttributedString {
+            target.setAttributedTitle( value, for: .normal )
+        }
+        else if self.nullableKeyPath == \UIButton.currentBackgroundImage,
+                let target = target as? UIButton, let value = value as? UIImage {
+            target.setBackgroundImage( value, for: .normal )
+        }
+        else if self.nullableKeyPath == \UIButton.currentImage,
+                let target = target as? UIButton, let value = value as? UIImage {
+            target.setImage( value, for: .normal )
+        }
+
+        if let propertyKeyPath = self.nullableKeyPath as? ReferenceWritableKeyPath<E, V?> {
+            self.target[keyPath: propertyKeyPath] = value
+        }
+        else if let propertyKeyPath = self.nonnullKeyPath as? ReferenceWritableKeyPath<E, V>, let value = value {
+            self.target[keyPath: propertyKeyPath] = value
+        }
+    }
+}
+
+public extension PropertyPath where V == NSAttributedString {
+    func apply(value: Any?) {
+        if let attribute = self.attribute, let string = self.target[keyPath: self.nullableKeyPath!] {
+            let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
+            if let value = value {
+                string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
+            }
+            else {
+                string.removeAttribute( attribute, range: NSRange( location: 0, length: string.length ) )
+            }
+
+            self.apply( value: string )
+        }
     }
 }
 
@@ -291,33 +368,20 @@ public class Property<V>: Updatable, CustomStringConvertible {
         return transform
     }
 
-    func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, V?>) {
+    func apply<E>(propertyPath: PropertyPath<E, V>) {
         let updater = Updater( {
-            if let target = target {
-                trc( "%@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
-
-                target[keyPath: keyPath] = self.get()
-            }
+            trc( "[apply] %@ => %@", propertyPath, self )
+            propertyPath.apply( value: self.get() )
         } )
 
         self.dependants.append( updater )
         updater.update()
     }
 
-    func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, NSAttributedString?>, attribute: NSAttributedString.Key) {
+    func apply<E>(propertyPath: PropertyPath<E, NSAttributedString>) {
         let updater = Updater( {
-            if let target = target, let string = target[keyPath: keyPath] {
-                trc( "%@ => %@ => %@ => %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, attribute.rawValue, self )
-
-                let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
-                if let value = self.get() {
-                    string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
-                }
-                else {
-                    string.removeAttribute( attribute, range: NSRange( location: 0, length: string.length ) )
-                }
-                target[keyPath: keyPath] = string
-            }
+            trc( "[apply] %@ => %@", propertyPath, self )
+            propertyPath.apply( value: self.get() )
         } )
 
         self.dependants.append( updater )
@@ -340,7 +404,7 @@ public class Property<V>: Updatable, CustomStringConvertible {
 
 public class ValueProperty<V>: Property<V> {
     private var value: V?
-    var properties = [ (Any, ReferenceWritableKeyPath<Any, V?>) ]()
+    var properties = [ (Any, KeyPath<Any, V?>) ]()
 
     init(_ value: V? = nil, parent: Property<V>? = nil) {
         super.init( parent: parent )
@@ -477,13 +541,10 @@ public extension Property where V == UIColor {
         self.parent?.get()?.cgColor
     }
 
-    func apply<E>(to target: E?, at keyPath: ReferenceWritableKeyPath<E, CGColor?>) {
+    func apply<E>(propertyPath: PropertyPath<E, CGColor>) {
         let updater = Updater( {
-            if let target = target {
-                trc( "%@ @ %@ = %@", String( describing: type( of: target ) ), NSExpression( forKeyPath: keyPath ).keyPath, self )
-
-                target[keyPath: keyPath] = self.get()
-            }
+            trc( "[apply] %@ => %@", propertyPath, self )
+            propertyPath.apply( value: self.get() )
         } )
 
         self.dependants.append( updater )

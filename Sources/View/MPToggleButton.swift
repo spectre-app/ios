@@ -85,8 +85,8 @@ class MPToggleButton: UIButton, ThemeObserver {
 
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
-           let borderColor = Theme.current.color.body.get()?.cgColor,
-           let backgroundColor = Theme.current.color.mute.get()?.cgColor {
+           let borderColor: CGColor = Theme.current.color.body.get(),
+           let backgroundColor: CGColor = Theme.current.color.mute.get() {
 
             let content = self.bounds.inset( by: self.contentEdgeInsets )
                                      .insetBy( dx: 1 / self.contentScaleFactor, dy: 1 / self.contentScaleFactor )

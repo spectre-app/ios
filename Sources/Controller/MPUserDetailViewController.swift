@@ -118,7 +118,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         if let attacker = self.attacker {
                             self.nameLabel.text = "\(amount: attacker.fixed_budget + attacker.monthly_budget * 12)$"
                             self.classLabel.text = "\(attacker)"
-                        } else {
+                        }
+                        else {
                             self.nameLabel.text = "Off"
                             self.classLabel.text = ""
                         }

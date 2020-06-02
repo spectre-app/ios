@@ -87,15 +87,14 @@ class MPButton: MPEffectView {
         self.action = action
         super.init( border: border, background: background, dark: dark, round: round, rounding: rounding, dims: false )
 
+        self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
-//        self.button.setTitleColor( MPTheme.current.color.body.get(), for: .normal )
-        self.button.titleLabel! => \.textColor => Theme.current.color.body
-        self.button.titleLabel! => \.font => Theme.current.font.callout
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
-        self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
+        self.button => \UIButton.currentTitleColor => Theme.current.color.body
+        self.button.titleLabel! => \.font => Theme.current.font.callout
         self.button.sizeToFit()
 
         self.stateObserver = self.button.observe( \UIButton.isSelected, options: .initial ) { _, _ in

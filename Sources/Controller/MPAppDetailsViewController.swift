@@ -214,12 +214,10 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-//                self.button.setTitleColor( MPTheme.current.color.body.get(), for: .normal )
-//                self.button.setTitleShadowColor( MPTheme.current.color.shadow.get(), for: .normal )
-                self.button.titleLabel!.shadowOffset = CGSize( width: 0, height: 1 )
                 self.button => \.titleLabel!.font => Theme.current.font.callout
-                self.button => \.titleLabel!.textColor => Theme.current.color.body
-                self.button => \.titleLabel!.shadowColor => Theme.current.color.shadow
+                self.button => \.currentTitleColor => Theme.current.color.body
+                self.button => \.currentTitleShadowColor => Theme.current.color.shadow
+                self.button.titleLabel!.shadowOffset = CGSize( width: 0, height: 1 )
                 self.button.action( for: .primaryActionTriggered ) { [unowned self] in
                     if let url = self.link?.url {
                         trc( "Opening link: %@", url )

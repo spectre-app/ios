@@ -404,14 +404,14 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 }
             }
 
-            self.nameField => \.font => Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
-            self.nameField => \.textColor => Theme.current.color.body
-            self.nameField.adjustsFontSizeToFitWidth = true
+            self.nameField.alpha = 0
             self.nameField.borderStyle = .none
+            self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
             self.nameField.attributedPlaceholder = NSAttributedString( string: "Your Full Name" )
-            Theme.current.color.placeholder.apply( to: self.nameField, at: \.attributedPlaceholder, attribute: .foregroundColor )
-            self.nameField.alpha = 0
+            self.nameField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
+            self.nameField => \.font => Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
+            self.nameField => \.textColor => Theme.current.color.body
 
             self.biometricButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 guard let userFile = self.userFile

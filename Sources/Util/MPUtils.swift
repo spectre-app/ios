@@ -127,7 +127,7 @@ extension MPIdenticon: Equatable {
         }
 
         let shadow = NSShadow()
-        shadow.shadowColor = Theme.current.color.shadow.get()
+        shadow.shadowColor = Theme.current.color.shadow.get() // TODO: Update on theme change.
         shadow.shadowOffset = CGSize( width: 0, height: 1 )
         return self.text().flatMap {
             NSAttributedString( string: $0, attributes: [
@@ -388,6 +388,7 @@ extension UIImage {
     public static func icon(_ icon: String, style: IconStyle = .duotone, fontSize: CGFloat = 22,
                             textColor: Property<UIColor> = Theme.current.color.body, toneColor: Property<UIColor> = Theme.current.color.secondary,
                             backgroundColor: UIColor = .clear, borderWidth: CGFloat = 0, borderColor: UIColor = .clear) -> UIImage? {
+        // TODO: Update on theme change.
         let baseImage = self._icon( icon, style: style, fontSize: fontSize,
                                     textColor: textColor.get() ?? .white, toneColor: toneColor.get() ?? .white,
                                     backgroundColor: backgroundColor, borderWidth: borderWidth, borderColor: borderColor )
