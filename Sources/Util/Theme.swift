@@ -260,11 +260,11 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.body.set( UIColor.label )
             self.color.secondary.set( UIColor.secondaryLabel )
             self.color.placeholder.set( UIColor.placeholderText )
-            self.color.backdrop.set( UIColor.systemBackground )
+            self.color.backdrop.set( UIColor.systemGroupedBackground )
             self.color.panel.set( UIColor.secondarySystemBackground )
             self.color.shadow.set( UIColor.secondarySystemFill )
-            self.color.mute.set( UIColor.systemFill )
-            self.color.selection.set( UIColor.link )
+            self.color.mute.set( UIColor.separator )
+            self.color.selection.set( UIColor.tertiarySystemFill )
         }
 
         Theme.byPath[""] = self

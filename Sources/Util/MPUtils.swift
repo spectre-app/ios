@@ -349,30 +349,24 @@ public enum IconStyle {
 }
 
 extension UIImage {
-    private static func _icon(_ icon: String, style: IconStyle, fontSize: CGFloat, textColor: UIColor, toneColor: UIColor,
-                              backgroundColor: UIColor, borderWidth: CGFloat, borderColor: UIColor) -> UIImage? {
-        guard let font = UIFont( name: style.fontName, size: fontSize )
+
+    public static func icon(_ icon: String) -> UIImage? {
+        guard let font = UIFont( name: IconStyle.duotone.fontName, size: 22 )
         else { return nil }
 
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = NSTextAlignment.center
         let attributedIcon = NSAttributedString( string: icon, attributes: [
             NSAttributedString.Key.font: font,
-            NSAttributedString.Key.foregroundColor: textColor,
-            NSAttributedString.Key.backgroundColor: backgroundColor,
             NSAttributedString.Key.paragraphStyle: paragraph,
-            NSAttributedString.Key.strokeWidth: fontSize == 0 ? 0: (-100 * borderWidth / fontSize),
-            NSAttributedString.Key.strokeColor: borderColor
+            NSAttributedString.Key.foregroundColor: UIColor.black,
         ] )
         var attributedTone: NSAttributedString?
-        if style == .duotone, let iconScalar = icon.unicodeScalars.first, let toneScalar = Unicode.Scalar( 0x100000 + iconScalar.value ) {
+        if let iconScalar = icon.unicodeScalars.first, let toneScalar = Unicode.Scalar( 0x100000 + iconScalar.value ) {
             attributedTone = NSAttributedString( string: String( String.UnicodeScalarView( [ toneScalar ] ) ), attributes: [
                 NSAttributedString.Key.font: font,
-                NSAttributedString.Key.foregroundColor: toneColor,
-                NSAttributedString.Key.backgroundColor: backgroundColor,
                 NSAttributedString.Key.paragraphStyle: paragraph,
-                NSAttributedString.Key.strokeWidth: fontSize == 0 ? 0: (-100 * borderWidth / fontSize),
-                NSAttributedString.Key.strokeColor: borderColor
+                NSAttributedString.Key.foregroundColor: UIColor.black.withAlphaComponent( 0.5 ),
             ] )
         }
 
@@ -382,38 +376,7 @@ extension UIImage {
         attributedIcon.draw( in: CGRect( origin: .zero, size: size ) )
         attributedTone?.draw( in: CGRect( origin: .zero, size: size ) )
 
-        return UIGraphicsGetImageFromCurrentImageContext()
-    }
-
-    public static func icon(_ icon: String, style: IconStyle = .duotone, fontSize: CGFloat = 22,
-                            textColor: Property<UIColor> = Theme.current.color.body, toneColor: Property<UIColor> = Theme.current.color.secondary,
-                            backgroundColor: UIColor = .clear, borderWidth: CGFloat = 0, borderColor: UIColor = .clear) -> UIImage? {
-        // TODO: Update on theme change.
-        let baseImage = self._icon( icon, style: style, fontSize: fontSize,
-                                    textColor: textColor.get() ?? .white, toneColor: toneColor.get() ?? .white,
-                                    backgroundColor: backgroundColor, borderWidth: borderWidth, borderColor: borderColor )
-
-        if let imageAsset = baseImage?.imageAsset, #available( iOS 13.0, * ) {
-            let darkConfiguration = UITraitCollection( userInterfaceStyle: .dark )
-            if let darkImage = darkConfiguration.resolveAsCurrent( {
-                self._icon( icon, style: style, fontSize: fontSize,
-                            textColor: textColor.get() ?? .white, toneColor: toneColor.get() ?? .white,
-                            backgroundColor: backgroundColor, borderWidth: borderWidth, borderColor: borderColor )
-            } ) {
-                imageAsset.register( darkImage, with: darkConfiguration )
-            }
-
-            let lightConfiguration = UITraitCollection( userInterfaceStyle: .light )
-            if let lightImage = lightConfiguration.resolveAsCurrent( {
-                self._icon( icon, style: style, fontSize: fontSize,
-                            textColor: textColor.get() ?? .white, toneColor: toneColor.get() ?? .white,
-                            backgroundColor: backgroundColor, borderWidth: borderWidth, borderColor: borderColor )
-            } ) {
-                imageAsset.register( lightImage, with: lightConfiguration )
-            }
-        }
-
-        return baseImage
+        return UIGraphicsGetImageFromCurrentImageContext()?.withRenderingMode( .alwaysTemplate )
     }
 }
 

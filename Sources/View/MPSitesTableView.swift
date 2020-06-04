@@ -153,7 +153,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         configuration.action = action
                         site.user.sites.removeAll { $0 === site }
                     },
-                    UIAction( title: "Details", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "settings" ) ) { action in
+                    UIAction( title: "Details", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "settings" ) ) { action in
                         configuration.action = action
                         self.observers.notify { $0.siteDetailsAction( site: site ) }
                     },
@@ -279,7 +279,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         private let resultLabel    = UITextField()
         private let captionLabel   = UILabel()
         private let modeButton     = MPButton( identifier: "sites.site #mode", image: UIImage.icon( "" ), background: false )
-        private let settingsButton = MPButton( identifier: "sites.site #site_settings", image: UIImage.icon( "" ) )
+        private let settingsButton = MPButton( identifier: "sites.site #site_settings", image: UIImage.icon( "" ), background: false )
         private let newButton      = MPButton( identifier: "sites.site #add", image: UIImage.icon( "" ), background: false )
 
         // MARK: --- Life ---
