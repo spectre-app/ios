@@ -79,7 +79,7 @@ class MPTapEffectView: UIView {
             if let context = UIGraphicsGetCurrentContext(), let host = self.host {
                 let hostSize = max( host.bounds.size.width, host.bounds.size.height ) / 4
                 let lineSize = self.bounds.size.width / 2 - hostSize / 2
-                context.setStrokeColor( self.tintColor.withAlphaComponent( .long ).cgColor )
+                context.setStrokeColor( self.tintColor.with( alpha: .long ).cgColor )
                 context.setLineWidth( lineSize )
                 context.strokeEllipse( in: CGRect(
                         center: self.bounds.center,

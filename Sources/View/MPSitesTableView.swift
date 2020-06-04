@@ -178,7 +178,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         configuration.event = MPTracker.shared.begin( named: "site #menu" )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( .long )
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -190,7 +190,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( .long )
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -501,7 +501,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.propLabel.layer.shadowRadius = 8
             self.propLabel.layer.shadowOpacity = .long
             self.propLabel.layer.shadowOffset = .zero
-            self.propLabel.layer => \.shadowColor => Theme.current.color.body
+            self.propLabel.layer => \.shadowColor => Theme.current.color.shadow
 
             // - Hierarchy
             self.contentView.addSubview( self.emitterView )

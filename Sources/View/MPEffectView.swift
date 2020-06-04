@@ -122,7 +122,7 @@ class MPEffectView: UIVisualEffectView {
 
     func updateContent() {
         DispatchQueue.main.perform {
-            self.layer => \.borderColor => Theme.current.color.body
+            self.layer => \.borderColor => Theme.current.color.secondary
 
             if self.isDimmedBySelection && !self.isSelected {
                 self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )

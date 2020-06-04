@@ -122,27 +122,30 @@ public extension PropertyPath where V == NSAttributedString {
     }
 }
 
+public struct ThemePattern {
+    static let volto = ThemePattern(
+            dark: .hex( "000F08" ),
+            dusk: .hex( "004A4F" ),
+            flat: .hex( "3E8989" ),
+            dawn: .hex( "9AD5CA" ),
+            pale: .hex( "CCE3DE" ) )
+
+    let dark: UIColor?
+    let dusk: UIColor?
+    let flat: UIColor?
+    let dawn: UIColor?
+    let pale: UIColor?
+}
+
 public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     private static var byPath = [ String: Theme ]()
     private static let base   = Theme()
 
-    public static let all     = [ Theme.default, Theme.base ] // Register all theme objects
-    public static let current = Theme( path: "current" )
+    public static let all       = [ Theme.default, Theme.base ] // Register all theme objects
+    public static let current   = Theme( path: "current" )
 
     // VOLTO:
-    // 000F08 004A4F 3E8989 9AD5CA CCE3DE
-    public static let `default` = Theme( path: ".volto" ) {
-        $0.color.body.set( light: UIColor( hex: "000F08" ), dark: UIColor( hex: "CCE3DE" ) )
-        $0.color.secondary.set( light: UIColor( hex: "3E8989" ), dark: UIColor( hex: "3E8989" ) )
-        $0.color.placeholder.set( light: UIColor( hex: "004A4F", alpha: .short ), dark: UIColor( hex: "9AD5CA", alpha: .short ) )
-        $0.color.backdrop.set( light: UIColor( hex: "CCE3DE" ), dark: UIColor( hex: "000F08" ) )
-        $0.color.panel.set( light: UIColor( hex: "9AD5CA" ), dark: UIColor( hex: "004A4F" ) )
-        $0.color.shade.set( light: UIColor( hex: "9AD5CA", alpha: .long ), dark: UIColor( hex: "004A4F", alpha: .long ) )
-        $0.color.shadow.set( light: UIColor( hex: "9AD5CA", alpha: .short ), dark: UIColor( hex: "004A4F", alpha: .short ) )
-        $0.color.mute.set( light: UIColor( hex: "004A4F", alpha: .short ), dark: UIColor( hex: "9AD5CA", alpha: .short ) )
-        $0.color.selection.set( light: UIColor( hex: "9AD5CA", alpha: .short ), dark: UIColor( hex: "004A4F", alpha: .short ) )
-        $0.color.tint.set( light: UIColor( hex: "9AD5CA" ), dark: UIColor( hex: "004A4F" ) )
-    }
+    public static let `default` = Theme( path: ".volto", pattern: .volto )
 
     public class func with(path: String?) -> Theme? {
         self.all.first { $0.path == path } ?? path<.flatMap { Theme.byPath[$0] } ?? .base
@@ -243,34 +246,35 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.font.footnote.set( .preferredFont( forTextStyle: .footnote ) )
         self.font.password.set( .monospacedDigitSystemFont( ofSize: 22, weight: .bold ) )
         self.font.mono.set( .monospacedDigitSystemFont( ofSize: UIFont.systemFontSize, weight: .thin ) )
-        self.color.body.set( UIColor.white )
-        self.color.secondary.set( UIColor.lightText )
-        self.color.placeholder.set( UIColor.lightText.withAlphaComponent( .short ) )
-        self.color.backdrop.set( UIColor.darkGray )
-        self.color.panel.set( UIColor.black )
-        self.color.shade.set( UIColor.black.withAlphaComponent( .long ) )
-        self.color.shadow.set( UIColor.black.withAlphaComponent( .short ) )
-        self.color.mute.set( UIColor.white.withAlphaComponent( .short ) )
-        self.color.selection.set( UIColor.lightGray )
-        self.color.tint.set( UIColor( hex: "00A99C" ) )
+        self.color.body.set( UIColor.darkText )
+        self.color.secondary.set( UIColor.darkGray.with( alpha: .long ) )
+        self.color.placeholder.set( UIColor.darkGray.with( alpha: .short ) )
+        self.color.backdrop.set( UIColor.groupTableViewBackground )
+        self.color.panel.set( UIColor.white )
+        self.color.shade.set( UIColor.lightText )
+        self.color.shadow.set( UIColor.gray.with( alpha: .short ) )
+        self.color.mute.set( UIColor.darkGray.with( alpha: .short ) )
+        self.color.selection.set( UIColor.gray.with( alpha: .short ) )
+        self.color.tint.set( UIColor.systemBlue )
 
         if #available( iOS 13, * ) {
             self.font.mono.set( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
-
             self.color.body.set( UIColor.label )
             self.color.secondary.set( UIColor.secondaryLabel )
             self.color.placeholder.set( UIColor.placeholderText )
-            self.color.backdrop.set( UIColor.systemGroupedBackground )
+            self.color.backdrop.set( UIColor.systemBackground )
             self.color.panel.set( UIColor.secondarySystemBackground )
+            self.color.shade.set( UIColor.systemFill )
             self.color.shadow.set( UIColor.secondarySystemFill )
             self.color.mute.set( UIColor.separator )
             self.color.selection.set( UIColor.tertiarySystemFill )
+            self.color.tint.set( UIColor.link )
         }
 
         Theme.byPath[""] = self
     }
 
-    private init(path: String, override: ((Theme) -> ())? = nil) {
+    private init(path: String, pattern: ThemePattern? = nil, override: ((Theme) -> ())? = nil) {
         var parent: Theme?
         if let lastDot = path.lastIndex( of: "." ) {
             self.name = String( path[path.index( after: lastDot )..<path.endIndex] )
@@ -281,6 +285,18 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         }
 
         Theme.byPath[path] = self
+        if let pattern = pattern {
+            self.color.body.set( light: pattern.dark, dark: pattern.pale )
+            self.color.secondary.set( light: pattern.dusk?.with( alpha: .long ), dark: pattern.dawn?.with( alpha: .long ) )
+            self.color.placeholder.set( light: pattern.dusk?.with( alpha: .short ), dark: pattern.dawn?.with( alpha: .short ) )
+            self.color.backdrop.set( light: pattern.pale, dark: pattern.dark )
+            self.color.panel.set( light: pattern.dawn, dark: pattern.dusk )
+            self.color.shade.set( light: pattern.flat?.with( alpha: .long ), dark: pattern.flat?.with( alpha: .long ) )
+            self.color.shadow.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
+            self.color.mute.set( light: pattern.dusk?.with( alpha: .short ), dark: pattern.dawn?.with( alpha: .short ) )
+            self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
+            self.color.tint.set( light: pattern.dusk, dark: pattern.dawn )
+        }
         override?( self )
 
         defer {
@@ -528,10 +544,10 @@ public extension Property where V == UIColor {
         var color: UIColor? = self.get()
 
         if let tint = tint {
-            color = color?.withHueComponent( tint.hue() )
+            color = color?.with( hue: tint.hue() )
         }
         if let alpha = alpha {
-            color = color?.withAlphaComponent( alpha )
+            color = color?.with( alpha: alpha )
         }
 
         return color

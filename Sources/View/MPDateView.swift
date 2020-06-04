@@ -40,7 +40,7 @@ class MPDateView: MPEffectView {
 
         self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
-        self.separatorView => \.backgroundColor => Theme.current.color.body
+        self.separatorView => \.backgroundColor => Theme.current.color.secondary
 
         self.monthLabel.textAlignment = .center
         self.monthLabel => \.textColor => Theme.current.color.body

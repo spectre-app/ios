@@ -17,7 +17,7 @@ class MPClassItemCell: MPItemCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.separatorView => \.backgroundColor => Theme.current.color.body
+        self.separatorView => \.backgroundColor => Theme.current.color.secondary
         self.nameLabel.textAlignment = .center
         self.nameLabel => \.textColor => Theme.current.color.body
         self.nameLabel => \.font => Theme.current.font.headline

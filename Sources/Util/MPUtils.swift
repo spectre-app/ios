@@ -359,6 +359,7 @@ extension CGFloat {
     public static let long  = 1 / φ
     public static let short = (1 - long)
 }
+
 extension Float {
     public static let φ     = Float( Double.φ ) // Golden Ratio
     public static let long  = 1 / φ
@@ -383,7 +384,7 @@ extension UIImage {
             attributedTone = NSAttributedString( string: String( String.UnicodeScalarView( [ toneScalar ] ) ), attributes: [
                 NSAttributedString.Key.font: font,
                 NSAttributedString.Key.paragraphStyle: paragraph,
-                NSAttributedString.Key.foregroundColor: UIColor.black.withAlphaComponent( 0.5 ),
+                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: 0.5 ),
             ] )
         }
 
@@ -408,7 +409,7 @@ extension UITraitCollection {
 }
 
 extension UIColor {
-    convenience init?(hex: String, alpha: CGFloat = 1) {
+    class func hex(_ hex: String, alpha: CGFloat = 1) -> UIColor? {
         var hexSanitized = hex.trimmingCharacters( in: .whitespacesAndNewlines )
         hexSanitized = hexSanitized.replacingOccurrences( of: "#", with: "" )
         var rgb: UInt32  = 0
@@ -432,7 +433,8 @@ extension UIColor {
         else {
             return nil
         }
-        self.init( red: r, green: g, blue: b, alpha: a )
+
+        return UIColor( red: r, green: g, blue: b, alpha: a )
     }
 
     var hex: String {
@@ -477,7 +479,17 @@ extension UIColor {
         return brightness
     }
 
-    func withHueComponent(_ newHue: CGFloat?) -> UIColor {
+    func with(alpha newAlpha: CGFloat?) -> UIColor {
+        var hue:        CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha:      CGFloat = 0
+        self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
+
+        return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: newAlpha ?? alpha )
+    }
+
+    func with(hue newHue: CGFloat?) -> UIColor {
         var hue:        CGFloat = 0
         var saturation: CGFloat = 0
         var brightness: CGFloat = 0
@@ -487,7 +499,7 @@ extension UIColor {
         return UIColor( hue: newHue ?? hue, saturation: saturation, brightness: brightness, alpha: alpha )
     }
 
-    func withSaturationComponent(_ newSaturation: CGFloat?) -> UIColor {
+    func with(saturation newSaturation: CGFloat?) -> UIColor {
         var hue:        CGFloat = 0
         var saturation: CGFloat = 0
         var brightness: CGFloat = 0
@@ -497,11 +509,7 @@ extension UIColor {
         return UIColor( hue: hue, saturation: newSaturation ?? saturation, brightness: brightness, alpha: alpha )
     }
 
-    func withSaturation(_ color: UIColor?) -> UIColor {
-        self.withSaturationComponent( color?.saturation() )
-    }
-
-    func withBrightnessComponent(_ newBrightness: CGFloat?) -> UIColor {
+    func with(brightness newBrightness: CGFloat?) -> UIColor {
         var hue:        CGFloat = 0
         var saturation: CGFloat = 0
         var brightness: CGFloat = 0
@@ -509,10 +517,6 @@ extension UIColor {
         self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
 
         return UIColor( hue: hue, saturation: saturation, brightness: newBrightness ?? brightness, alpha: alpha )
-    }
-
-    func withBrightness(_ color: UIColor?) -> UIColor {
-        self.withBrightnessComponent( color?.brightness() )
     }
 }
 

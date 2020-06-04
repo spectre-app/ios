@@ -45,8 +45,8 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
 
         // - View
         self.imageGradient.colors = [
-            UIColor.black.withAlphaComponent( .short ).cgColor,
-            UIColor.black.withAlphaComponent( 0.05 ).cgColor,
+            UIColor.black.with( alpha: .short ).cgColor,
+            UIColor.black.with( alpha: 0.05 ).cgColor,
             UIColor.clear.cgColor ]
         self.imageGradient.needsDisplayOnBoundsChange = true
         self.imageView.layer.mask = self.imageGradient

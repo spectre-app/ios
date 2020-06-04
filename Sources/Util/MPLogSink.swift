@@ -9,7 +9,7 @@ import os
 public class MPLogSink: MPConfigObserver {
     public static let shared = MPLogSink()
 
-    public var level: LogLevel {
+    public var  level: LogLevel {
         get {
             mpw_verbosity
         }
@@ -17,15 +17,10 @@ public class MPLogSink: MPConfigObserver {
             mpw_verbosity = newValue
         }
     }
-
     private var records = [ MPLogRecord ]()
 
-    private init() {
-    }
-
     public func register() {
-        appConfig.observers.register( observer: self ).didChangeConfig()
-
+        mpw_verbosity = .debug
         mpw_log_sink_register( { event in
             guard let event = event?.pointee
             else { return false }
@@ -59,6 +54,8 @@ public class MPLogSink: MPConfigObserver {
 
             return MPLogSink.shared.record( event.pointee )
         } )
+
+        appConfig.observers.register( observer: self ).didChangeConfig()
     }
 
     public func enumerate(level: LogLevel) -> [MPLogRecord] {
@@ -76,7 +73,7 @@ public class MPLogSink: MPConfigObserver {
     // MARK: --- MPConfigObserver ---
 
     public func didChangeConfig() {
-        self.level = appConfig.isDebug ? .trace: appConfig.diagnostics ? .info: .warning
+        self.level = appConfig.isDebug ? .debug: appConfig.diagnostics ? .info: .warning
     }
 }
 

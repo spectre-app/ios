@@ -6,7 +6,7 @@
 import UIKit
 
 class MPToggleButton: UIButton, ThemeObserver {
-    private let checkLabel = MPTintLabel()
+    private let checkLabel = UILabel()
 
     var tapEffect = true
     var identifier: String?
@@ -40,6 +40,7 @@ class MPToggleButton: UIButton, ThemeObserver {
         self.layer.needsDisplayOnBoundsChange = true
 
         self.checkLabel => \.font => Theme.current.font.callout
+        self.checkLabel => \.textColor => Theme.current.color.body
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
 
@@ -73,7 +74,7 @@ class MPToggleButton: UIButton, ThemeObserver {
 
     override func draw(_ rect: CGRect) {
         if let context = UIGraphicsGetCurrentContext(),
-           let borderColor: CGColor = Theme.current.color.body.get(),
+           let borderColor: CGColor = Theme.current.color.secondary.get(),
            let backgroundColor: CGColor = Theme.current.color.mute.get() {
 
             let content = self.bounds.inset( by: self.contentEdgeInsets )
