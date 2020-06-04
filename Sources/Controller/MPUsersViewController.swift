@@ -15,7 +15,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             if oldValue != self.selectedFile {
                 trc( "Selected user: %@", self.selectedFile )
 
-                UIView.animate( withDuration: 0.382 ) {
+                UIView.animate( withDuration: .short ) {
                     self.userToolbarConfiguration.activated = self.selectedFile != nil
 
                     self.userEvent?.end( [ "result": "deselected" ] )
@@ -132,7 +132,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.present( controller, animated: true )
         } )
 
-        self.userToolbar.barStyle = .black
+//        self.userToolbar.barStyle = .black
         self.userToolbar.items = [
             UIBarButtonItem( barButtonSystemItem: .trash, target: self, action: #selector( didTrashUser ) ),
             UIBarButtonItem( barButtonSystemItem: .rewind, target: self, action: #selector( didResetUser ) )
@@ -307,7 +307,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
                     self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.isSelected ? 2: 1) )
 //                    self.nameLabel.font.pointSize.animate(
-//                            to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: 0.618, render: {
+//                            to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: .long, render: {
 //                        self.nameLabel.font = self.nameLabel.font.withSize( $0 )
 //                    } )
 
@@ -558,7 +558,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         private func update() {
             DispatchQueue.main.perform {
-                UIView.animate( withDuration: 0.618 ) {
+                UIView.animate( withDuration: .long ) {
                     self.nameLabel.alpha = self.isSelected && self.userFile == nil ? 0: 1
                     self.nameField.alpha = 1 - self.nameLabel.alpha
 

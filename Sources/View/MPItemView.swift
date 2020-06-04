@@ -26,7 +26,7 @@ class Item<M>: NSObject {
     private (set) lazy var view = createItemView()
 
     private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
-        UIView.animate( withDuration: 0.382 ) {
+        UIView.animate( withDuration: .short ) {
             self.doUpdate()
         }
     }
@@ -507,7 +507,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
             super.didMoveToWindow()
 
             if let window = self.valueView.window {
-                self.valueView.heightAnchor.constraint( equalTo: window.heightAnchor, multiplier: 0.618 )
+                self.valueView.heightAnchor.constraint( equalTo: window.heightAnchor, multiplier: .long )
                                            .with( priority: .defaultHigh ).isActive = true
             }
         }

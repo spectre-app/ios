@@ -13,8 +13,8 @@ class MPToggleButton: UIButton, ThemeObserver {
     override var isSelected: Bool {
         didSet {
             DispatchQueue.main.perform {
-                UIView.animate( withDuration: 0.382 ) {
-                    self.imageView?.alpha = self.isSelected ? 1: 0.382
+                UIView.animate( withDuration: .short ) {
+                    self.imageView?.alpha = self.isSelected ? 1: .short
                     self.checkLabel.alpha = self.isSelected ? 1: 0
                     self.setNeedsDisplay()
                 }
@@ -24,7 +24,7 @@ class MPToggleButton: UIButton, ThemeObserver {
     override var isEnabled: Bool {
         didSet {
             DispatchQueue.main.perform {
-                UIView.animate( withDuration: 0.382 ) {
+                UIView.animate( withDuration: .short ) {
                     self.checkLabel => \.textColor => (self.isEnabled ? Theme.current.color.body: Theme.current.color.secondary)
                 }
             }
@@ -79,7 +79,7 @@ class MPToggleButton: UIButton, ThemeObserver {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        self.imageView?.alpha = self.isSelected ? 1: 0.382
+        self.imageView?.alpha = self.isSelected ? 1: .short
         self.setNeedsDisplay()
     }
 

@@ -54,7 +54,7 @@ class MPEffectView: UIVisualEffectView {
         self.layer.masksToBounds = true
 
         self.contentView.layer.shadowRadius = 0
-        self.contentView.layer.shadowOpacity = 0.382
+        self.contentView.layer.shadowOpacity = .short
         self.contentView.layer => \.shadowColor => Theme.current.color.shadow
         self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
@@ -126,7 +126,7 @@ class MPEffectView: UIVisualEffectView {
 
             if self.isDimmedBySelection && !self.isSelected {
                 self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
-                self.contentView.alpha = 0.618
+                self.contentView.alpha = .long
             }
             else {
                 self.contentView.alpha = 1

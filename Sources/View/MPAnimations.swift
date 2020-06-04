@@ -7,7 +7,7 @@ import UIKit
 
 extension UIView {
     func shake() {
-        UIView.animateKeyframes( withDuration: 0.618, delay: 0, animations: {
+        UIView.animateKeyframes( withDuration: .long, delay: 0, animations: {
             UIView.addKeyframe( withRelativeStartTime: 0, relativeDuration: 0.25 ) {
                 self.transform = CGAffineTransform( translationX: -8, y: 0 )
             }

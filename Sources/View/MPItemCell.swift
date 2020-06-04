@@ -9,7 +9,7 @@ class MPItemCell: UICollectionViewCell {
     override var isSelected: Bool {
         didSet {
             DispatchQueue.main.perform {
-                UIView.animate( withDuration: 0.382 ) {
+                UIView.animate( withDuration: .short ) {
                     self.effectView.isSelected = self.isSelected
                 }
             }

@@ -40,7 +40,7 @@ public class MPHapticFeedback: MPFeedback {
                         self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
                             CHHapticEvent( eventType: .hapticTransient, parameters: [
                                 CHHapticEventParameter( parameterID: .hapticSharpness, value: 0 ),
-                                CHHapticEventParameter( parameterID: .hapticIntensity, value: 0.618 ),
+                                CHHapticEventParameter( parameterID: .hapticIntensity, value: .long ),
                             ], relativeTime: CHHapticTimeImmediate, duration: 0 ),
                         ], parameters: [] ) )
 

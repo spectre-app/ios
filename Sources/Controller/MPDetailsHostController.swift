@@ -132,7 +132,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 detailsController.beginAppearanceTransition( true, animated: true )
                 self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
                 LayoutConfiguration( view: detailsController.view ).constrain().activate()
-                UIView.animate( withDuration: 0.382, animations: {
+                UIView.animate( withDuration: .short, animations: {
                     detailsController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()
                 }, completion: { finished in
@@ -149,7 +149,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             DispatchQueue.main.perform {
                 detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
-                UIView.animate( withDuration: 0.382, animations: {
+                UIView.animate( withDuration: .short, animations: {
                     self.popupConfiguration.deactivate()
                 }, completion: { finished in
                     detailsController.view.removeFromSuperview()

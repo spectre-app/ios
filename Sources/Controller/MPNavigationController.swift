@@ -46,7 +46,7 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
         // MARK: --- Life ---
 
         func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-            0.618
+            .long
         }
 
         func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
@@ -63,14 +63,14 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
                 toView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
                 transitionContext.containerView.addSubview( toView )
 
-                UIView.animate( withDuration: 1, delay: 0, usingSpringWithDamping: 0.618, initialSpringVelocity: 0,
+                UIView.animate( withDuration: 1, delay: 0, usingSpringWithDamping: .long, initialSpringVelocity: 0,
                                 options: .curveEaseOut, animations: {
                     fromView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
                     fromView.alpha = 0
                 }, completion: { finished in
                     fromView.transform = .identity
                 } )
-                UIView.animate( withDuration: 1.5, delay: 0, usingSpringWithDamping: 0.618, initialSpringVelocity: 0,
+                UIView.animate( withDuration: 1.5, delay: 0, usingSpringWithDamping: .long, initialSpringVelocity: 0,
                                 options: .curveEaseOut, animations: {
                     toView.alpha = 1
                     toView.transform = .identity

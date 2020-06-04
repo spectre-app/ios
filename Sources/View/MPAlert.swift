@@ -76,7 +76,7 @@ class MPAlert {
 
                 self.appearanceConfiguration.deactivate()
                 self.activationConfiguration.deactivate()
-                UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
+                UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
                     if dismissAutomatically {
                         self.automaticDismissalTask.request()
                     }
@@ -91,7 +91,7 @@ class MPAlert {
         self.automaticDismissalTask.cancel()
 
         DispatchQueue.main.perform {
-            UIView.animate( withDuration: 0.618, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
+            UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
                 self.view.removeFromSuperview()
             } )
         }
@@ -101,7 +101,7 @@ class MPAlert {
         self.automaticDismissalTask.cancel()
 
         DispatchQueue.main.perform {
-            UIView.animate( withDuration: 0.618 ) { self.activationConfiguration.activate() }
+            UIView.animate( withDuration: .long ) { self.activationConfiguration.activate() }
         }
     }
 

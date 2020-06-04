@@ -96,7 +96,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         LayoutConfiguration( view: self.sitePreviewController.view )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: 0.382 ) }
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: .short ) }
                 .activate()
 
         LayoutConfiguration( view: self.sitesTableView )
@@ -159,7 +159,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
     func siteWasSelected(site selectedSite: MPSite?) {
         DispatchQueue.main.perform {
-            UIView.animate( withDuration: 0.618, animations: {
+            UIView.animate( withDuration: .long, animations: {
                 if let selectedSite = selectedSite {
                     self.sitePreviewController.site = selectedSite
                 }

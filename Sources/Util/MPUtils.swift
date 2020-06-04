@@ -348,6 +348,23 @@ public enum IconStyle {
     }
 }
 
+extension Double {
+    public static let φ     = 1.618 // Golden Ratio
+    public static let long  = 1 / φ
+    public static let short = (1 - long)
+}
+
+extension CGFloat {
+    public static let φ     = CGFloat( Double.φ ) // Golden Ratio
+    public static let long  = 1 / φ
+    public static let short = (1 - long)
+}
+extension Float {
+    public static let φ     = Float( Double.φ ) // Golden Ratio
+    public static let long  = 1 / φ
+    public static let short = (1 - long)
+}
+
 extension UIImage {
 
     public static func icon(_ icon: String) -> UIImage? {

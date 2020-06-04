@@ -178,7 +178,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         configuration.event = MPTracker.shared.begin( named: "site #menu" )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -190,7 +190,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( 0.618 )
+        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.withAlphaComponent( .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -499,7 +499,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.propLabel.textAlignment = .center
             self.propLabel => \.font => Theme.current.font.largeTitle
             self.propLabel.layer.shadowRadius = 8
-            self.propLabel.layer.shadowOpacity = 0.618
+            self.propLabel.layer.shadowOpacity = .long
             self.propLabel.layer.shadowOffset = .zero
             self.propLabel.layer => \.shadowColor => Theme.current.color.body
 
