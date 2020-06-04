@@ -6,7 +6,7 @@
 import UIKit
 
 class MPToggleButton: UIButton, ThemeObserver {
-    private let checkLabel = UILabel()
+    private let checkLabel = MPTintLabel()
 
     var tapEffect = true
     var identifier: String?
@@ -16,18 +16,13 @@ class MPToggleButton: UIButton, ThemeObserver {
                 UIView.animate( withDuration: .short ) {
                     self.imageView?.alpha = self.isSelected ? 1: .short
                     self.checkLabel.alpha = self.isSelected ? 1: 0
-                    self.setNeedsDisplay()
                 }
             }
         }
     }
-    override var isEnabled: Bool {
+    override var isEnabled:  Bool {
         didSet {
-            DispatchQueue.main.perform {
-                UIView.animate( withDuration: .short ) {
-                    self.checkLabel => \.textColor => (self.isEnabled ? Theme.current.color.body: Theme.current.color.secondary)
-                }
-            }
+            self.tintAdjustmentMode = self.isEnabled ? .automatic: .dimmed
         }
     }
 
@@ -74,13 +69,6 @@ class MPToggleButton: UIButton, ThemeObserver {
         else {
             Theme.current.observers.unregister( observer: self )
         }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        self.imageView?.alpha = self.isSelected ? 1: .short
-        self.setNeedsDisplay()
     }
 
     override func draw(_ rect: CGRect) {
