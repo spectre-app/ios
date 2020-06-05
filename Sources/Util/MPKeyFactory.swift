@@ -226,7 +226,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
                     return UIImage.icon( "" )
 
                 case .biometricFace:
-                    return UIImage.icon( "" )
+                    return UIImage.icon( "" )
 
                 case .biometricNone:
                     return nil

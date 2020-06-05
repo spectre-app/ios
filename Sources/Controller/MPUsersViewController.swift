@@ -132,7 +132,6 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.present( controller, animated: true )
         } )
 
-//        self.userToolbar.barStyle = .black
         self.userToolbar.items = [
             UIBarButtonItem( barButtonSystemItem: .trash, target: self, action: #selector( didTrashUser ) ),
             UIBarButtonItem( barButtonSystemItem: .rewind, target: self, action: #selector( didResetUser ) )

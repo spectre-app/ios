@@ -47,11 +47,11 @@
 		93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
 		93D3975E8CAF0B2422D7C1D7 /* MPAttacker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */; };
 		93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
+		93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B6403FE258E526E5E85 /* UIView+MP.m */; };
 		93D3978E4978CDFF444B3DF4 /* UIView+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BFD3DB66C9068069B76 /* UIView+MP.swift */; };
 		93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
 		93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
 		93D3983CA421991D12ADDDBA /* MPLogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* MPLogSink.swift */; };
-		93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */; };
 		93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
 		93D398FB645DCA89A4BCC5A2 /* MPMarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MPMarginView.swift */; };
@@ -245,6 +245,7 @@
 		93D3969393A3A46BD27D7078 /* mpw-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm.c"; sourceTree = "<group>"; };
 		93D396BDE67A6BC9E1A1A6A0 /* UICollectionView+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UICollectionView+MP.swift"; sourceTree = "<group>"; };
 		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
+		93D396E496C23EC3C008D6F7 /* UIView+MP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+MP.h"; sourceTree = "<group>"; };
 		93D396E97202CBB3030B99EA /* String+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+MP.swift"; sourceTree = "<group>"; };
 		93D396EF81F724F74A21AFA9 /* MPImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPImageView.swift; sourceTree = "<group>"; };
 		93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailViewController.swift; sourceTree = "<group>"; };
@@ -265,20 +266,19 @@
 		93D3990D850D76A94C6B7A4D /* mpw-algorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm.h"; sourceTree = "<group>"; };
 		93D39941059143124D09AE05 /* MPLogSink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPLogSink.swift; sourceTree = "<group>"; };
 		93D39949A9E5C95F193F4315 /* MPItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPItemView.swift; sourceTree = "<group>"; };
-		93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UILabel+MPFontSize.h"; sourceTree = "<group>"; };
 		93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUntouchableView.swift; sourceTree = "<group>"; };
 		93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTapEffectView.swift; sourceTree = "<group>"; };
 		93D399D8E0D5A547143642A7 /* MPMarshal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMarshal.swift; sourceTree = "<group>"; };
 		93D39AFD17CBE324D745DAB0 /* mpw-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-types.h"; sourceTree = "<group>"; };
 		93D39B3112D0D128E6369596 /* MPTintLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintLabel.swift; sourceTree = "<group>"; };
 		93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSecrets.swift; sourceTree = "<group>"; };
+		93D39B6403FE258E526E5E85 /* UIView+MP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+MP.m"; sourceTree = "<group>"; };
 		93D39BAACC08C85F91D1C5C2 /* Graph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUsersViewController.swift; sourceTree = "<group>"; };
 		93D39BFD3DB66C9068069B76 /* UIView+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+MP.swift"; sourceTree = "<group>"; };
 		93D39C3FA9FA2CA5B234741E /* MPConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPConfig.swift; sourceTree = "<group>"; };
 		93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPResultTypeCell.swift; sourceTree = "<group>"; };
 		93D39CB804B95B268383FCB2 /* Persisting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persisting.swift; sourceTree = "<group>"; };
-		93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UILabel+MPFontSize.m"; sourceTree = "<group>"; };
 		93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteDetailViewController.swift; sourceTree = "<group>"; };
 		93D39CF7DB942C69D1C5D6BE /* mpw-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-util.h"; sourceTree = "<group>"; };
 		93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesViewController.swift; sourceTree = "<group>"; };
@@ -584,8 +584,6 @@
 			isa = PBXGroup;
 			children = (
 				93D39E1D19BCA02E43657384 /* MPUtils.swift */,
-				93D39CBCB72BD96FDAF90722 /* UILabel+MPFontSize.m */,
-				93D3996563C944ADDFC56F61 /* UILabel+MPFontSize.h */,
 				93D39D251169E42F0AAC451F /* MPURLUtils.swift */,
 				93D3915A208E1B01BDD05A3E /* MPQuery.swift */,
 				93D3940575E4CC62A8F6CE04 /* DispatchQueue+MP.swift */,
@@ -617,6 +615,8 @@
 				93D397311C748F45186ADB8D /* Result+MP.swift */,
 				93D39242076F89C40E7B292C /* UIContextMenuConfiguration+MP.swift */,
 				93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */,
+				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
+				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1461,7 +1461,6 @@
 				93D39A2954B245FC0D925312 /* MPSite.swift in Sources */,
 				93D393C161EB8FA55FA5174F /* MPSitesTableView.swift in Sources */,
 				93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */,
-				93D3983E1D178F17CCD7F73A /* UILabel+MPFontSize.m in Sources */,
 				93D39139805FC516B6C2C181 /* MPButton.swift in Sources */,
 				93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */,
 				93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */,
@@ -1525,6 +1524,7 @@
 				93D3998DDFAB93EA585BCB12 /* Result+MP.swift in Sources */,
 				93D396F895C0A16CF1FDAB79 /* UIContextMenuConfiguration+MP.swift in Sources */,
 				93D39FD2F39B2AFE27A88A97 /* MPSecrets.swift in Sources */,
+				93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
