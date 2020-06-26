@@ -34,8 +34,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
-            self.backgroundView.backgroundColor = self.model.color
-            self.imageView.image = self.model.image
+            self.color = self.model.color
+            self.image = self.model.image
         }
 
         self.setNeedsUpdate()

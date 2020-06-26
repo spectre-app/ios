@@ -87,6 +87,7 @@ public class MPKeychain {
         else { return false }
         query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
 
+        // TODO: Can lock up evaluating LAContext
         let status = SecItemCopyMatching( query as CFDictionary, nil )
         if status == errSecSuccess || status == errSecInteractionNotAllowed {
             return true

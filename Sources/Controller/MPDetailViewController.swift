@@ -11,12 +11,23 @@ class AnyMPDetailsViewController: MPViewController {
 
 class MPDetailsViewController<M>: AnyMPDetailsViewController {
     public let model: M
+    public var color: UIColor? {
+        didSet {
+            self.backgroundView.backgroundColor = self.color
+        }
+    }
+    public var image: UIImage? {
+        didSet {
+            self.imageView.image = self.image
+            self.backgroundView.layoutMargins.top = self.image == nil ? 40: 108
+        }
+    }
 
-    let backgroundView = MPBackgroundView()
-    let imageView      = UIImageView()
-    let itemsView      = UIStackView()
-    lazy var items         = self.loadItems()
-    lazy var imageGradient = CAGradientLayer( layer: self.imageView.layer )
+    private let backgroundView = MPBackgroundView()
+    private let imageView      = UIImageView()
+    private let itemsView      = UIStackView()
+    private lazy var items         = self.loadItems()
+    private lazy var imageGradient = CAGradientLayer( layer: self.imageView.layer )
 
     // MARK: --- Interface ---
 
@@ -39,6 +50,10 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         super.init()
 
         self.items.forEach { $0.model = self.model }
+
+        defer {
+            self.image = nil
+        }
     }
 
     override func viewDidLoad() {
@@ -53,7 +68,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         self.imageView.contentMode = .scaleAspectFill
         self.imageView.clipsToBounds = true
 
-        self.backgroundView.layoutMargins = UIEdgeInsets( top: 20, left: 8, bottom: 20, right: 8 )
+        self.backgroundView.layoutMargins.bottom = 40
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = 1
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow

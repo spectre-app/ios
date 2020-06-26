@@ -38,9 +38,11 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
             super.init( identifier: "logbook #feedback",
                         value: { _ in (label: "Let's Talk 🅿", image: nil) },
                         caption: { _ in "We're here to help.  You can also reach us at:\nsupport@volto.app" } ) {
-                let options = ConversationOptions()
-                options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
-                Freshchat.sharedInstance().showConversations( $0.viewController, with: options )
+                if let viewController = $0.viewController {
+                    let options = ConversationOptions()
+                    options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
+                    Freshchat.sharedInstance().showConversations( viewController, with: options )
+                }
             }
         }
     }
