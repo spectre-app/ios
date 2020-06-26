@@ -329,7 +329,7 @@
 		DA5BFA4A147E415C00F98B1E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DA5BFA4C147E415C00F98B1E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		DA5BFA4E147E415C00F98B1E /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
-		DA650F6724A6B19C00518890 /* Spectre.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Spectre.entitlements; sourceTree = "<group>"; };
+		DA650F6824A6B58E00518890 /* Spectre.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Spectre.entitlements; sourceTree = "<group>"; };
 		DA6701B716406A4100B61001 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		DA6701DD16406B7300B61001 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		DA6701DF16406BB400B61001 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
@@ -718,6 +718,7 @@
 		DA4A0BDE201443F4004E2CE5 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				DA650F6824A6B58E00518890 /* Spectre.entitlements */,
 				DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */,
 				DA4A0C1F201531B9004E2CE5 /* Info.plist */,
 				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
@@ -1035,7 +1036,6 @@
 		DACA23B41705DF7D002C6C22 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				DA650F6724A6B19C00518890 /* Spectre.entitlements */,
 				DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */,
 				DACA29701705E1A8002C6C22 /* Data */,
 				DABD360D1711E29400CF925C /* Media */,
