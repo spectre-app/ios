@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
-               BuildableName = "Volto.app"
-               BlueprintName = "Volto"
+               BuildableName = "Spectre.app"
+               BlueprintName = "Volto-iOS"
                ReferencedContainer = "container:Volto-iOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -57,8 +57,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
-            BuildableName = "Volto.app"
-            BlueprintName = "Volto"
+            BuildableName = "Spectre.app"
+            BlueprintName = "Volto-iOS"
             ReferencedContainer = "container:Volto-iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -115,8 +115,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
-            BuildableName = "Volto.app"
-            BlueprintName = "Volto"
+            BuildableName = "Spectre.app"
+            BlueprintName = "Volto-iOS"
             ReferencedContainer = "container:Volto-iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -5,7 +5,6 @@
 
 import Foundation
 import Sentry
-import Smartlook
 import Countly
 
 class MPTracker: MPConfigObserver {
@@ -14,17 +13,15 @@ class MPTracker: MPConfigObserver {
     private init() {
         // Sentry
         if let sentryDSN = decrypt( secret: sentryDSN ) {
-            do {
-                Sentry.Client.shared = try Sentry.Client( dsn: sentryDSN )
-                Sentry.Client.shared?.enabled = appConfig.diagnostics as NSNumber
-                Sentry.Client.shared?.enableAutomaticBreadcrumbTracking()
-                Sentry.Client.shared?.tags = [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ]
-                try Sentry.Client.shared?.startCrashHandler()
-            }
-            catch {
-                err( "Couldn't install Sentry [>TRC]" )
-                trc( "[>] %@", error )
-            }
+            SentrySDK.start( options: [
+                "dsn": sentryDSN,
+                "debug": appConfig.isDebug,
+                "environment": appConfig.isDebug ? "Development": appConfig.isPublic ? "Public": "Private",
+                "enabled": appConfig.diagnostics,
+                "enableAutoSessionTracking": true,
+                "attachStacktrace": true,
+            ] )
+            SentrySDK.configureScope { $0.setTags( [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ] ) }
         }
 
         // Countly
@@ -32,26 +29,17 @@ class MPTracker: MPConfigObserver {
             let countlyConfig = CountlyConfig()
             countlyConfig.host = "https://countly.volto.app"
             countlyConfig.appKey = countlyKey
-            countlyConfig.features = [ CLYPushNotifications ]
+            countlyConfig.features = [ CLYFeature.pushNotifications ]
             countlyConfig.requiresConsent = true
             #if PUBLIC
             countlyConfig.pushTestMode = nil
             #else
-            countlyConfig.pushTestMode = appConfig.isDebug ? CLYPushTestModeDevelopment: CLYPushTestModeTestFlightOrAdHoc
+            countlyConfig.pushTestMode = appConfig.isDebug ? CLYPushTestMode.development: CLYPushTestMode.testFlightOrAdHoc
             #endif
             countlyConfig.alwaysUsePOST = true
             countlyConfig.secretSalt = countlySalt
             countlyConfig.deviceID = self.deviceIdentifier
             Countly.sharedInstance().start( with: countlyConfig )
-        }
-
-        // Smartlook
-        if !appConfig.isPublic, let smartlookKey = decrypt( secret: smartlookKey ) {
-            Smartlook.setSessionProperty( value: self.deviceIdentifier, forName: "device" )
-            Smartlook.setSessionProperty( value: self.ownerIdentifier, forName: "owner" )
-            Smartlook.setup( key: smartlookKey )
-
-            Sentry.Client.shared?.extra?["smartlook"] = Smartlook.getDashboardSessionURL()
         }
 
         // Breadcrumbs & errors
@@ -60,35 +48,34 @@ class MPTracker: MPConfigObserver {
                   let record = MPLogRecord( logEvent )
             else { return false }
 
-            var sentrySeverity = SentrySeverity.debug
+            var sentryLevel = SentryLevel.debug
             switch record.level {
                 case .info:
-                    sentrySeverity = .info
+                    sentryLevel = .info
                 case .warning:
-                    sentrySeverity = .warning
+                    sentryLevel = .warning
                 case .error:
-                    sentrySeverity = .error
+                    sentryLevel = .error
                 case .fatal:
-                    sentrySeverity = .fatal
+                    sentryLevel = .fatal
                 default: ()
             }
 
             if record.level <= .error {
-                let event = Event( level: sentrySeverity )
+                let event = Event( level: sentryLevel )
                 event.message = record.message
                 event.logger = "mpw"
                 event.timestamp = record.occurrence
                 event.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
-                Sentry.Client.shared?.appendStacktrace( to: event )
-                Sentry.Client.shared?.send( event: event )
+                SentrySDK.capture( event: event )
             }
             else {
-                let breadcrumb = Breadcrumb( level: sentrySeverity, category: "mpw" )
+                let breadcrumb = Breadcrumb( level: sentryLevel, category: "mpw" )
                 breadcrumb.type = "log"
                 breadcrumb.message = record.message
                 breadcrumb.timestamp = record.occurrence
                 breadcrumb.data = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
-                Sentry.Client.shared?.breadcrumbs.add( breadcrumb )
+                SentrySDK.addBreadcrumb( crumb: breadcrumb )
             }
 
             return true
@@ -173,11 +160,6 @@ class MPTracker: MPConfigObserver {
         guard let keyId = user.masterKeyID?.uppercased(), let userId = digest( value: keyId ), let userName = digest( value: user.fullName )
         else { return }
 
-        if let activeUserId = Sentry.Client.shared?.user?.userId {
-            err( "User logged in while another still active. [>TRC]" )
-            trc( "[>] Active user: %s, will replace by login user: %s", activeUserId, userId )
-        }
-
         let userConfig: [String: Any] = [
             "algorithm": user.algorithm,
             "avatar": user.avatar,
@@ -187,19 +169,18 @@ class MPTracker: MPConfigObserver {
             "sites": user.sites.count,
         ]
 
-        Sentry.Client.shared?.user = Sentry.User( userId: userId )
-        Sentry.Client.shared?.user?.username = userName
-        Sentry.Client.shared?.user?.extra = userConfig
+        let user = User( userId: userId )
+        SentrySDK.setUser( user )
+        user.username = userName
+        user.data = userConfig
         Countly.sharedInstance().userLogged( in: userId )
         Countly.user().name = userName as NSString
         Countly.user().custom = userConfig as NSDictionary
-        Smartlook.setUserIdentifier( userId )
     }
 
     func logout() {
-        Sentry.Client.shared?.user = nil
+        SentrySDK.setUser( nil )
         Countly.sharedInstance().userLoggedOut()
-        Smartlook.setUserIdentifier( "n/a" )
     }
 
     func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
@@ -211,7 +192,7 @@ class MPTracker: MPConfigObserver {
                named name: String) -> TimedEvent {
         dbg( file: file, line: line, function: function, dso: dso, "> %@", name )
 
-        return TimedEvent( named: name, start: Date(), smartlook: Smartlook.startTimedCustomEvent( name: name, props: nil ) )
+        return TimedEvent( named: name, start: Date() )
     }
 
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
@@ -240,38 +221,24 @@ class MPTracker: MPConfigObserver {
         sentryBreadcrumb.type = "user"
         sentryBreadcrumb.message = name
         sentryBreadcrumb.data = eventParameters
-        Sentry.Client.shared?.breadcrumbs.add( sentryBreadcrumb )
+        SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
         // Countly
         Countly.sharedInstance().recordEvent(
                 name, segmentation: stringParameters,
                 count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
-
-        // Smartlook
-        if let timing = timing {
-            Smartlook.trackTimedCustomEvent( eventId: timing.smartlook, props: stringParameters )
-        }
-        else {
-            Smartlook.trackCustomEvent( name: name, props: stringParameters )
-        }
     }
 
     // MARK: --- MPConfigObserver ---
 
     public func didChangeConfig() {
         if appConfig.diagnostics {
-            Sentry.Client.shared?.enabled = true
+            SentrySDK.currentHub().getClient()?.options.enabled = true
             Countly.sharedInstance().giveConsentForAllFeatures()
-            if !appConfig.isPublic && !Smartlook.isRecording() {
-                Smartlook.startRecording()
-            }
         }
         else {
-            Sentry.Client.shared?.enabled = false
+            SentrySDK.currentHub().getClient()?.options.enabled = false
             Countly.sharedInstance().cancelConsentForAllFeatures()
-            if !appConfig.isPublic && Smartlook.isRecording() {
-                Smartlook.stopRecording()
-            }
         }
     }
 
@@ -303,13 +270,10 @@ class MPTracker: MPConfigObserver {
             sentryBreadcrumb.type = "navigation"
             sentryBreadcrumb.message = self.name
             sentryBreadcrumb.data = eventParameters
-            Sentry.Client.shared?.breadcrumbs.add( sentryBreadcrumb )
+            SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
             // Countly
             Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )
-
-            // Smartlook
-            Smartlook.trackNavigationEvent( withControllerId: self.name, type: .enter )
         }
 
         func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
@@ -323,21 +287,18 @@ class MPTracker: MPConfigObserver {
         }
 
         func dismiss(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-            Smartlook.trackNavigationEvent( withControllerId: self.name, type: .exit )
         }
     }
 
     class TimedEvent {
         let name:      String
         let start:     Date
-        let smartlook: Any
 
         private var ended = false
 
-        init(named name: String, start: Date, smartlook: Any) {
+        init(named name: String, start: Date) {
             self.name = name
             self.start = start
-            self.smartlook = smartlook
         }
 
         deinit {
@@ -357,7 +318,6 @@ class MPTracker: MPConfigObserver {
             guard !self.ended
             else { return }
 
-            Smartlook.trackTimedCustomEventCancel( eventId: self.smartlook, reason: nil, props: nil )
             dbg( file: file, line: line, function: function, dso: dso, "X %@", self.name )
             self.ended = true
         }
