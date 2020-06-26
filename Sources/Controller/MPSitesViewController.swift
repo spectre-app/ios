@@ -10,8 +10,6 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     private let searchField              = UITextField()
     private let userButton               = MPButton( identifier: "sites #user_settings" )
     private let sitesTableView           = MPSitesTableView()
-    private let sitePreviewController    = MPSitePreviewController()
-    private let sitePreviewConfiguration = LayoutConfiguration()
     private let detailsHost              = MPDetailsHostController()
 
     override var user: MPUser {
@@ -33,7 +31,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.detailsHost
     }
     private var  activeChild:                                UIViewController? {
-        self.sitePreviewConfiguration.activated ? self.sitePreviewController: self.detailsHost.isShowing ? self.detailsHost: nil
+        self.detailsHost.isShowing ? self.detailsHost: nil
     }
     override var childForStatusBarStyle:                     UIViewController? {
         self.activeChild
@@ -83,27 +81,15 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.sitesTableView.contentInsetAdjustmentBehavior = .never
 
         // - Hierarchy
-        self.addChild( self.sitePreviewController )
         self.addChild( self.detailsHost )
         self.view.addSubview( self.sitesTableView )
-        self.view.addSubview( self.sitePreviewController.view )
         self.view.addSubview( self.detailsHost.view )
         self.view.addSubview( self.topContainer )
-        self.sitePreviewController.didMove( toParent: self )
         self.detailsHost.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: self.sitePreviewController.view )
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: .short ) }
-                .activate()
-
         LayoutConfiguration( view: self.sitesTableView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: self.sitePreviewController.view.bottomAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrain()
                 .activate()
 
         LayoutConfiguration( view: self.detailsHost.view )
@@ -116,8 +102,6 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                         $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
                         $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )
                                     .with( priority: UILayoutPriority( 500 ) ),
-                        $1.topAnchor.constraint( greaterThanOrEqualTo: self.sitePreviewController.view.layoutMarginsGuide.bottomAnchor )
-                                    .with( priority: UILayoutPriority( 510 ) ),
                         $1.bottomAnchor.constraint( lessThanOrEqualTo: self.detailsHost.contentView.topAnchor, constant: 8 )
                                        .with( priority: UILayoutPriority( 520 ) ),
                         $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
@@ -126,12 +110,6 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                     ]
                 }
                 .activate()
-
-        self.sitePreviewConfiguration
-                .apply( LayoutConfiguration( view: self.sitePreviewController.view )
-                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: true )
-                .apply( LayoutConfiguration( view: self.sitesTableView )
-                                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }, active: false )
     }
 
     override func viewDidLayoutSubviews() {
@@ -143,16 +121,9 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
                 top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
 
         // Add space consumed by header and top container to details safe area.
-        if self.sitePreviewController.view.frame.maxY <= 0 {
-            self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
-                    top: self.topContainer.frame.maxY
-                            - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
-        }
-        else {
-            self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
-                    top: self.sitePreviewController.view.frame.maxY + (self.topContainer.frame.size.height + 8) / 2
-                            - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
-        }
+        self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
+                top: self.topContainer.frame.maxY
+                        - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
     }
 
     // MARK: --- MPSitesViewObserver ---
@@ -160,19 +131,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     func siteWasSelected(site selectedSite: MPSite?) {
         DispatchQueue.main.perform {
             UIView.animate( withDuration: .long, animations: {
-                if let selectedSite = selectedSite {
-                    self.sitePreviewController.site = selectedSite
-                }
-                else {
+                if selectedSite == nil {
                     self.detailsHost.hide()
                 }
 
-                self.sitePreviewConfiguration.activated = selectedSite != nil
                 self.setNeedsStatusBarAppearanceUpdate()
-            }, completion: { finished in
-                if selectedSite == nil {
-                    self.sitePreviewController.site = nil
-                }
             } )
         }
 
