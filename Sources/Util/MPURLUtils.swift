@@ -9,7 +9,7 @@ import SwiftLinkPreview
 class MPURLUtils {
     private static let queue    = OperationQueue( queue: DispatchQueue.net )
     public static let  session  = URLSession( configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: queue )
-    private static let preview  = SwiftLinkPreview( session: session, workQueue: DispatchQueue.net, responseQueue: DispatchQueue.net, cache: InMemoryCache() )
+    private static let preview  = SwiftLinkPreview()
     private static let caches   = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
     private static var metadata = loadMetadata() {
         didSet {
@@ -62,6 +62,7 @@ class MPURLUtils {
 
     static func preview(url: String, result: @escaping (Meta) -> Void) {
         if let info = self.metadata[url] {
+            dbg("[preview cached] %@: %d", url, info.imageData?.count ?? 0)
             result( info )
         }
 
@@ -82,6 +83,7 @@ class MPURLUtils {
                     self.metadata[url] = info
                 }
 
+                dbg("[preview success] %@: %d", url, responseData?.count ?? 0)
                 result( info )
             }.resume()
         }, onError: { error in
@@ -93,6 +95,7 @@ class MPURLUtils {
                     trc( "[>] %@: %@", url, error )
             }
 
+            dbg("[preview error] %@: %@", url, error)
             result( self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil ) )
         } )
     }

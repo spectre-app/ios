@@ -2,13 +2,13 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Volto-iOS.xcodeproj">
+      location = "group:Spectre-iOS.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Volto-macOS.xcodeproj">
+      location = "group:Spectre-macOS.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Volto-JNI.xcodeproj">
+      location = "group:Spectre-JNI.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">

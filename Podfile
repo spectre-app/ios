@@ -1,9 +1,9 @@
-workspace 'Volto'
-project 'Volto-iOS'
-project 'Volto-macOS'
+workspace 'Spectre'
+project 'Spectre-iOS'
+project 'Spectre-macOS'
 
-target 'Volto-iOS' do
-  project 'Volto-iOS'
+target 'Spectre-iOS' do
+  project 'Spectre-iOS'
   platform :ios, '12.4'
 
   use_modular_headers!
@@ -17,8 +17,8 @@ target 'Volto-iOS' do
   pod 'Countly'
 end
 
-target 'Volto-macOS' do
-  project 'Volto-macOS'
+target 'Spectre-macOS' do
+  project 'Spectre-macOS'
   platform :osx, '10.11'
 
   use_modular_headers!

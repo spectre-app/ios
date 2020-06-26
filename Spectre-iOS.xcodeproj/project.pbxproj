@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0DAA3D8F51991204ADB48E57 /* Pods_Volto_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7979C139A054F7208981E770 /* Pods_Volto_iOS.framework */; };
 		93D3902220F6DB4564F5FE6D /* NSLayoutConstraint+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E47D47CD353F4E0C94D /* NSLayoutConstraint+MP.swift */; };
 		93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
 		93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
@@ -184,6 +183,7 @@
 		DAD8047323C52D69000A4E86 /* MPSecrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */; };
 		DAF560502393411A000475BA /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DAF5605123934134000475BA /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
+		E49B6B56B414AE4F61D1E462 /* Pods_Spectre_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48556ABA5CB8BBC0B77C4B9E /* Pods_Spectre_iOS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -204,13 +204,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		07AC4B4B7D243222CAD3AD95 /* Pods-Volto-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Volto-iOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS.debug.xcconfig"; sourceTree = "<group>"; };
-		13F54E0F81436A5007B7A96B /* Pods-Volto.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Volto.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Volto/Pods-Volto.debug.xcconfig"; sourceTree = "<group>"; };
-		2003F52FBD2D3306612CC357 /* Pods-Volto-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Volto-iOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS.release.xcconfig"; sourceTree = "<group>"; };
-		3F5740BEFF88DA7457A3AE61 /* Pods-MasterPassword.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.debug.xcconfig"; sourceTree = "<group>"; };
-		7979C139A054F7208981E770 /* Pods_Volto_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Volto_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		8673E273737E67D2A774177F /* Pods-MasterPassword.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.release.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.release.xcconfig"; sourceTree = "<group>"; };
-		8EF7AFC3D894303B54EB2C44 /* Pods-Volto.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Volto.release.xcconfig"; path = "Pods/Target Support Files/Pods-Volto/Pods-Volto.release.xcconfig"; sourceTree = "<group>"; };
+		0383AF7AFF0DEABCD63CE61D /* Pods-Spectre-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.debug.xcconfig"; sourceTree = "<group>"; };
+		05046789E127F4CC1923F044 /* Pods-Spectre-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.release.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.release.xcconfig"; sourceTree = "<group>"; };
+		48556ABA5CB8BBC0B77C4B9E /* Pods_Spectre_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
 		93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesTableView.swift; sourceTree = "<group>"; };
 		93D3909744CE918AB4432318 /* ConstraintResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintResolver.swift; sourceTree = "<group>"; };
@@ -294,9 +290,7 @@
 		93D39F718C1C38C46D9D5078 /* MPSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSite.swift; sourceTree = "<group>"; };
 		93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitePreviewController.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAvatarCell.swift; sourceTree = "<group>"; };
-		A374698F63075B77FCACEE84 /* Pods-MasterPassword.test.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MasterPassword.test.xcconfig"; path = "Pods/Target Support Files/Pods-MasterPassword/Pods-MasterPassword.test.xcconfig"; sourceTree = "<group>"; };
-		A9B7C070C54A99993179C63A /* Pods-Volto-iOS.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Volto-iOS.public.xcconfig"; path = "Pods/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS.public.xcconfig"; sourceTree = "<group>"; };
-		AFF11C0F3E59F69243D862DD /* Pods-Volto.test.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Volto.test.xcconfig"; path = "Pods/Target Support Files/Pods-Volto/Pods-Volto.test.xcconfig"; sourceTree = "<group>"; };
+		A240D0A75802CF4504653D27 /* Pods-Spectre-iOS.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.public.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.public.xcconfig"; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		DA071BF1190187FE00179766 /* empty@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "empty@2x.png"; sourceTree = "<group>"; };
 		DA071BF2190187FE00179766 /* empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = empty.png; sourceTree = "<group>"; };
@@ -335,6 +329,7 @@
 		DA5BFA4A147E415C00F98B1E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DA5BFA4C147E415C00F98B1E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		DA5BFA4E147E415C00F98B1E /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		DA650F6724A6B19C00518890 /* Spectre.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Spectre.entitlements; sourceTree = "<group>"; };
 		DA6701B716406A4100B61001 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		DA6701DD16406B7300B61001 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		DA6701DF16406BB400B61001 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
@@ -423,7 +418,6 @@
 		DABD3FC91712446200CF925C /* cloud@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cloud@2x.png"; sourceTree = "<group>"; };
 		DABD3FCC1714F45B00CF925C /* identity.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = identity.png; sourceTree = "<group>"; };
 		DABD3FCD1714F45B00CF925C /* identity@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "identity@2x.png"; sourceTree = "<group>"; };
-		DABD5EF0241BE6BE00200755 /* Volto.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Volto.entitlements; sourceTree = "<group>"; };
 		DAC51052247C672C006CC5D6 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		DAC5106B247C7258006CC5D6 /* crypto_stream_salsa2012.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa2012.h; sourceTree = "<group>"; };
 		DAC5106C247C7258006CC5D6 /* crypto_auth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_auth.h; sourceTree = "<group>"; };
@@ -523,29 +517,13 @@
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
-				0DAA3D8F51991204ADB48E57 /* Pods_Volto_iOS.framework in Frameworks */,
+				E49B6B56B414AE4F61D1E462 /* Pods_Spectre_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7FCBA1D987E722EC5E5809F1 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				3F5740BEFF88DA7457A3AE61 /* Pods-MasterPassword.debug.xcconfig */,
-				8673E273737E67D2A774177F /* Pods-MasterPassword.release.xcconfig */,
-				A374698F63075B77FCACEE84 /* Pods-MasterPassword.test.xcconfig */,
-				13F54E0F81436A5007B7A96B /* Pods-Volto.debug.xcconfig */,
-				8EF7AFC3D894303B54EB2C44 /* Pods-Volto.release.xcconfig */,
-				AFF11C0F3E59F69243D862DD /* Pods-Volto.test.xcconfig */,
-				07AC4B4B7D243222CAD3AD95 /* Pods-Volto-iOS.debug.xcconfig */,
-				2003F52FBD2D3306612CC357 /* Pods-Volto-iOS.release.xcconfig */,
-				A9B7C070C54A99993179C63A /* Pods-Volto-iOS.public.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 		93D392613DA65A3C5867A2B1 /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -676,6 +654,16 @@
 			path = Controller;
 			sourceTree = "<group>";
 		};
+		C9DC157ABDB9805DFF33D123 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				0383AF7AFF0DEABCD63CE61D /* Pods-Spectre-iOS.debug.xcconfig */,
+				05046789E127F4CC1923F044 /* Pods-Spectre-iOS.release.xcconfig */,
+				A240D0A75802CF4504653D27 /* Pods-Spectre-iOS.public.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		DA24EBB019DAD4D000FF010B /* ios */ = {
 			isa = PBXGroup;
 			children = (
@@ -743,14 +731,13 @@
 		DA5BFA39147E415C00F98B1E = {
 			isa = PBXGroup;
 			children = (
-				DABD5EF0241BE6BE00200755 /* Volto.entitlements */,
 				93D39A2239FFFE6BEC83E191 /* core */,
 				DABD3B9F1711E2DB00CF925C /* Source */,
 				DACA22121705DDC5002C6C22 /* Libraries */,
 				DACA23B41705DF7D002C6C22 /* Resources */,
 				DA5BFA47147E415C00F98B1E /* Frameworks */,
-				7FCBA1D987E722EC5E5809F1 /* Pods */,
 				DA5BFA45147E415C00F98B1E /* Products */,
+				C9DC157ABDB9805DFF33D123 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -789,7 +776,7 @@
 				DABB981515100B4000B05417 /* SystemConfiguration.framework */,
 				93D394077F8FAB8167647187 /* Twitter.framework */,
 				DA5BFA48147E415C00F98B1E /* UIKit.framework */,
-				7979C139A054F7208981E770 /* Pods_Volto_iOS.framework */,
+				48556ABA5CB8BBC0B77C4B9E /* Pods_Spectre_iOS.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1048,9 +1035,10 @@
 		DACA23B41705DF7D002C6C22 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DA650F6724A6B19C00518890 /* Spectre.entitlements */,
+				DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */,
 				DACA29701705E1A8002C6C22 /* Data */,
 				DABD360D1711E29400CF925C /* Media */,
-				DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -1097,9 +1085,9 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
-		DA5BFA43147E415C00F98B1E /* Volto-iOS */ = {
+		DA5BFA43147E415C00F98B1E /* Spectre-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Volto-iOS" */;
+			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre-iOS" */;
 			buildPhases = (
 				6C65D68293559B6D9F6526C0 /* [CP] Check Pods Manifest.lock */,
 				DA5BFA40147E415C00F98B1E /* Sources */,
@@ -1115,7 +1103,7 @@
 				DAB7AE4E1F3D618700C856B1 /* PBXTargetDependency */,
 				DAB7AE501F3D618700C856B1 /* PBXTargetDependency */,
 			);
-			name = "Volto-iOS";
+			name = "Spectre-iOS";
 			productName = MasterPassword;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
 			productType = "com.apple.product-type.application";
@@ -1161,7 +1149,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Volto-iOS" */;
+			buildConfigurationList = DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre-iOS" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1259,7 +1247,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DA5BFA43147E415C00F98B1E /* Volto-iOS */,
+				DA5BFA43147E415C00F98B1E /* Spectre-iOS */,
 				DAB7AE471F3D468300C856B1 /* libsodium-ios */,
 				DAB7AE3D1F3D464A00C856B1 /* libjson-c-ios */,
 			);
@@ -1376,7 +1364,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Volto-iOS-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Spectre-iOS-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1409,15 +1397,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F547257C29D473EBD10587B5 /* [CP] Copy Pods Resources */ = {
@@ -1426,15 +1414,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Volto-iOS/Pods-Volto-iOS-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1701,11 +1689,11 @@
 		};
 		DA09744A1E95703B00F0BFE8 /* Public */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A9B7C070C54A99993179C63A /* Pods-Volto-iOS.public.xcconfig */;
+			baseConfigurationReference = A240D0A75802CF4504653D27 /* Pods-Spectre-iOS.public.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Volto.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
@@ -1735,7 +1723,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
 				MARKETING_VERSION = 3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.volto.iOS;
+				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.iOS;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
@@ -2049,11 +2037,11 @@
 		};
 		DA5BFA6E147E415C00F98B1E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 07AC4B4B7D243222CAD3AD95 /* Pods-Volto-iOS.debug.xcconfig */;
+			baseConfigurationReference = 0383AF7AFF0DEABCD63CE61D /* Pods-Spectre-iOS.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Volto.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
@@ -2083,7 +2071,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
 				MARKETING_VERSION = 3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.volto.iOS;
+				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.iOS;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
@@ -2092,11 +2080,11 @@
 		};
 		DA5BFA6F147E415C00F98B1E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2003F52FBD2D3306612CC357 /* Pods-Volto-iOS.release.xcconfig */;
+			baseConfigurationReference = 05046789E127F4CC1923F044 /* Pods-Spectre-iOS.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Volto.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
@@ -2126,7 +2114,7 @@
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
 				);
 				MARKETING_VERSION = 3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.volto.iOS;
+				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.iOS;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
@@ -2252,7 +2240,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Volto-iOS" */ = {
+		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA5BFA6B147E415C00F98B1E /* Debug */,
@@ -2262,7 +2250,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Volto-iOS" */ = {
+		DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA5BFA6E147E415C00F98B1E /* Debug */,

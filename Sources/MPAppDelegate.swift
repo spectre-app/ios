@@ -83,7 +83,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
         dbg( "opening: %@, options: %@", url, options )
         if let components = URLComponents( url: url, resolvingAgainstBaseURL: false ),
-           components.scheme == "volto", components.path == "import" {
+           components.scheme == "spectre", components.path == "import" {
             if let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 ) {
                 MPMarshal.shared.import( data: data )
             }

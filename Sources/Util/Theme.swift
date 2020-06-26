@@ -123,7 +123,7 @@ public extension PropertyPath where V == NSAttributedString {
 }
 
 public struct ThemePattern {
-    static let volto = ThemePattern(
+    static let spectre = ThemePattern(
             dark: .hex( "000F08" ),
             dusk: .hex( "004A4F" ),
             flat: .hex( "3E8989" ),
@@ -144,8 +144,8 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     public static let all       = [ Theme.default, Theme.base ] // Register all theme objects
     public static let current   = Theme( path: "current" )
 
-    // VOLTO:
-    public static let `default` = Theme( path: ".volto", pattern: .volto )
+    // SPECTRE:
+    public static let `default` = Theme( path: ".spectre", pattern: .spectre )
 
     public class func with(path: String?) -> Theme? {
         self.all.first { $0.path == path } ?? path<.flatMap { Theme.byPath[$0] } ?? .base
