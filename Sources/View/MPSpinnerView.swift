@@ -5,7 +5,7 @@
 
 import UIKit
 
-public class MPSpinnerView: UICollectionView {
+public class SpinnerView: UICollectionView {
     public var scrolledItem: Int {
         let currentOffset = self.contentOffset.y
         let maximumOffset = max( 0, self.contentSize.height - self.bounds.size.height )

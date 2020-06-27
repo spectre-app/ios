@@ -70,7 +70,7 @@ class MPURLUtils {
             guard let imageURL = self.validImageURL( response.image ) ?? self.validImageURL( response.icon )
             else { return }
 
-            session.dataTask( with: imageURL ) { responseData, response, error in
+            MPURLUtils.session.dataTask( with: imageURL ) { responseData, response, error in
                 var info = self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil )
 
                 if let error = error {
@@ -83,7 +83,7 @@ class MPURLUtils {
                     self.metadata[url] = info
                 }
 
-                dbg("[preview success] %@: %d", url, responseData?.count ?? 0)
+                dbg("[preview fetched] %@: %d", url, responseData?.count ?? 0)
                 result( info )
             }.resume()
         }, onError: { error in
@@ -105,9 +105,11 @@ class MPURLUtils {
            string.lowercased().hasSuffix( "png" ) || string.lowercased().hasSuffix( "gif" ) ||
                    string.lowercased().hasSuffix( "jpg" ) || string.lowercased().hasSuffix( "jpeg" ),
            let url = URL( string: string ) {
+            dbg("[preview url valid] %@", string)
             return url
         }
 
+        dbg("[preview url invalid] %@", string)
         return nil
     }
 }
