@@ -69,6 +69,8 @@ open class DataSource<E: Hashable> {
     open func update(_ updatedSectionsOfElements: [[E?]],
                      reloadItems: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: [E?]? = nil,
                      animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)? = nil) {
+        trc( "updating dataSource:\n%@\n<=\n%@", self.sectionsOfElements, updatedSectionsOfElements )
+
         if updatedSectionsOfElements == self.sectionsOfElements {
             self.perform( animated: animated, completion: completion ) {
                 var reloadPaths = reloadPaths ?? []
@@ -81,7 +83,7 @@ open class DataSource<E: Hashable> {
                 }
                 self.sectionsOfElements = updatedSectionsOfElements
                 if reloadPaths.count > 0 {
-                    //trc( "reload items \(reloadPaths)" )
+                    trc( "reload items %@", reloadPaths )
                     self.collectionView?.reloadItems( at: reloadPaths )
                     self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
                 }
@@ -91,84 +93,67 @@ open class DataSource<E: Hashable> {
         }
 
         self.perform( animated: animated, completion: completion ) {
-            // Figure out how the section items have changed.
-            var oldElements = Set<E?>()
-            var deletePaths = [ IndexPath ]()
-            var movedPaths  = [ IndexPath: IndexPath ]()
-            var reloadPaths = reloadPaths ?? []
-
-            for (section, elements) in self.sectionsOfElements.enumerated() {
-                for (item, element) in elements.enumerated() {
-                    oldElements.insert( element )
-
-                    let fromIndexPath = IndexPath( item: item, section: section )
-                    if let toIndexPath = self.indexPath( for: element, in: updatedSectionsOfElements ) {
-                        if fromIndexPath != toIndexPath {
-                            movedPaths[fromIndexPath] = toIndexPath
-                        }
-                        else if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
-                            reloadPaths.append( toIndexPath )
-                        }
-                    }
-                    else if section < updatedSectionsOfElements.count {
-                        deletePaths.append( fromIndexPath )
-                    }
-                }
-            }
 
             // Update the internal data sections and determine which sections changed.
-            var insertSet = IndexSet(), deleteSet = IndexSet()
             for section in (0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count )).reversed() {
                 if section >= updatedSectionsOfElements.count {
-                    //trc( "delete section \(section)" )
+                    trc( "delete section %d", section )
                     self.sectionsOfElements.remove( at: section )
-                    deleteSet.insert( section )
-                }
-                else if section >= self.sectionsOfElements.count {
-                    //trc( "insert section \(section)" )
-                    self.sectionsOfElements.append( updatedSectionsOfElements[section] )
-                    insertSet.insert( section )
-                }
-                else {
-                    self.sectionsOfElements[section] = updatedSectionsOfElements[section]
+                    self.collectionView?.deleteSections( IndexSet(integer: section ) )
+                    self.tableView?.deleteSections( IndexSet(integer: section ), with: .automatic )
                 }
             }
-            self.collectionView?.insertSections( insertSet )
-            self.collectionView?.deleteSections( deleteSet )
-            self.tableView?.insertSections( insertSet, with: .automatic )
-            self.tableView?.deleteSections( deleteSet, with: .automatic )
+            for section in 0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count ) {
+                if section >= self.sectionsOfElements.count {
+                    trc( "insert section %d", section )
+                    self.sectionsOfElements.append( [E?]() )
+                    self.collectionView?.insertSections( IndexSet(integer: section) )
+                    self.tableView?.insertSections( IndexSet(integer: section), with: .automatic )
+                }
+            }
 
-            var insertPaths = [ IndexPath ]()
-            for section in 0..<updatedSectionsOfElements.count {
-                let newSectionItems = updatedSectionsOfElements[section]
-                for index in 0..<newSectionItems.count {
-                    if oldElements.remove( newSectionItems[index] ) == nil {
-                        insertPaths.append( IndexPath( item: index, section: section ) )
+            // Figure out how the section items have changed.
+            for (section, elements) in updatedSectionsOfElements.enumerated() {
+                for (item, element) in elements.enumerated() {
+                    let toIndexPath = IndexPath( item: item, section: section )
+                    if let fromIndexPath = self.indexPath( for: element, in: self.sectionsOfElements ) {
+                        if toIndexPath != fromIndexPath {
+                            trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
+                            self.sectionsOfElements[fromIndexPath.section].remove( at: fromIndexPath.item )
+                            self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item)
+                            self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
+                            self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
+                        }
+                        else if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
+                            trc( "reload item %@", fromIndexPath )
+                            self.sectionsOfElements[fromIndexPath.section][fromIndexPath.item] = element
+                            self.collectionView?.reloadItems( at: [ fromIndexPath ] )
+                            self.tableView?.reloadRows( at: [ fromIndexPath ], with: .automatic )
+                        }
+                    }
+                    else {
+                        trc( "insert item %@", toIndexPath )
+                        self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item)
+                        self.collectionView?.insertItems( at: [ toIndexPath ] )
+                        self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
                     }
                 }
             }
 
-            // Reload existing items.
-            //for path in reloadPaths { trc( "reload item \(path)" ) }
-            self.collectionView?.reloadItems( at: reloadPaths )
-            self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
-
-            // Remove deleted rows.
-            //for path in deletePaths { trc( "delete item \(path)" ) }
-            self.collectionView?.deleteItems( at: deletePaths )
-            self.tableView?.deleteRows( at: deletePaths, with: .automatic )
-
             // Add inserted rows.
-            //for path in insertPaths { trc( "insert item \(path)" ) }
-            self.collectionView?.insertItems( at: insertPaths )
-            self.tableView?.insertRows( at: insertPaths, with: .automatic )
-
-            // Then shuffle around moved rows.
-            movedPaths.forEach { fromIndexPath, toIndexPath in
-                //trc( "move item \(fromIndexPath) -> \(toIndexPath)" )
-                self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
-                self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
+            for (section, elements) in self.sectionsOfElements.enumerated() {
+                for (item, element) in elements.enumerated().reversed() {
+                    let fromIndexPath = IndexPath( item: item, section: section )
+                    if self.indexPath( for: element, in: updatedSectionsOfElements ) == nil {
+                        trc( "delete item %@", fromIndexPath )
+                        self.sectionsOfElements[section].remove(at: item)
+                        self.collectionView?.deleteItems( at: [ fromIndexPath ] )
+                        self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
+                    }
+                }
             }
+
+            assert(self.sectionsOfElements == updatedSectionsOfElements)
         }
     }
 
@@ -188,24 +173,21 @@ open class DataSource<E: Hashable> {
 
     // MARK: --- Private ---
 
-    private func perform(animated: Bool = true, completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
+    private func perform(animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
         DispatchQueue.main.perform {
             if self.tableView == nil && self.collectionView == nil {
                 preconditionFailure( "Data source not associated with a data view." )
             }
 
-            let task = {
-                self.tableView?.performBatchUpdates( updates, completion: completion )
+            self.collectionView?.layoutIfNeeded()
 
-                self.collectionView?.layoutIfNeeded()
-                self.collectionView?.performBatchUpdates( updates, completion: completion )
-            }
-
-            if animated {
-                task()
+            if !animated {
+                updates()
+                completion?( true )
             }
             else {
-                UIView.performWithoutAnimation( task )
+                self.tableView?.performBatchUpdates( updates, completion: completion )
+                self.collectionView?.performBatchUpdates( updates, completion: completion )
             }
         }
     }
