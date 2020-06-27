@@ -114,6 +114,12 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         }
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.setNeedsUpdate()
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 

@@ -5,7 +5,11 @@
 
 import UIKit
 
-public class SpinnerView: UICollectionView {
+/**
+ * A view that presents a collection of items with a single item at the centre.
+ * The item the spinner has at its centre when at rest is the selected item.
+ */
+public class MPSpinnerView: UICollectionView {
     public var scrolledItem: Int {
         let currentOffset = self.contentOffset.y
         let maximumOffset = max( 0, self.contentSize.height - self.bounds.size.height )

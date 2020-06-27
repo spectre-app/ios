@@ -693,13 +693,16 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
         // MARK: --- Private ---
 
-        private func updateSelection() {
+        private func updateSelection(animated: Bool = UIView.areAnimationsEnabled) {
             if let model = self.item.model,
                let selectedValue = self.item.valueFactory( model ),
-               let selectedIndexPath = self.dataSource.indexPath( for: selectedValue ),
-               let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems,
-               selectedIndexPaths != [ selectedIndexPath ] {
-                self.collectionView.selectItem( at: selectedIndexPath, animated: UIView.areAnimationsEnabled, scrollPosition: .centeredHorizontally )
+               let selectedIndexPath = self.dataSource.indexPath( for: selectedValue ) {
+                if self.collectionView.indexPathsForSelectedItems == [ selectedIndexPath ] {
+                    self.collectionView.scrollToItem( at: selectedIndexPath, at: .centeredHorizontally, animated: animated )
+                }
+                else {
+                    self.collectionView.selectItem( at: selectedIndexPath, animated: animated, scrollPosition: .centeredHorizontally )
+                }
             }
         }
 
