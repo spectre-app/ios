@@ -5,18 +5,18 @@
 
 import UIKit
 
-class ConstraintResolver: CustomStringConvertible {
+class ConstraintResolver: CustomDebugStringConvertible {
     let view: UIView
     let axis: NSLayoutConstraint.Axis?
     var constraints = [ NSLayoutConstraint ]()
-    var description: String {
+    var debugDescription: String {
         if self.constraints.isEmpty {
             self.constraints = self.scan()
         }
 
         return self.constraints.reduce( "" ) { description, constraint in
             if self.axis == nil || constraint.firstAttribute.on( axis: self.axis! ) || constraint.secondAttribute.on( axis: self.axis! ) {
-                return (description.isEmpty ? "": "\(description)\n") + constraint.constraintDescription
+                return (description.isEmpty ? "": "\(description)\n") + String( reflecting: constraint )
             }
 
             return description
@@ -83,7 +83,7 @@ class ConstraintResolver: CustomStringConvertible {
                     self.view.constraintsAffectingLayout( for: .horizontal ).map { HashableConstraint( constraint: $0 ) } )
         }
 
-        return scannedConstraints.map { $0.constraint }.sorted { $1.constraintDescription > $0.constraintDescription }
+        return scannedConstraints.map { $0.constraint }.sorted { String( reflecting: $1 ) > String( reflecting: $0 ) }
     }
 
     enum Edge: CustomStringConvertible {
@@ -179,14 +179,12 @@ class HashableConstraint: Hashable {
     }
 }
 
-extension NSLayoutConstraint {
-    open override var description: String {
-        self.constraintDescription
-    }
-
-    open var constraintDescription: String {
+public extension NSLayoutConstraint {
+    // FIXME: https://bugs.swift.org/browse/TF-1287
+    // FIXME: @_dynamicReplacement(for: description)
+    override var debugDescription: String {
         if self.firstAttribute.description.contains( "?" ) || self.secondAttribute.description.contains( "?" ) {
-            return super.description
+            return self.description
         }
 
         var firstItem: String?, secondItem: String?, depth = 0, holder = self.holder
@@ -215,19 +213,19 @@ extension NSLayoutConstraint {
         }
 
         if let firstItem = firstItem, let secondItem = secondItem {
-            return String( repeating: "+", count: depth ) + "[ \(firstItem) ] \(self.relation) [ \(secondItem) ]\(modifier)\(priority)"
+            return String( repeating: "+", count: depth ) + "[ \(firstItem) ] \(self.relation) [ \(secondItem) ]\(modifier)\(priority): (\(self.description))"
         }
         else if let firstItem = firstItem {
-            return String( repeating: "+", count: depth ) + "[ \(firstItem) ] \(self.relation)\(modifier)\(priority)"
+            return String( repeating: "+", count: depth ) + "[ \(firstItem) ] \(self.relation)\(modifier)\(priority): (\(self.description))"
         }
         else if let secondItem = secondItem {
-            return String( repeating: "+", count: depth ) + "[ \(secondItem) ] \(self.relation)\(modifier)\(priority)"
+            return String( repeating: "+", count: depth ) + "[ \(secondItem) ] \(self.relation)\(modifier)\(priority): (\(self.description))"
         }
 
-        return "[ no items ]"
+        return "[ no items ]: (\(self.description))"
     }
 
-    open var holder: UIView? {
+    var holder: UIView? {
         var view = (self.firstItem as? UIView) ?? (self.firstItem as? UILayoutGuide)?.owningView ??
                 (self.secondItem as? UIView) ?? (self.secondItem as? UILayoutGuide)?.owningView
         while let view_ = view {
@@ -260,7 +258,7 @@ extension NSLayoutConstraint {
             }
         }
         else {
-            return String( describing: item )
+            return String( reflecting: item )
         }
     }
 }

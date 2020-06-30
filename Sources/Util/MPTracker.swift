@@ -206,7 +206,7 @@ class MPTracker: MPConfigObserver {
         }
 
         eventParameters.merge( parameters, uniquingKeysWith: { $1 } )
-        let stringParameters = eventParameters.mapValues { String( describing: $0 ) }
+        let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
         // Log
         if eventParameters.isEmpty {
@@ -255,7 +255,7 @@ class MPTracker: MPConfigObserver {
                   _ parameters: [String: Any] = [:]) {
             let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
                     .merging( parameters, uniquingKeysWith: { $1 } )
-            let stringParameters = eventParameters.mapValues { String( describing: $0 ) }
+            let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
             // Log
             if eventParameters.isEmpty {

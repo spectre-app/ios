@@ -819,7 +819,7 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
         guard let arg = arg
         else { return Int( bitPattern: nil ) }
 
-        return arg as? CVarArg ?? String( describing: arg )
+        return arg as? CVarArg ?? String( reflecting: arg )
     } )
 
     mpw_log_ssink( level, file, line, function, message )
