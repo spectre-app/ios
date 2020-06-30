@@ -271,16 +271,21 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
 
-        private var mode           = MPKeyPurpose.authentication {
+        private var mode            = MPKeyPurpose.authentication {
             didSet {
                 self.update()
             }
         }
-        private let resultLabel    = UITextField()
-        private let captionLabel   = UILabel()
-        private let modeButton     = MPButton( identifier: "sites.site #mode", image: UIImage.icon( "" ), background: false )
-        private let settingsButton = MPButton( identifier: "sites.site #site_settings", image: UIImage.icon( "" ), background: false )
-        private let newButton      = MPButton( identifier: "sites.site #add", image: UIImage.icon( "" ), background: false )
+        private let backgroundImage = MPBackgroundView( mode: .selection )
+        private let modeButton      = MPButton( identifier: "sites.site #mode", image: UIImage.icon( "" ), background: false )
+        private let settingsButton  = MPButton( identifier: "sites.site #site_settings", image: UIImage.icon( "" ), background: false )
+        private let newButton       = MPButton( identifier: "sites.site #add", image: UIImage.icon( "" ), background: false )
+        private let selectionView   = UIView()
+        private let resultLabel     = UITextField()
+        private let captionLabel    = UILabel()
+        private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
+
+        private var selectionConfiguration: LayoutConfiguration!
 
         // MARK: --- Life ---
 
@@ -298,11 +303,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.clipsToBounds = true
             self.backgroundColor = .clear
 
+            self.backgroundImage.imageView.alpha = .short
+            self.selectedBackgroundView = self.backgroundImage
+
             self.contentView.insetsLayoutMarginsFromSafeArea = false
             self.contentView.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( cellAction ) ) )
 
-            self.selectedBackgroundView = UIView()
-            self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
+            self.contentStack.axis = .vertical
 
             self.resultLabel.adjustsFontSizeToFitWidth = true
             self.resultLabel => \.font => Theme.current.font.password.transform { $0?.withSize( 32 ) }
@@ -326,8 +333,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.modeButton.button.addTarget( self, action: #selector( modeAction ), for: .primaryActionTriggered )
 
             // - Hierarchy
-            self.contentView.addSubview( self.resultLabel )
-            self.contentView.addSubview( self.captionLabel )
+            self.contentView.addSubview( self.contentStack )
             self.contentView.addSubview( self.modeButton )
             self.contentView.addSubview( self.settingsButton )
             self.contentView.addSubview( self.newButton )
@@ -335,34 +341,51 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             // - Layout
             LayoutConfiguration( view: self.modeButton )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.settingsButton )
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.newButton )
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
-            LayoutConfiguration( view: self.resultLabel )
+            LayoutConfiguration( view: self.contentStack )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeButton.trailingAnchor, constant: 4 ) }
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.settingsButton.leadingAnchor, constant: -4 ) }
+                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .activate()
+
+            LayoutConfiguration( view: self.selectionView )
+                    .hugging( horizontal: UILayoutPriority( 1 ), vertical: UILayoutPriority( 1 ) )
+                    .activate()
+
+            LayoutConfiguration( view: self.resultLabel )
                     .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
-                    .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 1 )
+                    .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 3 )
                     .activate()
 
             LayoutConfiguration( view: self.captionLabel )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.resultLabel.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
+                    .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 2 )
                     .activate()
+
+            self.selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
+                active.constrainTo {
+                    $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
+                                   .with( priority: .defaultHigh + 1 )
+                }
+            }
+                    .needs( .update() )
         }
 
         override func setSelected(_ selected: Bool, animated: Bool) {
@@ -413,6 +436,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         func siteDidChange(_ site: MPSite) {
             DispatchQueue.main.perform {
+                self.backgroundImage.image = self.site?.image
+
                 if let resultKey = self.result?.attributedKey {
                     let resultCaption = NSMutableAttributedString( attributedString: resultKey )
                     if self.new {
@@ -455,6 +480,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.modeButton.alpha = appConfig.premium ? 1: 0
                 self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
+                self.selectionConfiguration.activated = self.isSelected
             }.promised {
                 site.result( keyPurpose: self.mode )
             }.then( on: DispatchQueue.main ) {

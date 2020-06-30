@@ -500,7 +500,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                         inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         inactive.set( 0, forKey: "alpha" )
                     } )
-                    .needsLayout( self )
+                    .needs( .layout( view: WeakBox( self ) ) )
         }
 
         required init?(coder aDecoder: NSCoder) {

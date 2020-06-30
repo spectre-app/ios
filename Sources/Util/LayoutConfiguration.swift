@@ -110,8 +110,7 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
 
     private var constrainers       = [ (UIView, LayoutTarget) -> [NSLayoutConstraint] ]()
     private var activeConstraints  = Set<NSLayoutConstraint>()
-    private var layoutViews        = [ WeakBox<UIView> ]()
-    private var displayViews       = [ WeakBox<UIView> ]()
+    private var refreshViews       = [ Refresh ]()
     private var actions            = [ (UIView) -> Void ]()
     private var activeValues       = [ String: () -> Any? ]()
     private var inactiveValues     = [ String: Any? ]()
@@ -317,15 +316,9 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
         return self
     }
 
-    //! Mark the view as needing layout after activating the configuration.  Useful if it has custom layout code.
-    @discardableResult func needsLayout(_ view: UIView) -> Self {
-        self.layoutViews.append( WeakBox( view ) )
-        return self
-    }
-
-    //! Mark the view as needing a redraw after activating the configuration.  Useful if it has custom draw code.
-    @discardableResult func needsDisplay(_ view: UIView) -> Self {
-        self.displayViews.append( WeakBox( view ) )
+    //! Mark the view as needing an refresh after toggling the configuration.
+    @discardableResult func needs(_ refresh: Refresh) -> Self {
+        self.refreshViews.append( refresh )
         return self
     }
 
@@ -448,8 +441,9 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
 
                 self.activation = true
 
-                self.layoutViews.forEach { $0.value?.setNeedsLayout() }
-                self.displayViews.forEach { $0.value?.setNeedsDisplay() }
+                self.refreshViews.forEach { refresh in
+                    refresh.perform( in: targetView )
+                }
 
                 if parent == nil {
                     self.layoutIfNeeded()
@@ -521,8 +515,9 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
 
             self.activation = false
 
-            self.layoutViews.forEach { $0.value?.setNeedsLayout() }
-            self.displayViews.forEach { $0.value?.setNeedsDisplay() }
+            self.refreshViews.forEach { refresh in
+                refresh.perform( in: targetView )
+            }
 
             if parent == nil {
                 self.layoutIfNeeded()
@@ -553,6 +548,39 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
 
             trc( "[update] %@: %@, %@ -> %@", self.target, keyPath, oldValue, newValue )
             self.target.view?.setValue( newValue, forKeyPath: keyPath )
+        }
+    }
+
+    public enum Refresh {
+        //! Request a redraw. Useful if it affects custom draw code.
+        case display(view: WeakBox<UIView?>? = nil)
+        //! Request a layout. Useful if it affects custom layout code.
+        case layout(view: WeakBox<UIView?>? = nil)
+        //! Request an update. Useful if it affects table or collection cell sizing.
+        case update(view: WeakBox<UIView?>? = nil)
+
+        func perform(in targetView: UIView?) {
+            switch self {
+                case .display(let refreshView):
+                    (refreshView?.value ?? targetView)?.setNeedsDisplay()
+
+                case .layout(let refreshView):
+                    (refreshView?.value ?? targetView)?.setNeedsLayout()
+
+                case .update(let refreshView):
+                    var updateView = refreshView?.value ?? nil
+                    if updateView == nil {
+                        updateView = targetView
+                        while let needle = updateView {
+                            if needle is UITableView || needle is UICollectionView {
+                                break
+                            }
+                            updateView = needle.superview
+                        }
+                    }
+                    (updateView as? UITableView)?.performBatchUpdates( {} )
+                    (updateView as? UICollectionView)?.performBatchUpdates( {} )
+            }
         }
     }
 }
