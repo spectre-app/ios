@@ -6,13 +6,12 @@
 import UIKit
 
 class MPBackgroundView: UIView, ThemeObserver {
-    var mode = Mode.backdrop {
+    var mode      = Mode.backdrop {
         didSet {
             switch self.mode {
                 case .gradient:
-                    self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-                        Theme.current.color.panel.get(), Theme.current.color.backdrop.get(),
-                    ] as CFArray, locations: nil )
+                    // TODO: Unbind backgroundColor
+                    self.didChangeTheme()
 
                 case .backdrop:
                     self => \.backgroundColor => Theme.current.color.backdrop
@@ -23,22 +22,72 @@ class MPBackgroundView: UIView, ThemeObserver {
                     self.gradientColor = nil
 
                 case .tint:
-                    self.backgroundColor = self.tintColor
+                    self.tintColorDidChange()
+                    self.gradientColor = nil
+
+                case .selection:
+                    self => \.backgroundColor => Theme.current.color.selection
                     self.gradientColor = nil
             }
-
-            self.setNeedsDisplay()
         }
     }
+    var image: UIImage? {
+        get {
+            self.imageView.image
+        }
+        set {
+            self.imageView.image = newValue
+        }
+    }
+    var imageView = UIImageView()
 
-    private var gradientColor: CGGradient?
-    private var gradientPoint  = CGPoint()
-    private var gradientRadius = CGFloat( 0 )
+    private var imageMask      = CAGradientLayer()
+    private var gradientColor: CGGradient? {
+        didSet {
+            if oldValue != self.gradientColor {
+                self.setNeedsDisplay()
+            }
+        }
+    }
+    private var gradientPoint  = CGPoint() {
+        didSet {
+            if oldValue != self.gradientPoint {
+                self.setNeedsDisplay()
+            }
+        }
+    }
+    private var gradientRadius = CGFloat( 0 ) {
+        didSet {
+            if oldValue != self.gradientRadius {
+                self.setNeedsDisplay()
+            }
+        }
+    }
 
     // MARK: --- Life ---
 
     init(mode: Mode = .panel) {
         super.init( frame: .zero )
+
+        // - View
+        self.imageView.contentMode = .scaleAspectFill
+        self.imageView.layer.mask = self.imageMask
+        self.imageMask.needsDisplayOnBoundsChange = true
+        self.imageMask.colors = [
+            UIColor.black.with( alpha: .short ).cgColor,
+            UIColor.black.with( alpha: 0.05 ).cgColor,
+            UIColor.clear.cgColor ]
+
+        // - Hierarchy
+        self.addSubview( self.imageView )
+
+        // - Layout
+        LayoutConfiguration( view: self.imageView )
+                .constrain( anchors: .topBox )
+                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 200 ).with( priority: .defaultHigh ) }
+                .compressionResistance( horizontal: .fittingSizeLevel, vertical: .fittingSizeLevel )
+                .activate()
 
         defer {
             self.mode = mode
@@ -60,34 +109,46 @@ class MPBackgroundView: UIView, ThemeObserver {
         }
     }
 
+    override func tintColorDidChange() {
+        super.tintColorDidChange()
+
+        if case .tint = self.mode {
+            self.backgroundColor = self.tintColor
+        }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
+
+        self.imageMask.frame = self.imageView.bounds
 
         if case .gradient = self.mode {
             self.gradientPoint = self.bounds.top
             self.gradientRadius = max( self.bounds.size.width, self.bounds.size.height )
-            self.setNeedsDisplay()
         }
     }
 
     override func draw(_ rect: CGRect) {
-        guard let gradientColor = self.gradientColor
-        else { return }
-
-        UIGraphicsGetCurrentContext()?.drawRadialGradient(
-                gradientColor, startCenter: self.gradientPoint, startRadius: 0,
-                endCenter: self.gradientPoint, endRadius: self.gradientRadius, options: .drawsAfterEndLocation )
+        if let gradientColor = self.gradientColor {
+            UIGraphicsGetCurrentContext()?.drawRadialGradient(
+                    gradientColor, startCenter: self.gradientPoint, startRadius: 0,
+                    endCenter: self.gradientPoint, endRadius: self.gradientRadius, options: .drawsAfterEndLocation )
+        }
     }
 
     // MARK: --- ThemeObserver ---
 
     func didChangeTheme() {
-        self.setNeedsDisplay()
+        if case .gradient = self.mode {
+            self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
+                Theme.current.color.panel.get(), Theme.current.color.backdrop.get(),
+            ] as CFArray, locations: nil )
+        }
     }
 
     // MARK: --- Types ---
 
     enum Mode {
-        case gradient, backdrop, panel, tint
+        case gradient, backdrop, panel, tint, selection
     }
 }

@@ -18,16 +18,14 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     }
     public var image: UIImage? {
         didSet {
-            self.imageView.image = self.image
+            self.backgroundView.image = self.image
             self.backgroundView.layoutMargins.top = self.image == nil ? 40: 108
         }
     }
 
     private let backgroundView = MPBackgroundView()
-    private let imageView      = UIImageView()
     private let itemsView      = UIStackView()
     private lazy var items         = self.loadItems()
-    private lazy var imageGradient = CAGradientLayer( layer: self.imageView.layer )
 
     // MARK: --- Interface ---
 
@@ -59,15 +57,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     override func viewDidLoad() {
 
         // - View
-        self.imageGradient.colors = [
-            UIColor.black.with( alpha: .short ).cgColor,
-            UIColor.black.with( alpha: 0.05 ).cgColor,
-            UIColor.clear.cgColor ]
-        self.imageGradient.needsDisplayOnBoundsChange = true
-        self.imageView.layer.mask = self.imageGradient
-        self.imageView.contentMode = .scaleAspectFill
-        self.imageView.clipsToBounds = true
-
         self.backgroundView.layoutMargins.bottom = 40
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = 1
@@ -84,7 +73,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         }
 
         // - Hierarchy
-        self.backgroundView.addSubview( self.imageView )
         self.backgroundView.addSubview( self.itemsView )
         self.view.addSubview( self.backgroundView )
         for item in self.items {
@@ -94,10 +82,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         // - Layout
         LayoutConfiguration( view: self.backgroundView )
                 .constrain()
-                .activate()
-        LayoutConfiguration( view: self.imageView )
-                .constrain( anchors: .topBox )
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 200 ) }
                 .activate()
         LayoutConfiguration( view: self.itemsView )
                 .constrain( margins: true, anchors: .vertically )
@@ -118,11 +102,5 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         super.viewDidAppear( animated )
 
         self.setNeedsUpdate()
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        self.imageGradient.frame = self.imageView.bounds
     }
 }
