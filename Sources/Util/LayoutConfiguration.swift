@@ -428,7 +428,8 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                         self.inactiveValues[keyPath] = oldValue
                     }
 
-                    trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue, newValue )
+                    trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath,
+                         String( reflecting: oldValue ), String( reflecting: newValue ) )
                     self.target.view?.setValue( newValue, forKeyPath: keyPath )
                 }
                 Theme.current.observers.register( observer: self )
@@ -503,7 +504,8 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                     return
                 }
 
-                trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath, oldValue, newValue )
+                trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath,
+                     String( reflecting: oldValue ), String( reflecting: newValue ) )
                 self.target.view?.setValue( newValue, forKeyPath: keyPath )
             }
             Theme.current.observers.unregister( observer: self )
@@ -546,7 +548,8 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                 return
             }
 
-            trc( "[update] %@: %@, %@ -> %@", self.target, keyPath, oldValue, newValue )
+            trc( "[update] %@: %@, %@ -> %@", self.target, keyPath,
+                 String( reflecting: oldValue ), String( reflecting: newValue ) )
             self.target.view?.setValue( newValue, forKeyPath: keyPath )
         }
     }
