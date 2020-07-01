@@ -9,6 +9,7 @@ open class DataSource<E: Hashable> {
     private let tableView:      UITableView?
     private let collectionView: UICollectionView?
     private var sectionsOfElements = [ [ E? ] ]()
+    private var deferredUpdates    = false
 
     public init(tableView: UITableView? = nil, collectionView: UICollectionView? = nil, sectionsOfElements: [[E]]? = nil) {
         self.tableView = tableView
@@ -98,17 +99,21 @@ open class DataSource<E: Hashable> {
             for section in (0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count )).reversed() {
                 if section >= updatedSectionsOfElements.count {
                     trc( "delete section %d", section )
-                    self.sectionsOfElements.remove( at: section )
-                    self.collectionView?.deleteSections( IndexSet(integer: section ) )
-                    self.tableView?.deleteSections( IndexSet(integer: section ), with: .automatic )
+                    if !self.deferredUpdates {
+                        self.sectionsOfElements.remove( at: section )
+                    }
+                    self.collectionView?.deleteSections( IndexSet( integer: section ) )
+                    self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
                 }
             }
             for section in 0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count ) {
                 if section >= self.sectionsOfElements.count {
                     trc( "insert section %d", section )
-                    self.sectionsOfElements.append( [E?]() )
-                    self.collectionView?.insertSections( IndexSet(integer: section) )
-                    self.tableView?.insertSections( IndexSet(integer: section), with: .automatic )
+                    if !self.deferredUpdates {
+                        self.sectionsOfElements.append( [ E? ]() )
+                    }
+                    self.collectionView?.insertSections( IndexSet( integer: section ) )
+                    self.tableView?.insertSections( IndexSet( integer: section ), with: .automatic )
                 }
             }
 
@@ -119,21 +124,27 @@ open class DataSource<E: Hashable> {
                     if let fromIndexPath = self.indexPath( for: element, in: self.sectionsOfElements ) {
                         if toIndexPath != fromIndexPath {
                             trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
-                            self.sectionsOfElements[fromIndexPath.section].remove( at: fromIndexPath.item )
-                            self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item)
+                            if !self.deferredUpdates {
+                                self.sectionsOfElements[fromIndexPath.section].remove( at: fromIndexPath.item )
+                                self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item )
+                            }
                             self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
                             self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
                         }
                         else if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
                             trc( "reload item %@", fromIndexPath )
-                            self.sectionsOfElements[fromIndexPath.section][fromIndexPath.item] = element
+                            if !self.deferredUpdates {
+                                self.sectionsOfElements[fromIndexPath.section][fromIndexPath.item] = element
+                            }
                             self.collectionView?.reloadItems( at: [ fromIndexPath ] )
                             self.tableView?.reloadRows( at: [ fromIndexPath ], with: .automatic )
                         }
                     }
                     else {
                         trc( "insert item %@", toIndexPath )
-                        self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item)
+                        if !self.deferredUpdates {
+                            self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item )
+                        }
                         self.collectionView?.insertItems( at: [ toIndexPath ] )
                         self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
                     }
@@ -146,14 +157,21 @@ open class DataSource<E: Hashable> {
                     let fromIndexPath = IndexPath( item: item, section: section )
                     if self.indexPath( for: element, in: updatedSectionsOfElements ) == nil {
                         trc( "delete item %@", fromIndexPath )
-                        self.sectionsOfElements[section].remove(at: item)
+                        if !self.deferredUpdates {
+                            self.sectionsOfElements[section].remove( at: item )
+                        }
                         self.collectionView?.deleteItems( at: [ fromIndexPath ] )
                         self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
                     }
                 }
             }
 
-            assert(self.sectionsOfElements == updatedSectionsOfElements)
+            if self.deferredUpdates {
+                self.sectionsOfElements = updatedSectionsOfElements
+            }
+            else {
+                assert( self.sectionsOfElements == updatedSectionsOfElements )
+            }
         }
     }
 
@@ -182,10 +200,12 @@ open class DataSource<E: Hashable> {
             self.collectionView?.layoutIfNeeded()
 
             if !animated {
+                self.deferredUpdates = false
                 updates()
                 completion?( true )
             }
             else {
+                self.deferredUpdates = true
                 self.tableView?.performBatchUpdates( updates, completion: completion )
                 self.collectionView?.performBatchUpdates( updates, completion: completion )
             }
