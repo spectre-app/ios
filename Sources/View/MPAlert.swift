@@ -13,8 +13,8 @@ class MPAlert {
     private lazy var detailLabel   = UILabel()
 
     private lazy var appearanceConfiguration = LayoutConfiguration( view: self.view ) { active, inactive in
-        active.constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: -4 ) }
-        inactive.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.topAnchor ) }
+        active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: 4 ) }
+        inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
     }
     private lazy var activationConfiguration = LayoutConfiguration( view: self.view ) { (active, inactive) in
         active.apply( LayoutConfiguration( view: self.titleLabel ).set( Theme.current.font.title1.get(), forKey: "font" ) )
@@ -69,13 +69,15 @@ class MPAlert {
             if let root = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow {
                 root.addSubview( self.view )
 
-                LayoutConfiguration( view: self.view )
-                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
-                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
-                        .activate()
+                UIView.performWithoutAnimation {
+                    LayoutConfiguration( view: self.view )
+                            .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
+                            .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
+                            .activate()
 
-                self.appearanceConfiguration.deactivate()
-                self.activationConfiguration.deactivate()
+                    self.appearanceConfiguration.deactivate()
+                    self.activationConfiguration.deactivate()
+                }
                 UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
                     if dismissAutomatically {
                         self.automaticDismissalTask.request()

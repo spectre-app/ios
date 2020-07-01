@@ -360,9 +360,12 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     @discardableResult func activate(animationDuration duration: TimeInterval = -1, parent: LayoutConfiguration? = nil) -> Self {
         guard !self.activation
         else { return self }
-        guard duration < 0
-        else {
-            UIView.animate( withDuration: duration ) { self.activate( parent: parent ) }
+        if duration > 0 {
+            UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
+            return self
+        }
+        else if duration == 0 {
+            UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
             return self
         }
         trc( "%@: activate: %@", parent?.target, self )
@@ -459,9 +462,12 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     @discardableResult func deactivate(animationDuration duration: TimeInterval = -1, parent: LayoutConfiguration? = nil) -> Self {
         guard self.activation
         else { return self }
-        guard duration < 0
-        else {
+        if duration > 0 {
             UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
+            return self
+        }
+        else if duration == 0 {
+            UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
             return self
         }
         trc( "%@: deactivate: %@", parent?.target, self )
