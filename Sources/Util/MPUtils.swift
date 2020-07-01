@@ -216,9 +216,9 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
             case .none:
                 return "No Output"
             case .flat:
-                return "v1 (mpsites)"
+                return "v1 (sites)"
             case .JSON:
-                return "v2 (mpjson)"
+                return "v2 (json)"
             default:
                 fatalError( "Unsupported format: \(self.rawValue)" )
         }

@@ -10,7 +10,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
     let subtitleLabel = UILabel()
     let messageLabel  = UILabel()
     let formatControl = UISegmentedControl( items: MPMarshalFormat.allCases.compactMap { $0.description } )
-    let revealControl = UISegmentedControl( items: [ "Reveal Passwords", "Secure Export" ] )
+    let revealControl = UISegmentedControl( items: [ "Readable", "Secure" ] )
     let exportButton  = MPButton( identifier: "export #export", title: "Export User" )
     lazy var contentView = UIStackView( arrangedSubviews: [
         self.titleLabel,
