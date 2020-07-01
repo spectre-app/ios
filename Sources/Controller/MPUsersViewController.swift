@@ -72,7 +72,6 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         self.usersSpinner.indicatorStyle = .white
 
         self.appToolbar.axis = .horizontal
-        self.appToolbar.spacing = 12
         self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: UIImage.icon( "" ), background: false ) { _, _ in
             self.detailsHost.show( MPAppDetailsViewController() )
         } )

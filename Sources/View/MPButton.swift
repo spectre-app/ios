@@ -49,7 +49,7 @@ class MPButton: MPEffectView {
                         self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
                         self.squareButtonConstraint.isActive = true
                     case .image_icon:
-                        self.button.contentEdgeInsets = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
+                        self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
                         self.squareButtonConstraint.isActive = true
                     case .small:
                         self.button.contentEdgeInsets = UIEdgeInsets( top: 3, left: 5, bottom: 3, right: 5 )
