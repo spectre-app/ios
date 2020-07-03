@@ -177,7 +177,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         override func doUpdate() {
             super.doUpdate()
 
-            (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
+            (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
         }
     }
 
