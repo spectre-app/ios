@@ -12,8 +12,9 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.detailsController != nil
     }
 
-    private lazy var detailRecognizer   = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
-    private lazy var popupConfiguration = LayoutConfiguration( view: self.view )
+    private lazy var detailRecognizer    = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
+    private lazy var popupConfiguration  = LayoutConfiguration( view: self.view )
+    private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
     private let closeButton = MPButton.close( for: "details" )
     private var detailsController:      AnyMPDetailsViewController?
     private var contentSizeObservation: NSKeyValueObservation?
@@ -50,6 +51,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         // - View
         self.detailRecognizer.delegate = self
         self.scrollView.delegate = self
+        self.scrollView.keyboardDismissMode = .onDrag
         self.scrollView.contentInsetAdjustmentBehavior = .always
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
@@ -94,14 +96,28 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 .activate()
 
         self.popupConfiguration
-                .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
-                    active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                } )
                 .apply { active, inactive in
                     active.set( Theme.current.color.shade.get(), forKey: "backgroundColor" )
                     inactive.set( Theme.current.color.shade.get( alpha: 0 ), forKey: "backgroundColor" )
                 }
+                .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
+                    active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                } )
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        self.keyboardLayoutGuide.install( observer: { keyboardFrame in
+            self.additionalSafeAreaInsets.bottom = keyboardFrame.height
+        } )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        self.keyboardLayoutGuide.uninstall()
+
+        super.viewWillDisappear( animated )
     }
 
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {

@@ -40,8 +40,8 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     private let usersSpinner = MPSpinnerView()
     private let userToolbar  = UIToolbar( frame: .infinite )
     private let detailsHost  = MPDetailsHostController()
+    private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
     private var userToolbarConfiguration: LayoutConfiguration!
-    private var keyboardLayoutGuide:      KeyboardLayoutGuide!
     private var userEvent:                MPTracker.TimedEvent?
 
     // MARK: --- Life ---
@@ -168,19 +168,17 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
             inactive.set( 0, forKey: "alpha" )
         }
-
-        self.keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view ) { keyboardLayoutGuide in
-            [
-                self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
-                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 ),
-            ]
-        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        self.keyboardLayoutGuide.install()
+        self.keyboardLayoutGuide.install( constraints: { keyboardLayoutGuide in
+            [
+                self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
+                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 ),
+            ]
+        } )
 
         MPMarshal.shared.setNeedsReload()
     }

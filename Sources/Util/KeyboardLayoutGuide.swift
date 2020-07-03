@@ -9,7 +9,6 @@ class KeyboardLayoutGuide: UILayoutGuide {
     var observers   = [ Any ]()
     var constraints = [ NSLayoutConstraint ]()
     let view:                     UIView
-    let initializer:              ((UILayoutGuide) -> ([NSLayoutConstraint]?))?
     var keyboardTopConstraint:    NSLayoutConstraint!
     var keyboardLeftConstraint:   NSLayoutConstraint!
     var keyboardRightConstraint:  NSLayoutConstraint!
@@ -19,9 +18,8 @@ class KeyboardLayoutGuide: UILayoutGuide {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(in view: UIView, _ initializer: ((UILayoutGuide) -> ([NSLayoutConstraint]?))? = nil) {
+    init(in view: UIView) {
         self.view = view
-        self.initializer = initializer
         super.init()
 
         self.identifier = "KeyboardLayoutGuide"
@@ -31,15 +29,19 @@ class KeyboardLayoutGuide: UILayoutGuide {
         self.keyboardBottomConstraint = self.bottomAnchor.constraint( equalTo: self.view.bottomAnchor )
     }
 
+    /**
+     * Install the layout guide into the view.
+     * Optionally, install constraints onto the layout guide and/or monitor the keyboard frame in the view's coordinate space.
+     */
     @discardableResult
-    func install() -> Self {
+    func install(constraints: ((UILayoutGuide) -> [NSLayoutConstraint]?)? = nil, observer: ((CGRect) -> Void)? = nil) -> Self {
         self.uninstall()
         self.view.addLayoutGuide( self )
         self.keyboardTopConstraint.isActive = true
         self.keyboardLeftConstraint.isActive = true
         self.keyboardRightConstraint.isActive = true
         self.keyboardBottomConstraint.isActive = true
-        self.initializer?( self ).flatMap { self.constraints.append( contentsOf: $0 ) }
+        constraints?( self ).flatMap { self.constraints.append( contentsOf: $0 ) }
 
         self.observers.append( NotificationCenter.default.addObserver( forName: UIResponder.keyboardWillChangeFrameNotification, object: nil, queue: .main ) {
             guard let keyboardScreenFrame = ($0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
@@ -50,6 +52,7 @@ class KeyboardLayoutGuide: UILayoutGuide {
             self.keyboardLeftConstraint.constant = keyboardFrame.minX
             self.keyboardRightConstraint.constant = keyboardFrame.maxX - self.view.bounds.maxX
             self.keyboardBottomConstraint.constant = keyboardFrame.maxY - self.view.bounds.maxY
+            observer?( keyboardFrame )
         } )
         self.observers.append( NotificationCenter.default.addObserver( forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main ) {
             let duration = ($0.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0.3
