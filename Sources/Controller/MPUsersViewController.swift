@@ -173,14 +173,18 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
+        MPMarshal.shared.setNeedsReload()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
         self.keyboardLayoutGuide.install( constraints: { keyboardLayoutGuide in
             [
                 self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
                 self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 ),
             ]
         } )
-
-        MPMarshal.shared.setNeedsReload()
     }
 
     override func viewWillDisappear(_ animated: Bool) {

@@ -547,9 +547,18 @@ extension CGSize {
         CGSize( width: lhs.width + rhs.width, height: lhs.height + rhs.height )
     }
 
+    public static func -(lhs: CGSize, rhs: CGSize) -> CGSize {
+        CGSize( width: lhs.width - rhs.width, height: lhs.height - rhs.height )
+    }
+
     public static func +=(lhs: inout CGSize, rhs: CGSize) {
         lhs.width += rhs.width
         lhs.height += rhs.height
+    }
+
+    public static func -=(lhs: inout CGSize, rhs: CGSize) {
+        lhs.width -= rhs.width
+        lhs.height -= rhs.height
     }
 
     init(_ point: CGPoint) {
@@ -570,7 +579,51 @@ extension CGSize {
     }
 }
 
+extension CGPoint {
+    public static func +(lhs: CGPoint, rhs: CGPoint) -> CGPoint {
+        CGPoint( x: lhs.x + rhs.x, y: lhs.y + rhs.y )
+    }
+
+    public static func -(lhs: CGPoint, rhs: CGPoint) -> CGPoint {
+        CGPoint( x: lhs.x - rhs.x, y: lhs.y - rhs.y )
+    }
+
+    public static func +=(lhs: inout CGPoint, rhs: CGPoint) {
+        lhs.x += rhs.x
+        lhs.y += rhs.y
+    }
+
+    public static func -=(lhs: inout CGPoint, rhs: CGPoint) {
+        lhs.x -= rhs.x
+        lhs.y -= rhs.y
+    }
+}
+
 extension UIEdgeInsets {
+    public static func +(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+        UIEdgeInsets( top: max( lhs.top, rhs.top ), left: max( lhs.left, rhs.left ),
+                      bottom: max( lhs.bottom, rhs.bottom ), right: max( lhs.right, rhs.right ) )
+    }
+
+    public static func -(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+        UIEdgeInsets( top: min( lhs.top, rhs.top ), left: min( lhs.left, rhs.left ),
+                      bottom: min( lhs.bottom, rhs.bottom ), right: min( lhs.right, rhs.right ) )
+    }
+
+    public static func +=(lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
+        lhs.top = max( lhs.top, rhs.top )
+        lhs.left = max( lhs.left, rhs.left )
+        lhs.bottom = max( lhs.bottom, rhs.bottom )
+        lhs.right = max( lhs.right, rhs.right )
+    }
+
+    public static func -=(lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
+        lhs.top = min( lhs.top, rhs.top )
+        lhs.left = min( lhs.left, rhs.left )
+        lhs.bottom = min( lhs.bottom, rhs.bottom )
+        lhs.right = min( lhs.right, rhs.right )
+    }
+
     var width:  CGFloat {
         self.left + self.right
     }
@@ -579,6 +632,27 @@ extension UIEdgeInsets {
     }
     var size:   CGSize {
         CGSize( width: self.width, height: self.height )
+    }
+
+    init(in insetRect: CGRect, subtracting subtractRect: CGRect) {
+        if !insetRect.intersects( subtractRect ) {
+            self = .zero
+        }
+        else {
+            let topLeftBounds     = insetRect.topLeft
+            let bottomRightBounds = insetRect.bottomRight
+            let topLeftFrom       = subtractRect.topLeft
+            let bottomRightFrom   = subtractRect.bottomRight
+            let topLeftInset      = bottomRightFrom - topLeftBounds
+            let bottomRightInset  = bottomRightBounds - topLeftFrom
+
+            let top    = topLeftFrom.y <= topLeftBounds.y && bottomRightFrom.y < bottomRightBounds.y ? max( 0, topLeftInset.y ): 0
+            let left   = topLeftFrom.x <= topLeftBounds.x && bottomRightFrom.x < bottomRightBounds.x ? max( 0, topLeftInset.x ): 0
+            let bottom = topLeftFrom.y > topLeftBounds.y && bottomRightFrom.y >= bottomRightBounds.y ? max( 0, bottomRightInset.y ): 0
+            let right  = topLeftFrom.x > topLeftBounds.x && bottomRightFrom.x >= bottomRightBounds.x ? max( 0, bottomRightInset.x ): 0
+
+            self.init( top: top, left: left, bottom: bottom, right: right )
+        }
     }
 }
 
@@ -673,40 +747,40 @@ extension Decimal {
         // To speed convergence, using ln(z) = y + ln(A), A = z / e^y approximation for values larger than 1.5
         let approximateInput = Double( truncating: self as NSNumber )
         if approximateInput > 1.5 {
-            let y = Int( ceil( Darwin.log( approximateInput ) ) );
+            let y       = Int( ceil( Darwin.log( approximateInput ) ) )
             // Using integer because of more precise powers for integers
             let smaller = self / pow( Decimal.e, y )
             return Decimal( y ) + smaller.ln()
         }
         if approximateInput < 0.4 {
-            let y = Int( floor( Darwin.log( approximateInput ) ) );
+            let y       = Int( floor( Darwin.log( approximateInput ) ) )
             // Using integer because of more precise powers for integers
             let smaller = self / pow( Decimal.e, y )
             return Decimal( y ) + smaller.ln()
         }
 
         let seriesConstant       = (self - 1) / (self + 1)
-        var currentConstantValue = seriesConstant, final = seriesConstant;
+        var currentConstantValue = seriesConstant, final = seriesConstant
         for i in stride( from: 3, through: 93, by: 2 ) {
             currentConstantValue *= seriesConstant
 
             // For some reason, underflow never triggers an error on NSDecimalMultiply, so you need to check for when values get too small and abort convergence manually at that point
-            var rounded: Decimal = 0;
-            NSDecimalRound( &rounded, &currentConstantValue, 80, .bankers );
+            var rounded: Decimal = 0
+            NSDecimalRound( &rounded, &currentConstantValue, 80, .bankers )
             if rounded == 0 {
-                break;
+                break
             }
 
             currentConstantValue *= seriesConstant
-            NSDecimalRound( &rounded, &currentConstantValue, 80, .bankers );
+            NSDecimalRound( &rounded, &currentConstantValue, 80, .bankers )
             if rounded == 0 {
-                break;
+                break
             }
 
             var currentFactor = currentConstantValue / Decimal( i )
-            NSDecimalRound( &rounded, &currentFactor, 80, .bankers );
+            NSDecimalRound( &rounded, &currentFactor, 80, .bankers )
             if rounded == 0 {
-                break;
+                break
             }
 
             final += currentFactor

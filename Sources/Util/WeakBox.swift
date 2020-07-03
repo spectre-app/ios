@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct WeakBox<E>: Equatable {
+public class WeakBox<E>: Equatable {
     private weak var _value: AnyObject?
 
     public var value: E? {
@@ -26,5 +26,11 @@ public struct WeakBox<E>: Equatable {
 
     public static func ==(lhs: WeakBox<E>, rhs: E) -> Bool {
         lhs._value === rhs as AnyObject
+    }
+}
+
+public class WeakKey<E : Hashable>: WeakBox<E>, Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine( self.value?.hashValue )
     }
 }

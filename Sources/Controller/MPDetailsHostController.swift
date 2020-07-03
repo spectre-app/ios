@@ -51,7 +51,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         // - View
         self.detailRecognizer.delegate = self
         self.scrollView.delegate = self
-        self.scrollView.keyboardDismissMode = .onDrag
+        self.scrollView.keyboardDismissMode = .interactive
         self.scrollView.contentInsetAdjustmentBehavior = .always
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
@@ -106,11 +106,11 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 } )
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear( animated )
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
 
-        self.keyboardLayoutGuide.install( observer: { keyboardFrame in
-            self.additionalSafeAreaInsets.bottom = keyboardFrame.height
+        self.keyboardLayoutGuide.install( update: { keyboardFrame, keyboardInsets in
+            self.additionalSafeAreaInsets = keyboardInsets
         } )
     }
 

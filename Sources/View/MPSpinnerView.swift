@@ -181,7 +181,7 @@ public class MPSpinnerView: UICollectionView {
         }
 
         override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-            guard let collectionView = self.collectionView
+            guard let collectionView = self.collectionView, collectionView.bounds.height > 0
             else { return nil }
 
             let fromItem = Int( rect.minY / collectionView.bounds.height ), toItem = Int( rect.maxY / collectionView.bounds.height )
