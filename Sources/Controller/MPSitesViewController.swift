@@ -78,7 +78,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
         self.sitesTableView.observers.register( observer: self )
         self.sitesTableView.keyboardDismissMode = .onDrag
-        self.sitesTableView.contentInsetAdjustmentBehavior = .never
+        self.sitesTableView.contentInsetAdjustmentBehavior = .always
 
         // - Hierarchy
         self.addChild( self.detailsHost )
@@ -117,13 +117,10 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
         // Offset sites content's top inset to make space for the top container.
         let top = self.sitesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y - 8
-        self.sitesTableView.contentInset = UIEdgeInsets(
-                top: max( 0, top - self.sitesTableView.bounds.origin.y ), left: 0, bottom: 0, right: 0 )
+        self.sitesTableView.contentInset.top = max( 0, top - self.sitesTableView.bounds.origin.y - self.sitesTableView.safeAreaInsets.top )
 
         // Add space consumed by header and top container to details safe area.
-        self.detailsHost.additionalSafeAreaInsets = UIEdgeInsets(
-                top: self.topContainer.frame.maxY
-                        - self.view.safeAreaInsets.top, left: 0, bottom: 0, right: 0 )
+        self.detailsHost.additionalSafeAreaInsets.top = self.topContainer.frame.maxY - self.view.safeAreaInsets.top
     }
 
     // MARK: --- MPSitesViewObserver ---
