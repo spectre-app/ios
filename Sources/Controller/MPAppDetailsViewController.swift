@@ -40,7 +40,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
           Item<MPConfig>( subitems: [
               PremiumItem(),
           ] ), SeparatorItem(),
-          ThemeItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
+          ThemeItem(), SeparatorItem(),
           InfoItem() ]
     }
 
@@ -138,8 +138,8 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                         """
                         Personalize the application's appearance.
                         """
-                    },
-                    hidden: { !$0.premium } )
+                    } )
+            self.addBehaviour( RequiresPremium() )
         }
 
         override func didLoad(collectionView: UICollectionView) {

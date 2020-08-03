@@ -97,8 +97,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             """
                             Yearly budget of the primary attacker persona you're seeking to repel (@ \(cost_per_kwh)$/kWh).
                             """
-                        },
-                        hidden: { _ in !appConfig.premium } )
+                        } )
+            self.addBehaviour( RequiresPremium() )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -162,8 +162,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             Sign in using biometrics (eg. TouchID, FaceID).
                             Saves your master key in the device's key chain.
                             """
-                        },
-                        hidden: { _ in !appConfig.premium } ) ] )
+                        } )
+                        .addBehaviour( RequiresPremium() ) ] )
         }
     }
 

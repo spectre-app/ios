@@ -44,6 +44,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
                     Freshchat.sharedInstance().showConversations( viewController, with: options )
                 }
             }
+            self.addBehaviour( RequiresPremium() )
         }
     }
 
@@ -51,10 +52,10 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
         init() {
             super.init( identifier: "logbook #crash",
                         value: { _ in (label: "Force Crash", image: nil) },
-                        caption: { _ in "Terminate the app with a crash, triggering a crash report on the next launch." },
-                        hidden: { _ in !appConfig.isDebug } ) { _ in
+                        caption: { _ in "Terminate the app with a crash, triggering a crash report on the next launch." } ) { _ in
                 fatalError( "Forced Crash" )
             }
+            self.addBehaviour( RequiresDebug() )
         }
     }
 

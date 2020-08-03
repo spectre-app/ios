@@ -144,6 +144,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             self.detailsController = detailsController
 
             if let detailsController = self.detailsController {
+                detailsController.hostController = self
                 self.addChild( detailsController )
                 detailsController.beginAppearanceTransition( true, animated: true )
                 self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
@@ -166,11 +167,13 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
                 UIView.animate( withDuration: .short, animations: {
+                    self.scrollView.contentOffset = .zero
                     self.popupConfiguration.deactivate()
                 }, completion: { finished in
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
+                    detailsController.hostController = nil
                     self.detailsController = nil
                     completion?()
                 } )
@@ -178,7 +181,10 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             return true
         }
         else {
-            completion?()
+            DispatchQueue.main.perform {
+                self.scrollView.contentOffset = .zero
+                completion?()
+            }
             return false
         }
     }

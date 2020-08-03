@@ -6,7 +6,7 @@
 import UIKit
 
 class Item<M>: NSObject {
-    public var viewController: UIViewController? {
+    public var viewController: AnyMPDetailsViewController? {
         didSet {
             ({ self.subitems.forEach { $0.viewController = self.viewController } }())
         }
@@ -18,11 +18,11 @@ class Item<M>: NSObject {
             self.setNeedsUpdate()
         }
     }
+    private var behaviours = [ Behaviour<M> ]()
 
-    private let title:          String?
-    private let captionFactory: (M) -> CustomStringConvertible?
-    private let hiddenFactory:  (M) -> Bool
-    private let subitems:       [Item<M>]
+    private let title:           String?
+    private let captionProvider: (M) -> CustomStringConvertible?
+    private let subitems:        [Item<M>]
     private (set) lazy var view = createItemView()
 
     private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
@@ -32,12 +32,12 @@ class Item<M>: NSObject {
     }
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
-         caption captionFactory: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden hiddenFactory: @escaping (M) -> Bool = { _ in false }) {
+         caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         enabled enabledProvider: @escaping (M) -> Bool = { _ in true },
+         hidden hiddenProvider: @escaping (M) -> Bool = { _ in false }) {
         self.title = title
         self.subitems = subitems
-        self.captionFactory = captionFactory
-        self.hiddenFactory = hiddenFactory
+        self.captionProvider = captionProvider
     }
 
     func createItemView() -> ItemView<M> {
@@ -52,7 +52,15 @@ class Item<M>: NSObject {
         self.updateTask.request()
     }
 
+    @discardableResult
+    func addBehaviour(_ behaviour: Behaviour<M>) -> Self {
+        self.behaviours.append( behaviour )
+        behaviour.didInstall( into: self )
+        return self
+    }
+
     func doUpdate() {
+        self.behaviours.forEach { $0.didUpdate( item: self ) }
         self.subitems.forEach { $0.doUpdate() }
         self.view.update()
     }
@@ -86,7 +94,6 @@ class Item<M>: NSObject {
             self.titleLabel.textAlignment = .center
             self.titleLabel => \.font => Theme.current.font.headline
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
-            self.titleLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             self.subitemsView.axis = .horizontal
             self.subitemsView.distribution = .fillEqually
@@ -100,16 +107,17 @@ class Item<M>: NSObject {
             self.captionLabel => \.font => Theme.current.font.caption1
             self.captionLabel.numberOfLines = 0
             self.captionLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
-            self.captionLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             // - Hierarchy
             self.addSubview( self.contentView )
-            self.contentView.addArrangedSubview( self.titleLabel )
+            self.contentView.addArrangedSubview(
+                    MPMarginView( for: self.titleLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
             if let valueView = self.valueView {
                 self.contentView.addArrangedSubview( valueView )
             }
             self.contentView.addArrangedSubview( self.subitemsView )
-            self.contentView.addArrangedSubview( self.captionLabel )
+            self.contentView.addArrangedSubview(
+                    MPMarginView( for: self.captionLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
@@ -137,12 +145,18 @@ class Item<M>: NSObject {
         }
 
         func update() {
-            self.isHidden = self.item.model.flatMap { self.item.hiddenFactory( $0 ) } ?? true
+            let behaveHidden = self.item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: self.item ) ?? $0) }
+            let behaveEnabled = self.item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: self.item ) ?? $0) }
+
+            self.isHidden = behaveHidden
+            self.alpha = behaveEnabled ? 1: .short
+            self.contentView.isUserInteractionEnabled = behaveEnabled
+            self.tintAdjustmentMode = behaveEnabled ? .automatic: .dimmed
 
             self.titleLabel.text = self.item.title
             self.titleLabel.isHidden = self.item.title == nil
 
-            self.captionLabel.text = self.item.model.flatMap { self.item.captionFactory( $0 )?.description }
+            self.captionLabel.text = self.item.model.flatMap { self.item.captionProvider( $0 )?.description }
             self.captionLabel.isHidden = self.captionLabel.text == nil
 
             for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
@@ -159,6 +173,82 @@ class Item<M>: NSObject {
             }
             self.subitemsView.isHidden = self.subitemsView.arrangedSubviews.count == 0
         }
+    }
+}
+
+class Behaviour<M> {
+    private let hiddenProvider:  ((M) -> Bool)?
+    private let enabledProvider: ((M) -> Bool)?
+
+    init(hidden hiddenProvider: ((M) -> Bool)? = nil, enabled enabledProvider: ((M) -> Bool)? = nil) {
+        self.hiddenProvider = hiddenProvider
+        self.enabledProvider = enabledProvider
+    }
+
+    func didInstall(into item: Item<M>) {
+        self.didUpdate( item: item )
+    }
+
+    func didUpdate(item: Item<M>) {
+    }
+
+    func isHidden(item: Item<M>) -> Bool? {
+        if let model = item.model, let hiddenProvider = self.hiddenProvider {
+            return hiddenProvider( model )
+        }
+
+        return nil
+    }
+
+    func isEnabled(item: Item<M>) -> Bool? {
+        if let model = item.model, let enabledProvider = self.enabledProvider {
+            return enabledProvider( model )
+        }
+
+        return nil
+    }
+}
+
+class TapBehaviour<M>: Behaviour<M> {
+    var tapRecognizers = [ UIGestureRecognizer: Item<M> ]()
+
+    override func didInstall(into item: Item<M>) {
+        super.didInstall( into: item )
+
+        let tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didReceiveGesture ) )
+        self.tapRecognizers[tapRecognizer] = item
+        item.view.addGestureRecognizer( tapRecognizer )
+    }
+
+    @objc func didReceiveGesture(_ recognizer: UIGestureRecognizer) {
+        if let item = self.tapRecognizers[recognizer], recognizer.state == .ended {
+            self.doTapped( item: item )
+        }
+    }
+
+    func doTapped(item: Item<M>) {
+    }
+}
+
+class RequiresPremium<M>: TapBehaviour<M> {
+    init() {
+        super.init( enabled: { _ in appConfig.premium } )
+    }
+
+    override func didUpdate(item: Item<M>) {
+        super.didUpdate( item: item )
+
+        self.tapRecognizers.filter { $0.value == item }.forEach { $0.key.isEnabled = !appConfig.premium }
+    }
+
+    override func doTapped(item: Item<M>) {
+        item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
+    }
+}
+
+class RequiresDebug<M>: Behaviour<M> {
+    init() {
+        super.init( hidden: { _ in !appConfig.isDebug } )
     }
 }
 
@@ -189,17 +279,16 @@ class SeparatorItem<M>: Item<M> {
 }
 
 class ValueItem<M, V>: Item<M> {
-    let valueFactory: (M) -> V?
+    let valueProvider: (M) -> V?
     var value: V? {
-        self.model.flatMap { self.valueFactory( $0 ) }
+        self.model.flatMap { self.valueProvider( $0 ) }
     }
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
-         value valueFactory: @escaping (M) -> V? = { _ in nil },
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false }) {
-        self.valueFactory = valueFactory
-        super.init( title: title, subitems: subitems, caption: caption, hidden: hidden )
+         value valueProvider: @escaping (M) -> V? = { _ in nil },
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+        self.valueProvider = valueProvider
+        super.init( title: title, subitems: subitems, caption: caption )
     }
 }
 
@@ -251,6 +340,39 @@ class LabelItem<M>: ValueItem<M, Any> {
     }
 }
 
+class ImageItem<M>: ValueItem<M, UIImage> {
+    override func createItemView() -> ImageItemView<M> {
+        ImageItemView<M>( withItem: self )
+    }
+
+    class ImageItemView<M>: ItemView<M> {
+        let item: ImageItem
+        let valueImage = UIImageView()
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item<M>) {
+            self.item = item as! ImageItem
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.valueImage.setContentHuggingPriority( .defaultHigh, for: .horizontal )
+            self.valueImage.setContentHuggingPriority( .defaultHigh, for: .vertical )
+            return self.valueImage
+        }
+
+        override func update() {
+            super.update()
+
+            self.valueImage.image = self.item.value
+            self.valueImage.isHidden = self.valueImage.image == nil
+        }
+    }
+}
+
 class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool)> {
     let identifier: String
     let update:     (M, Bool) -> Void
@@ -258,12 +380,11 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
     init(identifier: String, title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (icon: UIImage?, selected: Bool, enabled: Bool),
          update: @escaping (M, Bool) -> Void = { _, _ in },
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.identifier = identifier
         self.update = update
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> ToggleItemView<M> {
@@ -310,12 +431,11 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
     init(identifier: String, title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> (label: String?, image: UIImage?),
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false },
          action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
         self.identifier = identifier
         self.action = action
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> ButtonItemView<M> {
@@ -399,11 +519,10 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     init(title: String? = nil, placeholder: String?, subitems: [Item<M>] = [],
          value: @escaping (M) -> String? = { _ in nil },
          update: ((M, String) -> Void)? = nil,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.placeholder = placeholder
         self.update = update
-        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> FieldItemView<M> {
@@ -459,10 +578,9 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> V? = { _ in nil },
          update: ((M, V) -> Void)? = nil,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.update = update
-        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> AreaItemView<M> {
@@ -535,20 +653,19 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 }
 
 class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
-    let update:     (M, V) -> Void
-    let step:       V, min: V, max: V
+    let update: (M, V) -> Void
+    let step:   V, min: V, max: V
 
     init(title: String? = nil, subitems: [Item<M>] = [],
          value: @escaping (M) -> V? = { _ in nil },
          update: @escaping (M, V) -> Void = { _, _ in },
          step: V, min: V, max: V,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.update = update
         self.step = step
         self.min = min
         self.max = max
-        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> StepperItemView<M> {
@@ -566,7 +683,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
                 self.item.update( model, value - self.item.step )
             }
         }
-        lazy var upButton = MPButton( title: "+", background: false) { [unowned self] _, _ in
+        lazy var upButton = MPButton( title: "+", background: false ) { [unowned self] _, _ in
             if let model = self.item.model,
                let value = self.item.value,
                value < self.item.max {
@@ -634,13 +751,12 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
     init(identifier: String, title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
          value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in },
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.identifier = identifier
         self.values = values
         self.update = update
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption, hidden: hidden )
+        super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
     override func createItemView() -> PickerItemView<M> {
@@ -695,7 +811,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
         private func updateSelection(animated: Bool = UIView.areAnimationsEnabled) {
             if let model = self.item.model,
-               let selectedValue = self.item.valueFactory( model ),
+               let selectedValue = self.item.valueProvider( model ),
                let selectedIndexPath = self.dataSource.indexPath( for: selectedValue ) {
                 if self.collectionView.indexPathsForSelectedItems == [ selectedIndexPath ] {
                     self.collectionView.scrollToItem( at: selectedIndexPath, at: .centeredHorizontally, animated: animated )
@@ -829,11 +945,10 @@ class ListItem<M, V: Hashable>: Item<M> {
     var deletable = false
 
     init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         hidden: @escaping (M) -> Bool = { _ in false }) {
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.values = values
 
-        super.init( title: title, subitems: subitems, caption: caption, hidden: hidden )
+        super.init( title: title, subitems: subitems, caption: caption )
     }
 
     func didLoad(tableView: UITableView) {

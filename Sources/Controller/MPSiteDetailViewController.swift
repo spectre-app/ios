@@ -13,8 +13,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     override func loadItems() -> [Item<MPSite>] {
         [ PasswordCounterItem(), SeparatorItem(),
           PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
-          LoginTypeItem(), LoginResultItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
-          SecurityAnswerItem(), SeparatorItem( hidden: { _ in !appConfig.premium } ),
+          LoginTypeItem(), LoginResultItem(), SeparatorItem(),
+          SecurityAnswerItem(), SeparatorItem(),
           URLItem(), SeparatorItem(),
           InfoItem() ]
     }
@@ -127,8 +127,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             super.init( identifier: "site >loginType", title: "User Name Type 🅿",
                         values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.loginType },
-                        update: { $0.loginType = $1 },
-                        hidden: { _ in !appConfig.premium } )
+                        update: { $0.loginType = $1 } )
+            self.addBehaviour( RequiresPremium() )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -161,8 +161,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                                         mperror( title: "Couldn't update site name", error: error )
                                 }
                             }
-                        },
-                        hidden: { _ in !appConfig.premium } )
+                        } )
+            self.addBehaviour( RequiresPremium() )
         }
 
         override func createItemView() -> FieldItemView<MPSite> {
@@ -210,9 +210,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             site.questions.append( MPQuestion( site: site, keyword: keyword ) )
                         } )
                         item.viewController?.present( controller, animated: true )
-                    } ],
-                    hidden: { _ in !appConfig.premium } )
-
+                    } ] )
+            self.addBehaviour( RequiresPremium() )
             self.deletable = true
         }
 

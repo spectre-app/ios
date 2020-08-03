@@ -7,6 +7,7 @@ import Foundation
 import UIKit
 
 class AnyMPDetailsViewController: MPViewController {
+    var hostController : MPDetailsHostController?
 }
 
 class MPDetailsViewController<M>: AnyMPDetailsViewController {
