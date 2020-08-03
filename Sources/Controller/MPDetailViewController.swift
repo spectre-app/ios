@@ -14,7 +14,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     public let model: M
     public var color: UIColor? {
         didSet {
-            self.backgroundView.backgroundColor = self.color
+            self.backgroundView => \.backgroundColor => Theme.current.color.panel.transform { $0?.with( hue: self.color?.hue ) }
         }
     }
     public var image: UIImage? {

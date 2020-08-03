@@ -25,8 +25,7 @@ class MPBackgroundView: UIView, ThemeObserver {
                     self.tintColorDidChange()
                     self.gradientColor = nil
 
-                case .selection:
-                    self => \.backgroundColor => Theme.current.color.selection
+                case .custom:
                     self.gradientColor = nil
             }
         }
@@ -149,6 +148,6 @@ class MPBackgroundView: UIView, ThemeObserver {
     // MARK: --- Types ---
 
     enum Mode {
-        case gradient, backdrop, panel, tint, selection
+        case gradient, backdrop, panel, tint, custom
     }
 }

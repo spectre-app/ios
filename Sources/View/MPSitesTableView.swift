@@ -276,7 +276,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.update()
             }
         }
-        private let backgroundImage = MPBackgroundView( mode: .selection )
+        private let backgroundImage = MPBackgroundView( mode: .custom )
         private let modeButton      = MPButton( identifier: "sites.site #mode", image: UIImage.icon( "" ), background: false )
         private let settingsButton  = MPButton( identifier: "sites.site #site_settings", image: UIImage.icon( "" ), background: false )
         private let newButton       = MPButton( identifier: "sites.site #add", image: UIImage.icon( "" ), background: false )
@@ -435,6 +435,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         func siteDidChange(_ site: MPSite) {
             DispatchQueue.main.perform {
+                self.backgroundImage => \.backgroundColor => Theme.current.color.selection.transform { $0?.with( hue: self.site?.color?.hue ) }
                 self.backgroundImage.image = self.site?.image
 
                 if let resultKey = self.result?.attributedKey {
