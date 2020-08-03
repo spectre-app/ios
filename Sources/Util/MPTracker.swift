@@ -15,7 +15,7 @@ class MPTracker: MPConfigObserver {
         if let sentryDSN = decrypt( secret: sentryDSN ) {
             SentrySDK.start( options: [
                 "dsn": sentryDSN,
-                "debug": appConfig.isDebug,
+                "debug": false, // appConfig.isDebug,
                 "environment": appConfig.isDebug ? "Development": appConfig.isPublic ? "Public": "Private",
                 "enabled": appConfig.diagnostics,
                 "enableAutoSessionTracking": true,
