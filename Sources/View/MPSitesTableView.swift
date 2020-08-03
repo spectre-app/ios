@@ -303,7 +303,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.clipsToBounds = true
             self.backgroundColor = .clear
 
-            self.backgroundImage.imageView.alpha = .short
             self.selectedBackgroundView = self.backgroundImage
 
             self.contentView.insetsLayoutMarginsFromSafeArea = false
