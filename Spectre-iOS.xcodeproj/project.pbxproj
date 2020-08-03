@@ -22,6 +22,7 @@
 		93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */; };
 		93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */; };
 		93D3929C87281367272F69F1 /* MPProgramState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* MPProgramState.swift */; };
+		93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
 		93D3930DDA8EE099DDBC2D78 /* Observers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3900653D9D95598C41DFA /* Observers.swift */; };
 		93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPURLUtils.swift */; };
 		93D393C161EB8FA55FA5174F /* MPSitesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */; };
@@ -234,6 +235,7 @@
 		93D39424D508440582DC7FD0 /* MPSpinnerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSpinnerView.swift; sourceTree = "<group>"; };
 		93D39477D638F3147366C029 /* MPAnimations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAnimations.swift; sourceTree = "<group>"; };
 		93D394B019A4203EF763DBEA /* MPUserDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUserDetailViewController.swift; sourceTree = "<group>"; };
+		93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FontAwesome.swift; sourceTree = "<group>"; };
 		93D39564D6408073D59CDB6A /* MPButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPButton.swift; sourceTree = "<group>"; };
 		93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPExportViewController.swift; sourceTree = "<group>"; };
 		93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailsHostController.swift; sourceTree = "<group>"; };
@@ -601,6 +603,7 @@
 				93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */,
 				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
 				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
+				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1515,6 +1518,7 @@
 				93D396F895C0A16CF1FDAB79 /* UIContextMenuConfiguration+MP.swift in Sources */,
 				93D39FD2F39B2AFE27A88A97 /* MPSecrets.swift in Sources */,
 				93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */,
+				93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

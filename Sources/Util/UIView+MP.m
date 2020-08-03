@@ -24,12 +24,12 @@
 
 - (UIEdgeInsets)alignmentRectOutsets {
 
-    return [objc_getAssociatedObject( self, @selector(alignmentRectOutsets) ) UIEdgeInsetsValue];
+    return [objc_getAssociatedObject( self, @selector( alignmentRectOutsets ) ) UIEdgeInsetsValue];
 }
 
 - (void)setAlignmentRectOutsets:(UIEdgeInsets)alignmentRectOutsets {
 
-    objc_setAssociatedObject( self, @selector(alignmentRectOutsets),
+    objc_setAssociatedObject( self, @selector( alignmentRectOutsets ),
             [NSValue valueWithUIEdgeInsets:alignmentRectOutsets], OBJC_ASSOCIATION_RETAIN );
 }
 

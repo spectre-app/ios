@@ -329,25 +329,6 @@ extension String.StringInterpolation {
     }
 }
 
-public enum IconStyle {
-    case brands, duotone, solid, light, regular
-
-    var fontName: String {
-        switch self {
-            case .brands:
-                return "FontAwesome5Brands-Regular"
-            case .duotone:
-                return "FontAwesome5Duotone-Solid"
-            case .solid:
-                return "FontAwesome5Pro-Solid"
-            case .light:
-                return "FontAwesome5Pro-Light"
-            case .regular:
-                return "FontAwesome5Pro-Regular"
-        }
-    }
-}
-
 extension Double {
     public static let φ     = 1.618 // Golden Ratio
     public static let long  = 1 / φ
@@ -364,38 +345,6 @@ extension Float {
     public static let φ     = Float( Double.φ ) // Golden Ratio
     public static let long  = 1 / φ
     public static let short = (1 - long)
-}
-
-extension UIImage {
-
-    public static func icon(_ icon: String) -> UIImage? {
-        guard let font = UIFont( name: IconStyle.duotone.fontName, size: 22 )
-        else { return nil }
-
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = NSTextAlignment.center
-        let attributedIcon = NSAttributedString( string: icon, attributes: [
-            NSAttributedString.Key.font: font,
-            NSAttributedString.Key.paragraphStyle: paragraph,
-            NSAttributedString.Key.foregroundColor: UIColor.black,
-        ] )
-        var attributedTone: NSAttributedString?
-        if let iconScalar = icon.unicodeScalars.first, let toneScalar = Unicode.Scalar( 0x100000 + iconScalar.value ) {
-            attributedTone = NSAttributedString( string: String( String.UnicodeScalarView( [ toneScalar ] ) ), attributes: [
-                NSAttributedString.Key.font: font,
-                NSAttributedString.Key.paragraphStyle: paragraph,
-                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: 0.5 ),
-            ] )
-        }
-
-        let size = attributedIcon.size().union( attributedTone?.size() ?? .zero )
-        UIGraphicsBeginImageContextWithOptions( size, false, 0 )
-        defer { UIGraphicsEndImageContext() }
-        attributedIcon.draw( in: CGRect( origin: .zero, size: size ) )
-        attributedTone?.draw( in: CGRect( origin: .zero, size: size ) )
-
-        return UIGraphicsGetImageFromCurrentImageContext()?.withRenderingMode( .alwaysTemplate )
-    }
 }
 
 extension UITraitCollection {
@@ -447,36 +396,43 @@ extension UIColor {
     // Determine how common a color is in a list of colors.
     // Compares the color to the other colors only by average hue distance.
     func similarityOfHue(in colors: [UIColor]) -> CGFloat {
-        let swatchHue = self.hue()
+        let swatchHue = self.hue
 
         var commonality: CGFloat = 0
         for color in colors {
-            let colorHue = color.hue()
+            let colorHue = color.hue
             commonality += abs( colorHue - swatchHue )
         }
 
         return commonality / CGFloat( colors.count )
     }
 
-    func hue() -> CGFloat {
+    var hue : CGFloat {
         var hue: CGFloat = 0
         self.getHue( &hue, saturation: nil, brightness: nil, alpha: nil )
 
         return hue
     }
 
-    func saturation() -> CGFloat {
+    var saturation : CGFloat {
         var saturation: CGFloat = 0
         self.getHue( nil, saturation: &saturation, brightness: nil, alpha: nil )
 
         return saturation
     }
 
-    func brightness() -> CGFloat {
+    var brightness : CGFloat {
         var brightness: CGFloat = 0
         self.getHue( nil, saturation: nil, brightness: &brightness, alpha: nil )
 
         return brightness
+    }
+
+    var alpha : CGFloat {
+        var alpha: CGFloat = 0
+        self.getHue( nil, saturation: nil, brightness: nil, alpha: &alpha )
+
+        return alpha
     }
 
     func with(alpha newAlpha: CGFloat?) -> UIColor {

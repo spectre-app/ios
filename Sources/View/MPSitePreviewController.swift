@@ -70,10 +70,10 @@ class MPSitePreviewController: UIViewController, MPSiteObserver {
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         if #available( iOS 13, * ) {
-            return self.site?.color?.brightness() ?? 0 > 0.8 ? .darkContent: .lightContent
+            return self.site?.color?.brightness ?? 0 > 0.8 ? .darkContent: .lightContent
         }
         else {
-            return self.site?.color?.brightness() ?? 0 > 0.8 ? .default: .lightContent
+            return self.site?.color?.brightness ?? 0 > 0.8 ? .default: .lightContent
         }
     }
 
@@ -87,7 +87,7 @@ class MPSitePreviewController: UIViewController, MPSiteObserver {
                 self.siteButton.setTitle( self.site?.image == nil ? self.site?.siteName: nil, for: .normal )
                 self.preferredContentSize = self.site?.image?.size ?? CGSize( width: 0, height: 200 )
 
-                if let brightness = self.site?.color?.brightness(), brightness > 0.8 {
+                if let brightness = self.site?.color?.brightness, brightness > 0.8 {
                     self.siteButton.layer.shadowColor = UIColor.darkGray.cgColor
                 }
                 else {

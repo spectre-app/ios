@@ -544,7 +544,7 @@ public extension Property where V == UIColor {
         var color: UIColor? = self.get()
 
         if let tint = tint {
-            color = color?.with( hue: tint.hue() )
+            color = color?.with( hue: tint.hue )
         }
         if let alpha = alpha {
             color = color?.with( alpha: alpha )
