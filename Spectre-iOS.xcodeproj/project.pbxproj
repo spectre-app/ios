@@ -45,6 +45,7 @@
 		93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */; };
 		93D396F895C0A16CF1FDAB79 /* UIContextMenuConfiguration+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39242076F89C40E7B292C /* UIContextMenuConfiguration+MP.swift */; };
 		93D39707EDA5669AB5A96ECB /* MPLogDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */; };
+		93D3972C722A7A007223F2AD /* MPPremiumDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */; };
 		93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
 		93D3975E8CAF0B2422D7C1D7 /* MPAttacker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */; };
 		93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
@@ -251,6 +252,7 @@
 		93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailViewController.swift; sourceTree = "<group>"; };
 		93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v1.c"; sourceTree = "<group>"; };
 		93D396FE084F709867C7C6CC /* Describe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Describe.swift; sourceTree = "<group>"; };
+		93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPPremiumDetailsViewController.swift; sourceTree = "<group>"; };
 		93D397311C748F45186ADB8D /* Result+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Result+MP.swift"; sourceTree = "<group>"; };
 		93D397326B833076646FF697 /* DataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataSource.swift; sourceTree = "<group>"; };
 		93D3975A310BEA6C16903C25 /* MPProgramState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPProgramState.swift; sourceTree = "<group>"; };
@@ -653,6 +655,7 @@
 				93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */,
 				93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */,
 				93D393A49E8705F3E38EB779 /* MPViewController.swift */,
+				93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -1518,6 +1521,7 @@
 				93D396F895C0A16CF1FDAB79 /* UIContextMenuConfiguration+MP.swift in Sources */,
 				93D39FD2F39B2AFE27A88A97 /* MPSecrets.swift in Sources */,
 				93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */,
+				93D3972C722A7A007223F2AD /* MPPremiumDetailsViewController.swift in Sources */,
 				93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
