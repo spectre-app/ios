@@ -134,11 +134,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     values: { _ in Theme.all },
                     value: { Theme.with( path: $0.theme ) ?? .default },
                     update: { $0.theme = $1.path },
-                    caption: { _ in
-                        """
-                        Personalize the application's appearance.
-                        """
-                    } )
+                    caption: { _ in Theme.current } )
             self.addBehaviour( RequiresPremium() )
         }
 
@@ -156,7 +152,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
             weak var theme: Theme? = Theme.default {
                 didSet {
                     DispatchQueue.main.perform {
-                        self.effectView.contentView => \.backgroundColor => self.theme?.color.shadow
+                        self.effectView.contentView => \.backgroundColor => self.theme?.color.panel
                     }
                 }
             }

@@ -123,12 +123,66 @@ public extension PropertyPath where V == NSAttributedString {
 }
 
 public struct ThemePattern {
-    static let spectre = ThemePattern(
+    static let dream  = ThemePattern(
+            dark: .hex( "385359" ),
+            dusk: .hex( "4C6C73" ),
+            flat: .hex( "64858C" ),
+            dawn: .hex( "AAB9BF" ),
+            pale: .hex( "F2F2F2" ) )
+    static let aged  = ThemePattern(
+            dark: .hex( "07090D" ),
+            dusk: .hex( "1E2626" ),
+            flat: .hex( "6C7365" ),
+            dawn: .hex( "A3A68D" ),
+            pale: .hex( "BBBF9F" ) )
+    static let pale = ThemePattern(
+            dark: .hex( "09090D" ),
+            dusk: .hex( "1F1E26" ),
+            flat: .hex( "3E5159" ),
+            dawn: .hex( "5E848C" ),
+            pale: .hex( "B0CDD9" ) )
+    static let lush = ThemePattern(
+            dark: .hex( "141F26" ),
+            dusk: .hex( "213A40" ),
+            flat: .hex( "4C6C73" ),
+            dawn: .hex( "5D878C" ),
+            pale: .hex( "F0F1F2" ) )
+    static let oak    = ThemePattern(
+            dark: .hex( "0D0D0D" ),
+            dusk: .hex( "262523" ),
+            flat: .hex( "595958" ),
+            dawn: .hex( "A68877" ),
+            pale: .hex( "D9C9BA" ) )
+    static let spring = ThemePattern(
+            dark: .hex( "0D0D0D" ),
+            dusk: .hex( "2E5955" ),
+            flat: .hex( "618C8C" ),
+            dawn: .hex( "99BFBF" ),
+            pale: .hex( "F2F2F2" ) )
+    static let fuzzy = ThemePattern(
             dark: .hex( "000F08" ),
             dusk: .hex( "004A4F" ),
             flat: .hex( "3E8989" ),
             dawn: .hex( "9AD5CA" ),
             pale: .hex( "CCE3DE" ) )
+    static let premium = ThemePattern(
+            dark: .hex( "0D0D0D" ),
+            dusk: .hex( "313A40" ),
+            flat: .hex( "593825" ),
+            dawn: .hex( "BFB7A8" ),
+            pale: .hex( "F2D5BB" ) )
+    static let deep = ThemePattern(
+            dark: .hex( "1A2A40" ),
+            dusk: .hex( "3F4859" ),
+            flat: .hex( "877B8C" ),
+            dawn: .hex( "B6A8BF" ),
+            pale: .hex( "BFCDD9" ) )
+    static let sand = ThemePattern(
+            dark: .hex( "0D0D0D" ),
+            dusk: .hex( "736656" ),
+            flat: .hex( "A69880" ),
+            dawn: .hex( "D9CDBF" ),
+            pale: .hex( "F2EEEB" ) )
 
     let dark: UIColor?
     let dusk: UIColor?
@@ -138,14 +192,36 @@ public struct ThemePattern {
 }
 
 public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
-    private static var byPath = [ String: Theme ]()
-    private static let base   = Theme()
+    private static var byPath    = [ String: Theme ]()
+    private static let base      = Theme()
 
-    public static let all       = [ Theme.default, Theme.base ] // Register all theme objects
-    public static let current   = Theme( path: "current" )
+    // Register all theme objects
+    public static let  all       = [ Theme.base,
+                                     Theme( path: ".dream", pattern: .dream,
+                                            mood: "This weather is for dreaming." ),
+                                     Theme( path: ".aged", pattern: .aged,
+                                            mood: "Whiff of a Victorian manuscript." ),
+                                     Theme( path: ".pale", pattern: .pale,
+                                            mood: "Weathered stone foundation standing tall." ),
+                                     Theme( path: ".lush", pattern: .lush,
+                                            mood: "A clean and modest kind of lush." ),
+                                     Theme( path: ".oak", pattern: .oak,
+                                            mood: "The cabin below deck on my yacht." ),
+                                     Theme( path: ".spring", pattern: .spring,
+                                            mood: "Bright morning fog in spring-time." ),
+                                     Theme( path: ".fuzzy", pattern: .fuzzy,
+                                            mood: "Soft and just a touch fuzzy." ),
+                                     Theme( path: ".premium", pattern: .premium,
+                                            mood: "The kind of wealthy you don't advertise." ),
+                                     Theme( path: ".deep", pattern: .deep,
+                                            mood: "I am my past and I am beautiful." ),
+                                     Theme( path: ".sand", pattern: .sand,
+                                            mood: "Sandstone cabin by the beech." ),
+    ]
+    public static let  current   = Theme( path: "current" )
 
     // SPECTRE:
-    public static let `default` = Theme( path: ".spectre", pattern: .spectre )
+    public static let  `default` = all[1]
 
     public class func with(path: String?) -> Theme? {
         self.all.first { $0.path == path } ?? path<.flatMap { Theme.byPath[$0] } ?? .base
@@ -224,8 +300,9 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             return self.name
         }
     }
+    public var  mood:        String?
     public var  description: String {
-        self.path
+        self.mood ?? self.parent?.description ?? self.path
     }
 
     // MPTheme.base
@@ -274,7 +351,9 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         Theme.byPath[""] = self
     }
 
-    private init(path: String, pattern: ThemePattern? = nil, override: ((Theme) -> ())? = nil) {
+    private init(path: String, pattern: ThemePattern? = nil, mood: String? = nil, override: ((Theme) -> ())? = nil) {
+        self.mood = mood
+
         var parent: Theme?
         if let lastDot = path.lastIndex( of: "." ) {
             self.name = String( path[path.index( after: lastDot )..<path.endIndex] )

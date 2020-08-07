@@ -74,6 +74,10 @@ class Item<M>: NSObject {
         private lazy var valueView = self.createValueView()
         private let item: Item<M>
 
+        override var forLastBaselineLayout: UIView {
+            self.titleLabel
+        }
+
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
         }
@@ -97,7 +101,7 @@ class Item<M>: NSObject {
 
             self.subitemsView.axis = .horizontal
             self.subitemsView.distribution = .fillEqually
-            self.subitemsView.alignment = .firstBaseline
+            self.subitemsView.alignment = .lastBaseline
             self.subitemsView.spacing = 20
             self.subitemsView.preservesSuperviewLayoutMargins = true
             self.subitemsView.isLayoutMarginsRelativeArrangement = true

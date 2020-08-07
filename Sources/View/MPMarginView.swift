@@ -22,4 +22,8 @@ class MPMarginView: UIView {
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
+
+    override var forLastBaselineLayout: UIView {
+        self.subviews.first ?? self
+    }
 }

@@ -61,6 +61,9 @@ public class MPConfig: Observable, Updatable {
             if Theme.current.parent?.path != self.theme {
                 Theme.current.parent = Theme.with( path: self.theme ) ?? .default
             }
+            if oldValue != self.theme {
+                self.update()
+            }
         }
     }
 
