@@ -15,7 +15,9 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
           DefaultTypeItem(), SeparatorItem(),
           AttackerItem(), SeparatorItem(),
           FeaturesItem(), SeparatorItem(),
-          InfoItem() ]
+          InfoItem(), SeparatorItem(),
+          AppSettingsItem(),
+        ]
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -98,7 +100,9 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             Yearly budget of the primary attacker persona you're seeking to repel (@ \(cost_per_kwh)$/kWh).
                             """
                         } )
-            self.addBehaviour( RequiresPremium() )
+
+            self.addBehaviour( PremiumTapBehaviour() )
+            self.addBehaviour( PremiumConditionalBehaviour(mode: .enables) )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -163,7 +167,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             Saves your master key in the device's key chain.
                             """
                         } )
-                        .addBehaviour( RequiresPremium() ) ] )
+                        .addBehaviour( PremiumTapBehaviour() )
+                        .addBehaviour( PremiumConditionalBehaviour(mode: .enables) ) ] )
         }
     }
 
@@ -214,6 +219,14 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class AlgorithmItem: LabelItem<MPUser> {
         init() {
             super.init( title: "Algorithm", value: { $0.algorithm } )
+        }
+    }
+
+    class AppSettingsItem: ButtonItem<MPUser> {
+        init() {
+            super.init( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) } ) { item in
+                item.viewController?.hostController?.show( MPAppDetailsViewController() )
+            }
         }
     }
 }

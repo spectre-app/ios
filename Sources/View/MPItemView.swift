@@ -234,15 +234,17 @@ class TapBehaviour<M>: Behaviour<M> {
     }
 }
 
-class RequiresPremium<M>: TapBehaviour<M> {
+class PremiumTapBehaviour<M>: TapBehaviour<M>, MPConfigObserver {
     init() {
-        super.init( enabled: { _ in appConfig.premium } )
+        super.init()
+
+        appConfig.observers.register( observer: self )
     }
 
-    override func didUpdate(item: Item<M>) {
-        super.didUpdate( item: item )
+    // MARK: --- MPConfigObserver ---
 
-        self.tapRecognizers.filter { $0.value == item }.forEach { $0.key.isEnabled = !appConfig.premium }
+    func didChangeConfig() {
+        self.tapRecognizers.keys.forEach { $0.isEnabled = !appConfig.premium }
     }
 
     override func doTapped(item: Item<M>) {
@@ -250,9 +252,61 @@ class RequiresPremium<M>: TapBehaviour<M> {
     }
 }
 
-class RequiresDebug<M>: Behaviour<M> {
-    init() {
-        super.init( hidden: { _ in !appConfig.isDebug } )
+class ConditionalBehaviour<M>: Behaviour<M> {
+    init(mode: Effect, condition: @escaping (M) -> Bool) {
+        super.init( hidden: { model in
+            switch mode {
+                case .enables:
+                    return false
+                case .reveals:
+                    return !condition( model )
+                case .hides:
+                    return condition( model )
+            }
+        }, enabled: { model in
+            switch mode {
+                case .enables:
+                    return condition( model )
+                case .reveals:
+                    return true
+                case .hides:
+                    return true
+            }
+        } )
+    }
+
+    enum Effect {
+        case enables
+        case reveals
+        case hides
+    }
+}
+
+class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, MPConfigObserver {
+    var items = [ Item<M> ]()
+
+    init(mode: Effect) {
+        super.init( mode: mode, condition: { _ in appConfig.premium } )
+
+        appConfig.observers.register( observer: self )
+    }
+
+    override func didInstall(into item: Item<M>) {
+        super.didInstall( into: item )
+
+        self.items.append( item )
+    }
+
+    // MARK: --- MPConfigObserver ---
+
+    func didChangeConfig() {
+        self.items.forEach { $0.setNeedsUpdate() }
+    }
+}
+
+class RequiresDebug<M>: ConditionalBehaviour<M> {
+    init(mode: Effect) {
+        super.init( mode: mode, condition: { _ in appConfig.isDebug } )
     }
 }
 

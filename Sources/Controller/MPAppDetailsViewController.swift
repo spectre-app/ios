@@ -36,11 +36,9 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
           Item<MPConfig>( subitems: [
               DiagnosticsItem(),
               NotificationsItem(),
-          ] ),
-          Item<MPConfig>( subitems: [
-              PremiumItem(),
           ] ), SeparatorItem(),
-          ThemeItem(), SeparatorItem(),
+          ThemeItem(),
+          ManageSubscriptionItem(), SeparatorItem(),
           InfoItem() ]
     }
 
@@ -105,27 +103,6 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
     }
 
-    class PremiumItem: ToggleItem<MPConfig> {
-        init() {
-            super.init(
-                    identifier: "app >premium",
-                    title: """
-                           Premium 🅿
-                           """,
-                    value: {
-                        (icon: UIImage.icon( "" ),
-                         selected: $0.premium,
-                         enabled: true)
-                    },
-                    update: { $0.premium = $1 },
-                    caption: { _ in
-                        """
-                        Unlock enhanced comfort and security features.
-                        """
-                    } )
-        }
-    }
-
     class ThemeItem: PickerItem<MPConfig, Theme> {
         init() {
             super.init(
@@ -135,7 +112,9 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     value: { Theme.with( path: $0.theme ) ?? .default },
                     update: { $0.theme = $1.path },
                     caption: { _ in Theme.current } )
-            self.addBehaviour( RequiresPremium() )
+
+            self.addBehaviour( PremiumTapBehaviour() )
+            self.addBehaviour( PremiumConditionalBehaviour(mode: .enables) )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -159,6 +138,14 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
     }
 
+    class ManageSubscriptionItem: ButtonItem<MPConfig> {
+        init() {
+            super.init( identifier: "app #subscription", value: { _ in (label: "Premium Subscription", image: nil) } ) { item in
+                item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
+            }
+        }
+    }
+
     class InfoItem: ListItem<MPConfig, InfoItem.Link> {
         init() {
             super.init( title: "Links", values: { _ in
@@ -172,6 +159,8 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         }
 
         override func didLoad(tableView: UITableView) {
+            super.didLoad( tableView: tableView )
+
             tableView.register( Cell.self )
         }
 

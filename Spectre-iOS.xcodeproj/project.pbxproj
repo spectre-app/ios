@@ -19,9 +19,10 @@
 		93D39241EC3D5ECD0790B9D0 /* UITableView+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39EB8868ED17BADDE4642 /* UITableView+MP.swift */; };
 		93D392506D66E48D27338086 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
 		93D39284CA724E394A9E91FD /* NSObject+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398D4B9F2323DC419DC82 /* NSObject+MP.swift */; };
+		93D3928A525C7A67E22F908B /* InAppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* InAppStore.swift */; };
 		93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */; };
 		93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */; };
-		93D3929C87281367272F69F1 /* MPProgramState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* MPProgramState.swift */; };
+		93D3929C87281367272F69F1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
 		93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
 		93D3930DDA8EE099DDBC2D78 /* Observers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3900653D9D95598C41DFA /* Observers.swift */; };
 		93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPURLUtils.swift */; };
@@ -255,7 +256,8 @@
 		93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPPremiumDetailsViewController.swift; sourceTree = "<group>"; };
 		93D397311C748F45186ADB8D /* Result+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Result+MP.swift"; sourceTree = "<group>"; };
 		93D397326B833076646FF697 /* DataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataSource.swift; sourceTree = "<group>"; };
-		93D3975A310BEA6C16903C25 /* MPProgramState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPProgramState.swift; sourceTree = "<group>"; };
+		93D3975A310BEA6C16903C25 /* TransientState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransientState.swift; sourceTree = "<group>"; };
+		93D397930CDEF625FC438ECE /* InAppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InAppStore.swift; sourceTree = "<group>"; };
 		93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAppDetailsViewController.swift; sourceTree = "<group>"; };
 		93D3985EDA6E3B7A05799E2C /* MPTintField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintField.swift; sourceTree = "<group>"; };
 		93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyboardLayoutGuide.swift; sourceTree = "<group>"; };
@@ -584,7 +586,7 @@
 				93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */,
 				93D395FD92D751588A645D15 /* MPKeyFactory.swift */,
 				93D39CB804B95B268383FCB2 /* Persisting.swift */,
-				93D3975A310BEA6C16903C25 /* MPProgramState.swift */,
+				93D3975A310BEA6C16903C25 /* TransientState.swift */,
 				93D393E2C339F220532F1D53 /* WeakBox.swift */,
 				93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */,
 				93D39C3FA9FA2CA5B234741E /* MPConfig.swift */,
@@ -606,6 +608,7 @@
 				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
 				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
 				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
+				93D397930CDEF625FC438ECE /* InAppStore.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1498,7 +1501,7 @@
 				93D396BC81D6634C478E0881 /* Persisting.swift in Sources */,
 				93D39BBE1211113524BCBF9D /* MPEffectView.swift in Sources */,
 				93D39AA2456367CDF6A7A296 /* MPQuestion.swift in Sources */,
-				93D3929C87281367272F69F1 /* MPProgramState.swift in Sources */,
+				93D3929C87281367272F69F1 /* TransientState.swift in Sources */,
 				93D39707EDA5669AB5A96ECB /* MPLogDetailsViewController.swift in Sources */,
 				93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */,
 				93D395FF978C5B91FA5268DC /* MPItemView.swift in Sources */,
@@ -1523,6 +1526,7 @@
 				93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */,
 				93D3972C722A7A007223F2AD /* MPPremiumDetailsViewController.swift in Sources */,
 				93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */,
+				93D3928A525C7A67E22F908B /* InAppStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
