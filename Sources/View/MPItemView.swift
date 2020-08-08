@@ -1025,7 +1025,8 @@ class ListItem<M, V: Hashable>: Item<M> {
 
     class ListItemView<M>: ItemView<M>, UITableViewDelegate, UITableViewDataSource {
         let item: ListItem<M, V>
-        let tableView = TableView()
+        let tableView         = TableView()
+        let activityIndicator = UIActivityIndicatorView( style: .whiteLarge )
         lazy var dataSource = DataSource<V>( tableView: self.tableView )
 
         required init?(coder aDecoder: NSCoder) {
@@ -1040,6 +1041,8 @@ class ListItem<M, V: Hashable>: Item<M> {
         override func createValueView() -> UIView? {
             self.tableView.delegate = self
             self.tableView.dataSource = self
+            self.tableView.tableHeaderView = self.activityIndicator
+            self.activityIndicator.startAnimating()
             return self.tableView
         }
 
@@ -1052,8 +1055,17 @@ class ListItem<M, V: Hashable>: Item<M> {
         override func update() {
             super.update()
 
-            self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ] )
+            self.tableView.tableHeaderView = self.activityIndicator
+            DispatchQueue.mpw.perform {
+                self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ], completion: { finished in
+                    if finished {
+                        self.tableView.tableHeaderView = nil
+                    }
+                } )
+            }
         }
+
+        // MARK: --- UITableViewDelegate ---
 
         // MARK: --- UITableViewDataSource ---
 

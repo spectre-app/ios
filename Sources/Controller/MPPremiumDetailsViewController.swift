@@ -168,7 +168,7 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreO
                     update: { appConfig.premium = $1 },
                     caption: { _ in
                         """
-                        Developer override for premium features on this device.
+                        Developer override for premium features.
                         """
                     } )
 

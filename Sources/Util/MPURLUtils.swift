@@ -7,8 +7,8 @@ import Foundation
 import SwiftLinkPreview
 
 class MPURLUtils {
-    private static let queue    = OperationQueue( queue: DispatchQueue.net )
     public static let  session  = URLSession( configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: queue )
+    private static let queue    = OperationQueue( queue: DispatchQueue.net )
     private static let preview  = SwiftLinkPreview()
     private static let caches   = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
     private static var metadata = loadMetadata() {
