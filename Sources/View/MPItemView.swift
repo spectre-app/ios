@@ -234,21 +234,27 @@ class TapBehaviour<M>: Behaviour<M> {
     }
 }
 
-class PremiumTapBehaviour<M>: TapBehaviour<M>, MPConfigObserver {
+class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     init() {
         super.init()
 
-        appConfig.observers.register( observer: self )
+        InAppFeature.observers.register( observer: self )
     }
 
-    // MARK: --- MPConfigObserver ---
+    override func didInstall(into item: Item<M>) {
+        super.didInstall( into: item )
 
-    func didChangeConfig() {
-        self.tapRecognizers.keys.forEach { $0.isEnabled = !appConfig.premium }
+        self.featureDidChange( .premium )
     }
 
     override func doTapped(item: Item<M>) {
         item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
+    }
+
+    // MARK: --- InAppFeatureObserver ---
+
+    func featureDidChange(_ feature: InAppFeature) {
+        self.tapRecognizers.keys.forEach { $0.isEnabled = !InAppFeature.premium.enabled() }
     }
 }
 
@@ -282,13 +288,13 @@ class ConditionalBehaviour<M>: Behaviour<M> {
     }
 }
 
-class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, MPConfigObserver {
+class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
     var items = [ Item<M> ]()
 
     init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in appConfig.premium } )
+        super.init( mode: mode, condition: { _ in InAppFeature.premium.enabled() } )
 
-        appConfig.observers.register( observer: self )
+        InAppFeature.observers.register( observer: self )
     }
 
     override func didInstall(into item: Item<M>) {
@@ -297,9 +303,9 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, MPConfigObserver 
         self.items.append( item )
     }
 
-    // MARK: --- MPConfigObserver ---
+    // MARK: --- InAppFeatureObserver ---
 
-    func didChangeConfig() {
+    func featureDidChange(_ feature: InAppFeature) {
         self.items.forEach { $0.setNeedsUpdate() }
     }
 }

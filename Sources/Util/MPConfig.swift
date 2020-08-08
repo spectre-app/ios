@@ -7,7 +7,7 @@ import Foundation
 
 public let appConfig = MPConfig()
 
-public class MPConfig: Observable, Updatable {
+public class MPConfig: Observable, Updatable, InAppFeatureObserver {
     public let observers = Observers<MPConfigObserver>()
 
     public var isDebug              = false
@@ -18,7 +18,7 @@ public class MPConfig: Observable, Updatable {
                 UserDefaults.standard.set( self.diagnostics, forKey: "diagnostics" )
             }
             if oldValue != self.diagnostics {
-                self.update()
+                self.observers.notify { $0.didChangeConfig() }
             }
         }
     }
@@ -36,20 +36,10 @@ public class MPConfig: Observable, Updatable {
             }
         }
     }
-    public var premium              = false {
-        didSet {
-            if self.premium != UserDefaults.standard.bool( forKey: "premium" ) {
-                UserDefaults.standard.set( self.premium, forKey: "premium" )
-            }
-            if oldValue != self.premium {
-                self.update()
-            }
-        }
-    }
     public private(set) var hasLegacy = false {
         didSet {
             if oldValue != self.hasLegacy {
-                self.update()
+                self.observers.notify { $0.didChangeConfig() }
             }
         }
     }
@@ -62,7 +52,7 @@ public class MPConfig: Observable, Updatable {
                 Theme.current.parent = Theme.with( path: self.theme ) ?? .default
             }
             if oldValue != self.theme {
-                self.update()
+                self.observers.notify { $0.didChangeConfig() }
             }
         }
     }
@@ -79,30 +69,32 @@ public class MPConfig: Observable, Updatable {
         self.isPublic = true
         #endif
 
-        self.load()
+        self.update()
 
         self.didChangeObserver = NotificationCenter.default.addObserver(
                 forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
-            self.load()
+            self.update()
         }
+        InAppFeature.observers.register(observer: self)
     }
 
     deinit {
         self.didChangeObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 
+    // MARK: --- InAppFeatureObserver ---
+
+    func featureDidChange(_ feature: InAppFeature) {
+        self.update()
+    }
+
     // MARK: --- Private ---
 
-    private func load() {
+    public func update() {
         self.diagnostics = UserDefaults.standard.bool( forKey: "diagnostics" )
         self.diagnosticsDecided = UserDefaults.standard.bool( forKey: "diagnosticsDecided" )
         self.notificationsDecided = UserDefaults.standard.bool( forKey: "notificationsDecided" )
-        self.premium = UserDefaults.standard.bool( forKey: "premium" )
-        self.theme = (self.premium ? UserDefaults.standard.string( forKey: "theme" ): nil) ?? Theme.default.path
-    }
-
-    public func update() {
-        self.observers.notify { $0.didChangeConfig() }
+        self.theme = (InAppFeature.premium.enabled() ? UserDefaults.standard.string( forKey: "theme" ): nil) ?? Theme.default.path
     }
 }
 

@@ -6,7 +6,7 @@
 import UIKit
 import StoreKit
 
-class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreObserver {
+class MPPremiumDetailsViewController: MPDetailsViewController<Void> {
 
     // MARK: --- Life ---
 
@@ -17,7 +17,7 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreO
     init() {
         super.init( model: () )
 
-        InAppStore.shared.observers.register( observer: self )
+        InAppStore.shared.restorePurchases()
     }
 
     override func loadItems() -> [Item<Void>] {
@@ -40,7 +40,7 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreO
               FeatureItem( name: "Password Strength", icon: "",
                            caption: "Understand what a password's complexity truly translates into." ),
               FeatureItem( name: "Application Themes", icon: "",
-                           caption: "Make it yours and dye Spectre with a dash of personality." ),
+                           caption: "Make it yours and dye \(productName) with a dash of personality." ),
           ] ),
           SeparatorItem( subitems: [
               OverrideItem(),
@@ -48,18 +48,12 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreO
         ]
     }
 
-    // MARK: --- InAppStoreObserver ---
-
-    func productsDidChange(_ products: [SKProduct]) {
-        self.setNeedsUpdate()
-    }
-
     // MARK: --- Types ---
 
     class HeaderItem: ImageItem<Void> {
         init() {
             super.init( title: "\(productName) Premium",
-                        value: { _ in UIImage.icon( "", withSize: 64 ) },
+                        value: { _ in .icon( "", withSize: 64 ) },
                         caption: { _ in "Unlock enhanced comfort and security features." } )
         }
     }
@@ -113,7 +107,10 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreO
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-                self.buyButton.button.action( for: .primaryActionTriggered ) { //[unowned self] in
+                self.buyButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+                    if let product = self.product {
+                        InAppStore.shared.purchase( product: product )
+                    }
                 }
 
                 self.captionLabel => \.textColor => Theme.current.color.secondary
@@ -141,19 +138,20 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreO
     class SubscribedItem: ImageItem<Void> {
         init() {
             super.init( title: "Enrolled",
-                        value: { _ in UIImage.icon( "", withSize: 64 ) },
-                        caption: { _ in "Thank you for making Spectre possible!" } )
+                        value: { _ in .icon( "", withSize: 64 ) },
+                        caption: { _ in "Thank you for making \(productName) possible!" } )
+
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
         }
     }
 
     class FeatureItem: ImageItem<Void> {
         init(name: String?, icon: String, caption: String?) {
-            super.init( title: name, value: { _ in UIImage.icon( icon, withSize: 48 ) }, caption: { _ in caption } )
+            super.init( title: name, value: { _ in .icon( icon, withSize: 48 ) }, caption: { _ in caption } )
         }
     }
 
-    class OverrideItem: ToggleItem<Void>, MPConfigObserver {
+    class OverrideItem: ToggleItem<Void>, InAppFeatureObserver {
         init() {
             super.init(
                     identifier: "premium >override",
@@ -161,23 +159,23 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void>, InAppStoreO
                            Subscribed 🅳
                            """,
                     value: {
-                        (icon: UIImage.icon( "" ),
-                         selected: appConfig.premium,
+                        (icon: .icon( "" ),
+                         selected: InAppFeature.premium.enabled(),
                          enabled: true)
                     },
-                    update: { appConfig.premium = $1 },
+                    update: { InAppFeature.premium.enabled( $1 ) },
                     caption: { _ in
                         """
                         Developer override for premium features.
                         """
                     } )
 
-            appConfig.observers.register( observer: self )
+            InAppFeature.observers.register( observer: self )
         }
 
-        // MARK: --- MPConfigObserver ---
+        // MARK: --- InAppFeatureObserver ---
 
-        func didChangeConfig() {
+        func featureDidChange(_ feature: InAppFeature) {
             self.setNeedsUpdate()
         }
     }

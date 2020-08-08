@@ -6,6 +6,28 @@
 import UIKit
 import StoreKit
 
+enum InAppFeature {
+    static var observers = Observers<InAppFeatureObserver>()
+
+    case premium
+
+    func enabled() -> Bool {
+        switch self {
+            case .premium:
+                return UserDefaults.standard.bool( forKey: "premium" )
+        }
+    }
+
+    func enabled(_ enabled: Bool) {
+        switch self {
+            case .premium:
+                UserDefaults.standard.set( enabled, forKey: "premium" )
+        }
+
+        InAppFeature.observers.notify { $0.featureDidChange( self ) }
+    }
+}
+
 enum InAppSubscription {
     case premium
 
@@ -23,6 +45,10 @@ enum InAppProducts: CaseIterable {
 
     public private(set) static var allCases = [ InAppProducts ]( [ .premiumAnnual, .premiumMonthly ] )
 
+    static func find(identifier: String) -> InAppProducts? {
+        self.allCases.first( where: { $0.identifier == identifier } )
+    }
+
     var identifier: String {
         switch self {
             case .premiumAnnual:
@@ -31,14 +57,24 @@ enum InAppProducts: CaseIterable {
                 return "app.spectre.premium.monthly"
         }
     }
+
+    var feature: InAppFeature {
+        switch self {
+            case .premiumAnnual:
+                return .premium
+            case .premiumMonthly:
+                return .premium
+        }
+    }
 }
 
-class InAppStore: NSObject, SKProductsRequestDelegate, Observable {
+class InAppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, Observable {
     public static let shared = InAppStore()
 
-    override init() {
+    private override init() {
         super.init()
 
+        SKPaymentQueue.default().add( self )
         self.update()
     }
 
@@ -57,11 +93,22 @@ class InAppStore: NSObject, SKProductsRequestDelegate, Observable {
         productsRequest.start()
     }
 
+    func purchase(product: SKProduct, quantity: Int = 1) {
+        let payment = SKMutablePayment( product: product )
+        payment.quantity = quantity
+
+        SKPaymentQueue.default().add( payment )
+    }
+
+    func restorePurchases() {
+        SKPaymentQueue.default().restoreCompletedTransactions()
+    }
+
     // MARK: --- SKProductsRequestDelegate ---
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         if !response.invalidProductIdentifiers.isEmpty {
-            inf( "Unsupported products: %@", response.invalidProductIdentifiers );
+            inf( "Unsupported products: %@", response.invalidProductIdentifiers )
         }
 
         self.products = response.products
@@ -73,7 +120,7 @@ class InAppStore: NSObject, SKProductsRequestDelegate, Observable {
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
-        mperror( title: "App Store Issue", message:
+        mperror( title: "App Store Request Issue", message:
         "Ensure you are online and try logging out and back into iTunes from your device's Settings.",
                  error: error )
     }
@@ -82,6 +129,29 @@ class InAppStore: NSObject, SKProductsRequestDelegate, Observable {
         self.products.filter {
             dbg( "product: %@, sub: %@", $0, $0.subscriptionGroupIdentifier )
             return $0.subscriptionGroupIdentifier == subscription.identifier
+        }
+    }
+
+    // MARK: --- SKPaymentTransactionObserver ---
+
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        for transaction in transactions {
+            dbg( "transaction updated: %@ -> %d", transaction.payment.productIdentifier, transaction.transactionState.rawValue )
+
+            switch transaction.transactionState {
+                case .purchasing, .deferred:
+                    break
+                case .purchased, .restored:
+                    InAppProducts.find( identifier: transaction.payment.productIdentifier )?.feature.enabled( true )
+                    queue.finishTransaction( transaction )
+                case .failed:
+                    mperror( title: "App Store Transaction Issue", message:
+                    "Ensure you are online and try logging out and back into iTunes from your device's Settings.",
+                             error: transaction.error )
+                    queue.finishTransaction( transaction )
+                @unknown default:
+                    break
+            }
         }
     }
 }
@@ -149,8 +219,12 @@ extension SKProductSubscriptionPeriod {
                 unitName = "<\(self.unit.rawValue)>"
         }
 
-        return plural ? "\(self.numberOfUnits) \(unitName)" : unitName
+        return plural ? "\(self.numberOfUnits) \(unitName)": unitName
     }
+}
+
+protocol InAppFeatureObserver {
+    func featureDidChange(_ feature: InAppFeature)
 }
 
 protocol InAppStoreObserver {

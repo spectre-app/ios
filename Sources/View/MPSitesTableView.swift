@@ -149,19 +149,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in MPSitePreviewController( site: site ) }, actionProvider: { _, configuration in
                 UIMenu( title: site.siteName, children: [
-                    UIAction( title: "Delete", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
+                    UIAction( title: "Delete", image: .icon( "" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
                         configuration.action = action
                         site.user.sites.removeAll { $0 === site }
                     },
-                    UIAction( title: "Details", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "settings" ) ) { action in
+                    UIAction( title: "Details", image: .icon( "" ), identifier: UIAction.Identifier( "settings" ) ) { action in
                         configuration.action = action
                         self.observers.notify { $0.siteDetailsAction( site: site ) }
                     },
-                    UIAction( title: "Copy Login Name 🅿", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: appConfig.premium ? []: .hidden ) { action in
+                    UIAction( title: "Copy Login Name 🅿", image: .icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: InAppFeature.premium.enabled() ? []: .disabled ) { action in
                         configuration.action = action
                         site.copy( keyPurpose: .identification, for: self )
                     },
-                    UIAction( title: "Copy Password", image: UIImage.icon( "" ), identifier: UIAction.Identifier( "password" ) ) { action in
+                    UIAction( title: "Copy Password", image: .icon( "" ), identifier: UIAction.Identifier( "password" ) ) { action in
                         configuration.action = action
                         site.copy( keyPurpose: .authentication, for: self )
                     },
@@ -248,7 +248,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     // MARK: --- Types ---
 
-    class SiteCell: UITableViewCell, MPSiteObserver, MPUserObserver, MPConfigObserver {
+    class SiteCell: UITableViewCell, Updatable, MPSiteObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
         public weak var sitesView: MPSitesTableView?
         public weak var result:    MPQuery.Result<MPSite>? {
             willSet {
@@ -277,9 +277,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
         private let backgroundImage = MPBackgroundView( mode: .custom )
-        private let modeButton      = MPButton( identifier: "sites.site #mode", image: UIImage.icon( "" ), background: false )
-        private let settingsButton  = MPButton( identifier: "sites.site #site_settings", image: UIImage.icon( "" ), background: false )
-        private let newButton       = MPButton( identifier: "sites.site #add", image: UIImage.icon( "" ), background: false )
+        private let modeButton      = MPButton( identifier: "sites.site #mode", image: .icon( "" ), background: false )
+        private let settingsButton  = MPButton( identifier: "sites.site #site_settings", image: .icon( "" ), background: false )
+        private let newButton       = MPButton( identifier: "sites.site #add", image: .icon( "" ), background: false )
         private let selectionView   = UIView()
         private let resultLabel     = UITextField()
         private let captionLabel    = UILabel()
@@ -297,6 +297,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             super.init( style: style, reuseIdentifier: reuseIdentifier )
 
             appConfig.observers.register( observer: self )
+            InAppFeature.observers.register( observer: self )
 
             // - View
             self.isOpaque = false
@@ -458,25 +459,34 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.update()
         }
 
+        // MARK: --- InAppFeatureObserver ---
+
+        func featureDidChange(_ feature: InAppFeature) {
+            self.update()
+        }
+
         // MARK: --- Private ---
 
-        private func update() {
+        public func update() {
             guard let site = self.site
             else { return }
 
             DispatchQueue.main.promise {
+                self.modeButton.alpha = InAppFeature.premium.enabled() ? 1: 0
+                if !InAppFeature.premium.enabled() {
+                    self.mode = .authentication
+                }
                 switch self.mode {
                     case .authentication:
-                        self.modeButton.image = UIImage.icon( "" )
+                        self.modeButton.image = .icon( "" )
                     case .identification:
-                        self.modeButton.image = UIImage.icon( "" )
+                        self.modeButton.image = .icon( "" )
                     case .recovery:
-                        self.modeButton.image = UIImage.icon( "" )
+                        self.modeButton.image = .icon( "" )
                     @unknown default:
                         self.modeButton.image = nil
                 }
 
-                self.modeButton.alpha = appConfig.premium ? 1: 0
                 self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
                 self.selectionConfiguration.activated = self.isSelected

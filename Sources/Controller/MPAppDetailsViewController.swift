@@ -64,7 +64,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     identifier: "app >diagnostics",
                     title: "Diagnostics",
                     value: {
-                        (icon: UIImage.icon( "" ),
+                        (icon: .icon( "" ),
                          selected: $0.diagnostics,
                          enabled: true)
                     },
@@ -83,7 +83,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     identifier: "app >notifications",
                     title: "Notifications",
                     value: { _ in
-                        (icon: UIImage.icon( "" ),
+                        (icon: .icon( "" ),
                          selected: MPTracker.enabledNotifications(),
                          enabled: true)
                     },

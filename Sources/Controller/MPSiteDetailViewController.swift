@@ -98,7 +98,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             }
                         },
                         caption: {
-                            guard appConfig.premium, let attacker = $0.user.attacker,
+                            guard InAppFeature.premium.enabled(), let attacker = $0.user.attacker,
                                   let timeToCrack = attacker.timeToCrack( type: $0.resultType )
                             else { return nil }
 

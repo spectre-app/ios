@@ -72,10 +72,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         self.usersSpinner.indicatorStyle = .white
 
         self.appToolbar.axis = .horizontal
-        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: UIImage.icon( "" ), background: false ) { _, _ in
+        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: .icon( "" ), background: false ) { _, _ in
             self.detailsHost.show( MPAppDetailsViewController() )
         } )
-        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: UIImage.icon( "" ), background: false ) { _, incognitoButton in
+        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: .icon( "" ), background: false ) { _, incognitoButton in
             guard let incognitoButton = incognitoButton as? MPTimedButton
             else { return }
             let incognitoEvent = MPTracker.shared.begin( named: "users #user" )
@@ -335,11 +335,11 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         private let nameLabel       = UILabel()
         private let nameField       = UITextField()
         private let avatarButton    = MPButton( identifier: "users.user #avatar", background: false )
-        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: UIImage.icon( "" ), background: false ) // TODO: biometry-specific icon
+        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: .icon( "" ), background: false ) // TODO: biometry-specific icon
         private var passwordEvent:               MPTracker.TimedEvent?
         private let passwordField   = MPMasterPasswordField()
-        private let idBadgeView     = UIImageView( image: UIImage.icon( "" ) )
-        private let authBadgeView   = UIImageView( image: UIImage.icon( "" ) )
+        private let idBadgeView     = UIImageView( image: .icon( "" ) )
+        private let authBadgeView   = UIImageView( image: .icon( "" ) )
         private var authenticationConfiguration: LayoutConfiguration!
         private var path:                        CGPath? {
             didSet {
@@ -567,7 +567,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }
-                    self.biometricButton.isHidden = !appConfig.premium ||
+                    self.biometricButton.isHidden = !InAppFeature.premium.enabled() ||
                             !(keychainKeyFactory?.hasKey( algorithm: self.userFile?.algorithm ?? .current ) ?? false)
                     self.biometricButton.image = keychainKeyFactory?.factor.icon
                     self.biometricButton.sizeToFit()
