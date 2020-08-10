@@ -358,6 +358,8 @@ extension UITraitCollection {
 }
 
 extension UIColor {
+
+    // Extended sRGB, hex, RRGGBB / RRGGBBAA
     class func hex(_ hex: String, alpha: CGFloat = 1) -> UIColor? {
         var hexSanitized = hex.trimmingCharacters( in: .whitespacesAndNewlines )
         hexSanitized = hexSanitized.replacingOccurrences( of: "#", with: "" )
@@ -377,7 +379,7 @@ extension UIColor {
             r = CGFloat( (rgb & 0xFF000000) >> 24 ) / 255.0
             g = CGFloat( (rgb & 0x00FF0000) >> 16 ) / 255.0
             b = CGFloat( (rgb & 0x0000FF00) >> 8 ) / 255.0
-            a = CGFloat( rgb & 0x000000FF ) / 255.0
+            a *= CGFloat( rgb & 0x000000FF ) / 255.0
         }
         else {
             return nil

@@ -85,10 +85,25 @@
 	<string>© 2011-2020, Maarten Billemont</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Exo2.0-Bold.otf</string>
-		<string>Exo2.0-ExtraBold.otf</string>
-		<string>Exo2.0-Regular.otf</string>
-		<string>Exo2.0-Thin.otf</string>
+		<string>Poppins-VF.otf</string>
+		<string>PoppinsLatin-Black.otf</string>
+		<string>PoppinsLatin-BlackItalic.otf</string>
+		<string>PoppinsLatin-Bold.otf</string>
+		<string>PoppinsLatin-BoldItalic.otf</string>
+		<string>PoppinsLatin-ExtraBold.otf</string>
+		<string>PoppinsLatin-ExtraBoldItalic.otf</string>
+		<string>PoppinsLatin-ExtraLight.otf</string>
+		<string>PoppinsLatin-ExtraLightItalic.otf</string>
+		<string>PoppinsLatin-Italic.otf</string>
+		<string>PoppinsLatin-Light.otf</string>
+		<string>PoppinsLatin-LightItalic.otf</string>
+		<string>PoppinsLatin-Medium.otf</string>
+		<string>PoppinsLatin-MediumItalic.otf</string>
+		<string>PoppinsLatin-Regular.otf</string>
+		<string>PoppinsLatin-SemiBold.otf</string>
+		<string>PoppinsLatin-SemiBoldItalic.otf</string>
+		<string>PoppinsLatin-Thin.otf</string>
+		<string>PoppinsLatin-ThinItalic.otf</string>
 		<string>Font Awesome 5 Brands-Regular-400.otf</string>
 		<string>Font Awesome 5 Duotone-Solid-900.otf</string>
 		<string>Font Awesome 5 Pro-Light-300.otf</string>

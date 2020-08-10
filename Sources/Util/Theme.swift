@@ -123,43 +123,43 @@ public extension PropertyPath where V == NSAttributedString {
 }
 
 public struct ThemePattern {
-    static let dream  = ThemePattern(
+    static let dream   = ThemePattern(
             dark: .hex( "385359" ),
             dusk: .hex( "4C6C73" ),
             flat: .hex( "64858C" ),
             dawn: .hex( "AAB9BF" ),
             pale: .hex( "F2F2F2" ) )
-    static let aged  = ThemePattern(
+    static let aged    = ThemePattern(
             dark: .hex( "07090D" ),
             dusk: .hex( "1E2626" ),
             flat: .hex( "6C7365" ),
             dawn: .hex( "A3A68D" ),
             pale: .hex( "BBBF9F" ) )
-    static let pale = ThemePattern(
+    static let pale    = ThemePattern(
             dark: .hex( "09090D" ),
             dusk: .hex( "1F1E26" ),
             flat: .hex( "3E5159" ),
             dawn: .hex( "5E848C" ),
             pale: .hex( "B0CDD9" ) )
-    static let lush = ThemePattern(
+    static let lush    = ThemePattern(
             dark: .hex( "141F26" ),
             dusk: .hex( "213A40" ),
             flat: .hex( "4C6C73" ),
             dawn: .hex( "5D878C" ),
             pale: .hex( "F0F1F2" ) )
-    static let oak    = ThemePattern(
+    static let oak     = ThemePattern(
             dark: .hex( "0D0D0D" ),
             dusk: .hex( "262523" ),
             flat: .hex( "595958" ),
             dawn: .hex( "A68877" ),
             pale: .hex( "D9C9BA" ) )
-    static let spring = ThemePattern(
+    static let spring  = ThemePattern(
             dark: .hex( "0D0D0D" ),
             dusk: .hex( "2E5955" ),
             flat: .hex( "618C8C" ),
             dawn: .hex( "99BFBF" ),
             pale: .hex( "F2F2F2" ) )
-    static let fuzzy = ThemePattern(
+    static let fuzzy   = ThemePattern(
             dark: .hex( "000F08" ),
             dusk: .hex( "004A4F" ),
             flat: .hex( "3E8989" ),
@@ -171,13 +171,13 @@ public struct ThemePattern {
             flat: .hex( "593825" ),
             dawn: .hex( "BFB7A8" ),
             pale: .hex( "F2D5BB" ) )
-    static let deep = ThemePattern(
+    static let deep    = ThemePattern(
             dark: .hex( "1A2A40" ),
             dusk: .hex( "3F4859" ),
             flat: .hex( "877B8C" ),
             dawn: .hex( "B6A8BF" ),
             pale: .hex( "BFCDD9" ) )
-    static let sand = ThemePattern(
+    static let sand    = ThemePattern(
             dark: .hex( "0D0D0D" ),
             dusk: .hex( "736656" ),
             flat: .hex( "A69880" ),
@@ -189,6 +189,33 @@ public struct ThemePattern {
     let flat: UIColor?
     let dawn: UIColor?
     let pale: UIColor?
+}
+
+extension UIFont {
+    static func custom(family: String, forTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
+        self.custom( family: family, forFontStyle: UIFontDescriptor.preferredFontDescriptor( withTextStyle: textStyle ) )
+    }
+
+    static func custom(family: String, forFontStyle fontStyle: UIFont) -> UIFont? {
+        self.custom( family: family, forFontStyle: fontStyle.fontDescriptor )
+    }
+
+    static func custom(family: String, forFontStyle styleDescriptor: UIFontDescriptor) -> UIFont? {
+        let customDescriptor = UIFontDescriptor( fontAttributes: [
+            .family: family, .size: styleDescriptor.pointSize,
+            .traits: [ UIFontDescriptor.TraitKey.weight: UIFont.Weight.regular ],
+            kCTFontVariationAttribute as UIFontDescriptor.AttributeName: [ "Weight": 400 ]
+        ] )
+        return UIFont( descriptor: customDescriptor.withSymbolicTraits( styleDescriptor.symbolicTraits ) ?? styleDescriptor, size: 0 )
+    }
+
+    static func poppins(forTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
+        self.custom( family: "Poppins VF", forTextStyle: textStyle )
+    }
+
+    static func sourceCodePro(ofSize size: CGFloat, weight: UIFont.Weight) -> UIFont? {
+        self.custom( family: "Source Code Pro", forFontStyle: .monospacedDigitSystemFont( ofSize: size, weight: weight ) )
+    }
 }
 
 public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
@@ -232,32 +259,32 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     public let color     = Colors()
 
     public struct Fonts {
-        public let largeTitle  = ValueProperty<UIFont>()
-        public let title1      = ValueProperty<UIFont>()
-        public let title2      = ValueProperty<UIFont>()
-        public let title3      = ValueProperty<UIFont>()
-        public let headline    = ValueProperty<UIFont>()
-        public let subheadline = ValueProperty<UIFont>()
-        public let body        = ValueProperty<UIFont>()
-        public let callout     = ValueProperty<UIFont>()
-        public let caption1    = ValueProperty<UIFont>()
-        public let caption2    = ValueProperty<UIFont>()
-        public let footnote    = ValueProperty<UIFont>()
-        public let password    = ValueProperty<UIFont>()
-        public let mono        = ValueProperty<UIFont>()
+        public let largeTitle  = FontProperty()
+        public let title1      = FontProperty()
+        public let title2      = FontProperty()
+        public let title3      = FontProperty()
+        public let headline    = FontProperty()
+        public let subheadline = FontProperty()
+        public let body        = FontProperty()
+        public let callout     = FontProperty()
+        public let caption1    = FontProperty()
+        public let caption2    = FontProperty()
+        public let footnote    = FontProperty()
+        public let password    = FontProperty()
+        public let mono        = FontProperty()
     }
 
     public struct Colors {
-        public let body        = StyleProperty<UIColor>() //! Text body
-        public let secondary   = StyleProperty<UIColor>() //! Text accents / Captions
-        public let placeholder = StyleProperty<UIColor>() //! Field hints
-        public let backdrop    = StyleProperty<UIColor>() //! Main content background
-        public let panel       = StyleProperty<UIColor>() //! Detail content background
-        public let shade       = StyleProperty<UIColor>() //! Detail dimming background
-        public let shadow      = StyleProperty<UIColor>() //! Text contrast
-        public let mute        = StyleProperty<UIColor>() //! Dim content hinting
-        public let selection   = StyleProperty<UIColor>() //! Selected content background
-        public let tint        = StyleProperty<UIColor>() //! Control accents
+        public let body        = AppearanceProperty<UIColor>() //! Text body
+        public let secondary   = AppearanceProperty<UIColor>() //! Text accents / Captions
+        public let placeholder = AppearanceProperty<UIColor>() //! Field hints
+        public let backdrop    = AppearanceProperty<UIColor>() //! Main content background
+        public let panel       = AppearanceProperty<UIColor>() //! Detail content background
+        public let shade       = AppearanceProperty<UIColor>() //! Detail dimming background
+        public let shadow      = AppearanceProperty<UIColor>() //! Text contrast
+        public let mute        = AppearanceProperty<UIColor>() //! Dim content hinting
+        public let selection   = AppearanceProperty<UIColor>() //! Selected content background
+        public let tint        = AppearanceProperty<UIColor>() //! Control accents
     }
 
     // MARK: --- Life ---
@@ -310,19 +337,19 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.name = ""
 
         // Global default style
-        self.font.largeTitle.set( .preferredFont( forTextStyle: .largeTitle ) )
-        self.font.title1.set( .preferredFont( forTextStyle: .title1 ) )
-        self.font.title2.set( .preferredFont( forTextStyle: .title2 ) )
-        self.font.title3.set( .preferredFont( forTextStyle: .title3 ) )
-        self.font.headline.set( .preferredFont( forTextStyle: .headline ) )
-        self.font.subheadline.set( .preferredFont( forTextStyle: .subheadline ) )
-        self.font.body.set( .preferredFont( forTextStyle: .body ) )
-        self.font.callout.set( .preferredFont( forTextStyle: .callout ) )
-        self.font.caption1.set( .preferredFont( forTextStyle: .caption1 ) )
-        self.font.caption2.set( .preferredFont( forTextStyle: .caption2 ) )
-        self.font.footnote.set( .preferredFont( forTextStyle: .footnote ) )
-        self.font.password.set( .monospacedDigitSystemFont( ofSize: 22, weight: .bold ) )
-        self.font.mono.set( .monospacedDigitSystemFont( ofSize: UIFont.systemFontSize, weight: .thin ) )
+        self.font.largeTitle.set( UIFont.poppins( forTextStyle: .largeTitle ), withTextStyle: .largeTitle )
+        self.font.title1.set( UIFont.poppins( forTextStyle: .title1 ), withTextStyle: .title1 )
+        self.font.title2.set( UIFont.poppins( forTextStyle: .title2 ), withTextStyle: .title2 )
+        self.font.title3.set( UIFont.poppins( forTextStyle: .title3 ), withTextStyle: .title3 )
+        self.font.headline.set( UIFont.poppins( forTextStyle: .headline ), withTextStyle: .headline )
+        self.font.subheadline.set( UIFont.poppins( forTextStyle: .subheadline ), withTextStyle: .subheadline )
+        self.font.body.set( UIFont.poppins( forTextStyle: .body ), withTextStyle: .body )
+        self.font.callout.set( UIFont.poppins( forTextStyle: .callout ), withTextStyle: .callout )
+        self.font.caption1.set( UIFont.poppins( forTextStyle: .caption1 ), withTextStyle: .caption1 )
+        self.font.caption2.set( UIFont.poppins( forTextStyle: .caption2 ), withTextStyle: .caption2 )
+        self.font.footnote.set( UIFont.poppins( forTextStyle: .footnote ), withTextStyle: .footnote )
+        self.font.password.set( UIFont.sourceCodePro( ofSize: 20, weight: .bold ), withTextStyle: .largeTitle )
+        self.font.mono.set( UIFont.sourceCodePro( ofSize: UIFont.systemFontSize, weight: .thin ), withTextStyle: .body )
         self.color.body.set( UIColor.darkText )
         self.color.secondary.set( UIColor.darkGray.with( alpha: .long ) )
         self.color.placeholder.set( UIColor.darkGray.with( alpha: .short ) )
@@ -371,7 +398,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( light: pattern.pale, dark: pattern.dark )
             self.color.panel.set( light: pattern.dawn, dark: pattern.dusk )
             self.color.shade.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
-            self.color.shadow.set( light: pattern.flat?.with( alpha: .long ), dark: pattern.flat?.with( alpha: .long ) )
+            self.color.shadow.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.mute.set( light: pattern.dusk?.with( alpha: .short ), dark: pattern.dawn?.with( alpha: .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.tint.set( light: pattern.dusk, dark: pattern.dawn )
@@ -529,7 +556,45 @@ public class ValueProperty<V>: Property<V> {
     }
 }
 
-public class StyleProperty<V>: Property<V> {
+public class FontProperty: ValueProperty<UIFont> {
+    private var textStyle: UIFont.TextStyle?
+
+    init(_ value: UIFont? = nil, withTextStyle textStyle: UIFont.TextStyle? = nil, parent: Property<UIFont>? = nil) {
+        self.textStyle = textStyle
+        super.init( value, parent: parent )
+    }
+
+    public override func get() -> UIFont? {
+        guard let value = super.get()
+        else { return nil }
+
+        guard let textStyle = self.textStyle
+        else { return value }
+
+        return UIFontMetrics( forTextStyle: textStyle ).scaledFont( for: value )
+    }
+
+    func set(_ value: UIFont?, withTextStyle textStyle: UIFont.TextStyle? = nil) {
+        self.textStyle = textStyle
+        super.set( value )
+    }
+
+    override func clear() {
+        self.textStyle = nil
+        super.clear()
+    }
+
+    public override var description: String {
+        if let textStyle = self.textStyle {
+            return "\(super.description), textStyle(\(textStyle)) ]"
+        }
+        else {
+            return super.description
+        }
+    }
+}
+
+public class AppearanceProperty<V>: Property<V> {
     private var value: (light: V?, dark: V?)
 
     init(_ value: (light: V?, dark: V?) = (light: nil, dark: nil), parent: Property<V>? = nil) {

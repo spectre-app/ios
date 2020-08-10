@@ -157,7 +157,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                         configuration.action = action
                         self.observers.notify { $0.siteDetailsAction( site: site ) }
                     },
-                    UIAction( title: "Copy Login Name 🅿", image: .icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: InAppFeature.premium.enabled() ? []: .disabled ) { action in
+                    UIAction( title: "Copy Login Name 🅿︎", image: .icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: InAppFeature.premium.enabled() ? []: .disabled ) { action in
                         configuration.action = action
                         site.copy( keyPurpose: .identification, for: self )
                     },

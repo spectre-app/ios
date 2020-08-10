@@ -36,7 +36,7 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
     class FeedbackItem: ButtonItem<Model> {
         init() {
             super.init( identifier: "logbook #feedback",
-                        value: { _ in (label: "Let's Talk 🅿", image: nil) },
+                        value: { _ in (label: "Let's Talk 🅿︎", image: nil) },
                         caption: { _ in "We're here to help.  You can also reach us at:\nsupport@volto.app" } ) {
                 if let viewController = $0.viewController {
                     let options = ConversationOptions()

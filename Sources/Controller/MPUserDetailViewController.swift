@@ -91,7 +91,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     class AttackerItem: PickerItem<MPUser, MPAttacker?> {
         init() {
-            super.init( identifier: "user >attacker", title: "Defense Strategy 🅿",
+            super.init( identifier: "user >attacker", title: "Defense Strategy 🅿︎",
                         values: { _ in MPAttacker.allCases },
                         value: { $0.attacker },
                         update: { $0.attacker = $1 },
@@ -153,7 +153,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         } ),
                 ToggleItem(
                         identifier: "user >biometricLock",
-                        title: "Biometric Lock 🅿",
+                        title: "Biometric Lock 🅿︎",
                         value: {
                             let keychainKeyFactory = MPKeychainKeyFactory( fullName: $0.fullName )
                             return (icon: keychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon,

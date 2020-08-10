@@ -102,7 +102,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                                   let timeToCrack = attacker.timeToCrack( type: $0.resultType )
                             else { return nil }
 
-                            return "Time to crack: \(timeToCrack) 🅿"
+                            return "Time to crack: \(timeToCrack) 🅿︎"
                         } )
         }
 
@@ -124,7 +124,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
-            super.init( identifier: "site >loginType", title: "User Name Type 🅿",
+            super.init( identifier: "site >loginType", title: "User Name Type 🅿︎",
                         values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
                         value: { $0.loginType },
                         update: { $0.loginType = $1 } )
@@ -187,7 +187,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class SecurityAnswerItem: ListItem<MPSite, MPQuestion> {
         init() {
             super.init(
-                    title: "Security Answers 🅿",
+                    title: "Security Answers 🅿︎",
                     values: {
                         $0.questions.reduce( [ "": MPQuestion( site: $0, keyword: "" ) ] ) {
                             $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
