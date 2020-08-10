@@ -178,22 +178,22 @@ struct TimeToCrack: CustomStringConvertible {
             return "> age of the universe"
         }
         else if self.inYears > 1 {
-            return "~\(self.inYears, numeric: "#,##0.#") years, ~\(amount: cost)$"
+            return "~\(self.inYears, numeric: "#,##0.#") years & ~\(amount: cost)$"
         }
         else if self.inMonths > 1 {
-            return "\(self.inMonths, numeric: "#,##0.#") months, ~\(amount: cost)$"
+            return "\(self.inMonths, numeric: "#,##0.#") months & ~\(amount: cost)$"
         }
         else if self.inWeeks > 1 {
-            return "\(self.inWeeks, numeric: "#,##0.#") weeks, ~\(amount: cost)$"
+            return "\(self.inWeeks, numeric: "#,##0.#") weeks & ~\(amount: cost)$"
         }
         else if self.inDays > 1 {
-            return "\(self.inDays, numeric: "#,##0.#") days, ~\(amount: cost)$"
+            return "\(self.inDays, numeric: "#,##0.#") days & ~\(amount: cost)$"
         }
         else if self.inHours > 1 {
-            return "\(self.inHours, numeric: "#,##0.#") hours, ~\(amount: cost)$"
+            return "\(self.inHours, numeric: "#,##0.#") hours & ~\(amount: cost)$"
         }
         else if self.inSeconds > 2 {
-            return "\(self.inSeconds, numeric: "#,##0.#") seconds, ~\(amount: cost)$"
+            return "\(self.inSeconds, numeric: "#,##0.#") seconds & ~\(amount: cost)$"
         }
 
         return "trivial"
