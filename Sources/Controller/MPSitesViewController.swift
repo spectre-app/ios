@@ -53,6 +53,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
 
         // - View
         self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name" )
+        self.searchField => \.attributedPlaceholder => .font => Theme.current.font.body
         self.searchField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
         self.searchField => \.textColor => Theme.current.color.body
         self.searchField.rightView = self.userButton

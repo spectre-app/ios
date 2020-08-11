@@ -115,7 +115,7 @@ class MPAlert {
         }
 
         let contentStack = UIStackView( arrangedSubviews: [
-            self.titleLabel, self.messageLabel, content, self.expandChevron, self.detailLabel
+            self.expandChevron, self.titleLabel, self.messageLabel, content, self.detailLabel
         ].compactMap { $0 } )
         contentStack.axis = .vertical
         contentStack.alignment = .center
@@ -131,11 +131,10 @@ class MPAlert {
         self.messageLabel.textAlignment = .center
         self.messageLabel.numberOfLines = 0
 
-        self.expandChevron.text = "▾"
+        self.expandChevron.attributedText = NSAttributedString.icon( "" )
         self.expandChevron => \.textColor => Theme.current.color.body
         self.expandChevron.textAlignment = .center
-        self.expandChevron => \.font => Theme.current.font.callout
-        self.expandChevron.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 0, bottom: -8, right: 0 )
+        self.expandChevron.alignmentRectOutsets = UIEdgeInsets( top: -4, left: 0, bottom: 0, right: 0 )
 
         self.detailLabel.text = self.details
         self.detailLabel => \.textColor => Theme.current.color.body
@@ -144,9 +143,9 @@ class MPAlert {
         self.detailLabel => \.font => Theme.current.font.footnote
 
         let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
-        dismissRecognizer.direction = .up
+        dismissRecognizer.direction = .down
         let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didActivateSwipe ) )
-        activateRecognizer.direction = .down
+        activateRecognizer.direction = .up
 
         let view = MPEffectView( content: contentStack, dark: true )
         view.insetsLayoutMarginsFromSafeArea = true
