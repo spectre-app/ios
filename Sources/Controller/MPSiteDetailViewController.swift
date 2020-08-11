@@ -115,8 +115,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             return view
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func update() {
+            super.update()
 
             (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
@@ -177,8 +177,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             return view
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func update() {
+            super.update()
 
             (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
         }

@@ -26,9 +26,8 @@ class MPAlert {
         inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, forKey: "hidden" ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
-    private lazy var automaticDismissalTask = DispatchTask( queue: DispatchQueue.main, qos: .utility, deadline: .now() + .seconds( 3 ) ) {
-        self.dismiss()
-    }
+    private lazy var automaticDismissalTask = DispatchTask( queue: .main, deadline: .now() + .seconds( 3 ),
+                                                            qos: .utility ) { self.dismiss() }
 
     // MARK: --- Life ---
 
@@ -39,7 +38,7 @@ class MPAlert {
     private let titleFactory:   () -> String?
     private let messageFactory: () -> String?
     private let detailsFactory: () -> String?
-    private let contentFactory: () -> (UIView?)
+    private let contentFactory: () -> UIView?
     private let level:          LogLevel
 
     required init?(coder aDecoder: NSCoder) {
@@ -47,7 +46,7 @@ class MPAlert {
     }
 
     init(title: @escaping @autoclosure () -> String?, message: @escaping @autoclosure () -> String? = nil,
-         details: @escaping @autoclosure () -> String? = nil, content: @escaping @autoclosure () -> (UIView?) = nil,
+         details: @escaping @autoclosure () -> String? = nil, content: @escaping @autoclosure () -> UIView? = nil,
          level: LogLevel = .info) {
         self.titleFactory = title
         self.messageFactory = message

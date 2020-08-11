@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPMarshal: Observable {
+class MPMarshal: Observable, Updatable {
     public static let shared = MPMarshal()
 
     public let observers = Observers<MPMarshalObserver>()
@@ -19,9 +19,8 @@ class MPMarshal: Observable {
     private let marshalQueue = DispatchQueue( label: "marshal" )
     private let defaults     = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? productName).marshal" )
     private let documentDirectory: URL?
-    private lazy var reloadTask = DispatchTask( queue: self.marshalQueue, qos: .userInitiated, deadline: .now() + .milliseconds( 300 ) ) {
-        self.userFiles = self.userDocuments().compactMap { self.userFile( at: $0 ) }
-    }
+    private lazy var updateTask = DispatchTask( queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ),
+                                                qos: .userInitiated, update: self )
 
     init() {
         do {
@@ -37,8 +36,8 @@ class MPMarshal: Observable {
     // MARK: --- Interface ---
 
     @discardableResult
-    public func setNeedsReload() -> Bool {
-        self.reloadTask.request()
+    public func setNeedsUpdate() -> Bool {
+        self.updateTask.request()
     }
 
     private func userFile(at documentURL: URL) -> UserFile? {
@@ -122,7 +121,7 @@ class MPMarshal: Observable {
                     throw MPError.internal( details: "Couldn't save \(documentURL)" )
                 }
 
-                self.setNeedsReload()
+                self.setNeedsUpdate()
                 return documentURL
             }
         }
@@ -517,7 +516,7 @@ class MPMarshal: Observable {
                     """ ).show()
                 }
 
-                self.setNeedsReload()
+                self.setNeedsUpdate()
                 return true
             }
         }
@@ -547,7 +546,7 @@ class MPMarshal: Observable {
 
                         This was a direct installation of the import data, not a merge import.
                         """ ).show()
-                        self.setNeedsReload()
+                        self.setNeedsUpdate()
                     }
                     else {
                         mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL )
@@ -590,6 +589,12 @@ class MPMarshal: Observable {
 
             return nil
         }
+    }
+
+    // MARK: --- Updatable ---
+
+    func update() {
+        self.userFiles = self.userDocuments().compactMap { self.userFile( at: $0 ) }
     }
 
     // MARK: --- Types ---

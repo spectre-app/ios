@@ -6,7 +6,7 @@
 import UIKit
 import AVKit
 
-class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, Observable, MPUserObserver {
+class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, Observable, MPUserObserver, Updatable {
     public let observers = Observers<MPSitesViewObserver>()
     public var user: MPUser? {
         willSet {
@@ -44,9 +44,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     private lazy var resultSource = DataSource<MPQuery.Result<MPSite>>( tableView: self )
     private var newSiteResult: MPQuery.Result<MPSite>?
     private var isInitial = true
-    private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
-        self.doUpdate()
-    }
+    private lazy var updateTask = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ),
+                                                qos: .userInitiated, update: self )
 
     // MARK: --- Life ---
 
@@ -69,7 +68,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     // MARK: --- Internal ---
 
-    func doUpdate() {
+    func update() {
         DispatchQueue.global().async { [weak self] in
             guard let self = self
             else { return }
@@ -249,8 +248,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     // MARK: --- Types ---
 
     class SiteCell: UITableViewCell, Updatable, MPSiteObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
-        public weak var sitesView: MPSitesTableView?
-        public weak var result:    MPQuery.Result<MPSite>? {
+        public weak var  sitesView: MPSitesTableView?
+        public weak var  result:    MPQuery.Result<MPSite>? {
             willSet {
                 self.site?.observers.unregister( observer: self )
                 self.site?.user.observers.unregister( observer: self )
@@ -262,18 +261,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 }
             }
         }
+        private lazy var updateTask = DispatchTask( queue: .main, qos: .userInitiated, update: self )
         public var site: MPSite? {
             self.result?.value
         }
         public var new = false {
             didSet {
-                self.update()
+                self.updateTask.request()
             }
         }
 
         private var mode            = MPKeyPurpose.authentication {
             didSet {
-                self.update()
+                self.updateTask.request()
             }
         }
         private let backgroundImage = MPBackgroundView( mode: .custom )
@@ -391,7 +391,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         override func setSelected(_ selected: Bool, animated: Bool) {
             super.setSelected( selected, animated: animated )
 
-            self.update()
+            self.updateTask.request()
         }
 
         @objc
@@ -450,19 +450,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     self.captionLabel.attributedText = nil
                 }
             }
-            self.update()
+            self.updateTask.request()
         }
 
         // MARK: --- MPConfigObserver ---
 
         func didChangeConfig() {
-            self.update()
+            self.updateTask.request()
         }
 
         // MARK: --- InAppFeatureObserver ---
 
         func featureDidChange(_ feature: InAppFeature) {
-            self.update()
+            self.updateTask.request()
         }
 
         // MARK: --- Private ---

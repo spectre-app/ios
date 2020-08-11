@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPMasterPasswordField: UITextField, UITextFieldDelegate {
+class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
     var userFile:  MPMarshal.UserFile?
     var nameField: UITextField? {
         willSet {
@@ -61,19 +61,8 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
-    private lazy var identiconTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated,
-                                                   deadline: .now() + .milliseconds( .random( in: 300..<500 ) ) ) {
-        let userName       = self.userFile?.fullName ?? self.nameField?.text
-        let masterPassword = self.passwordField?.text
-
-        DispatchQueue.mpw.perform {
-            let identicon = mpw_identicon( userName, masterPassword )
-
-            DispatchQueue.main.perform {
-                self.identiconLabel.attributedText = identicon.attributedText()
-            }
-        }
-    }
+    private lazy var identiconTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( .random( in: 300..<500 ) ),
+                                                   qos: .userInitiated, update: self )
 
     // MARK: --- Life ---
 
@@ -167,6 +156,23 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate {
                         self.passwordField?.shake()
                 }
                 self.passwordIndicator.stopAnimating()
+            }
+        }
+    }
+
+    // MARK: --- Updatable ---
+
+    func update() {
+        DispatchQueue.main.perform {
+            let userName       = self.userFile?.fullName ?? self.nameField?.text
+            let masterPassword = self.passwordField?.text
+
+            DispatchQueue.mpw.perform {
+                let identicon = mpw_identicon( userName, masterPassword )
+
+                DispatchQueue.main.perform {
+                    self.identiconLabel.attributedText = identicon.attributedText()
+                }
             }
         }
     }

@@ -173,7 +173,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        MPMarshal.shared.setNeedsReload()
+        MPMarshal.shared.setNeedsUpdate()
     }
 
     override func viewDidAppear(_ animated: Bool) {

@@ -5,7 +5,7 @@
 
 import UIKit
 
-class Item<M>: NSObject {
+class Item<M>: NSObject, Updatable {
     public var viewController: AnyMPDetailsViewController? {
         didSet {
             ({ self.subitems.forEach { $0.viewController = self.viewController } }())
@@ -25,11 +25,8 @@ class Item<M>: NSObject {
     private let subitems:        [Item<M>]
     private (set) lazy var view = createItemView()
 
-    private lazy var updateTask = DispatchTask( queue: DispatchQueue.main, qos: .userInitiated, deadline: .now() + .milliseconds( 100 ) ) {
-        UIView.animate( withDuration: .short ) {
-            self.doUpdate()
-        }
-    }
+    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
+                                                qos: .userInitiated, update: self, animated: true )
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
          caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil },
@@ -59,13 +56,13 @@ class Item<M>: NSObject {
         return self
     }
 
-    func doUpdate() {
+    func update() {
         self.behaviours.forEach { $0.didUpdate( item: self ) }
-        self.subitems.forEach { $0.doUpdate() }
+        self.subitems.forEach { $0.update() }
         self.view.update()
     }
 
-    class ItemView<M>: UIView {
+    class ItemView<M>: UIView, Updatable {
         let titleLabel   = UILabel()
         let captionLabel = UILabel()
         let contentView  = UIStackView()

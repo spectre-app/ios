@@ -95,7 +95,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         super.viewWillAppear( animated )
 
         UIView.performWithoutAnimation {
-            self.items.forEach { $0.doUpdate() }
+            self.items.forEach { $0.update() }
         }
     }
 

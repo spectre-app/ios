@@ -16,20 +16,14 @@ extension DispatchQueue {
     private static let threadLabelsKey = "DispatchQueue+MP"
     private var threadLabels: Set<String> {
         get {
-            if let threadLabels = Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] as? Set<String> {
-                return threadLabels
-            }
-
-            let newThreadLabels = Set<String>()
-            self.threadLabels = newThreadLabels
-            return newThreadLabels
+            Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] as? Set<String> ?? .init()
         }
         set {
             Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] = newValue
         }
     }
 
-    /** Performs the work asynchronously, unless queue is main and already on the main thread, then perform synchronously. */
+    /** Execute the work synchronously if Performs the work asynchronously, unless queue is main and already on the main thread, then perform synchronously. */
     public func perform(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping @convention(block) () -> Void) {
         if self.isActive {
@@ -273,27 +267,45 @@ public class Promise<V> {
     }
 }
 
+/**
+ * A task that can be scheduled by request.
+ */
 public class DispatchTask {
     private let requestQueue = DispatchQueue( label: "DispatchTask request", qos: .userInitiated )
     private let workQueue: DispatchQueue
     private let qos:       DispatchQoS
     private let group:     DispatchGroup?
     private let deadline:  () -> DispatchTime
-    private let work:      () -> Void
-    private var item:      DispatchWorkItem? {
+    private let work:     () -> Void
+    private var workItem: DispatchWorkItem? {
         willSet {
-            self.item?.cancel()
+            self.workItem?.cancel()
         }
         didSet {
-            if let item = self.item {
-                self.workQueue.asyncAfter( deadline: self.deadline(), execute: item )
+            if let item = self.workItem {
+                let deadline = self.deadline()
+                if deadline <= DispatchTime.now() {
+                    self.workQueue.async( execute: item )
+                }
+                else {
+                    self.workQueue.asyncAfter( deadline: deadline, execute: item )
+                }
             }
         }
     }
 
-    public init(queue: DispatchQueue, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified,
-                deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(),
-                execute work: @escaping @convention(block) () -> Void) {
+    public convenience init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), qos: DispatchQoS = .unspecified, group: DispatchGroup? = nil, update: Updatable, animated: Bool = false) {
+        self.init( queue: queue, deadline: deadline(), qos: qos, group: group ) {
+            if animated {
+                UIView.animate( withDuration: .short ) { update.update() }
+            }
+            else {
+                update.update()
+            }
+        }
+    }
+
+    public init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), qos: DispatchQoS = .unspecified, group: DispatchGroup? = nil, execute work: @escaping @convention(block) () -> ()) {
         self.workQueue = queue
         self.group = group
         self.qos = qos
@@ -301,28 +313,35 @@ public class DispatchTask {
         self.work = work
     }
 
+    /**
+     * Queue the task for execution if it has not already been queued.
+     * The task is removed from the request queue as soon as the work begins.
+     */
     @discardableResult
     public func request() -> Bool {
         self.requestQueue.sync {
-            guard self.item == nil
+            guard self.workItem == nil
             else { return false }
 
-            self.item = DispatchWorkItem( qos: self.qos ) {
-                self.requestQueue.sync { self.item = nil }
+            self.workItem = DispatchWorkItem( qos: self.qos ) {
+                self.requestQueue.sync { self.workItem = nil }
                 self.workQueue.perform( group: self.group, qos: self.qos, execute: self.work )
             }
             return true
         }
     }
 
+    /**
+     * Remove the task from the request queue if it is queued.
+     */
     @discardableResult
     public func cancel() -> Bool {
         self.requestQueue.sync {
             defer {
-                self.item = nil
+                self.workItem = nil
             }
 
-            return self.item != nil
+            return self.workItem != nil
         }
     }
 }
