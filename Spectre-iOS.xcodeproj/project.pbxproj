@@ -62,6 +62,7 @@
 		93D3998DDFAB93EA585BCB12 /* Result+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397311C748F45186ADB8D /* Result+MP.swift */; };
 		93D39A2954B245FC0D925312 /* MPSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPSite.swift */; };
 		93D39A467E6B7BB3B646E004 /* MPTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* MPTracker.swift */; };
+		93D39A9B302DAFB47A407100 /* NSAttributedString+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B001A2F124BE17C04E7 /* NSAttributedString+MP.swift */; };
 		93D39AA18A00A587610444F4 /* MPToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */; };
 		93D39AA2456367CDF6A7A296 /* MPQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */; };
 		93D39AB0E8841E744F4B6F4C /* MPItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39865ECFD34CF3ADF930D /* MPItemCell.swift */; };
@@ -257,6 +258,7 @@
 		93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTapEffectView.swift; sourceTree = "<group>"; };
 		93D399D8E0D5A547143642A7 /* MPMarshal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMarshal.swift; sourceTree = "<group>"; };
 		93D39AFD17CBE324D745DAB0 /* mpw-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-types.h"; sourceTree = "<group>"; };
+		93D39B001A2F124BE17C04E7 /* NSAttributedString+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSAttributedString+MP.swift"; sourceTree = "<group>"; };
 		93D39B3112D0D128E6369596 /* MPTintLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintLabel.swift; sourceTree = "<group>"; };
 		93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSecrets.swift; sourceTree = "<group>"; };
 		93D39B6403FE258E526E5E85 /* UIView+MP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+MP.m"; sourceTree = "<group>"; };
@@ -567,6 +569,7 @@
 				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
 				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
 				93D397930CDEF625FC438ECE /* InAppStore.swift */,
+				93D39B001A2F124BE17C04E7 /* NSAttributedString+MP.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1411,6 +1414,7 @@
 				93D3972C722A7A007223F2AD /* MPPremiumDetailsViewController.swift in Sources */,
 				93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */,
 				93D3928A525C7A67E22F908B /* InAppStore.swift in Sources */,
+				93D39A9B302DAFB47A407100 /* NSAttributedString+MP.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

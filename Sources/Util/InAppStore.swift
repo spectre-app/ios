@@ -157,12 +157,8 @@ class InAppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObser
 }
 
 extension SKProduct {
-    var localizedPrice: String {
-        self.localizedPrice( quantity: 1 )
-    }
-
-    func localizedPrice(quantity: Int) -> String {
-        let price = self.price.doubleValue * Double( self.subscriptionPeriod?.numberOfUnits ?? 1 * quantity )
+    func localizedPrice(quantity: Int = 1) -> String {
+        let price = self.price.doubleValue * Double( quantity )
 
         let currencyFormatter = NumberFormatter()
         currencyFormatter.numberStyle = .currency
@@ -170,56 +166,95 @@ extension SKProduct {
         return currencyFormatter.string( from: NSNumber( value: price ) ) ?? "\(price)"
     }
 
-    var localizedAmount: String {
-        self.localizedAmount( quantity: 1 ) ?? ""
+    func localizedDuration(quantity: Int = 1) -> String? {
+        self.subscriptionPeriod?.localizedDescription( periods: quantity, context: self.isAutoRenewing ? .frequency: .quantity )
     }
 
-    func localizedAmount(quantity: Int) -> String? {
-        (self.subscriptionPeriod?.localizedDescription).map { period in
-            quantity == 1 ? period: quantify( period, quantity: quantity )
+    func localizedOffer(quantity: Int = 1) -> String {
+        if let amount = self.localizedDuration( quantity: quantity ) {
+            return "\(self.localizedPrice( quantity: quantity )) \(self.isAutoRenewing ? "/": "for") \(amount)"
+        }
+        else {
+            return self.localizedPrice( quantity: quantity )
         }
     }
 
-    func quantify(_ string: String?, quantity: Int) -> String {
-        var quantum: String
-        if quantity == 0 {
-            quantum = "no"
+    var isAutoRenewing: Bool {
+        self.subscriptionGroupIdentifier != nil
+    }
+}
+
+extension SKProductDiscount {
+    var localizedOffer: String {
+        switch self.paymentMode {
+            case .freeTrial:
+                return "Try freely"
+            case .payAsYouGo:
+                return "\(self.localizedPrice) / \(self.subscriptionPeriod.localizedDescription( context: .frequency ))"
+            case .payUpFront:
+                fallthrough
+            @unknown default:
+                return "\(self.localizedPrice)"
         }
-        else if quantity == 1 {
-            quantum = "1 time"
-        }
-        else {
-            quantum = "\(quantity) times"
+    }
+
+    var localizedValidity: String {
+        self.subscriptionPeriod.localizedDescription( periods: self.numberOfPeriods, context: .quantity )
+    }
+
+    var localizedPrice: String {
+        let pricePeriods: Int
+        switch self.paymentMode {
+            case .freeTrial:
+                return "Free"
+            case .payAsYouGo:
+                pricePeriods = 1
+            case .payUpFront:
+                fallthrough
+            @unknown default:
+                pricePeriods = self.numberOfPeriods
         }
 
-        if let string = string {
-            return "\(quantum) \(string)"
-        }
-        else {
-            return quantum
-        }
+        let price = self.price.doubleValue * Double( pricePeriods )
+
+        let currencyFormatter = NumberFormatter()
+        currencyFormatter.numberStyle = .currency
+        currencyFormatter.locale = self.priceLocale
+        return currencyFormatter.string( from: NSNumber( value: price ) ) ?? "\(price)"
     }
 }
 
 extension SKProductSubscriptionPeriod {
-    var localizedDescription: String {
-        let plural = self.numberOfUnits != 1
-
-        var unitName: String
-        switch self.unit {
-            case .day:
-                unitName = plural ? "Days": "Day"
-            case .week:
-                unitName = plural ? "Weeks": "Week"
-            case .month:
-                unitName = plural ? "Months": "Month"
-            case .year:
-                unitName = plural ? "Years": "Year"
-            @unknown default:
-                unitName = "<\(self.unit.rawValue)>"
+    func localizedDescription(periods: Int = 1, context: LocalizedContext) -> String {
+        let units = self.numberOfUnits * periods
+        switch context {
+            case .frequency:
+                return units == 1 ? self.unit.localizedDescription( plural: false ):
+                        "\(units) \(self.unit.localizedDescription( plural: true ))"
+            case .quantity:
+                return "\(units) \(self.unit.localizedDescription( plural: units != 1 ))"
         }
+    }
 
-        return plural ? "\(self.numberOfUnits) \(unitName)": unitName
+    enum LocalizedContext {
+        case frequency, quantity
+    }
+}
+
+extension SKProduct.PeriodUnit {
+    func localizedDescription(plural: Bool) -> String {
+        switch self {
+            case .day:
+                return plural ? "days": "day"
+            case .week:
+                return plural ? "weeks": "week"
+            case .month:
+                return plural ? "months": "month"
+            case .year:
+                return plural ? "years": "year"
+            @unknown default:
+                return "<\(self.rawValue)>"
+        }
     }
 }
 

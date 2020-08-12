@@ -84,8 +84,16 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void> {
             var product: SKProduct? {
                 didSet {
                     if let product = self.product {
-                        self.buyButton.title = "\(product.localizedTitle) for \(product.localizedPrice) per \(product.localizedAmount)"
-                        self.captionLabel.text = product.localizedDescription
+                        if let introductoryPrice = product.introductoryPrice {
+                            self.buyButton.attributedTitle =
+                                    .str( introductoryPrice.localizedOffer ) +
+                                    .str( " for \(introductoryPrice.localizedValidity)", secondaryColor: .clear )
+                            self.captionLabel.text = "Then \(product.localizedOffer()). \(product.localizedDescription)"
+                        }
+                        else {
+                            self.buyButton.title = product.localizedOffer()
+                            self.captionLabel.text = product.localizedDescription
+                        }
                     }
                     else {
                         self.buyButton.title = nil

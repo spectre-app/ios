@@ -111,7 +111,15 @@ public extension PropertyPath where V == NSAttributedString {
         if let attribute = self.attribute, let string = self.target[keyPath: self.nullableKeyPath!] {
             let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
             if let value = value {
-                string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
+                if let secondaryColor = value as? UIColor, attribute == .strokeColor {
+                    string.enumerateAttribute( .strokeColor, in: NSRange( location: 0, length: string.length ) ) { value, range, stop in
+                        if value != nil, (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
+                            string.addAttribute( .foregroundColor, value: secondaryColor, range: range )
+                        }
+                    }
+                } else {
+                    string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
+                }
             }
             else {
                 string.removeAttribute( attribute, range: NSRange( location: 0, length: string.length ) )
