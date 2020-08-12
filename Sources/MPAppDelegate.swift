@@ -113,7 +113,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         err( "Couldn't register for remote notifications. [>TRC]" )
-        trc( "[>] %@", error )
+        pii( "[>] %@", error )
     }
 
     // MARK: --- MPConfigObserver ---

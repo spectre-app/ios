@@ -63,7 +63,7 @@ public class MPHapticFeedback: MPFeedback {
         }
         catch {
             err( "Haptics not available [>TRC]" )
-            trc( "[>] %@", error )
+            pii( "[>] %@", error )
 
             self.hapticEngine = nil
             self.players.removeAll()
@@ -82,7 +82,7 @@ public class MPHapticFeedback: MPFeedback {
             }
             catch {
                 err( "Couldn't play haptic [>TRC]" )
-                trc( "[>] %@", error )
+                pii( "[>] %@", error )
             }
         }
     }

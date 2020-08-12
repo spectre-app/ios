@@ -75,7 +75,7 @@ class MPURLUtils {
 
                 if let error = error {
                     wrn( "Couldn't fetch site preview. [>TRC]" )
-                    trc( "[>] %@: HTTP %d: %@",
+                    pii( "[>] %@: HTTP %d: %@",
                          imageURL, (response as? HTTPURLResponse)?.statusCode ?? -1, error )
                 }
                 else if let responseData = responseData {
@@ -92,7 +92,7 @@ class MPURLUtils {
 
                 default:
                     wrn( "No site preview. [>TRC]" )
-                    trc( "[>] %@: %@", url, error )
+                    pii( "[>] %@: %@", url, error )
             }
 
             dbg("[preview error] %@: %@", url, error)

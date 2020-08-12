@@ -61,7 +61,7 @@ class MPAlert {
     public func show(in view: UIView? = nil, dismissAutomatically: Bool = true,
                      file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) -> Self {
         log( file: file, line: line, function: function, dso: dso, level: self.level, "[ %@ ]", [ self.title ] )
-        trc( file: file, line: line, function: function, dso: dso, "> %@: %@", self.message, self.details )
+        pii( file: file, line: line, function: function, dso: dso, "> %@: %@", self.message, self.details )
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {

@@ -23,7 +23,12 @@ extension DispatchQueue {
         }
     }
 
-    /** Execute the work synchronously if Performs the work asynchronously, unless queue is main and already on the main thread, then perform synchronously. */
+    /**
+     * Execute the work synchronously if our queue:
+     *   - is .main and we're on the Main thread.
+     *   - its label is in the current thread's active labels.
+     *   - its label matches the current dispatch queue's label.
+     */
     public func perform(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping @convention(block) () -> Void) {
         if self.isActive {

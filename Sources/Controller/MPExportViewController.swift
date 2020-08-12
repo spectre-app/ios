@@ -85,7 +85,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
             let item       = MPMarshal.ActivityItem( user: self.user, format: self.format, redacted: self.redacted )
             let controller = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
             controller.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
-                trc( "Export activity completed: %d, error: %@", completed, activityError )
+                pii( "Export activity completed: %d, error: %@", completed, activityError )
 
                 item.activityViewController( controller, completed: completed, forActivityType: activityType,
                                              returnedItems: returnedItems, activityError: activityError )

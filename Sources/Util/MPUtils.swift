@@ -810,6 +810,11 @@ extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
     }
 }
 
+public func pii(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: appConfig.isDebug ? .debug : .trace, format, args )
+}
+
 public func trc(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) {
     log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
