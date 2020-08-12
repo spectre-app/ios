@@ -11,59 +11,25 @@ class MPButton: MPEffectView {
     var tapEffect = true
     var image: UIImage? {
         didSet {
-            DispatchQueue.main.perform {
-                self.button.setImage( self.image, for: .normal )
-                self.button.sizeToFit()
-            }
+            DispatchQueue.main.perform { self.update() }
         }
     }
     var title: String? {
         didSet {
-            DispatchQueue.main.perform {
-                if self.title?.count ?? 0 > 1 {
-                    self.size = .text
-                }
-                else if self.title?.count ?? 0 == 1 {
-                    self.size = .text_icon
-                }
-                else if self.title?.isEmpty ?? true {
-                    self.size = .image_icon
-                }
-                else {
-                    self.size = .small
-                }
-
-                self.button.setTitle( self.title, for: .normal )
-                self.button.sizeToFit()
-            }
+            DispatchQueue.main.perform { self.update() }
         }
     }
-    var size = Size.image_icon {
+    var attributedTitle: NSAttributedString? {
         didSet {
-            DispatchQueue.main.perform {
-                switch self.size {
-                    case .text:
-                        self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
-                        self.squareButtonConstraint.isActive = false
-                    case .text_icon:
-                        self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
-                        self.squareButtonConstraint.isActive = true
-                    case .image_icon:
-                        self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
-                        self.squareButtonConstraint.isActive = true
-                    case .small:
-                        self.button.contentEdgeInsets = UIEdgeInsets( top: 3, left: 5, bottom: 3, right: 5 )
-                        self.squareButtonConstraint.isActive = false
-                }
-                self.button.sizeToFit()
-            }
+            DispatchQueue.main.perform { self.update() }
         }
     }
     let button = UIButton( type: .custom )
 
     private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
-                                                                     .with( priority: .defaultHigh )
+                                                                     .with( priority: UILayoutPriority( 900 ) )
+
     override var bounds: CGRect {
         didSet {
             self.setNeedsUpdateConstraints()
@@ -72,32 +38,28 @@ class MPButton: MPEffectView {
 
     // MARK: --- Life ---
 
-    static func close(for prefix: String) -> MPButton {
-        MPButton( identifier: "\(prefix) #close", title: "╳" )
-    }
-
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(identifier: String? = nil, image: UIImage? = nil, title: String? = nil,
+    init(identifier: String? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
          border: CGFloat = 1, background: Bool = true, dark: Bool = false, round: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
          action: ((UIEvent, MPButton) -> Void)? = nil) {
         self.identifier = identifier
         self.action = action
         super.init( border: border, background: background, dark: dark, round: round, rounding: rounding, dims: false )
 
+        self.button.titleLabel?.numberOfLines = 0
+        self.button.titleLabel?.textAlignment = .center
         self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
-        self.button => \UIButton.currentTitleColor => Theme.current.color.body
-        self.button.titleLabel! => \.font => Theme.current.font.callout
         self.button.sizeToFit()
 
-        self.stateObserver = self.button.observe( \UIButton.isSelected, options: .initial ) { _, _ in
+        self.stateObserver = self.button.observe( \.isSelected, options: .initial ) { _, _ in
             self.isSelected = self.button.isSelected
         }
 
@@ -112,6 +74,7 @@ class MPButton: MPEffectView {
         defer {
             self.image = image
             self.title = title
+            self.attributedTitle = attributedTitle
         }
     }
 
@@ -136,10 +99,26 @@ class MPButton: MPEffectView {
         }
     }
 
-    // MARK: --- Types ---
+    func update() {
+        if self.title?.count ?? 0 == 1 || self.attributedTitle?.length ?? 0 == 1 ||
+                   (self.attributedTitle?.length ?? 0 == 3 && self.attributedTitle == NSAttributedString.icon( self.attributedTitle?.string.first?.description ?? "" )) {
+            self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+            self.squareButtonConstraint.isActive = true
+        }
+        else {
+            self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+            self.squareButtonConstraint.isActive = false
+        }
 
-    enum Size {
-        case text, text_icon, image_icon, small
+        self.button.setImage( self.image, for: .normal )
+        self.button.setTitle( self.title, for: .normal )
+        self.button.setAttributedTitle( self.attributedTitle, for: .normal )
+        self.button => \.titleLabel!.font => Theme.current.font.callout
+        //self.button => \.currentAttributedTitle => .font => Theme.current.font.callout
+        self.button => \.currentAttributedTitle => .foregroundColor => Theme.current.color.body
+        self.button => \.currentAttributedTitle => .strokeColor => Theme.current.color.secondary
+        self.button => \.currentTitleColor => Theme.current.color.body
+        self.button.sizeToFit()
     }
 }
 

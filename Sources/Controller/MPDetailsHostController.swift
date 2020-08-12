@@ -15,7 +15,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     private lazy var detailRecognizer    = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
     private lazy var popupConfiguration  = LayoutConfiguration( view: self.view )
     private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
-    private let closeButton = MPButton.close( for: "details" )
+    private let closeButton = MPButton( identifier: "details #close", attributedTitle: .icon( "" ) )
     private var detailsController:      AnyMPDetailsViewController?
     private var contentSizeObservation: NSKeyValueObservation?
 

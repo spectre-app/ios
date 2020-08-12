@@ -737,14 +737,14 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         let item: StepperItem
         let valueView  = UIView()
         let valueLabel = UILabel()
-        lazy var downButton = MPButton( title: "-", background: false ) { [unowned self]  _, _ in
+        lazy var downButton = MPButton( attributedTitle: .icon( "" ), background: false ) { [unowned self]  _, _ in
             if let model = self.item.model,
                let value = self.item.value,
                value > self.item.min {
                 self.item.update( model, value - self.item.step )
             }
         }
-        lazy var upButton = MPButton( title: "+", background: false ) { [unowned self] _, _ in
+        lazy var upButton = MPButton( attributedTitle: .icon( "" ), background: false ) { [unowned self] _, _ in
             if let model = self.item.model,
                let value = self.item.value,
                value < self.item.max {
