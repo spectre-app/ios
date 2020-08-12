@@ -58,11 +58,12 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void> {
         }
     }
 
-    class SubscribeItem: ListItem<Void, SKProduct> {
+    class SubscribeItem: ListItem<Void, SKProduct>, InAppStoreObserver {
         init() {
             super.init( title: "Enroll", values: { InAppStore.shared.products( forSubscription: .premium ) } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
+            InAppStore.shared.observers.register( observer: self )
         }
 
         override func didLoad(tableView: UITableView) {
@@ -76,6 +77,14 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void> {
                 ($0 as? Cell)?.product = value
             }
         }
+
+        // MARK: --- InAppStoreObserver ---
+
+        func productsDidChange(_ products: [SKProduct]) {
+            self.setNeedsUpdate()
+        }
+
+        // MARK: --- Types ---
 
         class Cell: UITableViewCell {
             private let buyButton    = MPButton( identifier: "premium.subscription #subscribe", title: "Subscribe" )
