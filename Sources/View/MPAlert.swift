@@ -140,7 +140,7 @@ class MPAlert {
         self.detailLabel => \.textColor => Theme.current.color.body
         self.detailLabel.textAlignment = .center
         self.detailLabel.numberOfLines = 0
-        self.detailLabel => \.font => Theme.current.font.footnote
+        self.detailLabel => \.font => Theme.current.font.body
 
         let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
         dismissRecognizer.direction = .down

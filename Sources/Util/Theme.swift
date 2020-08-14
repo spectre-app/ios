@@ -113,11 +113,13 @@ public extension PropertyPath where V == NSAttributedString {
             if let value = value {
                 if let secondaryColor = value as? UIColor, attribute == .strokeColor {
                     string.enumerateAttribute( .strokeColor, in: NSRange( location: 0, length: string.length ) ) { value, range, stop in
-                        if value != nil, (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
+                        if value != nil,
+                           (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
                             string.addAttribute( .foregroundColor, value: secondaryColor, range: range )
                         }
                     }
-                } else {
+                }
+                else {
                     string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
                 }
             }
@@ -200,29 +202,43 @@ public struct ThemePattern {
 }
 
 extension UIFont {
-    static func custom(family: String, forTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
-        self.custom( family: family, forFontStyle: UIFontDescriptor.preferredFontDescriptor( withTextStyle: textStyle ) )
+    static func custom(family: String, weight: UIFont.Weight, asTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
+        self.custom( family: family, weight: weight, asFontStyle: UIFontDescriptor.preferredFontDescriptor( withTextStyle: textStyle ) )
     }
 
-    static func custom(family: String, forFontStyle fontStyle: UIFont) -> UIFont? {
-        self.custom( family: family, forFontStyle: fontStyle.fontDescriptor )
+    static func custom(family: String, weight: UIFont.Weight, asFontStyle fontStyle: UIFont) -> UIFont? {
+        self.custom( family: family, weight: weight, asFontStyle: fontStyle.fontDescriptor )
     }
 
-    static func custom(family: String, forFontStyle styleDescriptor: UIFontDescriptor) -> UIFont? {
-        let customDescriptor = UIFontDescriptor( fontAttributes: [
+    static func custom(family: String, weight: UIFont.Weight, asFontStyle styleDescriptor: UIFontDescriptor) -> UIFont? {
+        var customDescriptor = UIFontDescriptor( fontAttributes: [
             .family: family, .size: styleDescriptor.pointSize,
-            .traits: [ UIFontDescriptor.TraitKey.weight: UIFont.Weight.regular ],
-            kCTFontVariationAttribute as UIFontDescriptor.AttributeName: [ "Weight": 400 ]
+            .traits: [ UIFontDescriptor.TraitKey.weight: weight ],
         ] )
-        return UIFont( descriptor: customDescriptor.withSymbolicTraits( styleDescriptor.symbolicTraits ) ?? styleDescriptor, size: 0 )
+        if let axes = CTFontCopyVariationAxes( UIFont( descriptor: customDescriptor, size: 0 ) ) as? [[String: Any]],
+           let weightAxis = axes.first( where: { $0[kCTFontVariationAxisNameKey as String] as? String == "Weight" } ),
+           let weightIdentifier = weightAxis[kCTFontVariationAxisIdentifierKey as String] as? NSNumber {
+            customDescriptor = CTFontDescriptorCreateCopyWithVariation( customDescriptor, weightIdentifier, weight.dimension )
+        }
+        return UIFont( descriptor: customDescriptor, size: 0 )
     }
 
-    static func poppins(forTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
-        self.custom( family: "Poppins VF", forTextStyle: textStyle )
+    static func poppins(_ weight: UIFont.Weight, asTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
+        self.custom( family: "Poppins VF", weight: weight, asTextStyle: textStyle )
     }
 
-    static func sourceCodePro(ofSize size: CGFloat, weight: UIFont.Weight) -> UIFont? {
-        self.custom( family: "Source Code Pro", forFontStyle: .monospacedDigitSystemFont( ofSize: size, weight: weight ) )
+    static func sourceCodePro(_ weight: UIFont.Weight, ofSize size: CGFloat) -> UIFont? {
+        self.custom( family: "Source Code Pro", weight: weight, asFontStyle: .monospacedDigitSystemFont( ofSize: size, weight: weight ) )
+    }
+}
+
+extension UIFont.Weight {
+    var dimension: CGFloat {
+        let myScale = self.rawValue, blackScale = UIFont.Weight.black.rawValue, ultraLightScale = UIFont.Weight.ultraLight.rawValue
+        let regular = CGFloat( 400 ), black = CGFloat( 900 ), ultraLight = CGFloat( 100 )
+
+        return myScale >= 0 ? regular + myScale / blackScale * (black - regular):
+                regular - myScale / ultraLightScale * (regular - ultraLight)
     }
 }
 
@@ -345,19 +361,19 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.name = ""
 
         // Global default style
-        self.font.largeTitle.set( UIFont.poppins( forTextStyle: .largeTitle ), withTextStyle: .largeTitle )
-        self.font.title1.set( UIFont.poppins( forTextStyle: .title1 ), withTextStyle: .title1 )
-        self.font.title2.set( UIFont.poppins( forTextStyle: .title2 ), withTextStyle: .title2 )
-        self.font.title3.set( UIFont.poppins( forTextStyle: .title3 ), withTextStyle: .title3 )
-        self.font.headline.set( UIFont.poppins( forTextStyle: .headline ), withTextStyle: .headline )
-        self.font.subheadline.set( UIFont.poppins( forTextStyle: .subheadline ), withTextStyle: .subheadline )
-        self.font.body.set( UIFont.poppins( forTextStyle: .body ), withTextStyle: .body )
-        self.font.callout.set( UIFont.poppins( forTextStyle: .callout ), withTextStyle: .callout )
-        self.font.caption1.set( UIFont.poppins( forTextStyle: .caption1 ), withTextStyle: .caption1 )
-        self.font.caption2.set( UIFont.poppins( forTextStyle: .caption2 ), withTextStyle: .caption2 )
-        self.font.footnote.set( UIFont.poppins( forTextStyle: .footnote ), withTextStyle: .footnote )
-        self.font.password.set( UIFont.sourceCodePro( ofSize: 20, weight: .bold ), withTextStyle: .largeTitle )
-        self.font.mono.set( UIFont.sourceCodePro( ofSize: UIFont.systemFontSize, weight: .thin ), withTextStyle: .body )
+        self.font.largeTitle.set( UIFont.poppins( .light, asTextStyle: .largeTitle ), withTextStyle: .largeTitle )
+        self.font.title1.set( UIFont.poppins( .regular, asTextStyle: .title1 ), withTextStyle: .title1 )
+        self.font.title2.set( UIFont.poppins( .medium, asTextStyle: .title2 ), withTextStyle: .title2 )
+        self.font.title3.set( UIFont.poppins( .regular, asTextStyle: .title3 ), withTextStyle: .title3 )
+        self.font.headline.set( UIFont.poppins( .medium, asTextStyle: .headline ), withTextStyle: .headline )
+        self.font.subheadline.set( UIFont.poppins( .bold, asTextStyle: .subheadline ), withTextStyle: .subheadline )
+        self.font.body.set( UIFont.poppins( .light, asTextStyle: .body ), withTextStyle: .body )
+        self.font.callout.set( UIFont.poppins( .regular, asTextStyle: .callout ), withTextStyle: .callout )
+        self.font.caption1.set( UIFont.poppins( .light, asTextStyle: .caption1 ), withTextStyle: .caption1 )
+        self.font.caption2.set( UIFont.poppins( .regular, asTextStyle: .caption2 ), withTextStyle: .caption2 )
+        self.font.footnote.set( UIFont.poppins( .medium, asTextStyle: .footnote ), withTextStyle: .footnote )
+        self.font.password.set( UIFont.sourceCodePro( .bold, ofSize: 20 ), withTextStyle: .largeTitle )
+        self.font.mono.set( UIFont.sourceCodePro( .thin, ofSize: UIFont.systemFontSize ), withTextStyle: .body )
         self.color.body.set( UIColor.darkText )
         self.color.secondary.set( UIColor.darkGray.with( alpha: .long ) )
         self.color.placeholder.set( UIColor.darkGray.with( alpha: .short ) )
