@@ -108,6 +108,7 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     //! Child configurations which will be deactivated when this configuration is activated and activated when this configuration is deactivated.
     public var  inactiveConfigurations = [ LayoutConfiguration ]()
 
+    private static let dummyView = UIView()
     private var constrainers       = [ (UIView, LayoutTarget) -> [NSLayoutConstraint] ]()
     private var activeConstraints  = Set<NSLayoutConstraint>()
     private var refreshViews       = [ Refresh ]()
@@ -406,18 +407,18 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                 }
 
                 if !self.constrainers.isEmpty {
-                    if let owningView = owningView {
-                        targetView?.translatesAutoresizingMaskIntoConstraints = false
-                        for constrainer in self.constrainers {
-                            for constraint in constrainer( owningView, self.target ) {
-                                trc( "%@:%@: activating %@", parent?.target, self.target, constraint )
+                    targetView?.translatesAutoresizingMaskIntoConstraints = false
+                    for constrainer in self.constrainers {
+                        for constraint in constrainer( owningView ?? LayoutConfiguration.dummyView, self.target ) {
+                            trc( "%@:%@: activating %@", parent?.target, self.target, constraint )
+                            if constraint.firstItem !== LayoutConfiguration.dummyView && constraint.secondItem !== LayoutConfiguration.dummyView {
                                 constraint.isActive = true
                                 self.activeConstraints.insert( constraint )
                             }
+                            else {
+                                assertionFailure( "Cannot constrain against owning view since view is not yet attached to the hierarchy." )
+                            }
                         }
-                    }
-                    else {
-                        assert( owningView != nil, "Skipping layout constraints since view has no owner: \(self.target)" )
                     }
                 }
 

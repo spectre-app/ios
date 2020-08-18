@@ -82,6 +82,7 @@
 		93D39EAA842D58A3306E6EFB /* DispatchQueue+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3940575E4CC62A8F6CE04 /* DispatchQueue+MP.swift */; };
 		93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */; };
 		93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */; };
+		93D39F3FDFF110FB8C369C65 /* UICollectionViewLayoutAttributes+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FB08E7B525DE82EB514 /* UICollectionViewLayoutAttributes+MP.swift */; };
 		93D39F69D0EDD80B5DCAF0BB /* MPConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C3FA9FA2CA5B234741E /* MPConfig.swift */; };
 		93D39FD2F39B2AFE27A88A97 /* MPSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */; };
 		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
@@ -281,6 +282,7 @@
 		93D39F718C1C38C46D9D5078 /* MPSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSite.swift; sourceTree = "<group>"; };
 		93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitePreviewController.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAvatarCell.swift; sourceTree = "<group>"; };
+		93D39FB08E7B525DE82EB514 /* UICollectionViewLayoutAttributes+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UICollectionViewLayoutAttributes+MP.swift"; sourceTree = "<group>"; };
 		A240D0A75802CF4504653D27 /* Pods-Spectre-iOS.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.public.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.public.xcconfig"; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		DA2C3D621BD96126001137B3 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
@@ -570,6 +572,7 @@
 				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
 				93D397930CDEF625FC438ECE /* InAppStore.swift */,
 				93D39B001A2F124BE17C04E7 /* NSAttributedString+MP.swift */,
+				93D39FB08E7B525DE82EB514 /* UICollectionViewLayoutAttributes+MP.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1415,6 +1418,7 @@
 				93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */,
 				93D3928A525C7A67E22F908B /* InAppStore.swift in Sources */,
 				93D39A9B302DAFB47A407100 /* NSAttributedString+MP.swift in Sources */,
+				93D39F3FDFF110FB8C369C65 /* UICollectionViewLayoutAttributes+MP.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

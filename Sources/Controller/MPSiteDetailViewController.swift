@@ -61,7 +61,13 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class PasswordTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
             super.init( identifier: "site >resultType", title: "Password Type",
-                        values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
+                        values: { _ in
+                            [ MPResultType? ].joined(
+                                    separator: [ nil ],
+                                    MPResultType.recommendedTypes[.authentication],
+                                    [ MPResultType.statefulPersonal ],
+                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                        },
                         value: { $0.resultType },
                         update: { $0.resultType = $1 } )
         }
@@ -125,7 +131,13 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     class LoginTypeItem: PickerItem<MPSite, MPResultType> {
         init() {
             super.init( identifier: "site >loginType", title: "User Name Type 🅿︎",
-                        values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
+                        values: { _ in
+                            [ MPResultType? ].joined(
+                                    separator: [ nil ],
+                                    MPResultType.recommendedTypes[.identification],
+                                    [ MPResultType.statefulPersonal ],
+                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                        },
                         value: { $0.loginType },
                         update: { $0.loginType = $1 } )
 

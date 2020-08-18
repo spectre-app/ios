@@ -108,7 +108,12 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
             super.init(
                     identifier: "app >theme",
                     title: "Application Themes 🅿︎",
-                    values: { _ in Theme.all },
+                    values: { _ in
+                        [ Theme? ].joined(
+                                separator: [ nil ],
+                                [ .default ],
+                                Theme.allCases ).unique()
+                    },
                     value: { Theme.with( path: $0.theme ) ?? .default },
                     update: { $0.theme = $1.path },
                     caption: { _ in Theme.current } )

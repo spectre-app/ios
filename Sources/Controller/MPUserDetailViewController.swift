@@ -73,7 +73,12 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class DefaultTypeItem: PickerItem<MPUser, MPResultType> {
         init() {
             super.init( identifier: "user >defaultType", title: "Default Type",
-                        values: { _ in resultTypes.filter { !$0.has( feature: .alternative ) } },
+                        values: { _ in
+                            [ MPResultType? ].joined(
+                                    separator: [ nil ],
+                                    MPResultType.recommendedTypes[.authentication],
+                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                        },
                         value: { $0.defaultType },
                         update: { $0.defaultType = $1 } )
         }

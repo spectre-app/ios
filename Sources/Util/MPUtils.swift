@@ -9,12 +9,6 @@ let productName    = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayN
 let productVersion = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
 let productBuild   = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String ?? "0"
 
-let resultTypes = [
-    MPResultType.templateMaximum, MPResultType.templateLong, MPResultType.templateMedium, MPResultType.templateShort,
-    MPResultType.templateBasic, MPResultType.templatePIN, MPResultType.templateName, MPResultType.templatePhrase,
-    MPResultType.statefulPersonal, MPResultType.statefulDevice, MPResultType.deriveKey
-]
-
 postfix operator <
 
 postfix public func <(a: Any?) -> Any? {
@@ -79,7 +73,18 @@ extension MPKeyPurpose: CustomStringConvertible {
     }
 }
 
-extension MPResultType: CustomStringConvertible {
+extension MPResultType: CustomStringConvertible, CaseIterable {
+    public static let allCases: [MPResultType] = [
+        .templateMaximum, .templateLong, .templateMedium, .templateShort,
+        .templateBasic, .templatePIN, .templateName, .templatePhrase,
+        .statefulPersonal, .statefulDevice, .deriveKey,
+    ]
+    static let recommendedTypes: [MPKeyPurpose: [MPResultType]] = [
+        .authentication: [ .templateMaximum, .templatePhrase, .templateLong, .templateBasic, .templatePIN ],
+        .identification: [ .templateName, .templateBasic, .templateShort ],
+        .recovery: [ .templatePhrase ],
+    ]
+
     public var description:          String {
         String( validate: mpw_type_short_name( self ) ) ?? "?"
     }
@@ -494,9 +499,56 @@ extension String {
     }
 }
 
+extension Array {
+    static func joined<E: Equatable>(separator: E? = nil, _ elements: [E]?...) -> Array<E> {
+        if let separator = separator {
+            return [ E ]( elements.compactMap( { $0 } ).joined( separator: [ separator ] ) )
+        }
+        else {
+            return [ E ]( elements.compactMap( { $0 } ).joined() )
+        }
+    }
+
+    static func joined<E: Equatable>(separator: [E?]? = nil, _ elements: [E?]?...) -> Array<E?> {
+        if let separator = separator {
+            return [ E? ]( elements.compactMap( { $0 } ).joined( separator: separator ) )
+        }
+        else {
+            return [ E? ]( elements.compactMap( { $0 } ).joined() )
+        }
+    }
+}
+
+extension Array where Element: Equatable {
+    /** Retains only the first of each equal element, filtering out any future occurrences.  Preserves all nil elements. */
+    func unique() -> Self {
+        var uniqueElements = [ Element ]()
+        return self.filter( { element in
+            defer { uniqueElements.append( element ) }
+            return !uniqueElements.contains( element ) || String( reflecting: element ) == "nil"
+        } )
+    }
+}
+
 extension Dictionary {
     @inlinable public func merging(_ other: [Key: Value]) -> [Key: Value] {
         self.merging( other, uniquingKeysWith: { $1 } )
+    }
+
+    subscript(key: Key, default def: @autoclosure () -> Value) -> Value {
+        mutating get {
+            if let value = self[key] {
+                return value
+            }
+            else {
+                let def = def()
+                self[key] = def
+                return def
+            }
+        }
+        set {
+            self[key] = newValue
+        }
     }
 }
 

@@ -247,7 +247,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     private static let base      = Theme()
 
     // Register all theme objects
-    public static let  all       = [ Theme.base,
+    public static let  allCases  = [ Theme.base,
                                      Theme( path: ".dream", pattern: .dream,
                                             mood: "This weather is for dreaming." ),
                                      Theme( path: ".aged", pattern: .aged,
@@ -272,10 +272,10 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     public static let  current   = Theme( path: "current" )
 
     // SPECTRE:
-    public static let  `default` = all[1]
+    public static let  `default` = allCases[1]
 
     public class func with(path: String?) -> Theme? {
-        self.all.first { $0.path == path } ?? path<.flatMap { Theme.byPath[$0] } ?? .base
+        self.allCases.first { $0.path == path } ?? path<.flatMap { Theme.byPath[$0] } ?? .base
     }
 
     public let observers = Observers<ThemeObserver>()
