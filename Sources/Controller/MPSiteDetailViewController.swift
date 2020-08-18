@@ -142,7 +142,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         update: { $0.loginType = $1 } )
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour(mode: .enables) )
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -177,7 +177,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             }
                         } )
 
-            self.addBehaviour( PremiumConditionalBehaviour(mode: .reveals) )
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
         }
 
         override func createItemView() -> FieldItemView<MPSite> {
@@ -229,7 +229,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             self.deletable = true
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour(mode: .enables) )
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
         override func didLoad(tableView: UITableView) {

@@ -15,8 +15,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
           DefaultTypeItem(), SeparatorItem(),
           AttackerItem(), SeparatorItem(),
           FeaturesItem(), SeparatorItem(),
-          InfoItem(), SeparatorItem(),
-          AppSettingsItem(),
+          InfoItem(),
         ]
     }
 
@@ -107,7 +106,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         } )
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour(mode: .enables) )
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -173,7 +172,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             """
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour(mode: .enables) ) ] )
+                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ) ] )
         }
     }
 
@@ -181,8 +180,6 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         init() {
             super.init( subitems: [
                 ButtonItem( identifier: "user #export", value: { _ in (label: "Export", image: nil) } ) { item in
-                    trc( "Exporting: %@", item.model )
-
                     if let user = item.model {
                         let controller = MPExportViewController( user: user )
                         controller.popoverPresentationController?.sourceView = item.view
@@ -190,9 +187,10 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         item.viewController?.present( controller, animated: true )
                     }
                 },
+                ButtonItem( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) } ) { item in
+                    item.viewController?.hostController?.show( MPAppDetailsViewController() )
+                },
                 ButtonItem( identifier: "user #logout", value: { _ in (label: "Log out", image: nil) } ) { item in
-                    trc( "Logging out: %@", item.model )
-
                     item.model?.logout()
                 },
             ] )
@@ -224,14 +222,6 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class AlgorithmItem: LabelItem<MPUser> {
         init() {
             super.init( title: "Algorithm", value: { $0.algorithm } )
-        }
-    }
-
-    class AppSettingsItem: ButtonItem<MPUser> {
-        init() {
-            super.init( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) } ) { item in
-                item.viewController?.hostController?.show( MPAppDetailsViewController() )
-            }
         }
     }
 }

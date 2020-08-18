@@ -205,6 +205,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
 
     func logout() {
+        trc( "Logging out: %@", self )
         self.masterKeyFactory = nil
     }
 
