@@ -104,11 +104,12 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             }
                         },
                         caption: {
-                            guard InAppFeature.premium.enabled(), let attacker = $0.user.attacker,
-                                  let timeToCrack = attacker.timeToCrack( type: $0.resultType )
-                            else { return nil }
-
-                            return "Time to crack: \(timeToCrack) 🅿︎"
+                            if InAppFeature.premium.enabled(), let attacker = $0.user.attacker,
+                                  let timeToCrack = attacker.timeToCrack( type: $0.resultType ) {
+                                return "Time to crack: \(timeToCrack) 🅿︎"
+                            } else {
+                                return "Time to crack: unknown 🅿︎"
+                            }
                         } )
         }
 
