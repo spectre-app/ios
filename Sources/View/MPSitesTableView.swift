@@ -427,9 +427,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- MPUserObserver ---
 
         func userDidChange(_ user: MPUser) {
-            DispatchQueue.main.perform {
-                self.resultLabel.isSecureTextEntry = self.site?.user.maskPasswords ?? true
-            }
+            self.updateTask.request()
         }
 
         // MARK: --- MPSiteObserver ---
@@ -495,6 +493,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }.then( on: DispatchQueue.main ) {
                 switch $0 {
                     case .success(let result):
+                        self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
                         self.resultLabel.text = result.token
 
                     case .failure(let error):
