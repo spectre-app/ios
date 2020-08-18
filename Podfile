@@ -15,6 +15,8 @@ target 'Spectre-iOS' do
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
   pod 'FreshchatSDK'
   pod 'Countly'
+
+  pod 'Reveal-SDK', :configurations => ['Debug']
 end
 
 target 'Spectre-macOS' do
