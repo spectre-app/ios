@@ -315,18 +315,18 @@ extension String.StringInterpolation {
         }
     }
 
-    mutating func appendInterpolation(amount value: Decimal) {
+    mutating func appendInterpolation(amount value: Decimal, si: Bool = true) {
         if value >= 1_000_000_000_000.0 {
             appendLiteral( "\(value / 1_000_000_000_000.0, numeric: "#,##0")T" )
         }
         else if value >= 1_000_000_000 {
-            appendLiteral( "\(value / 1_000_000_000, numeric: "#,##0")B" )
+            appendLiteral( "\(value / 1_000_000_000, numeric: "#,##0")\(si ? "G": "B")" )
         }
         else if value >= 1_000_000 {
             appendLiteral( "\(value / 1_000_000, numeric: "#,##0")M" )
         }
         else if value >= 1_000 {
-            appendLiteral( "\(value / 1_000, numeric: "#,##0")k" )
+            appendLiteral( "\(value / 1_000, numeric: "#,##0")\(si ? "k": "K")" )
         }
         else {
             appendLiteral( "\(value, numeric: "#,##0")" )

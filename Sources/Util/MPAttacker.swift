@@ -30,7 +30,7 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         }
     }
     var localizedDescription: String {
-        "\(self.scale, numeric: "0.#") x \(amount: attempts_per_second)/s (~ \(amount: self.fixed_budget)$ HW + \(amount: self.monthly_budget)$/m)"
+        "\(self.scale, numeric: "0.#") x \(amount: attempts_per_second)/s (~ $\(amount: self.fixed_budget, si: false) HW + $\(amount: self.monthly_budget, si: false)/m)"
     }
     var fixed_budget:         Decimal {
         switch self {
@@ -146,56 +146,26 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         secondsToCrack /= self.scale
 
         // Convert seconds into other time scales.
-        var time = TimeToCrack( permutations: permutations, attacker: self )
-        time.inSeconds = secondsToCrack
-        time.inHours = time.inSeconds / 3600
-        time.inDays = time.inHours / 24
-        time.inWeeks = time.inDays / 7
-        time.inMonths = time.inDays / 30
-        time.inYears = time.inDays / 356
-        time.inUniverses = time.inYears / 14_000_000_000.0
-
-        return time
+        return TimeToCrack( permutations: permutations, attacker: self, period: .seconds( secondsToCrack ) )
     }
 }
 
 struct TimeToCrack: CustomStringConvertible {
     var permutations: Decimal
     var attacker:     MPAttacker
-    var inSeconds:    Decimal = 0
-    var inHours:      Decimal = 0
-    var inDays:       Decimal = 0
-    var inWeeks:      Decimal = 0
-    var inMonths:     Decimal = 0
-    var inYears:      Decimal = 0
-    var inUniverses:  Decimal = 0
+    var period:       Period
 
     var description: String {
-        let kWh  = (self.attacker.scale * cost_watt) * self.inHours / 1000
-        let cost = (self.attacker.scale * cost_fixed) + cost_per_kwh * kWh
-
-        if self.inUniverses > 1 {
-            return "> age of the universe"
-        }
-        else if self.inYears > 1 {
-            return "~\(self.inYears, numeric: "#,##0.#") years & ~\(amount: cost)$"
-        }
-        else if self.inMonths > 1 {
-            return "\(self.inMonths, numeric: "#,##0.#") months & ~\(amount: cost)$"
-        }
-        else if self.inWeeks > 1 {
-            return "\(self.inWeeks, numeric: "#,##0.#") weeks & ~\(amount: cost)$"
-        }
-        else if self.inDays > 1 {
-            return "\(self.inDays, numeric: "#,##0.#") days & ~\(amount: cost)$"
-        }
-        else if self.inHours > 1 {
-            return "\(self.inHours, numeric: "#,##0.#") hours & ~\(amount: cost)$"
-        }
-        else if self.inSeconds > 2 {
-            return "\(self.inSeconds, numeric: "#,##0.#") seconds & ~\(amount: cost)$"
+        let Wh   = (self.attacker.scale * cost_watt) * self.period.seconds / 3600
+        let cost = (self.attacker.scale * cost_fixed) + cost_per_kwh * Wh / 1000
+        if self.period.seconds < 2 {
+            return "trivial"
         }
 
-        return "trivial"
+        let normalizedPeriod = self.period.normalize
+        if case Period.universes = normalizedPeriod {
+            return normalizedPeriod.localizedDescription
+        }
+        return "~\(normalizedPeriod.localizedDescription) & ~$\(amount: cost, si: false), ~\(amount: Wh)Wh"
     }
 }

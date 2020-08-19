@@ -124,7 +124,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                 didSet {
                     DispatchQueue.main.perform {
                         if let attacker = self.attacker {
-                            self.nameLabel.text = "\(amount: attacker.fixed_budget + attacker.monthly_budget * 12)$"
+                            self.nameLabel.text = "$\(amount: attacker.fixed_budget + attacker.monthly_budget * 12, si: false)"
                             self.classLabel.text = "\(attacker)"
                         }
                         else {

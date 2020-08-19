@@ -51,6 +51,7 @@
 		93D3975E8CAF0B2422D7C1D7 /* MPAttacker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */; };
 		93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
 		93D3978E4978CDFF444B3DF4 /* UIView+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BFD3DB66C9068069B76 /* UIView+MP.swift */; };
+		93D397A1D5DA3D612D5874EF /* Period.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39651387222CBD2F9CCE0 /* Period.swift */; };
 		93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B6403FE258E526E5E85 /* UIView+MP.m */; };
 		93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
 		93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
@@ -229,6 +230,7 @@
 		93D395FD92D751588A645D15 /* MPKeyFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeyFactory.swift; sourceTree = "<group>"; };
 		93D395FE1BCF8420D297DFDE /* UIControl+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+MP.swift"; sourceTree = "<group>"; };
 		93D39613B68BCF56DD931C91 /* MPMarginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMarginView.swift; sourceTree = "<group>"; };
+		93D39651387222CBD2F9CCE0 /* Period.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Period.swift; sourceTree = "<group>"; };
 		93D3969393A3A46BD27D7078 /* mpw-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm.c"; sourceTree = "<group>"; };
 		93D396BDE67A6BC9E1A1A6A0 /* UICollectionView+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UICollectionView+MP.swift"; sourceTree = "<group>"; };
 		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
@@ -573,6 +575,7 @@
 				93D397930CDEF625FC438ECE /* InAppStore.swift */,
 				93D39B001A2F124BE17C04E7 /* NSAttributedString+MP.swift */,
 				93D39FB08E7B525DE82EB514 /* UICollectionViewLayoutAttributes+MP.swift */,
+				93D39651387222CBD2F9CCE0 /* Period.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1419,6 +1422,7 @@
 				93D3928A525C7A67E22F908B /* InAppStore.swift in Sources */,
 				93D39A9B302DAFB47A407100 /* NSAttributedString+MP.swift in Sources */,
 				93D39F3FDFF110FB8C369C65 /* UICollectionViewLayoutAttributes+MP.swift in Sources */,
+				93D397A1D5DA3D612D5874EF /* Period.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

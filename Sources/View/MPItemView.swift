@@ -41,14 +41,6 @@ class Item<M>: NSObject, Updatable {
         ItemView<M>( withItem: self )
     }
 
-    func setNeedsUpdate() {
-        guard self.viewController != nil
-        else { return }
-
-        self.subitems.forEach { $0.setNeedsUpdate() }
-        self.updateTask.request()
-    }
-
     @discardableResult
     func addBehaviour(_ behaviour: Behaviour<M>) -> Self {
         self.behaviours.append( behaviour )
@@ -56,10 +48,14 @@ class Item<M>: NSObject, Updatable {
         return self
     }
 
+    func setNeedsUpdate() {
+        self.updateTask.request()
+        self.subitems.forEach { $0.setNeedsUpdate() }
+    }
+
     func update() {
-        self.behaviours.forEach { $0.didUpdate( item: self ) }
-        self.subitems.forEach { $0.update() }
         self.view.update()
+        self.behaviours.forEach { $0.didUpdate( item: self ) }
     }
 
     class ItemView<M>: UIView, Updatable {

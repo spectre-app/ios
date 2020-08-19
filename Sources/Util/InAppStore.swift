@@ -226,14 +226,11 @@ extension SKProductDiscount {
 
 extension SKProductSubscriptionPeriod {
     func localizedDescription(periods: Int = 1, context: LocalizedContext) -> String {
-        let units = self.numberOfUnits * periods
-        switch context {
-            case .frequency:
-                return units == 1 ? self.unit.localizedDescription( plural: false ):
-                        "\(units) \(self.unit.localizedDescription( plural: true ))"
-            case .quantity:
-                return "\(units) \(self.unit.localizedDescription( plural: units != 1 ))"
-        }
+        let units = Decimal( self.numberOfUnits * periods )
+
+        return context == .frequency && units == 1 ?
+                self.unit.localizedDescription( units: .nan ):
+                self.unit.localizedDescription( units: units )
     }
 
     enum LocalizedContext {
@@ -242,18 +239,18 @@ extension SKProductSubscriptionPeriod {
 }
 
 extension SKProduct.PeriodUnit {
-    func localizedDescription(plural: Bool) -> String {
+    func localizedDescription(units: Decimal) -> String {
         switch self {
             case .day:
-                return plural ? "days": "day"
+                return Period.days( units ).localizedDescription
             case .week:
-                return plural ? "weeks": "week"
+                return Period.weeks( units ).localizedDescription
             case .month:
-                return plural ? "months": "month"
+                return Period.months( units ).localizedDescription
             case .year:
-                return plural ? "years": "year"
+                return Period.years( units ).localizedDescription
             @unknown default:
-                return "<\(self.rawValue)>"
+                return "\(units)  <\(self.rawValue)>"
         }
     }
 }
