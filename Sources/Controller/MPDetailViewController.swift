@@ -7,7 +7,7 @@ import Foundation
 import UIKit
 
 class AnyMPDetailsViewController: MPViewController {
-    var hostController : MPDetailsHostController?
+    var hostController: MPDetailsHostController?
 }
 
 class MPDetailsViewController<M>: AnyMPDetailsViewController {
@@ -26,7 +26,8 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
 
     private let backgroundView = MPBackgroundView()
     private let itemsView      = UIStackView()
-    private lazy var items         = self.loadItems()
+    private var willEnterForegroundObserver: NSObjectProtocol?
+    private lazy var items = self.loadItems()
 
     // MARK: --- Interface ---
 
@@ -102,6 +103,15 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        self.setNeedsUpdate()
+        self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { _ in
+            self.setNeedsUpdate()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 }

@@ -20,15 +20,6 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         super.init( model: appConfig )
 
         self.model.observers.register( observer: self )
-
-        self.didBecomeActiveObserver = NotificationCenter.default.addObserver(
-                forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil ) { _ in
-            self.setNeedsUpdate()
-        }
-    }
-
-    deinit {
-        self.didBecomeActiveObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 
     override func loadItems() -> [Item<MPConfig>] {
@@ -40,6 +31,21 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
           ThemeItem(),
           ManageSubscriptionItem(), SeparatorItem(),
           InfoItem() ]
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.didBecomeActiveObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil ) { _ in
+            self.setNeedsUpdate()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        self.didBecomeActiveObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 
     // MARK: --- MPConfigObserver ---
