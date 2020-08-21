@@ -15,7 +15,6 @@ class MPMarshal: Observable, Updatable {
         }
     }
 
-    private var saving       = [ MPUser ]()
     private let marshalQueue = DispatchQueue( label: "marshal" )
     private let defaults     = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? productName).marshal" )
     private let documentDirectory: URL?
@@ -71,40 +70,8 @@ class MPMarshal: Observable, Updatable {
         return false
     }
 
-    public func setNeedsSave(user: MPUser) {
-        guard user.dirty, user.file != nil, !self.saving.contains( user )
-        else { return }
-
-        self.saving.append( user )
-        self.marshalQueue.asyncAfter( deadline: .now() + .seconds( 1 ) ) {
-            guard user.dirty, user.masterKeyFactory != nil
-            else { return }
-
-            self.save( user: user, format: .default ).then( {
-                switch $0 {
-                    case .success(let destination):
-                        if let origin = user.origin, origin != destination,
-                           FileManager.default.fileExists( atPath: origin.path ) {
-                            do { try FileManager.default.removeItem( at: origin ) }
-                            catch {
-                                mperror( title: "Migration issue", message: "Cannot delete obsolete origin document",
-                                         details: origin.lastPathComponent, error: error )
-                            }
-                        }
-                        user.origin = destination
-
-                    case .failure(let error):
-                        mperror( title: "Couldn't save user", details: user, error: error )
-                }
-
-                self.saving.removeAll { $0 == user }
-                user.dirty = false
-            } )
-        }
-    }
-
     @discardableResult
-    public func save(user: MPUser, format: MPMarshalFormat, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
+    public func save(user: MPUser, format: MPMarshalFormat = .default, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
         let saveEvent = MPTracker.shared.begin( named: "marshal #save" )
 
         return self.marshalQueue.promised {

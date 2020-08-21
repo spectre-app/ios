@@ -25,7 +25,7 @@ public class MPKeyFactory {
     }
 
     deinit {
-        self.flush()
+        self.invalidate()
     }
 
     // MARK: --- Interface ---
@@ -37,7 +37,7 @@ public class MPKeyFactory {
         }
     }
 
-    public func flush() {
+    public func invalidate() {
         DispatchQueue.mpw.await {
             self.masterKeysCache.forEach { $1.deallocate() }
             self.masterKeysCache.removeAll()
@@ -142,6 +142,12 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         self.context.localizedCancelTitle = "cancel"
     }
 
+    public override func invalidate() {
+        self.context.invalidate()
+
+        super.invalidate()
+    }
+
     // MARK: --- Interface ---
 
     public var factor: Factor {
@@ -172,6 +178,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         for algorithm in MPAlgorithmVersion.allCases {
             MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm, biometrics: true )
         }
+        self.invalidate()
     }
 
     // MARK: --- Private ---

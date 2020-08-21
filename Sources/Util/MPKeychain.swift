@@ -83,7 +83,9 @@ public class MPKeychain {
 
     public static func hasKey(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool)
                     -> Bool {
-        guard var query = try? self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics )
+        let context = LAContext()
+        context.interactionNotAllowed = true
+        guard var query = try? self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
         else { return false }
         query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
 

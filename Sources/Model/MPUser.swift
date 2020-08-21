@@ -42,6 +42,11 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         }
     }
     public private(set) var masterKeyFactory: MPKeyFactory? {
+        willSet {
+            if self.masterKeyFactory != nil, newValue == nil {
+                let _ = try? self.saveTask.request().await()
+            }
+        }
         didSet {
             if self.masterKeyFactory !== oldValue {
                 if self.masterKeyFactory != nil, oldValue == nil {
@@ -54,6 +59,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                 }
 
                 self.tryKeyFactoryMigration()
+                oldValue?.invalidate()
             }
         }
     }
@@ -85,13 +91,13 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public var biometricLock = false {
         didSet {
-            self.tryKeyFactoryMigration()
-
             if oldValue != self.biometricLock, !self.initializing,
                self.file?.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
+
+            self.tryKeyFactoryMigration()
         }
     }
     public var attacker: MPAttacker? {
@@ -117,7 +123,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             }
         }
     }
-    var description: String {
+    public var  description: String {
         if let identicon = self.identicon.encoded() {
             return "\(self.fullName): \(identicon)"
         }
@@ -128,22 +134,47 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             return "\(self.fullName)"
         }
     }
-    var initializing = true {
+    private var initializing = true {
         didSet {
             self.dirty = false
         }
     }
-    var dirty = false {
+    internal var dirty = false {
         didSet {
             if self.dirty {
                 if !self.initializing {
-                    MPMarshal.shared.setNeedsSave( user: self )
+                    self.saveTask.request()
                 }
             }
             else {
                 self.sites.forEach { $0.dirty = false }
             }
         }
+    }
+
+    private lazy var saveTask = DispatchTask( queue: .global(), deadline: .now() + .seconds( 1 ), qos: .utility ) {
+        guard self.dirty, self.file != nil
+        else { return }
+
+        let _ = try? MPMarshal.shared.save( user: self ).then( { result in
+            switch result {
+                case .success(let destination):
+                    if let origin = self.origin, origin != destination,
+                       FileManager.default.fileExists( atPath: origin.path ) {
+                        do { try FileManager.default.removeItem( at: origin ) }
+                        catch {
+                            mperror( title: "Migration issue", message: "Cannot delete obsolete origin document",
+                                     details: origin.lastPathComponent, error: error )
+                        }
+                    }
+                    self.origin = destination
+
+                case .failure(let error):
+                    mperror( title: "Couldn't save self", details: self, error: error )
+            }
+
+            self.dirty = false
+        } ).await()
     }
 
     // MARK: --- Life ---
@@ -246,9 +277,9 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
             }
         }
         else if let keychainKeyFactory = self.masterKeyFactory as? MPKeychainKeyFactory {
-            // biometric lock is off; if key factory is keychain, purge and unset it.
-            keychainKeyFactory.purgeKeys()
+            // biometric lock is off; if key factory is keychain, remove and purge it.
             self.masterKeyFactory = nil
+            keychainKeyFactory.purgeKeys()
         }
     }
 
