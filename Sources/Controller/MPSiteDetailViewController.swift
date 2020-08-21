@@ -104,7 +104,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             }
                         },
                         caption: {
-                            if InAppFeature.premium.enabled(), let attacker = $0.user.attacker,
+                            let attacker = $0.user.attacker ?? .default
+                            if InAppFeature.premium.enabled(),
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
                                        attacker.timeToCrack( string: try? $0.result().await().token ) {
                                 return "Time to crack: \(timeToCrack) 🅿︎"

@@ -15,6 +15,8 @@ let cost_watt           = Decimal( 120 ) // W
 let cost_per_kwh        = Decimal( 0.1 ) // $/kWh
 
 enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
+    static let `default` = MPAttacker.private
+
     case single, `private`, corporate, state
 
     var description:          String {

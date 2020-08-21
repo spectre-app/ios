@@ -97,7 +97,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         init() {
             super.init( identifier: "user >attacker", title: "Defense Strategy 🅿︎",
                         values: { _ in MPAttacker.allCases },
-                        value: { $0.attacker },
+                        value: { $0.attacker ?? .default },
                         update: { $0.attacker = $1 },
                         caption: { _ in
                             """
