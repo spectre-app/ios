@@ -59,6 +59,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
         self.searchField.rightView = self.userButton
         self.searchField.rightViewMode = .unlessEditing
         self.searchField.clearButtonMode = .whileEditing
+        self.searchField.clearsOnBeginEditing = true
         self.searchField.keyboardAppearance = .dark
         self.searchField.keyboardType = .URL
         self.searchField.textContentType = .URL
