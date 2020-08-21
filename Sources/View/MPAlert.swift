@@ -27,7 +27,7 @@ class MPAlert {
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
     }
     private lazy var automaticDismissalTask = DispatchTask( queue: .main, deadline: .now() + .seconds( 3 ),
-                                                            qos: .utility ) { self.dismiss() }
+                                                            qos: .utility, execute: { self.dismiss() } )
 
     // MARK: --- Life ---
 

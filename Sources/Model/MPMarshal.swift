@@ -36,7 +36,7 @@ class MPMarshal: Observable, Updatable {
     // MARK: --- Interface ---
 
     @discardableResult
-    public func setNeedsUpdate() -> Bool {
+    public func setNeedsUpdate() -> Promise<Void> {
         self.updateTask.request()
     }
 

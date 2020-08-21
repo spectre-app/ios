@@ -29,28 +29,33 @@ extension DispatchQueue {
      *   - its label is in the current thread's active labels.
      *   - its label matches the current dispatch queue's label.
      */
-    public func perform(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+    public func perform(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping @convention(block) () -> Void) {
-        if self.isActive {
-            // Already in the queue's thread.
-            group?.enter()
-            let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
-            defer {
-                if threadOwnsLabel { self.threadLabels.remove( self.label ) }
-                group?.leave()
+        let deadNow = deadline ?? .now() <= DispatchTime.now()
+        if self.isActive && deadNow {
+            self.now( group: group ) { DispatchWorkItem( qos: qos, flags: flags, block: work ).perform() }
+        }
+        else if let deadline = deadline, !deadNow {
+            self.asyncAfter( deadline: deadline, qos: qos, flags: flags ) {
+                self.now( group: group, work: work )
             }
-
-            DispatchWorkItem( qos: qos, flags: flags, block: work ).perform()
         }
         else {
-            // Dispatch to the queue's thread.
             self.async( group: group, qos: qos, flags: flags ) {
-                let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
-                defer { if threadOwnsLabel { self.threadLabels.remove( self.label ) } }
-
-                work()
+                self.now( work: work )
             }
         }
+    }
+
+    private func now(group: DispatchGroup? = nil, work: @escaping @convention(block) () -> Void) {
+        group?.enter()
+        let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
+        defer {
+            if threadOwnsLabel { self.threadLabels.remove( self.label ) }
+            group?.leave()
+        }
+
+        work()
     }
 
     /** Performs the work synchronously, returning the work's result. */
@@ -73,10 +78,11 @@ extension DispatchQueue {
         }
     }
 
-    public func promised<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
+    public func promised<V>(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                            execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
         let promise = Promise<V>()
 
-        self.perform( flags: flags ) {
+        self.perform( deadline: deadline, group: group, qos: qos, flags: flags ) {
             do { try work().finishes( promise ) }
             catch { promise.finish( .failure( error ) ) }
         }
@@ -84,12 +90,14 @@ extension DispatchQueue {
         return promise
     }
 
-    public func promise<V>(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) -> Promise<V> {
-        self.promised { Promise( .success( try work() ) ) }
+    public func promise<V>(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                           execute work: @escaping () throws -> V) -> Promise<V> {
+        self.promised( deadline: deadline, flags: flags, execute: { Promise( .success( try work() ) ) } )
     }
 
-    public func promise(flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> Void) -> Promise<Void> {
-        self.promised { Promise( .success( try work() ) ) }
+    public func promise(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                        execute work: @escaping () throws -> Void) -> Promise<Void> {
+        self.promised( deadline: deadline, flags: flags, execute: { Promise( .success( try work() ) ) } )
     }
 }
 
@@ -159,7 +167,7 @@ public class Promise<V> {
         return self
     }
 
-    public func then<V2>(on queue: DispatchQueue? = nil, x: Void = (), _ consumer: @escaping (Result<V, Error>) throws -> (V2)) -> Promise<V2> {
+    public func then<V2>(on queue: DispatchQueue? = nil, x: Void = (), _ consumer: @escaping (Result<V, Error>) throws -> V2) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -170,7 +178,7 @@ public class Promise<V> {
         return promise
     }
 
-    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> (V2)) -> Promise<V2> {
+    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> V2) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -187,7 +195,7 @@ public class Promise<V> {
         return promise
     }
 
-    public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping () throws -> (Promise<V2>)) -> Promise<V2> {
+    public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping () throws -> Promise<V2>) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -204,7 +212,7 @@ public class Promise<V> {
         return promise
     }
 
-    public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> (Promise<V2>)) -> Promise<V2> {
+    public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> Promise<V2>) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -275,46 +283,24 @@ public class Promise<V> {
 /**
  * A task that can be scheduled by request.
  */
-public class DispatchTask {
+public class DispatchTask<V> {
     private let requestQueue = DispatchQueue( label: "DispatchTask request", qos: .userInitiated )
     private let workQueue: DispatchQueue
-    private let qos:       DispatchQoS
-    private let group:     DispatchGroup?
     private let deadline:  () -> DispatchTime
-    private let work:     () -> Void
-    private var workItem: DispatchWorkItem? {
-        willSet {
-            self.workItem?.cancel()
-        }
-        didSet {
-            if let item = self.workItem {
-                let deadline = self.deadline()
-                if deadline <= DispatchTime.now() {
-                    self.workQueue.async( execute: item )
-                }
-                else {
-                    self.workQueue.asyncAfter( deadline: deadline, execute: item )
-                }
-            }
-        }
-    }
+    private let group:     DispatchGroup?
+    private let qos:       DispatchQoS
+    private let flags:     DispatchWorkItemFlags
+    private let work:      () -> V
 
-    public convenience init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), qos: DispatchQoS = .unspecified, group: DispatchGroup? = nil, update: Updatable, animated: Bool = false) {
-        self.init( queue: queue, deadline: deadline(), qos: qos, group: group ) {
-            if animated {
-                UIView.animate( withDuration: .short ) { update.update() }
-            }
-            else {
-                update.update()
-            }
-        }
-    }
+    private var requestItem: DispatchWorkItem?
+    private var workPromise: Promise<V>?
 
-    public init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), qos: DispatchQoS = .unspecified, group: DispatchGroup? = nil, execute work: @escaping @convention(block) () -> ()) {
+    public init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], execute work: @escaping () -> V) {
         self.workQueue = queue
+        self.deadline = deadline
         self.group = group
         self.qos = qos
-        self.deadline = deadline
+        self.flags = flags
         self.work = work
     }
 
@@ -323,16 +309,38 @@ public class DispatchTask {
      * The task is removed from the request queue as soon as the work begins.
      */
     @discardableResult
-    public func request() -> Bool {
-        self.requestQueue.sync {
-            guard self.workItem == nil
-            else { return false }
-
-            self.workItem = DispatchWorkItem( qos: self.qos ) {
-                self.requestQueue.sync { self.workItem = nil }
-                self.workQueue.perform( group: self.group, qos: self.qos, execute: self.work )
+    public func request() -> Promise<V> {
+        self.requestQueue.promised {
+            if let workPromise = self.workPromise {
+                return workPromise
             }
-            return true
+            guard self.requestItem?.isCancelled ?? true
+            else { return Promise( .failure( MPError.internal( details: "Task is cancelled." ) ) ) }
+
+            var value: V?
+            self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
+                value = self.work()
+            }
+
+            let workPromise: Promise<V>
+                    = self.workQueue.promise( deadline: self.deadline(), group: self.group, qos: self.qos, flags: self.flags ) {
+                if self.requestItem?.isCancelled ?? true {
+                    throw MPError.internal( details: "Task was cancelled." )
+                }
+
+                self.requestItem?.perform()
+                self.requestItem = nil
+                self.workPromise = nil
+
+                if let value = value {
+                    return value
+                }
+
+                throw MPError.internal( details: "Task was skipped." )
+            }
+
+            self.workPromise = workPromise
+            return workPromise
         }
     }
 
@@ -341,12 +349,22 @@ public class DispatchTask {
      */
     @discardableResult
     public func cancel() -> Bool {
-        self.requestQueue.sync {
-            defer {
-                self.workItem = nil
-            }
+        self.requestQueue.await {
+            self.requestItem?.cancel()
+            return self.requestItem?.isCancelled ?? false
+        }
+    }
+}
 
-            return self.workItem != nil
+extension DispatchTask where V == Void {
+    public convenience init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], update: Updatable, animated: Bool = false) {
+        self.init( queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) {
+            if animated {
+                UIView.animate( withDuration: .short ) { update.update() }
+            }
+            else {
+                update.update()
+            }
         }
     }
 }
