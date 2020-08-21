@@ -231,12 +231,47 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
 }
 
 public enum MPError: LocalizedError {
-    case `issue`(_ error: Error, title: String)
-    case `issue`(_ error: Error, title: String, details: String)
-    case `issue`(title: String, details: String)
+    case `issue`(_ error: Error? = nil, title: String, details: String? = nil)
     case `internal`(details: String)
     case `state`(details: String)
     case `marshal`(MPMarshalError, title: String)
+
+    public var errorDescription: String? {
+        switch self {
+            case .issue(_, title: let title, _):
+                return title
+            case .internal( _ ):
+                return "An internal error occurred."
+            case .state( _ ):
+                return "Not ready."
+            case .marshal(_, let title):
+                return title
+        }
+    }
+    public var failureReason: String? {
+        switch self {
+            case .issue(let error, _, let details):
+                return [ details, error?.localizedDescription, (error as NSError?)?.localizedFailureReason ]
+                        .compactMap( { $0 } ).joined( separator: "\n" )
+            case .internal(let details):
+                return details
+            case .state(let details):
+                return details
+            case .marshal(let error, _):
+                return [ error.localizedDescription, (error as NSError).localizedFailureReason ]
+                        .compactMap( { $0 } ).joined( separator: "\n" )
+        }
+    }
+    public var recoverySuggestion: String? {
+        switch self {
+            case .issue(let error, _, _):
+                return (error as NSError?)?.localizedRecoverySuggestion
+            case .marshal(let error, _):
+                return (error as NSError).localizedRecoverySuggestion
+            default:
+                return nil
+        }
+    }
 }
 
 extension OperationQueue {

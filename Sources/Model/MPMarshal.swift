@@ -798,9 +798,30 @@ class MPMarshal: Observable, Updatable {
     }
 }
 
-extension MPMarshalError: CustomStringConvertible {
-    public var description: String {
-        "\(self.type.rawValue): \(String( validate: self.message ) ?? "-")"
+extension MPMarshalError: LocalizedError {
+    public var errorDescription: String? {
+        String( validate: self.message )
+    }
+
+    public var failureReason: String? {
+        switch self.type {
+            case .success:
+                return "The marshalling operation completed successfully. (\(self.type))"
+            case .errorStructure:
+                return "An error in the structure of the marshall file interrupted marshalling. (\(self.type))"
+            case .errorFormat:
+                return "The marshall file uses an unsupported format version. (\(self.type))"
+            case .errorMissing:
+                return "A required value is missing or not specified. (\(self.type))"
+            case .errorMasterPassword:
+                return "The given master password is not valid. (\(self.type))"
+            case .errorIllegal:
+                return "An illegal value was specified. (\(self.type))"
+            case .errorInternal:
+                return "An internal system error interrupted marshalling. (\(self.type))"
+            @unknown default:
+                return "MPMarshalError (\(self.type))"
+        }
     }
 }
 

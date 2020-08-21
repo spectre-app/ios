@@ -174,15 +174,10 @@ class MPAlert {
 
 public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil,
                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-    var errorDetails = details?.description
-    if let error = error {
-        if let errorDetails_ = errorDetails {
-            errorDetails = "\(errorDetails_)\n\n\(error.localizedDescription)"
-        }
-        else {
-            errorDetails = "\(error.localizedDescription)"
-        }
-    }
+    let errorDetails = [ details?.description, error?.localizedDescription,
+                         (error as NSError?)?.localizedFailureReason,
+                         (error as NSError?)?.localizedRecoverySuggestion ]
+            .compactMap( { $0 } ).joined( separator: "\n\n" )
 
     MPAlert( title: title, message: message?.description, details: errorDetails, level: .error )
             .show( file: file, line: line, function: function, dso: dso )

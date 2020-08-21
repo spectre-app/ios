@@ -108,8 +108,9 @@ public class MPKeychain {
             var query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
             query[kSecReturnData] = true
 
-            let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access master key for:\n\(fullName)",
-                                   content: UIActivityIndicatorView( style: .white ) )
+            let spinner = MPAlert(
+                    title: "Biometrics Authentication", message: "Please authenticate to access master key for:\n\(fullName)",
+                    content: UIActivityIndicatorView( style: .white ) )
             spinner.show( dismissAutomatically: false )
             defer { spinner.dismiss() }
 
@@ -127,121 +128,238 @@ public class MPKeychain {
     }
 }
 
-extension OSStatus: Error {
-    var localizedDescription: String {
+extension OSStatus: LocalizedError {
+    public var errorDescription: String? {
         switch self {
             case errSecSuccess:
-                return "\(self): errSecSuccess: (No error)"
+                return "No error"
             case errSecUnimplemented:
-                return "\(self): errSecUnimplemented: (Function or operation not implemented)"
+                return "Function or operation not implemented"
             case errSecDiskFull:
-                return "\(self): errSecDiskFull: (Disk Full error)"
+                return "Disk Full error"
             case errSecIO:
-                return "\(self): errSecIO: (I/O error)"
+                return "I/O error"
             case errSecParam:
-                return "\(self): errSecParam: (One or more parameters passed to a function were not valid)"
+                return "One or more parameters passed to a function were not valid"
             case errSecWrPerm:
-                return "\(self): errSecWrPerm: (Write permissions error)"
+                return "Write permissions error"
             case errSecAllocate:
-                return "\(self): errSecAllocate: (Failed to allocate memory)"
+                return "Failed to allocate memory"
             case errSecUserCanceled:
-                return "\(self): errSecUserCanceled: (User canceled the operation)"
+                return "User canceled the operation"
             case errSecBadReq:
-                return "\(self): errSecBadReq: (Bad parameter or invalid state for operation)"
+                return "Bad parameter or invalid state for operation"
             case errSecInternalComponent:
-                return "\(self): errSecInternalComponent"
+                return nil
             case errSecCoreFoundationUnknown:
-                return "\(self): errSecCoreFoundationUnknown"
+                return nil
             case errSecNotAvailable:
-                return "\(self): errSecNotAvailable: (No keychain is available)"
+                return "No keychain is available"
             case errSecReadOnly:
-                return "\(self): errSecReadOnly: (Read only error)"
+                return "Read only error"
             case errSecAuthFailed:
-                return "\(self): errSecAuthFailed: (Authorization/Authentication failed)"
+                return "Authorization/Authentication failed"
             case errSecNoSuchKeychain:
-                return "\(self): errSecNoSuchKeychain: (The keychain does not exist)"
+                return "The keychain does not exist"
             case errSecInvalidKeychain:
-                return "\(self): errSecInvalidKeychain: (The keychain is not valid)"
+                return "The keychain is not valid"
             case errSecDuplicateKeychain:
-                return "\(self): errSecDuplicateKeychain: (A keychain with the same name already exists)"
+                return "A keychain with the same name already exists"
             case errSecDuplicateCallback:
-                return "\(self): errSecDuplicateCallback: (The specified callback is already installed)"
+                return "The specified callback is already installed"
             case errSecInvalidCallback:
-                return "\(self): errSecInvalidCallback: (The specified callback is not valid)"
+                return "The specified callback is not valid"
             case errSecDuplicateItem:
-                return "\(self): errSecDuplicateItem: (The item already exists)"
+                return "The item already exists"
             case errSecItemNotFound:
-                return "\(self): errSecItemNotFound: (The item cannot be found)"
+                return "The item cannot be found"
             case errSecBufferTooSmall:
-                return "\(self): errSecBufferTooSmall: (The buffer is too small)"
+                return "The buffer is too small"
             case errSecDataTooLarge:
-                return "\(self): errSecDataTooLarge: (The data is too large)"
+                return "The data is too large"
             case errSecNoSuchAttr:
-                return "\(self): errSecNoSuchAttr: (The attribute does not exist)"
+                return "The attribute does not exist"
             case errSecInvalidItemRef:
-                return "\(self): errSecInvalidItemRef: (The item reference is invalid)"
+                return "The item reference is invalid"
             case errSecInvalidSearchRef:
-                return "\(self): errSecInvalidSearchRef: (The search reference is invalid)"
+                return "The search reference is invalid"
             case errSecNoSuchClass:
-                return "\(self): errSecNoSuchClass: (The keychain item class does not exist)"
+                return "The keychain item class does not exist"
             case errSecNoDefaultKeychain:
-                return "\(self): errSecNoDefaultKeychain: (A default keychain does not exist)"
+                return "A default keychain does not exist"
             case errSecInteractionNotAllowed:
-                return "\(self): errSecInteractionNotAllowed: (User interaction is not allowed)"
+                return "User interaction is not allowed"
             case errSecReadOnlyAttr:
-                return "\(self): errSecReadOnlyAttr: (The attribute is read only)"
+                return "The attribute is read only"
             case errSecWrongSecVersion:
-                return "\(self): errSecWrongSecVersion: (The version is incorrect)"
+                return "The version is incorrect"
             case errSecKeySizeNotAllowed:
-                return "\(self): errSecKeySizeNotAllowed: (The key size is not allowed)"
+                return "The key size is not allowed"
             case errSecNoStorageModule:
-                return "\(self): errSecNoStorageModule: (There is no storage module available)"
+                return "There is no storage module available"
             case errSecNoCertificateModule:
-                return "\(self): errSecNoCertificateModule: (There is no certificate module available)"
+                return "There is no certificate module available"
             case errSecNoPolicyModule:
-                return "\(self): errSecNoPolicyModule: (There is no policy module available)"
+                return "There is no policy module available"
             case errSecInteractionRequired:
-                return "\(self): errSecInteractionRequired: (User interaction is required)"
+                return "User interaction is required"
             case errSecDataNotAvailable:
-                return "\(self): errSecDataNotAvailable: (The data is not available)"
+                return "The data is not available"
             case errSecDataNotModifiable:
-                return "\(self): errSecDataNotModifiable: (The data is not modifiable)"
+                return "The data is not modifiable"
             case errSecCreateChainFailed:
-                return "\(self): errSecCreateChainFailed: (The attempt to create a certificate chain failed)"
+                return "The attempt to create a certificate chain failed"
             case errSecACLNotSimple:
-                return "\(self): errSecACLNotSimple: (The access control list is not in standard simple form)"
+                return "The access control list is not in standard simple form"
             case errSecPolicyNotFound:
-                return "\(self): errSecPolicyNotFound: (The policy specified cannot be found)"
+                return "The policy specified cannot be found"
             case errSecInvalidTrustSetting:
-                return "\(self): errSecInvalidTrustSetting: (The specified trust setting is invalid)"
+                return "The specified trust setting is invalid"
             case errSecNoAccessForItem:
-                return "\(self): errSecNoAccessForItem: (The specified item has no access control)"
+                return "The specified item has no access control"
             case errSecInvalidOwnerEdit:
-                return "\(self): errSecInvalidOwnerEdit: (Invalid attempt to change the owner of this item)"
+                return "Invalid attempt to change the owner of this item"
             case errSecTrustNotAvailable:
-                return "\(self): errSecTrustNotAvailable: (No trust results are available)"
+                return "No trust results are available"
             case errSecUnsupportedFormat:
-                return "\(self): errSecUnsupportedFormat: (Import/Export format unsupported)"
+                return "Import/Export format unsupported"
             case errSecUnknownFormat:
-                return "\(self): errSecUnknownFormat: (Unknown format in import)"
+                return "Unknown format in import"
             case errSecKeyIsSensitive:
-                return "\(self): errSecKeyIsSensitive: (Key material must be wrapped for export)"
+                return "Key material must be wrapped for export"
             case errSecMultiplePrivKeys:
-                return "\(self): errSecMultiplePrivKeys: (An attempt was made to import multiple private keys)"
+                return "An attempt was made to import multiple private keys"
             case errSecPassphraseRequired:
-                return "\(self): errSecPassphraseRequired: (Passphrase is required for import/export)"
+                return "Passphrase is required for import/export"
             case errSecInvalidPasswordRef:
-                return "\(self): errSecInvalidPasswordRef: (The password reference was invalid)"
+                return "The password reference was invalid"
             case errSecInvalidTrustSettings:
-                return "\(self): errSecInvalidTrustSettings: (The Trust Settings Record was corrupted)"
+                return "The Trust Settings Record was corrupted"
             case errSecNoTrustSettings:
-                return "\(self): errSecNoTrustSettings: (No Trust Settings were found)"
+                return "No Trust Settings were found"
             case errSecPkcs12VerifyFailure:
-                return "\(self): errSecPkcs12VerifyFailure: (MAC verification failed during PKCS12 Import)"
+                return "MAC verification failed during PKCS12 Import"
             case errSecDecode:
-                return "\(self): errSecDecode: (Unable to decode the provided data)"
+                return "Unable to decode the provided data"
             default:
-                return "\(self): Unknown status"
+                return "Unknown status"
+        }
+    }
+
+    public var failureReason: String? {
+        switch self {
+            case errSecSuccess:
+                return "errSecSuccess (\(self))"
+            case errSecUnimplemented:
+                return "errSecUnimplemented (\(self))"
+            case errSecDiskFull:
+                return "errSecDiskFull (\(self))"
+            case errSecIO:
+                return "errSecIO (\(self))"
+            case errSecParam:
+                return "errSecParam (\(self))"
+            case errSecWrPerm:
+                return "errSecWrPerm (\(self))"
+            case errSecAllocate:
+                return "errSecAllocate (\(self))"
+            case errSecUserCanceled:
+                return "errSecUserCanceled (\(self))"
+            case errSecBadReq:
+                return "errSecBadReq (\(self))"
+            case errSecInternalComponent:
+                return "errSecInternalComponent (\(self))"
+            case errSecCoreFoundationUnknown:
+                return "errSecCoreFoundationUnknown (\(self))"
+            case errSecNotAvailable:
+                return "errSecNotAvailable (\(self))"
+            case errSecReadOnly:
+                return "errSecReadOnly (\(self))"
+            case errSecAuthFailed:
+                return "errSecAuthFailed (\(self))"
+            case errSecNoSuchKeychain:
+                return "errSecNoSuchKeychain (\(self))"
+            case errSecInvalidKeychain:
+                return "errSecInvalidKeychain (\(self))"
+            case errSecDuplicateKeychain:
+                return "errSecDuplicateKeychain (\(self))"
+            case errSecDuplicateCallback:
+                return "errSecDuplicateCallback (\(self))"
+            case errSecInvalidCallback:
+                return "errSecInvalidCallback (\(self))"
+            case errSecDuplicateItem:
+                return "errSecDuplicateItem (\(self))"
+            case errSecItemNotFound:
+                return "errSecItemNotFound (\(self))"
+            case errSecBufferTooSmall:
+                return "errSecBufferTooSmall (\(self))"
+            case errSecDataTooLarge:
+                return "errSecDataTooLarge (\(self))"
+            case errSecNoSuchAttr:
+                return "errSecNoSuchAttr (\(self))"
+            case errSecInvalidItemRef:
+                return "errSecInvalidItemRef (\(self))"
+            case errSecInvalidSearchRef:
+                return "errSecInvalidSearchRef (\(self))"
+            case errSecNoSuchClass:
+                return "errSecNoSuchClass (\(self))"
+            case errSecNoDefaultKeychain:
+                return "errSecNoDefaultKeychain (\(self))"
+            case errSecInteractionNotAllowed:
+                return "errSecInteractionNotAllowed (\(self))"
+            case errSecReadOnlyAttr:
+                return "errSecReadOnlyAttr (\(self))"
+            case errSecWrongSecVersion:
+                return "errSecWrongSecVersion (\(self))"
+            case errSecKeySizeNotAllowed:
+                return "errSecKeySizeNotAllowed (\(self))"
+            case errSecNoStorageModule:
+                return "errSecNoStorageModule (\(self))"
+            case errSecNoCertificateModule:
+                return "errSecNoCertificateModule (\(self))"
+            case errSecNoPolicyModule:
+                return "errSecNoPolicyModule (\(self))"
+            case errSecInteractionRequired:
+                return "errSecInteractionRequired (\(self))"
+            case errSecDataNotAvailable:
+                return "errSecDataNotAvailable (\(self))"
+            case errSecDataNotModifiable:
+                return "errSecDataNotModifiable (\(self))"
+            case errSecCreateChainFailed:
+                return "errSecCreateChainFailed (\(self))"
+            case errSecACLNotSimple:
+                return "errSecACLNotSimple (\(self))"
+            case errSecPolicyNotFound:
+                return "errSecPolicyNotFound (\(self))"
+            case errSecInvalidTrustSetting:
+                return "errSecInvalidTrustSetting (\(self))"
+            case errSecNoAccessForItem:
+                return "errSecNoAccessForItem (\(self))"
+            case errSecInvalidOwnerEdit:
+                return "errSecInvalidOwnerEdit (\(self))"
+            case errSecTrustNotAvailable:
+                return "errSecTrustNotAvailable (\(self))"
+            case errSecUnsupportedFormat:
+                return "errSecUnsupportedFormat (\(self))"
+            case errSecUnknownFormat:
+                return "errSecUnknownFormat (\(self))"
+            case errSecKeyIsSensitive:
+                return "errSecKeyIsSensitive (\(self))"
+            case errSecMultiplePrivKeys:
+                return "errSecMultiplePrivKeys (\(self))"
+            case errSecPassphraseRequired:
+                return "errSecPassphraseRequired (\(self))"
+            case errSecInvalidPasswordRef:
+                return "errSecInvalidPasswordRef (\(self))"
+            case errSecInvalidTrustSettings:
+                return "errSecInvalidTrustSettings (\(self))"
+            case errSecNoTrustSettings:
+                return "errSecNoTrustSettings (\(self))"
+            case errSecPkcs12VerifyFailure:
+                return "errSecPkcs12VerifyFailure (\(self))"
+            case errSecDecode:
+                return "errSecDecode (\(self))"
+            default:
+                return "unknown (\(self))"
         }
     }
 }

@@ -45,9 +45,11 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         didSet {
             if self.masterKeyFactory !== oldValue {
                 if self.masterKeyFactory != nil, oldValue == nil {
+                    trc( "Logging in: %@", self )
                     self.observers.notify { $0.userDidLogin( self ) }
                 }
                 if self.masterKeyFactory == nil, oldValue != nil {
+                    trc( "Logging out: %@", self )
                     self.observers.notify { $0.userDidLogout( self ) }
                 }
 
@@ -205,7 +207,6 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
 
     func logout() {
-        trc( "Logging out: %@", self )
         self.masterKeyFactory = nil
     }
 
