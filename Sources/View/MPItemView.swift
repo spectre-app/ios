@@ -48,6 +48,8 @@ class Item<M>: NSObject, Updatable {
         return self
     }
 
+    // MARK: --- Updatable ---
+
     func setNeedsUpdate() {
         self.updateTask.request()
     }
@@ -131,16 +133,20 @@ class Item<M>: NSObject, Updatable {
                     .activate()
         }
 
+        /** Create a custom view for rendering this item's value. */
         func createValueView() -> UIView? {
             nil
         }
 
+        /** The view was loaded and added to the view hierarchy. */
         func didLoad() {
             if let valueView = self.valueView {
                 valueView.superview?.readableContentGuide.widthAnchor.constraint( equalTo: valueView.widthAnchor )
                                                                      .with( priority: .defaultLow + 1 ).isActive = true
             }
         }
+
+        // MARK: --- Updatable ---
 
         func update() {
             let behaveHidden = self.item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: self.item ) ?? $0) }

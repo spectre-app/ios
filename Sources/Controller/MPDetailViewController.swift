@@ -27,7 +27,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
     private let backgroundView = MPBackgroundView()
     private let itemsView      = UIStackView()
     private var willEnterForegroundObserver: NSObjectProtocol?
-    private lazy var items = self.loadItems()
+    private lazy var items      = self.loadItems()
     private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
                                                 qos: .userInitiated, update: self, animated: true )
 
@@ -38,6 +38,10 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
     }
 
     func setNeedsUpdate() {
+        // If view has not yet appeared, postpone until viewWillAppear.
+        guard self.isViewLoaded, self.view.superview != nil
+        else { return }
+
         self.updateTask.request()
     }
 
@@ -79,9 +83,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
         // - Hierarchy
         self.backgroundView.addSubview( self.itemsView )
         self.view.addSubview( self.backgroundView )
-        for item in self.items {
-            item.view.didLoad()
-        }
+        self.items.forEach { $0.view.didLoad() }
 
         // - Layout
         LayoutConfiguration( view: self.backgroundView )
@@ -97,9 +99,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        UIView.performWithoutAnimation {
-            self.items.forEach { $0.update() }
-        }
+        UIView.performWithoutAnimation { self.update() }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -120,6 +120,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
     // MARK: --- Updatable ---
 
     func update() {
+        self.updateTask.cancel()
         self.items.forEach { $0.update() }
     }
 }
