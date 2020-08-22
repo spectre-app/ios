@@ -10,7 +10,7 @@ class AnyMPDetailsViewController: MPViewController {
     var hostController: MPDetailsHostController?
 }
 
-class MPDetailsViewController<M>: AnyMPDetailsViewController {
+class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
     public let model: M
     public var color: UIColor? {
         didSet {
@@ -28,6 +28,8 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     private let itemsView      = UIStackView()
     private var willEnterForegroundObserver: NSObjectProtocol?
     private lazy var items = self.loadItems()
+    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
+                                                qos: .userInitiated, update: self, animated: true )
 
     // MARK: --- Interface ---
 
@@ -36,7 +38,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     }
 
     func setNeedsUpdate() {
-        self.items.forEach { $0.setNeedsUpdate() }
+        self.updateTask.request()
     }
 
     // MARK: --- Life ---
@@ -113,5 +115,11 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         super.viewWillDisappear( animated )
 
         self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
+    }
+
+    // MARK: --- Updatable ---
+
+    func update() {
+        self.items.forEach { $0.update() }
     }
 }

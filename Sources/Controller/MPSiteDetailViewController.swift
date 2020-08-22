@@ -41,7 +41,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         self.setNeedsUpdate()
     }
 
-    // MARK: --- MPSiteObserver ---
+    // MARK: --- MPConfigObserver ---
 
     func didChangeConfig() {
         self.setNeedsUpdate()

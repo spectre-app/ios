@@ -295,7 +295,8 @@ public class DispatchTask<V> {
     private var requestItem: DispatchWorkItem?
     private var workPromise: Promise<V>?
 
-    public init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], execute work: @escaping () -> V) {
+    public init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+                qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], execute work: @escaping () -> V) {
         self.workQueue = queue
         self.deadline = deadline
         self.group = group
@@ -324,13 +325,18 @@ public class DispatchTask<V> {
 
             let workPromise: Promise<V>
                     = self.workQueue.promise( deadline: self.deadline(), group: self.group, qos: self.qos, flags: self.flags ) {
+                defer {
+                    self.requestQueue.perform {
+                        self.requestItem = nil
+                        self.workPromise = nil
+                    }
+                }
+
                 if self.requestItem?.isCancelled ?? true {
                     throw MPError.internal( details: "Task was cancelled." )
                 }
 
                 self.requestItem?.perform()
-                self.requestItem = nil
-                self.workPromise = nil
 
                 if let value = value {
                     return value
@@ -357,7 +363,8 @@ public class DispatchTask<V> {
 }
 
 extension DispatchTask where V == Void {
-    public convenience init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], update: Updatable, animated: Bool = false) {
+    public convenience init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+                            qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], update: Updatable, animated: Bool = false) {
         self.init( queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) {
             if animated {
                 UIView.animate( withDuration: .short ) { update.update() }

@@ -50,12 +50,13 @@ class Item<M>: NSObject, Updatable {
 
     func setNeedsUpdate() {
         self.updateTask.request()
-        self.subitems.forEach { $0.setNeedsUpdate() }
     }
 
     func update() {
+        self.updateTask.cancel()
         self.view.update()
         self.behaviours.forEach { $0.didUpdate( item: self ) }
+        self.subitems.forEach { $0.update() }
     }
 
     class ItemView<M>: UIView, Updatable {
