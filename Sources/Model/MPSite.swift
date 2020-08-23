@@ -333,7 +333,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                             resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
                     -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         DispatchQueue.mpw.promise {
-            guard let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm )
+            guard let masterKey = self.user.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
             defer { masterKey.deallocate() }
 
@@ -348,7 +348,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
                           resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
                     -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         DispatchQueue.mpw.promise {
-            guard let masterKey = self.user.masterKeyFactory?.newMasterKey( algorithm: algorithm )
+            guard let masterKey = self.user.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
             defer { masterKey.deallocate() }
 

@@ -197,7 +197,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         defer {
             self.maskPasswords = self.file?.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
             self.biometricLock = self.file?.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
-            self.attacker = self.file?.mpw_get( path: "user", "_ext_mpw", "attacker" ).flatMap { MPAttacker.for( $0 ) }
+            self.attacker = self.file?.mpw_get( path: "user", "_ext_mpw", "attacker" ).flatMap { MPAttacker.named( $0 ) }
 
             initialize( self )
             self.initializing = false
@@ -208,7 +208,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
     func login(keyFactory: MPKeyFactory) -> Promise<MPUser> {
         DispatchQueue.mpw.promise {
-            guard let authKey = keyFactory.newMasterKey( algorithm: self.algorithm )
+            guard let authKey = keyFactory.newKey( for: self.algorithm )
             else { throw MPError.internal( details: "Cannot authenticate user since master key is missing." ) }
             defer { authKey.deallocate() }
             guard let authKeyID = String( validate: mpw_id_buf( authKey, MPMasterKeySize ) )

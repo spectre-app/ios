@@ -568,7 +568,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
                     let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }
                     self.biometricButton.isHidden = !InAppFeature.premium.enabled() ||
-                            !(keychainKeyFactory?.hasKey( algorithm: self.userFile?.algorithm ?? .current ) ?? false)
+                            !(keychainKeyFactory?.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
                     self.biometricButton.image = keychainKeyFactory?.factor.icon
                     self.biometricButton.sizeToFit()
 

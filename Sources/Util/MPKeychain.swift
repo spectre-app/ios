@@ -47,7 +47,7 @@ public class MPKeychain {
             assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
 
             let query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
-            guard let masterKey = keyFactory.newMasterKey( algorithm: algorithm )
+            guard let masterKey = keyFactory.newKey( for: algorithm )
             else { throw MPError.internal( details: "Cannot save master key since key provider cannot provide one." ) }
             defer { masterKey.deallocate() }
 

@@ -58,7 +58,7 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         self.fixed_budget / cost_fixed
     }
 
-    static func `for`(_ identifier: String) -> MPAttacker {
+    static func named(_ identifier: String) -> MPAttacker {
         for attacker in MPAttacker.allCases {
             if attacker.description == identifier {
                 return attacker
