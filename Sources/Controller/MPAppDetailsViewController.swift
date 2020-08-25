@@ -37,7 +37,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         super.viewDidAppear( animated )
 
         self.didBecomeActiveObserver = NotificationCenter.default.addObserver(
-                forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil ) { _ in
+                forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil ) { [unowned self] _ in
             self.setNeedsUpdate()
         }
     }

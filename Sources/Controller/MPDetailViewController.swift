@@ -6,11 +6,51 @@
 import Foundation
 import UIKit
 
-class AnyMPDetailsViewController: MPViewController {
+class AnyMPDetailsViewController: MPViewController, Updatable {
     var hostController: MPDetailsHostController?
+
+    var updatesPostponed : Bool { !self.isViewLoaded || self.view.superview == nil }
+    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
+                                                qos: .userInitiated, update: self, animated: true )
+    private var willEnterForegroundObserver: NSObjectProtocol?
+
+    // MARK: --- Interface ---
+
+    func setNeedsUpdate() {
+        self.updateTask.request()
+    }
+
+    // MARK: --- Life ---
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        UIView.performWithoutAnimation { self.update() }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in
+            self.setNeedsUpdate()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
+    }
+
+    // MARK: --- Updatable ---
+
+    func update() {
+        self.updateTask.cancel()
+    }
 }
 
-class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
+class MPDetailsViewController<M>: AnyMPDetailsViewController {
     public let model: M
     public var color: UIColor? {
         didSet {
@@ -26,23 +66,12 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
 
     private let backgroundView = MPBackgroundView()
     private let itemsView      = UIStackView()
-    private var willEnterForegroundObserver: NSObjectProtocol?
     private lazy var items      = self.loadItems()
-    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
-                                                qos: .userInitiated, update: self, animated: true )
 
     // MARK: --- Interface ---
 
     func loadItems() -> [Item<M>] {
         []
-    }
-
-    func setNeedsUpdate() {
-        // If view has not yet appeared, postpone until viewWillAppear.
-        guard self.isViewLoaded, self.view.superview != nil
-        else { return }
-
-        self.updateTask.request()
     }
 
     // MARK: --- Life ---
@@ -96,31 +125,11 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController, Updatable {
                 .activate()
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear( animated )
-
-        UIView.performWithoutAnimation { self.update() }
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear( animated )
-
-        self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
-                forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { _ in
-            self.setNeedsUpdate()
-        }
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear( animated )
-
-        self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
-    }
-
     // MARK: --- Updatable ---
 
-    func update() {
-        self.updateTask.cancel()
+    override func update() {
+        super.update()
+
         self.items.forEach { $0.update() }
     }
 }

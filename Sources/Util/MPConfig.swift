@@ -72,7 +72,7 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
         self.update()
 
         self.didChangeObserver = NotificationCenter.default.addObserver(
-                forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { _ in
+                forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { [unowned self] _ in
             self.update()
         }
         InAppFeature.observers.register(observer: self)

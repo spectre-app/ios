@@ -57,7 +57,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
         self.closeButton.button.addTarget( self, action: #selector( hideAction ), for: .primaryActionTriggered )
 
-        self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { _, _ in
+        self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { [unowned self] _, _ in
             // Inset top to push content to the bottom of the host.
             self.scrollView.contentInset = UIEdgeInsets(
                     top: max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height ),

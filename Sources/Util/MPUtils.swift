@@ -940,6 +940,10 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
     }
 
     let message = String( format: format.description, arguments: args.map { arg in
+        if let error = arg as? LocalizedError {
+            return [ error.failureReason, error.errorDescription ].compactMap { $0 }.joined( separator: ": " )
+        }
+
         guard let arg = arg
         else { return Int( bitPattern: nil ) }
 

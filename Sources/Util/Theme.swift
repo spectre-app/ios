@@ -475,8 +475,16 @@ public protocol ThemeObserver {
     func didChangeTheme()
 }
 
-public protocol Updatable {
+public protocol Updatable : class {
+    var updatesPostponed : Bool { get }
+    var updatesRejected : Bool { get }
+
     func update()
+}
+
+public extension Updatable {
+    var updatesPostponed : Bool { false }
+    var updatesRejected : Bool { false }
 }
 
 public class Updater: Updatable {

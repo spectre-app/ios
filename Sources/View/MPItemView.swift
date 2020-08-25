@@ -6,7 +6,7 @@
 import UIKit
 
 class Item<M>: NSObject, Updatable {
-    public var viewController: AnyMPDetailsViewController? {
+    public weak var viewController: AnyMPDetailsViewController? {
         didSet {
             ({ self.subitems.forEach { $0.viewController = self.viewController } }())
         }
@@ -25,6 +25,7 @@ class Item<M>: NSObject, Updatable {
     private let subitems:        [Item<M>]
     private (set) lazy var view = createItemView()
 
+    var updatesPostponed : Bool { self.viewController?.updatesPostponed ?? true }
     private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
                                                 qos: .userInitiated, update: self, animated: true )
 

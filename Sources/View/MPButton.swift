@@ -59,7 +59,7 @@ class MPButton: MPEffectView {
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
         self.button.sizeToFit()
 
-        self.stateObserver = self.button.observe( \.isSelected, options: .initial ) { _, _ in
+        self.stateObserver = self.button.observe( \.isSelected, options: .initial ) { [unowned self] _, _ in
             self.isSelected = self.button.isSelected
         }
 

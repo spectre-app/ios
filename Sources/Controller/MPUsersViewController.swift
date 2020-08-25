@@ -418,7 +418,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 else { return }
 
                 let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
-                userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { result in
+                userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { [unowned self] result in
                     trc( "User biometric authentication: %@", result )
                     self.biometricButton.timing?.end( [
                                                           "result": result.name,

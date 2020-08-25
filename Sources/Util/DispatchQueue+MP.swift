@@ -78,23 +78,40 @@ extension DispatchQueue {
         }
     }
 
+    /** Performs work that yields a promise. The promise finishes the returned promise. */
     public func promised<V>(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                             execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
         let promise = Promise<V>()
+        return self.promises( promise, deadline: deadline, group: group, qos: qos, flags: flags, execute: work )
+    }
 
+    /** Performs work that yields a promise. The promise finishes the given promise. */
+    public func promises<V>(_ promise: Promise<V>, deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                            x: Void = (), execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
         self.perform( deadline: deadline, group: group, qos: qos, flags: flags ) {
             do { try work().finishes( promise ) }
+            catch Promise<V>.Interruption.postponed {
+                let _ = self.promises( promise, deadline: .now() + .milliseconds( 300 ), group: group, qos: qos, flags: flags, execute: work )
+            }
             catch { promise.finish( .failure( error ) ) }
         }
 
         return promise
     }
 
+    /** Performs work that yields a promise. The promise finishes the given promise. */
+    public func promises<V>(_ promise: Promise<V>, deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                            execute work: @escaping () throws -> V) -> Promise<V> {
+        self.promises( promise, deadline: deadline, group: group, qos: qos, flags: flags, execute: { Promise( .success( try work() ) ) } )
+    }
+
+    /** Performs work that yields a result. */
     public func promise<V>(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                            execute work: @escaping () throws -> V) -> Promise<V> {
         self.promised( deadline: deadline, flags: flags, execute: { Promise( .success( try work() ) ) } )
     }
 
+    /** Performs work that yields no result. */
     public func promise(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         execute work: @escaping () throws -> Void) -> Promise<Void> {
         self.promised( deadline: deadline, flags: flags, execute: { Promise( .success( try work() ) ) } )
@@ -126,6 +143,7 @@ public class Promise<V> {
                     if !results.contains( where: { $0 == nil } ) {
                         do { self.finish( .success( try results.compactMap( { try $0?.get() } ).reduce( value, partialResult ) ) ) }
                         catch { self.finish( .failure( error ) ) }
+                        // TODO: handle Interruption.postponed?
                     }
                 }
             }
@@ -173,6 +191,7 @@ public class Promise<V> {
         self.then( on: queue, {
             do { try promise.finish( .success( consumer( $0 ) ) ) }
             catch { promise.finish( .failure( error ) ) }
+            // TODO: handle Interruption.postponed?
         } )
 
         return promise
@@ -186,6 +205,7 @@ public class Promise<V> {
                 case .success(let value):
                     do { try promise.finish( .success( consumer( value ) ) ) }
                     catch { promise.finish( .failure( error ) ) }
+                    // TODO: handle Interruption.postponed?
 
                 case .failure(let error):
                     promise.finish( .failure( error ) )
@@ -203,6 +223,7 @@ public class Promise<V> {
                 case .success:
                     do { try consumer().finishes( promise ) }
                     catch { promise.finish( .failure( error ) ) }
+                    // TODO: handle Interruption.postponed?
 
                 case .failure(let error):
                     promise.finish( .failure( error ) )
@@ -218,6 +239,7 @@ public class Promise<V> {
         self.then( on: queue, {
             do { try consumer( $0 ).finishes( promise ) }
             catch { promise.finish( .failure( error ) ) }
+            // TODO: handle Interruption.postponed?
         } )
 
         return promise
@@ -278,6 +300,10 @@ public class Promise<V> {
 
         return try self.await()
     }
+
+    enum Interruption: Error {
+        case invalidated, rejected, postponed
+    }
 }
 
 /**
@@ -290,13 +316,13 @@ public class DispatchTask<V> {
     private let group:     DispatchGroup?
     private let qos:       DispatchQoS
     private let flags:     DispatchWorkItemFlags
-    private let work:      () -> V
+    private let work:      () throws -> V
 
     private var requestItem: DispatchWorkItem?
     private var workPromise: Promise<V>?
 
     public init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
-                qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], execute work: @escaping () -> V) {
+                qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) {
         self.workQueue = queue
         self.deadline = deadline
         self.group = group
@@ -318,31 +344,31 @@ public class DispatchTask<V> {
             guard self.requestItem?.isCancelled ?? true
             else { return Promise( .failure( MPError.internal( details: "Task is cancelled." ) ) ) }
 
-            var value: V?
+            var value: V?, workError: Error?
             self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
-                value = self.work()
+                do { value = try self.work() }
+                catch { workError = error }
             }
 
-            let workPromise: Promise<V>
-                    = self.workQueue.promise( deadline: self.deadline(), group: self.group, qos: self.qos, flags: self.flags ) {
-                defer {
-                    self.requestQueue.perform {
-                        self.requestItem = nil
-                        self.workPromise = nil
-                    }
-                }
-
+            let workPromise = self.workQueue.promise( deadline: self.deadline(), group: self.group,
+                                                      qos: self.qos, flags: self.flags ) { () -> V in
                 if self.requestItem?.isCancelled ?? true {
                     throw MPError.internal( details: "Task was cancelled." )
                 }
 
                 self.requestItem?.perform()
+                if let workError = workError {
+                    throw workError
+                }
 
                 if let value = value {
                     return value
                 }
 
                 throw MPError.internal( details: "Task was skipped." )
+            }.then( on: self.requestQueue ) { _ in
+                self.requestItem = nil
+                self.workPromise = nil
             }
 
             self.workPromise = workPromise
@@ -364,13 +390,24 @@ public class DispatchTask<V> {
 
 extension DispatchTask where V == Void {
     public convenience init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
-                            qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], update: Updatable, animated: Bool = false) {
-        self.init( queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) {
+                            qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], update updatable: Updatable, animated: Bool = false) {
+        self.init( queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
+            guard let updatable = updatable
+            else { throw Promise<V>.Interruption.invalidated }
+
+            if updatable.updatesRejected {
+                throw Promise<V>.Interruption.rejected
+            }
+            if updatable.updatesPostponed {
+                wrn( "Postponing update of: %@", updatable )
+                throw Promise<V>.Interruption.postponed
+            }
+
             if animated {
-                UIView.animate( withDuration: .short ) { update.update() }
+                UIView.animate( withDuration: .short ) { updatable.update() }
             }
             else {
-                update.update()
+                updatable.update()
             }
         }
     }
