@@ -7,126 +7,138 @@ import UIKit
 import LocalAuthentication
 
 public class MPKeychain {
-    private static func userQuery(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool, context: LAContext? = nil) throws
+    private static func keyQuery(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext?) throws
                     -> [CFString: Any] {
+        var error: Unmanaged<CFError>?
+        guard let accessControl = SecAccessControlCreateWithFlags(
+                kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error ), error == nil
+        else { throw MPError.issue( error?.takeRetainedValue() as Error?, title: "Keychain Unavailable", details: "Keychain access control could not be created." ) }
+
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: "\(String( validate: mpw_purpose_scope( .authentication ) )!).\(algorithm)",
             kSecAttrAccount: fullName,
-            kSecUseOperationPrompt: "Access \(fullName)'s master key.",
+            kSecAttrAccessControl: accessControl,
+            kSecUseAuthenticationUI: kSecUseAuthenticationUIFail,
         ]
         if #available( iOS 13, * ) {
             query[kSecUseDataProtectionKeychain] = true
         }
-        if let context = context,
-           context.canEvaluatePolicy( biometrics ? .deviceOwnerAuthenticationWithBiometrics: .deviceOwnerAuthentication, error: nil ) {
-            query[kSecUseAuthenticationContext] = context
-        }
 
-        if biometrics {
-            var error: Unmanaged<CFError>?
-            if let accessControl = SecAccessControlCreateWithFlags(
-                    kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error ), error == nil {
-                query[kSecAttrAccessControl] = accessControl
-            }
-            else if let error = error?.takeRetainedValue() {
-                throw MPError.issue( error, title: "Biometrics Not Supported", details: "Could not create biometric access controls on this device." )
-            }
-            else {
-                throw MPError.internal( details: "Unexpected issue creating biometric access controls." )
-            }
+        if let context = context {
+            var error: NSError?
+            guard context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: &error ), error == nil
+            else { throw MPError.issue( error, title: "Biometrics Unavailable", details: "Biometrics authentication is not available at this time." ) }
+
+            query[kSecUseAuthenticationContext] = context
+            query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIAllow
         }
 
         return query
     }
 
-    @discardableResult
-    public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, biometrics: Bool, context: LAContext)
-                    -> Promise<Void> {
-        DispatchQueue.mpw.promise {
-            assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
-
-            let query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
-            guard let masterKey = keyFactory.newKey( for: algorithm )
-            else { throw MPError.internal( details: "Cannot save master key since key provider cannot provide one." ) }
-            defer { masterKey.deallocate() }
-
-            let update: [CFString: Any] = [
-                kSecValueData: Data( bytes: masterKey, count: MPMasterKeySize ),
-                kSecAttrSynchronizable: false,
-                kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(fullName)",
-                kSecAttrDescription: "\(productName) master key (\(algorithm))",
-            ]
-
-            var status = SecItemUpdate( query as CFDictionary, update as CFDictionary )
-            if status == errSecItemNotFound {
-                status = SecItemAdd( query.merging( update, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
-            }
-
-            if status != errSecSuccess {
-                throw MPError.issue( status, title: "Biometrics Denied Saving Key" )
-            }
-        }
-    }
-
-    @discardableResult
-    public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool)
-                    -> Promise<Void> {
-        DispatchQueue.mpw.promise {
-            let query  = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics )
-            let status = SecItemDelete( query as CFDictionary )
-            if status != errSecSuccess, status != errSecItemNotFound {
-                throw MPError.issue( status, title: "Biometrics Denied Deleting Key" )
-            }
-        }
-    }
-
-    public static func hasKey(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool)
+    public static func hasKey(for fullName: String, algorithm: MPAlgorithmVersion)
                     -> Bool {
-        let context = LAContext()
-        context.interactionNotAllowed = true
-        guard var query = try? self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
-        else { return false }
-        query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
+        do {
+            var query = try self.keyQuery( for: fullName, algorithm: algorithm, context: nil )
+            query[kSecReturnAttributes] = false
+            query[kSecReturnData] = false
 
-        // TODO: Can lock up evaluating LAContext
-        let status = SecItemCopyMatching( query as CFDictionary, nil )
-        if status == errSecSuccess || status == errSecInteractionNotAllowed {
-            return true
+            let status = SecItemCopyMatching( query as CFDictionary, nil )
+            guard status == errSecSuccess || status == errSecInteractionNotAllowed || status == errSecItemNotFound
+            else { throw status }
+
+            return status == errSecSuccess || status == errSecInteractionNotAllowed
         }
-
-        if status != errSecItemNotFound {
-            wrn( "Issue looking for master key in keychain: %@", status )
+        catch {
+            wrn( "Issue looking for master key in keychain: %@", error )
+            return false
         }
-
-        return false
     }
 
-    public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, biometrics: Bool, context: LAContext) throws
+    @discardableResult
+    public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion)
+                    -> Promise<Void> {
+        DispatchQueue.global( qos: .utility ).promise {
+            let query = try self.keyQuery( for: fullName, algorithm: algorithm, context: nil )
+
+            let status = SecItemDelete( query as CFDictionary )
+            guard status == errSecSuccess || status == errSecItemNotFound
+            else { throw MPError.issue( status, title: "Biometrics Key Not Deleted" ) }
+        }
+    }
+
+    public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
                     -> Promise<MPMasterKey> {
-        DispatchQueue.mpw.promise {
-            assert( !Thread.isMainThread, "Keychain authentication from main thread might lead to deadlocks." )
+        let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access master key for:\n\(fullName)",
+                               content: UIActivityIndicatorView( style: .white ) )
+        spinner.show( dismissAutomatically: false )
 
-            var query = try self.userQuery( for: fullName, algorithm: algorithm, biometrics: biometrics, context: context )
-            query[kSecReturnData] = true
+        let promise = Promise<MPMasterKey>()
+        context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "evaluatePolicy loadKey" ) { result, error in
+            guard result, error == nil
+            else {
+                promise.finish( .failure( error as? LAError ?? MPError.issue( error, title: "Biometrics Rejected" ) ) )
+                spinner.dismiss()
+                return
+            }
 
-            let spinner = MPAlert(
-                    title: "Biometrics Authentication", message: "Please authenticate to access master key for:\n\(fullName)",
-                    content: UIActivityIndicatorView( style: .white ) )
-            spinner.show( dismissAutomatically: false )
-            defer { spinner.dismiss() }
+            DispatchQueue.global( qos: .utility ).promises( promise ) {
+                var query = try self.keyQuery( for: fullName, algorithm: algorithm, context: context )
+                query[kSecReturnData] = true
 
-            var cfResult: CFTypeRef?
-            let status = SecItemCopyMatching( query as CFDictionary, &cfResult )
-            if status == errSecSuccess, let data = cfResult as? Data, data.count == MPMasterKeySize {
+                var result: CFTypeRef?
+                let status = SecItemCopyMatching( query as CFDictionary, &result )
+                guard status == errSecSuccess, let data = result as? Data, data.count == MPMasterKeySize
+                else { throw MPError.issue( status, title: "Biometrics Key Denied" ) }
+
                 let masterKeyBytes = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
                 masterKeyBytes.initialize( repeating: 0, count: MPMasterKeySize )
                 data.copyBytes( to: masterKeyBytes, count: MPMasterKeySize )
                 return MPMasterKey( masterKeyBytes )
+            }.then { _ in
+                spinner.dismiss()
+            }
+        }
+
+        return promise
+    }
+
+    @discardableResult
+    public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext)
+                    -> Promise<Void> {
+        let promise = Promise<Void>()
+        context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "evaluatePolicy saveKey" ) { result, error in
+            guard result, error == nil
+            else {
+                promise.finish( .failure( error as? LAError ?? MPError.issue( error, title: "Biometrics Not Saved" ) ) )
+                return
             }
 
-            throw MPError.issue( status, title: "Biometrics Denied Accessing Key" )
+            DispatchQueue.global( qos: .utility ).promise {
+                let query = try self.keyQuery( for: fullName, algorithm: algorithm, context: context )
+
+                guard let masterKey = keyFactory.newKey( for: algorithm )
+                else { throw MPError.internal( details: "Cannot save master key since key provider cannot provide one." ) }
+                defer { masterKey.deallocate() }
+
+                let attributes: [CFString: Any] = [
+                    kSecValueData: Data( bytes: masterKey, count: MPMasterKeySize ),
+                    kSecAttrSynchronizable: false,
+                    kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(fullName)",
+                    kSecAttrDescription: "\(productName) master key (\(algorithm))",
+                ]
+
+                var status = SecItemUpdate( query as CFDictionary, attributes as CFDictionary )
+                if status == errSecItemNotFound {
+                    status = SecItemAdd( query.merging( attributes, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
+                }
+                guard status == errSecSuccess
+                else { throw MPError.issue( status, title: "Biometrics Key Not Saved" ) }
+            }.finishes( promise )
         }
+
+        return promise
     }
 }
 

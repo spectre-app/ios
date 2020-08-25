@@ -137,8 +137,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     public override init(fullName: String) {
         super.init( fullName: fullName )
 
-        self.context.touchIDAuthenticationAllowableReuseDuration = 2
-        self.context.localizedReason = "Authenticate for: \(fullName) [context]"
+        self.context.touchIDAuthenticationAllowableReuseDuration = 3
         self.context.localizedFallbackTitle = "fallback"
         self.context.localizedCancelTitle = "cancel"
     }
@@ -172,12 +171,12 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     }
 
     public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
-        self.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm, biometrics: true )
+        self.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
     }
 
     public func purgeKeys() {
         for algorithm in MPAlgorithmVersion.allCases {
-            MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm, biometrics: true )
+            MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm )
         }
         self.invalidate()
     }
@@ -186,8 +185,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
 
     fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> MPMasterKey? {
         do {
-            return try MPKeychain.loadKey( for: self.fullName, algorithm: algorithm,
-                                           biometrics: true, context: self.context ).await()
+            return try MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, context: self.context ).await()
         }
         catch {
             mperror( title: "Biometric Authentication Failed", error: error )
@@ -202,9 +200,8 @@ public class MPKeychainKeyFactory: MPKeyFactory {
             for item in items {
                 if let key = item.1 {
                     self.setKey( key, algorithm: item.0 )
-                    promise = promise.and( MPKeychain.saveKey(
-                            for: self.fullName, algorithm: item.0,
-                            keyFactory: self, biometrics: true, context: self.context ) )
+                    promise = promise.and(
+                            MPKeychain.saveKey( for: self.fullName, algorithm: item.0, keyFactory: self, context: self.context ) )
                 }
             }
 

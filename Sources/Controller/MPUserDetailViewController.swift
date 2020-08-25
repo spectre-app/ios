@@ -159,7 +159,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         identifier: "user >biometricLock",
                         title: "Biometric Lock 🅿︎",
                         value: {
-                            let keychainKeyFactory = MPKeychainKeyFactory( fullName: $0.fullName )
+                            let keychainKeyFactory = $0.masterKeyFactory as? MPKeychainKeyFactory ?? .init( fullName: $0.fullName )
                             return (icon: keychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon,
                                     selected: $0.biometricLock,
                                     enabled: keychainKeyFactory.factor != .biometricNone)
