@@ -554,7 +554,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 trc( "User biometric authentication: %@", result )
                 self.biometricButton.timing?.end(
                         [ "result": result.name,
-                          "factor": keychainKeyFactory.factor.description,
+                          "factor": MPKeychainKeyFactory.factor.description,
                         ] )
 
                 do {
@@ -583,10 +583,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.avatarButton.image = self.avatar.image
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
-                    let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }
                     self.biometricButton.isHidden = !InAppFeature.premium.enabled() || !(self.userFile?.biometricLock ?? false) ||
-                            !(keychainKeyFactory?.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
-                    self.biometricButton.image = keychainKeyFactory?.factor.icon
+                            !(self.userFile?.keychainKeyFactory.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
+                    self.biometricButton.image = MPKeychainKeyFactory.factor.icon
                     self.biometricButton.sizeToFit()
 
                     if self.isSelected {

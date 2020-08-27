@@ -130,26 +130,19 @@ public class MPBufferKeyFactory: MPKeyFactory {
 }
 
 public class MPKeychainKeyFactory: MPKeyFactory {
-    private let context = LAContext()
+    public static var factor: Factor = {
+        var error : NSError?
+        defer {
+            if let error = error {
+                wrn("Biometrics unavailable: %@", error)
+            }
+        }
 
-    // MARK: --- Life ---
-
-    public override init(fullName: String) {
-        super.init( fullName: fullName )
-
-        self.context.touchIDAuthenticationAllowableReuseDuration = 3
-        self.context.localizedReason = "Unlock \(fullName)"
-        self.context.localizedFallbackTitle = "Use Password"
-//        self.context.localizedCancelTitle = "cancel"
-    }
-
-    // MARK: --- Interface ---
-
-    public var factor: Factor {
-        guard self.context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: nil )
+        let context = LAContext()
+        guard context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: &error )
         else { return .biometricNone }
 
-        switch self.context.biometryType {
+        switch context.biometryType {
             case .none:
                 return .biometricNone
 
@@ -160,13 +153,27 @@ public class MPKeychainKeyFactory: MPKeyFactory {
                 return .biometricFace
 
             @unknown default:
-                wrn( "Unsupported biometry type: %@", self.context.biometryType )
+                wrn( "Unsupported biometry type: %@", context.biometryType )
                 return .biometricNone
         }
+    }()
+
+    private let context = LAContext()
+
+    // MARK: --- Life ---
+
+    public override init(fullName: String) {
+        super.init( fullName: fullName )
+
+        self.context.touchIDAuthenticationAllowableReuseDuration = 3
+        self.context.localizedReason = "Unlock \(fullName)"
+        self.context.localizedFallbackTitle = "Use Password"
     }
 
+    // MARK: --- Interface ---
+
     public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
-        self.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
+        MPKeychainKeyFactory.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
     }
 
     public func unlock() -> Promise<Void> {

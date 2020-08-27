@@ -633,6 +633,8 @@ class MPMarshal: Observable, Updatable {
     }
 
     class UserFile: Hashable, Comparable, CustomStringConvertible {
+        public lazy var keychainKeyFactory = MPKeychainKeyFactory( fullName: self.fullName )
+
         public let origin: URL?
         public var file:   UnsafeMutablePointer<MPMarshalledFile>
 
