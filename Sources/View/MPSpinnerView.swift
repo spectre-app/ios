@@ -21,7 +21,9 @@ public class MPSpinnerView: UICollectionView {
             self.indexPathsForSelectedItems?.first?.item
         }
         set {
-            self.selectItem( newValue )
+            if newValue != self.indexPathsForSelectedItems?.first?.item {
+                self.selectItem( newValue )
+            }
         }
     }
     public override var safeAreaInsets: UIEdgeInsets {

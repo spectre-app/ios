@@ -94,13 +94,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             ] )
 
                             site.state( resultParam: password ).then {
-                                switch $0 {
-                                    case .success(let state):
-                                        site.resultState = state.token
-
-                                    case .failure(let error):
-                                        mperror( title: "Couldn't update site password", error: error )
-                                }
+                                do { site.resultState = try $0.get().token }
+                                catch { mperror( title: "Couldn't update site password", error: error ) }
                             }
                         },
                         caption: {
@@ -171,13 +166,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             ] )
 
                             site.state( keyPurpose: .identification, resultParam: login ).then {
-                                switch $0 {
-                                    case .success(let state):
-                                        site.loginState = state.token
-
-                                    case .failure(let error):
-                                        mperror( title: "Couldn't update site name", error: error )
-                                }
+                                do { site.loginState = try $0.get().token }
+                                catch { mperror( title: "Couldn't update site name", error: error ) }
                             }
                         } )
 
@@ -262,13 +252,12 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             weak var question: MPQuestion? {
                 didSet {
                     self.question?.result().then( on: .main ) {
-                        switch $0 {
-                            case .success(let answer):
-                                self.resultLabel.text = answer.token
-                                self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
-
-                            case .failure(let error):
-                                mperror( title: "Couldn't calculate security answer", error: error )
+                        do {
+                            self.resultLabel.text = try $0.get().token
+                            self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
+                        }
+                        catch {
+                            mperror( title: "Couldn't calculate security answer", error: error )
                         }
                     }
                 }

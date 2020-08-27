@@ -488,16 +488,15 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
                 self.selectionConfiguration.activated = self.isSelected
+                self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
             }.promised {
                 site.result( keyPurpose: self.mode )
             }.then( on: DispatchQueue.main ) {
-                switch $0 {
-                    case .success(let result):
-                        self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
-                        self.resultLabel.text = result.token
-
-                    case .failure(let error):
-                        mperror( title: "Couldn't calculate site \(self.mode)", error: error )
+                do {
+                    self.resultLabel.text = try $0.get().token
+                }
+                catch {
+                    mperror( title: "Couldn't calculate site \(self.mode)", error: error )
                 }
             }
         }

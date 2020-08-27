@@ -201,33 +201,21 @@ public class Promise<V> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
-            switch $0 {
-                case .success(let value):
-                    do { try promise.finish( .success( consumer( value ) ) ) }
-                    catch { promise.finish( .failure( error ) ) }
-                    // TODO: handle Interruption.postponed?
-
-                case .failure(let error):
-                    promise.finish( .failure( error ) )
-            }
+            do { try promise.finish( .success( consumer( $0.get() ) ) ) }
+            catch { promise.finish( .failure( error ) ) }
+            // TODO: handle Interruption.postponed?
         } )
 
         return promise
     }
 
-    public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping () throws -> Promise<V2>) -> Promise<V2> {
+    public func promised<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> Promise<V2>) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
-            switch $0 {
-                case .success:
-                    do { try consumer().finishes( promise ) }
-                    catch { promise.finish( .failure( error ) ) }
-                    // TODO: handle Interruption.postponed?
-
-                case .failure(let error):
-                    promise.finish( .failure( error ) )
-            }
+            do { try consumer( $0.get() ).finishes( promise ) }
+            catch { promise.finish( .failure( error ) ) }
+            // TODO: handle Interruption.postponed?
         } )
 
         return promise
@@ -245,12 +233,8 @@ public class Promise<V> {
         return promise
     }
 
-    public func and<V2>(_ other: Promise<V2>) -> Promise<Void> {
-        self.promised {
-            other.then { _ in
-                ()
-            }
-        }
+    public func and(_ other: Promise<Void>) -> Promise<Void> where V == Void {
+        self.promised { other }
     }
 
     public func and<V2>(_ other: Promise<V2>) -> Promise<(V, V2)> {
@@ -262,19 +246,8 @@ public class Promise<V> {
 
         self.then { result1 in
             _ = other.then { result2 in
-                switch result1 {
-                    case .success(let value1):
-                        switch result2 {
-                            case .success(let value2):
-                                promise.finish( .success( reducing( value1, value2 ) ) )
-
-                            case .failure(let error):
-                                promise.finish( .failure( error ) )
-                        }
-
-                    case .failure(let error):
-                        promise.finish( .failure( error ) )
-                }
+                do { promise.finish( .success( try reducing( result1.get(), result2.get() ) ) ) }
+                catch { promise.finish( .failure( error ) ) }
             }
         }
 
@@ -283,13 +256,7 @@ public class Promise<V> {
 
     public func await() throws -> V {
         if let result = self.result {
-            switch result {
-                case .success(let value):
-                    return value
-
-                case .failure(let error):
-                    throw error
-            }
+            return try result.get()
         }
 
         // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.

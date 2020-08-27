@@ -157,20 +157,20 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         else { return }
 
         let _ = try? MPMarshal.shared.save( user: self ).then( { result in
-            switch result {
-                case .success(let destination):
-                    if let origin = self.origin, origin != destination,
-                       FileManager.default.fileExists( atPath: origin.path ) {
-                        do { try FileManager.default.removeItem( at: origin ) }
-                        catch {
-                            mperror( title: "Migration issue", message: "Cannot delete obsolete origin document",
-                                     details: origin.lastPathComponent, error: error )
-                        }
+            do {
+                let destination = try result.get()
+                if let origin = self.origin, origin != destination,
+                   FileManager.default.fileExists( atPath: origin.path ) {
+                    do { try FileManager.default.removeItem( at: origin ) }
+                    catch {
+                        mperror( title: "Migration issue", message: "Cannot delete obsolete origin document",
+                                 details: origin.lastPathComponent, error: error )
                     }
-                    self.origin = destination
-
-                case .failure(let error):
-                    mperror( title: "Couldn't save self", details: self, error: error )
+                }
+                self.origin = destination
+            }
+            catch {
+                mperror( title: "Couldn't save self", details: self, error: error )
             }
 
             self.dirty = false
@@ -206,7 +206,7 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         }
     }
 
-    func login(keyFactory: MPKeyFactory) -> Promise<MPUser> {
+    func login(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
         DispatchQueue.mpw.promise {
             guard let authKey = keyFactory.newKey( for: self.algorithm )
             else { throw MPError.internal( details: "Cannot authenticate user since master key is missing." ) }
@@ -267,13 +267,8 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         if self.biometricLock {
             // biometric lock is on; if key factory is password, migrate it to keychain.
             (self.masterKeyFactory as? MPPasswordKeyFactory)?.toKeychain().then {
-                switch $0 {
-                    case .success(let keychainKeyFactory):
-                        self.masterKeyFactory = keychainKeyFactory
-
-                    case .failure(let error):
-                        mperror( title: "Couldn't migrate to biometrics", error: error )
-                }
+                do { self.masterKeyFactory = try $0.get() }
+                catch { mperror( title: "Couldn't migrate to biometrics", error: error ) }
             }
         }
         else if let keychainKeyFactory = self.masterKeyFactory as? MPKeychainKeyFactory {

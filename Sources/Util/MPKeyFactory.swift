@@ -6,11 +6,11 @@
 import UIKit
 import LocalAuthentication
 
-private var masterKeyFactories = [ String: MPKeyFactory ]()
+private var keyFactories = [ String: MPKeyFactory ]()
 
-private func __masterKeyProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
+private func keyFactoryProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> MPMasterKey? {
     DispatchQueue.mpw.await {
-        String( validate: fullName ).flatMap { masterKeyFactories[$0] }?.newKey( for: algorithm )
+        String( validate: fullName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
     }
 }
 
@@ -32,8 +32,8 @@ public class MPKeyFactory {
 
     public func provide() -> MPMasterKeyProvider {
         DispatchQueue.mpw.await {
-            masterKeyFactories[self.fullName] = self
-            return __masterKeyProvider
+            keyFactories[self.fullName] = self
+            return keyFactoryProvider
         }
     }
 
@@ -138,14 +138,9 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         super.init( fullName: fullName )
 
         self.context.touchIDAuthenticationAllowableReuseDuration = 3
-        self.context.localizedFallbackTitle = "fallback"
-        self.context.localizedCancelTitle = "cancel"
-    }
-
-    public override func invalidate() {
-        DispatchQueue.mpw.await { self.context.invalidate() }
-
-        super.invalidate()
+        self.context.localizedReason = "Unlock \(fullName)"
+        self.context.localizedFallbackTitle = "Use Password"
+//        self.context.localizedCancelTitle = "cancel"
     }
 
     // MARK: --- Interface ---
@@ -174,11 +169,37 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         self.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
     }
 
+    public func unlock() -> Promise<Void> {
+        let promise = Promise<Void>()
+
+        self.context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.fullName)" ) { result, error in
+            if let error = error {
+                promise.finish( .failure( error ) )
+            }
+            else if !result {
+                promise.finish( .failure( MPError.internal( details: "Biometrics authentication denied." ) ) )
+            }
+            else {
+                promise.finish( .success( () ) )
+            }
+        }
+
+        return promise
+    }
+
     public func purgeKeys() {
         for algorithm in MPAlgorithmVersion.allCases {
             MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm )
         }
         self.invalidate()
+    }
+
+    // MARK: --- Life ---
+
+    public override func invalidate() {
+        DispatchQueue.mpw.await { self.context.invalidate() }
+
+        super.invalidate()
     }
 
     // MARK: --- Private ---
@@ -208,6 +229,8 @@ public class MPKeychainKeyFactory: MPKeyFactory {
             return promise.then { self }
         }
     }
+
+    // MARK: --- Types ---
 
     public enum Factor: CustomStringConvertible {
         case biometricTouch, biometricFace, biometricNone

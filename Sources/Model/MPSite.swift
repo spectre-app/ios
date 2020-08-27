@@ -105,7 +105,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public var image: UIImage? {
         didSet {
-            dbg("[preview set] %@: image %@ -> %@", self.siteName, oldValue, self.image)
+            dbg( "[preview set] %@: image %@ -> %@", self.siteName, oldValue, self.image )
             if (oldValue == nil) != (self.image == nil) {
                 self.observers.notify { $0.siteDidChange( self ) }
             }
@@ -288,43 +288,43 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
         return self.result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                             resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then {
-            switch $0 {
-                case .success(let result):
-                    guard let token = result.token
-                    else { return }
+            do {
+                let result = try $0.get()
+                guard let token = result.token
+                else { return }
 
-                    self.use()
-                    MPFeedback.shared.play( .trigger )
+                self.use()
+                MPFeedback.shared.play( .trigger )
 
-                    UIPasteboard.general.setItems(
-                            [ [ UIPasteboard.typeAutomatic: token ] ],
-                            options: [
-                                UIPasteboard.OptionsKey.localOnly: true,
-                                UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                            ] )
+                UIPasteboard.general.setItems(
+                        [ [ UIPasteboard.typeAutomatic: token ] ],
+                        options: [
+                            UIPasteboard.OptionsKey.localOnly: true,
+                            UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
+                        ] )
 
-                    MPAlert( title: "Copied \(keyPurpose) (3 min)", message: self.siteName, details:
-                    """
-                    Your \(keyPurpose) for \(self.siteName) is:
-                    \(token)
+                MPAlert( title: "Copied \(keyPurpose) (3 min)", message: self.siteName, details:
+                """
+                Your \(keyPurpose) for \(self.siteName) is:
+                \(token)
 
-                    It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
+                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
 
-                    Note that after 3 minutes, the \(keyPurpose) will expire from the pasteboard for security reasons.
-                    """ ).show( in: host )
+                Note that after 3 minutes, the \(keyPurpose) will expire from the pasteboard for security reasons.
+                """ ).show( in: host )
 
-                    copyEvent.end( [
-                        "result": $0.name,
-                        "counter": "\(result.counter)",
-                        "purpose": "\(result.purpose)",
-                        "type": "\(result.type)",
-                        "algorithm": "\(result.algorithm)",
-                        "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: token ) ?? 0,
-                    ] )
-
-                case .failure(let error):
-                    copyEvent.end( [ "result": $0.name ] )
-                    mperror( title: "Couldn't copy site", message: "Site value could not be calculated", error: error )
+                copyEvent.end(
+                        [ "result": $0.name,
+                          "counter": "\(result.counter)",
+                          "purpose": "\(result.purpose)",
+                          "type": "\(result.type)",
+                          "algorithm": "\(result.algorithm)",
+                          "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: token ) ?? 0,
+                        ] )
+            }
+            catch {
+                copyEvent.end( [ "result": $0.name ] )
+                mperror( title: "Couldn't copy site", message: "Site value could not be calculated", error: error )
             }
         }
     }

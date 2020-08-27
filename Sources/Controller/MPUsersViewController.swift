@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import LocalAuthentication
 
 class MPUsersViewController: MPViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
     public lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
@@ -16,9 +17,10 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                 trc( "Selected user: %@", self.selectedFile )
 
                 UIView.animate( withDuration: .short ) {
+                    self.usersSpinner.selectedItem = self.fileSource.indexPath( for: self.selectedFile )?.item
                     self.userToolbarConfiguration.activated = self.selectedFile != nil
-
                     self.userEvent?.end( [ "result": "deselected" ] )
+
                     if let selectedItem = self.usersSpinner.selectedItem {
                         MPFeedback.shared.play( .activate )
 
@@ -90,26 +92,26 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                                          content: UIActivityIndicatorView( style: .whiteLarge ) )
             passwordField.authenticater = { keyFactory in
                 spinner.show( dismissAutomatically: false )
-                return MPUser( fullName: keyFactory.fullName, file: nil ).login( keyFactory: keyFactory )
+                return MPUser( fullName: keyFactory.fullName, file: nil ).login( using: keyFactory )
             }
             passwordField.authenticated = { result in
                 trc( "Incognito authentication: %@", result )
-                incognitoButton.timing?.end( [
-                                                 "result": result.name,
-                                                 "length": passwordField.text?.count ?? 0,
-                                                 "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
-                                             ] )
+                incognitoButton.timing?.end(
+                        [ "result": result.name,
+                          "length": passwordField.text?.count ?? 0,
+                          "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
+                        ] )
 
                 spinner.dismiss()
                 controller.dismiss( animated: true ) {
-                    switch result {
-                        case .success(let user):
-                            MPFeedback.shared.play( .trigger )
-                            incognitoEvent.end( [ "result": "incognito" ] )
-                            self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-
-                        case .failure(let error):
-                            mperror( title: "Couldn't unlock user", error: error )
+                    do {
+                        let user = try result.get()
+                        MPFeedback.shared.play( .trigger )
+                        incognitoEvent.end( [ "result": "incognito" ] )
+                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                    }
+                    catch {
+                        mperror( title: "Couldn't unlock user", error: error )
                     }
                 }
             }
@@ -255,7 +257,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         UserCell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
-            (cell as? UserCell)?.navigationController = self.navigationController
+            (cell as? UserCell)?.viewController = self
             (cell as? UserCell)?.userFile = self.fileSource.element( at: indexPath )
         }
     }
@@ -304,6 +306,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                         self.nameField.text = nil
                         self.passwordField.text = nil
                     }
+                    else {
+                        self.attemptBiometrics()
+                    }
 
                     self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.isSelected ? 2: 1) )
 //                    self.nameLabel.font.pointSize.animate(
@@ -317,15 +322,15 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         }
 
         public var new: Bool = false
-        public weak var userEvent:            MPTracker.TimedEvent?
-        public weak var userFile:             MPMarshal.UserFile? {
+        public weak var userEvent:      MPTracker.TimedEvent?
+        public weak var userFile:       MPMarshal.UserFile? {
             didSet {
                 self.passwordField.userFile = self.userFile
                 self.avatar = self.userFile?.avatar ?? .avatar_add
                 self.update()
             }
         }
-        public weak var navigationController: UINavigationController?
+        public weak var viewController: MPUsersViewController?
 
         private var avatar          = MPUser.Avatar.avatar_add {
             didSet {
@@ -382,25 +387,25 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.passwordField.authenticater = { keyFactory in
                 self.passwordEvent = MPTracker.shared.begin( named: "users.user #auth_password" )
 
-                return self.userFile?.authenticate( keyFactory: keyFactory ) ??
-                        MPUser( fullName: keyFactory.fullName ).login( keyFactory: keyFactory )
+                return self.userFile?.authenticate( using: keyFactory ) ??
+                        MPUser( fullName: keyFactory.fullName ).login( using: keyFactory )
             }
             self.passwordField.authenticated = { result in
                 trc( "User password authentication: %@", result )
-                self.passwordEvent?.end( [
-                                             "result": result.name,
-                                             "length": self.passwordField.text?.count ?? 0,
-                                             "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
-                                         ] )
+                self.passwordEvent?.end(
+                        [ "result": result.name,
+                          "length": self.passwordField.text?.count ?? 0,
+                          "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
+                        ] )
 
-                switch result {
-                    case .success(let user):
-                        MPFeedback.shared.play( .trigger )
-                        self.userEvent?.end( [ "result": "password" ] )
-                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-
-                    case .failure(let error):
-                        mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
+                do {
+                    let user = try result.get()
+                    MPFeedback.shared.play( .trigger )
+                    self.userEvent?.end( [ "result": "password" ] )
+                    self.viewController?.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                }
+                catch {
+                    mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
                 }
             }
 
@@ -414,28 +419,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             self.nameField => \.textColor => Theme.current.color.body
 
             self.biometricButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
-                guard let userFile = self.userFile
-                else { return }
-
-                let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
-                userFile.authenticate( keyFactory: keychainKeyFactory ).then( on: .main ) { [unowned self] result in
-                    trc( "User biometric authentication: %@", result )
-                    self.biometricButton.timing?.end( [
-                                                          "result": result.name,
-                                                          "factor": keychainKeyFactory.factor.description,
-                                                      ] )
-
-                    switch result {
-                        case .success(let user):
-                            MPFeedback.shared.play( .trigger )
-                            self.userEvent?.end( [ "result": "biometric" ] )
-                            self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
-
-                        case .failure:
-                            keychainKeyFactory.purgeKeys()
-                            self.update()
-                    }
-                }
+                self.attemptBiometrics()
             }
 
             self.idBadgeView.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 )
@@ -556,6 +540,39 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         // MARK: --- Private ---
 
+        private func attemptBiometrics() {
+            guard InAppFeature.premium.enabled(), let userFile = self.userFile, userFile.biometricLock
+            else { return }
+
+            let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
+            guard keychainKeyFactory.hasKey( for: userFile.algorithm )
+            else { return }
+
+            keychainKeyFactory.unlock().promised {
+                userFile.authenticate( using: keychainKeyFactory )
+            }.then( on: .main ) { [unowned self] result in
+                trc( "User biometric authentication: %@", result )
+                self.biometricButton.timing?.end(
+                        [ "result": result.name,
+                          "factor": keychainKeyFactory.factor.description,
+                        ] )
+
+                do {
+                    let user = try result.get()
+                    MPFeedback.shared.play( .trigger )
+                    self.userEvent?.end( [ "result": "biometric" ] )
+                    self.viewController?.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                }
+                catch LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive {
+                    self.viewController?.selectedFile = nil
+                }
+                catch {
+                    mperror( title: "Biometrics Rejected", error: error )
+                    self.update()
+                }
+            }
+        }
+
         private func update() {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: .long ) {
@@ -567,7 +584,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
                     let keychainKeyFactory = self.userFile.flatMap { MPKeychainKeyFactory( fullName: $0.fullName ) }
-                    self.biometricButton.isHidden = !InAppFeature.premium.enabled() ||
+                    self.biometricButton.isHidden = !InAppFeature.premium.enabled() || !(self.userFile?.biometricLock ?? false) ||
                             !(keychainKeyFactory?.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
                     self.biometricButton.image = keychainKeyFactory?.factor.icon
                     self.biometricButton.sizeToFit()

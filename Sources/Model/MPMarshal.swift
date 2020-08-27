@@ -224,7 +224,7 @@ class MPMarshal: Observable, Updatable {
                 let replaceEvent = MPTracker.shared.begin( named: "marshal.importIntoFile #replace" )
 
                 guard let authentication = passwordField.authenticate( { keyFactory in
-                    importingFile.authenticate( keyFactory: keyFactory )
+                    importingFile.authenticate( using: keyFactory )
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Missing master password" )
@@ -273,8 +273,8 @@ class MPMarshal: Observable, Updatable {
 
                 guard let authentication = passwordField.authenticate( { keyFactory in
                     Promise( .success(
-                            (try? importingFile.authenticate( keyFactory: keyFactory ).await(),
-                             try? existingFile.authenticate( keyFactory: keyFactory ).await()) ) )
+                            (try? importingFile.authenticate( using: keyFactory ).await(),
+                             try? existingFile.authenticate( using: keyFactory ).await()) ) )
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Missing master password" )
@@ -288,131 +288,130 @@ class MPMarshal: Observable, Updatable {
                     trc( "Import merge authentication: %@", result )
                     spinner.dismiss()
 
-                    switch result {
-                        case .success(let (importedUser, existedUser)):
-                            if let importedUser = importedUser,
-                               let existedUser = existedUser {
-                                self.import( from: importedUser, into: existedUser ).finishes( promise ).then {
-                                    mergeEvent.end( [ "result": $0.name ] )
-                                    importEvent.end( [ "result": $0.name ] )
-                                }
+                    do {
+                        let (importedUser, existedUser) = try result.get()
+
+                        if let importedUser = importedUser,
+                           let existedUser = existedUser {
+                            self.import( from: importedUser, into: existedUser ).finishes( promise ).then {
+                                mergeEvent.end( [ "result": $0.name ] )
+                                importEvent.end( [ "result": $0.name ] )
                             }
-                            else if let importedUser = importedUser {
-                                let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockUser" )
+                        }
+                        else if let importedUser = importedUser {
+                            let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockUser" )
 
-                                let controller = UIAlertController( title: "Unlock Existing User", message:
-                                """
-                                The existing user is locked with a different master password.
+                            let controller = UIAlertController( title: "Unlock Existing User", message:
+                            """
+                            The existing user is locked with a different master password.
 
-                                The continue merging, also provide the existing user's master password.
+                            The continue merging, also provide the existing user's master password.
 
-                                Replacing will delete the existing user and replace it with the imported user.
-                                """, preferredStyle: .alert )
+                            Replacing will delete the existing user and replace it with the imported user.
+                            """, preferredStyle: .alert )
 
-                                let passwordField = MPMasterPasswordField( userFile: existingFile )
-                                passwordField.authenticater = { keyFactory in
-                                    spinner.show( dismissAutomatically: false )
-                                    return existingFile.authenticate( keyFactory: keyFactory )
-                                }
-                                passwordField.authenticated = { result in
-                                    trc( "Existing user authentication: %@", result )
+                            let passwordField = MPMasterPasswordField( userFile: existingFile )
+                            passwordField.authenticater = { keyFactory in
+                                spinner.show( dismissAutomatically: false )
+                                return existingFile.authenticate( using: keyFactory )
+                            }
+                            passwordField.authenticated = { result in
+                                trc( "Existing user authentication: %@", result )
 
-                                    spinner.dismiss()
-                                    controller.dismiss( animated: true ) {
-                                        switch result {
-                                            case .success(let existedUser):
-                                                self.import( from: importedUser, into: existedUser ).finishes( promise ).then {
-                                                    unlockEvent.end( [ "result": $0.name ] )
-                                                    mergeEvent.end( [ "result": $0.name ] )
-                                                    importEvent.end( [ "result": $0.name ] )
-                                                }
-
-                                            case .failure(let error):
-                                                mperror( title: "Couldn't import user", message: "User authentication failed",
-                                                         details: existingFile, error: error )
-                                                unlockEvent.end( [ "result": "!masterKey" ] )
-                                                viewController.present( controller, animated: true )
+                                spinner.dismiss()
+                                controller.dismiss( animated: true ) {
+                                    do {
+                                        self.import( from: importedUser, into: try result.get() ).finishes( promise ).then {
+                                            unlockEvent.end( [ "result": $0.name ] )
+                                            mergeEvent.end( [ "result": $0.name ] )
+                                            importEvent.end( [ "result": $0.name ] )
                                         }
                                     }
-                                }
-                                controller.addTextField { passwordField.passwordField = $0 }
-                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    unlockEvent.end( [ "result": "cancel" ] )
-                                    mergeEvent.end( [ "result": "failed: cancel" ] )
-                                    importEvent.end( [ "result": "failed: cancel" ] )
-                                    promise.finish( .success( false ) )
-                                } )
-                                controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
-                                    if !passwordField.try() {
-                                        mperror( title: "Couldn't import user", message: "Missing master password" )
-                                        unlockEvent.end( [ "result": "!masterPassword" ] )
+                                    catch {
+                                        mperror( title: "Couldn't import user", message: "User authentication failed",
+                                                 details: existingFile, error: error )
+                                        unlockEvent.end( [ "result": "!masterKey" ] )
                                         viewController.present( controller, animated: true )
                                     }
-                                } )
-                                viewController.present( controller, animated: true )
-                            }
-                            else if let existedUser = existedUser {
-                                let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockImport" )
-
-                                let controller = UIAlertController( title: "Unlock Import", message:
-                                """
-                                The import user is locked with a different master password.
-
-                                The continue merging, also provide the imported user's master password.
-                                """, preferredStyle: .alert )
-
-                                let passwordField = MPMasterPasswordField( userFile: importingFile )
-                                passwordField.authenticater = { keyFactory in
-                                    spinner.show( dismissAutomatically: false )
-                                    return importingFile.authenticate( keyFactory: keyFactory )
                                 }
-                                passwordField.authenticated = { result in
-                                    trc( "Import user authentication: %@", result )
-
-                                    spinner.dismiss()
-                                    controller.dismiss( animated: true ) {
-                                        switch result {
-                                            case .success(let importedUser):
-                                                self.import( from: importedUser, into: existedUser ).finishes( promise ).then {
-                                                    unlockEvent.end( [ "result": $0.name ] )
-                                                    mergeEvent.end( [ "result": $0.name ] )
-                                                    importEvent.end( [ "result": $0.name ] )
-                                                }
-
-                                            case .failure(let error):
-                                                mperror( title: "Couldn't import user", message: "User authentication failed",
-                                                         details: importingFile, error: error )
-                                                unlockEvent.end( [ "result": "!masterKey" ] )
-                                                viewController.present( controller, animated: true )
-                                        }
-                                    }
+                            }
+                            controller.addTextField { passwordField.passwordField = $0 }
+                            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                                unlockEvent.end( [ "result": "cancel" ] )
+                                mergeEvent.end( [ "result": "failed: cancel" ] )
+                                importEvent.end( [ "result": "failed: cancel" ] )
+                                promise.finish( .success( false ) )
+                            } )
+                            controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
+                                if !passwordField.try() {
+                                    mperror( title: "Couldn't import user", message: "Missing master password" )
+                                    unlockEvent.end( [ "result": "!masterPassword" ] )
+                                    viewController.present( controller, animated: true )
                                 }
-                                controller.addTextField { passwordField.passwordField = $0 }
-                                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                    unlockEvent.end( [ "result": "cancel" ] )
-                                    mergeEvent.end( [ "result": "failed: cancel" ] )
-                                    importEvent.end( [ "result": "failed: cancel" ] )
-                                    promise.finish( .success( false ) )
-                                } )
-                                controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
-                                    if !passwordField.try() {
-                                        mperror( title: "Couldn't import user", message: "Missing master password" )
-                                        unlockEvent.end( [ "result": "!masterPassword" ] )
-                                        viewController.present( controller, animated: true )
-                                    }
-                                } )
-                                viewController.present( controller, animated: true )
-                            }
-                            else {
-                                mperror( title: "Couldn't import user", message: "User authentication failed" )
-                                mergeEvent.end( [ "result": "!masterKey" ] )
-                                viewController.present( controller, animated: true )
-                            }
-
-                        case .failure(let error):
-                            mperror( title: "Couldn't import user", error: error )
-                            mergeEvent.end( [ "result": "unexpected" ] )
+                            } )
                             viewController.present( controller, animated: true )
+                        }
+                        else if let existedUser = existedUser {
+                            let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockImport" )
+
+                            let controller = UIAlertController( title: "Unlock Import", message:
+                            """
+                            The import user is locked with a different master password.
+
+                            The continue merging, also provide the imported user's master password.
+                            """, preferredStyle: .alert )
+
+                            let passwordField = MPMasterPasswordField( userFile: importingFile )
+                            passwordField.authenticater = { keyFactory in
+                                spinner.show( dismissAutomatically: false )
+                                return importingFile.authenticate( using: keyFactory )
+                            }
+                            passwordField.authenticated = { result in
+                                trc( "Import user authentication: %@", result )
+
+                                spinner.dismiss()
+                                controller.dismiss( animated: true ) {
+                                    do {
+                                        self.import( from: try result.get(), into: existedUser ).finishes( promise ).then {
+                                            unlockEvent.end( [ "result": $0.name ] )
+                                            mergeEvent.end( [ "result": $0.name ] )
+                                            importEvent.end( [ "result": $0.name ] )
+                                        }
+                                    }
+                                    catch {
+                                        mperror( title: "Couldn't import user", message: "User authentication failed",
+                                                 details: importingFile, error: error )
+                                        unlockEvent.end( [ "result": "!masterKey" ] )
+                                        viewController.present( controller, animated: true )
+                                    }
+                                }
+                            }
+                            controller.addTextField { passwordField.passwordField = $0 }
+                            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                                unlockEvent.end( [ "result": "cancel" ] )
+                                mergeEvent.end( [ "result": "failed: cancel" ] )
+                                importEvent.end( [ "result": "failed: cancel" ] )
+                                promise.finish( .success( false ) )
+                            } )
+                            controller.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
+                                if !passwordField.try() {
+                                    mperror( title: "Couldn't import user", message: "Missing master password" )
+                                    unlockEvent.end( [ "result": "!masterPassword" ] )
+                                    viewController.present( controller, animated: true )
+                                }
+                            } )
+                            viewController.present( controller, animated: true )
+                        }
+                        else {
+                            mperror( title: "Couldn't import user", message: "User authentication failed" )
+                            mergeEvent.end( [ "result": "!masterKey" ] )
+                            viewController.present( controller, animated: true )
+                        }
+                    }
+                    catch {
+                        mperror( title: "Couldn't import user", error: error )
+                        mergeEvent.end( [ "result": "unexpected" ] )
+                        viewController.present( controller, animated: true )
                     }
                 }
             } )
@@ -502,27 +501,26 @@ class MPMarshal: Observable, Updatable {
         }.then {
             spinner.dismiss()
 
-            switch ($0) {
-                case .success(let success):
-                    if success {
-                        importEvent.end( [ "result": "success: complete" ] )
-                        MPAlert( title: "Import Complete", message: documentURL.lastPathComponent, details:
-                        """
-                        Completed the import of \(importingFile) (\(importingFile.format)).
-                        This export file was created on \(importingFile.exportDate).
+            do {
+                if try $0.get() {
+                    importEvent.end( [ "result": "success: complete" ] )
+                    MPAlert( title: "Import Complete", message: documentURL.lastPathComponent, details:
+                    """
+                    Completed the import of \(importingFile) (\(importingFile.format)).
+                    This export file was created on \(importingFile.exportDate).
 
-                        This was a direct installation of the import data, not a merge import.
-                        """ ).show()
-                        self.setNeedsUpdate()
-                    }
-                    else {
-                        mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL )
-                        importEvent.end( [ "result": "!createFile" ] )
-                    }
-
-                case .failure(let error):
-                    mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL, error: error )
-                    importEvent.end( [ "result": $0.name ] )
+                    This was a direct installation of the import data, not a merge import.
+                    """ ).show()
+                    self.setNeedsUpdate()
+                }
+                else {
+                    mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL )
+                    importEvent.end( [ "result": "!createFile" ] )
+                }
+            }
+            catch {
+                mperror( title: "Couldn't import user", message: "Couldn't save user document", details: documentURL, error: error )
+                importEvent.end( [ "result": $0.name ] )
             }
         }
     }
@@ -674,7 +672,7 @@ class MPMarshal: Observable, Updatable {
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
         }
 
-        public func authenticate(keyFactory: MPKeyFactory) -> Promise<MPUser> {
+        public func authenticate(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
             DispatchQueue.mpw.promised {
                 if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: keyFactory.provide() )?.pointee,
                    self.file.pointee.error.type == .success {
@@ -720,7 +718,7 @@ class MPMarshal: Observable, Updatable {
                                 } )
                             }
                         }
-                    }.login( keyFactory: keyFactory )
+                    }.login( using: keyFactory )
                 }
 
                 throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User" )
