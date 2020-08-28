@@ -434,7 +434,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         func siteDidChange(_ site: MPSite) {
             DispatchQueue.main.perform {
-                self.backgroundImage => \.backgroundColor => Theme.current.color.selection.transform { $0?.with( hue: self.site?.color?.hue ) }
+                self.backgroundImage => \.backgroundColor => Theme.current.color.selection
+                        .transform { [unowned self] in $0?.with( hue: self.site?.color?.hue ) }
                 self.backgroundImage.image = self.site?.image
 
                 if let resultKey = self.result?.attributedKey {

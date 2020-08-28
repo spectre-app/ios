@@ -48,8 +48,8 @@ public func =><E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property
     }
 }
 
-public struct PropertyPath<E, V>: CustomStringConvertible {
-    let target:          E
+public struct PropertyPath<E, V>: CustomStringConvertible where E : AnyObject {
+    weak var target:          E?
     let nonnullKeyPath:  KeyPath<E, V>?
     let nullableKeyPath: KeyPath<E, V?>?
     let attribute:       NSAttributedString.Key?
@@ -77,38 +77,38 @@ public struct PropertyPath<E, V>: CustomStringConvertible {
 
     func apply(value: V?) {
         if self.nonnullKeyPath == \UIButton.currentTitleColor,
-           let target = target as? UIButton, let value = value as? UIColor {
+           let target = self.target as? UIButton, let value = value as? UIColor {
             target.setTitleColor( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentTitleShadowColor,
-                let target = target as? UIButton, let value = value as? UIColor {
+                let target = self.target as? UIButton, let value = value as? UIColor {
             target.setTitleShadowColor( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentAttributedTitle,
-                let target = target as? UIButton, let value = value as? NSAttributedString {
+                let target = self.target as? UIButton, let value = value as? NSAttributedString {
             target.setAttributedTitle( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentBackgroundImage,
-                let target = target as? UIButton, let value = value as? UIImage {
+                let target = self.target as? UIButton, let value = value as? UIImage {
             target.setBackgroundImage( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentImage,
-                let target = target as? UIButton, let value = value as? UIImage {
+                let target = self.target as? UIButton, let value = value as? UIImage {
             target.setImage( value, for: .normal )
         }
 
         if let propertyKeyPath = self.nullableKeyPath as? ReferenceWritableKeyPath<E, V?> {
-            self.target[keyPath: propertyKeyPath] = value
+            self.target?[keyPath: propertyKeyPath] = value
         }
         else if let propertyKeyPath = self.nonnullKeyPath as? ReferenceWritableKeyPath<E, V>, let value = value {
-            self.target[keyPath: propertyKeyPath] = value
+            self.target?[keyPath: propertyKeyPath] = value
         }
     }
 }
 
 public extension PropertyPath where V == NSAttributedString {
     func apply(value: Any?) {
-        if let attribute = self.attribute, let string = self.target[keyPath: self.nullableKeyPath!] {
+        if let attribute = self.attribute, let string = self.target?[keyPath: self.nullableKeyPath!] {
             let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
             if let value = value {
                 if let secondaryColor = value as? UIColor, attribute == .strokeColor {
@@ -505,7 +505,7 @@ public class Property<V>: Updatable, CustomStringConvertible {
             self.update()
         }
     }
-    var dependants = [ Updatable ]() // TODO: Don't leak references.
+    var dependants = [ Updatable ]()
 
     init(parent: Property<V>? = nil) {
         self.parent = parent

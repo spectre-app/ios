@@ -17,7 +17,7 @@ public class WeakBox<E>: Equatable {
     }
 
     public init(_ value: E) {
-        self._value = value as AnyObject
+        self.value = value
     }
 
     public static func ==(lhs: WeakBox<E>, rhs: WeakBox<E>) -> Bool {

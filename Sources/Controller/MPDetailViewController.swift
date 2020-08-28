@@ -26,11 +26,6 @@ class AnyMPDetailsViewController: MPViewController, Updatable {
         super.viewWillAppear( animated )
 
         UIView.performWithoutAnimation { self.update() }
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear( animated )
-
         self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
                 forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in
             self.setNeedsUpdate()
@@ -38,9 +33,10 @@ class AnyMPDetailsViewController: MPViewController, Updatable {
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear( animated )
-
         self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
+        self.updateTask.cancel()
+
+        super.viewWillDisappear( animated )
     }
 
     // MARK: --- Updatable ---
@@ -54,7 +50,8 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     public let model: M
     public var color: UIColor? {
         didSet {
-            self.backgroundView => \.backgroundColor => Theme.current.color.panel.transform { $0?.with( hue: self.color?.hue ) }
+            self.backgroundView => \.backgroundColor => Theme.current.color.panel
+                    .transform { [unowned self] in $0?.with( hue: self.color?.hue ) }
         }
     }
     public var image: UIImage? {
