@@ -142,7 +142,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
             weak var theme: Theme? = Theme.default {
                 didSet {
                     DispatchQueue.main.perform {
-                        self.effectView.contentView => \.backgroundColor => self.theme?.color.panel
+                        self.effectView => \.backgroundColor => self.theme?.color.panel
                     }
                 }
             }

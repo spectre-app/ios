@@ -38,7 +38,7 @@ class MPDateView: MPEffectView {
         self.monthFormatter.dateFormat = "MMM"
         self.dayFormatter.dateFormat = "dd"
 
-        self.contentView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
+        self.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
         self.separatorView => \.backgroundColor => Theme.current.color.secondary
 
@@ -51,9 +51,9 @@ class MPDateView: MPEffectView {
         self.dayLabel => \.font => Theme.current.font.largeTitle
 
         // - Hierarchy
-        self.contentView.addSubview( self.separatorView )
-        self.contentView.addSubview( self.monthLabel )
-        self.contentView.addSubview( self.dayLabel )
+        self.addSubview( self.separatorView )
+        self.addSubview( self.monthLabel )
+        self.addSubview( self.dayLabel )
 
         // - Layout
         self.widthAnchor.constraint( equalTo: self.heightAnchor, constant: .long ).isActive = true

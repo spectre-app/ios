@@ -5,18 +5,13 @@
 
 import UIKit
 
-class MPEffectView: UIVisualEffectView {
-    public var borderWidth : CGFloat {
+class MPEffectView: UIView {
+    public var borderWidth:         CGFloat {
         didSet {
             self.updateBackground()
         }
     }
     public var isBackground:        Bool {
-        didSet {
-            self.updateBackground()
-        }
-    }
-    public var isDark:              Bool {
         didSet {
             self.updateBackground()
         }
@@ -36,36 +31,84 @@ class MPEffectView: UIVisualEffectView {
             self.updateContent()
         }
     }
-    public var isSelected  = false {
+    public var isSelected = false {
         didSet {
             self.updateContent()
         }
     }
 
-    init(border: CGFloat = 2, background: Bool = true, dark: Bool = false, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+    override var layoutMargins: UIEdgeInsets {
+        get {
+            self.vibrancyEffectView.contentView.layoutMargins
+        }
+        set {
+            self.vibrancyEffectView.contentView.layoutMargins = newValue
+        }
+    }
+
+    override var backgroundColor: UIColor? {
+        get {
+            self.vibrancyEffectView.contentView.backgroundColor
+        }
+        set {
+            self.vibrancyEffectView.contentView.backgroundColor = newValue
+        }
+    }
+
+    private var blurEffect:     UIBlurEffect? {
+        didSet {
+            self.blurEffectView.effect = self.blurEffect
+
+//            if let blurEffect = self.blurEffect {
+//                if #available( iOS 13, * ) {
+//                    self.vibrancyEffect = UIVibrancyEffect( blurEffect: blurEffect, style: .fill )
+//                }
+//                else {
+//                    self.vibrancyEffect = UIVibrancyEffect( blurEffect: blurEffect )
+//                }
+//            }
+//            else {
+//                self.vibrancyEffect = nil
+//            }
+        }
+    }
+    private var vibrancyEffect: UIVibrancyEffect? {
+        didSet {
+            self.vibrancyEffectView.effect = self.vibrancyEffect
+        }
+    }
+    private lazy var blurEffectView     = UIVisualEffectView( effect: self.blurEffect )
+    private lazy var vibrancyEffectView = UIVisualEffectView( effect: self.vibrancyEffect )
+
+    init(border: CGFloat = 2, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
         self.borderWidth = border
         self.isBackground = background
-        self.isDark = dark
         self.isRound = round
         self.rounding = rounding
         self.isDimmedBySelection = dims
-        super.init( effect: nil )
+
+        super.init( frame: .zero )
 
         self.layer.masksToBounds = true
-
-        self.contentView.layer.shadowRadius = 0
-        self.contentView.layer.shadowOpacity = .short
-        self.contentView.layer => \.shadowColor => Theme.current.color.shadow
-        self.contentView.layer.shadowOffset = CGSize( width: 0, height: 1 )
+        self.layer.shadowRadius = 0
+        self.layer.shadowOpacity = .short
+        self.layer => \.shadowColor => Theme.current.color.shadow
+        self.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
         self.updateBackground()
+
+        self.blurEffectView.contentView.addSubview( self.vibrancyEffectView )
+        self.addSubview( self.blurEffectView )
+
+        LayoutConfiguration( view: self.vibrancyEffectView ).constrain().activate()
+        LayoutConfiguration( view: self.blurEffectView ).constrain().activate()
     }
 
-    convenience init(content: UIView, border: CGFloat = 2, background: Bool = true, dark: Bool = false, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
-        self.init( border: border, background: background, dark: dark, round: round, rounding: rounding, dims: false )
+    convenience init(content: UIView, border: CGFloat = 2, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+        self.init( border: border, background: background, round: round, rounding: rounding, dims: false )
 
         // - View
-        self.contentView.addSubview( content )
+        self.addSubview( content )
 
         // - Layout
         LayoutConfiguration( view: content )
@@ -75,6 +118,15 @@ class MPEffectView: UIVisualEffectView {
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    override func addSubview(_ view: UIView) {
+        if view == self.blurEffectView {
+            super.addSubview( view )
+        }
+        else {
+            self.vibrancyEffectView.contentView.addSubview( view )
+        }
     }
 
     override func layoutSubviews() {
@@ -97,19 +149,20 @@ class MPEffectView: UIVisualEffectView {
 
     // MARK: Private
 
-    private static func effect(dark: Bool) -> UIVisualEffect {
-        if #available( iOS 13, * ) {
-            return UIBlurEffect( style: dark ? .systemUltraThinMaterialDark: .systemUltraThinMaterialLight )
-        }
-        else {
-            return UIBlurEffect( style: dark ? .dark: .light )
-        }
-    }
-
     func updateBackground() {
         DispatchQueue.main.perform {
             //self.tintColor = self.isBackgroundDark ? MPTheme.current.color.secondary.get(): MPTheme.current.color.backdrop.get()
-            self.effect = self.isBackground ? MPEffectView.effect( dark: self.isDark ): nil
+            if self.isBackground {
+                if #available( iOS 13, * ) {
+                    self.blurEffect = UIBlurEffect( style: .systemUltraThinMaterial )
+                }
+                else {
+                    self.blurEffect = UIBlurEffect( style: .prominent )
+                }
+            }
+            else {
+                self.blurEffect = nil
+            }
             self.layer.borderWidth = self.isBackground ? self.borderWidth: 0
         }
     }
@@ -126,10 +179,10 @@ class MPEffectView: UIVisualEffectView {
 
             if self.isDimmedBySelection && !self.isSelected {
                 self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
-                self.contentView.alpha = .long
+                self.alpha = .long
             }
             else {
-                self.contentView.alpha = 1
+                self.alpha = 1
             }
         }
     }

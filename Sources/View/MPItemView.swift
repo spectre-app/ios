@@ -482,7 +482,7 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         override func update() {
             super.update()
 
-            self.button.setImage( self.item.value?.icon, for: .normal )
+            self.button.image = self.item.value?.icon
             self.button.isSelected = self.item.value?.selected ?? false
             self.button.isEnabled = self.item.value?.enabled ?? false
         }

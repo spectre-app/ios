@@ -147,7 +147,7 @@ class MPAlert {
         let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didActivateSwipe ) )
         activateRecognizer.direction = .up
 
-        let view = MPEffectView( content: contentStack, dark: true )
+        let view = MPEffectView( content: contentStack )
         view.insetsLayoutMarginsFromSafeArea = true
         view.addGestureRecognizer( dismissRecognizer )
         view.addGestureRecognizer( activateRecognizer )

@@ -6,11 +6,11 @@
 import UIKit
 
 class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
-    private lazy var topContainer = MPEffectView( content: self.searchField, dark: true )
-    private let searchField              = UITextField()
-    private let userButton               = MPButton( identifier: "sites #user_settings" )
-    private let sitesTableView           = MPSitesTableView()
-    private let detailsHost              = MPDetailsHostController()
+    private lazy var topContainer = MPEffectView( content: self.searchField )
+    private let searchField    = UITextField()
+    private let userButton     = MPButton( identifier: "sites #user_settings" )
+    private let sitesTableView = MPSitesTableView()
+    private let detailsHost    = MPDetailsHostController()
 
     override var user: MPUser {
         didSet {

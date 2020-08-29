@@ -43,11 +43,11 @@ class MPButton: MPEffectView {
     }
 
     init(identifier: String? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
-         border: CGFloat = 1, background: Bool = true, dark: Bool = false, round: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
+         border: CGFloat = 1, background: Bool = true, round: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
          action: ((UIEvent, MPButton) -> Void)? = nil) {
         self.identifier = identifier
         self.action = action
-        super.init( border: border, background: background, dark: dark, round: round, rounding: rounding, dims: false )
+        super.init( border: border, background: background, round: round, rounding: rounding, dims: false )
 
         self.button.titleLabel?.numberOfLines = 0
         self.button.titleLabel?.textAlignment = .center
@@ -63,9 +63,9 @@ class MPButton: MPEffectView {
             self.isSelected = self.button.isSelected
         }
 
-        self.contentView.layoutMargins = .zero
-        self.contentView.insetsLayoutMarginsFromSafeArea = false
-        self.contentView.addSubview( self.button )
+        self.layoutMargins = .zero
+        self.insetsLayoutMarginsFromSafeArea = false
+        self.addSubview( self.button )
 
         LayoutConfiguration( view: self.button )
                 .constrain( margins: true )

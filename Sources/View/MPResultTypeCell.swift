@@ -25,9 +25,9 @@ class MPClassItemCell: MPItemCell {
         self.classLabel => \.textColor => Theme.current.color.body
         self.classLabel => \.font => Theme.current.font.caption1
 
-        self.effectView.contentView.addSubview( self.separatorView )
-        self.effectView.contentView.addSubview( self.nameLabel )
-        self.effectView.contentView.addSubview( self.classLabel )
+        self.effectView.addSubview( self.separatorView )
+        self.effectView.addSubview( self.nameLabel )
+        self.effectView.addSubview( self.classLabel )
 
         LayoutConfiguration( view: self.separatorView )
                 .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
