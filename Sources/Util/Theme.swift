@@ -75,42 +75,45 @@ public struct PropertyPath<E, V>: CustomStringConvertible where E : AnyObject {
         }
     }
 
-    func apply(value: V?) {
+    func apply(value: @autoclosure () -> V?) {
+        guard let target = self.target
+        else { return }
+
+        let value = value()
         if self.nonnullKeyPath == \UIButton.currentTitleColor,
-           let target = self.target as? UIButton, let value = value as? UIColor {
+           let target = target as? UIButton, let value = value as? UIColor {
             target.setTitleColor( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentTitleShadowColor,
-                let target = self.target as? UIButton, let value = value as? UIColor {
+                let target = target as? UIButton, let value = value as? UIColor {
             target.setTitleShadowColor( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentAttributedTitle,
-                let target = self.target as? UIButton, let value = value as? NSAttributedString {
+                let target = target as? UIButton, let value = value as? NSAttributedString {
             target.setAttributedTitle( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentBackgroundImage,
-                let target = self.target as? UIButton, let value = value as? UIImage {
+                let target = target as? UIButton, let value = value as? UIImage {
             target.setBackgroundImage( value, for: .normal )
         }
         else if self.nullableKeyPath == \UIButton.currentImage,
-                let target = self.target as? UIButton, let value = value as? UIImage {
+                let target = target as? UIButton, let value = value as? UIImage {
             target.setImage( value, for: .normal )
         }
-
-        if let propertyKeyPath = self.nullableKeyPath as? ReferenceWritableKeyPath<E, V?> {
-            self.target?[keyPath: propertyKeyPath] = value
+        else if let propertyKeyPath = self.nullableKeyPath as? ReferenceWritableKeyPath<E, V?> {
+            target[keyPath: propertyKeyPath] = value
         }
         else if let propertyKeyPath = self.nonnullKeyPath as? ReferenceWritableKeyPath<E, V>, let value = value {
-            self.target?[keyPath: propertyKeyPath] = value
+            target[keyPath: propertyKeyPath] = value
         }
     }
 }
 
 public extension PropertyPath where V == NSAttributedString {
-    func apply(value: Any?) {
-        if let attribute = self.attribute, let string = self.target?[keyPath: self.nullableKeyPath!] {
+    func apply(value: @autoclosure () -> Any?) {
+        if let attribute = self.attribute, let target = self.target, let string = target[keyPath: self.nullableKeyPath!] {
             let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
-            if let value = value {
+            if let value = value() {
                 if let secondaryColor = value as? UIColor, attribute == .strokeColor {
                     string.enumerateAttribute( .strokeColor, in: NSRange( location: 0, length: string.length ) ) { value, range, stop in
                         if value != nil,
