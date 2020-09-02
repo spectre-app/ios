@@ -62,7 +62,7 @@ class MPURLUtils {
 
     static func preview(url: String, result: @escaping (Meta) -> Void) {
         if let info = self.metadata[url] {
-            dbg("[preview cached] %@: %d", url, info.imageData?.count ?? 0)
+            trc("[preview cached] %@: %d", url, info.imageData?.count ?? 0)
             result( info )
         }
 
@@ -83,10 +83,12 @@ class MPURLUtils {
                     self.metadata[url] = info
                 }
 
-                dbg("[preview fetched] %@: %d", url, responseData?.count ?? 0)
+                trc("[preview fetched] %@: %d", url, responseData?.count ?? 0)
                 result( info )
             }.resume()
         }, onError: { error in
+            trc("[preview error] %@: %@", url, error)
+
             switch error {
                 case .noURLHasBeenFound: ()
 
@@ -95,7 +97,6 @@ class MPURLUtils {
                     pii( "[>] %@: %@", url, error )
             }
 
-            dbg("[preview error] %@: %@", url, error)
             result( self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil ) )
         } )
     }
@@ -105,11 +106,11 @@ class MPURLUtils {
            string.lowercased().hasSuffix( "png" ) || string.lowercased().hasSuffix( "gif" ) ||
                    string.lowercased().hasSuffix( "jpg" ) || string.lowercased().hasSuffix( "jpeg" ),
            let url = URL( string: string ) {
-            dbg("[preview url valid] %@", string)
+            trc("[preview url valid] %@", string)
             return url
         }
 
-        dbg("[preview url invalid] %@", string)
+        trc("[preview url invalid] %@", string)
         return nil
     }
 }

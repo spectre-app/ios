@@ -105,7 +105,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     }
     public var image: UIImage? {
         didSet {
-            dbg( "[preview set] %@: image %@ -> %@", self.siteName, oldValue, self.image )
+            trc( "[preview set] %@: image %@ -> %@", self.siteName, oldValue, self.image )
             if (oldValue == nil) != (self.image == nil) {
                 self.observers.notify { $0.siteDidChange( self ) }
             }

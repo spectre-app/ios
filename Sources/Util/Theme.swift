@@ -147,10 +147,7 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
         else { return }
 
         var value = value()
-        dbg( "[assign] %@ => %@", self, value )
-        if self.nullableKeyPath == \CALayer.borderColor && value == nil {
-            dbg( "<bp>" )
-        }
+        trc( "[assign] %@ => %@", self, value )
 
         if let attribute = self.attribute, let string = target[keyPath: self.nullableKeyPath!] as? NSAttributedString {
             let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )

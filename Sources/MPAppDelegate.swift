@@ -81,7 +81,6 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
-        dbg( "opening: %@, options: %@", url, options )
         if let components = URLComponents( url: url, resolvingAgainstBaseURL: false ),
            components.scheme == "spectre", components.path == "import" {
             if let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 ) {
@@ -93,9 +92,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
                 let utis = utisValue as? Array<String> {
             for format in MPMarshalFormat.allCases {
                 if let uti = format.uti, utis.contains( uti ) {
-                    dbg( "connecting to: %@", url )
                     MPURLUtils.session.dataTask( with: url, completionHandler: { (data, response, error) in
-                        dbg( "connected to: %@, response: %@, error: %@", url, response, error )
                         if let data = data, error == nil {
                             MPMarshal.shared.import( data: data )
                         }

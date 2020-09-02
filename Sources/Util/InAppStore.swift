@@ -126,10 +126,7 @@ class InAppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObser
     }
 
     func products(forSubscription subscription: InAppSubscription) -> [SKProduct] {
-        self.products.filter {
-            dbg( "product: %@, sub: %@", $0, $0.subscriptionGroupIdentifier )
-            return $0.subscriptionGroupIdentifier == subscription.identifier
-        }
+        self.products.filter { $0.subscriptionGroupIdentifier == subscription.identifier }
     }
 
     // MARK: --- SKPaymentTransactionObserver ---
