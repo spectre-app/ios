@@ -178,20 +178,20 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
     class ActionsItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ButtonItem( identifier: "user #export", value: { _ in (label: "Export", image: nil) } ) { item in
+                ButtonItem( identifier: "user #export", value: { _ in (label: "Export", image: nil) }, action: { item in
                     if let user = item.model {
                         let controller = MPExportViewController( user: user )
                         controller.popoverPresentationController?.sourceView = item.view
                         controller.popoverPresentationController?.sourceRect = item.view.bounds
                         item.viewController?.present( controller, animated: true )
                     }
-                },
-                ButtonItem( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) } ) { item in
+                }),
+                ButtonItem( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) }, action: { item in
                     item.viewController?.hostController?.show( MPAppDetailsViewController() )
-                },
-                ButtonItem( identifier: "user #logout", value: { _ in (label: "Log out", image: nil) } ) { item in
+                }),
+                ButtonItem( identifier: "user #logout", value: { _ in (label: "Log out", image: nil) }, action: { item in
                     item.model?.logout()
-                },
+                }),
             ] )
         }
     }

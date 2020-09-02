@@ -151,9 +151,9 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
 
     class ManageSubscriptionItem: ButtonItem<MPConfig> {
         init() {
-            super.init( identifier: "app #subscription", value: { _ in (label: "Premium Subscription", image: nil) } ) { item in
+            super.init( identifier: "app #subscription", value: { _ in (label: "Premium Subscription", image: nil) }, action: { item in
                 item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
-            }
+            })
         }
     }
 

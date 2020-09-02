@@ -199,27 +199,27 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                             $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
                         }.values.sorted()
                     },
-                    subitems: [ ButtonItem( identifier: "site.question #add", value: { _ in (label: "Add Security Question", image: nil) } ) { item in
-                        let controller = UIAlertController( title: "Security Question", message:
-                        """
+                subitems: [ ButtonItem( identifier: "site.question #add", value: { _ in (label: "Add Security Question", image: nil) }, action: { item in
+                    let controller = UIAlertController( title: "Security Question", message:
+                                                            """
                         Enter the most significant noun for the site's security question.
                         """, preferredStyle: .alert )
-                        controller.addTextField {
-                            $0.placeholder = "eg. teacher"
-                            $0.autocapitalizationType = .none
-                            $0.keyboardType = .alphabet
-                            $0.returnKeyType = .done
-                        }
-                        controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                        controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
-                            guard let site = item?.model, let keyword = controller?.textFields?.first?.text<
-                            else { return }
-
-                            trc( "Adding security question <%@> for: %@", keyword, site )
-                            site.questions.append( MPQuestion( site: site, keyword: keyword ) )
-                        } )
-                        item.viewController?.present( controller, animated: true )
-                    } ] )
+                    controller.addTextField {
+                        $0.placeholder = "eg. teacher"
+                        $0.autocapitalizationType = .none
+                        $0.keyboardType = .alphabet
+                        $0.returnKeyType = .done
+                    }
+                    controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                    controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
+                        guard let site = item?.model, let keyword = controller?.textFields?.first?.text<
+                        else { return }
+                        
+                        trc( "Adding security question <%@> for: %@", keyword, site )
+                        site.questions.append( MPQuestion( site: site, keyword: keyword ) )
+                    } )
+                    item.viewController?.present( controller, animated: true )
+                }) ] )
             self.deletable = true
 
             self.addBehaviour( PremiumTapBehaviour() )
