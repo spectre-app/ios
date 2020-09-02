@@ -29,7 +29,7 @@ public class WeakBox<E>: Equatable {
     }
 }
 
-public class WeakKey<E : Hashable>: WeakBox<E>, Hashable {
+extension WeakBox: Hashable where E: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine( self.value?.hashValue )
     }

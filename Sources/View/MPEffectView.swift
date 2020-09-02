@@ -175,13 +175,13 @@ class MPEffectView: UIView {
 
     func updateContent() {
         DispatchQueue.main.perform {
-            self.layer => \.borderColor => Theme.current.color.secondary
 
             if self.isDimmedBySelection && !self.isSelected {
-                self.layer.borderColor = self.layer.borderColor?.copy( alpha: 0 )
-                self.alpha = .long
+                self.layer => \.borderColor => Theme.current.color.secondary.transform { $0?.with( alpha: 0 ) }
+                self.alpha = .short
             }
             else {
+                self.layer => \.borderColor => Theme.current.color.secondary
                 self.alpha = 1
             }
         }

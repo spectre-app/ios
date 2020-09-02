@@ -57,6 +57,11 @@ class MPButton: MPEffectView {
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
+        self.button => \.titleLabel!.font => Theme.current.font.callout
+        //self.button => \.currentAttributedTitle => .font => Theme.current.font.callout
+        self.button => \.currentAttributedTitle => .foregroundColor => Theme.current.color.body
+        self.button => \.currentAttributedTitle => .strokeColor => Theme.current.color.secondary
+        self.button => \.currentTitleColor => Theme.current.color.body
         self.button.sizeToFit()
 
         self.stateObserver = self.button.observe( \.isSelected, options: .initial ) { [unowned self] _, _ in
@@ -113,11 +118,6 @@ class MPButton: MPEffectView {
         self.button.setImage( self.image, for: .normal )
         self.button.setTitle( self.title, for: .normal )
         self.button.setAttributedTitle( self.attributedTitle, for: .normal )
-        self.button => \.titleLabel!.font => Theme.current.font.callout
-        //self.button => \.currentAttributedTitle => .font => Theme.current.font.callout
-        self.button => \.currentAttributedTitle => .foregroundColor => Theme.current.color.body
-        self.button => \.currentAttributedTitle => .strokeColor => Theme.current.color.secondary
-        self.button => \.currentTitleColor => Theme.current.color.body
         self.button.sizeToFit()
     }
 }

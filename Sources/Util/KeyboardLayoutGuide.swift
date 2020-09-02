@@ -22,7 +22,7 @@ class KeyboardLayoutGuide: UILayoutGuide {
         }
     }
 
-    static var screenObservers = [ WeakKey < UIScreen>: KeyboardObserver ]()
+    static var screenObservers = [ WeakBox < UIScreen>: KeyboardObserver ]()
 
     var observers   = [ Any ]()
     var constraints = [ NSLayoutConstraint ]()
@@ -68,8 +68,8 @@ class KeyboardLayoutGuide: UILayoutGuide {
         self.update = update
         self.notify()
 
-        if KeyboardLayoutGuide.screenObservers[WeakKey( screen )] == nil {
-            KeyboardLayoutGuide.screenObservers[WeakKey( screen )] = KeyboardObserver( screen: screen )
+        if KeyboardLayoutGuide.screenObservers[WeakBox( screen )] == nil {
+            KeyboardLayoutGuide.screenObservers[WeakBox( screen )] = KeyboardObserver( screen: screen )
         }
 
         self.observers.append( NotificationCenter.default.addObserver(
@@ -122,7 +122,7 @@ class KeyboardLayoutGuide: UILayoutGuide {
         guard let screen = self.view.window?.screen
         else { return }
 
-        let keyboardScreenFrame = KeyboardLayoutGuide.screenObservers[WeakKey( screen )]?.screenFrame ?? .null
+        let keyboardScreenFrame = KeyboardLayoutGuide.screenObservers[WeakBox( screen )]?.screenFrame ?? .null
         self.keyboardTopConstraint.isActive = keyboardScreenFrame != .null
         self.keyboardLeftConstraint.isActive = keyboardScreenFrame != .null
         self.keyboardRightConstraint.isActive = keyboardScreenFrame != .null
@@ -132,7 +132,7 @@ class KeyboardLayoutGuide: UILayoutGuide {
         }
 
         let keyboardViewFrame = self.view.convert( keyboardScreenFrame, from: screen.coordinateSpace )
-        let keyboardInsets = UIEdgeInsets( in: self.view.frame, subtracting: keyboardViewFrame )
+        let keyboardInsets    = UIEdgeInsets( in: self.view.frame, subtracting: keyboardViewFrame )
         self.keyboardTopConstraint.constant = keyboardViewFrame.minY
         self.keyboardLeftConstraint.constant = keyboardViewFrame.minX
         self.keyboardRightConstraint.constant = keyboardViewFrame.maxX - self.view.bounds.maxX
