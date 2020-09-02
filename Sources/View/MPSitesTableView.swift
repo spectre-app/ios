@@ -285,7 +285,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         private let captionLabel    = UILabel()
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
 
-        private var selectionConfiguration: LayoutConfiguration!
+        private var selectionConfiguration: LayoutConfiguration<UIStackView>!
 
         // MARK: --- Life ---
 

@@ -17,14 +17,14 @@ class MPAlert {
         inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
     }
     private lazy var activationConfiguration = LayoutConfiguration( view: self.view ) { (active, inactive) in
-        active.apply( LayoutConfiguration( view: self.titleLabel ).set( Theme.current.font.title1.get(), forKey: "font" ) )
-        active.apply( LayoutConfiguration( view: self.messageLabel ).set( Theme.current.font.title2.get(), forKey: "font" ) )
-        active.apply( LayoutConfiguration( view: self.expandChevron ).set( true, forKey: "hidden" ) )
-        active.apply( LayoutConfiguration( view: self.detailLabel ).set( false, forKey: "hidden" ) )
-        inactive.apply( LayoutConfiguration( view: self.titleLabel ).set( Theme.current.font.headline.get(), forKey: "font" ) )
-        inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( Theme.current.font.subheadline.get(), forKey: "font" ) )
-        inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, forKey: "hidden" ) )
-        inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, forKey: "hidden" ) )
+        active.apply( LayoutConfiguration( view: self.titleLabel ).set( Theme.current.font.title1.get(), keyPath: \.font ) )
+        active.apply( LayoutConfiguration( view: self.messageLabel ).set( Theme.current.font.title2.get(), keyPath: \.font ) )
+        active.apply( LayoutConfiguration( view: self.expandChevron ).set( true, keyPath: \.isHidden ) )
+        active.apply( LayoutConfiguration( view: self.detailLabel ).set( false, keyPath: \.isHidden ) )
+        inactive.apply( LayoutConfiguration( view: self.titleLabel ).set( Theme.current.font.headline.get(), keyPath: \.font ) )
+        inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( Theme.current.font.subheadline.get(), keyPath: \.font ) )
+        inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, keyPath: \.isHidden ) )
+        inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, keyPath: \.isHidden ) )
     }
     private lazy var automaticDismissalTask = DispatchTask( queue: .main, deadline: .now() + .seconds( 3 ),
                                                             qos: .utility, execute: { self.dismiss() } )

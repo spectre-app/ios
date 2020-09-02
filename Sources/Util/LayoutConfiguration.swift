@@ -32,8 +32,8 @@ struct Anchor: OptionSet {
     static let bottomCenter   = Anchor( arrayLiteral: Anchor.bottom, Anchor.centerX )
 }
 
-public struct LayoutTarget: CustomStringConvertible {
-    public let view:                UIView?
+public struct LayoutTarget<T: UIView>: CustomStringConvertible {
+    public let view:                T?
     public let layoutGuide:         UILayoutGuide?
     public var description:         String {
         describe( self.view ) ?? self.layoutGuide?.description ?? "-"
@@ -82,10 +82,22 @@ public struct LayoutTarget: CustomStringConvertible {
 /**
  * A layout configuration holds a set of operations that will be performed on the target when the configuration's active state changes.
  */
-public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
+public protocol AnyLayoutConfiguration: class, CustomStringConvertible, CustomDebugStringConvertible {
+    var activated: Bool { get set }
+
+    @discardableResult
+    func activate(animationDuration duration: TimeInterval, parent: AnyLayoutConfiguration?) -> Self
+
+    @discardableResult
+    func deactivate(animationDuration duration: TimeInterval, parent: AnyLayoutConfiguration?) -> Self
+}
+
+private let dummyView = UIView()
+
+public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserver {
 
     //! The target upon which this configuration's operations operate.
-    public let  target:    LayoutTarget
+    public let  target:    LayoutTarget<T>
     //! Whether this configuration has last been activated or deactivated.
     private var activation             = false
     public var  activated: Bool {
@@ -104,27 +116,29 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
         }
     }
     //! Child configurations which will be activated when this configuration is activated and deactivated when this configuration is deactivated.
-    public var  activeConfigurations   = [ LayoutConfiguration ]()
+    public var  activeConfigurations   = [ AnyLayoutConfiguration ]()
     //! Child configurations which will be deactivated when this configuration is activated and activated when this configuration is deactivated.
-    public var  inactiveConfigurations = [ LayoutConfiguration ]()
+    public var  inactiveConfigurations = [ AnyLayoutConfiguration ]()
 
-    private static let dummyView = UIView()
-    private var constrainers       = [ (UIView, LayoutTarget) -> [NSLayoutConstraint] ]()
+    private var constrainers       = [ (UIView, LayoutTarget<T>) -> [NSLayoutConstraint] ]()
     private var activeConstraints  = Set<NSLayoutConstraint>()
     private var refreshViews       = [ Refresh ]()
     private var actions            = [ (UIView) -> Void ]()
-    private var activeValues       = [ String: () -> Any? ]()
-    private var inactiveValues     = [ String: Any? ]()
+    private var properties         = [ AnyProperty ]()
     private var activeProperties   = [ String: Any ]()
     private var inactiveProperties = [ String: Any ]()
 
     public var description: String {
-        var description = "\(self.target)[\(self.activation ? "on": "off")]: "
+        "\(self.target)[\(self.activation ? "on": "off")]"
+    }
+
+    public var debugDescription: String {
+        var description = "\(self.description): "
         if !self.constrainers.isEmpty || !self.activeConstraints.isEmpty {
             description += "constrainers:\(self.constrainers.count), "
         }
-        if !self.activeValues.isEmpty {
-            description += "keys:\(self.activeValues.keys), "
+        if !self.properties.isEmpty {
+            description += "properties:\(self.properties), "
         }
         if !self.activeConfigurations.isEmpty || !self.inactiveConfigurations.isEmpty {
             description += "children:active[\(self.activeConfigurations.count)],inactive[\(self.inactiveConfigurations.count)]"
@@ -133,16 +147,16 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     }
 
     //! Create a new configuration for the view and automatically add an active and inactive child configuration for it configure them in the block.  New configurations start deactivated and the inactive configuration starts activated.
-    public convenience init(view: UIView? = nil, configurations: ((LayoutConfiguration, LayoutConfiguration) -> Void)? = nil) {
+    public convenience init(view: T? = nil, configurations: ((LayoutConfiguration<T>, LayoutConfiguration<T>) -> Void)? = nil) {
         self.init( target: LayoutTarget( view: view, layoutGuide: nil ), configurations: configurations )
     }
 
     //! Create a new configuration for a layout guide created in the view and automatically add an active and inactive child configuration for it configure them in the block.  New configurations start deactivated and the inactive configuration starts activated.
-    public convenience init(layoutGuide: UILayoutGuide, configurations: ((LayoutConfiguration, LayoutConfiguration) -> Void)? = nil) {
+    public convenience init(layoutGuide: UILayoutGuide, configurations: ((LayoutConfiguration<T>, LayoutConfiguration<T>) -> Void)? = nil) {
         self.init( target: LayoutTarget( view: nil, layoutGuide: layoutGuide ), configurations: configurations )
     }
 
-    private init(target: LayoutTarget, configurations: ((LayoutConfiguration, LayoutConfiguration) -> Void)? = nil) {
+    private init(target: LayoutTarget<T>, configurations: ((LayoutConfiguration<T>, LayoutConfiguration<T>) -> Void)? = nil) {
         self.target = target
         if let configurations = configurations {
             self.apply( configurations )
@@ -151,7 +165,7 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     }
 
     //! Add child configurations that triggers when this configuration's activation changes.
-    @discardableResult func apply(_ configurations: (LayoutConfiguration, LayoutConfiguration) -> Void) -> Self {
+    @discardableResult func apply(_ configurations: (LayoutConfiguration<T>, LayoutConfiguration<T>) -> Void) -> Self {
         let active   = LayoutConfiguration( target: self.target )
         let inactive = LayoutConfiguration( target: self.target )
         configurations( active, inactive )
@@ -162,7 +176,7 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     }
 
     //! Add a child configuration that triggers when this configuration is activated or deactivated.
-    @discardableResult func apply(_ configuration: LayoutConfiguration, active: Bool = true) -> Self {
+    @discardableResult func apply(_ configuration: AnyLayoutConfiguration, active: Bool = true) -> Self {
         if active {
             self.activeConfigurations.append( configuration )
             configuration.activated = self.activation
@@ -182,11 +196,11 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
         self.constrainTo { _, _ in constraint }
     }
 
-    @discardableResult func constrainTo(_ constrainer: @escaping (UIView, LayoutTarget) -> NSLayoutConstraint) -> Self {
+    @discardableResult func constrainTo(_ constrainer: @escaping (UIView, LayoutTarget<T>) -> NSLayoutConstraint) -> Self {
         self.constrainToAll { [ constrainer( $0, $1 ) ] }
     }
 
-    @discardableResult func constrainToAll(constrainers: @escaping (UIView, LayoutTarget) -> [NSLayoutConstraint]) -> Self {
+    @discardableResult func constrainToAll(constrainers: @escaping (UIView, LayoutTarget<T>) -> [NSLayoutConstraint]) -> Self {
         self.constrainers.append( constrainers )
         return self
     }
@@ -340,25 +354,21 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     }
 
     //! Set a given value for the target at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.
-    @discardableResult func set(_ value: @escaping @autoclosure () -> Any?, forKey keyPath: String, reverses: Bool = false) -> Self {
-        self.activeValues[keyPath] = value
-        if reverses {
-            self.inactiveValues[keyPath] = self.target.view?.value( forKeyPath: keyPath )
+    @discardableResult func set<V: Equatable>(_ value: @escaping @autoclosure () -> V, keyPath: ReferenceWritableKeyPath<T, V>, reverses: Bool = false) -> Self {
+        let property = Property( value: value, keyPath: keyPath, reversable: reverses )
+        if self.activated {
+            property.update( self.target.view )
         }
-
+        else {
+            property.deactivate( self.target.view )
+        }
+        self.properties.append( property )
         return self
     }
 
-//@discardableResult func setFloat:(CGFloat)value forKey:(NSString *)key -> Self {}
-//@discardableResult func setPoint:(CGPoint)value forKey:(NSString *)key -> Self {}
-//@discardableResult func setSize:(CGSize)value forKey:(NSString *)key -> Self {}
-//@discardableResult func setRect:(CGRect)value forKey:(NSString *)key -> Self {}
-//@discardableResult func setTransform:(CGAffineTransform)value forKey:(NSString *)key -> Self {}
-//@discardableResult func setEdgeInsets:(UIEdgeInsets)value forKey:(NSString *)key -> Self {}
-//@discardableResult func setOffset:(UIOffset)value forKey:(NSString *)key -> Self {}
-
     //! Activate this configuration and apply its operations.
-    @discardableResult func activate(animationDuration duration: TimeInterval = -1, parent: LayoutConfiguration? = nil) -> Self {
+    @discardableResult
+    public func activate(animationDuration duration: TimeInterval = -1, parent: AnyLayoutConfiguration? = nil) -> Self {
         guard !self.activation
         else { return self }
         if duration > 0 {
@@ -369,7 +379,7 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
             UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
             return self
         }
-        trc( "%@: activate: %@", parent?.target, self )
+        trc( "%@: activate: %@", parent?.description, self )
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: duration ) {
@@ -377,8 +387,8 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                 let targetView = self.target.view ?? owningView
 
                 self.inactiveConfigurations.forEach {
-                    trc( "%@:%@: -> deactivate inactive child: %@", parent?.target, self.target, $0 )
-                    $0.deactivate( parent: self )
+                    trc( "%@:%@: -> deactivate inactive child: %@", parent?.description, self.target, $0 )
+                    $0.deactivate( animationDuration: duration, parent: self )
                 }
 
                 if let newPriority = self.activeProperties["compressionResistance.horizontal"] as? UILayoutPriority,
@@ -409,9 +419,9 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                 if !self.constrainers.isEmpty {
                     targetView?.translatesAutoresizingMaskIntoConstraints = false
                     for constrainer in self.constrainers {
-                        for constraint in constrainer( owningView ?? LayoutConfiguration.dummyView, self.target ) {
-                            trc( "%@:%@: activating %@", parent?.target, self.target, constraint )
-                            if constraint.firstItem !== LayoutConfiguration.dummyView && constraint.secondItem !== LayoutConfiguration.dummyView {
+                        for constraint in constrainer( owningView ?? dummyView, self.target ) {
+                            trc( "%@:%@: activating %@", parent?.description, self.target, constraint )
+                            if constraint.firstItem !== dummyView && constraint.secondItem !== dummyView {
                                 constraint.isActive = true
                                 self.activeConstraints.insert( constraint )
                             }
@@ -422,26 +432,13 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                     }
                 }
 
-                self.activeValues.forEach { keyPath, newSupplier in
-                    let newValue = newSupplier(), oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
-                    if newValue as? NSObject == oldValue {
-                        return
-                    }
-
-                    if self.inactiveValues.keys.contains( keyPath ) {
-                        self.inactiveValues[keyPath] = oldValue
-                    }
-
-                    trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath,
-                         String( reflecting: oldValue ), String( reflecting: newValue ) )
-                    self.target.view?.setValue( newValue, forKeyPath: keyPath )
-                }
+                self.properties.forEach { $0.activate( self.target.view ) }
                 Theme.current.observers.register( observer: self )
 
                 targetView.flatMap { targetView in self.actions.forEach { $0( targetView ) } }
                 self.activeConfigurations.forEach {
-                    trc( "%@:%@: -> activate active child: %@", parent?.target, self.target, $0 )
-                    $0.activate( parent: self )
+                    trc( "%@:%@: -> activate active child: %@", parent?.description, self.target, $0 )
+                    $0.activate( animationDuration: duration, parent: self )
                 }
 
                 self.activation = true
@@ -460,7 +457,8 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     }
 
     //! Deactivate this configuration and reverse its relevant operations.
-    @discardableResult func deactivate(animationDuration duration: TimeInterval = -1, parent: LayoutConfiguration? = nil) -> Self {
+    @discardableResult
+    public func deactivate(animationDuration duration: TimeInterval = -1, parent: AnyLayoutConfiguration? = nil) -> Self {
         guard self.activation
         else { return self }
         if duration > 0 {
@@ -471,15 +469,15 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
             UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
             return self
         }
-        trc( "%@: deactivate: %@", parent?.target, self )
+        trc( "%@: deactivate: %@", parent?.description, self )
 
         DispatchQueue.main.perform {
             let owningView = self.target.owningView
             let targetView = self.target.view ?? owningView
 
             self.activeConfigurations.forEach {
-                trc( "%@:%@: -> deactivate active child: %@", parent?.target, self.target, $0 )
-                $0.deactivate( parent: self )
+                trc( "%@:%@: -> deactivate active child: %@", parent?.description, self.target, $0 )
+                $0.deactivate( animationDuration: duration, parent: self )
             }
 
             if let newPriority = self.inactiveProperties["compressionResistance.horizontal"] as? UILayoutPriority,
@@ -500,26 +498,17 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
             }
 
             self.activeConstraints.forEach {
-                trc( "%@:%@: deactivating %@", parent?.target, self.target, $0 )
+                trc( "%@:%@: deactivating %@", parent?.description, self.target, $0 )
                 $0.isActive = false
             }
             self.activeConstraints.removeAll()
 
-            self.inactiveValues.forEach { keyPath, newValue in
-                let oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
-                if newValue as? NSObject == oldValue {
-                    return
-                }
-
-                trc( "%@:%@: %@, %@ -> %@", parent?.target, self.target, keyPath,
-                     String( reflecting: oldValue ), String( reflecting: newValue ) )
-                self.target.view?.setValue( newValue, forKeyPath: keyPath )
-            }
+            self.properties.forEach { $0.deactivate( self.target.view ) }
             Theme.current.observers.unregister( observer: self )
 
             self.inactiveConfigurations.forEach {
-                trc( "%@:%@: -> activate inactive child: %@", parent?.target, self.target, $0 )
-                $0.activate( parent: self )
+                trc( "%@:%@: -> activate inactive child: %@", parent?.description, self.target, $0 )
+                $0.activate( animationDuration: duration, parent: self )
             }
 
             self.activation = false
@@ -546,20 +535,10 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
     // MARK: --- ThemeObserver ---
 
     public func didChangeTheme() {
-        guard self.activated
-        else { return }
-
-        self.activeValues.forEach { keyPath, newSupplier in
-            let newValue = newSupplier(), oldValue = self.target.view?.value( forKeyPath: keyPath ) as? NSObject
-            if newValue as? NSObject == oldValue {
-                return
-            }
-
-            trc( "[update] %@: %@, %@ -> %@", self.target, keyPath,
-                 String( reflecting: oldValue ), String( reflecting: newValue ) )
-            self.target.view?.setValue( newValue, forKeyPath: keyPath )
-        }
+        self.properties.forEach { $0.update( self.target.view ) }
     }
+
+    // MARK: --- Types ---
 
     public enum Refresh {
         //! Request a redraw. Useful if it affects custom draw code.
@@ -591,6 +570,85 @@ public class LayoutConfiguration: CustomStringConvertible, ThemeObserver {
                     (updateView as? UITableView)?.performBatchUpdates( {} )
                     (updateView as? UICollectionView)?.performBatchUpdates( {} )
             }
+        }
+    }
+
+    private class AnyProperty {
+        var active = false
+
+        func activate(_ target: T?) {
+            self.active = true
+        }
+
+        func deactivate(_ target: T?) {
+            self.active = false
+        }
+
+        func update(_ target: T?) {
+        }
+    }
+
+    private class Property<V: Equatable>: AnyProperty {
+        private var activeValue:   () -> V
+        private var inactiveValue: V?
+        private var keyPath:       ReferenceWritableKeyPath<T, V>
+        private var reversable:    Bool
+
+        init(value: @escaping () -> V, keyPath: ReferenceWritableKeyPath<T, V>, reversable: Bool) {
+            self.activeValue = value
+            self.keyPath = keyPath
+            self.reversable = reversable
+        }
+
+        override func activate(_ target: T?) {
+            if let target = target, !self.active {
+                let newValue = self.activeValue(), oldValue = target[keyPath: self.keyPath]
+
+                if newValue != oldValue {
+                    if self.reversable {
+                        self.inactiveValue = oldValue
+                    }
+
+                    trc( "%@ %@[%@]:activate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                         String( reflecting: oldValue ), String( reflecting: newValue ) )
+                    target[keyPath: self.keyPath] = newValue
+                }
+            }
+
+            super.activate( target )
+        }
+
+        override func deactivate(_ target: T?) {
+            if let target = target {
+                if let newValue = self.inactiveValue, self.active {
+                    let oldValue = target[keyPath: keyPath]
+
+                    if newValue != oldValue {
+                        trc( "%@ %@[%@]:deactivate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                             String( reflecting: oldValue ), String( reflecting: newValue ) )
+                        target[keyPath: self.keyPath] = newValue
+                    }
+                }
+                else if !self.active, self.reversable {
+                    self.inactiveValue = target[keyPath: self.keyPath]
+                }
+            }
+
+            super.deactivate( target )
+        }
+
+        override func update(_ target: T?) {
+            if let target = target, self.active {
+                let newValue = self.activeValue(), oldValue = target[keyPath: self.keyPath]
+
+                if newValue != oldValue {
+                    trc( "%@ %@[%@]:update: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                         String( reflecting: oldValue ), String( reflecting: newValue ) )
+                    target[keyPath: self.keyPath] = newValue
+                }
+            }
+
+            super.update( target )
         }
     }
 }

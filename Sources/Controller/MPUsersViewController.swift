@@ -43,7 +43,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
     private let userToolbar  = UIToolbar( frame: .infinite )
     private let detailsHost  = MPDetailsHostController()
     private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
-    private var userToolbarConfiguration: LayoutConfiguration!
+    private var userToolbarConfiguration: LayoutConfiguration<UIToolbar>!
     private var userEvent:                MPTracker.TimedEvent?
 
     // MARK: --- Life ---
@@ -166,9 +166,9 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
             active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
-            active.set( 1, forKey: "alpha" )
+            active.set( 1, keyPath: \.alpha )
             inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
-            inactive.set( 0, forKey: "alpha" )
+            inactive.set( 0, keyPath: \.alpha )
         }
     }
 
@@ -345,7 +345,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         private let passwordField   = MPMasterPasswordField()
         private let idBadgeView     = UIImageView( image: .icon( "" ) )
         private let authBadgeView   = UIImageView( image: .icon( "" ) )
-        private var authenticationConfiguration: LayoutConfiguration!
+        private var authenticationConfiguration: LayoutConfiguration<MPMasterPasswordField>!
         private var path:                        CGPath? {
             didSet {
                 if oldValue != self.path {
@@ -461,29 +461,29 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     .activate()
 
             self.authenticationConfiguration = LayoutConfiguration( view: self.passwordField ) { active, inactive in
-                active.set( 1, forKey: "alpha" )
-                inactive.set( 0, forKey: "alpha" )
+                active.set( 1, keyPath: \.alpha )
+                inactive.set( 0, keyPath: \.alpha )
             }
                     .apply( LayoutConfiguration( view: self.passwordField ) { active, inactive in
-                        active.set( true, forKey: "enabled" )
-                        inactive.set( false, forKey: "enabled" )
-                        inactive.set( nil, forKey: "text" )
+                        active.set( true, keyPath: \.isEnabled )
+                        inactive.set( false, keyPath: \.isEnabled )
+                        inactive.set( nil, keyPath: \.text )
                     } )
                     .apply( LayoutConfiguration( view: self.idBadgeView ) { active, inactive in
                         active.constrainTo { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
                         active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        active.set( 1, forKey: "alpha" )
+                        active.set( 1, keyPath: \.alpha )
                         inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
                         inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        inactive.set( 0, forKey: "alpha" )
+                        inactive.set( 0, keyPath: \.alpha )
                     } )
                     .apply( LayoutConfiguration( view: self.authBadgeView ) { active, inactive in
                         active.constrainTo { $1.leadingAnchor.constraint( equalTo: self.avatarButton.trailingAnchor ) }
                         active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        active.set( 1, forKey: "alpha" )
+                        active.set( 1, keyPath: \.alpha )
                         inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
                         inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        inactive.set( 0, forKey: "alpha" )
+                        inactive.set( 0, keyPath: \.alpha )
                     } )
                     .needs( .layout( view: WeakBox( self ) ) )
         }
