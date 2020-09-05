@@ -9,7 +9,9 @@ import UIKit
 class AnyMPDetailsViewController: MPViewController, Updatable {
     var hostController: MPDetailsHostController?
 
-    var updatesPostponed : Bool { !self.isViewLoaded || self.view.superview == nil }
+    var updatesPostponed: Bool {
+        !self.isViewLoaded || self.view.superview == nil
+    }
     private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
                                                 qos: .userInitiated, update: self, animated: true )
     private var willEnterForegroundObserver: NSObjectProtocol?
@@ -30,6 +32,12 @@ class AnyMPDetailsViewController: MPViewController, Updatable {
                 forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in
             self.setNeedsUpdate()
         }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.update()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -63,7 +71,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
 
     private let backgroundView = MPBackgroundView()
     private let itemsView      = UIStackView()
-    private lazy var items      = self.loadItems()
+    private lazy var items = self.loadItems()
 
     // MARK: --- Interface ---
 

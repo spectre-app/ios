@@ -863,6 +863,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
             super.didLoad()
 
             self.item.didLoad( collectionView: self.collectionView )
+            self.update()
         }
 
         override func update() {
@@ -913,9 +914,6 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
                 self.item.update( model, value )
             }
-        }
-
-        func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         }
 
         class PickerView: UICollectionView {
