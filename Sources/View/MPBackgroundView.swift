@@ -7,26 +7,26 @@ import UIKit
 
 class MPBackgroundView: UIView, ThemeObserver {
     var mode      = Mode.backdrop {
+        willSet {
+            (self => \.backgroundColor).unbind()
+            self.gradientColor = nil
+        }
         didSet {
             switch self.mode {
                 case .gradient:
-                    // TODO: Unbind backgroundColor
                     self.didChangeTheme()
 
                 case .backdrop:
                     self => \.backgroundColor => Theme.current.color.backdrop
-                    self.gradientColor = nil
 
                 case .panel:
                     self => \.backgroundColor => Theme.current.color.panel
-                    self.gradientColor = nil
 
                 case .tint:
                     self.tintColorDidChange()
-                    self.gradientColor = nil
 
                 case .custom:
-                    self.gradientColor = nil
+                    ()
             }
         }
     }

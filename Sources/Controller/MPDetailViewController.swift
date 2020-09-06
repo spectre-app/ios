@@ -90,10 +90,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         super.init()
 
         self.items.forEach { $0.model = self.model }
-
-        defer {
-            self.image = nil
-        }
     }
 
     override func viewDidLoad() {
