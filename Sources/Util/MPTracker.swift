@@ -197,16 +197,13 @@ class MPTracker: MPConfigObserver {
 
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
-        var eventParameters: [String: Any] = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
+        var eventParameters = parameters
 
         var duration = TimeInterval( 0 )
         if let timing = timing {
             duration = Date().timeIntervalSince( timing.start )
             eventParameters["duration"] = "\(duration, numeric: "0.#")"
         }
-
-        eventParameters.merge( parameters, uniquingKeysWith: { $1 } )
-        let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
         // Log
         if eventParameters.isEmpty {
@@ -215,6 +212,9 @@ class MPTracker: MPConfigObserver {
         else {
             dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, eventParameters )
         }
+
+        eventParameters.merge([ "file": file.lastPathComponent, "line": "\(line)", "function": function ], uniquingKeysWith: { $1 })
+        let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
         // Sentry
         let sentryBreadcrumb = Breadcrumb( level: .info, category: "event" )
@@ -253,17 +253,17 @@ class MPTracker: MPConfigObserver {
 
         func open(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                   _ parameters: [String: Any] = [:]) {
-            let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
-                    .merging( parameters, uniquingKeysWith: { $1 } )
-            let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
-
             // Log
-            if eventParameters.isEmpty {
+            if parameters.isEmpty {
                 dbg( file: file, line: line, function: function, dso: dso, "@ %@", self.name )
             }
             else {
-                dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", self.name, eventParameters )
+                dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", self.name, parameters )
             }
+
+            let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
+                    .merging( parameters, uniquingKeysWith: { $1 } )
+            let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
             // Sentry
             let sentryBreadcrumb = Breadcrumb( level: .info, category: "screen" )
