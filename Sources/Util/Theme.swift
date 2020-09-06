@@ -25,18 +25,20 @@ public func =><E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, a
                 -> PropertyPath<E, NSAttributedString> {
     find( propertyPath: PropertyPath( target: propertyPath.target, nonnullKeyPath: propertyPath.nonnullKeyPath,
                                       nullableKeyPath: propertyPath.nullableKeyPath, attribute: attribute ),
-          identity: propertyPath.target, propertyPath.nonnullKeyPath ?? propertyPath.nullableKeyPath, attribute )
+          identity: propertyPath.target, propertyPath.nonnullKeyPath ?? propertyPath.nullableKeyPath, attribute.rawValue as NSString )
 }
 
-private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, identity members: AnyHashable?...)
+private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, identity members: AnyObject?...)
                 -> PropertyPath<E, V> {
     let identity = Identity( members )
-    if let propertyPath = propertyPaths[identity] as? PropertyPath<E, V> {
+    if let propertyPath = propertyPaths[identity] as? PropertyPath<E, V>, propertyPath.target != nil {
+        trc( "find existing: %@", propertyPath )
         return propertyPath
     }
 
     let propertyPath = propertyPath()
     propertyPaths[identity] = propertyPath
+    trc( "find created: %@", propertyPath )
     return propertyPath
 }
 
@@ -68,24 +70,19 @@ public func =><E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property
 }
 
 class Identity: Equatable, Hashable {
-    let members: [WeakBox<AnyHashable?>]
-    let hash:    Int
+    let members: [ObjectIdentifier]
 
-    init(_ members: AnyHashable?...) {
-        var hasher = Hasher()
-        self.members = members.map {
-            hasher.combine( $0 )
-            return WeakBox( $0 )
-        }
-        self.hash = hasher.finalize()
+    init(_ members: [AnyObject?]) {
+        self.members = members.map { $0.flatMap { ObjectIdentifier( $0 ) } ?? ObjectIdentifier( NSNull.self ) }
+        trc( "identity: %@, hash: %x", self.members, self.hashValue )
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine( self.hash )
+        self.members.hash( into: &hasher )
     }
 
     static func ==(lhs: Identity, rhs: Identity) -> Bool {
-        lhs.hash == rhs.hash && lhs.members == rhs.members
+        lhs.members == rhs.members
     }
 }
 
@@ -101,6 +98,10 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
     let attribute:       NSAttributedString.Key?
     var property:        AnyProperty? {
         willSet {
+            trc( "[bind] %@: %@ => %@", self, self.property, newValue )
+            if self.target == nil {
+                trc( "<bp>" )
+            }
             if let property = self.property {
                 property.unbind( propertyPath: self )
             }
@@ -140,6 +141,10 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
         else {
             return "\(self.target == nil ? String( reflecting: E.self ): String( reflecting: self.target! ))"
         }
+    }
+
+    public func unbind() {
+        self.property = nil
     }
 
     public func assign(value: @autoclosure () -> Any?) {
