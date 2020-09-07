@@ -9,9 +9,11 @@ class MPButton: MPEffectView {
     var identifier: String?
     var action:     ((UIEvent, MPButton) -> Void)?
     var tapEffect = true
-    var image: UIImage? {
+    var image:      UIImage? {
         didSet {
-            DispatchQueue.main.perform { self.update() }
+            if self.image != oldValue {
+                self.update()
+            }
         }
     }
     var title: String? {
@@ -98,26 +100,28 @@ class MPButton: MPEffectView {
         }
     }
 
-    func update() {
-        if self.title?.count ?? 0 == 1 || self.attributedTitle?.length ?? 0 == 1 ||
-                   (self.attributedTitle?.length ?? 0 == 3 && self.attributedTitle == NSAttributedString.icon( self.attributedTitle?.string.first?.description ?? "" )) {
-            self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
-            self.squareButtonConstraint.isActive = true
-        }
-        else {
-            self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
-            self.squareButtonConstraint.isActive = false
-        }
+    private func update() {
+        DispatchQueue.main.perform {
+            if self.title?.count ?? 0 == 1 || self.attributedTitle?.length ?? 0 == 1 ||
+                       (self.attributedTitle?.length ?? 0 == 3 && self.attributedTitle == NSAttributedString.icon( self.attributedTitle?.string.first?.description ?? "" )) {
+                self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+                self.squareButtonConstraint.isActive = true
+            }
+            else {
+                self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
+                self.squareButtonConstraint.isActive = false
+            }
 
-        self.button.setImage( self.image, for: .normal )
-        self.button.setTitle( self.title, for: .normal )
-        self.button.setAttributedTitle( self.attributedTitle, for: .normal )
-        self.button => \.titleLabel!.font => Theme.current.font.callout
-        //self.button => \.currentAttributedTitle => .font => Theme.current.font.callout
-        self.button => \.currentAttributedTitle => .foregroundColor => Theme.current.color.body
-        self.button => \.currentAttributedTitle => .strokeColor => Theme.current.color.secondary
-        self.button => \.currentTitleColor => Theme.current.color.body
-        self.button.sizeToFit()
+            self.button.setImage( self.image, for: .normal )
+            self.button.setTitle( self.title, for: .normal )
+            self.button.setAttributedTitle( self.attributedTitle, for: .normal )
+            self.button => \.titleLabel!.font => Theme.current.font.callout
+            //self.button => \.currentAttributedTitle => .font => Theme.current.font.callout
+            self.button => \.currentAttributedTitle => .foregroundColor => Theme.current.color.body
+            self.button => \.currentAttributedTitle => .strokeColor => Theme.current.color.secondary
+            self.button => \.currentTitleColor => Theme.current.color.body
+            self.button.sizeToFit()
+        }
     }
 }
 

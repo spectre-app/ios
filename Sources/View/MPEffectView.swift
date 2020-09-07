@@ -6,38 +6,63 @@
 import UIKit
 
 class MPEffectView: UIView {
-    public var borderWidth:         CGFloat {
+    public var   borderWidth:         CGFloat {
         didSet {
-            self.updateBackground()
+            if self.borderWidth != oldValue {
+                self.update()
+            }
         }
     }
-    public var isBackground:        Bool {
+    public var   isBackground:        Bool {
         didSet {
-            self.updateBackground()
+            if self.isBackground != oldValue {
+                self.update()
+            }
         }
     }
-    public var isRound:             Bool {
+    public var   isRound:             Bool {
         didSet {
-            self.updateRounding()
+            if self.isRound != oldValue {
+                self.update()
+            }
         }
     }
-    public var rounding:            CGFloat {
+    public var   rounding:            CGFloat {
         didSet {
-            self.updateRounding()
+            if self.rounding != oldValue {
+                self.update()
+            }
         }
     }
-    public var isDimmedBySelection: Bool {
+    public var   isDimmedBySelection: Bool {
         didSet {
-            self.updateContent()
+            if self.isDimmedBySelection != oldValue {
+                self.update()
+            }
         }
     }
-    public var isSelected = false {
+    public var   isSelected = false {
         didSet {
-            self.updateContent()
+            if self.isSelected != oldValue {
+                self.update()
+            }
         }
     }
-
-    override var layoutMargins: UIEdgeInsets {
+    override var bounds:              CGRect {
+        didSet {
+            if self.isRound && self.bounds != oldValue {
+                self.update()
+            }
+        }
+    }
+    var borderColor: UIColor? {
+        didSet {
+            if self.borderColor != oldValue {
+                self.update()
+            }
+        }
+    }
+    override var layoutMargins:   UIEdgeInsets {
         get {
             self.vibrancyEffectView.contentView.layoutMargins
         }
@@ -45,7 +70,6 @@ class MPEffectView: UIView {
             self.vibrancyEffectView.contentView.layoutMargins = newValue
         }
     }
-
     override var backgroundColor: UIColor? {
         get {
             self.vibrancyEffectView.contentView.backgroundColor
@@ -58,7 +82,6 @@ class MPEffectView: UIView {
     private var blurEffect:     UIBlurEffect? {
         didSet {
             self.blurEffectView.effect = self.blurEffect
-
 //            if let blurEffect = self.blurEffect {
 //                if #available( iOS 13, * ) {
 //                    self.vibrancyEffect = UIVibrancyEffect( blurEffect: blurEffect, style: .fill )
@@ -95,13 +118,15 @@ class MPEffectView: UIView {
         self.layer => \.shadowColor => Theme.current.color.shadow
         self.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
-        self.updateBackground()
+        self => \.borderColor => Theme.current.color.secondary
 
         self.blurEffectView.contentView.addSubview( self.vibrancyEffectView )
         self.addSubview( self.blurEffectView )
 
         LayoutConfiguration( view: self.vibrancyEffectView ).constrain().activate()
         LayoutConfiguration( view: self.blurEffectView ).constrain().activate()
+
+        self.update()
     }
 
     convenience init(content: UIView, border: CGFloat = 2, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
@@ -129,30 +154,14 @@ class MPEffectView: UIView {
         }
     }
 
-    override func layoutSubviews() {
-        self.updateRounding()
+    // MARK: --- Updatable ---
 
-        super.layoutSubviews()
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange( previousTraitCollection )
-
-        self.updateContent()
-    }
-
-    override func tintColorDidChange() {
-        super.tintColorDidChange()
-
-        self.updateContent()
-    }
-
-    // MARK: Private
-
-    func updateBackground() {
+    private func update() {
         DispatchQueue.main.perform {
-            //self.tintColor = self.isBackgroundDark ? MPTheme.current.color.secondary.get(): MPTheme.current.color.backdrop.get()
+            self.layer.cornerRadius = self.isRound ? self.bounds.size.height / 2: self.rounding
+
             if self.isBackground {
+                self.layer.borderWidth = self.borderWidth
                 if #available( iOS 13, * ) {
                     self.blurEffect = UIBlurEffect( style: .systemUltraThinMaterial )
                 }
@@ -161,27 +170,15 @@ class MPEffectView: UIView {
                 }
             }
             else {
+                self.layer.borderWidth = 0
                 self.blurEffect = nil
             }
-            self.layer.borderWidth = self.isBackground ? self.borderWidth: 0
-        }
-    }
 
-    func updateRounding() {
-        DispatchQueue.main.perform {
-            self.layer.cornerRadius = self.isRound ? self.bounds.size.height / 2: self.rounding
-        }
-    }
-
-    func updateContent() {
-        DispatchQueue.main.perform {
-
+            self.layer.borderColor = self.borderColor?.cgColor
             if self.isDimmedBySelection && !self.isSelected {
-                self.layer => \.borderColor => Theme.current.color.secondary.transform { $0?.with( alpha: 0 ) }
                 self.alpha = .short
             }
             else {
-                self.layer => \.borderColor => Theme.current.color.secondary
                 self.alpha = 1
             }
         }
