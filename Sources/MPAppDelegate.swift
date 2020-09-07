@@ -41,20 +41,18 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
         // Diagnostics decision
         if !appConfig.diagnosticsDecided {
-            let controller = UIAlertController( title: "Welcome to \(productName)!", message:
+            let controller = UIAlertController( title: "Diagnostics", message:
             """
-            We want this to be a top-notch experience for you.
-            Diagnostics helps ensure us your app performs ideally and adds 1 to our count of active users.
+            We look for bugs, sudden crashes, runtime issues & statistics.
 
-            We look out for application bugs, issues, crashes & usage counters.
-            Needless to say, no personal details or secrets ever leave your device.
+            Diagnostics are scrubbed and personal details will never leave your device.
             """, preferredStyle: .actionSheet )
             controller.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
                 appConfig.diagnostics = false
                 appConfig.diagnosticsDecided = true
                 self.tryDecisions()
             } )
-            controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
+            controller.addAction( UIAlertAction( title: "Engage", style: .default ) { _ in
                 appConfig.diagnostics = true
                 appConfig.diagnosticsDecided = true
                 self.tryDecisions()
@@ -67,10 +65,9 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         if !appConfig.notificationsDecided {
             let controller = UIAlertController( title: "Keeping Safe", message:
             """
-            Things move fast in the online world.
-            To help keep you safe from password breaches and current on important security events, we inform our users through notifications.
+            Things move fast in the online world.
 
-            Enable notifications to be informed of these important events.
+            If you enable notifications, we can inform you of known breaches and keep you current on important security events.
             """, preferredStyle: .actionSheet )
             controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
                 MPTracker.enableNotifications()
