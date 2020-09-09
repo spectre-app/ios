@@ -112,7 +112,7 @@ class MPMarshal: Observable, Updatable {
             marshalledUser.pointee.redacted = redacted
             marshalledUser.pointee.avatar = user.avatar.rawValue
             marshalledUser.pointee.identicon = user.identicon
-            marshalledUser.pointee.keyID = UnsafePointer( mpw_strdup( user.masterKeyID ) )
+            marshalledUser.pointee.keyID = mpw_strdup( user.masterKeyID )
             marshalledUser.pointee.defaultType = user.defaultType
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 

@@ -46,8 +46,8 @@ func mirror(ratio: Int, center: Int, max: Int) -> Int {
     }
 }
 
-func withVaStrings<R>(_ strings: [String], terminate: Bool = true, body: (CVaListPointer) -> R) -> R {
-    var va: [CVarArg] = strings.map { mpw_strdup( $0 ) }
+func withVaStrings<R>(_ strings: [StaticString], terminate: Bool = true, body: (CVaListPointer) -> R) -> R {
+    var va: [CVarArg] = strings.map { $0.utf8Start }
     if terminate {
         va.append( Int( bitPattern: nil ) )
     }
@@ -297,27 +297,27 @@ extension NSTextAlignment {
 
 extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
 
-    public func mpw_get(path: String...) -> Bool? {
+    public func mpw_get(path: StaticString...) -> Bool? {
         withVaStrings( path ) { mpw_marshal_data_vget_bool( self.pointee.data, $0 ) }
     }
 
-    public func mpw_get(path: String...) -> Double? {
+    public func mpw_get(path: StaticString...) -> Double? {
         withVaStrings( path ) { mpw_marshal_data_vget_num( self.pointee.data, $0 ) }
     }
 
-    public func mpw_get(path: String...) -> String? {
+    public func mpw_get(path: StaticString...) -> String? {
         withVaStrings( path ) { String( validate: mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
     }
 
-    public func mpw_set(_ value: Bool, path: String...) -> Bool {
+    public func mpw_set(_ value: Bool, path: StaticString...) -> Bool {
         withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
     }
 
-    public func mpw_set(_ value: Double, path: String...) -> Bool {
+    public func mpw_set(_ value: Double, path: StaticString...) -> Bool {
         withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.pointee.data, $0 ) }
     }
 
-    public func mpw_set(_ value: String?, path: String...) -> Bool {
+    public func mpw_set(_ value: String?, path: StaticString...) -> Bool {
         withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.pointee.data, $0 ) }
     }
 }
