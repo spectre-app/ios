@@ -366,18 +366,22 @@ extension String.StringInterpolation {
             if value >= 1_000_000_000_000 {
                 value /= 1_000_000_000_000
                 formatter.positiveSuffix = "T"
+                formatter.negativeSuffix = formatter.positiveSuffix
             }
             else if value >= 1_000_000_000 {
                 value /= 1_000_000_000
                 formatter.positiveSuffix = options.contains( .currency ) ? "B": "G"
+                formatter.negativeSuffix = formatter.positiveSuffix
             }
             else if value >= 1_000_000 {
                 value /= 1_000_000
                 formatter.positiveSuffix = "M"
+                formatter.negativeSuffix = formatter.positiveSuffix
             }
             else if value >= 1_000 {
                 value /= 1_000
                 formatter.positiveSuffix = options.contains( .currency ) ? "K": "k"
+                formatter.negativeSuffix = formatter.positiveSuffix
             }
         }
 

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -1033,6 +1033,7 @@
 		DA5BFA3B147E415C00F98B1E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				CLASSPREFIX = MP;
 				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Lyndir;
