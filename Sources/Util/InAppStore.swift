@@ -79,6 +79,9 @@ class InAppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObser
     }
 
     var observers = Observers<InAppStoreObserver>()
+    var canMakePayments: Bool {
+        SKPaymentQueue.canMakePayments()
+    }
     var products = [ SKProduct ]() {
         didSet {
             if self.products != oldValue {

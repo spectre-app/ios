@@ -5,7 +5,20 @@
 
 import UIKit
 
-class Item<M>: NSObject, Updatable {
+class AnyItem: NSObject, Updatable {
+    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
+                                                qos: .userInitiated, update: self, animated: true )
+
+    func setNeedsUpdate() {
+        self.updateTask.request()
+    }
+
+    func update() {
+        self.updateTask.cancel()
+    }
+}
+
+class Item<M>: AnyItem {
     public weak var viewController: AnyMPDetailsViewController? {
         didSet {
             ({ self.subitems.forEach { $0.viewController = self.viewController } }())
@@ -25,9 +38,9 @@ class Item<M>: NSObject, Updatable {
     private let subitems:        [Item<M>]
     private (set) lazy var view = createItemView()
 
-    var updatesPostponed : Bool { self.viewController?.updatesPostponed ?? true }
-    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
-                                                qos: .userInitiated, update: self, animated: true )
+    var updatesPostponed: Bool {
+        self.viewController?.updatesPostponed ?? true
+    }
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
          caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil },
@@ -51,12 +64,9 @@ class Item<M>: NSObject, Updatable {
 
     // MARK: --- Updatable ---
 
-    func setNeedsUpdate() {
-        self.updateTask.request()
-    }
+    override func update() {
+        super.update()
 
-    func update() {
-        self.updateTask.cancel()
         self.view.update()
         self.behaviours.forEach { $0.didUpdate( item: self ) }
         self.subitems.forEach { $0.update() }
@@ -184,6 +194,7 @@ class Item<M>: NSObject, Updatable {
 class Behaviour<M> {
     private let hiddenProvider:  ((M) -> Bool)?
     private let enabledProvider: ((M) -> Bool)?
+    private var items = [ WeakBox<Item<M>> ]()
 
     init(hidden hiddenProvider: ((M) -> Bool)? = nil, enabled enabledProvider: ((M) -> Bool)? = nil) {
         self.hiddenProvider = hiddenProvider
@@ -192,9 +203,14 @@ class Behaviour<M> {
 
     func didInstall(into item: Item<M>) {
         self.didUpdate( item: item )
+        self.items.append( WeakBox( item ) )
     }
 
     func didUpdate(item: Item<M>) {
+    }
+
+    func setNeedsUpdate() {
+        self.items.forEach { $0.value?.setNeedsUpdate() }
     }
 
     func isHidden(item: Item<M>) -> Bool? {
@@ -290,7 +306,6 @@ class ConditionalBehaviour<M>: Behaviour<M> {
 }
 
 class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
-    var items = [ Item<M> ]()
 
     init(mode: Effect) {
         super.init( mode: mode, condition: { _ in InAppFeature.premium.enabled() } )
@@ -298,16 +313,10 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObser
         InAppFeature.observers.register( observer: self )
     }
 
-    override func didInstall(into item: Item<M>) {
-        super.didInstall( into: item )
-
-        self.items.append( item )
-    }
-
     // MARK: --- InAppFeatureObserver ---
 
     func featureDidChange(_ feature: InAppFeature) {
-        self.items.forEach { $0.setNeedsUpdate() }
+        self.setNeedsUpdate()
     }
 }
 
@@ -1105,10 +1114,12 @@ class ListItem<M, V: Hashable>: Item<M> {
         override func update() {
             super.update()
 
+            self.item.view.isHidden = false
             self.tableView.tableHeaderView = self.activityIndicator
             DispatchQueue.mpw.perform {
                 self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ], completion: { finished in
                     if finished {
+                        self.item.view.isHidden = self.dataSource.isEmpty
                         self.tableView.tableHeaderView = nil
                     }
                 } )

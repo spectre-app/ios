@@ -11,6 +11,10 @@ open class DataSource<E: Hashable> {
     private var elementsConsumed   = false
     private var sectionsOfElements = [ [ E? ] ]()
 
+    public var isEmpty: Bool {
+        self.sectionsOfElements.reduce( true ) { $0 && $1.isEmpty }
+    }
+
     public init(tableView: UITableView? = nil, collectionView: UICollectionView? = nil, sectionsOfElements: [[E]]? = nil) {
         self.tableView = tableView
         self.collectionView = collectionView
