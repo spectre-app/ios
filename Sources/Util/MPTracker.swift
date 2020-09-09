@@ -113,15 +113,15 @@ class MPTracker: MPConfigObserver {
         kSecAttrDescription: "Unique identifier for the device on this app.",
         kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: false,
-    ] )
+    ] ).uuidString
 
     lazy var ownerIdentifier = self.identifier( for: "owner", attributes: [
         kSecAttrDescription: "Unique identifier for the owner of this app.",
         kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: true,
-    ] )
+    ] ).uuidString
 
-    func identifier(for named: String, attributes: [CFString: Any] = [:]) -> String {
+    func identifier(for named: String, attributes: [CFString: Any] = [:]) -> UUID {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: "identifier",
@@ -131,24 +131,21 @@ class MPTracker: MPConfigObserver {
 
         var cfResult: CFTypeRef?
         var status = SecItemCopyMatching( query.merging( [ kSecReturnData: true ] ) as CFDictionary, &cfResult )
-        if status == errSecSuccess, let data = cfResult as? Data, !data.isEmpty {
-            return data.withUnsafeBytes {
-                NSUUID( uuidBytes: $0.bindMemory( to: UInt8.self ).baseAddress! ).uuidString
-            }
+        if status == errSecSuccess, let data = cfResult as? Data, !data.isEmpty,
+           let uuid = data.withUnsafeBytes( { $0.bindMemory( to: uuid_t.self ).first.flatMap { UUID( uuid: $0 ) } } ) {
+            return uuid
         }
 
-        let uuid     = NSUUID()
-        var uuidData = Data( count: 16 )
-        uuidData.withUnsafeMutableBytes {
-            uuid.getBytes( $0.bindMemory( to: UInt8.self ).baseAddress! )
-        }
+        let uuid      = UUID()
+        var uuidBytes = uuid.uuid
+        let uuidData = withUnsafeBytes( of: &uuidBytes ) { Data( $0 ) }
         SecItemDelete( query as CFDictionary )
         status = SecItemAdd( query.merging( attributes ).merging( [ kSecValueData: uuidData ] ) as CFDictionary, nil )
         if status != errSecSuccess {
             mperror( title: "Couldn't save \(named) identifier.", error: status )
         }
 
-        return uuid.uuidString
+        return uuid
     }
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
@@ -213,7 +210,7 @@ class MPTracker: MPConfigObserver {
             dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, eventParameters )
         }
 
-        eventParameters.merge([ "file": file.lastPathComponent, "line": "\(line)", "function": function ], uniquingKeysWith: { $1 })
+        eventParameters.merge( [ "file": file.lastPathComponent, "line": "\(line)", "function": function ], uniquingKeysWith: { $1 } )
         let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
         // Sentry
@@ -291,8 +288,8 @@ class MPTracker: MPConfigObserver {
     }
 
     class TimedEvent {
-        let name:      String
-        let start:     Date
+        let name:  String
+        let start: Date
 
         private var ended = false
 
