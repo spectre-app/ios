@@ -324,49 +324,90 @@ extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
 
 extension String.StringInterpolation {
     mutating func appendInterpolation(_ value: String, prePadToLength length: Int) {
-        appendLiteral( String( repeating: " ", count: max( 0, length - value.count ) ).appending( value ) )
+        self.appendLiteral( String( repeating: " ", count: max( 0, length - value.count ) ).appending( value ) )
     }
 
     mutating func appendInterpolation(_ value: String, postPadToLength length: Int) {
-        appendLiteral( value.appending( String( repeating: " ", count: max( 0, length - value.count ) ) ) )
+        self.appendLiteral( value.appending( String( repeating: " ", count: max( 0, length - value.count ) ) ) )
     }
 
-    mutating func appendInterpolation(_ value: Any?, sign: Bool) {
+    mutating func appendInterpolation(number value: CGFloat, as format: String? = nil, decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+        self.appendInterpolation( number: Double( value ), as: format, decimals: decimals, locale: locale, options.reduce( [] ) { $0.union( $1 ) } )
+    }
+
+    mutating func appendInterpolation(number value: Double, as format: String? = nil, decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+        self.appendInterpolation( number: Decimal( value ), as: format, decimals: decimals, locale: locale, options.reduce( [] ) { $0.union( $1 ) } )
+    }
+
+    mutating func appendInterpolation(number value: Decimal, as format: String? = nil, decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
         let formatter = NumberFormatter()
-        if sign {
+        if let format = format {
+            formatter.positiveFormat = format
+        }
+        if let locale = locale {
+            formatter.locale = locale
+        }
+        if let decimals = decimals {
+            formatter.minimumFractionDigits = decimals.lowerBound
+            formatter.maximumFractionDigits = decimals.upperBound
+        }
+        if options.contains( .abbreviated )  {
+            formatter.usesGroupingSeparator = true
+        }
+        if options.contains( .signed ) {
             formatter.positivePrefix = formatter.plusSign
         }
+        if options.contains( .currency ) {
+            formatter.numberStyle = .currency
+        }
+
+        var value = value
+        if options.contains( .abbreviated ) {
+            if value >= 1_000_000_000_000 {
+                value /= 1_000_000_000_000
+                formatter.positiveSuffix = "T"
+            }
+            else if value >= 1_000_000_000 {
+                value /= 1_000_000_000
+                formatter.positiveSuffix = options.contains( .currency ) ? "B": "G"
+            }
+            else if value >= 1_000_000 {
+                value /= 1_000_000
+                formatter.positiveSuffix = "M"
+            }
+            else if value >= 1_000 {
+                value /= 1_000
+                formatter.positiveSuffix = options.contains( .currency ) ? "K": "k"
+            }
+        }
+
         if let string = formatter.string( for: value ) {
-            appendLiteral( string )
+            self.appendLiteral( string )
         }
     }
 
-    mutating func appendInterpolation(_ value: Any?, numeric format: String) {
-        let formatter = NumberFormatter()
-        formatter.positiveFormat = format
-        formatter.negativeFormat = format
-        if let string = formatter.string( for: value ) {
-            appendLiteral( string )
-        }
+    struct NumberOptions: OptionSet {
+        let rawValue: Int
+
+        static let abbreviated = NumberOptions( rawValue: 1 << 0 )
+        static let currency    = NumberOptions( rawValue: 1 << 1 )
+        static let signed      = NumberOptions( rawValue: 1 << 2 )
     }
 
-    mutating func appendInterpolation(amount value: Decimal, si: Bool = true) {
-        if value >= 1_000_000_000_000.0 {
-            appendLiteral( "\(value / 1_000_000_000_000.0, numeric: "#,##0")T" )
-        }
-        else if value >= 1_000_000_000 {
-            appendLiteral( "\(value / 1_000_000_000, numeric: "#,##0")\(si ? "G": "B")" )
-        }
-        else if value >= 1_000_000 {
-            appendLiteral( "\(value / 1_000_000, numeric: "#,##0")M" )
-        }
-        else if value >= 1_000 {
-            appendLiteral( "\(value / 1_000, numeric: "#,##0")\(si ? "k": "K")" )
-        }
-        else {
-            appendLiteral( "\(value, numeric: "#,##0")" )
-        }
+    mutating func appendInterpolation(measurement: Measurement<Unit>, options: MeasurementFormatter.UnitOptions = .naturalScale, style: Formatter.UnitStyle = .short) {
+        let formatter = MeasurementFormatter()
+        formatter.unitOptions = options
+        formatter.unitStyle = style
+        self.appendLiteral( formatter.string( from: measurement ) )
     }
+
+    mutating func appendInterpolation(measurement value: Decimal, _ unit: Unit, options: MeasurementFormatter.UnitOptions = [ .providedUnit, .naturalScale ], style: Formatter.UnitStyle = .short) {
+        self.appendInterpolation( measurement: Measurement( value: (value as NSDecimalNumber).doubleValue, unit: unit ), options: options, style: style )
+    }
+}
+
+extension Locale {
+    public static let C = Locale( identifier: "en_US_POSIX" )
 }
 
 extension Double {

@@ -32,7 +32,7 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         }
     }
     var localizedDescription: String {
-        "\(self.scale, numeric: "0.#") x \(amount: attempts_per_second)/s (~ $\(amount: self.fixed_budget, si: false) HW + $\(amount: self.monthly_budget, si: false)/m)"
+        "\(number: self.scale, as: "0.#") x \(number: attempts_per_second, .abbreviated)/s (~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) HW + $\(number: self.monthly_budget, .currency, .abbreviated)/m)"
     }
     var fixed_budget:         Decimal {
         switch self {
@@ -168,6 +168,6 @@ struct TimeToCrack: CustomStringConvertible {
         if case Period.universes = normalizedPeriod {
             return normalizedPeriod.localizedDescription
         }
-        return "~\(normalizedPeriod.localizedDescription) & ~$\(amount: cost, si: false), ~\(amount: Wh)Wh"
+        return "~\(normalizedPeriod.localizedDescription) & ~\(number: cost, locale: .C, .currency, .abbreviated), ~\(number: Wh, .abbreviated)Wh"
     }
 }

@@ -202,7 +202,7 @@ class MPTracker: MPConfigObserver {
         var duration = TimeInterval( 0 )
         if let timing = timing {
             duration = Date().timeIntervalSince( timing.start )
-            eventParameters["duration"] = "\(duration, numeric: "0.#")"
+            eventParameters["duration"] = "\(number: duration, as: "0.#")"
         }
 
         // Log

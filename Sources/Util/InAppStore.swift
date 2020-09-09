@@ -156,11 +156,7 @@ class InAppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObser
 extension SKProduct {
     func localizedPrice(quantity: Int = 1) -> String {
         let price = self.price.doubleValue * Double( quantity )
-
-        let currencyFormatter = NumberFormatter()
-        currencyFormatter.numberStyle = .currency
-        currencyFormatter.locale = self.priceLocale
-        return currencyFormatter.string( from: NSNumber( value: price ) ) ?? "\(price)"
+        return "\(number: price, locale: self.priceLocale, .currency)"
     }
 
     func localizedDuration(quantity: Int = 1) -> String? {
@@ -213,11 +209,7 @@ extension SKProductDiscount {
         }
 
         let price = self.price.doubleValue * Double( pricePeriods )
-
-        let currencyFormatter = NumberFormatter()
-        currencyFormatter.numberStyle = .currency
-        currencyFormatter.locale = self.priceLocale
-        return currencyFormatter.string( from: NSNumber( value: price ) ) ?? "\(price)"
+        return "\(number: price, locale: self.priceLocale, .currency)"
     }
 }
 

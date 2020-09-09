@@ -124,7 +124,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                 didSet {
                     DispatchQueue.main.perform {
                         if let attacker = self.attacker {
-                            self.nameLabel.text = "$\(amount: attacker.fixed_budget + attacker.monthly_budget * 12, si: false)"
+                            self.nameLabel.text = "\(number: attacker.fixed_budget + attacker.monthly_budget * 12, decimals: 0...0, locale: .C, .currency, .abbreviated)"
                             self.classLabel.text = "\(attacker)"
                         }
                         else {
@@ -185,13 +185,13 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                         controller.popoverPresentationController?.sourceRect = item.view.bounds
                         item.viewController?.present( controller, animated: true )
                     }
-                }),
+                } ),
                 ButtonItem( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) }, action: { item in
                     item.viewController?.hostController?.show( MPAppDetailsViewController() )
-                }),
+                } ),
                 ButtonItem( identifier: "user #logout", value: { _ in (label: "Log out", image: nil) }, action: { item in
                     item.model?.logout()
-                }),
+                } ),
             ] )
         }
     }

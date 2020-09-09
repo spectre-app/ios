@@ -38,17 +38,17 @@ enum Period {
             case .universes:
                 return "> age of the universe"
             case .seconds(let seconds):
-                return seconds.isNaN ? "second": seconds == 1 ? "1 second": "\(seconds, numeric: "#,##0.#") seconds"
+                return seconds.isNaN ? "second": seconds == 1 ? "1 second": "\(number: seconds, decimals: 0...1, .abbreviated) seconds"
             case .hours(let hours):
-                return hours.isNaN ? "hour": hours == 1 ? "1 hour": "\(hours, numeric: "#,##0.#") hours"
+                return hours.isNaN ? "hour": hours == 1 ? "1 hour": "\(number: hours, decimals: 0...1, .abbreviated) hours"
             case .days(let days):
-                return days.isNaN ? "day": days == 1 ? "1 day": "\(days, numeric: "#,##0.#") days"
+                return days.isNaN ? "day": days == 1 ? "1 day": "\(number: days, decimals: 0...1, .abbreviated) days"
             case .weeks(let weeks):
-                return weeks.isNaN ? "week": weeks == 1 ? "1 week": "\(weeks, numeric: "#,##0.#") weeks"
+                return weeks.isNaN ? "week": weeks == 1 ? "1 week": "\(number: weeks, decimals: 0...1, .abbreviated) weeks"
             case .months(let months):
-                return months.isNaN ? "month": months == 1 ? "1 month": "\(months, numeric: "#,##0.#") months"
+                return months.isNaN ? "month": months == 1 ? "1 month": "\(number: months, decimals: 0...1, .abbreviated) months"
             case .years(let years):
-                return years.isNaN ? "year": years == 1 ? "1 year": "\(years, numeric: "#,##0.#") years"
+                return years.isNaN ? "year": years == 1 ? "1 year": "\(number: years, decimals: 0...1, .abbreviated) years"
         }
     }
 

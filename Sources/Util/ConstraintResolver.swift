@@ -205,7 +205,7 @@ public extension NSLayoutConstraint {
             modifier += " *\(self.multiplier)"
         }
         if self.constant != 0 || firstItem == nil || secondItem == nil {
-            modifier += " \(self.constant, sign: true)"
+            modifier += " \(number: self.constant, .signed)"
         }
         var priority = ""
         if self.priority != .required {

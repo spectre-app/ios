@@ -35,8 +35,8 @@ class MPDateView: MPEffectView {
         super.init( rounding: 8 )
 
         // - View
-        self.monthFormatter.dateFormat = "MMM"
-        self.dayFormatter.dateFormat = "dd"
+        self.monthFormatter.setLocalizedDateFormatFromTemplate( "MMM" )
+        self.dayFormatter.setLocalizedDateFormatFromTemplate( "dd" )
 
         self.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
 
