@@ -131,14 +131,12 @@ class MPTracker: MPConfigObserver {
 
         var cfResult: CFTypeRef?
         var status = SecItemCopyMatching( query.merging( [ kSecReturnData: true ] ) as CFDictionary, &cfResult )
-        if status == errSecSuccess, let data = cfResult as? Data, !data.isEmpty,
-           let uuid = data.withUnsafeBytes( { $0.bindMemory( to: uuid_t.self ).first.flatMap { UUID( uuid: $0 ) } } ) {
-            return uuid
+        if status == errSecSuccess, let data = cfResult as? Data, !data.isEmpty {
+            return data.withUnsafeBytes( { UUID( uuid: $0.load( as: uuid_t.self ) ) } )
         }
 
-        let uuid      = UUID()
-        var uuidBytes = uuid.uuid
-        let uuidData = withUnsafeBytes( of: &uuidBytes ) { Data( $0 ) }
+        let uuid = UUID()
+        let uuidData = withUnsafePointer( to: uuid.uuid ) { Data( buffer: UnsafeBufferPointer( start: $0, count: 1 ) ) }
         SecItemDelete( query as CFDictionary )
         status = SecItemAdd( query.merging( attributes ).merging( [ kSecValueData: uuidData ] ) as CFDictionary, nil )
         if status != errSecSuccess {

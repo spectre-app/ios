@@ -70,7 +70,7 @@ public class MPKeychain {
     }
 
     public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
-                    -> Promise<MPMasterKey> {
+                    -> Promise<UnsafePointer<MPMasterKey>> {
         let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access master key for:\n\(fullName)",
                                content: UIActivityIndicatorView( style: .white ) )
         spinner.show( dismissAutomatically: false )
@@ -81,13 +81,12 @@ public class MPKeychain {
 
             var result: CFTypeRef?
             let status = SecItemCopyMatching( query as CFDictionary, &result )
-            guard status == errSecSuccess, let data = result as? Data, data.count == MPMasterKeySize
+            guard status == errSecSuccess, let data = result as? Data
             else { throw MPError.issue( status, title: "Biometrics Key Denied" ) }
 
-            let masterKeyBytes = UnsafeMutablePointer<UInt8>.allocate( capacity: MPMasterKeySize )
-            masterKeyBytes.initialize( repeating: 0, count: MPMasterKeySize )
-            data.copyBytes( to: masterKeyBytes, count: MPMasterKeySize )
-            return MPMasterKey( masterKeyBytes )
+            let masterKeyBytes = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
+            data.withUnsafeBytes { masterKeyBytes.initialize( to: $0.load( as: MPMasterKey.self ) ) }
+            return UnsafePointer( masterKeyBytes )
         }.then { _ in
             spinner.dismiss()
         }
@@ -104,7 +103,7 @@ public class MPKeychain {
             defer { masterKey.deallocate() }
 
             let attributes: [CFString: Any] = [
-                kSecValueData: Data( bytes: masterKey, count: MPMasterKeySize ),
+                kSecValueData: Data( buffer: UnsafeBufferPointer( start: masterKey, count: 1 ) ),
                 kSecAttrSynchronizable: false,
                 kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(fullName)",
                 kSecAttrDescription: "\(productName) master key (\(algorithm))",

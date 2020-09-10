@@ -31,6 +31,13 @@ extension String {
 
     /** Create a String from an unsigned buffer of length-bytes in the given encoding. */
     init?(decode pointer: UnsafePointer<CUnsignedChar>?, as encoding: String.Encoding = .utf8, length: Int, deallocate: Bool = false) {
+        // This API is not expected to mutate the bytes.
+        self.init( decode: UnsafeMutableRawPointer( mutating: pointer ), as: encoding, length: length, deallocate: deallocate )
+    }
+
+    /** Create a String from a raw buffer of length-bytes in the given encoding. */
+    init?(decode pointer: UnsafeRawPointer?, as encoding: String.Encoding = .utf8, length: Int, deallocate: Bool = false) {
+        // This API is not expected to mutate the bytes.
         self.init( decode: UnsafeMutableRawPointer( mutating: pointer ), as: encoding, length: length, deallocate: deallocate )
     }
 

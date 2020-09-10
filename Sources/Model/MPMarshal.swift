@@ -123,10 +123,10 @@ class MPMarshal: Observable, Updatable {
                     throw MPError.internal( details: "Couldn't marshal \(user.fullName): \(site)" )
                 }
 
-                marshalledSite.pointee.resultState = UnsafePointer( mpw_strdup( site.resultState ) )
+                marshalledSite.pointee.resultState = mpw_strdup( site.resultState )
                 marshalledSite.pointee.loginType = site.loginType
-                marshalledSite.pointee.loginState = UnsafePointer( mpw_strdup( site.loginState ) )
-                marshalledSite.pointee.url = UnsafePointer( mpw_strdup( site.url ) )
+                marshalledSite.pointee.loginState = mpw_strdup( site.loginState )
+                marshalledSite.pointee.url = mpw_strdup( site.url )
                 marshalledSite.pointee.uses = site.uses
                 marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
 
@@ -138,7 +138,7 @@ class MPMarshal: Observable, Updatable {
                     }
 
                     marshalledQuestion.pointee.type = question.resultType
-                    marshalledQuestion.pointee.state = UnsafePointer( mpw_strdup( question.resultState ) )
+                    marshalledQuestion.pointee.state = mpw_strdup( question.resultState )
                 }
             }
 

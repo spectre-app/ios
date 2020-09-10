@@ -351,7 +351,7 @@ extension String.StringInterpolation {
             formatter.minimumFractionDigits = decimals.lowerBound
             formatter.maximumFractionDigits = decimals.upperBound
         }
-        if options.contains( .abbreviated )  {
+        if options.contains( .abbreviated ) {
             formatter.usesGroupingSeparator = true
         }
         if options.contains( .signed ) {
@@ -816,7 +816,7 @@ extension Data {
         }
     }
 
-    func hexEncodedString() -> String {
+    var hex: String {
         let hex = NSMutableString( capacity: self.count * 2 )
         self.forEach { hex.appendFormat( "%02hhX", $0 ) }
 
@@ -1010,13 +1010,11 @@ func decrypt(secret secretBase64: String?) -> String? {
     else { return nil }
     defer { key.deallocate() }
 
-    var secretData = Data( count: secretLength )
-    secretLength = secretData.withUnsafeMutableBytes { mpw_base64_decode( $0.bindMemory( to: UInt8.self ).baseAddress!, secretBase64 ) }
+    var secretData = [ UInt8 ]( repeating: 0, count: secretLength )
+    secretLength = mpw_base64_decode( secretBase64, &secretData )
 
-    return secretData.withUnsafeBytes {
-        String( decode: mpw_aes_decrypt( key, keyLength, $0.bindMemory( to: UInt8.self ).baseAddress!, &secretLength ),
-                length: secretLength, deallocate: true )
-    }
+    return String( decode: mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
+                   length: secretLength, deallocate: true )
 }
 
 func digest(value: String?) -> String? {
