@@ -86,10 +86,10 @@ extension MPResultType: CustomStringConvertible, CaseIterable {
     ]
 
     public var description:          String {
-        String( validate: mpw_type_short_name( self ) ) ?? "?"
+        String.valid( mpw_type_short_name( self ) ) ?? "?"
     }
     public var localizedDescription: String {
-        String( validate: mpw_type_long_name( self ) ) ?? "?"
+        String.valid( mpw_type_long_name( self ) ) ?? "?"
     }
 
     func `in`(class c: MPResultTypeClass) -> Bool {
@@ -112,7 +112,7 @@ extension MPIdenticon: Equatable {
             return nil
         }
 
-        return String( validate: mpw_identicon_encode( self ) )
+        return .valid( mpw_identicon_encode( self ) )
     }
 
     public func text() -> String? {
@@ -201,7 +201,7 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     }
 
     public var name: String? {
-        String( validate: mpw_format_name( self ) )
+        .valid( mpw_format_name( self ) )
     }
 
     public var uti:         String? {
@@ -306,7 +306,7 @@ extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
     }
 
     public func mpw_get(path: StaticString...) -> String? {
-        withVaStrings( path ) { String( validate: mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
+        withVaStrings( path ) { .valid( mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
     }
 
     public func mpw_set(_ value: Bool, path: StaticString...) -> Bool {
@@ -415,21 +415,27 @@ extension Locale {
 }
 
 extension Double {
-    public static let φ     = 1.618 // Golden Ratio
-    public static let long  = 1 / φ
+    public static let φ     = (1 + sqrt( 5 )) / 2 // Golden Ratio
     public static let short = (1 - long)
+    public static let long  = 1 / φ
+    public static let off   = 0.0
+    public static let on    = 1.0
 }
 
 extension CGFloat {
     public static let φ     = CGFloat( Double.φ ) // Golden Ratio
-    public static let long  = 1 / φ
     public static let short = (1 - long)
+    public static let long  = 1 / φ
+    public static let off   = CGFloat( 0.0 )
+    public static let on    = CGFloat( 1.0 )
 }
 
 extension Float {
     public static let φ     = Float( Double.φ ) // Golden Ratio
     public static let long  = 1 / φ
     public static let short = (1 - long)
+    public static let off   = Float( 0.0 )
+    public static let on    = Float( 1.0 )
 }
 
 extension UITraitCollection {
@@ -1013,7 +1019,7 @@ func decrypt(secret secretBase64: String?) -> String? {
     var secretData = [ UInt8 ]( repeating: 0, count: secretLength )
     secretLength = mpw_base64_decode( secretBase64, &secretData )
 
-    return String( decode: mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
+    return .valid( mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
                    length: secretLength, deallocate: true )
 }
 
@@ -1024,5 +1030,5 @@ func digest(value: String?) -> String? {
     else { return nil }
     defer { digest.deallocate() }
 
-    return String( validate: mpw_hex( digest, 32 ) )
+    return .valid( mpw_hex( digest, 32 ) )
 }

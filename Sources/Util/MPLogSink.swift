@@ -25,24 +25,24 @@ public class MPLogSink: MPConfigObserver {
             guard let event = event?.pointee
             else { return false }
 
-            let file = String( validate: event.file ) ?? ""
+            let file = String.valid( event.file ) ?? ""
             let source = file.lastIndex( of: "/" ).flatMap { String( file.suffix( from: file.index( after: $0 ) ) ) } ?? file
             switch event.level {
                 case .trace, .debug:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .debug, source, event.line, event.level.description,
-                            String( validate: event.message ) ?? "" )
+                    os_log( "%30@:%-3ld %-3@ | %@", type: .debug,
+                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
                 case .info:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .info, source, event.line, event.level.description,
-                            String( validate: event.message ) ?? "" )
+                    os_log( "%30@:%-3ld %-3@ | %@", type: .info,
+                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
                 case .warning:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .default, source, event.line, event.level.description,
-                            String( validate: event.message ) ?? "" )
+                    os_log( "%30@:%-3ld %-3@ | %@", type: .default,
+                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
                 case .error:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .error, source, event.line, event.level.description,
-                            String( validate: event.message ) ?? "" )
+                    os_log( "%30@:%-3ld %-3@ | %@", type: .error,
+                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
                 case .fatal:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .fault, source, event.line, event.level.description,
-                            String( validate: event.message ) ?? "" )
+                    os_log( "%30@:%-3ld %-3@ | %@", type: .fault,
+                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
                 @unknown default: ()
             }
 
@@ -92,9 +92,9 @@ public struct MPLogRecord: Comparable {
     }
 
     public init?(_ event: MPLogEvent) {
-        guard let file = String( validate: event.file ),
-              let function = String( validate: event.function ),
-              let message = String( validate: event.message )
+        guard let file = String.valid( event.file ),
+              let function = String.valid( event.function ),
+              let message = String.valid( event.message )
         else { return nil }
 
         self.occurrence = Date( timeIntervalSince1970: TimeInterval( event.occurrence ) )

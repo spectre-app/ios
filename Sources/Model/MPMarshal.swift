@@ -142,7 +142,7 @@ class MPMarshal: Observable, Updatable {
                 }
             }
 
-            if let data = String( validate: mpw_marshal_write( format, &user.file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
+            if let data = String.valid( mpw_marshal_write( format, &user.file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
                user.file?.pointee.error.type == .success {
                 exportEvent.end( [ "result": "success: data" ] )
                 return data
@@ -164,13 +164,7 @@ class MPMarshal: Observable, Updatable {
                 importEvent.end( [ "result": "!parse" ] )
                 return Promise( .success( false ) )
             }
-            guard let importingName = String( validate: importingFile.fullName )
-            else {
-                mperror( title: "Couldn't import user", message: "Import missing user's full name" )
-                importEvent.end( [ "result": "!fullName" ] )
-                return Promise( .success( false ) )
-            }
-            guard let importingURL = self.url( for: importingName, format: importingFile.format )
+            guard let importingURL = self.url( for: importingFile.fullName, format: importingFile.format )
             else {
                 mperror( title: "Couldn't import user", message: "Not a savable document", details: importingFile )
                 importEvent.end( [ "result": "!url" ] )
@@ -546,7 +540,7 @@ class MPMarshal: Observable, Updatable {
 
     private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
         DispatchQueue.mpw.await {
-            if let formatExtension = String( validate: mpw_format_extension( format ) ),
+            if let formatExtension = String.valid( mpw_format_extension( format ) ),
                let directory = directory ?? self.documentDirectory {
                 return directory.appendingPathComponent( name, isDirectory: false )
                                 .appendingPathExtension( formatExtension )
@@ -656,7 +650,7 @@ class MPMarshal: Observable, Updatable {
         init?(origin: URL?, document: String?) {
             guard let document = document, let file = mpw_marshal_read( nil, document ), file.pointee.error.type == .success
             else { return nil }
-            guard let info = file.pointee.info?.pointee, info.format != .none, let fullName = String( validate: info.fullName )
+            guard let info = file.pointee.info?.pointee, info.format != .none, let fullName = String.valid( info.fullName )
             else { return nil }
 
             self.origin = origin
@@ -668,7 +662,7 @@ class MPMarshal: Observable, Updatable {
             self.avatar = MPUser.Avatar( rawValue: info.avatar ) ?? .avatar_0
             self.fullName = fullName
             self.identicon = info.identicon
-            self.keyID = String( validate: info.keyID )
+            self.keyID = .valid( info.keyID )
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
@@ -681,7 +675,7 @@ class MPMarshal: Observable, Updatable {
                     return MPUser(
                             algorithm: marshalledUser.algorithm,
                             avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
-                            fullName: String( validate: marshalledUser.fullName ) ?? self.fullName,
+                            fullName: String.valid( marshalledUser.fullName ) ?? self.fullName,
                             identicon: marshalledUser.identicon,
                             masterKeyID: self.resetKey ? nil: self.keyID,
                             defaultType: marshalledUser.defaultType,
@@ -691,29 +685,29 @@ class MPMarshal: Observable, Updatable {
 
                         for s in 0..<marshalledUser.sites_count {
                             let marshalledSite = (marshalledUser.sites + s).pointee
-                            if let siteName = String( validate: marshalledSite.siteName ) {
+                            if let siteName = String.valid( marshalledSite.siteName ) {
                                 user.sites.append( MPSite(
                                         user: user,
                                         siteName: siteName,
                                         algorithm: marshalledSite.algorithm,
                                         counter: marshalledSite.counter,
                                         resultType: marshalledSite.resultType,
-                                        resultState: String( validate: marshalledSite.resultState ),
+                                        resultState: .valid( marshalledSite.resultState ),
                                         loginType: marshalledSite.loginType,
-                                        loginState: String( validate: marshalledSite.loginState ),
-                                        url: String( validate: marshalledSite.url ),
+                                        loginState: .valid( marshalledSite.loginState ),
+                                        url: .valid( marshalledSite.url ),
                                         uses: marshalledSite.uses,
                                         lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
                                 ) { site in
 
                                     for q in 0..<marshalledSite.questions_count {
                                         let marshalledQuestion = (marshalledSite.questions + q).pointee
-                                        if let keyword = String( validate: marshalledQuestion.keyword ) {
+                                        if let keyword = String.valid( marshalledQuestion.keyword ) {
                                             site.questions.append( MPQuestion(
                                                     site: site,
                                                     keyword: keyword,
                                                     resultType: marshalledQuestion.type,
-                                                    resultState: String( validate: marshalledQuestion.state )
+                                                    resultState: .valid( marshalledQuestion.state )
                                             ) )
                                         }
                                     }
@@ -767,7 +761,7 @@ class MPMarshal: Observable, Updatable {
 
 extension MPMarshalError: LocalizedError {
     public var errorDescription: String? {
-        String( validate: self.message )
+        .valid( self.message )
     }
 
     public var failureReason: String? {

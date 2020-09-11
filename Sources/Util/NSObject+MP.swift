@@ -13,7 +13,7 @@ extension NSObject {
         defer { free( properties ) }
 
         for p in 0..<Int( count ) {
-            guard let currentPropertyName = String( validate: property_getName( properties[p] ) )
+            guard let currentPropertyName = String.valid( property_getName( properties[p] ) )
             else { continue }
 
             if let ival = self.value( forKey: currentPropertyName ) as AnyObject?, ival === value {
@@ -34,10 +34,10 @@ extension NSObject {
 
             for i in 0..<Int( count ) {
                 let ivar = ivars[i]
-                if String( validate: ivar_getTypeEncoding( ivar ) ) == "@",
+                if String.valid( ivar_getTypeEncoding( ivar ) ) == "@",
                    let ival = object_getIvar( self, ivar ) as AnyObject?,
                    ival === value {
-                    return String( validate: ivar_getName( ivar ) )
+                    return .valid( ivar_getName( ivar ) )
                 }
             }
 
@@ -59,8 +59,8 @@ extension NSObject {
 
             for i in 0..<Int( count ) {
                 let ivar = ivars[i]
-                if let iname = String( validate: ivar_getName( ivar ) ) {
-                    let ival = String( validate: ivar_getTypeEncoding( ivar ) ) == "@" ? object_getIvar( self, ivar ) as AnyObject?: nil
+                if let iname = String.valid( ivar_getName( ivar ) ) {
+                    let ival = String.valid( ivar_getTypeEncoding( ivar ) ) == "@" ? object_getIvar( self, ivar ) as AnyObject?: nil
                     description += " - \(iname): \(String( reflecting: ival ))\n"
                 }
             }

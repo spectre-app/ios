@@ -10,7 +10,7 @@ private var keyFactories = [ String: MPKeyFactory ]()
 
 private func keyFactoryProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> UnsafePointer<MPMasterKey>? {
     DispatchQueue.mpw.await {
-        String( validate: fullName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
+        String.valid( fullName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
     }
 }
 
@@ -131,10 +131,10 @@ public class MPBufferKeyFactory: MPKeyFactory {
 
 public class MPKeychainKeyFactory: MPKeyFactory {
     public static var factor: Factor = {
-        var error : NSError?
+        var error: NSError?
         defer {
             if let error = error {
-                wrn("Biometrics unavailable: %@", error)
+                wrn( "Biometrics unavailable: %@", error )
             }
         }
 

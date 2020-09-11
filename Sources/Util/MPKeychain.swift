@@ -16,7 +16,8 @@ public class MPKeychain {
 
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
-            kSecAttrService: "\(String( validate: mpw_purpose_scope( .authentication ) )!).\(algorithm)",
+            kSecAttrService: [ String.valid( mpw_purpose_scope( .authentication ) ), algorithm.description ]
+                    .compactMap { $0 }.joined( separator: "." ),
             kSecAttrAccount: fullName,
             kSecAttrAccessControl: accessControl,
             kSecUseOperationPrompt: "Access \(fullName)'s master key.",

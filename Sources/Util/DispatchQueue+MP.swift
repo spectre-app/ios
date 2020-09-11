@@ -10,7 +10,7 @@ extension DispatchQueue {
     public static var net = DispatchQueue( label: "\(productName): Network Queue", qos: .background )
     public var isActive: Bool {
         (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
-                self.label == String( validate: __dispatch_queue_get_label( nil ) )
+                self.label == String.valid( __dispatch_queue_get_label( nil ) )
     }
 
     private static let threadLabelsKey = "DispatchQueue+MP"
