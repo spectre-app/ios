@@ -12,7 +12,7 @@ class MPTracker: MPConfigObserver {
 
     private init() {
         // Sentry
-        if let sentryDSN = decrypt( secret: sentryDSN ) {
+        if let sentryDSN = sentryDSN.b64Decrypt() {
             SentrySDK.start( options: [
                 "dsn": sentryDSN,
                 "debug": false, // appConfig.isDebug,
@@ -25,7 +25,7 @@ class MPTracker: MPConfigObserver {
         }
 
         // Countly
-        if let countlyKey = decrypt( secret: countlyKey ), let countlySalt = decrypt( secret: countlySalt ) {
+        if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
             let countlyConfig = CountlyConfig()
             countlyConfig.host = "https://countly.volto.app"
             countlyConfig.appKey = countlyKey
@@ -152,7 +152,7 @@ class MPTracker: MPConfigObserver {
     }
 
     func login(user: MPUser) {
-        guard let keyId = user.masterKeyID?.uppercased(), let userId = digest( value: keyId ), let userName = digest( value: user.fullName )
+        guard let keyId = user.masterKeyID?.uppercased(), let userId = keyId.hexDigest(), let userName = user.fullName.hexDigest()
         else { return }
 
         let userConfig: [String: Any] = [

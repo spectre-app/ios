@@ -5,6 +5,18 @@
 
 import Foundation
 
+func withVaStrings<R>(_ strings: [StaticString], terminate: Bool = true, body: (CVaListPointer) -> R) -> R {
+    var va: [CVarArg] = strings.map { $0.utf8Start }
+    if terminate {
+        va.append( Int( bitPattern: nil ) )
+    }
+    defer {
+        va.forEach { free( $0 as? UnsafeMutablePointer<Int8> ) }
+    }
+
+    return withVaList( va, body )
+}
+
 extension NSObject {
     dynamic func propertyWithValue(_ value: AnyObject) -> String? {
         var count: UInt32 = 0

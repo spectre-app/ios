@@ -6,6 +6,93 @@
 import Foundation
 import os
 
+public func pii(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: appConfig.isDebug ? .debug: .trace, format, args )
+}
+
+public func trc(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
+}
+
+public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: .debug, format, args )
+}
+
+public func inf(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: .info, format, args )
+}
+
+public func wrn(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: .warning, format, args )
+}
+
+public func err(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: .error, format, args )
+}
+
+public func ftl(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ format: StaticString, _ args: Any?...) {
+    log( file: file, line: line, function: function, dso: dso, level: .fatal, format, args )
+}
+
+public func log(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                level: LogLevel, _ format: StaticString, _ args: [Any?]) {
+
+    if mpw_verbosity < level {
+        return
+    }
+
+    let message = String( format: format.description, arguments: args.map { arg in
+        if let error = arg as? LocalizedError {
+            return [ error.failureReason, error.errorDescription ].compactMap { $0 }.joined( separator: ": " )
+        }
+
+        guard let arg = arg
+        else { return Int( bitPattern: nil ) }
+
+        return arg as? CVarArg ?? String( reflecting: arg )
+    } )
+
+    mpw_log_ssink( level, file, line, function, message )
+}
+
+extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
+    public private(set) static var allCases = [ LogLevel ]( (.fatal)...(.trace) )
+
+    public func distance(to other: LogLevel) -> Int32 {
+        other.rawValue - self.rawValue
+    }
+
+    public func advanced(by n: Int32) -> LogLevel {
+        LogLevel( rawValue: self.rawValue + n )!
+    }
+
+    public var description: String {
+        switch self {
+            case .trace:
+                return "TRC"
+            case .debug:
+                return "DBG"
+            case .info:
+                return "INF"
+            case .warning:
+                return "WRN"
+            case .error:
+                return "ERR"
+            case .fatal:
+                return "FTL"
+            @unknown default:
+                fatalError( "Unsupported log level: \(self.rawValue)" )
+        }
+    }
+}
+
 public class MPLogSink: MPConfigObserver {
     public static let shared = MPLogSink()
 

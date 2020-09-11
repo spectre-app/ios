@@ -23,7 +23,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window!.makeKeyAndVisible()
 
-        if let freshchatKey = decrypt( secret: freshchatKey ) {
+        if let freshchatKey = freshchatKey.b64Decrypt() {
             Freshchat.sharedInstance().initWith(
                     FreshchatConfig( appID: "***REMOVED***", andAppKey: freshchatKey ) )
         }
