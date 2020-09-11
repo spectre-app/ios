@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreServices
+import Network
 
 @UIApplicationMain
 class MPAppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +17,19 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: --- Life ---
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Require encrypted DNS.  Note: WebKit (eg. WKWebView/SFSafariViewController) ignores this.
+        if #available( iOS 14.0, * ) {
+            if let dohURL = URL( string: "https://cloudflare-dns.com/dns-query" ) {
+                NWParameters.PrivacyContext.default.requireEncryptedNameResolution( true, fallbackResolver:
+                .https( dohURL, serverAddresses: [
+                    .hostPort( host: "2606:4700:4700::1111", port: 443 ),
+                    .hostPort( host: "2606:4700:4700::1001", port: 443 ),
+                    .hostPort( host: "1.1.1.1", port: 443 ),
+                    .hostPort( host: "1.0.0.1", port: 443 ),
+                ] ) )
+            }
+        }
+
         MPLogSink.shared.register()
         MPTracker.shared.startup()
 
