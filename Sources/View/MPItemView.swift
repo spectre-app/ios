@@ -43,9 +43,7 @@ class Item<M>: AnyItem {
     }
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
-         caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         enabled enabledProvider: @escaping (M) -> Bool = { _ in true },
-         hidden hiddenProvider: @escaping (M) -> Bool = { _ in false }) {
+         caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.title = title
         self.subitems = subitems
         self.captionProvider = captionProvider
@@ -1114,12 +1112,12 @@ class ListItem<M, V: Hashable>: Item<M> {
         override func update() {
             super.update()
 
-            self.item.view.isHidden = false
+            self.tableView.isHidden = false
             self.tableView.tableHeaderView = self.activityIndicator
             DispatchQueue.mpw.perform {
                 self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ], completion: { finished in
                     if finished {
-                        self.item.view.isHidden = self.dataSource.isEmpty
+                        self.tableView.isHidden = self.dataSource.isEmpty
                         self.tableView.tableHeaderView = nil
                     }
                 } )
