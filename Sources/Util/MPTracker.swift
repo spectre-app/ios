@@ -48,8 +48,10 @@ class MPTracker: MPConfigObserver {
                   let record = MPLogRecord( logEvent )
             else { return false }
 
-            var sentryLevel = SentryLevel.debug
+            var sentryLevel = SentryLevel.info
             switch record.level {
+                case .trace, .debug:
+                    sentryLevel = .debug
                 case .info:
                     sentryLevel = .info
                 case .warning:
@@ -58,13 +60,13 @@ class MPTracker: MPConfigObserver {
                     sentryLevel = .error
                 case .fatal:
                     sentryLevel = .fatal
-                default: ()
+                @unknown default: ()
             }
 
             if record.level <= .error {
                 let event = Event( level: sentryLevel )
-                event.message = record.message
                 event.logger = "mpw"
+                event.message = record.message
                 event.timestamp = record.occurrence
                 event.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
                 SentrySDK.capture( event: event )

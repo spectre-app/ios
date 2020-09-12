@@ -96,7 +96,7 @@ extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
 public class MPLogSink: MPConfigObserver {
     public static let shared = MPLogSink()
 
-    public var  level: LogLevel {
+    public var level: LogLevel {
         get {
             mpw_verbosity
         }
@@ -104,6 +104,7 @@ public class MPLogSink: MPConfigObserver {
             mpw_verbosity = newValue
         }
     }
+
     private var records = [ MPLogRecord ]()
 
     public func register() {
@@ -112,27 +113,24 @@ public class MPLogSink: MPConfigObserver {
             guard let event = event?.pointee
             else { return false }
 
-            let file = String.valid( event.file ) ?? ""
-            let source = file.lastIndex( of: "/" ).flatMap { String( file.suffix( from: file.index( after: $0 ) ) ) } ?? file
+            let file  = String.valid( event.file ) ?? "mpw"
+            let log   = OSLog( subsystem: productIdentifier, category: "\(file.lastPathComponent):\(event.line)" )
+            var level = OSLogType.default
             switch event.level {
                 case .trace, .debug:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .debug,
-                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
+                    level = .debug
                 case .info:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .info,
-                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
+                    level = .info
                 case .warning:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .default,
-                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
+                    level = .default
                 case .error:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .error,
-                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
+                    level = .error
                 case .fatal:
-                    os_log( "%30@:%-3ld %-3@ | %@", type: .fault,
-                            source, event.line, event.level.description, String.valid( event.message ) ?? "" )
+                    level = .fault
                 @unknown default: ()
             }
 
+            os_log( level, dso: #dsohandle, log: log, "%@", String.valid( event.message ) ?? "-" )
             return true
         } )
         mpw_log_sink_register( { event in

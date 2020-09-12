@@ -16,7 +16,7 @@ extension Data {
 
     func hex() -> String {
         let hex = NSMutableString( capacity: self.count * 2 )
-        self.forEach { hex.appendFormat( "%02hhX", $0 ) }
+        self.forEach { hex.appendFormat( "%02.2hhX", $0 ) }
 
         return hex as String
     }

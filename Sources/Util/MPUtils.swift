@@ -5,9 +5,10 @@
 
 import UIKit
 
-let productName    = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) as? String ?? "Spectre"
-let productVersion = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
-let productBuild   = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String ?? "0"
+let productName       = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) as? String ?? "Spectre"
+let productIdentifier = Bundle.main.object( forInfoDictionaryKey: "CFBundleIdentifier" ) as? String ?? "app.spectre"
+let productVersion    = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
+let productBuild      = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String ?? "0"
 
 postfix operator <
 
