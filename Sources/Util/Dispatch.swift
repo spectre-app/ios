@@ -304,7 +304,7 @@ public class DispatchTask<V> {
      */
     @discardableResult
     public func request() -> Promise<V> {
-        self.requestQueue.promised {
+        self.workPromise ?? self.requestQueue.promised {
             if let workPromise = self.workPromise {
                 return workPromise
             }

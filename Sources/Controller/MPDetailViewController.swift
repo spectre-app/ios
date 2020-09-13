@@ -113,7 +113,6 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         // - Hierarchy
         self.backgroundView.addSubview( self.itemsView )
         self.view.addSubview( self.backgroundView )
-        self.items.forEach { $0.view.didLoad() }
 
         // - Layout
         LayoutConfiguration( view: self.backgroundView )
@@ -124,6 +123,8 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
                 .constrain( anchors: .horizontally )
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                 .activate()
+
+        self.items.forEach { $0.view.didLoad() }
     }
 
     // MARK: --- Updatable ---
