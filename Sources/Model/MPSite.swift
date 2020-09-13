@@ -339,7 +339,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
             return (token: .valid( mpw_site_result(
                     masterKey, self.siteName, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                                   deallocate: true ),
+                                   consume: true ),
                     counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
         }
     }
@@ -354,7 +354,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
             return (token: .valid( mpw_site_state(
                     masterKey, self.siteName, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                                   deallocate: true ),
+                                   consume: true ),
                     counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
         }
     }

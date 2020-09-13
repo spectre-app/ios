@@ -142,7 +142,7 @@ class MPMarshal: Observable, Updatable {
                 }
             }
 
-            if let data = String.valid( mpw_marshal_write( format, &user.file, marshalledUser ), deallocate: true )?.data( using: .utf8 ),
+            if let data = String.valid( mpw_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
                user.file?.pointee.error.type == .success {
                 exportEvent.end( [ "result": "success: data" ] )
                 return data

@@ -93,25 +93,27 @@ extension Result {
 
 extension String {
     /** Create a String from a signed c-string of valid UTF8 bytes. */
-    static func valid(_ pointer: UnsafePointer<CSignedChar>?, deallocate: Bool = false) -> String? {
-        defer { if deallocate { pointer?.deallocate() } }
+    static func valid(_ pointer: UnsafePointer<CSignedChar>?, consume: Bool = false) -> String? {
+        defer { if consume { pointer?.deallocate() } }
         return pointer.flatMap { self.init( validatingUTF8: $0 ) }
     }
 
     /** Create a String from an unsigned c-string of valid UTF8 bytes. */
-    static func valid(_ pointer: UnsafePointer<CUnsignedChar>?, deallocate: Bool = false) -> String? {
-        defer { if deallocate { pointer?.deallocate() } }
+    static func valid(_ pointer: UnsafePointer<CUnsignedChar>?, consume: Bool = false) -> String? {
+        defer { if consume { pointer?.deallocate() } }
         return self.decodeCString( pointer, as: Unicode.UTF8.self, repairingInvalidCodeUnits: false )?.result
     }
 
     /** Create a String from a raw buffer of length valid UTF8 bytes. */
-    static func valid(_ pointer: UnsafeRawPointer?, length: Int, deallocate: Bool = false) -> String? {
-        self.valid(pointer?.bindMemory(to: UInt8.self, capacity: length), deallocate: deallocate)
+    static func valid(_ pointer: UnsafeRawPointer?, length: Int, consume: Bool = false) -> String? {
+        defer { if consume { pointer?.deallocate() } }
+        return self.valid( mpw_strndup( pointer?.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
     }
 
     /** Create a String from a raw buffer of length valid UTF8 bytes. */
-    static func valid(_ pointer: UnsafeMutableRawPointer?, length: Int, deallocate: Bool = false) -> String? {
-        self.valid(pointer?.bindMemory(to: UInt8.self, capacity: length), deallocate: deallocate)
+    static func valid(_ pointer: UnsafeMutableRawPointer?, length: Int, consume: Bool = false) -> String? {
+        defer { if consume { pointer?.deallocate() } }
+        return self.valid( mpw_strndup( pointer?.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
     }
 
     public var lastPathComponent: String {
@@ -144,7 +146,7 @@ extension String {
         secretLength = mpw_base64_decode( self, &secretData )
 
         return .valid( mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
-                       length: secretLength, deallocate: true )
+                       length: secretLength, consume: true )
     }
 
     func hexDigest() -> String? {
