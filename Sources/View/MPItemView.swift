@@ -249,6 +249,20 @@ class TapBehaviour<M>: Behaviour<M> {
     }
 }
 
+class BlockTapBehaviour<M>: TapBehaviour<M> {
+    let block: (Item<M>) -> ()
+
+    init(_ block: @escaping (Item<M>) -> ()) {
+        self.block = block
+
+        super.init()
+    }
+
+    override func doTapped(item: Item<M>) {
+        self.block( item )
+    }
+}
+
 class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     init() {
         super.init()

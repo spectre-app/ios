@@ -29,7 +29,7 @@ class MPItemCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
-        self.effectView.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
+        self.effectView.layoutMargins = UIEdgeInsets( top: 6, left: 6, bottom: 6, right: 6 )
 
         self.contentView.addSubview( self.effectView )
 

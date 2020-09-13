@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver {
+class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver {
     public let observers = Observers<MPUserObserver>()
 
     public var algorithm: MPAlgorithmVersion {
@@ -66,6 +66,22 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
     public var defaultType: MPResultType {
         didSet {
             if oldValue != self.defaultType {
+                self.dirty = true
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
+    public var loginType: MPResultType {
+        didSet {
+            if oldValue != self.loginType {
+                self.dirty = true
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
+    public var loginState: String? {
+        didSet {
+            if oldValue != self.loginState {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -181,7 +197,8 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
          identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
-         defaultType: MPResultType? = nil, lastUsed: Date = Date(), origin: URL? = nil,
+         defaultType: MPResultType? = nil, loginType: MPResultType? = nil, loginState: String? = nil,
+         lastUsed: Date = Date(), origin: URL? = nil,
          file: UnsafeMutablePointer<MPMarshalledFile>? = mpw_marshal_file( nil, nil, nil ),
          initialize: (MPUser) -> Void = { _ in }) {
         self.algorithm = algorithm ?? .current
@@ -189,7 +206,9 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.fullName = fullName
         self.identicon = identicon
         self.masterKeyID = masterKeyID
-        self.defaultType = defaultType ?? .default
+        self.defaultType = defaultType ?? .defaultResult
+        self.loginType = loginType ?? .defaultLogin
+        self.loginState = loginState
         self.lastUsed = lastUsed
         self.origin = origin
         self.file = file
@@ -302,6 +321,127 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.lastUsed = Date()
     }
 
+    // MARK: --- mpw ---
+
+    public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promised {
+            switch keyPurpose {
+                case .authentication:
+                    return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType ?? self.defaultType, resultParam: resultParam,
+                                            algorithm: algorithm ?? self.algorithm )
+
+                case .identification:
+                    return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
+                                            algorithm: algorithm ?? self.algorithm )
+
+                case .recovery:
+                    return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                            algorithm: algorithm ?? self.algorithm )
+
+                @unknown default:
+                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+            }
+        }
+    }
+
+    public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promised {
+            switch keyPurpose {
+                case .authentication:
+                    return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                           resultType: resultType ?? self.defaultType, resultParam: resultParam,
+                                           algorithm: algorithm ?? self.algorithm )
+
+                case .identification:
+                    return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                           resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
+                                           algorithm: algorithm ?? self.algorithm )
+
+                case .recovery:
+                    return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                           resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                           algorithm: algorithm ?? self.algorithm )
+
+                @unknown default:
+                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+            }
+        }
+    }
+
+    @discardableResult
+    public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
+                     by host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        self.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                     resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then {
+            do {
+                let result = try $0.get()
+                guard let token = result.token
+                else { return }
+
+                self.use()
+                MPFeedback.shared.play( .trigger )
+
+                UIPasteboard.general.setItems(
+                        [ [ UIPasteboard.typeAutomatic: token ] ],
+                        options: [
+                            UIPasteboard.OptionsKey.localOnly: true,
+                            UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
+                        ] )
+
+                MPAlert( title: "Copied \(keyPurpose) (3 min)", message: name, details:
+                """
+                Your \(keyPurpose) for \(name ?? self.fullName) is:
+                \(token)
+
+                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
+
+                Note that after 3 minutes, the \(keyPurpose) will expire from the pasteboard for security reasons.
+                """ ).show( in: host )
+            }
+            catch {
+                mperror( title: "Couldn't copy site", message: "Site value could not be calculated", error: error )
+            }
+        }
+    }
+
+    private func mpw_result(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
+                            resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
+                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promise {
+            guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
+            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
+            defer { masterKey.deallocate() }
+
+            return (token: .valid( mpw_site_result(
+                    masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
+                                   consume: true ),
+                    counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
+        }
+    }
+
+    public func mpw_state(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
+                          resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
+                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promise {
+            guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
+            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
+            defer { masterKey.deallocate() }
+
+            return (token: .valid( mpw_site_state(
+                    masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
+                                   consume: true ),
+                    counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
+        }
+    }
+
     // MARK: --- Types ---
 
     enum Avatar: UInt32, CaseIterable, CustomStringConvertible {
@@ -333,9 +473,11 @@ class MPUser: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
 protocol MPUserObserver {
     func userDidLogin(_ user: MPUser)
+
     func userDidLogout(_ user: MPUser)
 
     func userDidChange(_ user: MPUser)
+
     func userDidUpdateSites(_ user: MPUser)
 }
 

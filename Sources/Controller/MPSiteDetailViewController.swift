@@ -133,6 +133,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
+                                    [ MPResultType.none ],
                                     MPResultType.recommendedTypes[.identification],
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
@@ -150,7 +151,12 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPSite, value: MPResultType) -> UICollectionViewCell? {
             MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                ($0 as? MPResultTypeCell)?.resultType = value
+                ($0 as? MPResultTypeCell)?.resultType = value.nonEmpty
+
+                if value == .none {
+                    ($0 as? MPResultTypeCell)?.name = nil
+                    ($0 as? MPResultTypeCell)?.class = "Standard Login"
+                }
             }
         }
     }
@@ -172,6 +178,11 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
+            self.addBehaviour( BlockTapBehaviour {
+                if let user = $0.model?.user, $0.model?.loginType == MPResultType.none {
+                    $0.viewController?.hostController?.show( MPUserDetailsViewController( model: user ) )
+                }
+            } )
         }
 
         override func createItemView() -> FieldItemView<MPSite> {
@@ -192,34 +203,37 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
 
     class SecurityAnswerItem: ListItem<MPSite, MPQuestion> {
         init() {
-            super.init(
-                    title: "Security Answers 🅿︎",
-                    values: {
-                        $0.questions.reduce( [ "": MPQuestion( site: $0, keyword: "" ) ] ) {
-                            $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
-                        }.values.sorted()
-                    },
-                subitems: [ ButtonItem( identifier: "site.question #add", value: { _ in (label: "Add Security Question", image: nil) }, action: { item in
-                    let controller = UIAlertController( title: "Security Question", message:
-                                                            """
-                        Enter the most significant noun for the site's security question.
-                        """, preferredStyle: .alert )
-                    controller.addTextField {
-                        $0.placeholder = "eg. teacher"
-                        $0.autocapitalizationType = .none
-                        $0.keyboardType = .alphabet
-                        $0.returnKeyType = .done
-                    }
-                    controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                    controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
-                        guard let site = item?.model, let keyword = controller?.textFields?.first?.text<
-                        else { return }
-                        
-                        trc( "Adding security question <%@> for: %@", keyword, site )
-                        site.questions.append( MPQuestion( site: site, keyword: keyword ) )
-                    } )
-                    item.viewController?.present( controller, animated: true )
-                }) ] )
+            super.init( title: "Security Answers 🅿︎",
+                        values: {
+                            $0.questions.reduce( [ "": MPQuestion( site: $0, keyword: "" ) ] ) {
+                                $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
+                            }.values.sorted()
+                        },
+                        subitems: [
+                            ButtonItem( identifier: "site.question #add",
+                                        value: { _ in (label: "Add Security Question", image: nil) },
+                                        action: { item in
+                                            let controller = UIAlertController( title: "Security Question", message:
+                                            """
+                                            Enter the most significant noun for the site's security question.
+                                            """, preferredStyle: .alert )
+                                            controller.addTextField {
+                                                $0.placeholder = "eg. teacher"
+                                                $0.autocapitalizationType = .none
+                                                $0.keyboardType = .alphabet
+                                                $0.returnKeyType = .done
+                                            }
+                                            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                                            controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
+                                                guard let site = item?.model, let keyword = controller?.textFields?.first?.text?.nonEmpty
+                                                else { return }
+
+                                                trc( "Adding security question <%@> for: %@", keyword, site )
+                                                site.questions.append( MPQuestion( site: site, keyword: keyword ) )
+                                            } )
+                                            item.viewController?.present( controller, animated: true )
+                                        } )
+                        ] )
             self.deletable = true
 
             self.addBehaviour( PremiumTapBehaviour() )
@@ -254,7 +268,7 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                     self.question?.result().then( on: .main ) {
                         do {
                             self.resultLabel.text = try $0.get().token
-                            self.keywordLabel.text = self.question?.keyword< ?? "(generic)"
+                            self.keywordLabel.text = self.question?.keyword.nonEmpty ?? "(generic)"
                         }
                         catch {
                             mperror( title: "Couldn't calculate security answer", error: error )
@@ -288,7 +302,24 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
-                    self.question?.copy()
+                    let event = MPTracker.shared.begin( named: "site.question #copy" )
+                    self.question?.copy().then {
+                        do {
+                            let result = try $0.get()
+                            event.end(
+                                    [ "result": $0.name,
+                                      "from": "site>details",
+                                      "counter": "\(result.counter)",
+                                      "purpose": "\(result.purpose)",
+                                      "type": "\(result.type)",
+                                      "algorithm": "\(result.algorithm)",
+                                      "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
+                                    ] )
+                        }
+                        catch {
+                            event.end( [ "result": $0.name ] )
+                        }
+                    }
                 }
 
                 // - Hierarchy

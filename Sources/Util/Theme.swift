@@ -349,7 +349,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     public static let  `default` = allCases[1]
 
     public class func with(path: String?) -> Theme? {
-        self.allCases.first { $0.path == path } ?? path<.flatMap { Theme.byPath[$0] } ?? .base
+        self.allCases.first { $0.path == path } ?? path?.nonEmpty.flatMap { Theme.byPath[$0] } ?? .base
     }
 
     public let observers = Observers<ThemeObserver>()
@@ -482,7 +482,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         var parent: Theme?
         if let lastDot = path.lastIndex( of: "." ) {
             self.name = String( path[path.index( after: lastDot )..<path.endIndex] )
-            parent = String( path[path.startIndex..<lastDot] )<.flatMap { Theme.byPath[$0] } ?? .base
+            parent = String( path[path.startIndex..<lastDot] ).nonEmpty.flatMap { Theme.byPath[$0] } ?? .base
         }
         else {
             self.name = path

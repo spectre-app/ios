@@ -114,6 +114,8 @@ class MPMarshal: Observable, Updatable {
             marshalledUser.pointee.identicon = user.identicon
             marshalledUser.pointee.keyID = mpw_strdup( user.masterKeyID )
             marshalledUser.pointee.defaultType = user.defaultType
+            marshalledUser.pointee.loginType = user.loginType
+            marshalledUser.pointee.loginState = mpw_strdup( user.loginState )
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
             for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
@@ -679,6 +681,8 @@ class MPMarshal: Observable, Updatable {
                             identicon: marshalledUser.identicon,
                             masterKeyID: self.resetKey ? nil: self.keyID,
                             defaultType: marshalledUser.defaultType,
+                            loginType: marshalledUser.loginType,
+                            loginState: .valid( marshalledUser.loginState ),
                             lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
                             origin: self.origin, file: self.file
                     ) { user in

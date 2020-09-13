@@ -116,6 +116,10 @@ extension String {
         return self.valid( mpw_strndup( pointer?.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
     }
 
+    public var nonEmpty: Self? {
+        self.isEmpty ? nil: self
+    }
+
     public var lastPathComponent: String {
         (self as NSString).lastPathComponent
     }
@@ -157,6 +161,12 @@ extension String {
         defer { digest.deallocate() }
 
         return .valid( mpw_hex( digest, 32 ) )
+    }
+}
+
+extension Numeric {
+    public var nonEmpty: Self? {
+        self == Self.init( exactly: 0 ) ? nil: self
     }
 }
 

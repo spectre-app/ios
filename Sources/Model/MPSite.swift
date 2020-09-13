@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPSiteObserver, MPQuestionObserver {
+class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPSiteObserver, MPQuestionObserver {
     public let observers = Observers<MPSiteObserver>()
 
     public let user: MPUser
@@ -158,7 +158,7 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         self.counter = counter ?? MPCounterValue.default
         self.resultType = resultType ?? user.defaultType
         self.resultState = resultState
-        self.loginType = loginType ?? MPResultType.templateName
+        self.loginType = loginType ?? .none
         self.loginState = loginState
         self.url = url
         self.uses = uses
@@ -228,23 +228,49 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
 
     // MARK: --- mpw ---
 
-    public func result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+    public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         DispatchQueue.mpw.promised {
             switch keyPurpose {
                 case .authentication:
-                    return self.mpw_result( counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
+                    return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                             resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
+                                             algorithm: algorithm ?? self.algorithm )
+
+                case .identification:
+                    return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                             resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
+                                             algorithm: algorithm ?? self.algorithm )
+
+                case .recovery:
+                    return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                             resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                             algorithm: algorithm ?? self.algorithm )
+
+                @unknown default:
+                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+            }
+        }
+    }
+
+    public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promised {
+            switch keyPurpose {
+                case .authentication:
+                    return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType ?? self.resultType, resultParam: resultParam,
                                             algorithm: algorithm ?? self.algorithm )
 
                 case .identification:
-                    return self.mpw_result( counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
+                    return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType ?? self.loginType, resultParam: resultParam,
                                             algorithm: algorithm ?? self.algorithm )
 
                 case .recovery:
-                    return self.mpw_result( counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                    return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                             resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
                                             algorithm: algorithm ?? self.algorithm )
 
@@ -254,109 +280,12 @@ class MPSite: Hashable, Comparable, CustomStringConvertible, Observable, Persist
         }
     }
 
-    public func state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promised {
-            switch keyPurpose {
-                case .authentication:
-                    return self.mpw_state( counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                           resultType: resultType ?? self.resultType, resultParam: resultParam,
-                                           algorithm: algorithm ?? self.algorithm )
-
-                case .identification:
-                    return self.mpw_state( counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                           resultType: resultType ?? self.loginType, resultParam: resultParam,
-                                           algorithm: algorithm ?? self.algorithm )
-
-                case .recovery:
-                    return self.mpw_state( counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                           resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                           algorithm: algorithm ?? self.algorithm )
-
-                @unknown default:
-                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
-            }
-        }
-    }
-
     @discardableResult
-    public func copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
+    public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                      resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
-                     for host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        let copyEvent = MPTracker.shared.begin( named: "site #copy" )
-
-        return self.result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                            resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then {
-            do {
-                let result = try $0.get()
-                guard let token = result.token
-                else { return }
-
-                self.use()
-                MPFeedback.shared.play( .trigger )
-
-                UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: token ] ],
-                        options: [
-                            UIPasteboard.OptionsKey.localOnly: true,
-                            UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                        ] )
-
-                MPAlert( title: "Copied \(keyPurpose) (3 min)", message: self.siteName, details:
-                """
-                Your \(keyPurpose) for \(self.siteName) is:
-                \(token)
-
-                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
-
-                Note that after 3 minutes, the \(keyPurpose) will expire from the pasteboard for security reasons.
-                """ ).show( in: host )
-
-                copyEvent.end(
-                        [ "result": $0.name,
-                          "counter": "\(result.counter)",
-                          "purpose": "\(result.purpose)",
-                          "type": "\(result.type)",
-                          "algorithm": "\(result.algorithm)",
-                          "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: token ) ?? 0,
-                        ] )
-            }
-            catch {
-                copyEvent.end( [ "result": $0.name ] )
-                mperror( title: "Couldn't copy site", message: "Site value could not be calculated", error: error )
-            }
-        }
-    }
-
-    private func mpw_result(counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
-                            resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promise {
-            guard let masterKey = self.user.masterKeyFactory?.newKey( for: algorithm )
-            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
-            defer { masterKey.deallocate() }
-
-            return (token: .valid( mpw_site_result(
-                    masterKey, self.siteName, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                                   consume: true ),
-                    counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
-        }
-    }
-
-    public func mpw_state(counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
-                          resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promise {
-            guard let masterKey = self.user.masterKeyFactory?.newKey( for: algorithm )
-            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
-            defer { masterKey.deallocate() }
-
-            return (token: .valid( mpw_site_state(
-                    masterKey, self.siteName, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                                   consume: true ),
-                    counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
-        }
+                     by host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        self.user.copy( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                        resultType: resultType, resultParam: resultParam, algorithm: algorithm )
     }
 }
 

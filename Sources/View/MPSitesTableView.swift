@@ -158,11 +158,45 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     },
                     UIAction( title: "Copy Login Name 🅿︎", image: .icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: InAppFeature.premium.enabled() ? []: .disabled ) { action in
                         configuration.action = action
-                        site.copy( keyPurpose: .identification, for: self )
+                        let event = MPTracker.shared.begin( named: "site #copy" )
+                        site.copy( keyPurpose: .identification, by: self ).then {
+                            do {
+                                let result = try $0.get()
+                                event.end(
+                                        [ "result": $0.name,
+                                          "from": "cell>menu>login",
+                                          "counter": "\(result.counter)",
+                                          "purpose": "\(result.purpose)",
+                                          "type": "\(result.type)",
+                                          "algorithm": "\(result.algorithm)",
+                                          "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
+                                        ] )
+                            }
+                            catch {
+                                event.end( [ "result": $0.name ] )
+                            }
+                        }
                     },
                     UIAction( title: "Copy Password", image: .icon( "" ), identifier: UIAction.Identifier( "password" ) ) { action in
                         configuration.action = action
-                        site.copy( keyPurpose: .authentication, for: self )
+                        let event = MPTracker.shared.begin( named: "site #copyPassword" )
+                        site.copy( keyPurpose: .authentication, by: self ).then {
+                            do {
+                                let result = try $0.get()
+                                event.end(
+                                        [ "result": $0.name,
+                                          "from": "cell>menu>password",
+                                          "counter": "\(result.counter)",
+                                          "purpose": "\(result.purpose)",
+                                          "type": "\(result.type)",
+                                          "algorithm": "\(result.algorithm)",
+                                          "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
+                                        ] )
+                            }
+                            catch {
+                                event.end( [ "result": $0.name ] )
+                            }
+                        }
                     },
                 ] )
             } )
@@ -417,9 +451,26 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         func cellAction() {
             self.sitesView?.selectedSite = self.site
 
-            _ = self.site?.copy( keyPurpose: self.mode, for: self ).then { _ in
+            let event = MPTracker.shared.begin( named: "site #copy" )
+            self.site?.copy( keyPurpose: self.mode, by: self ).then { _ in
                 if let site = self.site, self.new {
                     site.user.sites.append( site )
+                }
+            }.then {
+                do {
+                    let result = try $0.get()
+                    event.end(
+                            [ "result": $0.name,
+                              "from": "cell",
+                              "counter": "\(result.counter)",
+                              "purpose": "\(result.purpose)",
+                              "type": "\(result.type)",
+                              "algorithm": "\(result.algorithm)",
+                              "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
+                            ] )
+                }
+                catch {
+                    event.end( [ "result": $0.name ] )
                 }
             }
         }

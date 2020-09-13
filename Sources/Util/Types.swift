@@ -212,6 +212,10 @@ extension MPResultType: CustomStringConvertible, CaseIterable {
         String.valid( mpw_type_long_name( self ) ) ?? "?"
     }
 
+    public var nonEmpty: Self? {
+        self == .none ? nil: self
+    }
+
     func `in`(class c: MPResultTypeClass) -> Bool {
         self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
     }

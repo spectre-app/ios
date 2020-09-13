@@ -163,6 +163,7 @@ class MPTracker: MPConfigObserver {
             "biometricLock": user.biometricLock,
             "maskPasswords": user.maskPasswords,
             "defaultType": user.defaultType,
+            "loginType": user.loginType,
             "sites": user.sites.count,
         ]
 

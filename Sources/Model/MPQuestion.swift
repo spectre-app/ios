@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPQuestionObserver {
+class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPQuestionObserver {
     public let observers = Observers<MPQuestionObserver>()
 
     public let site: MPSite
@@ -82,27 +82,27 @@ class MPQuestion: Hashable, Comparable, CustomStringConvertible, Observable, Per
 
     // MARK: --- mpw ---
 
-    public func result(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+    public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.site.result( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+        self.site.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                           resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
     }
 
-    public func state(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+    public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.site.state( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+        self.site.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam, algorithm: algorithm )
     }
 
     @discardableResult
-    public func copy(counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
+    public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                      resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
-                     for host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.site.copy( counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                     by host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        self.site.copy( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                         resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm,
-                        for: host )
+                        by: host )
     }
 }
 

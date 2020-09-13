@@ -12,7 +12,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
 
     override func loadItems() -> [Item<MPUser>] {
         [ IdenticonItem(), AvatarItem(), ActionsItem(), SeparatorItem(),
-          DefaultTypeItem(), SeparatorItem(),
+          LoginTypeItem(), LoginResultItem(), DefaultTypeItem(), SeparatorItem(),
           AttackerItem(), SeparatorItem(),
           FeaturesItem(), SeparatorItem(),
           InfoItem(),
@@ -69,9 +69,69 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         }
     }
 
+    class LoginTypeItem: PickerItem<MPUser, MPResultType> {
+        init() {
+            super.init( identifier: "user >loginType", title: "Standard Login",
+                        values: { _ in
+                            [ MPResultType? ].joined(
+                                    separator: [ nil ],
+                                    MPResultType.recommendedTypes[.identification],
+                                    [ MPResultType.statefulPersonal ],
+                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                        },
+                        value: { $0.loginType },
+                        update: { $0.loginType = $1 } )
+        }
+
+        override func didLoad(collectionView: UICollectionView) {
+            collectionView.register( MPResultTypeCell.self )
+        }
+
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
+            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
+                ($0 as! MPResultTypeCell).resultType = value
+            }
+        }
+    }
+
+    class LoginResultItem: FieldItem<MPUser> {
+        init() {
+            super.init( title: nil, placeholder: "set a user name",
+                        value: { try? $0.result( keyPurpose: .identification ).await().token },
+                        update: { user, login in
+                            MPTracker.shared.event( named: "user >login", [
+                                "type": "\(user.loginType)",
+                                "entropy": MPAttacker.entropy( string: login ) ?? 0,
+                            ] )
+
+                            user.state( keyPurpose: .identification, resultParam: login ).then {
+                                do { user.loginState = try $0.get().token }
+                                catch { mperror( title: "Couldn't update user name", error: error ) }
+                            }
+                        } )
+
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
+        }
+
+        override func createItemView() -> FieldItemView<MPUser> {
+            let view = super.createItemView()
+            view.valueField => \.font => Theme.current.font.password
+            view.valueField.autocapitalizationType = .none
+            view.valueField.autocorrectionType = .no
+            view.valueField.keyboardType = .emailAddress
+            return view
+        }
+
+        override func update() {
+            super.update()
+
+            (self.view as? FieldItemView<MPUser>)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
+        }
+    }
+
     class DefaultTypeItem: PickerItem<MPUser, MPResultType> {
         init() {
-            super.init( identifier: "user >defaultType", title: "Default Type",
+            super.init( identifier: "user >defaultType", title: "Default Password Type",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -124,12 +184,12 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                 didSet {
                     DispatchQueue.main.perform {
                         if let attacker = self.attacker {
-                            self.nameLabel.text = "\(number: attacker.fixed_budget + attacker.monthly_budget * 12, decimals: 0...0, locale: .C, .currency, .abbreviated)"
-                            self.classLabel.text = "\(attacker)"
+                            self.name = "\(number: attacker.fixed_budget + attacker.monthly_budget * 12, decimals: 0...0, locale: .C, .currency, .abbreviated)"
+                            self.class = "\(attacker)"
                         }
                         else {
-                            self.nameLabel.text = "Off"
-                            self.classLabel.text = ""
+                            self.name = "Off"
+                            self.class = nil
                         }
                     }
                 }

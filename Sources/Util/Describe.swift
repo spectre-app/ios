@@ -67,7 +67,7 @@ func describe(_ view: UIView, short: Bool = false) -> String {
     }
 
     //let identifier : String = (inAccessibilityIdentifier ? nil: view.accessibilityIdentifier)< ??
-    let identifier: String = view.accessibilityIdentifier< ??
+    let identifier: String = view.accessibilityIdentifier?.nonEmpty ??
             (owner?.1).flatMap { "\(describe( type( of: view ), short: true )) \($0)" } ?? describe( type( of: view ) )
     if let nextResponder = owner?.0 {
         return "\(identifier) \(describe( type( of: nextResponder ), short: true ))"

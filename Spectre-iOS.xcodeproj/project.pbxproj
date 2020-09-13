@@ -63,7 +63,9 @@
 		93D39B0F44709C2D285A04D1 /* Foundation+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */; };
 		93D39B58BB6046893F274C8D /* MPAppDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */; };
 		93D39BBE1211113524BCBF9D /* MPEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* MPEffectView.swift */; };
+		93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
 		93D39BED3DFB61513B0D015D /* MPUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */; };
+		93D39C05281D4E4CB11F07AC /* MPResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPResult.swift */; };
 		93D39C0E969D1194203D5B9C /* ConstraintResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909744CE918AB4432318 /* ConstraintResolver.swift */; };
 		93D39C94D7BFAAE6C4B1471F /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
@@ -204,6 +206,7 @@
 		93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuestion.swift; sourceTree = "<group>"; };
 		93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeychain.swift; sourceTree = "<group>"; };
 		93D39203C899BA783F02D3B5 /* MPEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEffectView.swift; sourceTree = "<group>"; };
+		93D39267543CBFB6B0D7F54C /* MPResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPResult.swift; sourceTree = "<group>"; };
 		93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEmitterView.swift; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
 		93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMasterPasswordField.swift; sourceTree = "<group>"; };
@@ -253,6 +256,7 @@
 		93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUntouchableView.swift; sourceTree = "<group>"; };
 		93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTapEffectView.swift; sourceTree = "<group>"; };
 		93D399D8E0D5A547143642A7 /* MPMarshal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMarshal.swift; sourceTree = "<group>"; };
+		93D39A6EC596E8AE5D8F8714 /* Debug.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Debug.swift; sourceTree = "<group>"; };
 		93D39AFD17CBE324D745DAB0 /* mpw-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-types.h"; sourceTree = "<group>"; };
 		93D39B3112D0D128E6369596 /* MPTintLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintLabel.swift; sourceTree = "<group>"; };
 		93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSecrets.swift; sourceTree = "<group>"; };
@@ -489,6 +493,7 @@
 				93D39169E1BADEFA0517D4D2 /* MPUser.swift */,
 				93D399D8E0D5A547143642A7 /* MPMarshal.swift */,
 				93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */,
+				93D39267543CBFB6B0D7F54C /* MPResult.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -558,6 +563,7 @@
 				93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */,
 				93D39647B07609C89AA66767 /* UIKit+MP.swift */,
 				93D39754A28ADCAE0E58937F /* Swift+MP.swift */,
+				93D39A6EC596E8AE5D8F8714 /* Debug.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1400,6 +1406,8 @@
 				93D39B0F44709C2D285A04D1 /* Foundation+MP.swift in Sources */,
 				93D39DC523A8A2E162CEB420 /* UIKit+MP.swift in Sources */,
 				93D3973CB116392EFE182225 /* Swift+MP.swift in Sources */,
+				93D39C05281D4E4CB11F07AC /* MPResult.swift in Sources */,
+				93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
