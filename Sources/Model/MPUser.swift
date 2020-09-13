@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import AuthenticationServices
 
 class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver {
     public let observers = Observers<MPUserObserver>()
@@ -116,6 +117,17 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             self.tryKeyFactoryMigration()
         }
     }
+    public var autofill = false {
+        didSet {
+            if oldValue != self.autofill, !self.initializing,
+               self.file?.mpw_set( self.autofill, path: "user", "_ext_mpw", "autofill" ) ?? true {
+                self.dirty = true
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+
+            self.updateCredentialIdentities()
+        }
+    }
     public var attacker: MPAttacker? {
         didSet {
             if oldValue != self.attacker, !self.initializing,
@@ -216,6 +228,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         defer {
             self.maskPasswords = self.file?.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
             self.biometricLock = self.file?.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
+            self.autofill = self.file?.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
             self.attacker = self.file?.mpw_get( path: "user", "_ext_mpw", "attacker" ).flatMap { MPAttacker.named( $0 ) }
 
             initialize( self )
@@ -294,6 +307,32 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             // biometric lock is off; if key factory is keychain, remove and purge it.
             self.masterKeyFactory = nil
             keychainKeyFactory.purgeKeys()
+        }
+    }
+
+    private func updateCredentialIdentities() {
+        ASCredentialIdentityStore.shared.getState {
+            guard $0.isEnabled
+            else { return }
+
+            DispatchQueue.mpw.perform {
+                let credentials = self.sites.map { site in
+                    ASPasswordCredentialIdentity(
+                            serviceIdentifier: ASCredentialServiceIdentifier( identifier: site.siteName, type: .domain ),
+                            user: (try? site.result( keyPurpose: .identification ).await())?.token ?? self.fullName,
+                            recordIdentifier: self.fullName )
+                }
+                if self.autofill {
+                    ASCredentialIdentityStore.shared.saveCredentialIdentities( credentials ) {
+                        dbg( "autofill saved? %d - %@", $0, $1 )
+                    }
+                }
+                else {
+                    ASCredentialIdentityStore.shared.removeCredentialIdentities( credentials ) {
+                        dbg( "autofill removed? %d - %@", $0, $1 )
+                    }
+                }
+            }
         }
     }
 

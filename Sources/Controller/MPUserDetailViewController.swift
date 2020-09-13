@@ -14,7 +14,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         [ IdenticonItem(), AvatarItem(), ActionsItem(), SeparatorItem(),
           LoginTypeItem(), LoginResultItem(), DefaultTypeItem(), SeparatorItem(),
           AttackerItem(), SeparatorItem(),
-          FeaturesItem(), SeparatorItem(),
+          UsageFeaturesItem(), SystemFeaturesItem(), SeparatorItem(),
           InfoItem(),
         ]
     }
@@ -197,7 +197,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         }
     }
 
-    class FeaturesItem: Item<MPUser> {
+    class UsageFeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
                 ToggleItem<MPUser>(
@@ -213,6 +213,28 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             """
                             Do not reveal passwords on screen.
                             Useful to deter screen snooping.
+                            """
+                        } ),
+            ] )
+        }
+    }
+
+    class SystemFeaturesItem: Item<MPUser> {
+        init() {
+            super.init( subitems: [
+                ToggleItem<MPUser>(
+                        identifier: "user >autofill",
+                        title: "AutoFill Passwords",
+                        value: {
+                            (icon: .icon( "" ),
+                             selected: $0.autofill,
+                             enabled: true)
+                        },
+                        update: { $0.autofill = $1 },
+                        caption: { _ in
+                            """
+                            Expose sites in password auto-fill
+                            from other apps.
                             """
                         } ),
                 ToggleItem(
@@ -231,7 +253,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                             """
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ) ] )
+                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+            ] )
         }
     }
 
