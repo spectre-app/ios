@@ -563,12 +563,13 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
                     self.userEvent?.end( [ "result": "biometric" ] )
                     self.viewController?.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
                 }
-                catch LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive {
-                    self.viewController?.selectedFile = nil
-                }
                 catch {
-                    mperror( title: "Biometrics Rejected", error: error )
-                    self.update()
+                    switch error {
+                        case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
+                            wrn( "Biometrics cancelled: %@", error )
+                        default:
+                            mperror( title: "Biometrics Rejected", error: error )
+                    }
                 }
             }
         }
