@@ -135,7 +135,17 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         if let focus = self.focus, let scrollView = self.hostController?.scrollView,
            let focusItem = self.items.first( where: { $0.isKind( of: focus ) } ),
            let focusRect = self.hostController?.scrollView.convert( focusItem.view.bounds, from: focusItem.view ) {
-            scrollView.contentOffset.y = focusRect.center.y - scrollView.bounds.size.height / 2
+            scrollView.setContentOffset( CGPoint( x: 0, y: focusRect.center.y - scrollView.bounds.size.height / 2 ), animated: animated )
+
+            let colorOn = Theme.current.color.selection.get(), colorOff = colorOn?.with( alpha: .off )
+            focusItem.view.backgroundColor = colorOff
+            UIView.animate( withDuration: .long, animations: {
+                focusItem.view.backgroundColor = colorOn
+            }, completion: {
+                UIView.animate( withDuration: $0 ? .long: .off ) {
+                    focusItem.view.backgroundColor = colorOff
+                }
+            } )
         }
     }
 
