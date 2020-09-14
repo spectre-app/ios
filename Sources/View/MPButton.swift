@@ -32,12 +32,6 @@ class MPButton: MPEffectView {
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
                                                                      .with( priority: UILayoutPriority( 900 ) )
 
-    override var bounds: CGRect {
-        didSet {
-            self.setNeedsUpdateConstraints()
-        }
-    }
-
     // MARK: --- Life ---
 
     required init?(coder aDecoder: NSCoder) {

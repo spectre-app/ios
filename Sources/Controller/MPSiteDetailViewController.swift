@@ -162,6 +162,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
     }
 
     class LoginResultItem: FieldItem<MPSite> {
+        let userView = MPButton( identifier: "site.login #user" )
+
         init() {
             super.init( title: nil, placeholder: "set a user name",
                         value: { try? $0.result( keyPurpose: .identification ).await().token },
@@ -178,11 +180,6 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
                         } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
-            self.addBehaviour( BlockTapBehaviour {
-                if let user = $0.model?.user, $0.model?.loginType == MPResultType.none {
-                    $0.viewController?.hostController?.show( MPUserDetailsViewController( model: user ) )
-                }
-            } )
         }
 
         override func createItemView() -> FieldItemView<MPSite> {
@@ -191,13 +188,29 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
+            view.valueField.leftView = self.userView
+
+            self.userView.isRound = true
+            self.userView.button.action( for: .primaryActionTriggered ) { [unowned self] in
+                if let user = self.model?.user, self.model?.loginType == MPResultType.none {
+                    self.viewController?.hostController?.show( MPUserDetailsViewController( model: user ) )
+                }
+            }
+
             return view
+        }
+
+        override func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+            super.textFieldShouldBeginEditing( textField ) && (self.model?.loginType.in( class: .stateful ) ?? false)
         }
 
         override func update() {
             super.update()
 
-            (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
+            self.userView.title = self.model?.user.fullName.name( style: .abbreviated )
+            self.userView.sizeToFit()
+
+            (self.view as? FieldItemView<MPSite>)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
         }
     }
 

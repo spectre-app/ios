@@ -120,6 +120,17 @@ extension String {
         self.isEmpty ? nil: self
     }
 
+    public func name(style: PersonNameComponentsFormatter.Style) -> String {
+        let formatter = PersonNameComponentsFormatter()
+        formatter.style = style
+
+        if let components = formatter.personNameComponents( from: self ) {
+            return formatter.string( from: components )
+        }
+
+        return self
+    }
+
     public var lastPathComponent: String {
         (self as NSString).lastPathComponent
     }

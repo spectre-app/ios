@@ -616,6 +616,9 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     }
 
     // MARK: UITextFieldDelegate
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        self.update != nil
+    }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.endEditing( false )
@@ -639,6 +642,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.delegate = self.item
             self.valueField => \.textColor => Theme.current.color.body
             self.valueField.textAlignment = .center
+            self.valueField.setContentHuggingPriority( .defaultLow + 100, for: .horizontal )
             self.valueField.action( for: .editingChanged ) { [unowned self] in
                 if let model = self.item.model,
                    let text = self.valueField.text {
@@ -651,7 +655,6 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         override func update() {
             super.update()
 
-            self.valueField.isEnabled = self.item.update != nil
             self.valueField.placeholder = self.item.placeholder
             self.valueField.text = self.item.value
         }

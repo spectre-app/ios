@@ -48,6 +48,13 @@ class MPEffectView: UIView {
             }
         }
     }
+    override var frame:              CGRect {
+        didSet {
+            if self.isRound && self.frame != oldValue {
+                self.update()
+            }
+        }
+    }
     override var bounds:              CGRect {
         didSet {
             if self.isRound && self.bounds != oldValue {
@@ -158,7 +165,7 @@ class MPEffectView: UIView {
 
     private func update() {
         DispatchQueue.main.perform {
-            self.layer.cornerRadius = self.isRound ? self.bounds.size.height / 2: self.rounding
+            self.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
 
             if self.isBackground {
                 self.layer.borderWidth = self.borderWidth

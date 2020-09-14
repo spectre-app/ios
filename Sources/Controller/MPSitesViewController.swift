@@ -15,9 +15,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     override var user: MPUser {
         didSet {
             DispatchQueue.main.perform {
-                var userButtonTitle = ""
-                self.user.fullName.split( separator: " " ).forEach { word in userButtonTitle.append( word[word.startIndex] ) }
-                self.userButton.title = userButtonTitle.uppercased()
+                self.userButton.title = self.user.fullName.name( style: .abbreviated )
                 self.userButton.sizeToFit()
 
                 self.sitesTableView.user = self.user
@@ -71,12 +69,11 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
             self.sitesTableView.query = self.searchField.text
         }
 
+        self.userButton.isRound = true
         self.userButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.detailsHost.show( MPUserDetailsViewController( model: self.user ) )
             self.setNeedsStatusBarAppearanceUpdate()
         }
-        //self.userButton.setImage( self.user.avatar.image(), for: .normal )
-        self.userButton.sizeToFit()
 
         self.sitesTableView.observers.register( observer: self )
         self.sitesTableView.keyboardDismissMode = .onDrag
