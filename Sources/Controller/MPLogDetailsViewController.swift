@@ -14,8 +14,8 @@ class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewContro
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init() {
-        super.init( model: Model() )
+    init(focus: Item<Model>.Type? = nil) {
+        super.init( model: Model(), focus: focus )
 
         self.model.observers.register( observer: self )
     }

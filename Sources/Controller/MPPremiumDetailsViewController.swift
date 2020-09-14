@@ -14,8 +14,8 @@ class MPPremiumDetailsViewController: MPDetailsViewController<Void> {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init() {
-        super.init( model: () )
+    init(focus: Item<Void>.Type? = nil) {
+        super.init( model: (), focus: focus )
 
         InAppStore.shared.restorePurchases()
     }

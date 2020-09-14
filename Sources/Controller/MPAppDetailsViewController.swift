@@ -16,8 +16,8 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init() {
-        super.init( model: appConfig )
+    init(focus: Item<MPConfig>.Type? = nil) {
+        super.init( model: appConfig, focus: focus )
 
         self.model.observers.register( observer: self )
     }

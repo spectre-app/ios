@@ -23,8 +23,8 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override init(model: MPUser) {
-        super.init( model: model )
+    override init(model: MPUser, focus: Item<MPUser>.Type? = nil) {
+        super.init( model: model, focus: focus )
 
         self.model.observers.register( observer: self ).userDidChange( self.model )
         appConfig.observers.register( observer: self )

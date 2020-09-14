@@ -23,8 +23,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override init(model: MPSite) {
-        super.init( model: model )
+    override init(model: MPSite, focus: Item<MPSite>.Type? = nil) {
+        super.init( model: model, focus: focus )
 
         self.model.observers.register( observer: self ).siteDidChange( self.model )
         appConfig.observers.register( observer: self )
@@ -188,12 +188,13 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
-            view.valueField.leftView = self.userView
+            view.valueField.leftView = MPMarginView( for: self.userView, margins: UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
 
             self.userView.isRound = true
             self.userView.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let user = self.model?.user, self.model?.loginType == MPResultType.none {
-                    self.viewController?.hostController?.show( MPUserDetailsViewController( model: user ) )
+                    self.viewController?.hostController?.show(
+                            MPUserDetailsViewController( model: user, focus: MPUserDetailsViewController.LoginTypeItem.self ) )
                 }
             }
 

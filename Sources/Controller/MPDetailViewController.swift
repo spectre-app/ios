@@ -69,6 +69,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         }
     }
 
+    private let focus: Item<M>.Type?
     private let backgroundView = MPBackgroundView()
     private let itemsView      = UIStackView()
     private lazy var items = self.loadItems()
@@ -85,8 +86,9 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(model: M) {
+    init(model: M, focus: Item<M>.Type? = nil) {
         self.model = model
+        self.focus = focus
         super.init()
 
         self.items.forEach { $0.model = self.model }
@@ -125,6 +127,16 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
                 .activate()
 
         self.items.forEach { $0.view.didLoad() }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        if let focus = self.focus, let scrollView = self.hostController?.scrollView,
+           let focusItem = self.items.first( where: { $0.isKind( of: focus ) } ),
+           let focusRect = self.hostController?.scrollView.convert( focusItem.view.bounds, from: focusItem.view ) {
+            scrollView.contentOffset.y = focusRect.center.y - scrollView.bounds.size.height / 2
+        }
     }
 
     // MARK: --- Updatable ---
