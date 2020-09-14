@@ -143,14 +143,15 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             self.detailsController = detailsController
 
             if let detailsController = self.detailsController {
-                detailsController.hostController = self
-                self.addChild( detailsController )
-                detailsController.view.frame = self.contentView.bounds
-                detailsController.view.frame.size = detailsController.view.frame.size.union(
-                        detailsController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
-                detailsController.beginAppearanceTransition( true, animated: true )
-                self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
-                LayoutConfiguration( view: detailsController.view ).constrain().activate()
+                UIView.performWithoutAnimation {
+                    detailsController.hostController = self
+                    self.addChild( detailsController )
+                    detailsController.view.frame.size = self.contentView.bounds.size.union(
+                            detailsController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
+                    detailsController.beginAppearanceTransition( true, animated: true )
+                    self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
+                    LayoutConfiguration( view: detailsController.view ).constrain().activate()
+                }
                 UIView.animate( withDuration: .short, animations: {
                     detailsController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()
@@ -169,13 +170,14 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
                 UIView.animate( withDuration: .short, animations: {
-                    self.scrollView.contentOffset = .zero
+                    self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
                     self.popupConfiguration.deactivate()
                 }, completion: { finished in
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
                     detailsController.hostController = nil
+                    self.contentView.layoutIfNeeded()
                     self.detailsController = nil
                     completion?()
                 } )
@@ -184,7 +186,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         }
         else {
             DispatchQueue.main.perform {
-                self.scrollView.contentOffset = .zero
+                self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
                 completion?()
             }
             return false
