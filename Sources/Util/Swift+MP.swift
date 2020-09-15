@@ -3,6 +3,8 @@
 // Copyright (c) 2020 Lyndir. All rights reserved.
 //
 
+import Swift
+
 extension Array {
     static func joined<E: Equatable>(separator: E? = nil, _ elements: [E]?...) -> Array<E> {
         if let separator = separator {
@@ -135,16 +137,13 @@ extension String {
         (self as NSString).lastPathComponent
     }
 
-    func sha256() -> [UInt8] {
-        self.data( using: .utf8 )?.sha256() ?? []
-    }
-
     func color() -> UIColor? {
-        let sha        = self.sha256()
-        let hue        = CGFloat( ratio( of: sha[0], from: 0, to: 1 ) )
-        let saturation = CGFloat( ratio( of: sha[1], from: 0.3, to: 1 ) )
-        let brightness = CGFloat( ratio( of: sha[2], from: 0.5, to: 0.7 ) )
+        guard let digest = self.digest()
+        else { return nil }
 
+        let hue        = CGFloat( ratio( of: digest[0], from: 0, to: 1 ) )
+        let saturation = CGFloat( ratio( of: digest[1], from: 0.3, to: 1 ) )
+        let brightness = CGFloat( ratio( of: digest[2], from: 0.5, to: 0.7 ) )
         return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: 1 )
     }
 
@@ -164,14 +163,20 @@ extension String {
                        length: secretLength, consume: true )
     }
 
+    func digest() -> UnsafeBufferPointer<UInt8>? {
+        guard let appSalt = appSalt.b64Decrypt()
+        else { return nil }
+
+        let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self, self.lengthOfBytes( using: .utf8 ) )
+        return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
+    }
+
     func hexDigest() -> String? {
-        guard let appSalt = appSalt.b64Decrypt(),
-              let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ),
-                                                 self, self.lengthOfBytes( using: .utf8 ) )
+        guard let digest = self.digest()
         else { return nil }
         defer { digest.deallocate() }
 
-        return .valid( mpw_hex( digest, 32 ) )
+        return .valid( mpw_hex( digest.baseAddress, digest.count ) )
     }
 }
 

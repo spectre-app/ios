@@ -65,7 +65,7 @@ class MPAlert {
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
-            if let root = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow {
+            if let root = view as? UIWindow ?? view?.window { //?? UIApplication.shared.keyWindow {
                 root.addSubview( self.view )
 
                 UIView.performWithoutAnimation {

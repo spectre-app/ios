@@ -16,6 +16,10 @@ target 'Spectre-iOS' do
   pod 'Countly'
 
   pod 'Reveal-SDK', :configurations => ['Debug']
+
+  target 'Spectre-AutoFill-iOS' do
+    inherit! :search_paths
+  end
 end
 
 target 'Spectre-macOS' do

@@ -15,22 +15,10 @@ class MPMarshal: Observable, Updatable {
         }
     }
 
-    private let marshalQueue = DispatchQueue( label: "marshal" )
-    private let defaults     = UserDefaults( suiteName: "\(Bundle.main.bundleIdentifier ?? productName).marshal" )
-    private let documentDirectory: URL?
+    private let marshalQueue      = DispatchQueue( label: "marshal" )
+    private let documentDirectory = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: "group.app.spectre" )
     private lazy var updateTask = DispatchTask( queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ),
                                                 qos: .userInitiated, update: self )
-
-    init() {
-        do {
-            self.documentDirectory = try FileManager.default.url(
-                    for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
-        }
-        catch {
-            mperror( title: "Couldn't access user documents", error: error )
-            self.documentDirectory = nil
-        }
-    }
 
     // MARK: --- Interface ---
 

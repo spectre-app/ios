@@ -6,14 +6,6 @@
 import Foundation
 
 extension Data {
-    func sha256() -> [UInt8] {
-        self.withUnsafeBytes {
-            var hash = [ UInt8 ]( repeating: 0, count: Int( CC_SHA256_DIGEST_LENGTH ) )
-            _ = CC_SHA256( $0.baseAddress, CC_LONG( self.count ), &hash )
-            return hash
-        }
-    }
-
     func hex() -> String {
         let hex = NSMutableString( capacity: self.count * 2 )
         self.forEach { hex.appendFormat( "%02.2hhX", $0 ) }

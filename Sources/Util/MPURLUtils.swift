@@ -7,9 +7,15 @@ import Foundation
 import SwiftLinkPreview
 
 class MPURLUtils {
-    public static let  session  = URLSession( configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: queue )
+    public static let session = URLSession( configuration: configuration, delegate: nil, delegateQueue: queue )
+
+    private static var configuration: URLSessionConfiguration = {
+        let configuration = URLSessionConfiguration()
+        configuration.sharedContainerIdentifier = "group.app.spectre"
+        return configuration
+    }()
     private static let queue    = OperationQueue( queue: DispatchQueue.net )
-    private static let preview  = SwiftLinkPreview()
+    private static let preview  = SwiftLinkPreview( session: session, cache: InMemoryCache() )
     private static let caches   = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
     private static var metadata = loadMetadata() {
         didSet {
@@ -62,7 +68,7 @@ class MPURLUtils {
 
     static func preview(url: String, result: @escaping (Meta) -> Void) {
         if let info = self.metadata[url] {
-            trc("[preview cached] %@: %d", url, info.imageData?.count ?? 0)
+            trc( "[preview cached] %@: %d", url, info.imageData?.count ?? 0 )
             result( info )
         }
 
@@ -83,11 +89,11 @@ class MPURLUtils {
                     self.metadata[url] = info
                 }
 
-                trc("[preview fetched] %@: %d", url, responseData?.count ?? 0)
+                trc( "[preview fetched] %@: %d", url, responseData?.count ?? 0 )
                 result( info )
             }.resume()
         }, onError: { error in
-            trc("[preview error] %@: %@", url, error)
+            trc( "[preview error] %@: %@", url, error )
 
             switch error {
                 case .noURLHasBeenFound: ()
@@ -106,11 +112,11 @@ class MPURLUtils {
            string.lowercased().hasSuffix( "png" ) || string.lowercased().hasSuffix( "gif" ) ||
                    string.lowercased().hasSuffix( "jpg" ) || string.lowercased().hasSuffix( "jpeg" ),
            let url = URL( string: string ) {
-            trc("[preview url valid] %@", string)
+            trc( "[preview url valid] %@", string )
             return url
         }
 
-        trc("[preview url invalid] %@", string)
+        trc( "[preview url invalid] %@", string )
         return nil
     }
 }

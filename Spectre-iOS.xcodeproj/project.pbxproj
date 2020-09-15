@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6A2187B575B0BF2FD282AE1F /* Pods_Spectre_AutoFill_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64EE2A62D96C986FFA55567B /* Pods_Spectre_AutoFill_iOS.framework */; };
 		93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
 		93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
 		93D390D2B19CB69F721DD7A6 /* MPTintField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* MPTintField.swift */; };
@@ -83,6 +84,21 @@
 		93D39F69D0EDD80B5DCAF0BB /* MPConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C3FA9FA2CA5B234741E /* MPConfig.swift */; };
 		93D39FD2F39B2AFE27A88A97 /* MPSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */; };
 		DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
+		DA0E552E250D6F7F002B3AB1 /* AutoFillViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA0E552D250D6F7F002B3AB1 /* AutoFillViewController.swift */; };
+		DA0E5565251022EB002B3AB1 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = DA5B0B3E1F36469400B663F0 /* base64.c */; };
+		DA0E5566251022EB002B3AB1 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
+		DA0E5567251022EB002B3AB1 /* mpw-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* mpw-types.c */; };
+		DA0E5568251022EB002B3AB1 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
+		DA0E5569251022EB002B3AB1 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
+		DA0E556A251022EB002B3AB1 /* mpw-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* mpw-marshal.c */; };
+		DA0E556B251022EB002B3AB1 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
+		DA0E556C251022EB002B3AB1 /* mpw-algorithm_v3.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */; };
+		DA0E556D251022EB002B3AB1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
+		DA0E556E251022EB002B3AB1 /* mpw-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* mpw-algorithm.c */; };
+		DA0E556F251022EB002B3AB1 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
+		DA0E557025102B3A002B3AB1 /* Spectre AutoFill.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
+		DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
 		DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
 		DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
@@ -166,13 +182,33 @@
 		DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
 		DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */ = {isa = PBXBuildFile; fileRef = DACA29721705E1A8002C6C22 /* dictionary.lst */; };
-		DAD8047323C52D69000A4E86 /* MPSecrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */; };
 		DAF560502393411A000475BA /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DAF5605123934134000475BA /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
 		E49B6B56B414AE4F61D1E462 /* Pods_Spectre_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48556ABA5CB8BBC0B77C4B9E /* Pods_Spectre_iOS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		DA0E557525105196002B3AB1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DA0E5529250D6F7F002B3AB1;
+			remoteInfo = "Spectre-AutoFill-iOS";
+		};
+		DA0E5579251052D1002B3AB1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DAB7AE3D1F3D464A00C856B1;
+			remoteInfo = "libjson-c-ios";
+		};
+		DA0E557B251052D4002B3AB1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DAB7AE471F3D468300C856B1;
+			remoteInfo = "libsodium-ios";
+		};
 		DAB7AE4D1F3D618700C856B1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
@@ -189,10 +225,26 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		DA0E5537250D6F7F002B3AB1 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DA0E557025102B3A002B3AB1 /* Spectre AutoFill.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0383AF7AFF0DEABCD63CE61D /* Pods-Spectre-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.debug.xcconfig"; sourceTree = "<group>"; };
 		05046789E127F4CC1923F044 /* Pods-Spectre-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.release.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.release.xcconfig"; sourceTree = "<group>"; };
 		48556ABA5CB8BBC0B77C4B9E /* Pods_Spectre_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B952874C3F3467E842EAF3C /* Pods-AutoFill.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AutoFill.release.xcconfig"; path = "Target Support Files/Pods-AutoFill/Pods-AutoFill.release.xcconfig"; sourceTree = "<group>"; };
+		64EE2A62D96C986FFA55567B /* Pods_Spectre_AutoFill_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_AutoFill_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
 		93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesTableView.swift; sourceTree = "<group>"; };
 		93D3909744CE918AB4432318 /* ConstraintResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintResolver.swift; sourceTree = "<group>"; };
@@ -278,8 +330,15 @@
 		93D39F718C1C38C46D9D5078 /* MPSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSite.swift; sourceTree = "<group>"; };
 		93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitePreviewController.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAvatarCell.swift; sourceTree = "<group>"; };
+		98E778772A2933679268D176 /* Pods-AutoFill.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AutoFill.debug.xcconfig"; path = "Target Support Files/Pods-AutoFill/Pods-AutoFill.debug.xcconfig"; sourceTree = "<group>"; };
 		A240D0A75802CF4504653D27 /* Pods-Spectre-iOS.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.public.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.public.xcconfig"; sourceTree = "<group>"; };
+		A6A771BD0693EE94E38BC35D /* Pods-Spectre-AutoFill-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill-iOS.release.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill-iOS/Pods-Spectre-AutoFill-iOS.release.xcconfig"; sourceTree = "<group>"; };
+		CE4381A4067BD2EBB94C7641 /* Pods-AutoFill.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AutoFill.public.xcconfig"; path = "Target Support Files/Pods-AutoFill/Pods-AutoFill.public.xcconfig"; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA0E552D250D6F7F002B3AB1 /* AutoFillViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillViewController.swift; sourceTree = "<group>"; };
+		DA0E5532250D6F7F002B3AB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AutoFill.entitlements; sourceTree = "<group>"; };
 		DA2C3D621BD96126001137B3 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		DA2C3D641BD9612F001137B3 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		DA351486233EF8FE00BCF504 /* mpw-algorithm_v2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v2.h"; sourceTree = "<group>"; };
@@ -466,8 +525,9 @@
 		DAC510C7247C7286006CC5D6 /* json_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object.h; sourceTree = "<group>"; };
 		DAC632871486D95D0075AEA5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		DACA29721705E1A8002C6C22 /* dictionary.lst */ = {isa = PBXFileReference; fileEncoding = 1; lastKnownFileType = text; path = dictionary.lst; sourceTree = "<group>"; };
-		DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MPSecrets.xcconfig; sourceTree = "<group>"; };
 		DAEBC45214F6364500987BF6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		DE71CE8414A6389CB4817F2A /* Pods-Spectre-AutoFill-iOS.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill-iOS.public.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill-iOS/Pods-Spectre-AutoFill-iOS.public.xcconfig"; sourceTree = "<group>"; };
+		DFC18412D02BCFBE6ADBC94D /* Pods-Spectre-AutoFill-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill-iOS.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill-iOS/Pods-Spectre-AutoFill-iOS.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -475,7 +535,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
+				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
+				6A2187B575B0BF2FD282AE1F /* Pods_Spectre_AutoFill_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,12 +546,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
-				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
-				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
-				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
+				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
+				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
+				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
 				E49B6B56B414AE4F61D1E462 /* Pods_Spectre_iOS.framework in Frameworks */,
+				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -498,11 +561,11 @@
 		93D392613DA65A3C5867A2B1 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				93D39F718C1C38C46D9D5078 /* MPSite.swift */,
-				93D39169E1BADEFA0517D4D2 /* MPUser.swift */,
 				93D399D8E0D5A547143642A7 /* MPMarshal.swift */,
 				93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */,
 				93D39267543CBFB6B0D7F54C /* MPResult.swift */,
+				93D39F718C1C38C46D9D5078 /* MPSite.swift */,
+				93D39169E1BADEFA0517D4D2 /* MPUser.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -510,28 +573,28 @@
 		93D39472440F87F0B0FAD295 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				93D3990C92C01413465156FF /* MPAlert.swift */,
+				93D39477D638F3147366C029 /* MPAnimations.swift */,
+				93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */,
+				93D3911FED606FAE34608C50 /* MPBackgroundView.swift */,
+				93D39564D6408073D59CDB6A /* MPButton.swift */,
+				93D398A0CC7A860ADA1315EF /* MPDateView.swift */,
+				93D39203C899BA783F02D3B5 /* MPEffectView.swift */,
+				93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */,
+				93D396EF81F724F74A21AFA9 /* MPImageView.swift */,
+				93D39865ECFD34CF3ADF930D /* MPItemCell.swift */,
+				93D39949A9E5C95F193F4315 /* MPItemView.swift */,
+				93D39613B68BCF56DD931C91 /* MPMarginView.swift */,
+				93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */,
+				93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */,
+				93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */,
 				93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */,
 				93D39424D508440582DC7FD0 /* MPSpinnerView.swift */,
-				93D39564D6408073D59CDB6A /* MPButton.swift */,
-				93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */,
-				93D3990C92C01413465156FF /* MPAlert.swift */,
-				93D396EF81F724F74A21AFA9 /* MPImageView.swift */,
-				93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */,
 				93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */,
-				93D398A0CC7A860ADA1315EF /* MPDateView.swift */,
-				93D39477D638F3147366C029 /* MPAnimations.swift */,
-				93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */,
-				93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */,
-				93D39865ECFD34CF3ADF930D /* MPItemCell.swift */,
-				93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */,
+				93D3985EDA6E3B7A05799E2C /* MPTintField.swift */,
 				93D39B3112D0D128E6369596 /* MPTintLabel.swift */,
 				93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */,
-				93D3985EDA6E3B7A05799E2C /* MPTintField.swift */,
-				93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */,
-				93D3911FED606FAE34608C50 /* MPBackgroundView.swift */,
-				93D39613B68BCF56DD931C91 /* MPMarginView.swift */,
-				93D39203C899BA783F02D3B5 /* MPEffectView.swift */,
-				93D39949A9E5C95F193F4315 /* MPItemView.swift */,
+				93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -539,40 +602,40 @@
 		93D39760DAE73795CA63D02A /* Util */ = {
 			isa = PBXGroup;
 			children = (
-				93D39E1D19BCA02E43657384 /* MPUtils.swift */,
-				93D39D251169E42F0AAC451F /* MPURLUtils.swift */,
-				93D3915A208E1B01BDD05A3E /* MPQuery.swift */,
-				93D3940575E4CC62A8F6CE04 /* Dispatch.swift */,
-				93D398E83036023785BE6806 /* Theme.swift */,
-				93D3900653D9D95598C41DFA /* Observers.swift */,
 				93D3909744CE918AB4432318 /* ConstraintResolver.swift */,
-				93D39BAACC08C85F91D1C5C2 /* Graph.swift */,
 				93D397326B833076646FF697 /* DataSource.swift */,
-				93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */,
-				93D395FD92D751588A645D15 /* MPKeyFactory.swift */,
-				93D39CB804B95B268383FCB2 /* Persisting.swift */,
-				93D3975A310BEA6C16903C25 /* TransientState.swift */,
-				93D393E2C339F220532F1D53 /* WeakBox.swift */,
+				93D39A6EC596E8AE5D8F8714 /* Debug.swift */,
+				93D396FE084F709867C7C6CC /* Describe.swift */,
+				93D3940575E4CC62A8F6CE04 /* Dispatch.swift */,
+				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
+				93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */,
+				93D39BAACC08C85F91D1C5C2 /* Graph.swift */,
+				93D397930CDEF625FC438ECE /* InAppStore.swift */,
+				93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */,
+				93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */,
 				93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */,
 				93D39C3FA9FA2CA5B234741E /* MPConfig.swift */,
 				93D3909E003FF5E936687AA6 /* MPFeedback.swift */,
+				93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */,
+				93D395FD92D751588A645D15 /* MPKeyFactory.swift */,
 				93D39941059143124D09AE05 /* MPLogSink.swift */,
-				93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */,
-				93D396FE084F709867C7C6CC /* Describe.swift */,
-				93D398D4B9F2323DC419DC82 /* Plumbing.swift */,
-				93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */,
-				93D3917402B9BC4575713560 /* MPTracker.swift */,
+				93D3915A208E1B01BDD05A3E /* MPQuery.swift */,
 				93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */,
-				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
-				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
-				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
-				93D397930CDEF625FC438ECE /* InAppStore.swift */,
+				93D3917402B9BC4575713560 /* MPTracker.swift */,
+				93D39D251169E42F0AAC451F /* MPURLUtils.swift */,
+				93D39E1D19BCA02E43657384 /* MPUtils.swift */,
+				93D3900653D9D95598C41DFA /* Observers.swift */,
 				93D39651387222CBD2F9CCE0 /* Period.swift */,
-				93D393F8D17BB4283C64AC37 /* Types.swift */,
-				93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */,
-				93D39647B07609C89AA66767 /* UIKit+MP.swift */,
+				93D39CB804B95B268383FCB2 /* Persisting.swift */,
+				93D398D4B9F2323DC419DC82 /* Plumbing.swift */,
 				93D39754A28ADCAE0E58937F /* Swift+MP.swift */,
-				93D39A6EC596E8AE5D8F8714 /* Debug.swift */,
+				93D398E83036023785BE6806 /* Theme.swift */,
+				93D3975A310BEA6C16903C25 /* TransientState.swift */,
+				93D393F8D17BB4283C64AC37 /* Types.swift */,
+				93D39647B07609C89AA66767 /* UIKit+MP.swift */,
+				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
+				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
+				93D393E2C339F220532F1D53 /* WeakBox.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -610,19 +673,19 @@
 		93D39E0C533C1943D2425F07 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */,
-				93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */,
-				93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */,
-				93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */,
-				93D394B019A4203EF763DBEA /* MPUserDetailViewController.swift */,
+				93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */,
+				93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */,
 				93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */,
 				93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */,
-				93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */,
-				93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */,
-				93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */,
 				93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */,
-				93D393A49E8705F3E38EB779 /* MPViewController.swift */,
+				93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */,
 				93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */,
+				93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */,
+				93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */,
+				93D394B019A4203EF763DBEA /* MPUserDetailViewController.swift */,
+				93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */,
+				93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */,
+				93D393A49E8705F3E38EB779 /* MPViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -633,8 +696,24 @@
 				0383AF7AFF0DEABCD63CE61D /* Pods-Spectre-iOS.debug.xcconfig */,
 				05046789E127F4CC1923F044 /* Pods-Spectre-iOS.release.xcconfig */,
 				A240D0A75802CF4504653D27 /* Pods-Spectre-iOS.public.xcconfig */,
+				98E778772A2933679268D176 /* Pods-AutoFill.debug.xcconfig */,
+				5B952874C3F3467E842EAF3C /* Pods-AutoFill.release.xcconfig */,
+				CE4381A4067BD2EBB94C7641 /* Pods-AutoFill.public.xcconfig */,
+				DFC18412D02BCFBE6ADBC94D /* Pods-Spectre-AutoFill-iOS.debug.xcconfig */,
+				A6A771BD0693EE94E38BC35D /* Pods-Spectre-AutoFill-iOS.release.xcconfig */,
+				DE71CE8414A6389CB4817F2A /* Pods-Spectre-AutoFill-iOS.public.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		DA0E552C250D6F7F002B3AB1 /* AutoFill */ = {
+			isa = PBXGroup;
+			children = (
+				DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */,
+				DA0E552D250D6F7F002B3AB1 /* AutoFillViewController.swift */,
+				DA0E5532250D6F7F002B3AB1 /* Info.plist */,
+			);
+			path = AutoFill;
 			sourceTree = "<group>";
 		};
 		DA4A0BDE201443F4004E2CE5 /* iOS */ = {
@@ -644,6 +723,7 @@
 				DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */,
 				DA4A0C1F201531B9004E2CE5 /* Info.plist */,
 				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
+				DA0E552C250D6F7F002B3AB1 /* AutoFill */,
 				93D39E0C533C1943D2425F07 /* Controller */,
 				93D39760DAE73795CA63D02A /* Util */,
 				93D39472440F87F0B0FAD295 /* View */,
@@ -668,6 +748,7 @@
 			isa = PBXGroup;
 			children = (
 				DA5BFA44147E415C00F98B1E /* Spectre.app */,
+				DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -700,6 +781,7 @@
 				93D394077F8FAB8167647187 /* Twitter.framework */,
 				DA5BFA48147E415C00F98B1E /* UIKit.framework */,
 				48556ABA5CB8BBC0B77C4B9E /* Pods_Spectre_iOS.framework */,
+				64EE2A62D96C986FFA55567B /* Pods_Spectre_AutoFill_iOS.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -827,7 +909,6 @@
 				DA4A0BDE201443F4004E2CE5 /* iOS */,
 				93D392613DA65A3C5867A2B1 /* Model */,
 				DA3954B32066D2B5004621DB /* Prefix.pch */,
-				DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -1001,6 +1082,26 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
+		DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill-iOS" */;
+			buildPhases = (
+				C539937E3008C3DC159E6587 /* [CP] Check Pods Manifest.lock */,
+				DA0E5526250D6F7F002B3AB1 /* Sources */,
+				DA0E5527250D6F7F002B3AB1 /* Frameworks */,
+				DA0E5528250D6F7F002B3AB1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DA0E557A251052D1002B3AB1 /* PBXTargetDependency */,
+				DA0E557C251052D4002B3AB1 /* PBXTargetDependency */,
+			);
+			name = "Spectre-AutoFill-iOS";
+			productName = "Spectre-AutoFill";
+			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		DA5BFA43147E415C00F98B1E /* Spectre-iOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre-iOS" */;
@@ -1009,6 +1110,7 @@
 				DA5BFA40147E415C00F98B1E /* Sources */,
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
+				DA0E5537250D6F7F002B3AB1 /* Embed App Extensions */,
 				F3AC5E941C67EFDE08BB5D9D /* [CP] Embed Pods Frameworks */,
 				F547257C29D473EBD10587B5 /* [CP] Copy Pods Resources */,
 				DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */,
@@ -1016,8 +1118,9 @@
 			buildRules = (
 			);
 			dependencies = (
-				DAB7AE4E1F3D618700C856B1 /* PBXTargetDependency */,
 				DAB7AE501F3D618700C856B1 /* PBXTargetDependency */,
+				DAB7AE4E1F3D618700C856B1 /* PBXTargetDependency */,
+				DA0E557625105196002B3AB1 /* PBXTargetDependency */,
 			);
 			name = "Spectre-iOS";
 			productName = MasterPassword;
@@ -1169,13 +1272,21 @@
 			projectRoot = "";
 			targets = (
 				DA5BFA43147E415C00F98B1E /* Spectre-iOS */,
-				DAB7AE471F3D468300C856B1 /* libsodium-ios */,
 				DAB7AE3D1F3D464A00C856B1 /* libjson-c-ios */,
+				DAB7AE471F3D468300C856B1 /* libsodium-ios */,
+				DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill-iOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		DA0E5528250D6F7F002B3AB1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DA5BFA42147E415C00F98B1E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1237,7 +1348,6 @@
 				DA762F7224E04F2E00E61D3F /* avatar-16@2x.png in Resources */,
 				DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */,
 				DA762F8024E04F2E00E61D3F /* avatar-6.png in Resources */,
-				DAD8047323C52D69000A4E86 /* MPSecrets.xcconfig in Resources */,
 				DA762F8224E04F2E00E61D3F /* avatar-18@2x.png in Resources */,
 				DA762F9924E04F2E00E61D3F /* PoppinsLatin-Light.otf in Resources */,
 				DA762F7B24E04F2E00E61D3F /* avatar-10.png in Resources */,
@@ -1269,6 +1379,28 @@
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-Spectre-iOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C539937E3008C3DC159E6587 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Spectre-AutoFill-iOS-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1332,6 +1464,25 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		DA0E5526250D6F7F002B3AB1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA0E5566251022EB002B3AB1 /* mpw-algorithm_v1.c in Sources */,
+				DA0E556F251022EB002B3AB1 /* aes.c in Sources */,
+				DA0E556A251022EB002B3AB1 /* mpw-marshal.c in Sources */,
+				DA0E556C251022EB002B3AB1 /* mpw-algorithm_v3.c in Sources */,
+				DA0E556B251022EB002B3AB1 /* mpw-algorithm_v0.c in Sources */,
+				DA0E556E251022EB002B3AB1 /* mpw-algorithm.c in Sources */,
+				DA0E5569251022EB002B3AB1 /* mpw-algorithm_v2.c in Sources */,
+				DA0E5565251022EB002B3AB1 /* base64.c in Sources */,
+				DA0E552E250D6F7F002B3AB1 /* AutoFillViewController.swift in Sources */,
+				DA0E556D251022EB002B3AB1 /* mpw-marshal-util.c in Sources */,
+				DA0E5568251022EB002B3AB1 /* mpw-util.c in Sources */,
+				DA0E5567251022EB002B3AB1 /* mpw-types.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DA5BFA40147E415C00F98B1E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1427,6 +1578,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		DA0E557625105196002B3AB1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill-iOS */;
+			targetProxy = DA0E557525105196002B3AB1 /* PBXContainerItemProxy */;
+		};
+		DA0E557A251052D1002B3AB1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DAB7AE3D1F3D464A00C856B1 /* libjson-c-ios */;
+			targetProxy = DA0E5579251052D1002B3AB1 /* PBXContainerItemProxy */;
+		};
+		DA0E557C251052D4002B3AB1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DAB7AE471F3D468300C856B1 /* libsodium-ios */;
+			targetProxy = DA0E557B251052D4002B3AB1 /* PBXContainerItemProxy */;
+		};
 		DAB7AE4E1F3D618700C856B1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DAB7AE471F3D468300C856B1 /* libsodium-ios */;
@@ -1442,7 +1608,6 @@
 /* Begin XCBuildConfiguration section */
 		DA0974491E95703B00F0BFE8 /* Public */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_OPTIMIZATION = time;
@@ -1514,7 +1679,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_SEMICOLON_BEFORE_METHOD_BODY = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = NO;
+				CLANG_WARN_STRICT_PROTOTYPES = YES_ERROR;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -1524,6 +1689,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 3.0.0;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_INCREMENTAL_DISTILL = NO;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1535,11 +1701,16 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
 					"NDEBUG=1",
 					"NS_BLOCK_ASSERTIONS=1",
 					"PUBLIC=1",
+					"MPW_JSON=1",
+					"MPW_SODIUM=1",
+					"MPW_CPERCIVA=0",
+					"MPW_COLOR=0",
+					"$(inherited)",
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
@@ -1574,7 +1745,9 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LLVM_LTO = YES;
+				MARKETING_VERSION = 3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -1583,6 +1756,7 @@
 				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_SWIFT_SYMBOLS = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1596,26 +1770,19 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A240D0A75802CF4504653D27 /* Pods-Spectre-iOS.public.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_PREFIX_HEADER = Source/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"MPW_JSON=1",
-					"MPW_SODIUM=1",
-					"MPW_CPERCIVA=0",
-					"MPW_COLOR=0",
+					"APP_CONTAINER=1",
 				);
-				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"$(inherited)",
 				);
 				INFOPLIST_FILE = Source/iOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1623,21 +1790,117 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
+			};
+			name = Public;
+		};
+		DA0E5538250D6F7F002B3AB1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DFC18412D02BCFBE6ADBC94D /* Pods-Spectre-AutoFill-iOS.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/AutoFill/AutoFill.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"APP_EXTENSION=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = Source/iOS/AutoFill/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
+				PRODUCT_NAME = "Spectre AutoFill";
+			};
+			name = Debug;
+		};
+		DA0E5539250D6F7F002B3AB1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A6A771BD0693EE94E38BC35D /* Pods-Spectre-AutoFill-iOS.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/AutoFill/AutoFill.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"APP_EXTENSION=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = Source/iOS/AutoFill/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
+				PRODUCT_NAME = "Spectre AutoFill";
+			};
+			name = Release;
+		};
+		DA0E553A250D6F7F002B3AB1 /* Public */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE71CE8414A6389CB4817F2A /* Pods-Spectre-AutoFill-iOS.public.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_ENTITLEMENTS = Source/iOS/AutoFill/AutoFill.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"APP_EXTENSION=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = Source/iOS/AutoFill/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
+				PRODUCT_NAME = "Spectre AutoFill";
 			};
 			name = Public;
 		};
 		DA5BFA6B147E415C00F98B1E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_OPTIMIZATION = time;
@@ -1709,7 +1972,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_SEMICOLON_BEFORE_METHOD_BODY = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = NO;
+				CLANG_WARN_STRICT_PROTOTYPES = YES_ERROR;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -1719,6 +1982,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 3.0.0;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_INCREMENTAL_DISTILL = YES;
 				ENABLE_NS_ASSERTIONS = YES;
@@ -1730,8 +1995,13 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
+					"MPW_JSON=1",
+					"MPW_SODIUM=1",
+					"MPW_CPERCIVA=0",
+					"MPW_COLOR=0",
 					"$(inherited)",
 				);
 				GCC_STRICT_ALIASING = YES;
@@ -1768,7 +2038,9 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LINKER_DISPLAYS_MANGLED_NAMES = YES;
 				LLVM_LTO = NO;
-				MTL_ENABLE_DEBUG_INFO = YES;
+				MARKETING_VERSION = 3.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
@@ -1779,6 +2051,7 @@
 				STRIP_SWIFT_SYMBOLS = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1790,7 +2063,6 @@
 		};
 		DA5BFA6C147E415C00F98B1E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DAD8047223C52D69000A4E86 /* MPSecrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_OPTIMIZATION = time;
@@ -1862,7 +2134,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_SEMICOLON_BEFORE_METHOD_BODY = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = NO;
+				CLANG_WARN_STRICT_PROTOTYPES = YES_ERROR;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -1872,6 +2144,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 3.0.0;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_INCREMENTAL_DISTILL = NO;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1883,10 +2156,15 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
 					"NDEBUG=1",
 					"NS_BLOCK_ASSERTIONS=1",
+					"MPW_JSON=1",
+					"MPW_SODIUM=1",
+					"MPW_CPERCIVA=0",
+					"MPW_COLOR=0",
+					"$(inherited)",
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
@@ -1921,7 +2199,9 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LLVM_LTO = YES;
+				MARKETING_VERSION = 3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -1930,6 +2210,7 @@
 				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_SWIFT_SYMBOLS = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1943,26 +2224,19 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0383AF7AFF0DEABCD63CE61D /* Pods-Spectre-iOS.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_PREFIX_HEADER = Source/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"MPW_JSON=1",
-					"MPW_SODIUM=1",
-					"MPW_CPERCIVA=0",
-					"MPW_COLOR=0",
+					"APP_CONTAINER=1",
 				);
-				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"$(inherited)",
 				);
 				INFOPLIST_FILE = Source/iOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1970,15 +2244,13 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -1986,26 +2258,19 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 05046789E127F4CC1923F044 /* Pods-Spectre-iOS.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = NO;
 				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CURRENT_PROJECT_VERSION = 3.0.0;
 				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_PREFIX_HEADER = Source/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"MPW_JSON=1",
-					"MPW_SODIUM=1",
-					"MPW_CPERCIVA=0",
-					"MPW_COLOR=0",
+					"APP_CONTAINER=1",
 				);
-				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"$(inherited)",
 				);
 				INFOPLIST_FILE = Source/iOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -2013,15 +2278,13 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
 					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -2144,6 +2407,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA0E5538250D6F7F002B3AB1 /* Debug */,
+				DA0E5539250D6F7F002B3AB1 /* Release */,
+				DA0E553A250D6F7F002B3AB1 /* Public */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
