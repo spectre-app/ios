@@ -120,6 +120,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         super.viewWillDisappear( animated )
     }
 
+    #if APP_CONTAINER
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         if motion == .motionShake {
             self.show( MPLogDetailsViewController() )
@@ -128,6 +129,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             super.motionEnded( motion, with: event )
         }
     }
+    #endif
 
     // MARK: --- Private ---
 

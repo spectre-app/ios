@@ -184,7 +184,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
                 promise.finish( .failure( error ) )
             }
             else if !result {
-                promise.finish( .failure( MPError.internal( details: "Biometrics authentication denied." ) ) )
+                promise.finish( .failure( MPError.internal( cause: "Biometrics authentication denied.", details: self.fullName) ) )
             }
             else {
                 promise.finish( .success( () ) )

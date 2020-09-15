@@ -65,24 +65,32 @@ class MPAlert {
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
-            if let root = view as? UIWindow ?? view?.window { //?? UIApplication.shared.keyWindow {
-                root.addSubview( self.view )
-
-                UIView.performWithoutAnimation {
-                    LayoutConfiguration( view: self.view )
-                            .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
-                            .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
-                            .activate()
-
-                    self.appearanceConfiguration.deactivate()
-                    self.activationConfiguration.deactivate()
-                }
-                UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
-                    if dismissAutomatically {
-                        self.automaticDismissalTask.request()
-                    }
-                } )
+            #if APP_CONTAINER
+            let window = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow
+            #else
+            let window = view as? UIWindow ?? view?.window
+            #endif
+            if let window = window {
+                window.addSubview( self.view )
+            } else {
+                wrn( "No view to present alert: %@", self.title )
+                return
             }
+
+            UIView.performWithoutAnimation {
+                LayoutConfiguration( view: self.view )
+                        .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
+                        .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
+                        .activate()
+
+                self.appearanceConfiguration.deactivate()
+                self.activationConfiguration.deactivate()
+            }
+            UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
+                if dismissAutomatically {
+                    self.automaticDismissalTask.request()
+                }
+            } )
         }
 
         return self
@@ -172,13 +180,14 @@ class MPAlert {
     }
 }
 
-public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil,
+public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil, in view: UIView? = nil,
                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-    let errorDetails = [ details?.description, error?.localizedDescription,
-                         (error as NSError?)?.localizedFailureReason,
-                         (error as NSError?)?.localizedRecoverySuggestion ]
+    let message = message?.description ?? error?.localizedDescription
+    let details = [ details?.description, message == error?.localizedDescription ? nil: error?.localizedDescription,
+                    (error as NSError?)?.localizedFailureReason,
+                    (error as NSError?)?.localizedRecoverySuggestion ]
             .compactMap( { $0 } ).joined( separator: "\n\n" )
 
-    MPAlert( title: title, message: message?.description, details: errorDetails, level: .error )
-            .show( file: file, line: line, function: function, dso: dso )
+    MPAlert( title: title, message: message?.description, details: details, level: .error )
+            .show( in: view, file: file, line: line, function: function, dso: dso )
 }

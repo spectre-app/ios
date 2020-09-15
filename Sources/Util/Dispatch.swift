@@ -7,7 +7,7 @@ import Foundation
 
 extension DispatchQueue {
     public static var mpw = DispatchQueue( label: "\(productName): mpw", qos: .utility )
-    public static var net = DispatchQueue( label: "\(productName): Network Queue", qos: .background )
+
     public var isActive: Bool {
         (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                 self.label == String.valid( __dispatch_queue_get_label( nil ) )
@@ -309,7 +309,7 @@ public class DispatchTask<V> {
                 return workPromise
             }
             guard self.requestItem?.isCancelled ?? true
-            else { return Promise( .failure( MPError.internal( details: "Task is cancelled." ) ) ) }
+            else { return Promise( .failure( MPError.internal( cause: "Task is cancelled." ) ) ) }
 
             var value: V?, workError: Error?
             self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
@@ -320,7 +320,7 @@ public class DispatchTask<V> {
             let workPromise = self.workQueue.promise( deadline: self.deadline(), group: self.group,
                                                       qos: self.qos, flags: self.flags ) { () -> V in
                 if self.requestItem?.isCancelled ?? true {
-                    throw MPError.internal( details: "Task was cancelled." )
+                    throw MPError.internal( cause: "Task was cancelled." )
                 }
 
                 self.requestItem?.perform()
@@ -332,7 +332,7 @@ public class DispatchTask<V> {
                     return value
                 }
 
-                throw MPError.internal( details: "Task was skipped." )
+                throw MPError.internal( cause: "Task was skipped." )
             }.then( on: self.requestQueue ) { _ in
                 self.requestItem = nil
                 self.workPromise = nil

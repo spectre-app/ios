@@ -31,10 +31,8 @@ class MPTracker: MPConfigObserver {
             countlyConfig.appKey = countlyKey
             countlyConfig.features = [ CLYFeature.pushNotifications ]
             countlyConfig.requiresConsent = true
-            #if PUBLIC
-            countlyConfig.pushTestMode = nil
-            #else
-            countlyConfig.pushTestMode = appConfig.isDebug ? CLYPushTestMode.development: CLYPushTestMode.testFlightOrAdHoc
+            #if !PUBLIC
+            countlyConfig.pushTestMode = appConfig.isDebug ? .development: .testFlightOrAdHoc
             #endif
             countlyConfig.alwaysUsePOST = true
             countlyConfig.secretSalt = countlySalt
@@ -87,6 +85,7 @@ class MPTracker: MPConfigObserver {
         appConfig.observers.register( observer: self ).didChangeConfig()
     }
 
+    #if APP_CONTAINER
     static func enabledNotifications() -> Bool {
         UIApplication.shared.isRegisteredForRemoteNotifications
     }
@@ -110,6 +109,7 @@ class MPTracker: MPConfigObserver {
         appConfig.notificationsDecided = true
         UIApplication.shared.unregisterForRemoteNotifications()
     }
+    #endif
 
     lazy var deviceIdentifier = self.identifier( for: "device", attributes: [
         kSecAttrDescription: "Unique identifier for the device on this app.",

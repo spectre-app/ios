@@ -22,34 +22,40 @@ extension MPAlgorithmVersion: Strideable, CaseIterable, CustomStringConvertible 
 }
 
 public enum MPError: LocalizedError {
-    case `issue`(_ error: Error? = nil, title: String, details: String? = nil)
-    case `internal`(details: String)
-    case `state`(details: String)
-    case `marshal`(MPMarshalError, title: String)
+    case cancelled
+    case `issue`(_ error: Error? = nil, title: String, details: CustomStringConvertible? = nil)
+    case `internal`(cause: String, details: CustomStringConvertible? = nil)
+    case `state`(title: String, details: CustomStringConvertible? = nil)
+    case `marshal`(MPMarshalError, title: String, details: CustomStringConvertible? = nil)
 
     public var errorDescription: String? {
         switch self {
+            case .cancelled:
+                return "Operation Cancelled"
             case .issue(_, title: let title, _):
                 return title
-            case .internal( _ ):
-                return "An internal error occurred."
-            case .state( _ ):
-                return "Not ready."
-            case .marshal(_, let title):
+            case .internal( _, _ ):
+                return "Internal Inconsistency"
+            case .state(let title, _):
+                return title
+            case .marshal(_, let title, _):
                 return title
         }
     }
     public var failureReason: String? {
         switch self {
+            case .cancelled:
+                return nil
             case .issue(let error, _, let details):
-                return [ details, error?.localizedDescription, (error as NSError?)?.localizedFailureReason ]
+                return [ details?.description, error?.localizedDescription, (error as NSError?)?.localizedFailureReason ]
                         .compactMap( { $0 } ).joined( separator: "\n" )
-            case .internal(let details):
-                return details
-            case .state(let details):
-                return details
-            case .marshal(let error, _):
-                return [ error.localizedDescription, (error as NSError).localizedFailureReason ]
+            case .internal(let cause, let details):
+                return [ cause, details?.description ]
+                        .compactMap( { $0 } ).joined( separator: "\n" )
+            case .state(_, let details):
+                return details?.description
+            case .marshal(let error, _, let details):
+                return [ error.localizedDescription, (error as NSError).localizedFailureReason, details?.description ]
                         .compactMap( { $0 } ).joined( separator: "\n" )
         }
     }
@@ -57,7 +63,7 @@ public enum MPError: LocalizedError {
         switch self {
             case .issue(let error, _, _):
                 return (error as NSError?)?.localizedRecoverySuggestion
-            case .marshal(let error, _):
+            case .marshal(let error, _, _):
                 return (error as NSError).localizedRecoverySuggestion
             default:
                 return nil

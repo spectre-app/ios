@@ -92,10 +92,16 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
+        let viewController = (app.keyWindow?.rootViewController)!
+
         if let components = URLComponents( url: url, resolvingAgainstBaseURL: false ),
            components.scheme == "spectre", components.path == "import" {
             if let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 ) {
-                MPMarshal.shared.import( data: data )
+                MPMarshal.shared.import( data: data, viewController: viewController ).then {
+                    if case .failure(let error) = $0 {
+                        mperror( title: "Couldn't import user", error: error )
+                    }
+                }
             }
         }
         else if let utisValue = UTTypeCreateAllIdentifiersForTag(
@@ -103,9 +109,13 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
                 let utis = utisValue as? Array<String> {
             for format in MPMarshalFormat.allCases {
                 if let uti = format.uti, utis.contains( uti ) {
-                    MPURLUtils.session.dataTask( with: url, completionHandler: { (data, response, error) in
+                    URLSession.required.dataTask( with: url, completionHandler: { (data, response, error) in
                         if let data = data, error == nil {
-                            MPMarshal.shared.import( data: data )
+                            MPMarshal.shared.import( data: data, viewController: viewController ).then {
+                                if case .failure(let error) = $0 {
+                                    mperror( title: "Couldn't import user", error: error )
+                                }
+                            }
                         }
                         else {
                             mperror( title: "Couldn't open document", details: url.lastPathComponent, error: error )

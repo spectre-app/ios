@@ -66,7 +66,7 @@ public class MPKeychain {
 
             let status = SecItemDelete( query as CFDictionary )
             guard status == errSecSuccess || status == errSecItemNotFound
-            else { throw MPError.issue( status, title: "Biometrics Key Not Deleted" ) }
+            else { throw MPError.issue( status, title: "Biometrics Key Not Deleted", details: fullName ) }
         }
     }
 
@@ -83,7 +83,7 @@ public class MPKeychain {
             var result: CFTypeRef?
             let status = SecItemCopyMatching( query as CFDictionary, &result )
             guard status == errSecSuccess, let data = result as? Data
-            else { throw MPError.issue( status, title: "Biometrics Key Denied" ) }
+            else { throw MPError.issue( status, title: "Biometrics Key Denied", details: fullName ) }
 
             let masterKeyBytes = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
             data.withUnsafeBytes { masterKeyBytes.initialize( to: $0.load( as: MPMasterKey.self ) ) }
@@ -100,7 +100,7 @@ public class MPKeychain {
             let query = try self.keyQuery( for: fullName, algorithm: algorithm, context: context )
 
             guard let masterKey = keyFactory.newKey( for: algorithm )
-            else { throw MPError.internal( details: "Cannot save master key since key provider cannot provide one." ) }
+            else { throw MPError.internal( cause: "Cannot save master key since key provider cannot provide one.", details: fullName ) }
             defer { masterKey.deallocate() }
 
             let attributes: [CFString: Any] = [
@@ -115,7 +115,7 @@ public class MPKeychain {
                 status = SecItemAdd( query.merging( attributes, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
             }
             guard status == errSecSuccess
-            else { throw MPError.issue( status, title: "Biometrics Key Not Saved" ) }
+            else { throw MPError.issue( status, title: "Biometrics Key Not Saved", details: fullName ) }
         }
     }
 }

@@ -6,16 +6,39 @@
 import Foundation
 import SwiftLinkPreview
 
-class MPURLUtils {
-    public static let session = URLSession( configuration: configuration, delegate: nil, delegateQueue: queue )
+extension URLSession {
+    public static let required = URLSession( configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue(
+            queue: DispatchQueue( label: "\(productName): Network Required", qos: .userInitiated ) ) )
+    public static let optional = URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(
+            queue: DispatchQueue( label: "\(productName): Network Optional", qos: .background ) ) )
 
-    private static var configuration: URLSessionConfiguration = {
-        let configuration = URLSessionConfiguration()
-        configuration.sharedContainerIdentifier = "group.app.spectre"
+    private static func requiredConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpShouldSetCookies = false
+        configuration.httpCookieAcceptPolicy = .never
+        configuration.sharedContainerIdentifier = productGroup
+        if #available( iOS 13.0, * ) {
+            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        }
         return configuration
-    }()
-    private static let queue    = OperationQueue( queue: DispatchQueue.net )
-    private static let preview  = SwiftLinkPreview( session: session, cache: InMemoryCache() )
+    }
+
+    private static func optionalConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.isDiscretionary = true
+        configuration.httpShouldSetCookies = false
+        configuration.httpCookieAcceptPolicy = .never
+        configuration.sharedContainerIdentifier = productGroup
+        if #available( iOS 13.0, * ) {
+            configuration.allowsConstrainedNetworkAccess = false
+            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        }
+        return configuration
+    }
+}
+
+class MPURLUtils {
+    private static let preview  = SwiftLinkPreview( session: .optional, cache: InMemoryCache() )
     private static let caches   = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
     private static var metadata = loadMetadata() {
         didSet {
@@ -46,14 +69,14 @@ class MPURLUtils {
         return [:]
     }
 
-    static func load(url: URL, result: @escaping (Data?) -> Void) {
-        MPURLUtils.session.dataTask( with: url ) { responseData, response, error in
+    static func load(url: URL, session: URLSession = .optional, result: @escaping (Data?) -> Void) {
+        session.dataTask( with: url ) { responseData, response, error in
             result( responseData )
         }.resume()
     }
 
-    static func loadHTML(url: URL, result: @escaping (String?) -> Void) {
-        MPURLUtils.session.dataTask( with: url ) { responseData, response, error in
+    static func loadHTML(url: URL, session: URLSession = .optional, result: @escaping (String?) -> Void) {
+        session.dataTask( with: url ) { responseData, response, error in
             if let mimeType = response?.mimeType, mimeType.hasSuffix( "/html" ),
                let encoding = response?.textEncodingName, let responseData = responseData,
                let response = NSString( data: responseData, encoding:
@@ -76,7 +99,7 @@ class MPURLUtils {
             guard let imageURL = self.validImageURL( response.image ) ?? self.validImageURL( response.icon )
             else { return }
 
-            MPURLUtils.session.dataTask( with: imageURL ) { responseData, response, error in
+            self.preview.session.dataTask( with: imageURL ) { responseData, response, error in
                 var info = self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil )
 
                 if let error = error {

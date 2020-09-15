@@ -263,30 +263,6 @@ class BlockTapBehaviour<M>: TapBehaviour<M> {
     }
 }
 
-class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
-    init() {
-        super.init()
-
-        InAppFeature.observers.register( observer: self )
-    }
-
-    override func didInstall(into item: Item<M>) {
-        super.didInstall( into: item )
-
-        self.featureDidChange( .premium )
-    }
-
-    override func doTapped(item: Item<M>) {
-        item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
-    }
-
-    // MARK: --- InAppFeatureObserver ---
-
-    func featureDidChange(_ feature: InAppFeature) {
-        self.tapRecognizers.keys.forEach { $0.isEnabled = !InAppFeature.premium.enabled() }
-    }
-}
-
 class ConditionalBehaviour<M>: Behaviour<M> {
     init(mode: Effect, condition: @escaping (M) -> Bool) {
         super.init( hidden: { model in

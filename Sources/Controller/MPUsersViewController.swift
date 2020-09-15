@@ -211,13 +211,17 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak self, weak userFile] _ in
-                guard let self = self, let user = userFile
+            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak userFile] _ in
+                guard let userFile = userFile
                 else { return }
-                trc( "Trashing user: %@", user )
+                trc( "Trashing user: %@", userFile )
 
-                if MPMarshal.shared.delete( userFile: user ) {
-                    self.fileSource.remove( user )
+                do {
+                    try MPMarshal.shared.delete( userFile: userFile )
+                    // TODO: Check that fileSource is getting updated.
+                }
+                catch {
+                    mperror( title: "Couldn't delete user", error: error )
                 }
             } )
             self.present( alert, animated: true )

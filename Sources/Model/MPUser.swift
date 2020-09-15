@@ -198,7 +198,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                 self.origin = destination
             }
             catch {
-                mperror( title: "Couldn't save self", details: self, error: error )
+                mperror( title: "Couldn't save changes.", details: self, error: error )
             }
 
             self.dirty = false
@@ -241,16 +241,16 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     func login(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
         DispatchQueue.mpw.promise {
             guard let authKey = keyFactory.newKey( for: self.algorithm )
-            else { throw MPError.internal( details: "Cannot authenticate user since master key is missing." ) }
+            else { throw MPError.internal( cause: "Cannot authenticate user since master key is missing.", details: self ) }
             defer { authKey.deallocate() }
             guard let authKeyID = String.valid( mpw_id_buf( authKey, MemoryLayout<MPMasterKey>.size ) )
-            else { throw MPError.internal( details: "Could not determine key ID for authentication key." ) }
+            else { throw MPError.internal( cause: "Could not determine key ID for authentication key.", details: self ) }
 
             if self.masterKeyID == nil {
                 self.masterKeyID = authKeyID
             }
             if !mpw_id_buf_equals( self.masterKeyID, authKeyID ) {
-                throw MPError.state( details: "Incorrect master key for user." )
+                throw MPError.state( title: "Incorrect Master Key", details: self )
             }
         }.then { (result: Result<Void, Error>) -> MPUser in
             switch result {
@@ -383,7 +383,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                                             algorithm: algorithm ?? self.algorithm )
 
                 @unknown default:
-                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
             }
         }
     }
@@ -409,7 +409,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                                            algorithm: algorithm ?? self.algorithm )
 
                 @unknown default:
-                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
             }
         }
     }
@@ -456,7 +456,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                     -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
-            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
+            else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }
             defer { masterKey.deallocate() }
 
             return (token: .valid( mpw_site_result(
@@ -471,7 +471,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                     -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
-            else { throw MPError.internal( details: "Cannot calculate result since master key is missing." ) }
+            else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }
             defer { masterKey.deallocate() }
 
             return (token: .valid( mpw_site_state(

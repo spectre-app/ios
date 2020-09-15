@@ -187,12 +187,6 @@ extension NSLayoutConstraint {
     }
 }
 
-extension NSTextAlignment {
-    static var inverse: NSTextAlignment {
-        UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft ? .left: .right
-    }
-}
-
 extension UICollectionView {
 
     func register(_ type: UICollectionViewCell.Type, nib: UINib? = nil) {

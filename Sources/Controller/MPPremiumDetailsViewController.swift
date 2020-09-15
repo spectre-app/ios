@@ -6,6 +6,33 @@
 import UIKit
 import StoreKit
 
+class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
+    init() {
+        super.init()
+
+        InAppFeature.observers.register( observer: self )
+    }
+
+    override func didInstall(into item: Item<M>) {
+        super.didInstall( into: item )
+
+        self.featureDidChange( .premium )
+    }
+
+    override func doTapped(item: Item<M>) {
+        item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
+    }
+
+    // MARK: --- InAppFeatureObserver ---
+
+    func featureDidChange(_ feature: InAppFeature) {
+        guard case .premium = feature
+        else { return }
+
+        self.tapRecognizers.keys.forEach { $0.isEnabled = !InAppFeature.premium.enabled() }
+    }
+}
+
 class MPPremiumDetailsViewController: MPDetailsViewController<Void> {
 
     // MARK: --- Life ---

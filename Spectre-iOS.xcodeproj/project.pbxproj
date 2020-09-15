@@ -72,8 +72,10 @@
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
 		93D39D506D830E25948A9EB5 /* MPEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */; };
 		93D39D8B9142B6F4077CFBD2 /* MPUntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */; };
+		93D39DA73327FB4E3D600A31 /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39813D4D15F649C54ADE0 /* Updatable.swift */; };
 		93D39DC523A8A2E162CEB420 /* UIKit+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+MP.swift */; };
 		93D39DE4534EF967532011C2 /* KeyboardLayoutGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */; };
+		93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39813D4D15F649C54ADE0 /* Updatable.swift */; };
 		93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
 		93D39E31D32AFAF973C302E6 /* MPBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3911FED606FAE34608C50 /* MPBackgroundView.swift */; };
 		93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
@@ -99,6 +101,69 @@
 		DA0E557025102B3A002B3AB1 /* Spectre AutoFill.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
 		DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
+		DA0E557F251063BF002B3AB1 /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
+		DA0E55802510642B002B3AB1 /* Swift+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39754A28ADCAE0E58937F /* Swift+MP.swift */; };
+		DA0E558225106486002B3AB1 /* MPSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */; };
+		DA0E55832510649E002B3AB1 /* Plumbing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398D4B9F2323DC419DC82 /* Plumbing.swift */; };
+		DA0E5584251064D9002B3AB1 /* WeakBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393E2C339F220532F1D53 /* WeakBox.swift */; };
+		DA0E5585251064E9002B3AB1 /* UIView+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B6403FE258E526E5E85 /* UIView+MP.m */; };
+		DA0E558625106500002B3AB1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
+		DA0E558725106518002B3AB1 /* Observers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3900653D9D95598C41DFA /* Observers.swift */; };
+		DA0E558925106542002B3AB1 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
+		DA0E558B2510E985002B3AB1 /* MPLogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* MPLogSink.swift */; };
+		DA0E558C2510E985002B3AB1 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398E83036023785BE6806 /* Theme.swift */; };
+		DA0E558D2510E985002B3AB1 /* Foundation+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */; };
+		DA0E558E2510E985002B3AB1 /* ConstraintResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909744CE918AB4432318 /* ConstraintResolver.swift */; };
+		DA0E558F2510E985002B3AB1 /* Dispatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3940575E4CC62A8F6CE04 /* Dispatch.swift */; };
+		DA0E55902510E985002B3AB1 /* MPTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* MPTracker.swift */; };
+		DA0E55912510E985002B3AB1 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
+		DA0E55922510E985002B3AB1 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
+		DA0E55932510E985002B3AB1 /* UIKit+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+MP.swift */; };
+		DA0E55942510E985002B3AB1 /* InAppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* InAppStore.swift */; };
+		DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
+		DA0E55962510E985002B3AB1 /* MPURLUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPURLUtils.swift */; };
+		DA0E55972510E985002B3AB1 /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
+		DA0E55982510E985002B3AB1 /* MPConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C3FA9FA2CA5B234741E /* MPConfig.swift */; };
+		DA0E55992510E985002B3AB1 /* MPKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */; };
+		DA0E559A2510E985002B3AB1 /* Persisting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CB804B95B268383FCB2 /* Persisting.swift */; };
+		DA0E559B2510E985002B3AB1 /* MPAttacker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */; };
+		DA0E559C2510E985002B3AB1 /* LayoutConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */; };
+		DA0E559D2510E985002B3AB1 /* MPFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909E003FF5E936687AA6 /* MPFeedback.swift */; };
+		DA0E559E2510E985002B3AB1 /* Describe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396FE084F709867C7C6CC /* Describe.swift */; };
+		DA0E559F2510E985002B3AB1 /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BAACC08C85F91D1C5C2 /* Graph.swift */; };
+		DA0E55A02510E985002B3AB1 /* KeyboardLayoutGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */; };
+		DA0E55A12510E985002B3AB1 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
+		DA0E55A22510E985002B3AB1 /* Period.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39651387222CBD2F9CCE0 /* Period.swift */; };
+		DA0E55A32510E98B002B3AB1 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
+		DA0E55A42510E992002B3AB1 /* MPMarshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* MPMarshal.swift */; };
+		DA0E55A52510E992002B3AB1 /* MPQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */; };
+		DA0E55A62510E992002B3AB1 /* MPResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPResult.swift */; };
+		DA0E55A72510E992002B3AB1 /* MPSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPSite.swift */; };
+		DA0E55A82510E992002B3AB1 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
+		DA0E55A92510E9BB002B3AB1 /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
+		DA0E55AA2510E9BB002B3AB1 /* MPItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39949A9E5C95F193F4315 /* MPItemView.swift */; };
+		DA0E55AB2510E9BB002B3AB1 /* MPItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39865ECFD34CF3ADF930D /* MPItemCell.swift */; };
+		DA0E55AC2510E9BB002B3AB1 /* MPAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39477D638F3147366C029 /* MPAnimations.swift */; };
+		DA0E55AD2510E9BB002B3AB1 /* MPSitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */; };
+		DA0E55AE2510E9BB002B3AB1 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
+		DA0E55AF2510E9BB002B3AB1 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
+		DA0E55B02510E9BB002B3AB1 /* MPDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398A0CC7A860ADA1315EF /* MPDateView.swift */; };
+		DA0E55B12510E9BB002B3AB1 /* MPEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* MPEffectView.swift */; };
+		DA0E55B22510E9BB002B3AB1 /* MPEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */; };
+		DA0E55B32510E9BB002B3AB1 /* MPSitesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */; };
+		DA0E55B42510E9BB002B3AB1 /* MPButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39564D6408073D59CDB6A /* MPButton.swift */; };
+		DA0E55B52510E9BB002B3AB1 /* MPTintField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* MPTintField.swift */; };
+		DA0E55B62510E9BB002B3AB1 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
+		DA0E55B72510E9BB002B3AB1 /* MPMarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MPMarginView.swift */; };
+		DA0E55B82510E9BB002B3AB1 /* MPToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */; };
+		DA0E55B92510E9BB002B3AB1 /* MPBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3911FED606FAE34608C50 /* MPBackgroundView.swift */; };
+		DA0E55BA2510E9BB002B3AB1 /* MPImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396EF81F724F74A21AFA9 /* MPImageView.swift */; };
+		DA0E55BB2510E9BB002B3AB1 /* MPSpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39424D508440582DC7FD0 /* MPSpinnerView.swift */; };
+		DA0E55BC2510E9BB002B3AB1 /* MPResultTypeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */; };
+		DA0E55BD2510E9BB002B3AB1 /* MPUntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */; };
+		DA0E55BE251112BB002B3AB1 /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
+		DA0E55BF251112C1002B3AB1 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
+		DA0E55C0251112D0002B3AB1 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
 		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
 		DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
 		DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
@@ -294,6 +359,7 @@
 		93D39754A28ADCAE0E58937F /* Swift+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Swift+MP.swift"; sourceTree = "<group>"; };
 		93D3975A310BEA6C16903C25 /* TransientState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransientState.swift; sourceTree = "<group>"; };
 		93D397930CDEF625FC438ECE /* InAppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InAppStore.swift; sourceTree = "<group>"; };
+		93D39813D4D15F649C54ADE0 /* Updatable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Updatable.swift; sourceTree = "<group>"; };
 		93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAppDetailsViewController.swift; sourceTree = "<group>"; };
 		93D3985EDA6E3B7A05799E2C /* MPTintField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintField.swift; sourceTree = "<group>"; };
 		93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyboardLayoutGuide.swift; sourceTree = "<group>"; };
@@ -636,6 +702,7 @@
 				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
 				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
 				93D393E2C339F220532F1D53 /* WeakBox.swift */,
+				93D39813D4D15F649C54ADE0 /* Updatable.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1468,18 +1535,82 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA0E55B22510E9BB002B3AB1 /* MPEmitterView.swift in Sources */,
+				DA0E55AE2510E9BB002B3AB1 /* MPMasterPasswordField.swift in Sources */,
+				DA0E55B62510E9BB002B3AB1 /* MPTintLabel.swift in Sources */,
+				DA0E55B42510E9BB002B3AB1 /* MPButton.swift in Sources */,
+				DA0E55972510E985002B3AB1 /* MPKeyFactory.swift in Sources */,
+				DA0E55BE251112BB002B3AB1 /* MPDetailsHostController.swift in Sources */,
+				DA0E55AF2510E9BB002B3AB1 /* MPAvatarCell.swift in Sources */,
+				DA0E558F2510E985002B3AB1 /* Dispatch.swift in Sources */,
+				DA0E559C2510E985002B3AB1 /* LayoutConfiguration.swift in Sources */,
+				DA0E55B52510E9BB002B3AB1 /* MPTintField.swift in Sources */,
+				DA0E55A12510E985002B3AB1 /* DataSource.swift in Sources */,
+				DA0E55B82510E9BB002B3AB1 /* MPToggleButton.swift in Sources */,
+				DA0E55A22510E985002B3AB1 /* Period.swift in Sources */,
+				DA0E5585251064E9002B3AB1 /* UIView+MP.m in Sources */,
+				DA0E558225106486002B3AB1 /* MPSecrets.swift in Sources */,
+				DA0E55982510E985002B3AB1 /* MPConfig.swift in Sources */,
+				DA0E559D2510E985002B3AB1 /* MPFeedback.swift in Sources */,
+				DA0E55922510E985002B3AB1 /* Types.swift in Sources */,
 				DA0E5566251022EB002B3AB1 /* mpw-algorithm_v1.c in Sources */,
+				DA0E55B02510E9BB002B3AB1 /* MPDateView.swift in Sources */,
+				DA0E55BF251112C1002B3AB1 /* MPDetailViewController.swift in Sources */,
+				DA0E55C0251112D0002B3AB1 /* MPViewController.swift in Sources */,
 				DA0E556F251022EB002B3AB1 /* aes.c in Sources */,
+				DA0E558E2510E985002B3AB1 /* ConstraintResolver.swift in Sources */,
 				DA0E556A251022EB002B3AB1 /* mpw-marshal.c in Sources */,
+				DA0E55AD2510E9BB002B3AB1 /* MPSitePreviewController.swift in Sources */,
+				DA0E55962510E985002B3AB1 /* MPURLUtils.swift in Sources */,
+				DA0E55A42510E992002B3AB1 /* MPMarshal.swift in Sources */,
 				DA0E556C251022EB002B3AB1 /* mpw-algorithm_v3.c in Sources */,
+				DA0E55932510E985002B3AB1 /* UIKit+MP.swift in Sources */,
+				DA0E558725106518002B3AB1 /* Observers.swift in Sources */,
+				DA0E55A72510E992002B3AB1 /* MPSite.swift in Sources */,
 				DA0E556B251022EB002B3AB1 /* mpw-algorithm_v0.c in Sources */,
+				DA0E55B72510E9BB002B3AB1 /* MPMarginView.swift in Sources */,
+				DA0E55BB2510E9BB002B3AB1 /* MPSpinnerView.swift in Sources */,
+				DA0E55AC2510E9BB002B3AB1 /* MPAnimations.swift in Sources */,
+				DA0E55AB2510E9BB002B3AB1 /* MPItemCell.swift in Sources */,
+				DA0E55A92510E9BB002B3AB1 /* MPTapEffectView.swift in Sources */,
+				DA0E55B12510E9BB002B3AB1 /* MPEffectView.swift in Sources */,
+				DA0E559A2510E985002B3AB1 /* Persisting.swift in Sources */,
 				DA0E556E251022EB002B3AB1 /* mpw-algorithm.c in Sources */,
+				DA0E559F2510E985002B3AB1 /* Graph.swift in Sources */,
+				DA0E558C2510E985002B3AB1 /* Theme.swift in Sources */,
+				DA0E558625106500002B3AB1 /* TransientState.swift in Sources */,
 				DA0E5569251022EB002B3AB1 /* mpw-algorithm_v2.c in Sources */,
+				DA0E55A82510E992002B3AB1 /* MPUser.swift in Sources */,
+				DA0E55942510E985002B3AB1 /* InAppStore.swift in Sources */,
+				DA0E55912510E985002B3AB1 /* Debug.swift in Sources */,
+				DA0E558925106542002B3AB1 /* MPQuery.swift in Sources */,
+				DA0E55AA2510E9BB002B3AB1 /* MPItemView.swift in Sources */,
+				DA0E55BC2510E9BB002B3AB1 /* MPResultTypeCell.swift in Sources */,
+				DA0E55A32510E98B002B3AB1 /* MPAlert.swift in Sources */,
+				DA0E558D2510E985002B3AB1 /* Foundation+MP.swift in Sources */,
 				DA0E5565251022EB002B3AB1 /* base64.c in Sources */,
+				DA0E55992510E985002B3AB1 /* MPKeychain.swift in Sources */,
 				DA0E552E250D6F7F002B3AB1 /* AutoFillViewController.swift in Sources */,
 				DA0E556D251022EB002B3AB1 /* mpw-marshal-util.c in Sources */,
+				DA0E55902510E985002B3AB1 /* MPTracker.swift in Sources */,
+				DA0E55BA2510E9BB002B3AB1 /* MPImageView.swift in Sources */,
+				DA0E55BD2510E9BB002B3AB1 /* MPUntouchableView.swift in Sources */,
+				DA0E55832510649E002B3AB1 /* Plumbing.swift in Sources */,
+				DA0E55A02510E985002B3AB1 /* KeyboardLayoutGuide.swift in Sources */,
+				DA0E557F251063BF002B3AB1 /* MPUtils.swift in Sources */,
 				DA0E5568251022EB002B3AB1 /* mpw-util.c in Sources */,
+				DA0E55A52510E992002B3AB1 /* MPQuestion.swift in Sources */,
 				DA0E5567251022EB002B3AB1 /* mpw-types.c in Sources */,
+				DA0E559B2510E985002B3AB1 /* MPAttacker.swift in Sources */,
+				DA0E558B2510E985002B3AB1 /* MPLogSink.swift in Sources */,
+				93D39DA73327FB4E3D600A31 /* Updatable.swift in Sources */,
+				DA0E55B92510E9BB002B3AB1 /* MPBackgroundView.swift in Sources */,
+				DA0E559E2510E985002B3AB1 /* Describe.swift in Sources */,
+				DA0E55B32510E9BB002B3AB1 /* MPSitesTableView.swift in Sources */,
+				DA0E55802510642B002B3AB1 /* Swift+MP.swift in Sources */,
+				DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */,
+				DA0E5584251064D9002B3AB1 /* WeakBox.swift in Sources */,
+				DA0E55A62510E992002B3AB1 /* MPResult.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1572,6 +1703,7 @@
 				93D3973CB116392EFE182225 /* Swift+MP.swift in Sources */,
 				93D39C05281D4E4CB11F07AC /* MPResult.swift in Sources */,
 				93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */,
+				93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1755,6 +1887,7 @@
 				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_SWIFT_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PUBLIC NDEBUG";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -1797,6 +1930,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_CONTAINER $(inherited)";
 			};
 			name = Public;
 		};
@@ -1830,6 +1964,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_EXTENSION $(inherited)";
 			};
 			name = Debug;
 		};
@@ -1863,6 +1998,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_EXTENSION $(inherited)";
 			};
 			name = Release;
 		};
@@ -1896,6 +2032,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_EXTENSION $(inherited)";
 			};
 			name = Public;
 		};
@@ -2209,6 +2346,7 @@
 				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_SWIFT_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = NDEBUG;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -2251,6 +2389,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_CONTAINER $(inherited)";
 			};
 			name = Debug;
 		};
@@ -2285,6 +2424,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_CONTAINER $(inherited)";
 			};
 			name = Release;
 		};

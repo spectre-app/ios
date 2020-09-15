@@ -9,6 +9,7 @@ let productName       = Bundle.main.object( forInfoDictionaryKey: "CFBundleDispl
 let productBuild      = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String ?? "0"
 let productVersion    = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
 let productIdentifier = Bundle.main.bundleIdentifier ?? "app.spectre"
+let productGroup      = "group.app.spectre"
 
 func ratio(of value: UInt8, from: Double, to: Double) -> Double {
     from + (to - from) * (Double( value ) / Double( UInt8.max ))

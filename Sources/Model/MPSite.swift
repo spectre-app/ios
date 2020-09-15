@@ -249,7 +249,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                                              algorithm: algorithm ?? self.algorithm )
 
                 @unknown default:
-                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
             }
         }
     }
@@ -275,7 +275,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                                             algorithm: algorithm ?? self.algorithm )
 
                 @unknown default:
-                    throw MPError.internal( details: "Unsupported key purpose: \(keyPurpose)" )
+                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
             }
         }
     }
