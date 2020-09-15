@@ -322,7 +322,7 @@ _build() {
     if (( ! ${#archs[@]} )); then
         case "$platform" in
             'macos') archs=( 'x86_64' ) ;;
-            'ios') archs=( 'i386' 'x86_64' 'armv7' 'armv7s' 'arm64' ) ;;
+            'ios') archs=( 'x86_64' 'arm64' ) ;;
             'android') archs=( 'arm' 'arm64' 'x86' 'x86_64' ) ;;
             'windows') archs=( 'Win32' 'x64' ) ;;
             *) archs=( 'i686' 'x86_64' ) ;;
