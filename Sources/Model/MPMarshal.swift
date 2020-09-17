@@ -39,7 +39,7 @@ class MPMarshal: Observable, Updatable {
     public func save(user: MPUser, format: MPMarshalFormat = .default, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
         let saveEvent = MPTracker.shared.begin( named: "marshal #save" )
 
-        return self.marshalQueue.promised {
+        return self.marshalQueue.promising {
             guard let documentURL = self.url( for: user, in: directory, format: format )
             else {
                 saveEvent.end( [ "result": "!url" ] )
@@ -75,13 +75,16 @@ class MPMarshal: Observable, Updatable {
     public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
         let exportEvent = MPTracker.shared.begin( named: "marshal #export" )
 
-        return DispatchQueue.mpw.promise {
+        return DispatchQueue.mpw.promising {
             guard let keyFactory = user.masterKeyFactory
             else {
                 exportEvent.end( [ "result": "!keyFactory" ] )
                 throw MPError.state( title: "Not Authenticated", details: user )
             }
-            guard let marshalledUser = mpw_marshal_user( user.fullName, keyFactory.provide(), user.algorithm )
+
+            return keyFactory.provide()
+        }.promise( on: .mpw ) { (keyProvider: @escaping MPMasterKeyProvider) in
+            guard let marshalledUser = mpw_marshal_user( user.fullName, keyProvider, user.algorithm )
             else {
                 exportEvent.end( [ "result": "!marshal_user" ] )
                 throw MPError.internal( cause: "Couldn't marshal user.", details: user )
@@ -137,7 +140,7 @@ class MPMarshal: Observable, Updatable {
     public func `import`(data: Data, viewController: UIViewController) -> Promise<Void> {
         let importEvent = MPTracker.shared.begin( named: "marshal #importData" )
 
-        return DispatchQueue.mpw.promised {
+        return DispatchQueue.mpw.promising {
             let importingFile = try self.userFile( for: data )
             guard let importingURL = self.url( for: importingFile.fullName, format: importingFile.format )
             else {
@@ -163,7 +166,7 @@ class MPMarshal: Observable, Updatable {
     private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile, viewController: UIViewController) -> Promise<Void> {
         let importEvent = MPTracker.shared.begin( named: "marshal #importIntoFile" )
 
-        return DispatchQueue.main.promised {
+        return DispatchQueue.main.promising {
             let promise = Promise<Void>()
 
             let spinner         = MPAlert( title: "Unlocking", message: importingFile.description,
@@ -393,7 +396,7 @@ class MPMarshal: Observable, Updatable {
 
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
-        return DispatchQueue.mpw.promised {
+        return DispatchQueue.mpw.promising {
             var replacedSites = 0, newSites = 0
             for importedSite in importedUser.sites {
                 if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
@@ -472,20 +475,22 @@ class MPMarshal: Observable, Updatable {
                 throw MPError.issue( error, title: "Cannot Create Document Path", details: documentURL )
             }
 
-            if FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
-                importEvent.end( [ "result": "success: complete" ] )
-                MPAlert( title: "Import Complete", message: documentURL.lastPathComponent, details:
-                """
-                Completed the import of \(importingFile) (\(importingFile.format)).
-                This export file was created on \(importingFile.exportDate).
-
-                This was a direct installation of the import data, not a merge import.
-                """ ).show( in: viewController.view )
-                self.setNeedsUpdate()
+            if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
+                importEvent.end( [ "result": "!createFile" ] )
+                throw MPError.issue( title: "Cannot Write User Document", details: documentURL )
             }
 
-            importEvent.end( [ "result": "!createFile" ] )
-            throw MPError.issue( title: "Cannot Write User Document", details: documentURL )
+            importEvent.end( [ "result": "success: complete" ] )
+            MPAlert( title: "Import Complete", message: documentURL.lastPathComponent, details:
+            """
+            Completed the import of \(importingFile) (\(importingFile.format)).
+            This export file was created on \(importingFile.exportDate).
+
+            This was a direct installation of the import data, not a merge import.
+            """ ).show( in: viewController.view )
+            self.setNeedsUpdate()
+        }.then {
+            spinner.dismiss()
         }
     }
 
@@ -531,8 +536,8 @@ class MPMarshal: Observable, Updatable {
     // MARK: --- Updatable ---
 
     @discardableResult
-    public func setNeedsUpdate() -> Promise<Void> {
-        self.updateTask.request()
+    public func setNeedsUpdate() -> Promise<[UserFile]> {
+        self.updateTask.request().promise { self.userFiles }
     }
 
     func update() {
@@ -659,57 +664,55 @@ class MPMarshal: Observable, Updatable {
         }
 
         public func authenticate(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
-            DispatchQueue.mpw.promised {
-                if let marshalledUser = mpw_marshal_auth( self.file, self.resetKey ? nil: keyFactory.provide() )?.pointee,
-                   self.file.pointee.error.type == .success {
-                    return MPUser(
-                            algorithm: marshalledUser.algorithm,
-                            avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
-                            fullName: String.valid( marshalledUser.fullName ) ?? self.fullName,
-                            identicon: marshalledUser.identicon,
-                            masterKeyID: self.resetKey ? nil: self.keyID,
-                            defaultType: marshalledUser.defaultType,
-                            loginType: marshalledUser.loginType,
-                            loginState: .valid( marshalledUser.loginState ),
-                            lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                            origin: self.origin, file: self.file
-                    ) { user in
+            (self.resetKey ? Promise( .success( nil ) ): keyFactory.provide().optional()).promising( on: .mpw ) {
+                guard let marshalledUser = mpw_marshal_auth( self.file, $0 )?.pointee, self.file.pointee.error.type == .success
+                else { throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User", details: self.fullName ) }
 
-                        for s in 0..<marshalledUser.sites_count {
-                            let marshalledSite = (marshalledUser.sites + s).pointee
-                            if let siteName = String.valid( marshalledSite.siteName ) {
-                                user.sites.append( MPSite(
-                                        user: user,
-                                        siteName: siteName,
-                                        algorithm: marshalledSite.algorithm,
-                                        counter: marshalledSite.counter,
-                                        resultType: marshalledSite.resultType,
-                                        resultState: .valid( marshalledSite.resultState ),
-                                        loginType: marshalledSite.loginType,
-                                        loginState: .valid( marshalledSite.loginState ),
-                                        url: .valid( marshalledSite.url ),
-                                        uses: marshalledSite.uses,
-                                        lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
-                                ) { site in
+                return MPUser(
+                        algorithm: marshalledUser.algorithm,
+                        avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
+                        fullName: String.valid( marshalledUser.fullName ) ?? self.fullName,
+                        identicon: marshalledUser.identicon,
+                        masterKeyID: self.resetKey ? nil: self.keyID,
+                        defaultType: marshalledUser.defaultType,
+                        loginType: marshalledUser.loginType,
+                        loginState: .valid( marshalledUser.loginState ),
+                        lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
+                        origin: self.origin, file: self.file
+                ) { user in
 
-                                    for q in 0..<marshalledSite.questions_count {
-                                        let marshalledQuestion = (marshalledSite.questions + q).pointee
-                                        if let keyword = String.valid( marshalledQuestion.keyword ) {
-                                            site.questions.append( MPQuestion(
-                                                    site: site,
-                                                    keyword: keyword,
-                                                    resultType: marshalledQuestion.type,
-                                                    resultState: .valid( marshalledQuestion.state )
-                                            ) )
-                                        }
+                    for s in 0..<marshalledUser.sites_count {
+                        let marshalledSite = (marshalledUser.sites + s).pointee
+                        if let siteName = String.valid( marshalledSite.siteName ) {
+                            user.sites.append( MPSite(
+                                    user: user,
+                                    siteName: siteName,
+                                    algorithm: marshalledSite.algorithm,
+                                    counter: marshalledSite.counter,
+                                    resultType: marshalledSite.resultType,
+                                    resultState: .valid( marshalledSite.resultState ),
+                                    loginType: marshalledSite.loginType,
+                                    loginState: .valid( marshalledSite.loginState ),
+                                    url: .valid( marshalledSite.url ),
+                                    uses: marshalledSite.uses,
+                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
+                            ) { site in
+
+                                for q in 0..<marshalledSite.questions_count {
+                                    let marshalledQuestion = (marshalledSite.questions + q).pointee
+                                    if let keyword = String.valid( marshalledQuestion.keyword ) {
+                                        site.questions.append( MPQuestion(
+                                                site: site,
+                                                keyword: keyword,
+                                                resultType: marshalledQuestion.type,
+                                                resultState: .valid( marshalledQuestion.state )
+                                        ) )
                                     }
-                                } )
-                            }
+                                }
+                            } )
                         }
-                    }.login( using: keyFactory )
-                }
-
-                throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User", details: self.fullName )
+                    }
+                }.login( using: keyFactory )
             }
         }
 

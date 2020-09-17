@@ -230,8 +230,8 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promised {
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promising {
             switch keyPurpose {
                 case .authentication:
                     return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -256,8 +256,8 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promised {
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promising {
             switch keyPurpose {
                 case .authentication:
                     return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -282,10 +282,10 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     @discardableResult
     public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
-                     by host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, by host: UIView? = nil)
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         self.user.copy( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                        resultType: resultType, resultParam: resultParam, algorithm: algorithm )
+                        resultType: resultType, resultParam: resultParam, algorithm: algorithm, by: host )
     }
 }
 

@@ -142,7 +142,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
             self.passwordField?.isEnabled = false
             self.passwordIndicator.startAnimating()
 
-            return DispatchQueue.mpw.promised {
+            return DispatchQueue.mpw.promising {
                 try handler( MPPasswordKeyFactory( fullName: fullName, masterPassword: masterPassword ) )
             }.then( on: .main ) { result in
                 self.passwordField?.text = nil

@@ -30,8 +30,8 @@ public class MPKeyFactory {
 
     // MARK: --- Interface ---
 
-    public func provide() -> MPMasterKeyProvider {
-        DispatchQueue.mpw.await {
+    public func provide() -> Promise<MPMasterKeyProvider> {
+        DispatchQueue.mpw.promise {
             keyFactories[self.fullName] = self
             return keyFactoryProvider
         }
@@ -158,40 +158,72 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         }
     }()
 
-    private let context = LAContext()
+    public var expiry: TimeInterval? {
+        didSet {
+            (self._context = self._context)
+        }
+    }
+
+    private var _context:         LAContext? {
+        didSet {
+            if let expiry = self.expiry, _context != nil {
+                self._contextValidity = Date() + expiry
+            }
+            else {
+                self._contextValidity = nil
+            }
+        }
+    }
+    private var _contextValidity: Date?
+    private var contextValid:     Bool {
+        if let validity = self._contextValidity {
+            return validity > Date()
+        }
+
+        return true
+    }
+    private var context:          LAContext {
+        if let context = self._context, self.contextValid {
+            return context
+        }
+
+        let context = LAContext()
+        context.touchIDAuthenticationAllowableReuseDuration = 3
+        context.localizedReason = "Unlock \(self.fullName)"
+        context.localizedFallbackTitle = "Use Password"
+        self._context = context
+
+        return context
+    }
 
     // MARK: --- Life ---
 
     public override init(fullName: String) {
         super.init( fullName: fullName )
-
-        self.context.touchIDAuthenticationAllowableReuseDuration = 3
-        self.context.localizedReason = "Unlock \(fullName)"
-        self.context.localizedFallbackTitle = "Use Password"
     }
 
-    // MARK: --- Interface ---
-
-    public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
-        MPKeychainKeyFactory.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
-    }
-
-    public func unlock() -> Promise<Void> {
-        let promise = Promise<Void>()
+    public override func provide() -> Promise<MPMasterKeyProvider> {
+        let promise = Promise<MPMasterKeyProvider>()
 
         self.context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.fullName)" ) { result, error in
             if let error = error {
                 promise.finish( .failure( error ) )
             }
             else if !result {
-                promise.finish( .failure( MPError.internal( cause: "Biometrics authentication denied.", details: self.fullName) ) )
+                promise.finish( .failure( MPError.internal( cause: "Biometrics authentication denied.", details: self.fullName ) ) )
             }
             else {
-                promise.finish( .success( () ) )
+                super.provide().finishes( promise )
             }
         }
 
         return promise
+    }
+
+    // MARK: --- Interface ---
+
+    public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
+        MPKeychainKeyFactory.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
     }
 
     public func purgeKeys() {
@@ -222,7 +254,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     }
 
     fileprivate func saveKeys(_ items: [(MPAlgorithmVersion, UnsafePointer<MPMasterKey>?)]) -> Promise<MPKeychainKeyFactory> {
-        DispatchQueue.mpw.promised {
+        DispatchQueue.mpw.promising {
             var promise = Promise( .success( () ) )
 
             for item in items {
@@ -233,7 +265,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
                 }
             }
 
-            return promise.then { self }
+            return promise.promise { self }
         }
     }
 

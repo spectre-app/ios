@@ -450,13 +450,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         @objc
         func cellAction() {
             self.sitesView?.selectedSite = self.site
+            if let site = self.site, self.new {
+                site.user.sites.append( site )
+            }
 
             let event = MPTracker.shared.begin( named: "site #copy" )
-            self.site?.copy( keyPurpose: self.mode, by: self ).then { _ in
-                if let site = self.site, self.new {
-                    site.user.sites.append( site )
-                }
-            }.then {
+            self.site?.copy( keyPurpose: self.mode, by: self ).then {
                 do {
                     let result = try $0.get()
                     event.end(
@@ -541,7 +540,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
                 self.selectionConfiguration.activated = self.isSelected
                 self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
-            }.promised {
+            }.promising {
                 site.result( keyPurpose: self.mode )
             }.then( on: DispatchQueue.main ) {
                 do {

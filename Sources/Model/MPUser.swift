@@ -364,8 +364,8 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promised {
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promising {
             switch keyPurpose {
                 case .authentication:
                     return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -390,8 +390,8 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promised {
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+        DispatchQueue.mpw.promising {
             switch keyPurpose {
                 case .authentication:
                     return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -416,14 +416,12 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     @discardableResult
     public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil,
-                     by host: UIView? = nil) -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, by host: UIView? = nil)
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         self.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                      resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then {
             do {
-                let result = try $0.get()
-                guard let token = result.token
-                else { return }
+                let token = try $0.get().token
 
                 self.use()
                 MPFeedback.shared.play( .trigger )
@@ -453,31 +451,35 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     private func mpw_result(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
                             resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }
             defer { masterKey.deallocate() }
 
-            return (token: .valid( mpw_site_result(
-                    masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                                   consume: true ),
-                    counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
+            guard let result = String.valid(
+                    mpw_site_result( masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
+                    consume: true )
+            else { throw MPError.internal( cause: "Cannot calculate result.", details: self ) }
+
+            return (token: result, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
         }
     }
 
     public func mpw_state(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
                           resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
-                    -> Promise<(token: String?, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }
             defer { masterKey.deallocate() }
 
-            return (token: .valid( mpw_site_state(
-                    masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                                   consume: true ),
-                    counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
+            guard let result = String.valid(
+                    mpw_site_state( masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
+                    consume: true )
+            else { throw MPError.internal( cause: "Cannot calculate result.", details: self ) }
+
+            return (token: result, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
         }
     }
 

@@ -88,7 +88,7 @@ public class MPKeychain {
             let masterKeyBytes = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
             data.withUnsafeBytes { masterKeyBytes.initialize( to: $0.load( as: MPMasterKey.self ) ) }
             return UnsafePointer( masterKeyBytes )
-        }.then { _ in
+        }.then {
             spinner.dismiss()
         }
     }

@@ -552,9 +552,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
             guard keychainKeyFactory.hasKey( for: userFile.algorithm )
             else { return }
 
-            keychainKeyFactory.unlock().promised {
-                userFile.authenticate( using: keychainKeyFactory )
-            }.then( on: .main ) { [unowned self] result in
+            userFile.authenticate( using: keychainKeyFactory ).then( on: .main ) { [unowned self] result in
                 trc( "User biometric authentication: %@", result )
                 self.biometricButton.timing?.end(
                         [ "result": result.name,
