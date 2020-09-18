@@ -385,11 +385,12 @@ class LabelItem<M>: ValueItem<M, Any> {
         override func update() {
             super.update()
 
-            if let value = self.item.value as? NSAttributedString {
+            let value = self.item.value
+            if let value = value as? NSAttributedString {
                 self.valueLabel.attributedText = value
                 self.valueLabel.isHidden = false
             }
-            else if let value = self.item.value {
+            else if let value = value {
                 self.valueLabel.text = String( describing: value )
                 self.valueLabel.isHidden = false
             }
@@ -479,9 +480,10 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         override func update() {
             super.update()
 
-            self.button.image = self.item.value?.icon
-            self.button.isSelected = self.item.value?.selected ?? false
-            self.button.isEnabled = self.item.value?.enabled ?? false
+            let value = self.item.value
+            self.button.image = value?.icon
+            self.button.isEnabled = value?.enabled ?? false
+            self.button.isSelected = value?.selected ?? false
         }
     }
 }
@@ -527,8 +529,9 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
         override func update() {
             super.update()
 
-            self.button.title = self.item.value?.label
-            self.button.image = self.item.value?.image
+            let value = self.item.value
+            self.button.title = value?.label
+            self.button.image = value?.image
         }
     }
 }
@@ -700,11 +703,12 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 
             self.valueView.isEditable = self.item.update != nil
 
-            if let value = self.item.value as? NSAttributedString {
+            let value = self.item.value
+            if let value = value as? NSAttributedString {
                 self.valueView.attributedText = value
                 self.valueView.isHidden = false
             }
-            else if let value = self.item.value {
+            else if let value = value {
                 self.valueView.text = String( describing: value )
                 self.valueView.isHidden = false
             }
@@ -717,7 +721,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
     }
 }
 
-class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
+class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertible>: ValueItem<M, V> {
     let update: (M, V) -> Void
     let step:   V, min: V, max: V
 
@@ -742,15 +746,13 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         let valueView  = UIView()
         let valueLabel = UILabel()
         lazy var downButton = MPButton( attributedTitle: .icon( "" ), background: false ) { [unowned self]  _, _ in
-            if let model = self.item.model,
-               let value = self.item.value,
+            if let model = self.item.model, let value = self.item.value,
                value > self.item.min {
                 self.item.update( model, value - self.item.step )
             }
         }
         lazy var upButton = MPButton( attributedTitle: .icon( "" ), background: false ) { [unowned self] _, _ in
-            if let model = self.item.model,
-               let value = self.item.value,
+            if let model = self.item.model, let value = self.item.value,
                value < self.item.max {
                 self.item.update( model, value + self.item.step )
             }
@@ -799,12 +801,7 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable>: ValueItem<M, V> {
         override func update() {
             super.update()
 
-            if let value = self.item.value {
-                self.valueLabel.text = "\(value)"
-            }
-            else {
-                self.valueLabel.text = nil
-            }
+            self.valueLabel.text = self.item.value?.description
         }
     }
 }
