@@ -20,7 +20,7 @@ public class MPFeedback {
     }
 
     public enum Effect: Int, CaseIterable {
-        case flick, activate, trigger
+        case flick, activate, trigger, error
     }
 }
 
@@ -52,6 +52,14 @@ public class MPHapticFeedback: MPFeedback {
                         ], parameters: [] ) )
 
                     case .trigger:
+                        self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
+                            CHHapticEvent( eventType: .hapticTransient, parameters: [
+                                CHHapticEventParameter( parameterID: .hapticSharpness, value: 1 ),
+                            ], relativeTime: CHHapticTimeImmediate, duration: 0 ),
+                        ], parameters: [] ) )
+
+                    case .error:
+                        // TODO
                         self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
                             CHHapticEvent( eventType: .hapticTransient, parameters: [
                                 CHHapticEventParameter( parameterID: .hapticSharpness, value: 1 ),

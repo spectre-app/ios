@@ -311,6 +311,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     }
 
     private func updateCredentialIdentities() {
+        #if APP_CONTAINER
         ASCredentialIdentityStore.shared.getState {
             guard $0.isEnabled
             else { return }
@@ -334,6 +335,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                 }
             }
         }
+        #endif
     }
 
     // MARK: --- MPUserObserver ---

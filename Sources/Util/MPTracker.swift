@@ -11,6 +11,7 @@ class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
 
     private init() {
+        #if APP_CONTAINER
         // Sentry
         if let sentryDSN = sentryDSN.b64Decrypt() {
             SentrySDK.start( options: [
@@ -84,6 +85,7 @@ class MPTracker: MPConfigObserver {
 
         self.logout()
         appConfig.observers.register( observer: self ).didChangeConfig()
+        #endif
     }
 
     #if APP_CONTAINER

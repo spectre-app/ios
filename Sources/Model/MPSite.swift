@@ -15,10 +15,12 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                 self.dirty = true
                 self.observers.notify { $0.siteDidChange( self ) }
 
+                #if APP_CONTAINER
                 MPURLUtils.preview( url: self.siteName, result: { info in
                     self.color = info.color?.uiColor
                     self.image = info.imageData.flatMap { UIImage( data: $0 ) }
                 } )
+                #endif
             }
         }
     }
@@ -168,10 +170,12 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
         defer {
             // TODO: make efficient
+            #if APP_CONTAINER
             MPURLUtils.preview( url: self.siteName, result: { info in
                 self.color = info.color?.uiColor
                 self.image = info.imageData.flatMap { UIImage( data: $0 ) }
             } )
+            #endif
 
             initialize( self )
             self.initializing = false
