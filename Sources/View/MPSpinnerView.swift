@@ -87,8 +87,8 @@ public class MPSpinnerView: UICollectionView {
 
     internal class Layout: UICollectionViewLayout {
         internal var itemCount         = 0
+        internal var bounds            = CGRect.zero, oldBounds = CGRect.zero
         internal var itemAttributes    = [ Int: UICollectionViewLayoutAttributes ]()
-        internal var oldBounds: CGRect?
         internal var itemOldAttributes = [ Int: UICollectionViewLayoutAttributes ]()
         internal var contentSize       = CGSize.zero
 
@@ -101,8 +101,11 @@ public class MPSpinnerView: UICollectionView {
 
             if context.invalidateEverything || context.invalidateDataSourceCounts {
                 self.itemAttributes.removeAll()
-                self.itemCount = self.collectionView?.numberOfSections ?? 0 > 0 ?
-                        self.collectionView?.numberOfItems( inSection: 0 ) ?? 0: 0
+
+                if let collectionView = self.collectionView {
+                    self.bounds = collectionView.bounds
+                    self.itemCount = collectionView.numberOfSections == 0 ? 0: collectionView.numberOfItems( inSection: 0 )
+                }
             }
             else if let invalidatedItemIndexPaths = context.invalidatedItemIndexPaths {
                 invalidatedItemIndexPaths.forEach { self.itemAttributes.removeValue( forKey: $0.item ) }
@@ -112,11 +115,8 @@ public class MPSpinnerView: UICollectionView {
         override func prepare() {
             super.prepare()
 
-            guard let collectionView = self.collectionView
-            else { return }
-
-            self.contentSize = CGSize( width: collectionView.bounds.width, height: collectionView.bounds.height * CGFloat( self.itemCount ) )
-            self.layout( items: &self.itemAttributes, inBounds: collectionView.bounds )
+            self.contentSize = CGSize( width: self.bounds.width, height: self.bounds.height * CGFloat( self.itemCount ) )
+            self.layout( items: &self.itemAttributes, inBounds: self.bounds )
         }
 
         func layout(items: inout [Int: UICollectionViewLayoutAttributes], inBounds bounds: CGRect) {
@@ -126,14 +126,14 @@ public class MPSpinnerView: UICollectionView {
                 let itemDistance = scan - CGFloat( item )
                 if itemDistance > 0 {
                     // subview shows before scanned item.
-                    scale = pow( itemDistance * 0.2 + 1, 2 )
                     offset = -100 * pow( itemDistance, 2 )
+                    scale = pow( itemDistance * 0.2 + 1, 2 )
                     alpha = max( 0, 1 - pow( itemDistance, 2 ) )
                 }
                 else {
                     // subview shows behind scanned item.
-                    scale = 1 / pow( itemDistance * 0.2 - 1, 2 )
                     offset = 100 * pow( itemDistance * 0.5, 2 )
+                    scale = 1 / pow( itemDistance * 0.2 - 1, 2 )
                     alpha = max( 0, 1 - pow( itemDistance * 0.8, 2 ) )
                 }
 
@@ -151,12 +151,11 @@ public class MPSpinnerView: UICollectionView {
         }
 
         override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
-            guard let oldBounds = self.oldBounds
+            guard self.oldBounds.height > 0
             else { return proposedContentOffset }
 
-            let targetBounds = self.collectionView?.bounds ?? .zero
-            let scan         = oldBounds.size.height > 0 ? oldBounds.origin.y / oldBounds.size.height: 0
-            return CGPoint( x: oldBounds.origin.x, y: scan * targetBounds.height )
+            let scan = self.oldBounds.size.height > 0 ? self.oldBounds.origin.y / self.oldBounds.size.height: 0
+            return CGPoint( x: self.oldBounds.origin.x, y: scan * self.bounds.height )
         }
 
         override func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
@@ -170,7 +169,7 @@ public class MPSpinnerView: UICollectionView {
         override func finalizeAnimatedBoundsChange() {
             super.finalizeAnimatedBoundsChange()
 
-            self.oldBounds = nil
+            self.oldBounds = .zero
             self.itemOldAttributes.removeAll()
         }
 
@@ -183,10 +182,10 @@ public class MPSpinnerView: UICollectionView {
         }
 
         override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-            guard let collectionView = self.collectionView, collectionView.bounds.height > 0
+            guard self.bounds.height > 0
             else { return nil }
 
-            let fromItem = Int( rect.minY / collectionView.bounds.height ), toItem = Int( rect.maxY / collectionView.bounds.height )
+            let fromItem = Int( rect.minY / self.bounds.height ), toItem = Int( rect.maxY / self.bounds.height )
             return Range( fromItem...toItem ).clamped( to: 0..<self.itemCount ).compactMap { self.itemAttributes[$0] }
         }
 
@@ -195,7 +194,11 @@ public class MPSpinnerView: UICollectionView {
         }
 
         override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-            true
+            guard newBounds != self.bounds
+            else { return false }
+
+            self.bounds = newBounds
+            return true
         }
 
         override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
