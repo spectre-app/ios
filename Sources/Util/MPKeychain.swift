@@ -19,6 +19,7 @@ public class MPKeychain {
             kSecAttrService: [ String.valid( mpw_purpose_scope( .authentication ) ), algorithm.description ]
                     .compactMap { $0 }.joined( separator: "." ),
             kSecAttrAccount: fullName,
+            kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
             kSecUseOperationPrompt: "Access \(fullName)'s master key.",
             kSecUseAuthenticationUI: kSecUseAuthenticationUIFail,

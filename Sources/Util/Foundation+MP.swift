@@ -128,3 +128,25 @@ extension OperationQueue {
         self.underlyingQueue = queue
     }
 }
+
+extension TimeInterval {
+    public static func seconds(_ seconds: Double) -> TimeInterval {
+        TimeInterval( seconds )
+    }
+
+    public static func minutes(_ minutes: Double) -> TimeInterval {
+        .seconds( minutes * 60 )
+    }
+
+    public static func hours(_ hours: Double) -> TimeInterval {
+        .minutes( hours * 60 )
+    }
+
+    public static func days(_ days: Double) -> TimeInterval {
+        .hours( days * 24 )
+    }
+}
+
+extension UserDefaults {
+    public static let shared = UserDefaults( suiteName: productGroup ) ?? UserDefaults.standard
+}

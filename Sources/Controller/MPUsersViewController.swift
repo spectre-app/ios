@@ -344,7 +344,7 @@ class MPUsersViewController: MPViewController, UICollectionViewDelegate, UIColle
         private let nameLabel       = UILabel()
         private let nameField       = UITextField()
         private let avatarButton    = MPButton( identifier: "users.user #avatar", background: false )
-        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: .icon( "" ), background: false ) // TODO: biometry-specific icon
+        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: .icon( "" ), background: false )
         private var passwordEvent:               MPTracker.TimedEvent?
         private let passwordField   = MPMasterPasswordField()
         private let idBadgeView     = UIImageView( image: .icon( "" ) )

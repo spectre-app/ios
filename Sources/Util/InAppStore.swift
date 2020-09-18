@@ -14,14 +14,14 @@ enum InAppFeature {
     func enabled() -> Bool {
         switch self {
             case .premium:
-                return UserDefaults.standard.bool( forKey: "premium" )
+                return UserDefaults.shared.bool( forKey: "premium" )
         }
     }
 
     func enabled(_ enabled: Bool) {
         switch self {
             case .premium:
-                UserDefaults.standard.set( enabled, forKey: "premium" )
+                UserDefaults.shared.set( enabled, forKey: "premium" )
         }
 
         InAppFeature.observers.notify { $0.featureDidChange( self ) }

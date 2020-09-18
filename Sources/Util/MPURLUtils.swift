@@ -12,7 +12,7 @@ extension URLSession {
     public static let optional = URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(
             queue: DispatchQueue( label: "\(productName): Network Optional", qos: .background ) ) )
 
-    private static func requiredConfiguration() -> URLSessionConfiguration {
+    public static func requiredConfiguration() -> URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
         configuration.httpShouldSetCookies = false
         configuration.httpCookieAcceptPolicy = .never
@@ -23,7 +23,7 @@ extension URLSession {
         return configuration
     }
 
-    private static func optionalConfiguration() -> URLSessionConfiguration {
+    public static func optionalConfiguration() -> URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
         configuration.isDiscretionary = true
         configuration.httpShouldSetCookies = false

@@ -10,12 +10,13 @@ public let appConfig = MPConfig()
 public class MPConfig: Observable, Updatable, InAppFeatureObserver {
     public let observers = Observers<MPConfigObserver>()
 
-    public var isDebug              = false
-    public var isPublic             = false
-    public var diagnostics          = false {
+    public var isApp    = false
+    public var isDebug  = false
+    public var isPublic = false
+    public var diagnostics = false {
         didSet {
-            if self.diagnostics != UserDefaults.standard.bool( forKey: "diagnostics" ) {
-                UserDefaults.standard.set( self.diagnostics, forKey: "diagnostics" )
+            if self.diagnostics != UserDefaults.shared.bool( forKey: "diagnostics" ) {
+                UserDefaults.shared.set( self.diagnostics, forKey: "diagnostics" )
             }
             if oldValue != self.diagnostics {
                 self.observers.notify { $0.didChangeConfig() }
@@ -24,15 +25,15 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
     }
     public var diagnosticsDecided   = false {
         didSet {
-            if self.diagnosticsDecided != UserDefaults.standard.bool( forKey: "diagnosticsDecided" ) {
-                UserDefaults.standard.set( self.diagnosticsDecided, forKey: "diagnosticsDecided" )
+            if self.diagnosticsDecided != UserDefaults.shared.bool( forKey: "diagnosticsDecided" ) {
+                UserDefaults.shared.set( self.diagnosticsDecided, forKey: "diagnosticsDecided" )
             }
         }
     }
     public var notificationsDecided = false {
         didSet {
-            if self.notificationsDecided != UserDefaults.standard.bool( forKey: "notificationsDecided" ) {
-                UserDefaults.standard.set( self.notificationsDecided, forKey: "notificationsDecided" )
+            if self.notificationsDecided != UserDefaults.shared.bool( forKey: "notificationsDecided" ) {
+                UserDefaults.shared.set( self.notificationsDecided, forKey: "notificationsDecided" )
             }
         }
     }
@@ -45,8 +46,8 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
     }
     public var theme = Theme.default.path {
         didSet {
-            if self.theme != UserDefaults.standard.string( forKey: "theme" ) {
-                UserDefaults.standard.set( self.theme, forKey: "theme" )
+            if self.theme != UserDefaults.shared.string( forKey: "theme" ) {
+                UserDefaults.shared.set( self.theme, forKey: "theme" )
             }
             if Theme.current.parent?.path != self.theme {
                 Theme.current.parent = Theme.with( path: self.theme ) ?? .default
@@ -62,6 +63,9 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
     // MARK: --- Life ---
 
     init() {
+        #if APP_CONTAINER
+        self.isApp = true
+        #endif
         #if DEBUG
         self.isDebug = true
         #endif
@@ -72,10 +76,10 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
         self.update()
 
         self.didChangeObserver = NotificationCenter.default.addObserver(
-                forName: UserDefaults.didChangeNotification, object: UserDefaults.standard, queue: nil ) { [unowned self] _ in
+                forName: UserDefaults.didChangeNotification, object: UserDefaults.shared, queue: nil ) { [unowned self] _ in
             self.update()
         }
-        InAppFeature.observers.register(observer: self)
+        InAppFeature.observers.register( observer: self )
     }
 
     deinit {
@@ -91,10 +95,10 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
     // MARK: --- Private ---
 
     public func update() {
-        self.diagnostics = UserDefaults.standard.bool( forKey: "diagnostics" )
-        self.diagnosticsDecided = UserDefaults.standard.bool( forKey: "diagnosticsDecided" )
-        self.notificationsDecided = UserDefaults.standard.bool( forKey: "notificationsDecided" )
-        self.theme = (InAppFeature.premium.enabled() ? UserDefaults.standard.string( forKey: "theme" ): nil) ?? Theme.default.path
+        self.diagnostics = UserDefaults.shared.bool( forKey: "diagnostics" )
+        self.diagnosticsDecided = UserDefaults.shared.bool( forKey: "diagnosticsDecided" )
+        self.notificationsDecided = UserDefaults.shared.bool( forKey: "notificationsDecided" )
+        self.theme = (InAppFeature.premium.enabled() ? UserDefaults.shared.string( forKey: "theme" ): nil) ?? Theme.default.path
     }
 }
 

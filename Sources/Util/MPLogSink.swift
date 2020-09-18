@@ -105,9 +105,13 @@ public class MPLogSink: MPConfigObserver {
         }
     }
 
-    private var records = [ MPLogRecord ]()
+    private var registered = false
+    private var records    = [ MPLogRecord ]()
 
     public func register() {
+        guard !registered
+        else { return }
+
         mpw_verbosity = .debug
         mpw_log_sink_register( { event in
             guard let event = event?.pointee
@@ -141,6 +145,8 @@ public class MPLogSink: MPConfigObserver {
         } )
 
         appConfig.observers.register( observer: self ).didChangeConfig()
+
+        self.registered = true
     }
 
     public func enumerate(level: LogLevel) -> [MPLogRecord] {

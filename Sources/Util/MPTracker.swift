@@ -37,6 +37,7 @@ class MPTracker: MPConfigObserver {
             countlyConfig.alwaysUsePOST = true
             countlyConfig.secretSalt = countlySalt
             countlyConfig.deviceID = self.deviceIdentifier
+            countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
             Countly.sharedInstance().start( with: countlyConfig )
         }
 
@@ -230,7 +231,7 @@ class MPTracker: MPConfigObserver {
     // MARK: --- MPConfigObserver ---
 
     public func didChangeConfig() {
-        if appConfig.diagnostics {
+        if appConfig.isApp && appConfig.diagnostics {
             SentrySDK.currentHub().getClient()?.options.enabled = true
             Countly.sharedInstance().giveConsentForAllFeatures()
         }

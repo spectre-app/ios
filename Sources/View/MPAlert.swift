@@ -58,21 +58,22 @@ class MPAlert {
     // MARK: --- Interface ---
 
     @discardableResult
-    public func show(in view: UIView? = nil, dismissAutomatically: Bool = true,
+    public func show(in view: @escaping @autoclosure () -> UIView? = nil, dismissAutomatically: Bool = true,
                      file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) -> Self {
         log( file: file, line: line, function: function, dso: dso, level: self.level, "[ %@ ]", [ self.title ] )
         pii( file: file, line: line, function: function, dso: dso, "> %@: %@", self.message, self.details )
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
+            let view   = view()
+            var window = view?.window ?? view as? UIWindow
             #if APP_CONTAINER
-            let window = view as? UIWindow ?? view?.window ?? UIApplication.shared.keyWindow
-            #else
-            let window = view as? UIWindow ?? view?.window
+            window = window ?? UIApplication.shared.keyWindow
             #endif
             if let window = window {
                 window.addSubview( self.view )
-            } else {
+            }
+            else {
                 wrn( "No view to present alert: %@", self.title )
                 return
             }
@@ -100,6 +101,9 @@ class MPAlert {
         self.automaticDismissalTask.cancel()
 
         DispatchQueue.main.perform {
+            guard self.view.superview != nil
+            else { return }
+
             UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
                 self.view.removeFromSuperview()
             } )
