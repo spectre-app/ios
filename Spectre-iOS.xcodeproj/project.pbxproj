@@ -13,6 +13,7 @@
 		93D390D2B19CB69F721DD7A6 /* MPTintField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* MPTintField.swift */; };
 		93D391377514DB16467A3CDC /* MPUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */; };
 		93D39139805FC516B6C2C181 /* MPButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39564D6408073D59CDB6A /* MPButton.swift */; };
+		93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D390CB091CCF46AF6EAB4C /* AutoFill.swift */; };
 		93D391E2A56BA0C4D8E05D25 /* MPUserDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394B019A4203EF763DBEA /* MPUserDetailViewController.swift */; };
 		93D39216BF04B39B4E90B8D6 /* WeakBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393E2C339F220532F1D53 /* WeakBox.swift */; };
 		93D392506D66E48D27338086 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
@@ -40,6 +41,7 @@
 		93D39676011DF46822C3BEAC /* MPFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909E003FF5E936687AA6 /* MPFeedback.swift */; };
 		93D396BC81D6634C478E0881 /* Persisting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CB804B95B268383FCB2 /* Persisting.swift */; };
 		93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */; };
+		93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D390CB091CCF46AF6EAB4C /* AutoFill.swift */; };
 		93D39707EDA5669AB5A96ECB /* MPLogDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */; };
 		93D3972C722A7A007223F2AD /* MPPremiumDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */; };
 		93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
@@ -316,6 +318,7 @@
 		93D3909E003FF5E936687AA6 /* MPFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPFeedback.swift; sourceTree = "<group>"; };
 		93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v2.c"; sourceTree = "<group>"; };
 		93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v0.c"; sourceTree = "<group>"; };
+		93D390CB091CCF46AF6EAB4C /* AutoFill.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFill.swift; sourceTree = "<group>"; };
 		93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPToggleButton.swift; sourceTree = "<group>"; };
 		93D3911FED606FAE34608C50 /* MPBackgroundView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPBackgroundView.swift; sourceTree = "<group>"; };
 		93D3915A208E1B01BDD05A3E /* MPQuery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuery.swift; sourceTree = "<group>"; };
@@ -703,6 +706,7 @@
 				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
 				93D393E2C339F220532F1D53 /* WeakBox.swift */,
 				93D39813D4D15F649C54ADE0 /* Updatable.swift */,
+				93D390CB091CCF46AF6EAB4C /* AutoFill.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1611,6 +1615,7 @@
 				DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */,
 				DA0E5584251064D9002B3AB1 /* WeakBox.swift in Sources */,
 				DA0E55A62510E992002B3AB1 /* MPResult.swift in Sources */,
+				93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1704,6 +1709,7 @@
 				93D39C05281D4E4CB11F07AC /* MPResult.swift in Sources */,
 				93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */,
 				93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */,
+				93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

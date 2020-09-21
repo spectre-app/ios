@@ -230,3 +230,37 @@ extension MPResultType: CustomStringConvertible, CaseIterable {
         self.rawValue & UInt32( f.rawValue ) == UInt32( f.rawValue )
     }
 }
+
+extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
+
+    public func mpw_get(path: StaticString...) -> Bool? {
+        withVaStrings( path ) { mpw_marshal_data_vget_bool( self.pointee.data, $0 ) }
+    }
+
+    public func mpw_get(path: StaticString...) -> Double? {
+        withVaStrings( path ) { mpw_marshal_data_vget_num( self.pointee.data, $0 ) }
+    }
+
+    public func mpw_get(path: StaticString...) -> String? {
+        withVaStrings( path ) { .valid( mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
+    }
+
+    public func mpw_set(_ value: Bool, path: StaticString...) -> Bool {
+        withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
+    }
+
+    public func mpw_set(_ value: Double, path: StaticString...) -> Bool {
+        withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.pointee.data, $0 ) }
+    }
+
+    public func mpw_set(_ value: String?, path: StaticString...) -> Bool {
+        withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.pointee.data, $0 ) }
+    }
+
+    public func mpw_find(path: StaticString...) -> UnsafeBufferPointer<MPMarshalledData>? {
+        guard let found = withVaStrings( path, body: { mpw_marshal_data_vfind( self.pointee.data, $0 ) } )
+        else { return nil }
+
+        return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )
+    }
+}

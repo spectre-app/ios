@@ -12,6 +12,8 @@ class MPMarshal: Observable, Updatable {
     public var userFiles = [ UserFile ]() {
         didSet {
             self.observers.notify { $0.userFilesDidChange( self.userFiles ) }
+
+            AutoFill.shared.seed( self.userFiles )
         }
     }
 
@@ -619,7 +621,7 @@ class MPMarshal: Observable, Updatable {
         }
     }
 
-    class UserFile: Hashable, Comparable, CustomStringConvertible {
+    class UserFile: Hashable, Comparable, CustomStringConvertible, CredentialSupplier {
         public lazy var keychainKeyFactory = MPKeychainKeyFactory( fullName: self.fullName )
 
         public let origin: URL?
@@ -637,6 +639,7 @@ class MPMarshal: Observable, Updatable {
         public let lastUsed:  Date
 
         public let biometricLock: Bool
+        public let autofill:      Bool
 
         public var resetKey = false
 
@@ -661,6 +664,7 @@ class MPMarshal: Observable, Updatable {
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
+            self.autofill = self.file.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
         }
 
         public func authenticate(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
@@ -749,6 +753,20 @@ class MPMarshal: Observable, Updatable {
                 else {
                     return "\(self.fullName) [\(self.format)]"
                 }
+            }
+        }
+
+        // MARK: --- CredentialSupplier ---
+
+        var credentialHost: String {
+            self.fullName
+        }
+        var credentials: [AutoFill.Credential]? {
+            guard self.autofill
+            else { return nil }
+
+            return self.file.mpw_find( path: "sites" )?.compactMap {
+                String.valid( $0.obj_key ).flatMap { AutoFill.Credential( supplier: self, name: $0 ) }
             }
         }
     }

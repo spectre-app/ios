@@ -4,9 +4,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver {
+class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver, CredentialSupplier {
     public let observers = Observers<MPUserObserver>()
 
     public var algorithm: MPAlgorithmVersion {
@@ -123,9 +122,9 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                self.file?.mpw_set( self.autofill, path: "user", "_ext_mpw", "autofill" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
-            }
 
-            self.updateCredentialIdentities()
+                AutoFill.shared.update( for: self )
+            }
         }
     }
     public var attacker: MPAttacker? {
@@ -310,38 +309,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         }
     }
 
-    private func updateCredentialIdentities() {
-        #if APP_CONTAINER
-        ASCredentialIdentityStore.shared.getState {
-            guard $0.isEnabled
-            else { return }
-
-            DispatchQueue.mpw.perform {
-                let credentials = self.sites.map { site in
-                    ASPasswordCredentialIdentity(
-                            serviceIdentifier: ASCredentialServiceIdentifier( identifier: site.siteName, type: .domain ),
-                            user: (try? site.result( keyPurpose: .identification ).await())?.token ?? self.fullName,
-                            recordIdentifier: self.fullName )
-                }
-                if self.autofill {
-                    ASCredentialIdentityStore.shared.saveCredentialIdentities( credentials ) {
-                        dbg( "autofill saved? %d - %@", $0, $1 )
-                    }
-                }
-                else {
-                    ASCredentialIdentityStore.shared.removeCredentialIdentities( credentials ) {
-                        dbg( "autofill removed? %d - %@", $0, $1 )
-                    }
-                }
-            }
-        }
-        #endif
-    }
-
     // MARK: --- MPUserObserver ---
-
-    func userDidChange(_ user: MPUser) {
-    }
 
     func userDidLogin(_ user: MPUser) {
         MPTracker.shared.login( user: self )
@@ -349,6 +317,13 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     func userDidLogout(_ user: MPUser) {
         MPTracker.shared.logout()
+    }
+
+    func userDidChange(_ user: MPUser) {
+    }
+
+    func userDidUpdateSites(_ user: MPUser) {
+        AutoFill.shared.update( for: self )
     }
 
     // MARK: --- MPSiteObserver ---
@@ -360,6 +335,15 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     public func use() {
         self.lastUsed = Date()
+    }
+
+    // MARK: --- CredentialSupplier ---
+
+    var credentialHost: String {
+        self.fullName
+    }
+    var credentials: [AutoFill.Credential]? {
+        self.autofill ? self.sites.map { AutoFill.Credential( supplier: self, name: $0.siteName ) }: nil
     }
 
     // MARK: --- mpw ---
