@@ -144,6 +144,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.sites {
                 self.dirty = true
+                Set( oldValue ).subtracting( self.sites ).forEach { site in site.observers.unregister( observer: self ) }
                 self.sites.forEach { site in site.observers.register( observer: self ) }
                 self.observers.notify { $0.userDidUpdateSites( self ) }
                 self.observers.notify { $0.userDidChange( self ) }

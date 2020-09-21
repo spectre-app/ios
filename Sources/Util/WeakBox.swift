@@ -27,6 +27,17 @@ public class WeakBox<E>: Equatable {
     public static func ==(lhs: WeakBox<E>, rhs: E) -> Bool {
         lhs._value === rhs as AnyObject
     }
+
+    public static func ==(lhs: WeakBox<E>, rhs: WeakBox<E>) -> Bool where E: Equatable {
+        guard let lhs = lhs.value, let rhs = rhs.value
+        else { return false }
+
+        return lhs == rhs
+    }
+
+    public static func ==(lhs: WeakBox<E>, rhs: E) -> Bool where E: Equatable {
+        lhs.value == rhs
+    }
 }
 
 extension WeakBox: Hashable where E: Hashable {

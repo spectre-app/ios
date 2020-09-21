@@ -15,7 +15,10 @@ public class Observers<O> {
 
     @discardableResult
     public func register(observer: O) -> O {
-        self.observers.append( WeakBox( observer ) )
+        let box = WeakBox( observer )
+        if !self.observers.contains( box ) {
+            self.observers.append( box )
+        }
         return observer
     }
 

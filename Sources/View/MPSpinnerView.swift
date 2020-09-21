@@ -121,6 +121,7 @@ public class MPSpinnerView: UICollectionView {
 
         func layout(items: inout [Int: UICollectionViewLayoutAttributes], inBounds bounds: CGRect) {
             let scan = bounds.size.height > 0 ? bounds.origin.y / bounds.size.height: 0
+
             for item in 0..<self.itemCount {
                 var offset       = CGFloat.zero, scale = CGFloat.zero, alpha = CGFloat.zero
                 let itemDistance = scan - CGFloat( item )
