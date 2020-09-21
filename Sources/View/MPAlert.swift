@@ -189,7 +189,8 @@ public func mperror(title: String, message: CustomStringConvertible? = nil, deta
     let message = message?.description ?? error?.localizedDescription
     let details = [ details?.description, message == error?.localizedDescription ? nil: error?.localizedDescription,
                     (error as NSError?)?.localizedFailureReason,
-                    (error as NSError?)?.localizedRecoverySuggestion ]
+                    (error as NSError?)?.localizedRecoverySuggestion,
+                    ((error as NSError?)?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ]
             .compactMap( { $0 } ).joined( separator: "\n\n" )
 
     MPAlert( title: title, message: message?.description, details: details, level: .error )

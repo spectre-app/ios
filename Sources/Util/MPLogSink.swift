@@ -105,59 +105,62 @@ public class MPLogSink: MPConfigObserver {
         }
     }
 
+    private let queue      = DispatchQueue( label: "\(productName): Log Sink", qos: .utility )
     private var registered = false
     private var records    = [ MPLogRecord ]()
 
     public func register() {
-        guard !registered
-        else { return }
+        self.queue.sync {
+            guard !registered
+            else { return }
 
-        mpw_verbosity = .debug
-        mpw_log_sink_register( { event in
-            guard let event = event?.pointee
-            else { return false }
+            mpw_verbosity = .debug
+            mpw_log_sink_register( { event in
+                guard let event = event?.pointee
+                else { return false }
 
-            let file  = String.valid( event.file ) ?? "mpw"
-            let log   = OSLog( subsystem: productIdentifier, category: "\(file.lastPathComponent):\(event.line)" )
-            var level = OSLogType.default
-            switch event.level {
-                case .trace, .debug:
-                    level = .debug
-                case .info:
-                    level = .info
-                case .warning:
-                    level = .default
-                case .error:
-                    level = .error
-                case .fatal:
-                    level = .fault
-                @unknown default: ()
-            }
+                let file  = String.valid( event.file ) ?? "mpw"
+                let log   = OSLog( subsystem: productIdentifier, category: "\(file.lastPathComponent):\(event.line)" )
+                var level = OSLogType.default
+                switch event.level {
+                    case .trace, .debug:
+                        level = .debug
+                    case .info:
+                        level = .info
+                    case .warning:
+                        level = .default
+                    case .error:
+                        level = .error
+                    case .fatal:
+                        level = .fault
+                    @unknown default: ()
+                }
 
-            os_log( level, dso: #dsohandle, log: log, "%@", String.valid( event.message ) ?? "-" )
-            return true
-        } )
-        mpw_log_sink_register( { event in
-            guard let event = event
-            else { return false }
+                os_log( level, dso: #dsohandle, log: log, "%@", String.valid( event.message ) ?? "-" )
+                return true
+            } )
+            mpw_log_sink_register( { event in
+                guard let event = event
+                else { return false }
 
-            return MPLogSink.shared.record( event.pointee )
-        } )
+                return MPLogSink.shared.record( event.pointee )
+            } )
 
-        appConfig.observers.register( observer: self ).didChangeConfig()
+            appConfig.observers.register( observer: self ).didChangeConfig()
 
-        self.registered = true
+            self.registered = true
+        }
     }
 
     public func enumerate(level: LogLevel) -> [MPLogRecord] {
-        self.records.filter( { $0.level <= level } ).sorted()
+        self.queue.sync { self.records.filter( { $0.level <= level } ).sorted() }
     }
 
     fileprivate func record(_ event: MPLogEvent) -> Bool {
         guard let record = MPLogRecord( event )
         else { return false }
 
-        self.records.append( record )
+        self.queue.sync { self.records.append( record ) }
         return true
     }
 
