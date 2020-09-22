@@ -17,7 +17,7 @@ class MPMarshal: Observable, Updatable {
         }
     }
 
-    private let marshalQueue      = DispatchQueue( label: "marshal" )
+    private let marshalQueue      = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
     private let documentDirectory = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
                                                        .appendingPathComponent( "Documents" )
     private lazy var updateTask = DispatchTask( queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ),
@@ -48,23 +48,27 @@ class MPMarshal: Observable, Updatable {
                 throw MPError.internal( cause: "No path to marshal user.", details: user )
             }
 
-            return self.export( user: user, format: format, redacted: redacted ).then { (result: Result<Data, Error>) in
+            guard !documentURL.hasDirectoryPath
+            else {
+                saveEvent.end( [ "result": "!dir" ] )
+                throw MPError.internal( cause: "Cannot save to a directory URL.", details: documentURL )
+            }
+
+            do {
+                let documentDirectory = documentURL.deletingLastPathComponent()
+                if documentDirectory.hasDirectoryPath {
+                    try FileManager.default.createDirectory( at: documentDirectory, withIntermediateDirectories: true )
+                }
+            }
+            catch {
+                saveEvent.end( [ "result": "!path" ] )
+                throw MPError.issue( error, title: "Cannot Create Document Path", details: documentURL )
+            }
+
+            return self.export( user: user, format: format, redacted: redacted ).then { result in
                 saveEvent.end( [ "result": result.name ] )
-                let userData = try result.get()
 
-                guard !documentURL.hasDirectoryPath
-                else { throw MPError.internal( cause: "Cannot save to a directory URL.", details: documentURL ) }
-                do {
-                    let documentDirectory = documentURL.deletingLastPathComponent()
-                    if documentDirectory.hasDirectoryPath {
-                        try FileManager.default.createDirectory( at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
-                    }
-                }
-                catch {
-                    throw MPError.issue( error, title: "Cannot Create Document Path", details: documentURL )
-                }
-
-                if !FileManager.default.createFile( atPath: documentURL.path, contents: userData ) {
+                if !FileManager.default.createFile( atPath: documentURL.path, contents: try result.get() ) {
                     throw MPError.internal( cause: "Couldn't create file.", details: documentURL )
                 }
 
@@ -644,7 +648,7 @@ class MPMarshal: Observable, Updatable {
         public var resetKey = false
 
         init(origin: URL?, document: String) throws {
-            guard let file = mpw_marshal_read( nil, document )
+            guard let file = DispatchQueue.mpw.await( execute: { mpw_marshal_read( nil, document ) } )
             else { throw MPError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
             guard file.pointee.error.type == .success
             else { throw MPError.marshal( file.pointee.error, title: "Cannot Load User", details: origin ) }

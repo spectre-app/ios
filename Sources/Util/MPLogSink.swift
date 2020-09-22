@@ -63,7 +63,7 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
 }
 
 extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
-    public private(set) static var allCases = [ LogLevel ]( (.fatal)...(.trace) )
+    public static let allCases = [ LogLevel ]( (.fatal)...(.trace) )
 
     public func distance(to other: LogLevel) -> Int32 {
         other.rawValue - self.rawValue

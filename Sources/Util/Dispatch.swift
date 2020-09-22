@@ -6,7 +6,7 @@
 import Foundation
 
 extension DispatchQueue {
-    public static var mpw = DispatchQueue( label: "\(productName): mpw", qos: .utility )
+    public static let mpw = DispatchQueue( label: "\(productName): mpw", qos: .utility )
 
     public var isActive: Bool {
         (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||

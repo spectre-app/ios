@@ -6,10 +6,11 @@
 import UIKit
 import LocalAuthentication
 
+private let keyQueue     = DispatchQueue( label: "\(productName): Key Factory", qos: .utility )
 private var keyFactories = [ String: MPKeyFactory ]()
 
 private func keyFactoryProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> UnsafePointer<MPMasterKey>? {
-    DispatchQueue.mpw.await {
+    keyQueue.await {
         String.valid( fullName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
     }
 }
@@ -31,35 +32,33 @@ public class MPKeyFactory {
     // MARK: --- Interface ---
 
     public func provide() -> Promise<MPMasterKeyProvider> {
-        DispatchQueue.mpw.promise {
+        keyQueue.promise {
             keyFactories[self.fullName] = self
             return keyFactoryProvider
         }
     }
 
     public func invalidate() {
-        DispatchQueue.mpw.await {
+        keyQueue.await {
             self.masterKeysCache.forEach { $1.deallocate() }
             self.masterKeysCache.removeAll()
         }
     }
 
     public func newKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
-        DispatchQueue.mpw.await {
-            guard let masterKey = self.getKey( for: algorithm )
-            else { return nil }
+        guard let masterKey = self.getKey( for: algorithm )
+        else { return nil }
 
-            // Create a copy of the master key to be consumed by the caller.
-            let providedMasterKey = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
-            providedMasterKey.initialize( from: masterKey, count: 1 )
-            return UnsafePointer<MPMasterKey>( providedMasterKey )
-        }
+        // Create a copy of the master key to be consumed by the caller.
+        let providedMasterKey = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
+        providedMasterKey.initialize( from: masterKey, count: 1 )
+        return UnsafePointer<MPMasterKey>( providedMasterKey )
     }
 
     // MARK: --- Private ---
 
     private func getKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
-        DispatchQueue.mpw.await {
+        keyQueue.await {
             // Try to resolve the master key from the cache.
             if let masterKey = self.masterKeysCache[algorithm] {
                 return masterKey
@@ -76,7 +75,7 @@ public class MPKeyFactory {
     }
 
     fileprivate func setKey(_ key: UnsafePointer<MPMasterKey>, algorithm: MPAlgorithmVersion) {
-        DispatchQueue.mpw.await {
+        keyQueue.await {
             self.masterKeysCache[algorithm] = key
         }
     }
@@ -105,14 +104,17 @@ public class MPPasswordKeyFactory: MPKeyFactory {
     }
 
     public func toKeychain() -> Promise<MPKeychainKeyFactory> {
-        MPKeychainKeyFactory( fullName: self.fullName )
-                .saveKeys( MPAlgorithmVersion.allCases.map( { ($0, self.newKey( for: $0 )) } ) )
+        MPKeychainKeyFactory( fullName: self.fullName ).unlock().promising {
+            $0.saveKeys( MPAlgorithmVersion.allCases.map( { ($0, self.newKey( for: $0 )) } ) )
+        }
     }
 
     // MARK: --- Private ---
 
     fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
-        mpw_master_key( self.fullName, self.masterPassword, algorithm )
+        DispatchQueue.mpw.await {
+            mpw_master_key( self.fullName, self.masterPassword, algorithm )
+        }
     }
 }
 
@@ -130,7 +132,7 @@ public class MPBufferKeyFactory: MPKeyFactory {
 }
 
 public class MPKeychainKeyFactory: MPKeyFactory {
-    public static var factor: Factor = {
+    public static let factor: Factor = {
         var error: NSError?
         defer {
             if let error = error {
@@ -223,20 +225,21 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     // MARK: --- Interface ---
 
     public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
-        MPKeychainKeyFactory.factor != .biometricNone && MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
+        MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
     }
 
     public func purgeKeys() {
         for algorithm in MPAlgorithmVersion.allCases {
             MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm )
         }
+
         self.invalidate()
     }
 
     // MARK: --- Life ---
 
     public override func invalidate() {
-        DispatchQueue.mpw.await { self.context.invalidate() }
+        keyQueue.await { self.context.invalidate() }
 
         super.invalidate()
     }
@@ -254,7 +257,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     }
 
     fileprivate func saveKeys(_ items: [(MPAlgorithmVersion, UnsafePointer<MPMasterKey>?)]) -> Promise<MPKeychainKeyFactory> {
-        DispatchQueue.mpw.promising {
+        keyQueue.promising {
             var promise = Promise( .success( () ) )
 
             for item in items {

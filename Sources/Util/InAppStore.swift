@@ -7,7 +7,7 @@ import UIKit
 import StoreKit
 
 enum InAppFeature {
-    static var observers = Observers<InAppFeatureObserver>()
+    static let observers = Observers<InAppFeatureObserver>()
 
     case premium
 
@@ -43,7 +43,7 @@ enum InAppProducts: CaseIterable {
     case premiumAnnual
     case premiumMonthly
 
-    public private(set) static var allCases = [ InAppProducts ]( [ .premiumAnnual, .premiumMonthly ] )
+    public static let allCases = [ InAppProducts ]( [ .premiumAnnual, .premiumMonthly ] )
 
     static func find(identifier: String) -> InAppProducts? {
         self.allCases.first( where: { $0.identifier == identifier } )

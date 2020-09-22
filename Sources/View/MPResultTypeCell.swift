@@ -85,7 +85,7 @@ class MPResultTypeCell: MPClassItemCell {
 
     override func update() {
         if let resultType = self.resultType {
-            self.name = .valid( mpw_type_abbreviation( resultType ) )
+            self.name = resultType.abbreviation
 
             if resultType.in( class: .template ) {
                 self.class = "Template"

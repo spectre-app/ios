@@ -16,7 +16,7 @@ public class MPKeychain {
 
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
-            kSecAttrService: [ String.valid( mpw_purpose_scope( .authentication ) ), algorithm.description ]
+            kSecAttrService: [ MPKeyPurpose.authentication.scope, algorithm.description ]
                     .compactMap { $0 }.joined( separator: "." ),
             kSecAttrAccount: fullName,
             kSecAttrAccessGroup: productGroup,
@@ -62,7 +62,7 @@ public class MPKeychain {
     @discardableResult
     public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion)
                     -> Promise<Void> {
-        DispatchQueue.global( qos: .utility ).promise {
+        DispatchQueue.mpw.promise {
             let query = try self.keyQuery( for: fullName, algorithm: algorithm, context: nil )
 
             let status = SecItemDelete( query as CFDictionary )
@@ -77,7 +77,7 @@ public class MPKeychain {
                                content: UIActivityIndicatorView( style: .white ) )
         spinner.show( dismissAutomatically: false )
 
-        return DispatchQueue.global( qos: .utility ).promise {
+        return DispatchQueue.mpw.promise {
             var query = try self.keyQuery( for: fullName, algorithm: algorithm, context: context )
             query[kSecReturnData] = true
 
@@ -97,7 +97,7 @@ public class MPKeychain {
     @discardableResult
     public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext)
                     -> Promise<Void> {
-        DispatchQueue.global( qos: .utility ).promise {
+        DispatchQueue.mpw.promise {
             let query = try self.keyQuery( for: fullName, algorithm: algorithm, context: context )
 
             guard let masterKey = keyFactory.newKey( for: algorithm )

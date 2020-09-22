@@ -148,35 +148,41 @@ extension String {
     }
 
     func b64Decrypt() -> String? {
-        var secretLength = mpw_base64_decode_max( self ), keyLength = 0
-        guard secretLength > 0
-        else { return nil }
+        DispatchQueue.mpw.await {
+            var secretLength = mpw_base64_decode_max( self ), keyLength = 0
+            guard secretLength > 0
+            else { return nil }
 
-        guard let key = mpw_unhex( appSecret, &keyLength )
-        else { return nil }
-        defer { key.deallocate() }
+            guard let key = mpw_unhex( appSecret, &keyLength )
+            else { return nil }
+            defer { key.deallocate() }
 
-        var secretData = [ UInt8 ]( repeating: 0, count: secretLength )
-        secretLength = mpw_base64_decode( self, &secretData )
+            var secretData = [ UInt8 ]( repeating: 0, count: secretLength )
+            secretLength = mpw_base64_decode( self, &secretData )
 
-        return .valid( mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
-                       length: secretLength, consume: true )
+            return .valid( mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
+                           length: secretLength, consume: true )
+        }
     }
 
     func digest() -> UnsafeBufferPointer<UInt8>? {
-        guard let appSalt = appSalt.b64Decrypt()
-        else { return nil }
+        DispatchQueue.mpw.await {
+            guard let appSalt = appSalt.b64Decrypt()
+            else { return nil }
 
-        let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self, self.lengthOfBytes( using: .utf8 ) )
-        return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
+            let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self, self.lengthOfBytes( using: .utf8 ) )
+            return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
+        }
     }
 
     func hexDigest() -> String? {
-        guard let digest = self.digest()
-        else { return nil }
-        defer { digest.deallocate() }
+        DispatchQueue.mpw.await {
+            guard let digest = self.digest()
+            else { return nil }
+            defer { digest.deallocate() }
 
-        return .valid( mpw_hex( digest.baseAddress, digest.count ) )
+            return .valid( mpw_hex( digest.baseAddress, digest.count ) )
+        }
     }
 }
 

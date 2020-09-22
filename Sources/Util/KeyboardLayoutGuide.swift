@@ -6,7 +6,7 @@
 import UIKit
 
 class KeyboardLayoutGuide: UILayoutGuide {
-    class KeyboardObserver {
+    private class KeyboardObserver {
         var screenFrame = CGRect.null
         var frameObserver: Any?
 
@@ -22,16 +22,16 @@ class KeyboardLayoutGuide: UILayoutGuide {
         }
     }
 
-    static var screenObservers = [ WeakBox < UIScreen>: KeyboardObserver ]()
+    private static var screenObservers = [ WeakBox < UIScreen>: KeyboardObserver ]()
 
-    var observers   = [ Any ]()
-    var constraints = [ NSLayoutConstraint ]()
-    let view:                     UIView
-    var update:                   ((CGRect, UIEdgeInsets) -> Void)?
-    var keyboardTopConstraint:    NSLayoutConstraint!
-    var keyboardLeftConstraint:   NSLayoutConstraint!
-    var keyboardRightConstraint:  NSLayoutConstraint!
-    var keyboardBottomConstraint: NSLayoutConstraint!
+    private var observers   = [ Any ]()
+    private var constraints = [ NSLayoutConstraint ]()
+    private let view:                     UIView
+    private var update:                   ((CGRect, UIEdgeInsets) -> Void)?
+    private var keyboardTopConstraint:    NSLayoutConstraint!
+    private var keyboardLeftConstraint:   NSLayoutConstraint!
+    private var keyboardRightConstraint:  NSLayoutConstraint!
+    private var keyboardBottomConstraint: NSLayoutConstraint!
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
