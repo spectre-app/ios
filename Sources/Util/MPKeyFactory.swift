@@ -204,24 +204,6 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         super.init( fullName: fullName )
     }
 
-    public override func provide() -> Promise<MPMasterKeyProvider> {
-        let promise = Promise<MPMasterKeyProvider>()
-
-        self.context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.fullName)" ) { result, error in
-            if let error = error {
-                promise.finish( .failure( error ) )
-            }
-            else if !result {
-                promise.finish( .failure( MPError.internal( cause: "Biometrics authentication denied.", details: self.fullName ) ) )
-            }
-            else {
-                super.provide().finishes( promise )
-            }
-        }
-
-        return promise
-    }
-
     // MARK: --- Interface ---
 
     public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
@@ -242,6 +224,24 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         keyQueue.await { self.context.invalidate() }
 
         super.invalidate()
+    }
+
+    public func unlock() -> Promise<MPKeychainKeyFactory> {
+        let promise = Promise<MPKeychainKeyFactory>()
+
+        self.context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.fullName)" ) { result, error in
+            if let error = error {
+                promise.finish( .failure( error ) )
+            }
+            else if !result {
+                promise.finish( .failure( MPError.internal( cause: "Biometrics authentication denied.", details: self.fullName ) ) )
+            }
+            else {
+                promise.finish( .success( self ) )
+            }
+        }
+
+        return promise
     }
 
     // MARK: --- Private ---

@@ -9,23 +9,12 @@
 import AuthenticationServices
 import LocalAuthentication
 
-class AutoFillViewController: ASCredentialProviderViewController, MPMarshalObserver {
-    var userFiles = [ MPMarshal.UserFile ]()
-    var users     = [ MPUser ]()
-
+class AutoFillViewController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        MPLogSink.shared.register()
-        dbg( "init:nibName:bundle: dbg: %@", nibNameOrNil, nibBundleOrNil )
-
+        let _ = Model.shared
+        
+        dbg( "init:nibName:bundle: %@", nibNameOrNil, nibBundleOrNil )
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
-
-        do {
-            self.userFiles = try MPMarshal.shared.setNeedsUpdate().await()
-            MPMarshal.shared.observers.register( observer: self )
-        }
-        catch {
-            err( "Cannot read user documents: %@", error )
-        }
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -38,7 +27,7 @@ class AutoFillViewController: ASCredentialProviderViewController, MPMarshalObser
      prioritize the most relevant credentials in the list.
     */
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
-        dbg( "prepareCredentialList: inf: %@", serviceIdentifiers )
+        dbg( "prepareCredentialList: %@", serviceIdentifiers )
     }
 
     /*
@@ -50,14 +39,14 @@ class AutoFillViewController: ASCredentialProviderViewController, MPMarshalObser
      the request with error code ASExtensionError.userInteractionRequired.
     */
     override func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
-        dbg( "provideCredentialWithoutUserInteraction: inf: %@", credentialIdentity )
+        dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
 
         DispatchQueue.mpw.promising {
-            if let user = self.users.first( where: { $0.fullName == credentialIdentity.recordIdentifier } ) {
+            if let user = Model.shared.users.first( where: { $0.fullName == credentialIdentity.recordIdentifier } ) {
                 return Promise( .success( user ) )
             }
 
-            guard let userFile = self.userFiles.first( where: { $0.fullName == credentialIdentity.recordIdentifier } )
+            guard let userFile = Model.shared.userFiles.first( where: { $0.fullName == credentialIdentity.recordIdentifier } )
             else { throw self.error( .credentialIdentityNotFound, failure: "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
             let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
@@ -67,7 +56,7 @@ class AutoFillViewController: ASCredentialProviderViewController, MPMarshalObser
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
         }.promising { (user: MPUser) in
-            self.users.append( user )
+            Model.shared.users.append( user )
 
             guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
             else { throw self.error( .credentialIdentityNotFound, failure: "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
@@ -106,18 +95,11 @@ class AutoFillViewController: ASCredentialProviderViewController, MPMarshalObser
      by completing the extension request with the associated ASPasswordCredential.
     */
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
-        dbg( "prepareInterfaceToProvideCredential: inf: %@", credentialIdentity )
+        dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
     }
 
     override func prepareInterfaceForExtensionConfiguration() {
         dbg( "prepareInterfaceForExtensionConfiguration: inf" )
-    }
-
-    // MARK: --- MPMarshalObserver ---
-
-    func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
-        trc( "Users updated: %@", userFiles )
-        self.userFiles = userFiles
     }
 
     // MARK: --- Private ---
@@ -135,10 +117,40 @@ class AutoFillViewController: ASCredentialProviderViewController, MPMarshalObser
     }
 
     func cancel(_ error: ASExtensionError) {
+        dbg( "cancelling request: %@", error )
         self.extensionContext.cancelRequest( withError: error )
     }
 
     func complete(_ passwordCredential: ASPasswordCredential) {
+        dbg( "completing request: %@", passwordCredential )
         self.extensionContext.completeRequest( withSelectedCredential: passwordCredential, completionHandler: nil )
+    }
+
+    // MARK: --- Types ---
+
+    class Model : MPMarshalObserver {
+        static let shared = Model()
+
+        var users     = [ MPUser ]()
+        var userFiles = [ MPMarshal.UserFile ]()
+
+        init() {
+            MPLogSink.shared.register()
+
+            do {
+                self.userFiles = try MPMarshal.shared.setNeedsUpdate().await()
+                MPMarshal.shared.observers.register( observer: self )
+            }
+            catch {
+                err( "Cannot read user documents: %@", error )
+            }
+        }
+
+        // MARK: --- MPMarshalObserver ---
+
+        func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
+            trc( "Users updated: %@", userFiles )
+            self.userFiles = userFiles
+        }
     }
 }
