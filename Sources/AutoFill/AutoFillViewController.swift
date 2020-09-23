@@ -12,13 +12,28 @@ import LocalAuthentication
 class AutoFillViewController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         let _ = Model.shared
-        
+
         dbg( "init:nibName:bundle: %@", nibNameOrNil, nibBundleOrNil )
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // - View
+        let backgroundView = MPBackgroundView( mode: .backdrop )
+
+        // - Hierarchy
+        self.view.addSubview( backgroundView )
+
+        // - Layout
+        LayoutConfiguration( view: backgroundView )
+                .constrain()
+                .activate()
     }
 
     /*
@@ -28,6 +43,18 @@ class AutoFillViewController: ASCredentialProviderViewController {
     */
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
         dbg( "prepareCredentialList: %@", serviceIdentifiers )
+
+        let vc = AutoFillUsersViewController( userFiles: Model.shared.userFiles )
+
+        // - Hierarchy
+        self.addChild( vc )
+        self.view.addSubview( vc.view )
+        vc.didMove( toParent: self )
+
+        // - Layout
+        LayoutConfiguration( view: vc.view )
+                .constrain()
+                .activate()
     }
 
     /*
@@ -47,11 +74,11 @@ class AutoFillViewController: ASCredentialProviderViewController {
             }
 
             guard let userFile = Model.shared.userFiles.first( where: { $0.fullName == credentialIdentity.recordIdentifier } )
-            else { throw self.error( .credentialIdentityNotFound, failure: "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
+            else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
             let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
             guard keychainKeyFactory.hasKey( for: userFile.algorithm )
-            else { throw self.error( .userInteractionRequired, failure: "No key in keychain for: \(userFile.fullName)" ) }
+            else { throw ASExtensionError( .userInteractionRequired, "No key in keychain for: \(userFile.fullName)" ) }
 
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
@@ -59,7 +86,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
             Model.shared.users.append( user )
 
             guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
-            else { throw self.error( .credentialIdentityNotFound, failure: "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
+            else { throw ASExtensionError( .credentialIdentityNotFound, "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
 
             return site.result( keyPurpose: .identification ).and( site.result( keyPurpose: .authentication ) ).promise {
                 ASPasswordCredential( user: $0.0.token, password: $0.1.token )
@@ -69,16 +96,16 @@ class AutoFillViewController: ASCredentialProviderViewController {
 
             switch error {
                 case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel:
-                    self.cancel( self.error( .userCanceled, failure: "Local authentication cancelled.", error: error ) )
+                    self.cancel( ASExtensionError( .userCanceled, "Local authentication cancelled.", error: error ) )
 
                 case let error as LAError:
-                    self.cancel( self.error( .userInteractionRequired, failure: "Non-interactive authentication denied.", error: error ) )
+                    self.cancel( ASExtensionError( .userInteractionRequired, "Non-interactive authentication denied.", error: error ) )
 
                 case let extensionError as ASExtensionError:
                     self.cancel( extensionError )
 
                 default:
-                    self.cancel( self.error( .failed, failure: "Credential unavailable.", error: error ) )
+                    self.cancel( ASExtensionError( .failed, "Credential unavailable.", error: error ) )
             }
         }.success { (credential: ASPasswordCredential) in
             dbg( "Non-interactive credential lookup succeeded: %@", credential )
@@ -104,18 +131,6 @@ class AutoFillViewController: ASCredentialProviderViewController {
 
     // MARK: --- Private ---
 
-    func error(_ code: ASExtensionError.Code, failure: String, reason: CustomStringConvertible? = nil, error: Error? = nil) -> ASExtensionError {
-        var userInfo: [String: Any] = [ NSLocalizedFailureErrorKey: failure ]
-        if let error = error {
-            userInfo[NSUnderlyingErrorKey] = error
-        }
-        if let reason = reason ?? error?.localizedDescription {
-            userInfo[NSLocalizedFailureReasonErrorKey] = reason.description
-        }
-
-        return ASExtensionError( code, userInfo: userInfo )
-    }
-
     func cancel(_ error: ASExtensionError) {
         dbg( "cancelling request: %@", error )
         self.extensionContext.cancelRequest( withError: error )
@@ -128,7 +143,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
 
     // MARK: --- Types ---
 
-    class Model : MPMarshalObserver {
+    class Model: MPMarshalObserver {
         static let shared = Model()
 
         var users     = [ MPUser ]()
@@ -152,5 +167,19 @@ class AutoFillViewController: ASCredentialProviderViewController {
             trc( "Users updated: %@", userFiles )
             self.userFiles = userFiles
         }
+    }
+}
+
+extension ASExtensionError: Error {
+    init(_ code: ASExtensionError.Code, _ failure: String, reason: CustomStringConvertible? = nil, error: Error? = nil) {
+        var userInfo: [String: Any] = [ NSLocalizedFailureErrorKey: failure ]
+        if let error = error {
+            userInfo[NSUnderlyingErrorKey] = error
+        }
+        if let reason = reason ?? error?.localizedDescription {
+            userInfo[NSLocalizedFailureReasonErrorKey] = reason.description
+        }
+
+        self.init( code, userInfo: userInfo )
     }
 }

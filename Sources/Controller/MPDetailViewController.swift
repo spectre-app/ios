@@ -95,6 +95,7 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     }
 
     override func viewDidLoad() {
+        super.viewDidLoad()
 
         // - View
         self.backgroundView.layoutMargins.bottom = 40

@@ -15,6 +15,8 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
     // MARK: --- Life ---
 
     override func viewDidLoad() {
+        super.viewDidLoad()
+
         self.delegate = self
         self.isNavigationBarHidden = true
 

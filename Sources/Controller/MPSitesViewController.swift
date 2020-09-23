@@ -48,6 +48,7 @@ class MPSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesV
     }
 
     override func viewDidLoad() {
+        super.viewDidLoad()
 
         // - View
         self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name" )

@@ -64,7 +64,9 @@ class KeyboardLayoutGuide: UILayoutGuide {
         self.keyboardRightConstraint.isActive = true
         self.keyboardBottomConstraint.isActive = true
 
-        constraints?( self ).flatMap { self.constraints.append( contentsOf: $0 ) }
+        if let constraints = constraints {
+            self.add( constraints: constraints )
+        }
         self.update = update
         self.notify()
 
@@ -97,6 +99,12 @@ class KeyboardLayoutGuide: UILayoutGuide {
             }
         } )
 
+        return self
+    }
+
+    @discardableResult
+    func add(constraints: (UILayoutGuide) -> [NSLayoutConstraint]?) -> Self {
+        constraints( self ).flatMap { self.constraints.append( contentsOf: $0 ) }
         return self
     }
 
