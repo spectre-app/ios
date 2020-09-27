@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserViewController*/MPUserObserver, MPConfigObserver {
+class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewController*/MPUserObserver, MPConfigObserver {
 
     // MARK: --- Life ---
 
@@ -270,7 +270,7 @@ class MPUserDetailsViewController: MPDetailsViewController<MPUser>, /*MPUserView
                     }
                 } ),
                 ButtonItem( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) }, action: { item in
-                    item.viewController?.hostController?.show( MPAppDetailsViewController() )
+                    item.viewController?.show( MPAppDetailsViewController(), sender: item )
                 } ),
                 ButtonItem( identifier: "user #logout", value: { _ in (label: "Log out", image: nil) }, action: { item in
                     item.model?.logout()

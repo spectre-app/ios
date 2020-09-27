@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserver, MPConfigObserver {
+class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver, MPConfigObserver {
 
     // MARK: --- Life ---
 
@@ -193,8 +193,8 @@ class MPSiteDetailsViewController: MPDetailsViewController<MPSite>, MPSiteObserv
             self.userView.isRound = true
             self.userView.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let user = self.model?.user, self.model?.loginType == MPResultType.none {
-                    self.viewController?.hostController?.show(
-                            MPUserDetailsViewController( model: user, focus: MPUserDetailsViewController.LoginTypeItem.self ) )
+                    self.viewController?.show(
+                            MPUserDetailsViewController( model: user, focus: MPUserDetailsViewController.LoginTypeItem.self ), sender: self )
                 }
             }
 

@@ -21,10 +21,10 @@ class MPUsersViewController: BasicUsersViewController {
 
         // - View
         self.appToolbar.axis = .horizontal
-        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: .icon( "" ), background: false ) { _, _ in
-            self.detailsHost.show( MPAppDetailsViewController() )
+        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: .icon( "" ), background: false ) { [unowned self] _, _ in
+            self.detailsHost.show( MPAppDetailsViewController(), sender: self )
         } )
-        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: .icon( "" ), background: false ) { _, incognitoButton in
+        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: .icon( "" ), background: false ) { [unowned self] _, incognitoButton in
             guard let incognitoButton = incognitoButton as? MPTimedButton
             else { return }
             let incognitoEvent = MPTracker.shared.begin( named: "users #user" )

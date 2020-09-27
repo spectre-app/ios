@@ -20,7 +20,7 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     }
 
     override func doTapped(item: Item<M>) {
-        item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
+        item.viewController?.show( MPPremiumDetailsViewController(), sender: item )
     }
 
     // MARK: --- InAppFeatureObserver ---
@@ -33,7 +33,7 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     }
 }
 
-class MPPremiumDetailsViewController: MPDetailsViewController<Void> {
+class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     // MARK: --- Life ---
 

@@ -19,7 +19,7 @@ class AnyItem: NSObject, Updatable {
 }
 
 class Item<M>: AnyItem {
-    public weak var viewController: AnyMPDetailsViewController? {
+    public weak var viewController: MPItemsViewController<M>? {
         didSet {
             ({ self.subitems.forEach { $0.viewController = self.viewController } }())
         }
@@ -1104,6 +1104,7 @@ class ListItem<M, V: Hashable>: Item<M> {
 
             self.tableView.isHidden = false
             self.tableView.tableHeaderView = self.activityIndicator
+
             DispatchQueue.mpw.perform {
                 self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ], completion: { finished in
                     if finished {

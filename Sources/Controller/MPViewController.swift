@@ -5,9 +5,40 @@
 
 import UIKit
 
-class MPViewController: UIViewController {
+class MPViewController: UIViewController, Updatable {
     var trackScreen = true
     lazy var screen = MPTracker.shared.screen( named: type( of: self ).description() )
+
+    internal var activeChildController: UIViewController? {
+        didSet {
+            self.setNeedsStatusBarAppearanceUpdate()
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+            self.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+        }
+    }
+
+    override var next:                                       UIResponder? {
+        self.activeChildController ?? super.next
+    }
+    override var childForStatusBarStyle:                     UIViewController? {
+        self.activeChildController ?? super.childForStatusBarStyle
+    }
+    override var childForStatusBarHidden:                    UIViewController? {
+        self.activeChildController ?? super.childForStatusBarHidden
+    }
+    override var childForHomeIndicatorAutoHidden:            UIViewController? {
+        self.activeChildController ?? super.childForHomeIndicatorAutoHidden
+    }
+    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
+        self.activeChildController ?? super.childForScreenEdgesDeferringSystemGestures
+    }
+
+    var updatesPostponed: Bool {
+        !self.isViewLoaded || self.view.superview == nil
+    }
+    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
+                                                qos: .userInitiated, update: self, animated: true )
+    private var willEnterForegroundObserver: NSObjectProtocol?
 
     // MARK: --- Life ---
 
@@ -25,6 +56,26 @@ class MPViewController: UIViewController {
         }
 
         super.viewWillAppear( animated )
+
+//        UIView.performWithoutAnimation { self.update() }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+//        self.update()
+
+        self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in
+            self.setNeedsUpdate()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
+        self.updateTask.cancel()
+
+        super.viewWillDisappear( animated )
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -33,5 +84,15 @@ class MPViewController: UIViewController {
         if self.trackScreen {
             self.screen.dismiss()
         }
+    }
+
+    // MARK: --- Updatable ---
+
+    func setNeedsUpdate() {
+        self.updateTask.request()
+    }
+
+    func update() {
+        self.updateTask.cancel()
     }
 }

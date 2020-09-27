@@ -6,7 +6,7 @@
 import UIKit
 import Countly
 
-class MPLogDetailsViewController: MPDetailsViewController<MPLogDetailsViewController.Model>, ModelObserver {
+class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewController.Model>, ModelObserver {
 
     // MARK: --- Life ---
 

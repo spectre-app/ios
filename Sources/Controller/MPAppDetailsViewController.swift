@@ -6,7 +6,7 @@
 import UIKit
 import Countly
 
-class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObserver {
+class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObserver {
 
     private var didBecomeActiveObserver: NSObjectProtocol?
 
@@ -125,7 +125,7 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
                     caption: { _ in Theme.current } )
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour(mode: .enables) )
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -153,8 +153,8 @@ class MPAppDetailsViewController: MPDetailsViewController<MPConfig>, MPConfigObs
     class ManageSubscriptionItem: ButtonItem<MPConfig> {
         init() {
             super.init( identifier: "app #subscription", value: { _ in (label: "Premium Subscription", image: nil) }, action: { item in
-                item.viewController?.hostController?.show( MPPremiumDetailsViewController() )
-            })
+                item.viewController?.show( MPPremiumDetailsViewController(), sender: item )
+            } )
         }
     }
 

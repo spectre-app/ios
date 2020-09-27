@@ -6,55 +6,7 @@
 import Foundation
 import UIKit
 
-class AnyMPDetailsViewController: MPViewController, Updatable {
-    var hostController: MPDetailsHostController?
-
-    var updatesPostponed: Bool {
-        !self.isViewLoaded || self.view.superview == nil
-    }
-    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
-                                                qos: .userInitiated, update: self, animated: true )
-    private var willEnterForegroundObserver: NSObjectProtocol?
-
-    // MARK: --- Interface ---
-
-    func setNeedsUpdate() {
-        self.updateTask.request()
-    }
-
-    // MARK: --- Life ---
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear( animated )
-
-        UIView.performWithoutAnimation { self.update() }
-        self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
-                forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in
-            self.setNeedsUpdate()
-        }
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear( animated )
-
-        self.update()
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
-        self.updateTask.cancel()
-
-        super.viewWillDisappear( animated )
-    }
-
-    // MARK: --- Updatable ---
-
-    func update() {
-        self.updateTask.cancel()
-    }
-}
-
-class MPDetailsViewController<M>: AnyMPDetailsViewController {
+class MPItemsViewController<M>: MPViewController {
     public let model: M
     public var color: UIColor? {
         didSet {
@@ -133,9 +85,10 @@ class MPDetailsViewController<M>: AnyMPDetailsViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        if let focus = self.focus, let scrollView = self.hostController?.scrollView,
-           let focusItem = self.items.first( where: { $0.isKind( of: focus ) } ),
-           let focusRect = self.hostController?.scrollView.convert( focusItem.view.bounds, from: focusItem.view ) {
+        // TODO: Move to MPDetailsHostController?
+        if let focus = self.focus, let scrollView = (self.parent as? MPDetailsHostController)?.scrollView,
+           let focusItem = self.items.first( where: { $0.isKind( of: focus ) } ) {
+            let focusRect = scrollView.convert( focusItem.view.bounds, from: focusItem.view )
             scrollView.setContentOffset( CGPoint( x: 0, y: focusRect.center.y - scrollView.bounds.size.height / 2 ), animated: animated )
 
             let colorOn = Theme.current.color.selection.get(), colorOff = colorOn?.with( alpha: .off )

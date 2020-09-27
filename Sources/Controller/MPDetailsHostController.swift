@@ -16,28 +16,17 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     private lazy var popupConfiguration  = LayoutConfiguration( view: self.view )
     private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
     private let closeButton = MPButton( identifier: "details #close", attributedTitle: .icon( "" ) )
-    private var detailsController:      AnyMPDetailsViewController?
+    private var detailsController:      UIViewController? {
+        didSet {
+            self.activeChildController = self.detailsController
+        }
+    }
     private var contentSizeObservation: NSKeyValueObservation?
 
     // MARK: --- Life ---
 
-    override var next:                                       UIResponder? {
+    override var next: UIResponder? {
         self.parent?.view.superview
-    }
-    private var  activeChild:                                UIViewController? {
-        self.detailsController
-    }
-    override var childForStatusBarStyle:                     UIViewController? {
-        self.activeChild
-    }
-    override var childForStatusBarHidden:                    UIViewController? {
-        self.activeChild
-    }
-    override var childForScreenEdgesDeferringSystemGestures: UIViewController? {
-        self.activeChild
-    }
-    override var childForHomeIndicatorAutoHidden:            UIViewController? {
-        self.activeChild
     }
 
     override func loadView() {
@@ -55,7 +44,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.scrollView.contentInsetAdjustmentBehavior = .always
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
-        self.closeButton.button.addTarget( self, action: #selector( hideAction ), for: .primaryActionTriggered )
+        self.closeButton.button.action( for: .primaryActionTriggered ) { self.hide() }
 
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { [unowned self] _, _ in
             // Inset top to push content to the bottom of the host.
@@ -123,7 +112,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     #if APP_CONTAINER
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         if motion == .motionShake {
-            self.show( MPLogDetailsViewController() )
+            self.show( MPLogDetailsViewController(), sender: self )
         }
         else {
             super.motionEnded( motion, with: event )
@@ -140,13 +129,12 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
     // MARK: --- Interface ---
 
-    public func show(_ detailsController: AnyMPDetailsViewController) {
+    override func show(_ vc: UIViewController, sender: Any?) {
         self.hide {
-            self.detailsController = detailsController
+            self.detailsController = vc
 
             if let detailsController = self.detailsController {
                 UIView.performWithoutAnimation {
-                    detailsController.hostController = self
                     self.addChild( detailsController )
                     detailsController.view.frame.size = self.contentView.bounds.size.union(
                             detailsController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
@@ -178,7 +166,6 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
-                    detailsController.hostController = nil
                     self.contentView.layoutIfNeeded()
                     self.detailsController = nil
                     completion?()
