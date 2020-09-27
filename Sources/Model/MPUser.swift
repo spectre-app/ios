@@ -33,9 +33,9 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             }
         }
     }
-    public var masterKeyID: String? {
+    public var masterKeyID: MPKeyID {
         didSet {
-            if !mpw_id_buf_equals( oldValue, self.masterKeyID ) {
+            if !mpw_id_equals( [ oldValue ], &self.masterKeyID ) {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -155,11 +155,8 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         if let identicon = self.identicon.encoded() {
             return "\(self.fullName): \(identicon)"
         }
-        else if let masterKeyID = self.masterKeyID {
-            return "\(self.fullName): \(masterKeyID)"
-        }
         else {
-            return "\(self.fullName)"
+            return "\(self.fullName): \(masterKeyID)"
         }
     }
     private var initializing = true {
@@ -208,7 +205,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     // MARK: --- Life ---
 
     init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, fullName: String,
-         identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: String? = nil,
+         identicon: MPIdenticon = MPIdenticonUnset, masterKeyID: MPKeyID = MPNoKeyID,
          defaultType: MPResultType? = nil, loginType: MPResultType? = nil, loginState: String? = nil,
          lastUsed: Date = Date(), origin: URL? = nil,
          file: UnsafeMutablePointer<MPMarshalledFile>? = mpw_marshal_file( nil, nil, nil ),
@@ -243,13 +240,15 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             guard let authKey = keyFactory.newKey( for: self.algorithm )
             else { throw MPError.internal( cause: "Cannot authenticate user since master key is missing.", details: self ) }
             defer { authKey.deallocate() }
-            guard let authKeyID = String.valid( mpw_id_buf( authKey, MemoryLayout<MPMasterKey>.size ) )
+
+            var authKeyID = mpw_id_buf( authKey, MemoryLayout<MPMasterKey>.size )
+            guard mpw_id_valid( &authKeyID )
             else { throw MPError.internal( cause: "Could not determine key ID for authentication key.", details: self ) }
 
-            if self.masterKeyID == nil {
+            if !mpw_id_valid( &self.masterKeyID ) {
                 self.masterKeyID = authKeyID
             }
-            if !mpw_id_buf_equals( self.masterKeyID, authKeyID ) {
+            else if !mpw_id_equals( &self.masterKeyID, &authKeyID ) {
                 throw MPError.state( title: "Incorrect Master Key", details: self )
             }
         }.then { (result: Result<Void, Error>) -> MPUser in
@@ -352,52 +351,48 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promising {
-            switch keyPurpose {
-                case .authentication:
-                    return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType ?? self.defaultType, resultParam: resultParam,
-                                            algorithm: algorithm ?? self.algorithm )
+        switch keyPurpose {
+            case .authentication:
+                return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                        resultType: resultType ?? self.defaultType, resultParam: resultParam,
+                                        algorithm: algorithm ?? self.algorithm )
 
-                case .identification:
-                    return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                                            algorithm: algorithm ?? self.algorithm )
+            case .identification:
+                return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                        resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
+                                        algorithm: algorithm ?? self.algorithm )
 
-                case .recovery:
-                    return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                            algorithm: algorithm ?? self.algorithm )
+            case .recovery:
+                return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                        resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                        algorithm: algorithm ?? self.algorithm )
 
-                @unknown default:
-                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
-            }
+            @unknown default:
+                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promising {
-            switch keyPurpose {
-                case .authentication:
-                    return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                           resultType: resultType ?? self.defaultType, resultParam: resultParam,
-                                           algorithm: algorithm ?? self.algorithm )
+        switch keyPurpose {
+            case .authentication:
+                return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                       resultType: resultType ?? self.defaultType, resultParam: resultParam,
+                                       algorithm: algorithm ?? self.algorithm )
 
-                case .identification:
-                    return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                           resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
-                                           algorithm: algorithm ?? self.algorithm )
+            case .identification:
+                return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                       resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
+                                       algorithm: algorithm ?? self.algorithm )
 
-                case .recovery:
-                    return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                           resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                           algorithm: algorithm ?? self.algorithm )
+            case .recovery:
+                return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                       resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                       algorithm: algorithm ?? self.algorithm )
 
-                @unknown default:
-                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
-            }
+            @unknown default:
+                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
         }
     }
 

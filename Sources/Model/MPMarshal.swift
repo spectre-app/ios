@@ -99,7 +99,7 @@ class MPMarshal: Observable, Updatable {
             marshalledUser.pointee.redacted = redacted
             marshalledUser.pointee.avatar = user.avatar.rawValue
             marshalledUser.pointee.identicon = user.identicon
-            marshalledUser.pointee.keyID = mpw_strdup( user.masterKeyID )
+            marshalledUser.pointee.keyID = user.masterKeyID
             marshalledUser.pointee.defaultType = user.defaultType
             marshalledUser.pointee.loginType = user.loginType
             marshalledUser.pointee.loginState = mpw_strdup( user.loginState )
@@ -529,14 +529,12 @@ class MPMarshal: Observable, Updatable {
     }
 
     private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
-        DispatchQueue.mpw.await {
-            guard let formatExtension = String.valid( mpw_format_extension( format ) ),
-                  let directory = directory ?? self.documentDirectory
-            else { return nil }
+        guard let formatExtension = String.valid( mpw_format_extension( format ) ),
+              let directory = directory ?? self.documentDirectory
+        else { return nil }
 
-            return directory.appendingPathComponent( name.replacingOccurrences( of: "/", with: "_" ), isDirectory: false )
-                            .appendingPathExtension( formatExtension )
-        }
+        return directory.appendingPathComponent( name.replacingOccurrences( of: "/", with: "_" ), isDirectory: false )
+                        .appendingPathExtension( formatExtension )
     }
 
     // MARK: --- Updatable ---
@@ -639,7 +637,7 @@ class MPMarshal: Observable, Updatable {
         public let avatar:    MPUser.Avatar
         public let fullName:  String
         public let identicon: MPIdenticon
-        public let keyID:     String?
+        public let keyID:     MPKeyID
         public let lastUsed:  Date
 
         public let biometricLock: Bool
@@ -648,7 +646,7 @@ class MPMarshal: Observable, Updatable {
         public var resetKey = false
 
         init(origin: URL?, document: String) throws {
-            guard let file = DispatchQueue.mpw.await( execute: { mpw_marshal_read( nil, document ) } )
+            guard let file = mpw_marshal_read( nil, document )
             else { throw MPError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
             guard file.pointee.error.type == .success
             else { throw MPError.marshal( file.pointee.error, title: "Cannot Load User", details: origin ) }
@@ -664,7 +662,7 @@ class MPMarshal: Observable, Updatable {
             self.avatar = MPUser.Avatar( rawValue: info.avatar ) ?? .avatar_0
             self.fullName = fullName
             self.identicon = info.identicon
-            self.keyID = .valid( info.keyID )
+            self.keyID = info.keyID
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
@@ -681,7 +679,7 @@ class MPMarshal: Observable, Updatable {
                         avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
                         fullName: String.valid( marshalledUser.fullName ) ?? self.fullName,
                         identicon: marshalledUser.identicon,
-                        masterKeyID: self.resetKey ? nil: self.keyID,
+                        masterKeyID: self.resetKey ? MPNoKeyID: self.keyID,
                         defaultType: marshalledUser.defaultType,
                         loginType: marshalledUser.loginType,
                         loginState: .valid( marshalledUser.loginState ),
@@ -751,11 +749,8 @@ class MPMarshal: Observable, Updatable {
                 if let identicon = self.identicon.encoded() {
                     return "\(self.fullName): \(identicon) [\(self.format)]"
                 }
-                else if let keyID = self.keyID {
-                    return "\(self.fullName): \(keyID) [\(self.format)]"
-                }
                 else {
-                    return "\(self.fullName) [\(self.format)]"
+                    return "\(self.fullName): \(self.keyID) [\(self.format)]"
                 }
             }
         }

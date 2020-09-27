@@ -78,13 +78,7 @@ extension MPIdenticon: Equatable {
     }
 
     public func encoded() -> String? {
-        if self.color == .unset {
-            return nil
-        }
-
-        return DispatchQueue.mpw.await {
-            String.valid( mpw_identicon_encode( self ) )
-        }
+        self.color == .unset ? nil: .valid( mpw_identicon_encode( self ), consume: true )
     }
 
     public func text() -> String? {
@@ -160,9 +154,7 @@ extension MPKeyPurpose: CustomStringConvertible {
     }
 
     public var scope: String? {
-        DispatchQueue.mpw.await {
-            String.valid( mpw_purpose_scope( .authentication ) )
-        }
+        .valid( mpw_purpose_scope( .authentication ) )
     }
 }
 
@@ -178,9 +170,7 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     }
 
     public var name: String? {
-        DispatchQueue.mpw.await {
-            .valid( mpw_format_name( self ) )
-        }
+        .valid( mpw_format_name( self ) )
     }
 
     public var uti:         String? {
@@ -221,20 +211,14 @@ extension MPResultType: CustomStringConvertible, CaseIterable {
         .recovery: [ .templatePhrase ],
     ]
 
-    public var abbreviation: String {
-        DispatchQueue.mpw.await {
-            String.valid( mpw_type_abbreviation( self ) ) ?? "?"
-        }
+    public var abbreviation:         String {
+        String.valid( mpw_type_abbreviation( self ) ) ?? "?"
     }
-    public var description: String {
-        DispatchQueue.mpw.await {
-            String.valid( mpw_type_short_name( self ) ) ?? "?"
-        }
+    public var description:          String {
+        String.valid( mpw_type_short_name( self ) ) ?? "?"
     }
     public var localizedDescription: String {
-        DispatchQueue.mpw.await {
-            String.valid( mpw_type_long_name( self ) ) ?? "?"
-        }
+        String.valid( mpw_type_long_name( self ) ) ?? "?"
     }
 
     public var nonEmpty: Self? {
@@ -253,47 +237,33 @@ extension MPResultType: CustomStringConvertible, CaseIterable {
 extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
 
     public func mpw_get(path: StaticString...) -> Bool? {
-        DispatchQueue.mpw.await {
-            withVaStrings( path ) { mpw_marshal_data_vget_bool( self.pointee.data, $0 ) }
-        }
+        withVaStrings( path ) { mpw_marshal_data_vget_bool( self.pointee.data, $0 ) }
     }
 
     public func mpw_get(path: StaticString...) -> Double? {
-        DispatchQueue.mpw.await {
-            withVaStrings( path ) { mpw_marshal_data_vget_num( self.pointee.data, $0 ) }
-        }
+        withVaStrings( path ) { mpw_marshal_data_vget_num( self.pointee.data, $0 ) }
     }
 
     public func mpw_get(path: StaticString...) -> String? {
-        DispatchQueue.mpw.await {
-            withVaStrings( path ) { .valid( mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
-        }
+        withVaStrings( path ) { .valid( mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
     }
 
     public func mpw_set(_ value: Bool, path: StaticString...) -> Bool {
-        DispatchQueue.mpw.await {
-            withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
-        }
+        withVaStrings( path ) { mpw_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
     }
 
     public func mpw_set(_ value: Double, path: StaticString...) -> Bool {
-        DispatchQueue.mpw.await {
-            withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.pointee.data, $0 ) }
-        }
+        withVaStrings( path ) { mpw_marshal_data_vset_num( value, self.pointee.data, $0 ) }
     }
 
     public func mpw_set(_ value: String?, path: StaticString...) -> Bool {
-        DispatchQueue.mpw.await {
-            withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.pointee.data, $0 ) }
-        }
+        withVaStrings( path ) { mpw_marshal_data_vset_str( value, self.pointee.data, $0 ) }
     }
 
     public func mpw_find(path: StaticString...) -> UnsafeBufferPointer<MPMarshalledData>? {
-        DispatchQueue.mpw.await {
-            guard let found = withVaStrings( path, body: { mpw_marshal_data_vfind( self.pointee.data, $0 ) } )
-            else { return nil }
+        guard let found = withVaStrings( path, body: { mpw_marshal_data_vfind( self.pointee.data, $0 ) } )
+        else { return nil }
 
-            return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )
-        }
+        return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )
     }
 }

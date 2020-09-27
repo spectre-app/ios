@@ -157,7 +157,8 @@ class MPTracker: MPConfigObserver {
     }
 
     func login(user: MPUser) {
-        guard let keyId = user.masterKeyID?.uppercased(), let userId = keyId.hexDigest(), let userName = user.fullName.hexDigest()
+        guard let userId = withUnsafeBytes( of: user.masterKeyID.bytes, { $0.bindMemory( to: UInt8.self ).digest()?.hex() } ),
+              let userName = user.fullName.digest()?.hex()
         else { return }
 
         let userConfig: [String: Any] = [
@@ -171,9 +172,9 @@ class MPTracker: MPConfigObserver {
         ]
 
         let user = User( userId: userId )
-        SentrySDK.setUser( user )
         user.username = userName
         user.data = userConfig
+        SentrySDK.setUser( user )
         Countly.sharedInstance().userLogged( in: userId )
         Countly.user().name = userName as NSString
         Countly.user().custom = userConfig as NSDictionary

@@ -235,52 +235,48 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promising {
-            switch keyPurpose {
-                case .authentication:
-                    return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                             resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
-                                             algorithm: algorithm ?? self.algorithm )
+        switch keyPurpose {
+            case .authentication:
+                return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                         resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
+                                         algorithm: algorithm ?? self.algorithm )
 
-                case .identification:
-                    return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                             resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                                             algorithm: algorithm ?? self.algorithm )
+            case .identification:
+                return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                         resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
+                                         algorithm: algorithm ?? self.algorithm )
 
-                case .recovery:
-                    return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                             resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                             algorithm: algorithm ?? self.algorithm )
+            case .recovery:
+                return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                         resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                         algorithm: algorithm ?? self.algorithm )
 
-                @unknown default:
-                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
-            }
+            @unknown default:
+                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        DispatchQueue.mpw.promising {
-            switch keyPurpose {
-                case .authentication:
-                    return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType ?? self.resultType, resultParam: resultParam,
-                                            algorithm: algorithm ?? self.algorithm )
+        switch keyPurpose {
+            case .authentication:
+                return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                        resultType: resultType ?? self.resultType, resultParam: resultParam,
+                                        algorithm: algorithm ?? self.algorithm )
 
-                case .identification:
-                    return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType ?? self.loginType, resultParam: resultParam,
-                                            algorithm: algorithm ?? self.algorithm )
+            case .identification:
+                return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                        resultType: resultType ?? self.loginType, resultParam: resultParam,
+                                        algorithm: algorithm ?? self.algorithm )
 
-                case .recovery:
-                    return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                            resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                            algorithm: algorithm ?? self.algorithm )
+            case .recovery:
+                return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                                        resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                        algorithm: algorithm ?? self.algorithm )
 
-                @unknown default:
-                    throw MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose )
-            }
+            @unknown default:
+                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
         }
     }
 

@@ -72,27 +72,25 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         guard type.in( class: .template )
         else { return nil }
 
-        return DispatchQueue.mpw.await {
-            var count = 0
-            guard let templates = mpw_type_templates( type, &count )
-            else { return nil }
-            defer { templates.deallocate() }
+        var count = 0
+        guard let templates = mpw_type_templates( type, &count )
+        else { return nil }
+        defer { templates.deallocate() }
 
-            var typePermutations = Decimal( 0 )
-            for t in 0..<count {
-                guard let template = templates[t]
-                else { continue }
+        var typePermutations = Decimal( 0 )
+        for t in 0..<count {
+            guard let template = templates[t]
+            else { continue }
 
-                var templatePermutations = Decimal( 1 )
-                for c in 0..<strlen( template ) {
-                    templatePermutations *= Decimal( strlen( mpw_class_characters( template[c] ) ) )
-                }
-
-                typePermutations += templatePermutations
+            var templatePermutations = Decimal( 1 )
+            for c in 0..<strlen( template ) {
+                templatePermutations *= Decimal( strlen( mpw_class_characters( template[c] ) ) )
             }
 
-            return typePermutations
+            typePermutations += templatePermutations
         }
+
+        return typePermutations
     }
 
     static func entropy(type: MPResultType) -> Int? {
@@ -107,28 +105,26 @@ enum MPAttacker: Int, CaseIterable, CustomStringConvertible {
         guard let string = string
         else { return nil }
 
-        return DispatchQueue.mpw.await {
-            var stringPermutations = Decimal( 1 )
+        var stringPermutations = Decimal( 1 )
 
-            for passwordCharacter in string.utf8CString {
-                var characterEntropy = Decimal( 256 ) /* a byte */
+        for passwordCharacter in string.utf8CString {
+            var characterEntropy = Decimal( 256 ) /* a byte */
 
-                for characterClass in [ "v", "c", "a", "x" ] {
-                    guard let charactersForClass = mpw_class_characters( characterClass.utf8CString[0] )
-                    else { continue }
+            for characterClass in [ "v", "c", "a", "x" ] {
+                guard let charactersForClass = mpw_class_characters( characterClass.utf8CString[0] )
+                else { continue }
 
-                    if (strchr( charactersForClass, Int32( passwordCharacter ) )) != nil {
-                        // Found class for password character.
-                        characterEntropy = Decimal( strlen( charactersForClass ) )
-                        break
-                    }
+                if (strchr( charactersForClass, Int32( passwordCharacter ) )) != nil {
+                    // Found class for password character.
+                    characterEntropy = Decimal( strlen( charactersForClass ) )
+                    break
                 }
-
-                stringPermutations *= characterEntropy
             }
 
-            return stringPermutations
+            stringPermutations *= characterEntropy
         }
+
+        return stringPermutations
     }
 
     static func entropy(string: String?) -> Int? {

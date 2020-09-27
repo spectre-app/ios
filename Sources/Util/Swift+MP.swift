@@ -96,26 +96,41 @@ extension Result {
 extension String {
     /** Create a String from a signed c-string of valid UTF8 bytes. */
     static func valid(_ pointer: UnsafePointer<CSignedChar>?, consume: Bool = false) -> String? {
-        defer { if consume { pointer?.deallocate() } }
-        return pointer.flatMap { self.init( validatingUTF8: $0 ) }
+        guard let pointer = pointer
+        else { return nil }
+        defer { if consume { pointer.deallocate() } }
+        return self.init( validatingUTF8: pointer )
     }
 
     /** Create a String from an unsigned c-string of valid UTF8 bytes. */
     static func valid(_ pointer: UnsafePointer<CUnsignedChar>?, consume: Bool = false) -> String? {
-        defer { if consume { pointer?.deallocate() } }
+        guard let pointer = pointer
+        else { return nil }
+        defer { if consume { pointer.deallocate() } }
         return self.decodeCString( pointer, as: Unicode.UTF8.self, repairingInvalidCodeUnits: false )?.result
     }
 
     /** Create a String from a raw buffer of length valid UTF8 bytes. */
     static func valid(_ pointer: UnsafeRawPointer?, length: Int, consume: Bool = false) -> String? {
-        defer { if consume { pointer?.deallocate() } }
-        return self.valid( mpw_strndup( pointer?.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
+        guard let pointer = pointer
+        else { return nil }
+        defer { if consume { pointer.deallocate() } }
+        return self.valid( mpw_strndup( pointer.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
     }
 
     /** Create a String from a raw buffer of length valid UTF8 bytes. */
     static func valid(_ pointer: UnsafeMutableRawPointer?, length: Int, consume: Bool = false) -> String? {
-        defer { if consume { pointer?.deallocate() } }
-        return self.valid( mpw_strndup( pointer?.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
+        guard let pointer = pointer
+        else { return nil }
+        defer { if consume { pointer.deallocate() } }
+        return self.valid( mpw_strndup( pointer.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
+    }
+
+    /** Create a String from a raw buffer of length valid UTF8 bytes. */
+    static func valid(_ pointer: UnsafeRawBufferPointer?, consume: Bool = false) -> String? {
+        guard let pointer = pointer
+        else { return nil }
+        return self.valid( pointer.baseAddress, length: pointer.count, consume: consume )
     }
 
     public var nonEmpty: Self? {
@@ -146,43 +161,45 @@ extension String {
         let brightness = CGFloat( ratio( of: digest[2], from: 0.5, to: 0.7 ) )
         return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: 1 )
     }
+}
 
+extension String {
     func b64Decrypt() -> String? {
-        DispatchQueue.mpw.await {
-            var secretLength = mpw_base64_decode_max( self ), keyLength = 0
-            guard secretLength > 0
-            else { return nil }
+        var secretLength = mpw_base64_decode_max( self ), keyLength = 0
+        guard secretLength > 0
+        else { return nil }
 
-            guard let key = mpw_unhex( appSecret, &keyLength )
-            else { return nil }
-            defer { key.deallocate() }
+        guard let key = mpw_unhex( appSecret, &keyLength )
+        else { return nil }
+        defer { key.deallocate() }
 
-            var secretData = [ UInt8 ]( repeating: 0, count: secretLength )
-            secretLength = mpw_base64_decode( self, &secretData )
+        var secretData = [ UInt8 ]( repeating: 0, count: secretLength )
+        secretLength = mpw_base64_decode( self, &secretData )
 
-            return .valid( mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
-                           length: secretLength, consume: true )
-        }
+        return .valid( mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
+                       length: secretLength, consume: true )
     }
 
     func digest() -> UnsafeBufferPointer<UInt8>? {
-        DispatchQueue.mpw.await {
-            guard let appSalt = appSalt.b64Decrypt()
-            else { return nil }
+        guard let appSalt = appSalt.b64Decrypt()
+        else { return nil }
 
-            let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self, self.lengthOfBytes( using: .utf8 ) )
-            return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
-        }
+        let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self, self.lengthOfBytes( using: .utf8 ) )
+        return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
+    }
+}
+
+extension UnsafeBufferPointer where Element == UInt8 {
+    func digest() -> UnsafeBufferPointer<UInt8>? {
+        guard let appSalt = appSalt.b64Decrypt()
+        else { return nil }
+
+        let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self.baseAddress, self.count )
+        return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
     }
 
-    func hexDigest() -> String? {
-        DispatchQueue.mpw.await {
-            guard let digest = self.digest()
-            else { return nil }
-            defer { digest.deallocate() }
-
-            return .valid( mpw_hex( digest.baseAddress, digest.count ) )
-        }
+    func hex() -> String? {
+        .valid( mpw_hex( self.baseAddress, self.count, nil, nil ), consume: true )
     }
 }
 
