@@ -151,12 +151,12 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             }
         }
     }
-    public var  description: String {
+    public var description: String {
         if let identicon = self.identicon.encoded() {
             return "\(self.fullName): \(identicon)"
         }
         else {
-            return "\(self.fullName): \(masterKeyID)"
+            return "\(self.fullName): \(withUnsafeBytes( of: self.masterKeyID.hex, { String.valid( $0 ) } ) ?? "-")"
         }
     }
     private var initializing = true {
