@@ -83,8 +83,11 @@ public class MPKeychain {
 
             var result: CFTypeRef?
             let status = SecItemCopyMatching( query as CFDictionary, &result )
-            guard status == errSecSuccess, let data = result as? Data
+            guard status == errSecSuccess
             else { throw MPError.issue( status, title: "Biometrics Key Denied", details: fullName ) }
+
+            guard let data = result as? Data, data.count == MemoryLayout<MPMasterKey>.size
+            else { throw MPError.internal( cause: "Biometrics Key Not Valid", details: fullName ) }
 
             let masterKeyBytes = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
             data.withUnsafeBytes { masterKeyBytes.initialize( to: $0.load( as: MPMasterKey.self ) ) }
