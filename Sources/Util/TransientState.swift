@@ -18,17 +18,17 @@ public enum TransientState {
         }
     }
 
-    case sideEffect
+    case cursing // Recurse prevention
 
     public var isActive: Bool {
         TransientState.activeStates[self] ?? 0 > 0
     }
 
-    public func perform(_ action: () -> Void) {
+    public func perform<V>(_ action: () throws -> V) rethrows -> V {
         TransientState.activeStates[self] = (TransientState.activeStates[self] ?? 0) + 1
         defer { TransientState.activeStates[self] = (TransientState.activeStates[self] ?? 0) - 1 }
 
-        action()
+        return try action()
     }
 }
 

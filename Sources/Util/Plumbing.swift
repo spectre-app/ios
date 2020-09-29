@@ -18,38 +18,46 @@ func withVaStrings<R>(_ strings: [StaticString], terminate: Bool = true, body: (
 }
 
 extension NSObject {
-    dynamic func propertyWithValue(_ value: AnyObject) -> String? {
-        var count: UInt32 = 0
-        guard let properties = class_copyPropertyList( type( of: self ), &count )
-        else { return nil }
-        defer { free( properties ) }
+    dynamic func property(withValue value: AnyObject) -> String? {
+        var mirror: Mirror? = Mirror.init( reflecting: self )
+        while let mirror_ = mirror {
+            if let child = mirror_.children.first( where: { $0.value as AnyObject? === value } ) {
+                if child.label == nil {
+                    wrn( "Missing label for mirror: %@, child: %@", mirror_, child )
+                }
 
-        for p in 0..<Int( count ) {
-            guard let currentPropertyName = String.valid( property_getName( properties[p] ) )
-            else { continue }
-
-            if let ival = self.value( forKey: currentPropertyName ) as AnyObject?, ival === value {
-                return currentPropertyName
+                return child.label
             }
+
+            mirror = mirror_.superclassMirror
         }
 
-        return nil
-    }
-
-    dynamic func ivarWithValue(_ value: AnyObject) -> String? {
-        var type: AnyClass? = Swift.type( of: self )
+        var type: AnyClass? = Self.self
         while (type != nil) {
             var count: UInt32 = 0
-            guard let ivars = class_copyIvarList( type, &count )
-            else { break }
-            defer { free( ivars ) }
 
-            for i in 0..<Int( count ) {
-                let ivar = ivars[i]
-                if String.valid( ivar_getTypeEncoding( ivar ) ) == "@",
-                   let ival = object_getIvar( self, ivar ) as AnyObject?,
-                   ival === value {
-                    return .valid( ivar_getName( ivar ) )
+            if let properties = class_copyPropertyList( type, &count ) {
+                defer { free( properties ) }
+
+                for p in 0..<Int( count ) {
+                    if let propertyName = String.valid( property_getName( properties[p] ) ),
+                       let propertyValue = self.value( forKey: propertyName ) as AnyObject?,
+                       value === propertyValue {
+                        return propertyName
+                    }
+                }
+            }
+
+            if let ivars = class_copyIvarList( type, &count ) {
+                defer { free( ivars ) }
+
+                for i in 0..<Int( count ) {
+                    let ivar = ivars[i]
+
+                    if let encoding = ivar_getTypeEncoding( ivar ), encoding.pointee == 64,
+                       value === object_getIvar( self, ivar ) as AnyObject? {
+                        return .valid( ivar_getName( ivar ) )
+                    }
                 }
             }
 

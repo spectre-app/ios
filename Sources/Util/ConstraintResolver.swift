@@ -240,10 +240,11 @@ public extension NSLayoutConstraint {
 
     private func describeItem(_ item: AnyObject) -> String {
         if let view = item as? UIView {
-            return describe( view )
+            return view.describe()
         }
         else if let guide = item as? UILayoutGuide, let owningView = guide.owningView {
-            let owner = describe( owningView )
+            let owner = owningView.describe()
+
             if guide.identifier == "UIViewLayoutMarginsGuide" {
                 return "LM{\(owner)}"
             }

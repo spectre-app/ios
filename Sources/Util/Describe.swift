@@ -5,17 +5,18 @@
 
 import UIKit
 
-protocol Describable {
-    var describe: String { get }
+@objc
+public protocol Describable {
+    func describe(short: Bool) -> String
 }
 
 private let swiftTypePattern = (try? NSRegularExpression( pattern: "^_T[^0-9]*" ))!
 
-func describe(_ type: AnyClass?, short: Bool = false, _: Void = ()) -> String? {
-    type.flatMap { describe( $0, short: short ) }
+func _describe(_ type: AnyClass?, short: Bool = false, _: Void = ()) -> String? {
+    type.flatMap { _describe( $0, short: short ) }
 }
 
-func describe(_ type: AnyClass, short: Bool = false) -> String {
+func _describe(_ type: AnyClass, short: Bool = false) -> String {
     var className = NSStringFromClass( type )
 
     // Get the last inner class name.
@@ -23,12 +24,13 @@ func describe(_ type: AnyClass, short: Bool = false) -> String {
 
     // Decode the swift class name.
     if let swiftType = swiftTypePattern.firstMatch( in: className, range: NSRange( location: 0, length: className.count ) )?.range,
-       swiftType.location != NSNotFound && swiftType.length > 0 {
-        let decoding = String( className.suffix( swiftType.location + swiftType.length ) )
+       swiftType.location != NSNotFound && swiftType.length > 0, let range = Range( swiftType, in: className ) {
+        let decoding = className[range.upperBound...]
         var decoded  = [ String ]()
         var index    = decoding.startIndex
         while index < decoding.endIndex {
-            guard let length = Int( decoding.suffix( from: index ) ), length > 0
+            let length = (decoding[index...] as NSString).integerValue
+            guard length > 0
             else { break }
 
             let lengthLength = Int( log10( Double( length ) ) + 1 )
@@ -37,7 +39,7 @@ func describe(_ type: AnyClass, short: Bool = false) -> String {
             decoded.append( String( decoding[from..<to] ) )
             index = to
         }
-        className = decoded.last ?? decoding
+        className = decoded.last ?? String( decoding )
     }
 
     if short {
@@ -47,31 +49,20 @@ func describe(_ type: AnyClass, short: Bool = false) -> String {
     return className
 }
 
-func describe(_ type: UIView?, short: Bool = false, _: Void = ()) -> String? {
-    type.flatMap { describe( $0, short: short ) }
-}
+extension UIView: Describable {
+    public func describe(short: Bool = false) -> String {
+        let owner = self.owner
 
-func describe(_ view: UIView, short: Bool = false) -> String {
-    let owner = view.owner
-
-    if short {
-        if view == (owner?.0 as? UIViewController)?.viewIfLoaded {
-            return "view"
+        if let identifier = self.accessibilityIdentifier?.nonEmpty {
+            return identifier
+        }
+        if let owner = owner {
+            return short ? owner.name: "\(_describe( Self.self, short: true )) \(owner.name) @\(_describe( type( of: owner.host ), short: true ))"
+        }
+        if let index = self.superview?.subviews.firstIndex( of: self ) {
+            return short ? "[\(index)]": "[\(index)] \(_describe( Self.self ))"
         }
 
-        if let index = view.superview?.subviews.firstIndex( of: view ) {
-            return "[\(index)] \(describe( type( of: view ) ))"
-        }
-
-        return describe( type( of: view ) )
+        return _describe( Self.self )
     }
-
-    //let identifier : String = (inAccessibilityIdentifier ? nil: view.accessibilityIdentifier)< ??
-    let identifier: String = view.accessibilityIdentifier?.nonEmpty ??
-            (owner?.1).flatMap { "\(describe( type( of: view ), short: true )) \($0)" } ?? describe( type( of: view ) )
-    if let nextResponder = owner?.0 {
-        return "\(identifier) \(describe( type( of: nextResponder ), short: true ))"
-    }
-
-    return identifier
 }

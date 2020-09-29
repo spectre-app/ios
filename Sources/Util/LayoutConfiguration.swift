@@ -36,7 +36,7 @@ public struct LayoutTarget<T: UIView>: CustomStringConvertible {
     public let view:                T?
     public let layoutGuide:         UILayoutGuide?
     public var description:         String {
-        describe( self.view ) ?? self.layoutGuide?.description ?? "-"
+        self.view?.describe() ?? self.layoutGuide?.description ?? "-"
     }
     public var owningView:          UIView? {
         self.view?.superview ?? self.layoutGuide?.owningView

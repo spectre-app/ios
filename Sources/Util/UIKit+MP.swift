@@ -541,23 +541,11 @@ extension UITraitCollection {
     }
 }
 
-//private var inAccessibilityIdentifier = false
 extension UIView {
-    public override var accessibilityLabel: String? {
-        get {
-//            inAccessibilityIdentifier = true
-//            defer { inAccessibilityIdentifier = false }
-            super.accessibilityLabel ?? describe(self)
-        }
-        set {
-            super.accessibilityLabel = newValue
-        }
-    }
-
-    var owner : (UIResponder, String)? {
-        var nextResponder: UIResponder?
+    public var owner: (host: UIResponder, name: String)? {
+        var nextResponder: UIResponder? = self
         while let nextResponder_ = nextResponder {
-            if let property = nextResponder_.ivarWithValue( self ) {
+            if let property = nextResponder_.property( withValue: self ) {
                 return (nextResponder_, property)
             }
 

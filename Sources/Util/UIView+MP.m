@@ -6,6 +6,12 @@
 #import "UIView+MP.h"
 #import <objc/runtime.h>
 
+@interface UIView(MP_Swift)
+
+- (NSString *)describeWithShort:(BOOL)s;
+
+@end
+
 @implementation UIView(MP)
 
 - (UIEdgeInsets)alignmentRectInsets {
@@ -36,6 +42,20 @@
 - (CGRect)alignmentRect {
 
     return [self alignmentRectForFrame:self.frame];
+}
+
+- (NSString *)accessibilityIdentifier {
+
+    if ([NSThread currentThread].threadDictionary[@"accessibilityIdentifier"])
+        return nil;
+
+    @try {
+        [NSThread currentThread].threadDictionary[@"accessibilityIdentifier"] = @YES;
+        return [self describeWithShort:NO];
+    }
+    @finally {
+        [NSThread currentThread].threadDictionary[@"accessibilityIdentifier"] = nil;
+    }
 }
 
 @end

@@ -146,7 +146,7 @@ class KeyboardLayoutGuide: UILayoutGuide {
         self.keyboardRightConstraint.constant = keyboardViewFrame.maxX - self.view.bounds.maxX
         self.keyboardBottomConstraint.constant = keyboardViewFrame.maxY - self.view.bounds.maxY
 
-        trc( "keyboardFrame view %@: %@ (%@)", describe( self.view ), keyboardViewFrame, keyboardInsets )
+        trc( "keyboardFrame view %@: %@ (%@)", self.view.describe(), keyboardViewFrame, keyboardInsets )
         self.update?( keyboardViewFrame, keyboardInsets )
     }
 }
