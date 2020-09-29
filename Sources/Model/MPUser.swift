@@ -241,17 +241,18 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             else { throw MPError.internal( cause: "Cannot authenticate user since master key is missing.", details: self ) }
             defer { authKey.deallocate() }
 
-            var authKeyID = authKey.pointee.keyID
-            guard mpw_id_valid( &authKeyID )
+            guard mpw_id_valid( [ authKey.pointee.keyID ] )
             else { throw MPError.internal( cause: "Could not determine key ID for authentication key.", details: self ) }
 
             if !mpw_id_valid( &self.masterKeyID ) {
                 self.masterKeyID = authKey.pointee.keyID
             }
-            else if !mpw_id_equals( &self.masterKeyID, &authKeyID ) {
+            else if !mpw_id_equals( &self.masterKeyID, [ authKey.pointee.keyID ] ) {
                 throw MPError.state( title: "Incorrect Master Key", details: self )
             }
-        }.then { (result: Result<Void, Error>) -> MPUser in
+
+            return self
+        }.then { (result: Result<MPUser, Error>) -> Void in
             switch result {
                 case .success:
                     if let keyFactory = keyFactory as? MPPasswordKeyFactory {
@@ -263,8 +264,6 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                 case .failure:
                     self.logout()
             }
-
-            return self
         }
     }
 
