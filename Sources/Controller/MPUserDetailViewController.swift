@@ -233,7 +233,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                         update: { $0.autofill = $1 },
                         caption: { _ in
                             """
-                            Expose sites in password auto-fill
+                            Expose services in password auto-fill
                             from other apps.
                             """
                         } ),
@@ -291,7 +291,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class UsesItem: LabelItem<MPUser> {
         init() {
-            super.init( title: "Sites", value: { $0.sites.count } )
+            super.init( title: "Sites", value: { $0.services.count } )
         }
     }
 

@@ -59,7 +59,7 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
           ] ),
           Item<Void>( subitems: [
               FeatureItem( name: "Login Name Generator", icon: "",
-                           caption: "Upgrade your inter-site anonymity with unique login names. Who is who?" ),
+                           caption: "Upgrade your inter-service anonymity with unique login names. Who is who?" ),
               FeatureItem( name: "Security Answer Generator", icon: "",
                            caption: "Say « No » to those pretentiously invasive \"security\" questions." ),
           ] ),

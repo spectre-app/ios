@@ -5,8 +5,8 @@
 
 import UIKit
 
-class MPSitesViewController: BasicSitesViewController {
-    private let userButton  = MPButton( identifier: "sites #user_settings" )
+class MPServicesViewController: BasicServicesViewController {
+    private let userButton  = MPButton( identifier: "services #user_settings" )
     private let detailsHost = MPDetailsHostController()
 
     override var user: MPUser {
@@ -54,8 +54,8 @@ class MPSitesViewController: BasicSitesViewController {
 
     // MARK: --- MPSitesViewObserver ---
 
-    override func siteWasSelected(site selectedSite: MPSite?) {
-        super.siteWasSelected( site: selectedSite )
+    override func serviceWasSelected(service selectedSite: MPService?) {
+        super.serviceWasSelected( service: selectedSite )
 
         if selectedSite == nil {
             DispatchQueue.main.perform {
@@ -66,9 +66,9 @@ class MPSitesViewController: BasicSitesViewController {
         }
     }
 
-    override func siteDetailsAction(site: MPSite) {
+    override func serviceDetailsAction(service: MPService) {
         DispatchQueue.main.perform {
-            self.detailsHost.show( MPSiteDetailsViewController( model: site ), sender: self )
+            self.detailsHost.show( MPServiceDetailsViewController( model: service ), sender: self )
         }
     }
 

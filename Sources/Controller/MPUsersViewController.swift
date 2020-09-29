@@ -55,7 +55,7 @@ class MPUsersViewController: BasicUsersViewController {
                         let user = try result.get()
                         MPFeedback.shared.play( .trigger )
                         incognitoEvent.end( [ "result": "incognito" ] )
-                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+                        self.navigationController?.pushViewController( MPServicesViewController( user: user ), animated: true )
                     }
                     catch {
                         mperror( title: "Couldn't unlock user", error: error )
@@ -121,7 +121,7 @@ class MPUsersViewController: BasicUsersViewController {
     override func login(user: MPUser) {
         super.login( user: user )
 
-        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
+        self.navigationController?.pushViewController( MPServicesViewController( user: user ), animated: true )
     }
 
     // MARK: --- Private ---
@@ -134,7 +134,7 @@ class MPUsersViewController: BasicUsersViewController {
             This will delete the user and all of its recorded state:
             \(userFile)
 
-            Note: You can re-create the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
+            Note: You can re-create the user at any time and add back your services to fully regenerate their stateless passwords and other content.
             When re-creating the user, make sure to use the exact same name and master password.
             The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
             """, preferredStyle: .alert )
@@ -164,8 +164,8 @@ class MPUsersViewController: BasicUsersViewController {
             This will allow you to change the master password for:
             \(userFile)
 
-            Note: When the user's master password changes, its site passwords and other generated content will also change accordingly.
-            The master password can always be changed back to revert to the user's current site passwords and generated content.
+            Note: When the user's master password changes, its service passwords and other generated content will also change accordingly.
+            The master password can always be changed back to revert to the user's current service passwords and generated content.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
             alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in

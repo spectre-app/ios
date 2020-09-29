@@ -180,26 +180,21 @@ extension String {
                        length: secretLength, consume: true )
     }
 
-    func digest() -> UnsafeBufferPointer<UInt8>? {
-        guard let appSalt = appSalt.b64Decrypt()
-        else { return nil }
-
-        let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self, self.lengthOfBytes( using: .utf8 ) )
-        return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
+    func digest() -> Data? {
+        withUnsafeBytes( of: self.cString( using: .utf8 ) ) { $0.bindMemory( to: UInt8.self ).digest() }
     }
 }
 
 extension UnsafeBufferPointer where Element == UInt8 {
-    func digest() -> UnsafeBufferPointer<UInt8>? {
+    func digest() -> Data? {
         guard let appSalt = appSalt.b64Decrypt()
         else { return nil }
 
-        let digest = mpw_hash_hmac_sha256( appSalt, appSalt.lengthOfBytes( using: .utf8 ), self.baseAddress, self.count )
-        return UnsafeBufferPointer( start: digest?.bindMemory( to: UInt8.self, capacity: 32 ), count: 32 )
-    }
+        var digest = [ UInt8 ]( repeating: 0, count: 32 )
+        guard mpw_hash_hmac_sha256( &digest, appSalt, appSalt.lengthOfBytes( using: .utf8 ), self.baseAddress, self.count )
+        else { return nil }
 
-    func hex() -> String? {
-        .valid( mpw_hex( self.baseAddress, self.count, nil, nil ), consume: true )
+        return Data( digest )
     }
 }
 

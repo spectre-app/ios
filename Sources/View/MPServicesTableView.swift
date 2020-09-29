@@ -6,8 +6,8 @@
 import UIKit
 import AVKit
 
-class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, Observable, MPUserObserver, Updatable {
-    public let observers = Observers<MPSitesViewObserver>()
+class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, Observable, MPUserObserver, Updatable {
+    public let observers = Observers<MPServicesViewObserver>()
     public var user: MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
@@ -18,9 +18,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.updateTask.request()
         }
     }
-    public var selectedSite: MPSite? {
+    public var selectedService: MPService? {
         didSet {
-            let selectedPath = self.resultSource.indexPath( where: { $0?.value == self.selectedSite } )
+            let selectedPath = self.resultSource.indexPath( where: { $0?.value == self.selectedService } )
             if self.indexPathForSelectedRow != selectedPath {
                 self.selectRow( at: selectedPath, animated: UIView.areAnimationsEnabled, scrollPosition: .middle )
             }
@@ -28,8 +28,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.scrollToRow( at: selectedPath, at: .middle, animated: UIView.areAnimationsEnabled )
             }
 
-            if oldValue != self.selectedSite {
-                self.observers.notify { $0.siteWasSelected( site: self.selectedSite ) }
+            if oldValue != self.selectedService {
+                self.observers.notify { $0.serviceWasSelected( service: self.selectedService ) }
             }
         }
     }
@@ -41,8 +41,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         }
     }
 
-    private lazy var resultSource = DataSource<MPQuery.Result<MPSite>>( tableView: self )
-    private var newSiteResult: MPQuery.Result<MPSite>?
+    private lazy var resultSource = DataSource<MPQuery.Result<MPService>>( tableView: self )
+    private var newServiceResult: MPQuery.Result<MPService>?
     private var isInitial = true
     private lazy var updateTask = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ),
                                                 qos: .userInitiated, update: self )
@@ -52,7 +52,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     init() {
         super.init( frame: .zero, style: .plain )
 
-        self.register( SiteCell.self )
+        self.register( ServiceCell.self )
         self.register( LiefsteCell.self )
         self.delegate = self
         self.dataSource = self
@@ -73,45 +73,45 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             guard let self = self
             else { return }
 
-            var selectedResult: MPQuery.Result<MPSite>?
-            var resultSource = [ [ MPQuery.Result<MPSite>? ] ]()
+            var selectedResult: MPQuery.Result<MPService>?
+            var resultSource = [ [ MPQuery.Result<MPService>? ] ]()
             if let user = self.user, user.masterKeyFactory != nil {
 
-                // Determine search state and filter user sites
-                selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedSite } )?.element
-                let selectionFollowsQuery = self.newSiteResult === selectedResult || selectedResult?.exact ?? false
-                let results = MPQuery( self.query ).find( user.sites.sorted() ) { $0.siteName }
+                // Determine search state and filter user services
+                selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedService } )?.element
+                let selectionFollowsQuery = self.newServiceResult === selectedResult || selectedResult?.exact ?? false
+                let results = MPQuery( self.query ).find( user.services.sorted() ) { $0.serviceName }
                 let exactResult = results.first { $0.exact }
                 resultSource.append( results )
 
-                // Add "new site" result if there is a query and no exact result
+                // Add "new service" result if there is a query and no exact result
                 if let query = self.query,
                    !query.isEmpty, exactResult == nil {
-                    self.newSiteResult?.value.siteName = query
+                    self.newServiceResult?.value.serviceName = query
 
-                    if self.newSiteResult == nil || LiefsteCell.is( result: self.newSiteResult ) {
-                        self.newSiteResult = MPQuery.Result<MPSite>( value: MPSite( user: user, siteName: query ), keySupplier: { $0.siteName } )
+                    if self.newServiceResult == nil || LiefsteCell.is( result: self.newServiceResult ) {
+                        self.newServiceResult = MPQuery.Result<MPService>( value: MPService( user: user, serviceName: query ), keySupplier: { $0.serviceName } )
                     }
 
-                    self.newSiteResult?.matches( query: query )
-                    resultSource.append( [ self.newSiteResult ] )
+                    self.newServiceResult?.matches( query: query )
+                    resultSource.append( [ self.newServiceResult ] )
                 }
                 else {
-                    self.newSiteResult = nil
+                    self.newServiceResult = nil
                 }
 
-                // Special case for selected site: keep selection on the site result that matches the query
+                // Special case for selected service: keep selection on the service result that matches the query
                 if selectionFollowsQuery {
-                    selectedResult = exactResult ?? self.newSiteResult
+                    selectedResult = exactResult ?? self.newServiceResult
                 }
-                if self.newSiteResult != selectedResult,
+                if self.newServiceResult != selectedResult,
                    let selectedResult_ = selectedResult,
                    !results.contains( selectedResult_ ) {
                     selectedResult = nil
                 }
             }
 
-            // Update the sites table to show the newly filtered sites
+            // Update the services table to show the newly filtered services
             DispatchQueue.main.perform { [weak self] in
                 guard let self = self
                 else { return }
@@ -121,11 +121,11 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
                 // Light-weight reload the cell content without fully reloading the cell rows.
                 self.resultSource.elements().forEach { path, element in
-                    (self.cellForRow( at: path ) as? SiteCell)?.result = element
+                    (self.cellForRow( at: path ) as? ServiceCell)?.result = element
                 }
 
                 // Select the most appropriate row according to the query.
-                self.selectedSite = selectedResult?.value
+                self.selectedService = selectedResult?.value
             }
         }
     }
@@ -144,22 +144,22 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        (self.resultSource.element( at: indexPath )?.value).flatMap { site in
+        (self.resultSource.element( at: indexPath )?.value).flatMap { service in
             UIContextMenuConfiguration(
-                    indexPath: indexPath, previewProvider: { _ in MPSitePreviewController( site: site ) }, actionProvider: { _, configuration in
-                UIMenu( title: site.siteName, children: [
+                    indexPath: indexPath, previewProvider: { _ in MPServicePreviewController( service: service ) }, actionProvider: { _, configuration in
+                UIMenu( title: service.serviceName, children: [
                     UIAction( title: "Delete", image: .icon( "" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
                         configuration.action = action
-                        site.user.sites.removeAll { $0 === site }
+                        service.user.services.removeAll { $0 === service }
                     },
                     UIAction( title: "Details", image: .icon( "" ), identifier: UIAction.Identifier( "settings" ) ) { action in
                         configuration.action = action
-                        self.observers.notify { $0.siteDetailsAction( site: site ) }
+                        self.observers.notify { $0.serviceDetailsAction( service: service ) }
                     },
                     UIAction( title: "Copy Login Name 🅿︎", image: .icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: InAppFeature.premium.enabled() ? []: .disabled ) { action in
                         configuration.action = action
-                        let event = MPTracker.shared.begin( named: "site #copy" )
-                        site.copy( keyPurpose: .identification, by: self ).then {
+                        let event = MPTracker.shared.begin( named: "service #copy" )
+                        service.copy( keyPurpose: .identification, by: self ).then {
                             do {
                                 let result = try $0.get()
                                 event.end(
@@ -179,8 +179,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                     },
                     UIAction( title: "Copy Password", image: .icon( "" ), identifier: UIAction.Identifier( "password" ) ) { action in
                         configuration.action = action
-                        let event = MPTracker.shared.begin( named: "site #copyPassword" )
-                        site.copy( keyPurpose: .authentication, by: self ).then {
+                        let event = MPTracker.shared.begin( named: "service #copyPassword" )
+                        service.copy( keyPurpose: .authentication, by: self ).then {
                             do {
                                 let result = try $0.get()
                                 event.end(
@@ -208,7 +208,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        configuration.event = MPTracker.shared.begin( named: "site #menu" )
+        configuration.event = MPTracker.shared.begin( named: "service #menu" )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.with( alpha: .long )
@@ -229,14 +229,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
-        self.selectedSite = self.resultSource.element( at: configuration.indexPath )?.value
+        self.selectedService = self.resultSource.element( at: configuration.indexPath )?.value
     }
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if let site = self.resultSource.element( at: indexPath )?.value, editingStyle == .delete {
-            MPTracker.shared.event( named: "site #delete" )
+        if let service = self.resultSource.element( at: indexPath )?.value, editingStyle == .delete {
+            MPTracker.shared.event( named: "service #delete" )
 
-            site.user.sites.removeAll { $0 === site }
+            service.user.services.removeAll { $0 === service }
         }
     }
 
@@ -254,10 +254,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
         }
 
-        let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
-        cell.sitesView = self
+        let cell = ServiceCell.dequeue( from: tableView, indexPath: indexPath )
+        cell.servicesView = self
         cell.result = result
-        cell.new = cell.result == self.newSiteResult
+        cell.new = cell.result == self.newServiceResult
         return cell
     }
 
@@ -275,28 +275,28 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         self.updateTask.request()
     }
 
-    func userDidUpdateSites(_ user: MPUser) {
+    func userDidUpdateServices(_ user: MPUser) {
         self.updateTask.request()
     }
 
     // MARK: --- Types ---
 
-    class SiteCell: UITableViewCell, Updatable, MPSiteObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
-        public weak var  sitesView: MPSitesTableView?
-        public weak var  result:    MPQuery.Result<MPSite>? {
+    class ServiceCell: UITableViewCell, Updatable, MPServiceObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
+        public weak var servicesView: MPServicesTableView?
+        public weak var result:       MPQuery.Result<MPService>? {
             willSet {
-                self.site?.observers.unregister( observer: self )
-                self.site?.user.observers.unregister( observer: self )
+                self.service?.observers.unregister( observer: self )
+                self.service?.user.observers.unregister( observer: self )
             }
             didSet {
-                if let site = self.site {
-                    site.observers.register( observer: self ).siteDidChange( site )
-                    site.user.observers.register( observer: self ).userDidChange( site.user )
+                if let service = self.service {
+                    service.observers.register( observer: self ).serviceDidChange( service )
+                    service.user.observers.register( observer: self ).userDidChange( service.user )
                 }
             }
         }
         private lazy var updateTask = DispatchTask( queue: .main, qos: .userInitiated, update: self )
-        public var site: MPSite? {
+        public var service: MPService? {
             self.result?.value
         }
         public var new = false {
@@ -311,9 +311,9 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             }
         }
         private let backgroundImage = MPBackgroundView( mode: .custom )
-        private let modeButton      = MPButton( identifier: "sites.site #mode", image: .icon( "" ), background: false )
-        private let settingsButton  = MPButton( identifier: "sites.site #site_settings", image: .icon( "" ), background: false )
-        private let newButton       = MPButton( identifier: "sites.site #add", image: .icon( "" ), background: false )
+        private let modeButton      = MPButton( identifier: "services.service #mode", image: .icon( "" ), background: false )
+        private let settingsButton  = MPButton( identifier: "services.service #service_settings", image: .icon( "" ), background: false )
+        private let newButton       = MPButton( identifier: "services.service #add", image: .icon( "" ), background: false )
         private let selectionView   = UIView()
         private let resultLabel     = UITextField()
         private let captionLabel    = UILabel()
@@ -430,8 +430,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         @objc
         func settingsAction() {
-            if let site = self.site {
-                self.sitesView?.observers.notify { $0.siteDetailsAction( site: site ) }
+            if let service = self.service {
+                self.servicesView?.observers.notify { $0.serviceDetailsAction( service: service ) }
             }
         }
 
@@ -449,13 +449,13 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
 
         @objc
         func cellAction() {
-            self.sitesView?.selectedSite = self.site
-            if let site = self.site, self.new {
-                site.user.sites.append( site )
+            self.servicesView?.selectedService = self.service
+            if let service = self.service, self.new {
+                service.user.services.append( service )
             }
 
-            let event = MPTracker.shared.begin( named: "site #copy" )
-            self.site?.copy( keyPurpose: self.mode, by: self ).then {
+            let event = MPTracker.shared.begin( named: "service #copy" )
+            self.service?.copy( keyPurpose: self.mode, by: self ).then {
                 do {
                     let result = try $0.get()
                     event.end(
@@ -480,18 +480,18 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
             self.updateTask.request()
         }
 
-        // MARK: --- MPSiteObserver ---
+        // MARK: --- MPServiceObserver ---
 
-        func siteDidChange(_ site: MPSite) {
+        func serviceDidChange(_ service: MPService) {
             DispatchQueue.main.perform {
                 self.backgroundImage => \.backgroundColor => Theme.current.color.selection
-                        .transform { [unowned self] in $0?.with( hue: self.site?.color?.hue ) }
-                self.backgroundImage.image = self.site?.image
+                        .transform { [unowned self] in $0?.with( hue: self.service?.color?.hue ) }
+                self.backgroundImage.image = self.service?.image
 
                 if let resultKey = self.result?.attributedKey {
                     let resultCaption = NSMutableAttributedString( attributedString: resultKey )
                     if self.new {
-                        resultCaption.append( NSAttributedString( string: " (new site)" ) )
+                        resultCaption.append( NSAttributedString( string: " (new service)" ) )
                     }
                     self.captionLabel.attributedText = resultCaption
                 }
@@ -517,7 +517,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         // MARK: --- Private ---
 
         public func update() {
-            guard let site = self.site
+            guard let service = self.service
             else { return }
 
             DispatchQueue.main.promise {
@@ -539,15 +539,15 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
                 self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
                 self.newButton.alpha = self.isSelected && self.new ? 1: 0
                 self.selectionConfiguration.activated = self.isSelected
-                self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
+                self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.service?.user.maskPasswords ?? true
             }.promising {
-                site.result( keyPurpose: self.mode )
+                service.result( keyPurpose: self.mode )
             }.then( on: DispatchQueue.main ) {
                 do {
                     self.resultLabel.text = try $0.get().token
                 }
                 catch {
-                    mperror( title: "Couldn't calculate site \(self.mode)", error: error )
+                    mperror( title: "Couldn't calculate service \(self.mode)", error: error )
                 }
             }
         }
@@ -558,8 +558,8 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
         private let propLabel   = UILabel()
         private var player: AVPlayer?
 
-        class func `is`(result: MPQuery.Result<MPSite>?) -> Bool {
-            result?.value.siteName == "liefste"
+        class func `is`(result: MPQuery.Result<MPService>?) -> Bool {
+            result?.value.serviceName == "liefste"
         }
 
         // MARK: --- Life ---
@@ -627,7 +627,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, UITableViewDataSource,
     }
 }
 
-protocol MPSitesViewObserver {
-    func siteWasSelected(site selectedSite: MPSite?)
-    func siteDetailsAction(site: MPSite)
+protocol MPServicesViewObserver {
+    func serviceWasSelected(service selectedSite: MPService?)
+    func serviceDetailsAction(service: MPService)
 }

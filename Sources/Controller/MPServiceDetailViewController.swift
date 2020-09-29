@@ -6,11 +6,11 @@
 import Foundation
 import UIKit
 
-class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver, MPConfigObserver {
+class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServiceObserver, MPConfigObserver {
 
     // MARK: --- Life ---
 
-    override func loadItems() -> [Item<MPSite>] {
+    override func loadItems() -> [Item<MPService>] {
         [ PasswordCounterItem(), SeparatorItem(),
           PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
           LoginTypeItem(), LoginResultItem(), SeparatorItem(),
@@ -23,16 +23,16 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override init(model: MPSite, focus: Item<MPSite>.Type? = nil) {
+    override init(model: MPService, focus: Item<MPService>.Type? = nil) {
         super.init( model: model, focus: focus )
 
-        self.model.observers.register( observer: self ).siteDidChange( self.model )
+        self.model.observers.register( observer: self ).serviceDidChange( self.model )
         appConfig.observers.register( observer: self )
     }
 
-    // MARK: --- MPSiteObserver ---
+    // MARK: --- MPServiceObserver ---
 
-    func siteDidChange(_ site: MPSite) {
+    func serviceDidChange(_ service: MPService) {
         DispatchQueue.main.perform {
             self.color = self.model.color
             self.image = self.model.image
@@ -49,7 +49,7 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
 
     // MARK: --- Types ---
 
-    class PasswordCounterItem: StepperItem<MPSite, UInt32> {
+    class PasswordCounterItem: StepperItem<MPService, UInt32> {
         init() {
             super.init( title: "Password Counter",
                         value: { $0.counter.rawValue },
@@ -58,9 +58,9 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         }
     }
 
-    class PasswordTypeItem: PickerItem<MPSite, MPResultType> {
+    class PasswordTypeItem: PickerItem<MPService, MPResultType> {
         init() {
-            super.init( identifier: "site >resultType", title: "Password Type",
+            super.init( identifier: "service >resultType", title: "Password Type",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -76,26 +76,26 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
             collectionView.register( MPResultTypeCell.self )
         }
 
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPSite, value: MPResultType) -> UICollectionViewCell? {
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPService, value: MPResultType) -> UICollectionViewCell? {
             MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                 ($0 as? MPResultTypeCell)?.resultType = value
             }
         }
     }
 
-    class PasswordResultItem: FieldItem<MPSite> {
+    class PasswordResultItem: FieldItem<MPService> {
         init() {
             super.init( title: nil, placeholder: "set a password",
                         value: { try? $0.result().await().token },
-                        update: { site, password in
-                            MPTracker.shared.event( named: "site >password", [
-                                "type": "\(site.resultType)",
+                        update: { service, password in
+                            MPTracker.shared.event( named: "service >password", [
+                                "type": "\(service.resultType)",
                                 "entropy": MPAttacker.entropy( string: password ) ?? 0,
                             ] )
 
-                            site.state( resultParam: password ).then {
-                                do { site.resultState = try $0.get().token }
-                                catch { mperror( title: "Couldn't update site password", error: error ) }
+                            service.state( resultParam: password ).then {
+                                do { service.resultState = try $0.get().token }
+                                catch { mperror( title: "Couldn't update service password", error: error ) }
                             }
                         },
                         caption: {
@@ -111,7 +111,7 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
                         } )
         }
 
-        override func createItemView() -> FieldItemView<MPSite> {
+        override func createItemView() -> FieldItemView<MPService> {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
             view.valueField.autocapitalizationType = .none
@@ -123,13 +123,13 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         override func update() {
             super.update()
 
-            (self.view as? FieldItemView<MPSite>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
+            (self.view as? FieldItemView<MPService>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
     }
 
-    class LoginTypeItem: PickerItem<MPSite, MPResultType> {
+    class LoginTypeItem: PickerItem<MPService, MPResultType> {
         init() {
-            super.init( identifier: "site >loginType", title: "User Name Type 🅿︎",
+            super.init( identifier: "service >loginType", title: "User Name Type 🅿︎",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -149,7 +149,7 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
             collectionView.register( MPResultTypeCell.self )
         }
 
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPSite, value: MPResultType) -> UICollectionViewCell? {
+        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPService, value: MPResultType) -> UICollectionViewCell? {
             MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
                 ($0 as? MPResultTypeCell)?.resultType = value.nonEmpty
 
@@ -161,28 +161,28 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         }
     }
 
-    class LoginResultItem: FieldItem<MPSite> {
-        let userView = MPButton( identifier: "site.login #user" )
+    class LoginResultItem: FieldItem<MPService> {
+        let userView = MPButton( identifier: "service.login #user" )
 
         init() {
             super.init( title: nil, placeholder: "set a user name",
                         value: { try? $0.result( keyPurpose: .identification ).await().token },
-                        update: { site, login in
-                            MPTracker.shared.event( named: "site >login", [
-                                "type": "\(site.loginType)",
+                        update: { service, login in
+                            MPTracker.shared.event( named: "service >login", [
+                                "type": "\(service.loginType)",
                                 "entropy": MPAttacker.entropy( string: login ) ?? 0,
                             ] )
 
-                            site.state( keyPurpose: .identification, resultParam: login ).then {
-                                do { site.loginState = try $0.get().token }
-                                catch { mperror( title: "Couldn't update site name", error: error ) }
+                            service.state( keyPurpose: .identification, resultParam: login ).then {
+                                do { service.loginState = try $0.get().token }
+                                catch { mperror( title: "Couldn't update service name", error: error ) }
                             }
                         } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
         }
 
-        override func createItemView() -> FieldItemView<MPSite> {
+        override func createItemView() -> FieldItemView<MPService> {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
             view.valueField.autocapitalizationType = .none
@@ -211,25 +211,25 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
             self.userView.title = self.model?.user.fullName.name( style: .abbreviated )
             self.userView.sizeToFit()
 
-            (self.view as? FieldItemView<MPSite>)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
+            (self.view as? FieldItemView<MPService>)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
         }
     }
 
-    class SecurityAnswerItem: ListItem<MPSite, MPQuestion> {
+    class SecurityAnswerItem: ListItem<MPService, MPQuestion> {
         init() {
             super.init( title: "Security Answers 🅿︎",
                         values: {
-                            $0.questions.reduce( [ "": MPQuestion( site: $0, keyword: "" ) ] ) {
+                            $0.questions.reduce( [ "": MPQuestion( service: $0, keyword: "" ) ] ) {
                                 $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
                             }.values.sorted()
                         },
                         subitems: [
-                            ButtonItem( identifier: "site.question #add",
+                            ButtonItem( identifier: "service.question #add",
                                         value: { _ in (label: "Add Security Question", image: nil) },
                                         action: { item in
                                             let controller = UIAlertController( title: "Security Question", message:
                                             """
-                                            Enter the most significant noun for the site's security question.
+                                            Enter the most significant noun for the service's security question.
                                             """, preferredStyle: .alert )
                                             controller.addTextField {
                                                 $0.placeholder = "eg. teacher"
@@ -239,11 +239,11 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
                                             }
                                             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
                                             controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
-                                                guard let site = item?.model, let keyword = controller?.textFields?.first?.text?.nonEmpty
+                                                guard let service = item?.model, let keyword = controller?.textFields?.first?.text?.nonEmpty
                                                 else { return }
 
-                                                trc( "Adding security question <%@> for: %@", keyword, site )
-                                                site.questions.append( MPQuestion( site: site, keyword: keyword ) )
+                                                trc( "Adding security question <%@> for: %@", keyword, service )
+                                                service.questions.append( MPQuestion( service: service, keyword: keyword ) )
                                             } )
                                             item.viewController?.present( controller, animated: true )
                                         } )
@@ -260,13 +260,13 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
             tableView.register( Cell.self )
         }
 
-        override func cell(tableView: UITableView, indexPath: IndexPath, model: MPSite, value: MPQuestion) -> UITableViewCell? {
+        override func cell(tableView: UITableView, indexPath: IndexPath, model: MPService, value: MPQuestion) -> UITableViewCell? {
             Cell.dequeue( from: tableView, indexPath: indexPath ) {
                 ($0 as? Cell)?.question = value
             }
         }
 
-        override func delete(model: MPSite, value: MPQuestion) {
+        override func delete(model: MPService, value: MPQuestion) {
             trc( "Trashing security question: %@", value )
 
             model.questions.removeAll { $0 === value }
@@ -275,7 +275,7 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         class Cell: UITableViewCell {
             private let keywordLabel = UILabel()
             private let resultLabel  = UILabel()
-            private let copyButton   = MPButton( identifier: "site.question #copy", title: "copy" )
+            private let copyButton   = MPButton( identifier: "service.question #copy", title: "copy" )
 
             weak var question: MPQuestion? {
                 didSet {
@@ -316,13 +316,13 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
-                    let event = MPTracker.shared.begin( named: "site.question #copy" )
+                    let event = MPTracker.shared.begin( named: "service.question #copy" )
                     self.question?.copy().then {
                         do {
                             let result = try $0.get()
                             event.end(
                                     [ "result": $0.name,
-                                      "from": "site>details",
+                                      "from": "service>details",
                                       "counter": "\(result.counter)",
                                       "purpose": "\(result.purpose)",
                                       "type": "\(result.type)",
@@ -363,14 +363,14 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         }
     }
 
-    class URLItem: FieldItem<MPSite> {
+    class URLItem: FieldItem<MPService> {
         init() {
             super.init( title: "URL", placeholder: "eg. https://www.apple.com",
                         value: { $0.url },
                         update: { $0.url = $1 } )
         }
 
-        override func createItemView() -> FieldItemView<MPSite> {
+        override func createItemView() -> FieldItemView<MPService> {
             let itemView = super.createItemView()
             itemView.valueField.autocapitalizationType = .none
             itemView.valueField.autocorrectionType = .no
@@ -379,7 +379,7 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         }
     }
 
-    class InfoItem: Item<MPSite> {
+    class InfoItem: Item<MPService> {
         init() {
             super.init( title: nil, subitems: [
                 UsesItem(),
@@ -389,19 +389,19 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
         }
     }
 
-    class UsesItem: LabelItem<MPSite> {
+    class UsesItem: LabelItem<MPService> {
         init() {
             super.init( title: "Total Uses", value: { $0.uses } )
         }
     }
 
-    class UsedItem: DateItem<MPSite> {
+    class UsedItem: DateItem<MPService> {
         init() {
             super.init( title: "Last Used", value: { $0.lastUsed } )
         }
     }
 
-    class AlgorithmItem: LabelItem<MPSite> {
+    class AlgorithmItem: LabelItem<MPService> {
         init() {
             super.init( title: "Algorithm", value: { $0.algorithm } )
         }

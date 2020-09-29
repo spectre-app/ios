@@ -43,6 +43,6 @@ class AutoFillUsersViewController: BasicUsersViewController {
     override func login(user: MPUser) {
         super.login( user: user )
 
-        self.detailsHost.show( AutoFillSitesViewController( user: user ), sender: self )
+        self.detailsHost.show( AutoFillServicesViewController( user: user ), sender: self )
     }
 }

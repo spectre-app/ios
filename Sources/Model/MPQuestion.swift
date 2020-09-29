@@ -8,7 +8,7 @@ import UIKit
 class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPQuestionObserver {
     public let observers = Observers<MPQuestionObserver>()
 
-    public let site: MPSite
+    public let service: MPService
     public var keyword: String {
         didSet {
             if oldValue != self.keyword {
@@ -39,15 +39,15 @@ class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Obser
     var dirty = false {
         didSet {
             if self.dirty {
-                self.site.dirty = true
+                self.service.dirty = true
             }
         }
     }
 
     // MARK: --- Life ---
 
-    init(site: MPSite, keyword: String, resultType: MPResultType? = nil, resultState: String? = nil) {
-        self.site = site
+    init(service: MPService, keyword: String, resultType: MPResultType? = nil, resultState: String? = nil) {
+        self.service = service
         self.keyword = keyword
         self.resultType = resultType ?? .templatePhrase
         self.resultState = resultState
@@ -55,8 +55,8 @@ class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Obser
 
     // MARK: --- Interface ---
 
-    func copy(to site: MPSite) -> MPQuestion {
-        MPQuestion( site: site, keyword: self.keyword, resultType: self.resultType, resultState: self.resultState )
+    func copy(to service: MPService) -> MPQuestion {
+        MPQuestion( service: service, keyword: self.keyword, resultType: self.resultType, resultState: self.resultState )
     }
 
     // MARK: Hashable
@@ -85,14 +85,14 @@ class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Obser
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.site.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+        self.service.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                           resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.site.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+        self.service.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam, algorithm: algorithm )
     }
 
@@ -100,7 +100,7 @@ class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Obser
     public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                      resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, by host: UIView? = nil)
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.site.copy( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+        self.service.copy( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                         resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, by: host )
     }
 }

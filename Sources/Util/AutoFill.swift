@@ -86,23 +86,23 @@ final class AutoFill {
 
     class Credential: Hashable, CustomDebugStringConvertible {
         let hostName: String
-        let siteName: String
+        let serviceName: String
 
         var debugDescription: String {
-            "<Credential: \(self.hostName) :: \(self.siteName)>"
+            "<Credential: \(self.hostName) :: \(self.serviceName)>"
         }
 
         init(supplier: CredentialSupplier, name: String) {
             self.hostName = supplier.credentialHost
-            self.siteName = name
+            self.serviceName = name
         }
 
         init?(dictionary: [String: String]?) {
-            guard let host = dictionary?["host"], let site = dictionary?["site"]
+            guard let host = dictionary?["host"], let service = dictionary?["service"]
             else { return nil }
 
             self.hostName = host
-            self.siteName = site
+            self.serviceName = service
         }
 
         func supplied(by supplier: CredentialSupplier) -> Bool {
@@ -110,14 +110,14 @@ final class AutoFill {
         }
 
         func identity() -> ASPasswordCredentialIdentity {
-            ASPasswordCredentialIdentity( serviceIdentifier: ASCredentialServiceIdentifier( identifier: self.siteName, type: .domain ),
+            ASPasswordCredentialIdentity( serviceIdentifier: ASCredentialServiceIdentifier( identifier: self.serviceName, type: .domain ),
                                           user: self.hostName, recordIdentifier: self.hostName )
         }
 
         func dictionary() -> [String: String] {
             [
                 "host": self.hostName,
-                "site": self.siteName,
+                "service": self.serviceName,
             ]
         }
 
@@ -125,11 +125,11 @@ final class AutoFill {
 
         func hash(into hasher: inout Hasher) {
             hasher.combine( self.hostName )
-            hasher.combine( self.siteName )
+            hasher.combine( self.serviceName )
         }
 
         static func ==(lhs: Credential, rhs: Credential) -> Bool {
-            lhs.hostName == rhs.hostName && lhs.siteName == rhs.siteName
+            lhs.hostName == rhs.hostName && lhs.serviceName == rhs.serviceName
         }
     }
 }

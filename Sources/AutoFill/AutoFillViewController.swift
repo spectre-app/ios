@@ -85,10 +85,10 @@ class AutoFillViewController: ASCredentialProviderViewController {
         }.promising { (user: MPUser) in
             Model.shared.users.append( user )
 
-            guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
-            else { throw ASExtensionError( .credentialIdentityNotFound, "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
+            guard let service = user.services.first( where: { $0.serviceName == credentialIdentity.serviceIdentifier.identifier } )
+            else { throw ASExtensionError( .credentialIdentityNotFound, "No service named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
 
-            return site.result( keyPurpose: .identification ).and( site.result( keyPurpose: .authentication ) ).promise {
+            return service.result( keyPurpose: .identification ).and( service.result( keyPurpose: .authentication ) ).promise {
                 ASPasswordCredential( user: $0.0.token, password: $0.1.token )
             }
         }.failure { error in

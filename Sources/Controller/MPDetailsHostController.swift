@@ -185,7 +185,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     // MARK: --- UIGestureRecognizerDelegate ---
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        // siteDetailRecognizer shouldn't trigger on subviews
+        // detailRecognizer shouldn't trigger on subviews
         if gestureRecognizer == self.detailRecognizer {
             return touch.view == gestureRecognizer.view
         }

@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPSiteObserver, CredentialSupplier {
+class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPServiceObserver, CredentialSupplier {
     public let observers = Observers<MPUserObserver>()
 
     public var algorithm: MPAlgorithmVersion {
@@ -140,13 +140,13 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     public var file:   UnsafeMutablePointer<MPMarshalledFile>?
     public var origin: URL?
 
-    public var sites = [ MPSite ]() {
+    public var services = [ MPService ]() {
         didSet {
-            if oldValue != self.sites {
+            if oldValue != self.services {
                 self.dirty = true
-                Set( oldValue ).subtracting( self.sites ).forEach { site in site.observers.unregister( observer: self ) }
-                self.sites.forEach { site in site.observers.register( observer: self ) }
-                self.observers.notify { $0.userDidUpdateSites( self ) }
+                Set( oldValue ).subtracting( self.services ).forEach { service in service.observers.unregister( observer: self ) }
+                self.services.forEach { service in service.observers.register( observer: self ) }
+                self.observers.notify { $0.userDidUpdateServices( self ) }
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
@@ -172,7 +172,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                 }
             }
             else {
-                self.sites.forEach { $0.dirty = false }
+                self.services.forEach { $0.dirty = false }
             }
         }
     }
@@ -241,12 +241,12 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             else { throw MPError.internal( cause: "Cannot authenticate user since master key is missing.", details: self ) }
             defer { authKey.deallocate() }
 
-            var authKeyID = mpw_id_buf( authKey, MemoryLayout<MPMasterKey>.size )
+            var authKeyID = authKey.pointee.keyID
             guard mpw_id_valid( &authKeyID )
             else { throw MPError.internal( cause: "Could not determine key ID for authentication key.", details: self ) }
 
             if !mpw_id_valid( &self.masterKeyID ) {
-                self.masterKeyID = authKeyID
+                self.masterKeyID = authKey.pointee.keyID
             }
             else if !mpw_id_equals( &self.masterKeyID, &authKeyID ) {
                 throw MPError.state( title: "Incorrect Master Key", details: self )
@@ -322,13 +322,13 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     func userDidChange(_ user: MPUser) {
     }
 
-    func userDidUpdateSites(_ user: MPUser) {
+    func userDidUpdateServices(_ user: MPUser) {
         AutoFill.shared.update( for: self )
     }
 
-    // MARK: --- MPSiteObserver ---
+    // MARK: --- MPServiceObserver ---
 
-    func siteDidChange(_ site: MPSite) {
+    func serviceDidChange(_ service: MPService) {
     }
 
     // MARK: --- Interface ---
@@ -343,7 +343,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         self.fullName
     }
     var credentials: [AutoFill.Credential]? {
-        self.autofill ? self.sites.map { AutoFill.Credential( supplier: self, name: $0.siteName ) }: nil
+        self.autofill ? self.services.map { AutoFill.Credential( supplier: self, name: $0.serviceName ) }: nil
     }
 
     // MARK: --- mpw ---
@@ -426,7 +426,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                 """ ).show( in: host )
             }
             catch {
-                mperror( title: "Couldn't copy site", message: "Site value could not be calculated", error: error )
+                mperror( title: "Couldn't copy service", message: "Site value could not be calculated", error: error )
             }
         }
     }
@@ -440,8 +440,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             defer { masterKey.deallocate() }
 
             guard let result = String.valid(
-                    mpw_site_result( masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                    consume: true )
+                    mpw_service_result( masterKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
             else { throw MPError.internal( cause: "Cannot calculate result.", details: self ) }
 
             return (token: result, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
@@ -457,8 +456,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             defer { masterKey.deallocate() }
 
             guard let result = String.valid(
-                    mpw_site_state( masterKey, name, counter, keyPurpose, keyContext, resultType, resultParam, algorithm ),
-                    consume: true )
+                    mpw_service_state( masterKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
             else { throw MPError.internal( cause: "Cannot calculate result.", details: self ) }
 
             return (token: result, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
@@ -501,7 +499,7 @@ protocol MPUserObserver {
 
     func userDidChange(_ user: MPUser)
 
-    func userDidUpdateSites(_ user: MPUser)
+    func userDidUpdateServices(_ user: MPUser)
 }
 
 extension MPUserObserver {
@@ -514,6 +512,6 @@ extension MPUserObserver {
     func userDidChange(_ user: MPUser) {
     }
 
-    func userDidUpdateSites(_ user: MPUser) {
+    func userDidUpdateServices(_ user: MPUser) {
     }
 }

@@ -5,7 +5,7 @@
 
 import Foundation
 
-extension Data {
+extension Collection where Element == UInt8 {
     func hex() -> String {
         let hex = NSMutableString( capacity: self.count * 2 )
         self.forEach { hex.appendFormat( "%02hhX", $0 ) }

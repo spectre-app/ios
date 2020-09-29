@@ -105,25 +105,25 @@ class MPMarshal: Observable, Updatable {
             marshalledUser.pointee.loginState = mpw_strdup( user.loginState )
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
-            for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
-                guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+            for service in user.services.sorted( by: { $0.serviceName < $1.serviceName } ) {
+                guard let marshalledSite = mpw_marshal_service( marshalledUser, service.serviceName, service.resultType, service.counter, service.algorithm )
                 else {
-                    exportEvent.end( [ "result": "!marshal_site" ] )
-                    throw MPError.internal( cause: "Couldn't marshal site.", details: [ user, site ] )
+                    exportEvent.end( [ "result": "!marshal_service" ] )
+                    throw MPError.internal( cause: "Couldn't marshal service.", details: [ user, service ] )
                 }
 
-                marshalledSite.pointee.resultState = mpw_strdup( site.resultState )
-                marshalledSite.pointee.loginType = site.loginType
-                marshalledSite.pointee.loginState = mpw_strdup( site.loginState )
-                marshalledSite.pointee.url = mpw_strdup( site.url )
-                marshalledSite.pointee.uses = site.uses
-                marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+                marshalledSite.pointee.resultState = mpw_strdup( service.resultState )
+                marshalledSite.pointee.loginType = service.loginType
+                marshalledSite.pointee.loginState = mpw_strdup( service.loginState )
+                marshalledSite.pointee.url = mpw_strdup( service.url )
+                marshalledSite.pointee.uses = service.uses
+                marshalledSite.pointee.lastUsed = time_t( service.lastUsed.timeIntervalSince1970 )
 
-                for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
+                for question in service.questions.sorted( by: { $0.keyword < $1.keyword } ) {
                     guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
                     else {
                         exportEvent.end( [ "result": "!marshal_question" ] )
-                        throw MPError.internal( cause: "Couldn't marshal question.", details: [ user, site, question ] )
+                        throw MPError.internal( cause: "Couldn't marshal question.", details: [ user, service, question ] )
                     }
 
                     marshalledQuestion.pointee.type = question.resultType
@@ -404,20 +404,20 @@ class MPMarshal: Observable, Updatable {
 
         return DispatchQueue.mpw.promising {
             var replacedSites = 0, newSites = 0
-            for importedSite in importedUser.sites {
-                if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
+            for importedSite in importedUser.services {
+                if let existedSite = existedUser.services.first( where: { $0.serviceName == importedSite.serviceName } ) {
                     if importedSite.lastUsed <= existedSite.lastUsed {
                         continue
                     }
 
-                    existedUser.sites.removeAll { $0 === existedSite }
+                    existedUser.services.removeAll { $0 === existedSite }
                     replacedSites += 1
                 }
                 else {
                     newSites += 1
                 }
 
-                existedUser.sites.append( importedSite.copy( to: existedUser ) )
+                existedUser.services.append( importedSite.copy( to: existedUser ) )
             }
             var updatedUser = false
             if importedUser.lastUsed >= existedUser.lastUsed {
@@ -446,9 +446,9 @@ class MPMarshal: Observable, Updatable {
                     importEvent.end( [ "result": "success: complete" ] )
                     MPAlert( title: "Import Complete", message: existedUser.description, details:
                     """
-                    Completed the import of sites into \(existedUser).
+                    Completed the import of services into \(existedUser).
 
-                    This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
+                    This was a merge import.  \(replacedSites) services were replaced, \(newSites) new services were created.
                     \(updatedUser ?
                             "The user settings were updated from the import.":
                             "The existing user's settings were more recent than the import.")
@@ -687,12 +687,12 @@ class MPMarshal: Observable, Updatable {
                         origin: self.origin, file: self.file
                 ) { user in
 
-                    for s in 0..<marshalledUser.sites_count {
-                        let marshalledSite = (marshalledUser.sites + s).pointee
-                        if let siteName = String.valid( marshalledSite.siteName ) {
-                            user.sites.append( MPSite(
+                    for s in 0..<marshalledUser.services_count {
+                        let marshalledSite = (marshalledUser.services + s).pointee
+                        if let serviceName = String.valid( marshalledSite.serviceName ) {
+                            user.services.append( MPService(
                                     user: user,
-                                    siteName: siteName,
+                                    serviceName: serviceName,
                                     algorithm: marshalledSite.algorithm,
                                     counter: marshalledSite.counter,
                                     resultType: marshalledSite.resultType,
@@ -702,13 +702,13 @@ class MPMarshal: Observable, Updatable {
                                     url: .valid( marshalledSite.url ),
                                     uses: marshalledSite.uses,
                                     lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
-                            ) { site in
+                            ) { service in
 
                                 for q in 0..<marshalledSite.questions_count {
                                     let marshalledQuestion = (marshalledSite.questions + q).pointee
                                     if let keyword = String.valid( marshalledQuestion.keyword ) {
-                                        site.questions.append( MPQuestion(
-                                                site: site,
+                                        service.questions.append( MPQuestion(
+                                                service: service,
                                                 keyword: keyword,
                                                 resultType: marshalledQuestion.type,
                                                 resultState: .valid( marshalledQuestion.state )
@@ -764,7 +764,7 @@ class MPMarshal: Observable, Updatable {
             guard self.autofill
             else { return nil }
 
-            return self.file.mpw_find( path: "sites" )?.compactMap {
+            return self.file.mpw_find( path: "services" )?.compactMap {
                 String.valid( $0.obj_key ).flatMap { AutoFill.Credential( supplier: self, name: $0 ) }
             }
         }

@@ -50,7 +50,7 @@ class MPURLUtils {
                 }
             }
             catch {
-                mperror( title: "Couldn't save site metadata", error: error )
+                mperror( title: "Couldn't save service metadata", error: error )
             }
         }
     }
@@ -63,7 +63,7 @@ class MPURLUtils {
             }
         }
         catch {
-            mperror( title: "Couldn't load site metadata", error: error )
+            mperror( title: "Couldn't load service metadata", error: error )
         }
 
         return [:]
@@ -103,7 +103,7 @@ class MPURLUtils {
                 var info = self.metadata[url] ?? Meta( color: Color( uiColor: url.color() ), imageData: nil )
 
                 if let error = error {
-                    wrn( "Couldn't fetch site preview. [>TRC]" )
+                    wrn( "Couldn't fetch service preview. [>TRC]" )
                     pii( "[>] %@: HTTP %d: %@",
                          imageURL, (response as? HTTPURLResponse)?.statusCode ?? -1, error )
                 }
@@ -122,7 +122,7 @@ class MPURLUtils {
                 case .noURLHasBeenFound: ()
 
                 default:
-                    wrn( "No site preview. [>TRC]" )
+                    wrn( "No service preview. [>TRC]" )
                     pii( "[>] %@: %@", url, error )
             }
 
@@ -179,7 +179,7 @@ struct Meta: Codable, Equatable {
                         100 * mirror( ratio: value, center: 216, max: 256 ) / 256
             }
 
-            // Use top weighted color as site's color.
+            // Use top weighted color as service's color.
             let sorted = scoresByColor.sorted( by: { $0.value > $1.value } )
             if let color = sorted.first?.key {
                 self.color = color

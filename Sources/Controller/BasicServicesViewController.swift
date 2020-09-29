@@ -5,15 +5,15 @@
 
 import UIKit
 
-class BasicSitesViewController: MPUserViewController, UITextFieldDelegate, MPSitesViewObserver {
+class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MPServicesViewObserver {
     internal lazy var topContainer = MPEffectView( content: self.searchField )
-    internal let searchField    = UITextField()
-    internal let sitesTableView = MPSitesTableView()
+    internal let searchField       = UITextField()
+    internal let servicesTableView = MPServicesTableView()
 
     override var user: MPUser {
         didSet {
             DispatchQueue.main.perform {
-                self.sitesTableView.user = self.user
+                self.servicesTableView.user = self.user
             }
         }
     }
@@ -39,19 +39,19 @@ class BasicSitesViewController: MPUserViewController, UITextFieldDelegate, MPSit
         self.searchField.returnKeyType = .done
         self.searchField.delegate = self
         self.searchField.action( for: .editingChanged ) { [unowned self] in
-            self.sitesTableView.query = self.searchField.text
+            self.servicesTableView.query = self.searchField.text
         }
 
-        self.sitesTableView.observers.register( observer: self )
-        self.sitesTableView.keyboardDismissMode = .onDrag
-        self.sitesTableView.contentInsetAdjustmentBehavior = .always
+        self.servicesTableView.observers.register( observer: self )
+        self.servicesTableView.keyboardDismissMode = .onDrag
+        self.servicesTableView.contentInsetAdjustmentBehavior = .always
 
         // - Hierarchy
-        self.view.addSubview( self.sitesTableView )
+        self.view.addSubview( self.servicesTableView )
         self.view.addSubview( self.topContainer )
 
         // - Layout
-        LayoutConfiguration( view: self.sitesTableView )
+        LayoutConfiguration( view: self.servicesTableView )
                 .constrain()
                 .activate()
 
@@ -72,18 +72,18 @@ class BasicSitesViewController: MPUserViewController, UITextFieldDelegate, MPSit
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        // Offset sites content's top inset to make space for the top container.
-        let top = self.sitesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y - 8
-        self.sitesTableView.contentInset.top = max( 0, top - self.sitesTableView.bounds.origin.y - self.sitesTableView.safeAreaInsets.top )
+        // Offset services content's top inset to make space for the top container.
+        let top = self.servicesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y - 8
+        self.servicesTableView.contentInset.top = max( 0, top - self.servicesTableView.bounds.origin.y - self.servicesTableView.safeAreaInsets.top )
     }
 
-    // MARK: --- MPSitesViewObserver ---
+    // MARK: --- MPServicesViewObserver ---
 
-    func siteWasSelected(site selectedSite: MPSite?) {
+    func serviceWasSelected(service selectedSite: MPService?) {
         MPFeedback.shared.play( .activate )
     }
 
-    func siteDetailsAction(site: MPSite) {
+    func serviceDetailsAction(service: MPService) {
     }
 
     // MARK: --- UITextFieldDelegate ---

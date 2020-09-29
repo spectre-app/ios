@@ -168,7 +168,7 @@ class MPTracker: MPConfigObserver {
             "maskPasswords": user.maskPasswords,
             "defaultType": user.defaultType,
             "loginType": user.loginType,
-            "sites": user.sites.count,
+            "services": user.services.count,
         ]
 
         let user = User( userId: userId )

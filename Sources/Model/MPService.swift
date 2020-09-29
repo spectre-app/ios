@@ -5,18 +5,18 @@
 
 import UIKit
 
-class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPSiteObserver, MPQuestionObserver {
-    public let observers = Observers<MPSiteObserver>()
+class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPServiceObserver, MPQuestionObserver {
+    public let observers = Observers<MPServiceObserver>()
 
     public let user: MPUser
-    public var siteName: String {
+    public var serviceName: String {
         didSet {
-            if oldValue != self.siteName {
+            if oldValue != self.serviceName {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
 
                 #if APP_CONTAINER
-                MPURLUtils.preview( url: self.siteName, result: { info in
+                MPURLUtils.preview( url: self.serviceName, result: { info in
                     self.color = info.color?.uiColor
                     self.image = info.imageData.flatMap { UIImage( data: $0 ) }
                 } )
@@ -28,7 +28,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -36,7 +36,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.counter {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -44,7 +44,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -52,7 +52,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -61,7 +61,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.resultState {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -69,7 +69,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.loginState {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -78,7 +78,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.url {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -86,7 +86,7 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.uses {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -94,26 +94,26 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         didSet {
             if oldValue != self.lastUsed {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
     public var color: UIColor? {
         didSet {
             if oldValue != self.color {
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
     public var image: UIImage? {
         didSet {
-            trc( "[preview set] %@: image %@ -> %@", self.siteName, oldValue, self.image )
+            trc( "[preview set] %@: image %@ -> %@", self.serviceName, oldValue, self.image )
             if (oldValue == nil) != (self.image == nil) {
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
             else if oldValue !== self.image, let oldValue = oldValue, let image = self.image,
                     oldValue.pngData() == image.pngData() {
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -122,12 +122,12 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
             if oldValue != self.questions {
                 self.dirty = true
                 self.questions.forEach { question in question.observers.register( observer: self ) }
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
     var description: String {
-        "\(self.siteName)"
+        "\(self.serviceName)"
     }
     var initializing = true {
         didSet {
@@ -149,13 +149,13 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     // MARK: --- Life ---
 
-    init(user: MPUser, siteName: String, algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
+    init(user: MPUser, serviceName: String, algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
          resultType: MPResultType? = nil, resultState: String? = nil,
          loginType: MPResultType? = nil, loginState: String? = nil,
          url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil, questions: [MPQuestion] = [],
-         initialize: (MPSite) -> Void = { _ in }) {
+         initialize: (MPService) -> Void = { _ in }) {
         self.user = user
-        self.siteName = siteName
+        self.serviceName = serviceName
         self.algorithm = algorithm ?? user.algorithm
         self.counter = counter ?? MPCounterValue.default
         self.resultType = resultType ?? user.defaultType
@@ -166,12 +166,12 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
         self.questions = questions
-        self.color = siteName.color()
+        self.color = serviceName.color()
 
         defer {
             // TODO: make efficient
             #if APP_CONTAINER
-            MPURLUtils.preview( url: self.siteName, result: { info in
+            MPURLUtils.preview( url: self.serviceName, result: { info in
                 self.color = info.color?.uiColor
                 self.image = info.imageData.flatMap { UIImage( data: $0 ) }
             } )
@@ -185,21 +185,21 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     // MARK: Hashable
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine( self.siteName )
+        hasher.combine( self.serviceName )
     }
 
-    static func ==(lhs: MPSite, rhs: MPSite) -> Bool {
-        lhs.siteName == rhs.siteName
+    static func ==(lhs: MPService, rhs: MPService) -> Bool {
+        lhs.serviceName == rhs.serviceName
     }
 
     // MARK: Comparable
 
-    public static func <(lhs: MPSite, rhs: MPSite) -> Bool {
+    public static func <(lhs: MPService, rhs: MPService) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
             return lhs.lastUsed > rhs.lastUsed
         }
 
-        return lhs.siteName > rhs.siteName
+        return lhs.serviceName > rhs.serviceName
     }
 
     // MARK: --- Interface ---
@@ -210,19 +210,19 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         self.user.use()
     }
 
-    public func copy(to user: MPUser) -> MPSite {
+    public func copy(to user: MPUser) -> MPService {
         // TODO: do we need to re-encode state?
-        let site = MPSite( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
+        let service = MPService( user: user, serviceName: self.serviceName, algorithm: self.algorithm, counter: self.counter,
                            resultType: self.resultType, resultState: self.resultState,
                            loginType: self.loginType, loginState: self.loginState,
                            url: self.url, uses: self.uses, lastUsed: self.lastUsed )
-        site.questions = self.questions.map { $0.copy( to: site ) }
-        return site
+        service.questions = self.questions.map { $0.copy( to: service ) }
+        return service
     }
 
-    // MARK: --- MPSiteObserver ---
+    // MARK: --- MPServiceObserver ---
 
-    func siteDidChange(_ site: MPSite) {
+    func serviceDidChange(_ service: MPService) {
     }
 
     // MARK: --- MPQuestionObserver ---
@@ -237,17 +237,17 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         switch keyPurpose {
             case .authentication:
-                return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.result( for: name ?? self.serviceName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
                                          algorithm: algorithm ?? self.algorithm )
 
             case .identification:
-                return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.result( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
                                          algorithm: algorithm ?? self.algorithm )
 
             case .recovery:
-                return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.result( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
                                          algorithm: algorithm ?? self.algorithm )
 
@@ -261,17 +261,17 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                     -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
         switch keyPurpose {
             case .authentication:
-                return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.state( for: name ?? self.serviceName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? self.resultType, resultParam: resultParam,
                                         algorithm: algorithm ?? self.algorithm )
 
             case .identification:
-                return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.state( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? self.loginType, resultParam: resultParam,
                                         algorithm: algorithm ?? self.algorithm )
 
             case .recovery:
-                return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.state( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
                                         algorithm: algorithm ?? self.algorithm )
 
@@ -289,6 +289,6 @@ class MPSite: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
     }
 }
 
-protocol MPSiteObserver {
-    func siteDidChange(_ site: MPSite)
+protocol MPServiceObserver {
+    func serviceDidChange(_ service: MPService)
 }
