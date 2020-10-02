@@ -53,7 +53,7 @@ class MPTapEffectView: UIView {
 
         UIView.animate( withDuration: .long, animations: {
             self.flareView.transform = CGAffineTransform( scaleX: 4, y: 4 )
-            self.alpha = 0
+            self.alpha = .off
         }, completion: { finished in
             self.removeFromSuperview()
         } )

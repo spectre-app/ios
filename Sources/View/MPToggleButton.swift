@@ -21,10 +21,10 @@ class MPToggleButton: UIView {
 
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: .short ) {
-                    self.button.alpha = self.isSelected ? 1: .short
-//                    self.button.imageView?.alpha = self.isSelected ? 1: .short
+                    self.button.alpha = self.isSelected ? .on: .short
+//                    self.button.imageView?.alpha = self.isSelected ? .on: .short
                     self.checkLabel => \.textColor => Theme.current.color.body.transform { [unowned self] in
-                        $0?.with( alpha: self.isSelected ? 1: 0 )
+                        $0?.with( alpha: self.isSelected ? .on: .off )
                     }
                     self.checkLabel.layer.borderWidth = self.isSelected ? 1.5: 1
                 }

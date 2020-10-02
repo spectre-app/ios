@@ -87,7 +87,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.popupConfiguration
                 .apply { active, inactive in
                     active.set( Theme.current.color.shade.get(), keyPath: \.backgroundColor )
-                    inactive.set( Theme.current.color.shade.get( alpha: 0 ), keyPath: \.backgroundColor )
+                    inactive.set( Theme.current.color.shade.get( alpha: .off ), keyPath: \.backgroundColor )
                 }
                 .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
                     active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }

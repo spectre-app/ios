@@ -7,17 +7,17 @@ import UIKit
 
 extension UIView {
     func shake() {
-        UIView.animateKeyframes( withDuration: .long, delay: 0, animations: {
-            UIView.addKeyframe( withRelativeStartTime: 0, relativeDuration: 0.25 ) {
+        UIView.animateKeyframes( withDuration: .long, delay: .immediate, animations: {
+            UIView.addKeyframe( withRelativeStartTime: .milliseconds( 0 ), relativeDuration: .milliseconds( 250 ) ) {
                 self.transform = CGAffineTransform( translationX: -8, y: 0 )
             }
-            UIView.addKeyframe( withRelativeStartTime: 0.25, relativeDuration: 0.5 ) {
+            UIView.addKeyframe( withRelativeStartTime: .milliseconds( 250 ), relativeDuration: .milliseconds( 500 ) ) {
                 self.transform = CGAffineTransform( translationX: 8, y: 0 )
             }
-            UIView.addKeyframe( withRelativeStartTime: 0.5, relativeDuration: 0.75 ) {
+            UIView.addKeyframe( withRelativeStartTime: .milliseconds( 500 ), relativeDuration: .milliseconds( 750 ) ) {
                 self.transform = CGAffineTransform( translationX: -8, y: 0 )
             }
-            UIView.addKeyframe( withRelativeStartTime: 0.75, relativeDuration: 1 ) {
+            UIView.addKeyframe( withRelativeStartTime: .milliseconds( 750 ), relativeDuration: .seconds( 1 ) ) {
                 self.transform = .identity
             }
         } )

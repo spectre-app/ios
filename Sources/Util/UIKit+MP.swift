@@ -380,7 +380,7 @@ public class UIControlHandler: NSObject {
 extension UIColor {
 
     // Extended sRGB, hex, RRGGBB / RRGGBBAA
-    class func hex(_ hex: String, alpha: CGFloat = 1) -> UIColor? {
+    class func hex(_ hex: String, alpha: CGFloat = .on) -> UIColor? {
         var hexSanitized = hex.trimmingCharacters( in: .whitespacesAndNewlines )
         hexSanitized = hexSanitized.replacingOccurrences( of: "#", with: "" )
         var rgb: UInt32  = 0

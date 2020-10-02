@@ -79,8 +79,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.revealControl.selectedSegmentIndex = 1
 
         self.exportButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
-            trc( "Requested export of %@, format: %@, redacted: %d",
-                 self.user, self.format, self.redacted )
+            trc( "Requested export of %@, format: %@, redacted: %d", self.user, self.format, self.redacted )
 
             let item       = MPMarshal.ActivityItem( user: self.user, format: self.format, redacted: self.redacted )
             let controller = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )

@@ -52,7 +52,7 @@ class MPItemsViewController<M>: MPViewController {
         // - View
         self.backgroundView.layoutMargins.bottom = 40
         self.backgroundView.layer.shadowRadius = 8
-        self.backgroundView.layer.shadowOpacity = 1
+        self.backgroundView.layer.shadowOpacity = .on
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowOffset = .zero
         self.backgroundView.layer.cornerRadius = 8

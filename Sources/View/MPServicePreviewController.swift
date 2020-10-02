@@ -41,7 +41,7 @@ class MPServicePreviewController: UIViewController, MPServiceObserver {
         // - View
         self.view.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
         self.view.layer.shadowRadius = 40
-        self.view.layer.shadowOpacity = 1
+        self.view.layer.shadowOpacity = .on
         self.view.layer => \.shadowColor => Theme.current.color.shadow
         self.view.layer.shadowOffset = .zero
 
@@ -50,7 +50,7 @@ class MPServicePreviewController: UIViewController, MPServiceObserver {
         self.serviceButton.imageView?.layer.masksToBounds = true
         self.serviceButton.titleLabel! => \.font => Theme.current.font.largeTitle
         self.serviceButton.layer.shadowRadius = 20
-        self.serviceButton.layer.shadowOpacity = 1
+        self.serviceButton.layer.shadowOpacity = .on
         self.serviceButton.layer => \.shadowColor => Theme.current.color.shadow
         self.serviceButton.layer.shadowOffset = .zero
 

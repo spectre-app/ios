@@ -61,20 +61,20 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
             }
 
             if transitionContext.isAnimated {
-                toView.alpha = 0
+                toView.alpha = .off
                 toView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
                 transitionContext.containerView.addSubview( toView )
 
-                UIView.animate( withDuration: 1, delay: 0, usingSpringWithDamping: .long, initialSpringVelocity: 0,
+                UIView.animate( withDuration: .seconds(1), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
                                 options: .curveEaseOut, animations: {
                     fromView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
-                    fromView.alpha = 0
+                    fromView.alpha = .off
                 }, completion: { finished in
                     fromView.transform = .identity
                 } )
-                UIView.animate( withDuration: 1.5, delay: 0, usingSpringWithDamping: .long, initialSpringVelocity: 0,
+                UIView.animate( withDuration: .seconds(1.5), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
                                 options: .curveEaseOut, animations: {
-                    toView.alpha = 1
+                    toView.alpha = .on
                     toView.transform = .identity
                 }, completion: { finished in
                     transitionContext.completeTransition( finished )

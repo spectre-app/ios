@@ -130,8 +130,14 @@ extension OperationQueue {
 }
 
 extension TimeInterval {
+    public static let immediate : TimeInterval = .off
+
     public static func seconds(_ seconds: Double) -> TimeInterval {
         TimeInterval( seconds )
+    }
+
+    public static func milliseconds(_ milliseconds: Double) -> TimeInterval {
+        .seconds( milliseconds / 1000 )
     }
 
     public static func minutes(_ minutes: Double) -> TimeInterval {

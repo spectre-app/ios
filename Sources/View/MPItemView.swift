@@ -162,7 +162,7 @@ class Item<M>: AnyItem {
             let behaveEnabled = self.item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: self.item ) ?? $0) }
 
             self.isHidden = behaveHidden
-            self.alpha = behaveEnabled ? 1: .short
+            self.alpha = behaveEnabled ? .on: .short
             self.contentView.isUserInteractionEnabled = behaveEnabled
             self.tintAdjustmentMode = behaveEnabled ? .automatic: .dimmed
 

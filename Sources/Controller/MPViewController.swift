@@ -7,7 +7,7 @@ import UIKit
 
 class MPViewController: UIViewController, Updatable {
     var trackScreen = true
-    lazy var screen = MPTracker.shared.screen( named: type( of: self ).description() )
+    lazy var screen = MPTracker.shared.screen( named: Self.self.description() )
 
     internal var activeChildController: UIViewController? {
         didSet {

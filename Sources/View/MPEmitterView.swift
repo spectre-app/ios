@@ -36,14 +36,14 @@ class MPEmitterView: UIView, CAAnimationDelegate {
             let transition = CATransition()
             transition.delegate = self
             transition.type = .fade
-            transition.duration = 1
+            transition.duration = .seconds(1)
             transition.timingFunction = CAMediaTimingFunction( name: .easeOut )
             transition.setValue( layer, forKey: kAnimationLayerKey )
             transition.isRemovedOnCompletion = false
 
             layer.add( transition, forKey: nil )
 
-            layer.opacity = 0
+            layer.opacity = .off
         }
         layer.add( animation, forKey: nil )
         CATransaction.commit()

@@ -280,7 +280,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
                 }
             }
 
-            self.nameField.alpha = 0
+            self.nameField.alpha = .off
             self.nameField.borderStyle = .none
             self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
@@ -450,8 +450,8 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
         private func update() {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: .long ) {
-                    self.nameLabel.alpha = self.isSelected && self.userFile == nil ? 0: 1
-                    self.nameField.alpha = 1 - self.nameLabel.alpha
+                    self.nameLabel.alpha = self.isSelected && self.userFile == nil ? .off: .on
+                    self.nameField.alpha = .on - self.nameLabel.alpha
 
                     self.avatarButton.isUserInteractionEnabled = self.isSelected
                     self.avatarButton.image = self.avatar.image
@@ -465,7 +465,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
                     if self.isSelected {
                         self.authenticationConfiguration.activate()
 
-                        if self.nameField.alpha != 0 {
+                        if self.nameField.alpha != .off {
                             self.nameField.becomeFirstResponder()
                         }
                         else if self.authenticationConfiguration.activated {

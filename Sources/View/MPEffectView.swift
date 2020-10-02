@@ -48,7 +48,7 @@ class MPEffectView: UIView {
             }
         }
     }
-    override var frame:              CGRect {
+    override var frame:               CGRect {
         didSet {
             if self.isRound && self.frame != oldValue {
                 self.update()
@@ -177,16 +177,13 @@ class MPEffectView: UIView {
                 }
             }
             else {
-                self.layer.borderWidth = 0
+                self.layer.borderWidth = .off
                 self.blurEffect = nil
             }
 
             self.layer.borderColor = self.borderColor?.cgColor
-            if self.isDimmedBySelection && !self.isSelected {
-                self.alpha = .short
-            }
-            else {
-                self.alpha = 1
+            if self.isDimmedBySelection {
+                self.alpha = self.isSelected ? .on: .short
             }
         }
     }

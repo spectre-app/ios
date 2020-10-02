@@ -39,31 +39,31 @@ public class MPHapticFeedback: MPFeedback {
                     case .flick:
                         self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
                             CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: 0 ),
+                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .off ),
                                 CHHapticEventParameter( parameterID: .hapticIntensity, value: .long ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: 0 ),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
                         ], parameters: [] ) )
 
                     case .activate:
                         self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
                             CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: 0 ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: 0 ),
+                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .off ),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
                         ], parameters: [] ) )
 
                     case .trigger:
                         self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
                             CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: 1 ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: 0 ),
+                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .on ),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
                         ], parameters: [] ) )
 
                     case .error:
                         // TODO
                         self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
                             CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: 1 ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: 0 ),
+                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .on ),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
                         ], parameters: [] ) )
                 }
             }
@@ -85,7 +85,7 @@ public class MPHapticFeedback: MPFeedback {
                     throw error
                 }
                 else {
-                    try self.players[effect]?.start( atTime: 0 )
+                    try self.players[effect]?.start( atTime: .immediate )
                 }
             }
             catch {

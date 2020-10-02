@@ -159,7 +159,7 @@ extension String {
         let hue        = CGFloat( ratio( of: digest[0], from: 0, to: 1 ) )
         let saturation = CGFloat( ratio( of: digest[1], from: 0.3, to: 1 ) )
         let brightness = CGFloat( ratio( of: digest[2], from: 0.5, to: 0.7 ) )
-        return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: 1 )
+        return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: .on )
     }
 }
 
@@ -200,7 +200,7 @@ extension UnsafeBufferPointer where Element == UInt8 {
 
 extension Numeric {
     public var nonEmpty: Self? {
-        self == Self.init( exactly: 0 ) ? nil: self
+        self == Self.init( exactly: .off ) ? nil: self
     }
 }
 
