@@ -36,17 +36,17 @@ extension NSObject {
         while (type != nil) {
             var count: UInt32 = 0
 
-            if let properties = class_copyPropertyList( type, &count ) {
-                defer { free( properties ) }
-
-                for p in 0..<Int( count ) {
-                    if let propertyName = String.valid( property_getName( properties[p] ) ),
-                       let propertyValue = self.value( forKey: propertyName ) as AnyObject?,
-                       value === propertyValue {
-                        return propertyName
-                    }
-                }
-            }
+//            if let properties = class_copyPropertyList( type, &count ) {
+//                defer { free( properties ) }
+//
+//                for p in 0..<Int( count ) {
+//                    if let propertyName = String.valid( property_getName( properties[p] ) ),
+//                       let propertyValue = self.value( forKey: propertyName ) as AnyObject?,
+//                       value === propertyValue {
+//                        return propertyName
+//                    }
+//                }
+//            }
 
             if let ivars = class_copyIvarList( type, &count ) {
                 defer { free( ivars ) }
@@ -69,7 +69,7 @@ extension NSObject {
 
     dynamic var identityDescription: String {
         var description      = ""
-        var type_: AnyClass? = Swift.type( of: self )
+        var type_: AnyClass? = Self.self
         while let type = type_ {
             description += "\(type):\n"
             var count: UInt32 = 0

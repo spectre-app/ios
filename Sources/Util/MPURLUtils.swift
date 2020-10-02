@@ -104,8 +104,7 @@ class MPURLUtils {
 
                 if let error = error {
                     wrn( "Couldn't fetch service preview. [>TRC]" )
-                    pii( "[>] %@: HTTP %d: %@",
-                         imageURL, (response as? HTTPURLResponse)?.statusCode ?? -1, error )
+                    pii( "[>] %@: HTTP %d: %@", imageURL, (response as? HTTPURLResponse)?.statusCode ?? -1, error )
                 }
                 else if let responseData = responseData {
                     info.imageData = responseData

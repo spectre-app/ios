@@ -379,7 +379,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
             return self
         }
-        trc( "%@: activate: %@", parent?.description, self )
+        trc( "%@: activate: %@", parent, self )
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: duration ) {
@@ -387,7 +387,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 let targetView = self.target.view ?? owningView
 
                 self.inactiveConfigurations.forEach {
-                    trc( "%@:%@: -> deactivate inactive child: %@", parent?.description, self.target, $0 )
+                    trc( "%@:%@: -> deactivate inactive child: %@", parent, self.target, $0 )
                     $0.deactivate( animationDuration: duration, parent: self )
                 }
 
@@ -420,7 +420,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                     targetView?.translatesAutoresizingMaskIntoConstraints = false
                     for constrainer in self.constrainers {
                         for constraint in constrainer( owningView ?? dummyView, self.target ) {
-                            trc( "%@:%@: activating %@", parent?.description, self.target, constraint )
+                            trc( "%@:%@: activating %@", parent, self.target, constraint )
                             if constraint.firstItem !== dummyView && constraint.secondItem !== dummyView {
                                 constraint.isActive = true
                                 self.activeConstraints.insert( constraint )
@@ -437,7 +437,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
                 targetView.flatMap { targetView in self.actions.forEach { $0( targetView ) } }
                 self.activeConfigurations.forEach {
-                    trc( "%@:%@: -> activate active child: %@", parent?.description, self.target, $0 )
+                    trc( "%@:%@: -> activate active child: %@", parent, self.target, $0 )
                     $0.activate( animationDuration: duration, parent: self )
                 }
 
@@ -469,14 +469,14 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
             return self
         }
-        trc( "%@: deactivate: %@", parent?.description, self )
+        trc( "%@: deactivate: %@", parent, self )
 
         DispatchQueue.main.perform {
             let owningView = self.target.owningView
             let targetView = self.target.view ?? owningView
 
             self.activeConfigurations.forEach {
-                trc( "%@:%@: -> deactivate active child: %@", parent?.description, self.target, $0 )
+                trc( "%@:%@: -> deactivate active child: %@", parent, self.target, $0 )
                 $0.deactivate( animationDuration: duration, parent: self )
             }
 
@@ -498,7 +498,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
 
             self.activeConstraints.forEach {
-                trc( "%@:%@: deactivating %@", parent?.description, self.target, $0 )
+                trc( "%@:%@: deactivating %@", parent, self.target, $0 )
                 $0.isActive = false
             }
             self.activeConstraints.removeAll()
@@ -507,7 +507,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             Theme.current.observers.unregister( observer: self )
 
             self.inactiveConfigurations.forEach {
-                trc( "%@:%@: -> activate inactive child: %@", parent?.description, self.target, $0 )
+                trc( "%@:%@: -> activate inactive child: %@", parent, self.target, $0 )
                 $0.activate( animationDuration: duration, parent: self )
             }
 

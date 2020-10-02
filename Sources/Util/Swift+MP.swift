@@ -200,7 +200,7 @@ extension UnsafeBufferPointer where Element == UInt8 {
 
 extension Numeric {
     public var nonEmpty: Self? {
-        self == Self.init( exactly: .off ) ? nil: self
+        self == Self.init( exactly: 0 ) ? nil: self
     }
 }
 

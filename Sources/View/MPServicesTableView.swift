@@ -290,24 +290,30 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             }
             didSet {
                 if let service = self.service {
-                    service.observers.register( observer: self ).serviceDidChange( service )
-                    service.user.observers.register( observer: self ).userDidChange( service.user )
+                    service.observers.register( observer: self )
+                    service.user.observers.register( observer: self )
                 }
+
+                self.updateTask.request()
             }
         }
-        private lazy var updateTask = DispatchTask( queue: .main, qos: .userInitiated, update: self )
         public var service: MPService? {
             self.result?.value
         }
         public var new = false {
             didSet {
-                self.updateTask.request()
+                if oldValue != self.new {
+                    self.updateTask.request()
+                }
             }
         }
 
+        private lazy var updateTask = DispatchTask( queue: .main, qos: .userInitiated, update: self )
         private var mode            = MPKeyPurpose.authentication {
             didSet {
-                self.updateTask.request()
+                if oldValue != self.mode {
+                    self.updateTask.request()
+                }
             }
         }
         private let backgroundImage = MPBackgroundView( mode: .custom )
@@ -418,14 +424,17 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                     $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
                                    .with( priority: .defaultHigh + 1 )
                 }
-            }
-                    .needs( .update() )
+            }.needs( .update() )
         }
 
         override func setSelected(_ selected: Bool, animated: Bool) {
-            super.setSelected( selected, animated: animated )
-
-            self.updateTask.request()
+            if self.isSelected != selected {
+                defer { self.updateTask.request() }
+                super.setSelected( selected, animated: animated )
+            }
+            else {
+                super.setSelected( selected, animated: animated )
+            }
         }
 
         @objc
@@ -483,22 +492,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         // MARK: --- MPServiceObserver ---
 
         func serviceDidChange(_ service: MPService) {
-            DispatchQueue.main.perform {
-                self.backgroundImage => \.backgroundColor => Theme.current.color.selection
-                        .transform { [unowned self] in $0?.with( hue: self.service?.color?.hue ) }
-                self.backgroundImage.image = self.service?.image
-
-                if let resultKey = self.result?.attributedKey {
-                    let resultCaption = NSMutableAttributedString( attributedString: resultKey )
-                    if self.new {
-                        resultCaption.append( NSAttributedString( string: " (new service)" ) )
-                    }
-                    self.captionLabel.attributedText = resultCaption
-                }
-                else {
-                    self.captionLabel.attributedText = nil
-                }
-            }
             self.updateTask.request()
         }
 
@@ -521,7 +514,20 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             else { return }
 
             DispatchQueue.main.promise {
-                self.modeButton.alpha = InAppFeature.premium.enabled() ? 1: 0
+                self.backgroundImage.image = self.service?.image
+                self.backgroundImage => \.backgroundColor => Theme.current.color.selection
+                        .transform { [unowned self] in $0?.with( hue: self.service?.color?.hue ) }
+
+                if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.attributedKey ) } ) {
+                    if self.new {
+                        resultCaption.append( NSAttributedString( string: " (new service)" ) )
+                    }
+                    self.captionLabel.attributedText = resultCaption
+                }
+                else {
+                    self.captionLabel.attributedText = nil
+                }
+
                 if !InAppFeature.premium.enabled() {
                     self.mode = .authentication
                 }
@@ -536,8 +542,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                         self.modeButton.image = nil
                 }
 
-                self.settingsButton.alpha = self.isSelected && !self.new ? 1: 0
-                self.newButton.alpha = self.isSelected && self.new ? 1: 0
+                self.modeButton.alpha = InAppFeature.premium.enabled() ? .on: .off
+                self.settingsButton.alpha = self.isSelected && !self.new ? .on: .off
+                self.newButton.alpha = self.isSelected && self.new ? .on: .off
                 self.selectionConfiguration.activated = self.isSelected
                 self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.service?.user.maskPasswords ?? true
             }.promising {

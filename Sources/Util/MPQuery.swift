@@ -20,9 +20,9 @@ class MPQuery {
     class Result<V>: Hashable where V: Hashable {
         public let value:       V
         public let keySupplier: (V) -> String
-        public let attributedKey = NSMutableAttributedString()
-        public var matches       = [ String.Index ]()
-        public var exact:       Bool {
+        public private(set) var attributedKey = NSAttributedString()
+        public private(set) var matches       = [ String.Index ]()
+        public var exact: Bool {
             get {
                 (self.attributedKey.string.indices).elementsEqual( self.matches )
             }
@@ -35,8 +35,13 @@ class MPQuery {
 
         @discardableResult
         public func matches(query: String?) -> Bool {
-            let key = self.keySupplier( self.value )
-            self.attributedKey.setAttributedString( NSAttributedString( string: key ) )
+            let key           = self.keySupplier( self.value )
+            let attributedKey = NSMutableAttributedString( string: key )
+            var matches       = [ String.Index ]()
+            defer {
+                self.attributedKey = attributedKey
+                self.matches = matches
+            }
 
             guard key.count > 0
             else { return query?.count == 0 }
@@ -49,7 +54,9 @@ class MPQuery {
                 n = key.index( after: k )
 
                 if query[q] == key[k] {
-                    self.keyMatched( at: k, next: n )
+                    matches.append( k )
+                    attributedKey.addAttribute( NSAttributedString.Key.backgroundColor, value: UIColor.red,
+                                                range: NSRange( k..<n, in: key ) )
                     q = query.index( after: q )
                 }
 
@@ -58,12 +65,6 @@ class MPQuery {
 
             // If the match against the query broke before the end of the query, it failed.
             return !(q < query.endIndex)
-        }
-
-        private func keyMatched(at: String.Index, next: String.Index) {
-            self.matches.append( at )
-            self.attributedKey.addAttribute( NSAttributedString.Key.backgroundColor, value: UIColor.red,
-                                             range: NSRange( at..<next, in: self.attributedKey.string ) )
         }
 
         static func ==(lhs: Result<V>, rhs: Result<V>) -> Bool {
