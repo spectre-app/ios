@@ -11,12 +11,13 @@ let productVersion    = Bundle.main.object( forInfoDictionaryKey: "CFBundleShort
 let productIdentifier = Bundle.main.bundleIdentifier ?? "app.spectre"
 let productGroup      = "group.app.spectre"
 
-func ratio(of value: UInt8, from: Double, to: Double) -> Double {
-    from + (to - from) * (Double( value ) / Double( UInt8.max ))
+func with<V>(_ value: V, _ initializer: (V) -> Void) -> V {
+    initializer( value )
+    return value
 }
 
-prefix public func -(a: UIEdgeInsets) -> UIEdgeInsets {
-    UIEdgeInsets( top: -a.top, left: -a.left, bottom: -a.bottom, right: -a.right )
+func ratio(of value: UInt8, from: Double, to: Double) -> Double {
+    from + (to - from) * (Double( value ) / Double( UInt8.max ))
 }
 
 // Map a 0-max value such that it mirrors around a center point.

@@ -124,6 +124,10 @@ extension CGSize {
 }
 
 extension UIEdgeInsets {
+    prefix public static func -(a: UIEdgeInsets) -> UIEdgeInsets {
+        UIEdgeInsets( top: -a.top, left: -a.left, bottom: -a.bottom, right: -a.right )
+    }
+
     public static func +(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
         UIEdgeInsets( top: max( lhs.top, rhs.top ), left: max( lhs.left, rhs.left ),
                       bottom: max( lhs.bottom, rhs.bottom ), right: max( lhs.right, rhs.right ) )
@@ -239,23 +243,6 @@ extension UICollectionViewCell {
         }
 
         return cell as! Self
-    }
-}
-
-extension UICollectionViewLayoutAttributes {
-    public convenience init(forCellWith indexPath: IndexPath, init i: (UICollectionViewLayoutAttributes) -> ()) {
-        self.init( forCellWith: indexPath )
-        i( self )
-    }
-
-    public convenience init(forSupplementaryViewOfKind elementKind: String, with indexPath: IndexPath, init i: (UICollectionViewLayoutAttributes) -> ()) {
-        self.init( forSupplementaryViewOfKind: elementKind, with: indexPath )
-        i( self )
-    }
-
-    public convenience init(forDecorationViewOfKind decorationViewKind: String, with indexPath: IndexPath, init i: (UICollectionViewLayoutAttributes) -> ()) {
-        self.init( forDecorationViewOfKind: decorationViewKind, with: indexPath )
-        i( self )
     }
 }
 

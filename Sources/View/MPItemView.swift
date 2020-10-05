@@ -836,7 +836,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         (value as? CustomStringConvertible)?.description
     }
 
-    class PickerItemView<M>: ItemView<M>, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
+    class PickerItemView<M>: ItemView<M>, UICollectionViewDelegate, UICollectionViewDataSource {
         let item: PickerItem<M, V>
         let collectionView = PickerView()
         lazy var dataSource = DataSource<V>( collectionView: self.collectionView )
@@ -860,15 +860,17 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
             super.didLoad()
 
             self.item.didLoad( collectionView: self.collectionView )
-            self.update()
         }
 
         override func update() {
             super.update()
 
             let values = self.item.model.flatMap { self.item.values( $0 ) } ?? []
-            self.dataSource.update( values.split( separator: nil ).map( { Array( $0 ) } ) )
-            self.updateSelection()
+            self.dataSource.update( values.split( separator: nil ).map( { [ V? ]( $0 ) } ) ) { [unowned self] _ in
+                DispatchQueue.main.async {
+                    self.updateSelection()
+                }
+            }
         }
 
         // MARK: --- Private ---
@@ -901,7 +903,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
                             model: self.item.model!, value: self.dataSource.element( at: indexPath )! )!
         }
 
-        // MARK: --- UICollectionViewDelegateFlowLayout ---
+        // MARK: --- UICollectionViewDelegate ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             if let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
@@ -927,25 +929,20 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
             }
 
             override var intrinsicContentSize: CGSize {
-                if self.numberOfSections > 0 && self.numberOfItems( inSection: 0 ) > 0,
-                   let itemSize = self.layout.layoutAttributesForItem( at: IndexPath( item: 0, section: 0 ) )?.size {
-                    return itemSize + self.layoutMargins.size
-                }
-
-                return CGSize( width: 1, height: 1 ) + self.layoutMargins.size
+                self.layout.collectionViewContentSize
             }
 
             class PickerLayout: UICollectionViewLayout {
-                private var attributes           = [ UICollectionView.ElementCategory: [ IndexPath: UICollectionViewLayoutAttributes ] ]()
-                private let initialItemSize      = CGSize( width: 50, height: 50 )
-                private let initialSeparatorSize = CGSize( width: 1, height: 50 )
-                private var contentSize          = CGSize.zero {
+                private var attributes      = [ UICollectionView.ElementCategory: [ IndexPath: UICollectionViewLayoutAttributes ] ]()
+                private var initialPaths    = [ UICollectionView.ElementCategory: [ IndexPath ] ]()
+                private let initialItemSize = CGSize( width: 50, height: 50 )
+                private let spacing         = CGFloat( 12 )
+
+                private lazy var  contentSize = self.initialItemSize {
                     didSet {
                         self.collectionView?.invalidateIntrinsicContentSize()
                     }
                 }
-                private let spacing              = CGFloat( 12 )
-
                 open override var collectionViewContentSize: CGSize {
                     self.contentSize
                 }
@@ -953,49 +950,69 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
                 open override func prepare() {
                     super.prepare()
 
-                    var newAttributes = [ UICollectionView.ElementCategory: [ IndexPath: UICollectionViewLayoutAttributes ] ]()
-                    let margins       = self.collectionView?.layoutMargins ?? .zero, start = margins.left
-                    var offset        = start, height = CGFloat( 0 )
+                    let margins         = self.collectionView?.layoutMargins ?? .zero
+                    var offset          = margins.left, height = CGFloat( 0 )
+                    var initialItemSize = self.initialItemSize, initialSeparatorSize = initialItemSize
+                    initialSeparatorSize.width = 1
 
                     let sections = self.collectionView?.numberOfSections ?? 0
                     for section in 0..<sections {
                         for item in 0..<(self.collectionView?.numberOfItems( inSection: section ) ?? 0) {
-                            let path = IndexPath( item: item, section: section ), attributes = self.attributes[.cell]?[path] ??
-                                    UICollectionViewLayoutAttributes( forCellWith: path, init:
-                                    { $0.frame.size = self.initialItemSize } )
-                            newAttributes[.cell, default: .init()][path] = attributes
-
-                            attributes.frame.origin = CGPoint( x: offset == start ? start: offset + spacing, y: margins.top )
-                            height = max( height, attributes.frame.maxY )
-                            offset = attributes.frame.maxX
+                            self.prepareAttributes(
+                                    path: IndexPath( item: item, section: section ), category: .cell,
+                                    initialSize: &initialItemSize, margins: margins, offset: &offset, height: &height )
                         }
-
                         if section < sections - 1 {
-                            let path = IndexPath( item: 0, section: section ), attributes = self.attributes[.decorationView]?[path] ??
-                                    UICollectionViewLayoutAttributes( forDecorationViewOfKind: "Separator", with: path, init:
-                                    { $0.frame.size = self.initialSeparatorSize } )
-                            newAttributes[.decorationView, default: .init()][path] = attributes
-
-                            attributes.frame.origin = CGPoint( x: offset == start ? start: offset + spacing, y: margins.top )
-                            offset = attributes.frame.maxX
+                            self.prepareAttributes(
+                                    path: IndexPath( item: 0, section: section ), category: .decorationView,
+                                    initialSize: &initialSeparatorSize, margins: margins, offset: &offset, height: &height )
                         }
                     }
 
-                    self.attributes = newAttributes
                     self.contentSize = CGSize( width: offset + (margins.right), height: height + (margins.bottom) )
 
-                    height = (self.contentSize.height - (margins.height)) * .long
+                    height = ((self.contentSize.height - (margins.height)) * .long).rounded( .towardZero )
                     self.attributes[.decorationView]?.values.forEach {
                         $0.frame.size.height = height
                         $0.frame.origin.y = (self.contentSize.height - height) / 2
                     }
                 }
 
+                func prepareAttributes(path: IndexPath, category: UICollectionView.ElementCategory, initialSize: inout CGSize,
+                                       margins: UIEdgeInsets, offset: inout CGFloat, height: inout CGFloat) {
+                    if !(self.attributes[category]?.keys.contains( path ) ?? false) {
+                        self.initialPaths[category, default: .init()].append( path )
+                    }
+
+                    let attributes = self.attributes[category, default: .init()][path, default: {
+                        switch category {
+                            case .cell:
+                                return UICollectionViewLayoutAttributes( forCellWith: path )
+                            case .decorationView:
+                                return UICollectionViewLayoutAttributes( forDecorationViewOfKind: "Separator", with: path )
+                            default:
+                                return nil
+                        }
+                    }()!]
+
+                    if self.initialPaths[category]?.contains( path ) ?? false {
+                        attributes.frame.size = initialSize
+                    }
+                    else {
+                        initialSize = attributes.size
+                    }
+
+                    attributes.frame.origin = CGPoint( x: offset == margins.left ? offset: offset + spacing, y: margins.top )
+                    height = max( height, attributes.frame.maxY )
+                    offset = attributes.frame.maxX
+                }
+
                 open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                                           withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
                     if let currentAttributes = self.attributes[originalAttributes.representedElementCategory]?[originalAttributes.indexPath],
-                       currentAttributes.size.width != preferredAttributes.size.width {
+                       currentAttributes.size != preferredAttributes.size {
                         currentAttributes.size = preferredAttributes.size
+                        self.initialPaths[originalAttributes.representedElementCategory]?.removeAll { $0 == currentAttributes.indexPath }
                         return true
                     }
 
@@ -1031,14 +1048,11 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
                 override init(frame: CGRect) {
                     super.init( frame: frame )
 
-                    // - View
                     self => \.backgroundColor => Theme.current.color.mute
+                }
 
-                    // - Layout
-                    LayoutConfiguration( view: self )
-                            .constrainTo { $1.widthAnchor.constraint( equalToConstant: 1 ).with( priority: .defaultLow ) }
-                            .constrainTo { $1.heightAnchor.constraint( equalToConstant: 1 ).with( priority: .defaultLow ) }
-                            .activate()
+                override var intrinsicContentSize: CGSize {
+                    CGSize( width: 1, height: 1 )
                 }
             }
         }

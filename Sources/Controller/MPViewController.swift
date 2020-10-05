@@ -57,13 +57,11 @@ class MPViewController: UIViewController, Updatable {
 
         super.viewWillAppear( animated )
 
-//        UIView.performWithoutAnimation { self.update() }
+        UIView.performWithoutAnimation { self.update() }
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
-
-//        self.update()
 
         self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
                 forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in

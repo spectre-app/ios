@@ -79,6 +79,7 @@ open class DataSource<E: Hashable> {
 
         if !self.elementsConsumed {
             self.sectionsOfElements = updatedSectionsOfElements
+            completion?( true )
             return
         }
 
