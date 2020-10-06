@@ -102,7 +102,10 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
                         mperror( title: "Couldn't import user", error: error )
                     }
                 }
+                return true
             }
+
+            wrn( "Import URL missing data parameter: %@", url )
         }
         else if let utisValue = UTTypeCreateAllIdentifiersForTag(
                 kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
@@ -118,12 +121,17 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
                             }
                         }
                         else {
-                            mperror( title: "Couldn't open document", details: url.lastPathComponent, error: error )
+                            mperror( title: "Couldn't open document", details: url, error: error )
                         }
                     } ).resume()
                     return true
                 }
             }
+
+            wrn( "Import UTI not supported: %@: %@", url, utis )
+        }
+        else {
+            wrn( "Open URL not supported: %@", url )
         }
 
         return false

@@ -178,9 +178,9 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
             case .none:
                 return nil
             case .flat:
-                return "com.lyndir.masterpassword.sites"
+                return "app.spectre.user.mpsites"
             case .JSON:
-                return "com.lyndir.masterpassword.json"
+                return "app.spectre.user.json"
             default:
                 fatalError( "Unsupported format: \(self)" )
         }
