@@ -69,12 +69,21 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
                 .activate()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        // Need to lay out before setting initial content offset to ensure top container inset is taken into account.
+        self.view.layoutIfNeeded()
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
         // Offset services content's top inset to make space for the top container.
-        let top = self.servicesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y - 8
-        self.servicesTableView.contentInset.top = max( 0, top - self.servicesTableView.bounds.origin.y - self.servicesTableView.safeAreaInsets.top )
+        self.servicesTableView.contentInset.top =
+                max( 0, self.servicesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y
+                        - (self.servicesTableView.bounds.origin.y + self.servicesTableView.safeAreaInsets.top)
+                        - 8 )
     }
 
     // MARK: --- MPServicesViewObserver ---

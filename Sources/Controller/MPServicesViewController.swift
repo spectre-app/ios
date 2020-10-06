@@ -59,9 +59,9 @@ class MPServicesViewController: BasicServicesViewController {
 
         if selectedSite == nil {
             DispatchQueue.main.perform {
-                UIView.animate( withDuration: .long, animations: {
+                UIView.animate( withDuration: .long ) {
                     self.detailsHost.hide()
-                } )
+                }
             }
         }
     }
