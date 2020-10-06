@@ -6,8 +6,14 @@
 import UIKit
 
 class AnyItem: NSObject, Updatable {
-    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
-                                                qos: .userInitiated, update: self, animated: true )
+    let title: String?
+
+    private lazy var updateTask = DispatchTask( named: self.title, queue: .main, deadline: .now() + .milliseconds( 100 ),
+                                                update: self, animated: true )
+
+    init(title: String? = nil) {
+        self.title = title
+    }
 
     func setNeedsUpdate() {
         self.updateTask.request()
@@ -33,7 +39,6 @@ class Item<M>: AnyItem {
     }
     private var behaviours = [ Behaviour<M> ]()
 
-    private let title:           String?
     private let captionProvider: (M) -> CustomStringConvertible?
     private let subitems:        [Item<M>]
     private (set) lazy var view = createItemView()
@@ -44,9 +49,10 @@ class Item<M>: AnyItem {
 
     init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
          caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
-        self.title = title
         self.subitems = subitems
         self.captionProvider = captionProvider
+
+        super.init( title: title )
     }
 
     func createItemView() -> ItemView<M> {

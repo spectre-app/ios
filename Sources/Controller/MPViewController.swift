@@ -36,8 +36,7 @@ class MPViewController: UIViewController, Updatable {
     var updatesPostponed: Bool {
         !self.isViewLoaded || self.view.superview == nil
     }
-    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ),
-                                                qos: .userInitiated, update: self, animated: true )
+    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ), update: self, animated: true )
     private var willEnterForegroundObserver: NSObjectProtocol?
 
     // MARK: --- Life ---

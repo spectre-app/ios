@@ -15,7 +15,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         }
         didSet {
             self.user?.observers.register( observer: self )
-            self.updateTask.request()
+            self.update()
         }
     }
     public var selectedService: MPService? {
@@ -43,9 +43,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
     private lazy var resultSource = DataSource<MPQuery.Result<MPService>>( tableView: self )
     private var newServiceResult: MPQuery.Result<MPService>?
-    private var isInitial = true
-    private lazy var updateTask = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ),
-                                                qos: .userInitiated, update: self )
+    private lazy var updateTask = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
 
     // MARK: --- Life ---
 
@@ -69,63 +67,55 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
     // MARK: --- Internal ---
 
     func update() {
-        DispatchQueue.global().async { [weak self] in
-            guard let self = self
-            else { return }
+        self.updateTask.cancel()
 
-            var selectedResult: MPQuery.Result<MPService>?
-            var resultSource = [ [ MPQuery.Result<MPService>? ] ]()
-            if let user = self.user, user.masterKeyFactory != nil {
+        var selectedResult: MPQuery.Result<MPService>?
+        var resultSource = [ [ MPQuery.Result<MPService>? ] ]()
+        if let user = self.user, user.masterKeyFactory != nil {
 
-                // Determine search state and filter user services
-                selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedService } )?.element
-                let selectionFollowsQuery = self.newServiceResult === selectedResult || selectedResult?.exact ?? false
-                let results = MPQuery( self.query ).find( user.services.sorted() ) { $0.serviceName }
-                let exactResult = results.first { $0.exact }
-                resultSource.append( results )
+            // Determine search state and filter user services
+            selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedService } )?.element
+            let selectionFollowsQuery = self.newServiceResult === selectedResult || selectedResult?.exact ?? false
+            let results = MPQuery( self.query ).find( user.services.sorted() ) { $0.serviceName }
+            let exactResult = results.first { $0.exact }
+            resultSource.append( results )
 
-                // Add "new service" result if there is a query and no exact result
-                if let query = self.query,
-                   !query.isEmpty, exactResult == nil {
-                    self.newServiceResult?.value.serviceName = query
+            // Add "new service" result if there is a query and no exact result
+            if let query = self.query,
+               !query.isEmpty, exactResult == nil {
+                self.newServiceResult?.value.serviceName = query
 
-                    if self.newServiceResult == nil || LiefsteCell.is( result: self.newServiceResult ) {
-                        self.newServiceResult = MPQuery.Result<MPService>( value: MPService( user: user, serviceName: query ), keySupplier: { $0.serviceName } )
-                    }
-
-                    self.newServiceResult?.matches( query: query )
-                    resultSource.append( [ self.newServiceResult ] )
-                }
-                else {
-                    self.newServiceResult = nil
+                if self.newServiceResult == nil || LiefsteCell.is( result: self.newServiceResult ) {
+                    self.newServiceResult = MPQuery.Result<MPService>( value: MPService( user: user, serviceName: query ), keySupplier: { $0.serviceName } )
                 }
 
-                // Special case for selected service: keep selection on the service result that matches the query
-                if selectionFollowsQuery {
-                    selectedResult = exactResult ?? self.newServiceResult
-                }
-                if self.newServiceResult != selectedResult,
-                   let selectedResult_ = selectedResult,
-                   !results.contains( selectedResult_ ) {
-                    selectedResult = nil
-                }
+                self.newServiceResult?.matches( query: query )
+                resultSource.append( [ self.newServiceResult ] )
+            }
+            else {
+                self.newServiceResult = nil
             }
 
+            // Special case for selected service: keep selection on the service result that matches the query
+            if selectionFollowsQuery {
+                selectedResult = exactResult ?? self.newServiceResult
+            }
+            if self.newServiceResult != selectedResult,
+               let selectedResult_ = selectedResult,
+               !results.contains( selectedResult_ ) {
+                selectedResult = nil
+            }
+        }
+
+        DispatchQueue.main.perform {
             // Update the services table to show the newly filtered services
-            DispatchQueue.main.perform { [weak self] in
-                guard let self = self
-                else { return }
-
-                self.resultSource.update( resultSource, animated: !self.isInitial )
-                self.isInitial = false
-
-                // Light-weight reload the cell content without fully reloading the cell rows.
-                self.resultSource.elements().forEach { path, element in
-                    (self.cellForRow( at: path ) as? ServiceCell)?.result = element
-                }
-
-                // Select the most appropriate row according to the query.
+            self.resultSource.update( resultSource ) { _ in
                 self.selectedService = selectedResult?.value
+            }
+
+            // Light-weight reload the cell content without fully reloading the cell rows.
+            self.resultSource.elements().forEach { path, element in
+                (self.cellForRow( at: path ) as? ServiceCell)?.result = element
             }
         }
     }
@@ -258,6 +248,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         cell.servicesView = self
         cell.result = result
         cell.new = cell.result == self.newServiceResult
+        cell.update()
         return cell
     }
 
@@ -308,7 +299,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             }
         }
 
-        private lazy var updateTask = DispatchTask( queue: .main, qos: .userInitiated, update: self )
         private var mode            = MPKeyPurpose.authentication {
             didSet {
                 if oldValue != self.mode {
@@ -324,6 +314,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         private let resultLabel     = UITextField()
         private let captionLabel    = UILabel()
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
+        private lazy var updateTask   = DispatchTask( named: self.service?.serviceName, queue: .main, update: self )
 
         private var selectionConfiguration: LayoutConfiguration<UIStackView>!
 
@@ -427,13 +418,18 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             }.needs( .update() )
         }
 
+        override var isSelected: Bool {
+            didSet {
+                if oldValue != self.isSelected {
+                    self.updateTask.request()
+                }
+            }
+        }
+
         override func setSelected(_ selected: Bool, animated: Bool) {
             if self.isSelected != selected {
-                defer { self.updateTask.request() }
                 super.setSelected( selected, animated: animated )
-            }
-            else {
-                super.setSelected( selected, animated: animated )
+                self.updateTask.request()
             }
         }
 
@@ -510,6 +506,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         // MARK: --- Private ---
 
         public func update() {
+            self.updateTask.cancel()
+
             guard let service = self.service
             else { return }
 

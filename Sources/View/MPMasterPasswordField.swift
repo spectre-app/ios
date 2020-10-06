@@ -61,8 +61,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
-    private lazy var identiconTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( .random( in: 300..<500 ) ),
-                                                   qos: .userInitiated, update: self )
+    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( .random( in: 300..<500 ) ), update: self )
 
     // MARK: --- Life ---
 
@@ -103,10 +102,10 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
         super.willMove( toWindow: newWindow )
 
         if newWindow == nil {
-            self.identiconTask.cancel()
+            self.updateTask.cancel()
         }
         else {
-            self.identiconTask.request()
+            self.updateTask.request()
         }
     }
 
@@ -115,11 +114,11 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
     public func setNeedsIdenticon() {
         DispatchQueue.main.perform {
             if (self.userFile?.fullName ?? self.nameField?.text) == nil || self.passwordField?.text == nil {
-                self.identiconTask.cancel()
+                self.updateTask.cancel()
                 self.identiconLabel.attributedText = nil
             }
             else {
-                self.identiconTask.request()
+                self.updateTask.request()
             }
         }
     }

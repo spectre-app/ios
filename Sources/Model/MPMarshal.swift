@@ -20,8 +20,7 @@ class MPMarshal: Observable, Updatable {
     private let marshalQueue      = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
     private let documentDirectory = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
                                                        .appendingPathComponent( "Documents" )
-    private lazy var updateTask = DispatchTask( queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ),
-                                                qos: .userInitiated, update: self )
+    private lazy var updateTask = DispatchTask( queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ), update: self )
 
     // MARK: --- Interface ---
 

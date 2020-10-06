@@ -306,7 +306,7 @@ public class Promise<V> {
  * A task that can be scheduled by request.
  */
 public class DispatchTask<V> {
-    private let requestQueue = DispatchQueue( label: "DispatchTask request", qos: .userInitiated )
+    private let name:      String
     private let workQueue: DispatchQueue
     private let deadline:  () -> DispatchTime
     private let group:     DispatchGroup?
@@ -314,11 +314,13 @@ public class DispatchTask<V> {
     private let flags:     DispatchWorkItemFlags
     private let work:      () throws -> V
 
-    private var requestItem: DispatchWorkItem?
-    private var workPromise: Promise<V>?
+    private var requestItem:    DispatchWorkItem?
+    private var requestPromise: Promise<V>?
+    private lazy var requestQueue = DispatchQueue( label: "\(productName): DispatchTask: \(self.name)", qos: .userInitiated )
 
-    public init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
-                qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) {
+    public init(named identifier: String, queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+                qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) {
+        self.name = identifier
         self.workQueue = queue
         self.deadline = deadline
         self.group = group
@@ -333,12 +335,14 @@ public class DispatchTask<V> {
      */
     @discardableResult
     public func request() -> Promise<V> {
-        self.workPromise ?? self.requestQueue.promising {
-            if let workPromise = self.workPromise {
-                return workPromise
+        self.requestQueue.await {
+            if let requestPromise = self.requestPromise {
+                return requestPromise
             }
-            guard self.requestItem?.isCancelled ?? true
-            else { return Promise( .failure( MPError.internal( cause: "Task is cancelled." ) ) ) }
+
+            if self.requestItem?.isCancelled ?? false {
+                return Promise( .failure( MPError.internal( cause: "Task is cancelled." ) ) )
+            }
 
             var value: V?, workError: Error?
             self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
@@ -346,9 +350,11 @@ public class DispatchTask<V> {
                 catch { workError = error }
             }
 
-            let workPromise = self.workQueue.promise( deadline: self.deadline(), group: self.group,
-                                                      qos: self.qos, flags: self.flags ) { () -> V in
-                if self.requestItem?.isCancelled ?? true {
+            let requestPromise = Promise<V>()
+            self.requestPromise = requestPromise
+            let _ = self.workQueue.promise( requestPromise, deadline: self.deadline(), group: self.group,
+                                            qos: self.qos, flags: self.flags ) { () -> V in
+                if self.requestItem?.isCancelled ?? false {
                     throw MPError.internal( cause: "Task was cancelled." )
                 }
 
@@ -364,11 +370,10 @@ public class DispatchTask<V> {
                 throw MPError.internal( cause: "Task was skipped." )
             }.then( on: self.requestQueue ) { _ in
                 self.requestItem = nil
-                self.workPromise = nil
+                self.requestPromise = nil
             }
 
-            self.workPromise = workPromise
-            return workPromise
+            return requestPromise
         }
     }
 
@@ -378,6 +383,11 @@ public class DispatchTask<V> {
     @discardableResult
     public func cancel() -> Bool {
         self.requestQueue.await {
+            defer {
+                self.requestItem = nil
+                self.requestPromise = nil
+            }
+
             self.requestItem?.cancel()
             return self.requestItem?.isCancelled ?? false
         }
@@ -385,9 +395,9 @@ public class DispatchTask<V> {
 }
 
 extension DispatchTask where V == Void {
-    public convenience init(queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
-                            qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], update updatable: Updatable, animated: Bool = false) {
-        self.init( queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
+    public convenience init(named identifier: String? = nil, queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+                            qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], update updatable: Updatable, animated: Bool = false) {
+        self.init( named: "\(type( of: updatable )): \(identifier ?? "-")", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
             guard let updatable = updatable
             else { throw Promise<V>.Interruption.invalidated }
 

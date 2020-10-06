@@ -26,8 +26,8 @@ class MPAlert {
         inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, keyPath: \.isHidden ) )
         inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, keyPath: \.isHidden ) )
     }
-    private lazy var automaticDismissalTask = DispatchTask( queue: .main, deadline: .now() + .seconds( 3 ),
-                                                            qos: .utility, execute: { self.dismiss() } )
+    private lazy var dismissTask = DispatchTask( named: "Dismiss Alert: \(self.title ?? "-")", queue: .main,
+                                                 deadline: .now() + .seconds( 3 ), execute: { self.dismiss() } )
 
     // MARK: --- Life ---
 
@@ -89,7 +89,7 @@ class MPAlert {
             }
             UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
                 if dismissAutomatically {
-                    self.automaticDismissalTask.request()
+                    self.dismissTask.request()
                 }
             } )
         }
@@ -98,7 +98,7 @@ class MPAlert {
     }
 
     public func dismiss() {
-        self.automaticDismissalTask.cancel()
+        self.dismissTask.cancel()
 
         DispatchQueue.main.perform {
             guard self.view.superview != nil
@@ -111,7 +111,7 @@ class MPAlert {
     }
 
     public func activate() {
-        self.automaticDismissalTask.cancel()
+        self.dismissTask.cancel()
 
         DispatchQueue.main.perform {
             UIView.animate( withDuration: .long ) { self.activationConfiguration.activate() }

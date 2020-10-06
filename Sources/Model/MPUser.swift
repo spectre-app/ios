@@ -177,7 +177,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
         }
     }
 
-    private lazy var saveTask = DispatchTask( queue: .global(), deadline: .now() + .seconds( 1 ), qos: .utility ) {
+    private lazy var saveTask = DispatchTask( named: self.fullName, queue: .global(), deadline: .now() + .seconds( 1 ) ) {
         guard self.dirty, self.file != nil
         else { return }
 
