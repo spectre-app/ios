@@ -21,19 +21,9 @@ class AutoFillViewController: ASCredentialProviderViewController {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // - View
-        let backgroundView = MPBackgroundView( mode: .backdrop )
-
-        // - Hierarchy
-        self.view.addSubview( backgroundView )
-
-        // - Layout
-        LayoutConfiguration( view: backgroundView )
-                .constrain()
-                .activate()
+    override func loadView() {
+        self.view = MPBackgroundView( mode: .backdrop )
+        self.view => \.tintColor => Theme.current.color.tint
     }
 
     /*

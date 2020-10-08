@@ -5,6 +5,10 @@
 
 import UIKit
 
+protocol MPDetailViewController: UIViewController {
+    var isContentScrollable: Bool { get }
+}
+
 class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     public let scrollView  = UIScrollView()
     public let contentView = MPUntouchableView()
@@ -12,16 +16,18 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.detailsController != nil
     }
 
-    private lazy var detailRecognizer    = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
-    private lazy var popupConfiguration  = LayoutConfiguration( view: self.view )
-    private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
-    private let closeButton = MPButton( identifier: "details #close", attributedTitle: .icon( "" ) )
-    private var detailsController:      UIViewController? {
+    private var detailsController: UIViewController? {
         didSet {
             self.activeChildController = self.detailsController
         }
     }
-    private var contentSizeObservation: NSKeyValueObservation?
+
+    private lazy var detailRecognizer    = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
+    private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
+    private let closeButton = MPButton( identifier: "details #close", attributedTitle: .icon( "" ) )
+    private var popupConfiguration:        LayoutConfiguration<UIView>!
+    private var fixedContentConfiguration: LayoutConfiguration<UIView>!
+    private var contentSizeObservation:    NSKeyValueObservation?
 
     // MARK: --- Life ---
 
@@ -71,13 +77,17 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 .activate()
 
         LayoutConfiguration( view: self.contentView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: 8 ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: 8 ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: -8 ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -8 ) }
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor, constant: -16 ) }
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
+                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
                 .activate()
+
+        self.fixedContentConfiguration = LayoutConfiguration( view: self.contentView )
+                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
+                .apply( LayoutConfiguration( view: self.scrollView )
+                                .set( false, keyPath: \.isScrollEnabled, reverses: true ) )
 
         LayoutConfiguration( view: self.closeButton )
                 .constrainTo { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
@@ -85,7 +95,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
                 .activate()
 
-        self.popupConfiguration
+        self.popupConfiguration = LayoutConfiguration( view: self.view )
                 .apply { active, inactive in
                     active.set( Theme.current.color.shade.get(), keyPath: \.backgroundColor )
                     inactive.set( Theme.current.color.shade.get( alpha: .off ), keyPath: \.backgroundColor )
@@ -141,10 +151,11 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                             detailsController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
                     detailsController.beginAppearanceTransition( true, animated: true )
                     self.contentView.addSubview( detailsController.view )
-                    LayoutConfiguration( view: detailsController.view ).constrain().activate()
+                    LayoutConfiguration( view: detailsController.view ).constrain( margins: true ).activate()
                 }
                 UIView.animate( withDuration: .short, animations: {
                     detailsController.view.window?.endEditing( true )
+                    self.fixedContentConfiguration.activated = (detailsController as? MPDetailViewController)?.isContentScrollable ?? false
                     self.popupConfiguration.activate()
                     self.closeButton.alpha = .on
                 }, completion: { finished in

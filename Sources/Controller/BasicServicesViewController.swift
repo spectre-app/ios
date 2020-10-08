@@ -5,10 +5,13 @@
 
 import UIKit
 
-class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MPServicesViewObserver {
+class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MPServicesViewObserver, MPDetailViewController {
     internal lazy var topContainer = MPEffectView( content: self.searchField )
     internal let searchField       = UITextField()
     internal let servicesTableView = MPServicesTableView()
+    var isContentScrollable = true
+
+    // MARK: --- State ---
 
     override var user: MPUser? {
         didSet {

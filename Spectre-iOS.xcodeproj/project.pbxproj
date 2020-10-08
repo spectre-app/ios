@@ -52,7 +52,7 @@
 		93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
 		93D397A1D5DA3D612D5874EF /* Period.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39651387222CBD2F9CCE0 /* Period.swift */; };
 		93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B6403FE258E526E5E85 /* UIView+MP.m */; };
-		93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
+		93D397CE8C3D324B39A60501 /* MPItemsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPItemsViewController.swift */; };
 		93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
 		93D3983CA421991D12ADDDBA /* MPLogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* MPLogSink.swift */; };
 		93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
@@ -167,7 +167,7 @@
 		DA0E55BC2510E9BB002B3AB1 /* MPResultTypeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */; };
 		DA0E55BD2510E9BB002B3AB1 /* MPUntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */; };
 		DA0E55BE251112BB002B3AB1 /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
-		DA0E55BF251112C1002B3AB1 /* MPDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */; };
+		DA0E55BF251112C1002B3AB1 /* MPItemsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPItemsViewController.swift */; };
 		DA0E55C0251112D0002B3AB1 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
 		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
 		DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
@@ -429,7 +429,7 @@
 		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
 		93D396E496C23EC3C008D6F7 /* UIView+MP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+MP.h"; sourceTree = "<group>"; };
 		93D396EF81F724F74A21AFA9 /* MPImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPImageView.swift; sourceTree = "<group>"; };
-		93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDetailViewController.swift; sourceTree = "<group>"; };
+		93D396F647CD1C68F9BA9AD5 /* MPItemsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPItemsViewController.swift; sourceTree = "<group>"; };
 		93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v1.c"; sourceTree = "<group>"; };
 		93D396FE084F709867C7C6CC /* Describe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Describe.swift; sourceTree = "<group>"; };
 		93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPPremiumDetailsViewController.swift; sourceTree = "<group>"; };
@@ -825,7 +825,7 @@
 				93D3990ACF0E11CD40EA6319 /* BasicUsersViewController.swift */,
 				93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */,
 				93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */,
-				93D396F647CD1C68F9BA9AD5 /* MPDetailViewController.swift */,
+				93D396F647CD1C68F9BA9AD5 /* MPItemsViewController.swift */,
 				93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */,
 				93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */,
 				93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */,
@@ -1710,7 +1710,7 @@
 				DA0E55922510E985002B3AB1 /* Types.swift in Sources */,
 				DA0E5566251022EB002B3AB1 /* mpw-algorithm_v1.c in Sources */,
 				DA0E55B02510E9BB002B3AB1 /* MPDateView.swift in Sources */,
-				DA0E55BF251112C1002B3AB1 /* MPDetailViewController.swift in Sources */,
+				DA0E55BF251112C1002B3AB1 /* MPItemsViewController.swift in Sources */,
 				DA0E55C0251112D0002B3AB1 /* MPViewController.swift in Sources */,
 				DA0E556F251022EB002B3AB1 /* aes.c in Sources */,
 				DA0E558E2510E985002B3AB1 /* ConstraintResolver.swift in Sources */,
@@ -1814,7 +1814,7 @@
 				93D39557916D91E959F0133A /* Theme.swift in Sources */,
 				93D3930DDA8EE099DDBC2D78 /* Observers.swift in Sources */,
 				93D391E2A56BA0C4D8E05D25 /* MPUserDetailViewController.swift in Sources */,
-				93D397CE8C3D324B39A60501 /* MPDetailViewController.swift in Sources */,
+				93D397CE8C3D324B39A60501 /* MPItemsViewController.swift in Sources */,
 				93D3973C97332CCE89FC9B22 /* MPAvatarCell.swift in Sources */,
 				93D39AB0E8841E744F4B6F4C /* MPItemCell.swift in Sources */,
 				93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */,

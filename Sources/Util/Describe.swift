@@ -58,17 +58,17 @@ extension UIView: Describable {
             description = identifier
         }
         else if let owner = owner {
-            description = short ? owner.name: "\(_describe( Self.self, short: true )) \(owner.name) @\(_describe( type( of: owner.host ), short: true ))"
+            description = short ? owner.name: "\(owner.name):\(_describe( Self.self, short: true ))@\(_describe( type( of: owner.host ), short: true ))"
         }
         else if let index = self.superview?.subviews.firstIndex( of: self ) {
-            description = short ? "[\(index)]": "[\(index)] \(_describe( Self.self ))"
+            description = short ? "[\(index)]": "[\(index)]\(_describe( Self.self ))"
         }
         else {
             description = _describe( Self.self )
         }
 
         if !short, let ownerView = owner?.host as? UIView {
-            return "\(ownerView.describe( short: false ))/\(description)"
+            return "\(description) << \(ownerView.describe( short: false ))"
         }
         else {
             return description

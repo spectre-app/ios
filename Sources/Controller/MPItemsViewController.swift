@@ -49,8 +49,8 @@ class MPItemsViewController<M>: MPViewController {
         super.viewDidLoad()
 
         // - View
-        self.view.layoutMargins.bottom = 40
         self.backgroundView.mode = .panel
+        self.backgroundView.layoutMargins.bottom = 40
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = .on
