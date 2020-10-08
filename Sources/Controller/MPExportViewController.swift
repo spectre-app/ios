@@ -21,10 +21,10 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.exportButton,
     ] )
 
-    override var user: MPUser {
+    override var user: MPUser? {
         didSet {
             DispatchQueue.main.perform {
-                self.subtitleLabel.text = self.user.fullName
+                self.subtitleLabel.text = self.user?.fullName
             }
         }
     }
@@ -43,6 +43,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
 
     override init(user: MPUser) {
         super.init( user: user )
+
         self.modalPresentationStyle = .popover
         self.popoverPresentationController!.delegate = self
         self.popoverPresentationController! => \.backgroundColor => Theme.current.color.shade
@@ -79,9 +80,12 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.revealControl.selectedSegmentIndex = 1
 
         self.exportButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
-            trc( "Requested export of %@, format: %@, redacted: %d", self.user, self.format, self.redacted )
+            guard let user = self.user
+            else { return }
 
-            let item       = MPMarshal.ActivityItem( user: self.user, format: self.format, redacted: self.redacted )
+            trc( "Requested export of %@, format: %@, redacted: %d", user, self.format, self.redacted )
+
+            let item       = MPMarshal.ActivityItem( user: user, format: self.format, redacted: self.redacted )
             let controller = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
             controller.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
                 pii( "Export activity completed: %d, error: %@", completed, activityError )

@@ -6,12 +6,22 @@
 import UIKit
 
 class MPUserViewController: MPViewController, MPUserObserver {
-    var user: MPUser {
+    var user: MPUser? {
         willSet {
-            self.user.observers.unregister( observer: self )
+            self.user?.observers.unregister( observer: self )
         }
         didSet {
-            self.user.observers.register( observer: self )
+            if let user = self.user, user.masterKeyFactory != nil {
+                user.observers.register( observer: self )
+            }
+            else {
+                DispatchQueue.main.perform {
+                    if let navigationController = self.navigationController {
+                        trc( "Dismissing %@ since user logged out.", Self.self )
+                        navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
+                    }
+                }
+            }
         }
     }
 
@@ -22,7 +32,6 @@ class MPUserViewController: MPViewController, MPUserObserver {
     }
 
     init(user: MPUser) {
-        self.user = user
         super.init()
 
         defer {
@@ -33,20 +42,18 @@ class MPUserViewController: MPViewController, MPUserObserver {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        if self.user.masterKeyFactory == nil {
-            mperror( title: "User logged out", message: "User is no longer authenticated", details: self.user )
-            self.userDidLogout( self.user )
+        // TODO: is this still necessary?
+        if let user = self.user, user.masterKeyFactory == nil {
+            mperror( title: "User logged out", message: "User is no longer authenticated", details: user )
+            self.userDidLogout( user )
         }
     }
 
     // MARK: --- MPUserObserver ---
 
     func userDidLogout(_ user: MPUser) {
-        DispatchQueue.main.perform {
-            if user == self.user, let navigationController = self.navigationController {
-                trc( "Dismissing %@ since user logged out.", Self.self)
-                navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
-            }
+        if self.user == user {
+            self.user = nil
         }
     }
 }

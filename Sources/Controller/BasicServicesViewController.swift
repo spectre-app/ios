@@ -10,11 +10,9 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
     internal let searchField       = UITextField()
     internal let servicesTableView = MPServicesTableView()
 
-    override var user: MPUser {
+    override var user: MPUser? {
         didSet {
-            DispatchQueue.main.perform {
-                self.servicesTableView.user = self.user
-            }
+            self.servicesTableView.user = self.user
         }
     }
 

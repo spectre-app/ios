@@ -9,10 +9,10 @@ class MPServicesViewController: BasicServicesViewController {
     private let userButton  = MPButton( identifier: "services #user_settings" )
     private let detailsHost = MPDetailsHostController()
 
-    override var user: MPUser {
+    override var user: MPUser? {
         didSet {
             DispatchQueue.main.perform {
-                self.userButton.title = self.user.fullName.name( style: .abbreviated )
+                self.userButton.title = self.user?.fullName.name( style: .abbreviated )
                 self.userButton.sizeToFit()
             }
         }
@@ -26,7 +26,9 @@ class MPServicesViewController: BasicServicesViewController {
         // - View
         self.userButton.isRound = true
         self.userButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
-            self.detailsHost.show( MPUserDetailsViewController( model: self.user ), sender: self )
+            if let user = self.user {
+                self.detailsHost.show( MPUserDetailsViewController( model: user ), sender: self )
+            }
         }
         self.searchField.rightView = self.userButton
 
