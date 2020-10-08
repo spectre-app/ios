@@ -9,6 +9,7 @@ class MPViewController: UIViewController, Updatable {
     var trackScreen = true
     lazy var screen = MPTracker.shared.screen( named: Self.self.description() )
 
+    internal var backgroundView = MPBackgroundView( mode: .clear )
     internal var activeChildController: UIViewController? {
         didSet {
             self.setNeedsStatusBarAppearanceUpdate()
@@ -47,6 +48,10 @@ class MPViewController: UIViewController, Updatable {
 
     init() {
         super.init( nibName: nil, bundle: nil )
+    }
+
+    override func loadView() {
+        self.view = self.backgroundView
     }
 
     override func viewWillAppear(_ animated: Bool) {

@@ -22,8 +22,7 @@ class MPItemsViewController<M>: MPViewController {
     }
 
     private let focus: Item<M>.Type?
-    private let backgroundView = MPBackgroundView()
-    private let itemsView      = UIStackView()
+    private let itemsView = UIStackView()
     private lazy var items = self.loadItems()
 
     // MARK: --- Interface ---
@@ -50,10 +49,11 @@ class MPItemsViewController<M>: MPViewController {
         super.viewDidLoad()
 
         // - View
-        self.backgroundView.layoutMargins.bottom = 40
+        self.view.layoutMargins.bottom = 40
+        self.backgroundView.mode = .panel
+        self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = .on
-        self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowOffset = .zero
         self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.masksToBounds = true
@@ -66,13 +66,9 @@ class MPItemsViewController<M>: MPViewController {
         }
 
         // - Hierarchy
-        self.backgroundView.addSubview( self.itemsView )
-        self.view.addSubview( self.backgroundView )
+        self.view.addSubview( self.itemsView )
 
         // - Layout
-        LayoutConfiguration( view: self.backgroundView )
-                .constrain()
-                .activate()
         LayoutConfiguration( view: self.itemsView )
                 .constrain( margins: true, anchors: .vertically )
                 .constrain( anchors: .horizontally )

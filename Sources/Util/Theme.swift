@@ -32,13 +32,11 @@ private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, ide
                 -> PropertyPath<E, V> {
     let identity = Identity( members )
     if let propertyPath = propertyPaths[identity] as? PropertyPath<E, V>, propertyPath.target != nil {
-        trc( "find existing: %@", propertyPath )
         return propertyPath
     }
 
     let propertyPath = propertyPath()
     propertyPaths[identity] = propertyPath
-    trc( "find created: %@", propertyPath )
     return propertyPath
 }
 
@@ -74,7 +72,6 @@ class Identity: Equatable, Hashable {
 
     init(_ members: [AnyObject?]) {
         self.members = members.map { $0.flatMap { ObjectIdentifier( $0 ) } ?? ObjectIdentifier( NSNull.self ) }
-        trc( "identity: %@, hash: %x", self.members, self.hashValue )
     }
 
     func hash(into hasher: inout Hasher) {
@@ -98,7 +95,6 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
     let attribute:       NSAttributedString.Key?
     var property:        AnyProperty? {
         willSet {
-            trc( "[bind] %@: %@ => %@", self, self.property, newValue )
             if self.target == nil {
                 trc( "<bp>" )
             }
@@ -133,10 +129,10 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
             targetDescription = "\(type( of: E.self )): gone)"
         }
         if let keyPath = self.nullableKeyPath {
-            return "\(targetDescription) => \(NSExpression( forKeyPath: keyPath ).keyPath)"
+            return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String(describing: keyPath))"
         }
         else if let keyPath = self.nonnullKeyPath {
-            return "\(targetDescription) => \(NSExpression( forKeyPath: keyPath ).keyPath)"
+            return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String(describing: keyPath))"
         }
         else {
             return "\(self.target == nil ? String( reflecting: E.self ): String( reflecting: self.target! ))"
@@ -152,7 +148,6 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
         else { return }
 
         var value = value()
-        trc( "[assign] %@ => %@", self, value )
 
         if let attribute = self.attribute, let string = target[keyPath: self.nullableKeyPath!] as? NSAttributedString {
             let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )

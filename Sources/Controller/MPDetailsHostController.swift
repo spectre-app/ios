@@ -44,6 +44,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.scrollView.contentInsetAdjustmentBehavior = .always
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
+        self.closeButton.alpha = .off
         self.closeButton.button.action( for: .primaryActionTriggered ) { self.hide() }
 
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { [unowned self] _, _ in
@@ -59,8 +60,8 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
         // - Hierarchy
         self.view.addSubview( self.scrollView )
+        self.view.addSubview( self.closeButton )
         self.scrollView.addSubview( self.contentView )
-        self.contentView.addSubview( self.closeButton )
 
         // - Layout
         LayoutConfiguration( view: self.scrollView )
@@ -139,12 +140,13 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     detailsController.view.frame.size = self.contentView.bounds.size.union(
                             detailsController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
                     detailsController.beginAppearanceTransition( true, animated: true )
-                    self.contentView.insertSubview( detailsController.view, belowSubview: self.closeButton )
+                    self.contentView.addSubview( detailsController.view )
                     LayoutConfiguration( view: detailsController.view ).constrain().activate()
                 }
                 UIView.animate( withDuration: .short, animations: {
                     detailsController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()
+                    self.closeButton.alpha = .on
                 }, completion: { finished in
                     detailsController.endAppearanceTransition()
                     detailsController.didMove( toParent: self )
@@ -162,6 +164,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 UIView.animate( withDuration: .short, animations: {
                     self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
                     self.popupConfiguration.deactivate()
+                    self.closeButton.alpha = .off
                 }, completion: { finished in
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()

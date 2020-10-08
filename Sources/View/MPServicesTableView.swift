@@ -45,6 +45,17 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
     private var newServiceResult: MPQuery.Result<MPService>?
     private lazy var updateTask = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
 
+    // MARK: --- State ---
+
+    override var contentSize:          CGSize {
+        didSet {
+            self.invalidateIntrinsicContentSize()
+        }
+    }
+    override var intrinsicContentSize: CGSize {
+        CGSize( width: UIView.noIntrinsicMetric, height: max( 1, self.contentSize.height ) )
+    }
+
     // MARK: --- Life ---
 
     init() {

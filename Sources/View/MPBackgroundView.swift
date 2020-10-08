@@ -10,9 +10,14 @@ class MPBackgroundView: UIView, ThemeObserver {
         willSet {
             (self => \.backgroundColor).unbind()
             self.gradientColor = nil
+            self.isOpaque = true
         }
         didSet {
             switch self.mode {
+                case .clear:
+                    self.backgroundColor = .clear
+                    self.isOpaque = false
+
                 case .gradient:
                     self.didChangeTheme()
 
@@ -148,6 +153,6 @@ class MPBackgroundView: UIView, ThemeObserver {
     // MARK: --- Types ---
 
     enum Mode {
-        case gradient, backdrop, panel, tint, custom
+        case clear, gradient, backdrop, panel, tint, custom
     }
 }

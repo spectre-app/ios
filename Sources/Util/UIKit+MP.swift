@@ -530,7 +530,7 @@ extension UITraitCollection {
 
 extension UIView {
     public var owner: (host: UIResponder, name: String)? {
-        var nextResponder: UIResponder? = self
+        var nextResponder = self.next
         while let nextResponder_ = nextResponder {
             if let property = nextResponder_.property( withValue: self ) {
                 return (nextResponder_, property)
@@ -541,13 +541,4 @@ extension UIView {
 
         return nil
     }
-
-//- (NSString *)infoPathName {
-//
-//    UIResponder *parent = [self nextResponder]
-//    if ([parent isKindOfClass:[UIView class]])
-//        return strf( @"%@/%@", [(UIView *)parent infoPathName]?: @"", [self infoShortName])
-//
-//    return strf( @"%@/%@", describe( [parent class] )?: @"", [self infoShortName] )
-//}
 }

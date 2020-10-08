@@ -924,6 +924,19 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         class PickerView: UICollectionView {
             let layout = PickerLayout()
 
+            // MARK: --- State ---
+
+            override var contentSize:          CGSize {
+                didSet {
+                    self.invalidateIntrinsicContentSize()
+                }
+            }
+            override var intrinsicContentSize: CGSize {
+                self.layout.collectionViewContentSize
+            }
+
+            // MARK: --- Life ---
+
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
             }
@@ -932,10 +945,6 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
                 super.init( frame: UIScreen.main.bounds, collectionViewLayout: self.layout )
                 self.backgroundColor = .clear
                 self.register( Separator.self, decorationKind: "Separator" )
-            }
-
-            override var intrinsicContentSize: CGSize {
-                self.layout.collectionViewContentSize
             }
 
             class PickerLayout: UICollectionViewLayout {
@@ -1166,11 +1175,10 @@ class ListItem<M, V: Hashable>: Item<M> {
         // MARK: --- UITableViewDelegate ---
 
         class TableView: UITableView {
-            override var intrinsicContentSize: CGSize {
-                CGSize( width: UIView.noIntrinsicMetric, height: self.contentSize.height )
-            }
 
-            override var bounds:      CGRect {
+            // MARK: --- State ---
+
+            override var bounds:               CGRect {
                 didSet {
                     if self.bounds.size.height < self.contentSize.height {
                         if !self.isScrollEnabled {
@@ -1183,13 +1191,16 @@ class ListItem<M, V: Hashable>: Item<M> {
                     }
                 }
             }
-            override var contentSize: CGSize {
+            override var contentSize:          CGSize {
                 didSet {
                     self.invalidateIntrinsicContentSize()
-                    self.setNeedsUpdateConstraints()
-                    self.setNeedsLayout()
                 }
             }
+            override var intrinsicContentSize: CGSize {
+                CGSize( width: UIView.noIntrinsicMetric, height: max( 1, self.contentSize.height ) )
+            }
+
+            // MARK: --- Life ---
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
@@ -1199,22 +1210,6 @@ class ListItem<M, V: Hashable>: Item<M> {
                 super.init( frame: .zero, style: .plain )
                 self.backgroundColor = .clear
                 self.separatorStyle = .none
-            }
-
-            override func endUpdates() {
-                super.endUpdates()
-
-                self.invalidateIntrinsicContentSize()
-                self.setNeedsUpdateConstraints()
-                self.setNeedsLayout()
-            }
-
-            override func reloadData() {
-                super.reloadData()
-
-                self.invalidateIntrinsicContentSize()
-                self.setNeedsUpdateConstraints()
-                self.setNeedsLayout()
             }
         }
     }
