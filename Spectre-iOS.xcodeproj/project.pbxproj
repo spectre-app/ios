@@ -25,6 +25,7 @@
 		93D3929C87281367272F69F1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
 		93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
 		93D3930DDA8EE099DDBC2D78 /* Observers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3900653D9D95598C41DFA /* Observers.swift */; };
+		93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */; };
 		93D393B953CB94FC9E964625 /* MPURLUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPURLUtils.swift */; };
 		93D393C161EB8FA55FA5174F /* MPServicesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPServicesTableView.swift */; };
 		93D394687CCE5DACAE237129 /* Describe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396FE084F709867C7C6CC /* Describe.swift */; };
@@ -59,6 +60,7 @@
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
 		93D398FB645DCA89A4BCC5A2 /* MPMarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MPMarginView.swift */; };
 		93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
+		93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985695447159F2D4BE76 /* AutoFillModel.swift */; };
 		93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		93D39A2954B245FC0D925312 /* MPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPService.swift */; };
 		93D39A467E6B7BB3B646E004 /* MPTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* MPTracker.swift */; };
@@ -91,7 +93,6 @@
 		93D39F69D0EDD80B5DCAF0BB /* MPConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C3FA9FA2CA5B234741E /* MPConfig.swift */; };
 		93D39FD2F39B2AFE27A88A97 /* MPSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */; };
 		DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
-		DA0E552E250D6F7F002B3AB1 /* AutoFillViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA0E552D250D6F7F002B3AB1 /* AutoFillViewController.swift */; };
 		DA0E5565251022EB002B3AB1 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = DA5B0B3E1F36469400B663F0 /* base64.c */; };
 		DA0E5566251022EB002B3AB1 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
 		DA0E5567251022EB002B3AB1 /* mpw-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* mpw-types.c */; };
@@ -387,6 +388,7 @@
 		5B952874C3F3467E842EAF3C /* Pods-AutoFill.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AutoFill.release.xcconfig"; path = "Target Support Files/Pods-AutoFill/Pods-AutoFill.release.xcconfig"; sourceTree = "<group>"; };
 		64EE2A62D96C986FFA55567B /* Pods_Spectre_AutoFill_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_AutoFill_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
+		93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillViewController.swift; sourceTree = "<group>"; };
 		93D3903B1B32B494FBD792EC /* MPServicesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicesTableView.swift; sourceTree = "<group>"; };
 		93D3909744CE918AB4432318 /* ConstraintResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintResolver.swift; sourceTree = "<group>"; };
 		93D3909E003FF5E936687AA6 /* MPFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPFeedback.swift; sourceTree = "<group>"; };
@@ -439,6 +441,7 @@
 		93D397930CDEF625FC438ECE /* InAppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InAppStore.swift; sourceTree = "<group>"; };
 		93D39813D4D15F649C54ADE0 /* Updatable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Updatable.swift; sourceTree = "<group>"; };
 		93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAppDetailsViewController.swift; sourceTree = "<group>"; };
+		93D3985695447159F2D4BE76 /* AutoFillModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillModel.swift; sourceTree = "<group>"; };
 		93D3985EDA6E3B7A05799E2C /* MPTintField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTintField.swift; sourceTree = "<group>"; };
 		93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyboardLayoutGuide.swift; sourceTree = "<group>"; };
 		93D39865ECFD34CF3ADF930D /* MPItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPItemCell.swift; sourceTree = "<group>"; };
@@ -483,7 +486,6 @@
 		CE4381A4067BD2EBB94C7641 /* Pods-AutoFill.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AutoFill.public.xcconfig"; path = "Target Support Files/Pods-AutoFill/Pods-AutoFill.public.xcconfig"; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DA0E552D250D6F7F002B3AB1 /* AutoFillViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillViewController.swift; sourceTree = "<group>"; };
 		DA0E5532250D6F7F002B3AB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AutoFill.entitlements; sourceTree = "<group>"; };
 		DA2C3D621BD96126001137B3 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
@@ -861,10 +863,11 @@
 			isa = PBXGroup;
 			children = (
 				DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */,
-				DA0E552D250D6F7F002B3AB1 /* AutoFillViewController.swift */,
 				DA0E5532250D6F7F002B3AB1 /* Info.plist */,
 				93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */,
 				93D392986FB7C71256EABBB0 /* AutoFillServicesViewController.swift */,
+				93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */,
+				93D3985695447159F2D4BE76 /* AutoFillModel.swift */,
 			);
 			path = AutoFill;
 			sourceTree = "<group>";
@@ -1745,7 +1748,6 @@
 				DA0E558D2510E985002B3AB1 /* Foundation+MP.swift in Sources */,
 				DA0E5565251022EB002B3AB1 /* base64.c in Sources */,
 				DA0E55992510E985002B3AB1 /* MPKeychain.swift in Sources */,
-				DA0E552E250D6F7F002B3AB1 /* AutoFillViewController.swift in Sources */,
 				DA0E556D251022EB002B3AB1 /* mpw-marshal-util.c in Sources */,
 				DA0E55902510E985002B3AB1 /* MPTracker.swift in Sources */,
 				DA0E55BA2510E9BB002B3AB1 /* MPImageView.swift in Sources */,
@@ -1770,6 +1772,8 @@
 				93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */,
 				93D39122A70525461AEE4D62 /* BasicUsersViewController.swift in Sources */,
 				93D394F428331F661FF95123 /* AutoFillServicesViewController.swift in Sources */,
+				93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */,
+				93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

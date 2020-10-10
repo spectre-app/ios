@@ -20,10 +20,10 @@ class AutoFillUsersViewController: BasicUsersViewController {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(userFiles: [MPMarshal.UserFile]) {
+    override init() {
         super.init()
 
-        self.userFilesDidChange( userFiles )
+        self.userFilesDidChange( AutoFillModel.shared.userFiles )
     }
 
     override func viewDidLoad() {
@@ -36,6 +36,14 @@ class AutoFillUsersViewController: BasicUsersViewController {
         LayoutConfiguration( view: self.cancelButton )
                 .constrain( margins: true, anchors: .bottomCenter )
                 .activate()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
+            self.selectedFile = self.fileSource.firstElement( where: { $0?.fullName == userName } )
+        }
     }
 
     // MARK: --- Types ---

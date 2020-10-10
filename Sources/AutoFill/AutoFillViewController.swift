@@ -11,7 +11,7 @@ import LocalAuthentication
 
 class AutoFillViewController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        let _ = Model.shared
+        MPLogSink.shared.register()
 
         dbg( "init:nibName:bundle: %@", nibNameOrNil, nibBundleOrNil )
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
@@ -26,44 +26,40 @@ class AutoFillViewController: ASCredentialProviderViewController {
         self.view => \.tintColor => Theme.current.color.tint
     }
 
-    /*
-     Prepare your UI to list available credentials for the user to choose from. The items in
-     'serviceIdentifiers' describe the service the user is logging in to, so your extension can
-     prioritize the most relevant credentials in the list.
-    */
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        dbg( "viewDidLoad" )
+        AutoFillModel.shared.context = AutoFillModel.Context()
+    }
+
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
         dbg( "prepareCredentialList: %@", serviceIdentifiers )
+        AutoFillModel.shared.context = AutoFillModel.Context( serviceIdentifiers: serviceIdentifiers )
 
-        let vc = AutoFillUsersViewController( userFiles: Model.shared.userFiles )
+        let usersViewController = AutoFillUsersViewController()
 
         // - Hierarchy
-        self.addChild( vc )
-        self.view.addSubview( vc.view )
-        vc.didMove( toParent: self )
+        self.addChild( usersViewController )
+        self.view.addSubview( usersViewController.view )
+        usersViewController.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: vc.view )
+        LayoutConfiguration( view: usersViewController.view )
                 .constrain()
                 .activate()
     }
 
-    /*
-     Implement this method if your extension supports showing credentials in the QuickType bar.
-     When the userfr selects a credential from your app, this method will be called with the
-     ASPasswordCredentialIdentity your app has previously saved to the ASCredentialIdentityStore.
-     Provide the password by completing the extension request with the associated ASPasswordCredential.
-     If using the credential would require showing custom UI for authenticating the user, cancel
-     the request with error code ASExtensionError.userInteractionRequired.
-    */
     override func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
         dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
+        AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
         DispatchQueue.mpw.promising {
-            if let user = Model.shared.users.first( where: { $0.fullName == credentialIdentity.recordIdentifier } ) {
+            if let user = AutoFillModel.shared.users.first( where: { $0.fullName == credentialIdentity.recordIdentifier } ) {
                 return Promise( .success( user ) )
             }
 
-            guard let userFile = Model.shared.userFiles.first( where: { $0.fullName == credentialIdentity.recordIdentifier } )
+            guard let userFile = AutoFillModel.shared.userFiles.first( where: { $0.fullName == credentialIdentity.recordIdentifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
             let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
@@ -73,7 +69,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
         }.promising { (user: MPUser) in
-            Model.shared.users.append( user )
+            AutoFillModel.shared.users.append( user )
 
             guard let service = user.services.first( where: { $0.serviceName == credentialIdentity.serviceIdentifier.identifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No service named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
@@ -85,23 +81,25 @@ class AutoFillViewController: ASCredentialProviderViewController {
             MPFeedback.shared.play( .error )
 
             switch error {
+                case let extensionError as ASExtensionError:
+                    self.extensionContext.cancelRequest( withError: extensionError )
+
                 case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel:
-                    self.cancel( ASExtensionError( .userCanceled, "Local authentication cancelled.", error: error ) )
+                    self.extensionContext.cancelRequest( withError: ASExtensionError(
+                            .userCanceled, "Local authentication cancelled.", error: error ) )
 
                 case let error as LAError:
-                    self.cancel( ASExtensionError( .userInteractionRequired, "Non-interactive authentication denied.", error: error ) )
-
-                case let extensionError as ASExtensionError:
-                    self.cancel( extensionError )
+                    self.extensionContext.cancelRequest( withError: ASExtensionError(
+                            .userInteractionRequired, "Non-interactive authentication denied.", error: error ) )
 
                 default:
-                    self.cancel( ASExtensionError( .failed, "Credential unavailable.", error: error ) )
+                    self.extensionContext.cancelRequest( withError: ASExtensionError(
+                            .failed, "Credential unavailable.", error: error ) )
             }
         }.success { (credential: ASPasswordCredential) in
-            dbg( "Non-interactive credential lookup succeeded: %@", credential )
             MPFeedback.shared.play( .activate )
 
-            self.complete( credential )
+            self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
         }
     }
 
@@ -113,50 +111,11 @@ class AutoFillViewController: ASCredentialProviderViewController {
     */
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
         dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
+        AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
     }
 
     override func prepareInterfaceForExtensionConfiguration() {
-        dbg( "prepareInterfaceForExtensionConfiguration: inf" )
-    }
-
-    // MARK: --- Private ---
-
-    func cancel(_ error: ASExtensionError) {
-        dbg( "cancelling request: %@", error )
-        self.extensionContext.cancelRequest( withError: error )
-    }
-
-    func complete(_ passwordCredential: ASPasswordCredential) {
-        dbg( "completing request: %@", passwordCredential )
-        self.extensionContext.completeRequest( withSelectedCredential: passwordCredential, completionHandler: nil )
-    }
-
-    // MARK: --- Types ---
-
-    class Model: MPMarshalObserver {
-        static let shared = Model()
-
-        var users     = [ MPUser ]()
-        var userFiles = [ MPMarshal.UserFile ]()
-
-        init() {
-            MPLogSink.shared.register()
-
-            do {
-                self.userFiles = try MPMarshal.shared.setNeedsUpdate().await()
-                MPMarshal.shared.observers.register( observer: self )
-            }
-            catch {
-                err( "Cannot read user documents: %@", error )
-            }
-        }
-
-        // MARK: --- MPMarshalObserver ---
-
-        func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
-            trc( "Users updated: %@", userFiles )
-            self.userFiles = userFiles
-        }
+        dbg( "prepareInterfaceForExtensionConfiguration" )
     }
 }
 

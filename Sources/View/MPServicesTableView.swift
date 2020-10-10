@@ -20,7 +20,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
     }
     public var selectedService: MPService? {
         didSet {
-            let selectedPath = self.resultSource.indexPath( where: { $0?.value == self.selectedService } )
+            let selectedPath = self.servicesDataSource.indexPath( where: { $0?.value == self.selectedService } )
             if self.indexPathForSelectedRow != selectedPath {
                 self.selectRow( at: selectedPath, animated: UIView.areAnimationsEnabled, scrollPosition: .middle )
             }
@@ -33,15 +33,20 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             }
         }
     }
-    public var query: String? {
+    public var query:           String? {
         didSet {
             if oldValue != self.query {
                 self.updateTask.request()
             }
         }
     }
+    public var preferredFilter: ((MPService) -> Bool)? {
+        didSet {
+            self.updateTask.request()
+        }
+    }
 
-    private lazy var resultSource = DataSource<MPQuery.Result<MPService>>( tableView: self )
+    private lazy var servicesDataSource = DataSource<MPQuery.Result<MPService>>( tableView: self )
     private var newServiceResult: MPQuery.Result<MPService>?
     private lazy var updateTask = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
 
@@ -81,19 +86,37 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         self.updateTask.cancel()
 
         var selectedResult: MPQuery.Result<MPService>?
-        var resultSource = [ [ MPQuery.Result<MPService>? ] ]()
-        if let user = self.user, user.masterKeyFactory != nil {
+        var elementsBySection = [ [ MPQuery.Result<MPService>? ] ]()
 
-            // Determine search state and filter user services
-            selectedResult = self.resultSource.elements().first( where: { $1?.value === self.selectedService } )?.element
-            let selectionFollowsQuery = self.newServiceResult === selectedResult || selectedResult?.exact ?? false
-            let results = MPQuery( self.query ).find( user.services.sorted() ) { $0.serviceName }
-            let exactResult = results.first { $0.exact }
-            resultSource.append( results )
+        if let user = self.user, user.masterKeyFactory != nil {
+            selectedResult = self.servicesDataSource.firstElement( where: { $0?.value === self.selectedService } )
+            let selectionFollowsQuery = self.newServiceResult === selectedResult || selectedResult?.isExact ?? false
+
+            // Filter services by query.
+            let results = MPQuery( self.query ).filter( user.services.sorted(), by: { $0.serviceName } )
+            let exactResult = results.first( where: { $0.isExact } )
+
+            // Divide the results into sections.
+            if let preferredFilter = self.preferredFilter {
+                var preferred = [ MPQuery.Result<MPService>? ](),
+                    remaining = [ MPQuery.Result<MPService>? ]()
+                for result in results {
+                    if preferredFilter( result.value ) {
+                        preferred.append( result )
+                    }
+                    else {
+                        remaining.append( result )
+                    }
+                }
+                elementsBySection.append( preferred )
+                elementsBySection.append( remaining )
+            }
+            else {
+                elementsBySection.append( results )
+            }
 
             // Add "new service" result if there is a query and no exact result
-            if let query = self.query,
-               !query.isEmpty, exactResult == nil {
+            if let query = self.query, !query.isEmpty, exactResult == nil {
                 self.newServiceResult?.value.serviceName = query
 
                 if self.newServiceResult == nil || LiefsteCell.is( result: self.newServiceResult ) {
@@ -101,7 +124,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                 }
 
                 self.newServiceResult?.matches( query: query )
-                resultSource.append( [ self.newServiceResult ] )
+                elementsBySection.append( [ self.newServiceResult ] )
             }
             else {
                 self.newServiceResult = nil
@@ -120,12 +143,12 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
         DispatchQueue.main.perform {
             // Update the services table to show the newly filtered services
-            self.resultSource.update( resultSource ) { _ in
+            self.servicesDataSource.update( elementsBySection ) { _ in
                 self.selectedService = selectedResult?.value
             }
 
             // Light-weight reload the cell content without fully reloading the cell rows.
-            self.resultSource.elements().forEach { path, element in
+            self.servicesDataSource.elements().forEach { path, element in
                 (self.cellForRow( at: path ) as? ServiceCell)?.result = element
             }
         }
@@ -145,7 +168,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        (self.resultSource.element( at: indexPath )?.value).flatMap { service in
+        (self.servicesDataSource.element( at: indexPath )?.value).flatMap { service in
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in MPServicePreviewController( service: service ) }, actionProvider: { _, configuration in
                 UIMenu( title: service.serviceName, children: [
@@ -212,7 +235,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         configuration.event = MPTracker.shared.begin( named: "service #menu" )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.with( alpha: .long )
+        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.value.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -224,17 +247,17 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.resultSource.element( at: indexPath )?.value.color?.with( alpha: .long )
+        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.value.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
-        self.selectedService = self.resultSource.element( at: configuration.indexPath )?.value
+        self.selectedService = self.servicesDataSource.element( at: configuration.indexPath )?.value
     }
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if let service = self.resultSource.element( at: indexPath )?.value, editingStyle == .delete {
+        if let service = self.servicesDataSource.element( at: indexPath )?.value, editingStyle == .delete {
             MPTracker.shared.event( named: "service #delete" )
 
             service.user.services.removeAll { $0 === service }
@@ -242,15 +265,15 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
     }
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        self.resultSource.numberOfSections
+        self.servicesDataSource.numberOfSections
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.resultSource.numberOfItems( in: section )
+        self.servicesDataSource.numberOfItems( in: section )
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let result = self.resultSource.element( at: indexPath )
+        let result = self.servicesDataSource.element( at: indexPath )
         if LiefsteCell.is( result: result ) {
             return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
         }

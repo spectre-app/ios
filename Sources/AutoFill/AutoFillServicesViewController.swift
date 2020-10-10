@@ -24,5 +24,45 @@ class AutoFillServicesViewController: BasicServicesViewController {
         self.backgroundView.layer.shadowOffset = .zero
         self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.masksToBounds = true
+
+        var allServiceIdentifiers = [ ASCredentialServiceIdentifier ]()
+        if let serviceIdentifier = AutoFillModel.shared.context.credentialIdentity?.serviceIdentifier {
+            allServiceIdentifiers.append( serviceIdentifier )
+        }
+        if let serviceIdentifiers = AutoFillModel.shared.context.serviceIdentifiers {
+            allServiceIdentifiers.append( contentsOf: serviceIdentifiers )
+        }
+        self.servicesTableView.preferredFilter = { service in
+            allServiceIdentifiers.contains( where: {
+                var serviceIdentifier = $0.identifier
+                if case .URL = $0.type, let url = URL( string: $0.identifier ),
+                   let host = url.host {
+                    serviceIdentifier = host
+                }
+
+                return serviceIdentifier.contains( service.serviceName ) || service.serviceName.contains( serviceIdentifier )
+            } )
+        }
+    }
+
+    // MARK: --- MPServicesViewObserver ---
+
+    override func serviceDetailsAction(service: MPService) {
+        super.serviceDetailsAction( service: service )
+
+        MPFeedback.shared.play( .activate )
+
+        if let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext {
+            service.result( keyPurpose: .identification ).and( service.result( keyPurpose: .authentication ) ).then {
+                do {
+                    let result = try $0.get()
+                    extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential(
+                            user: result.0.token, password: result.1.token ) )
+                }
+                catch {
+                    mperror( title: "Couldn't compute service result.", error: error )
+                }
+            }
+        }
     }
 }

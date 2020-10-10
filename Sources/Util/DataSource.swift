@@ -8,37 +8,41 @@ import UIKit
 open class DataSource<E: Hashable> {
     private let tableView:      UITableView?
     private let collectionView: UICollectionView?
-    private var elementsConsumed   = false
-    private var sectionsOfElements = [ [ E? ] ]()
+    private var elementsConsumed  = false
+    private var elementsBySection = [ [ E? ] ]()
 
     public var isEmpty: Bool {
-        self.sectionsOfElements.reduce( true ) { $0 && $1.isEmpty }
+        self.elementsBySection.reduce( true ) { $0 && $1.isEmpty }
     }
 
     public init(tableView: UITableView? = nil, collectionView: UICollectionView? = nil, sectionsOfElements: [[E]]? = nil) {
         self.tableView = tableView
         self.collectionView = collectionView
-        self.sectionsOfElements = sectionsOfElements ?? self.sectionsOfElements
+        self.elementsBySection = sectionsOfElements ?? self.elementsBySection
     }
 
     // MARK: --- Interface ---
 
     public var numberOfSections: Int {
         self.elementsConsumed = true
-        return self.sectionsOfElements.count
+        return self.elementsBySection.count
     }
 
     public func numberOfItems(in section: Int) -> Int {
         self.elementsConsumed = true
-        return section < self.sectionsOfElements.count ? self.sectionsOfElements[section].count: 0
+        return section < self.elementsBySection.count ? self.elementsBySection[section].count: 0
     }
 
     open func indexPath(for item: E?) -> IndexPath? {
-        self.indexPath( for: item, in: self.sectionsOfElements )
+        self.indexPath( for: item, in: self.elementsBySection )
     }
 
     open func indexPath(where predicate: (E?) -> Bool) -> IndexPath? {
-        self.indexPath( where: predicate, in: self.sectionsOfElements )
+        self.indexPath( where: predicate, in: self.elementsBySection )
+    }
+
+    open func firstElement(where predicate: (E?) -> Bool) -> E? {
+        self.elementsBySection.flatMap { $0 }.first( where: predicate ).flatMap { $0 }
     }
 
     open func element(at indexPath: IndexPath?) -> E? {
@@ -53,14 +57,14 @@ open class DataSource<E: Hashable> {
         else { return nil }
 
         return section >= 0 && item >= 0 &&
-                section < self.sectionsOfElements.count && item < self.sectionsOfElements[section].count ?
-                self.sectionsOfElements[section][item]: nil
+                section < self.elementsBySection.count && item < self.elementsBySection[section].count ?
+                self.elementsBySection[section][item]: nil
     }
 
     open func elements() -> AnySequence<(indexPath: IndexPath, element: E?)> {
         // TODO: inline these types
         let s: LazySequence<FlattenSequence<LazyMapSequence<EnumeratedSequence<[[E?]]>, LazyMapSequence<EnumeratedSequence<[E?]>, (indexPath: IndexPath, element: E?)>>>>
-                = self.sectionsOfElements.enumerated().lazy.flatMap {
+                = self.elementsBySection.enumerated().lazy.flatMap {
             let (section, sectionElements) = $0
 
             return sectionElements.enumerated().lazy.map {
@@ -72,13 +76,13 @@ open class DataSource<E: Hashable> {
         return AnySequence<(indexPath: IndexPath, element: E?)>( s )
     }
 
-    open func update(_ updatedSectionsOfElements: [[E?]],
+    open func update(_ elementsBySection: [[E?]],
                      reloadItems: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: [E?]? = nil,
                      animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)? = nil) {
-        trc( "updating dataSource:\n%@\n<=\n%@", self.sectionsOfElements, updatedSectionsOfElements )
+        trc( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, elementsBySection )
 
         if !self.elementsConsumed {
-            self.sectionsOfElements = updatedSectionsOfElements
+            self.elementsBySection = elementsBySection
             completion?( true )
             return
         }
@@ -87,8 +91,8 @@ open class DataSource<E: Hashable> {
             let updateIncrementally = !animated
             var reloadPaths         = reloadPaths ?? []
 
-            if updatedSectionsOfElements == self.sectionsOfElements {
-                for (section, elements) in self.sectionsOfElements.enumerated() {
+            if elementsBySection == self.elementsBySection {
+                for (section, elements) in self.elementsBySection.enumerated() {
                     for (item, element) in elements.enumerated() {
                         if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
                             let indexPath = IndexPath( item: item, section: section )
@@ -100,21 +104,21 @@ open class DataSource<E: Hashable> {
             }
             else {
                 // Update the internal data sections and determine which sections changed.
-                for section in (0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count )).reversed() {
-                    if section >= updatedSectionsOfElements.count {
+                for section in (0..<max( self.elementsBySection.count, elementsBySection.count )).reversed() {
+                    if section >= elementsBySection.count {
                         trc( "delete section %d", section )
                         if updateIncrementally {
-                            self.sectionsOfElements.remove( at: section )
+                            self.elementsBySection.remove( at: section )
                         }
                         self.collectionView?.deleteSections( IndexSet( integer: section ) )
                         self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
                     }
                 }
-                for section in 0..<max( self.sectionsOfElements.count, updatedSectionsOfElements.count ) {
-                    if section >= self.sectionsOfElements.count {
+                for section in 0..<max( self.elementsBySection.count, elementsBySection.count ) {
+                    if section >= self.elementsBySection.count {
                         trc( "insert section %d", section )
                         if updateIncrementally {
-                            self.sectionsOfElements.append( [ E? ]() )
+                            self.elementsBySection.append( [ E? ]() )
                         }
                         self.collectionView?.insertSections( IndexSet( integer: section ) )
                         self.tableView?.insertSections( IndexSet( integer: section ), with: .automatic )
@@ -122,15 +126,15 @@ open class DataSource<E: Hashable> {
                 }
 
                 // Figure out how the section items have changed.
-                for (section, elements) in updatedSectionsOfElements.enumerated() {
+                for (section, elements) in elementsBySection.enumerated() {
                     for (item, element) in elements.enumerated() {
                         let toIndexPath = IndexPath( item: item, section: section )
-                        if let fromIndexPath = self.indexPath( for: element, in: self.sectionsOfElements ) {
+                        if let fromIndexPath = self.indexPath( for: element, in: self.elementsBySection ) {
                             if toIndexPath != fromIndexPath {
                                 trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
                                 if updateIncrementally {
-                                    self.sectionsOfElements[fromIndexPath.section].remove( at: fromIndexPath.item )
-                                    self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item )
+                                    self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
+                                    self.elementsBySection[toIndexPath.section].insert( element, at: toIndexPath.item )
                                 }
                                 self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
                                 self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
@@ -138,7 +142,7 @@ open class DataSource<E: Hashable> {
                             else if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
                                 trc( "reload item %@", fromIndexPath )
                                 if updateIncrementally {
-                                    self.sectionsOfElements[fromIndexPath.section][fromIndexPath.item] = element
+                                    self.elementsBySection[fromIndexPath.section][fromIndexPath.item] = element
                                 }
                                 reloadPaths.append( fromIndexPath )
                             }
@@ -146,7 +150,7 @@ open class DataSource<E: Hashable> {
                         else {
                             trc( "insert item %@", toIndexPath )
                             if updateIncrementally {
-                                self.sectionsOfElements[toIndexPath.section].insert( element, at: toIndexPath.item )
+                                self.elementsBySection[toIndexPath.section].insert( element, at: toIndexPath.item )
                             }
                             self.collectionView?.insertItems( at: [ toIndexPath ] )
                             self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
@@ -155,13 +159,13 @@ open class DataSource<E: Hashable> {
                 }
 
                 // Add inserted rows.
-                for (section, elements) in self.sectionsOfElements.enumerated() {
+                for (section, elements) in self.elementsBySection.enumerated() {
                     for (item, element) in elements.enumerated().reversed() {
                         let fromIndexPath = IndexPath( item: item, section: section )
-                        if self.indexPath( for: element, in: updatedSectionsOfElements ) == nil {
+                        if self.indexPath( for: element, in: elementsBySection ) == nil {
                             trc( "delete item %@", fromIndexPath )
                             if updateIncrementally {
-                                self.sectionsOfElements[section].remove( at: item )
+                                self.elementsBySection[section].remove( at: item )
                             }
                             self.collectionView?.deleteItems( at: [ fromIndexPath ] )
                             self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
@@ -170,7 +174,7 @@ open class DataSource<E: Hashable> {
                 }
             }
 
-            self.sectionsOfElements = updatedSectionsOfElements
+            self.elementsBySection = elementsBySection
 
             if reloadPaths.count > 0 {
                 trc( "reload items %@", reloadPaths )
@@ -184,7 +188,7 @@ open class DataSource<E: Hashable> {
     open func remove(_ item: E, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
         if let indexPath = self.indexPath( for: item ) {
             self.perform( animated: animated, completion: completion ) {
-                self.sectionsOfElements[indexPath.section].remove( at: indexPath.item )
+                self.elementsBySection[indexPath.section].remove( at: indexPath.item )
                 self.collectionView?.deleteItems( at: [ indexPath ] )
                 self.tableView?.deleteRows( at: [ indexPath ], with: .automatic )
             }
