@@ -25,7 +25,7 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
         super.viewDidLoad()
 
         // - View
-        self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Name" )
+        self.searchField.attributedPlaceholder = NSAttributedString( string: "Service Name" )
         self.searchField => \.attributedPlaceholder => .font => Theme.current.font.body
         self.searchField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
         self.searchField => \.textColor => Theme.current.color.body
@@ -89,8 +89,7 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
 
     // MARK: --- MPServicesViewObserver ---
 
-    func serviceWasSelected(service selectedSite: MPService?) {
-        MPFeedback.shared.play( .activate )
+    func serviceWasSelected(service selectedService: MPService?) {
     }
 
     func serviceDetailsAction(service: MPService) {

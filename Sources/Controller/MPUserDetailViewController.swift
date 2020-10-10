@@ -291,7 +291,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class UsesItem: LabelItem<MPUser> {
         init() {
-            super.init( title: "Sites", value: { $0.services.count } )
+            super.init( title: "Services", value: { $0.services.count } )
         }
     }
 

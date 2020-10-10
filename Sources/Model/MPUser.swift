@@ -425,7 +425,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                 """ ).show( in: host )
             }
             catch {
-                mperror( title: "Couldn't copy service", message: "Site value could not be calculated", error: error )
+                mperror( title: "Couldn't copy \(keyPurpose)", message: "Value for \(keyPurpose) could not be calculated", error: error )
             }
         }
     }

@@ -638,6 +638,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 }
 
 protocol MPServicesViewObserver {
-    func serviceWasSelected(service selectedSite: MPService?)
+    func serviceWasSelected(service selectedService: MPService?)
     func serviceDetailsAction(service: MPService)
 }

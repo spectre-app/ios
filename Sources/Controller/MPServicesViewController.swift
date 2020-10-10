@@ -54,12 +54,12 @@ class MPServicesViewController: BasicServicesViewController {
         self.detailsHost.additionalSafeAreaInsets.top = self.topContainer.frame.maxY - self.view.safeAreaInsets.top
     }
 
-    // MARK: --- MPSitesViewObserver ---
+    // MARK: --- MPServicesViewObserver ---
 
-    override func serviceWasSelected(service selectedSite: MPService?) {
-        super.serviceWasSelected( service: selectedSite )
+    override func serviceWasSelected(service selectedService: MPService?) {
+        super.serviceWasSelected( service: selectedService )
 
-        if selectedSite == nil {
+        if selectedService == nil {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: .long ) {
                     self.detailsHost.hide()

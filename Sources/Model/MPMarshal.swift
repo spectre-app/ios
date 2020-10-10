@@ -105,21 +105,21 @@ class MPMarshal: Observable, Updatable {
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
             for service in user.services.sorted( by: { $0.serviceName < $1.serviceName } ) {
-                guard let marshalledSite = mpw_marshal_service( marshalledUser, service.serviceName, service.resultType, service.counter, service.algorithm )
+                guard let marshalledService = mpw_marshal_service( marshalledUser, service.serviceName, service.resultType, service.counter, service.algorithm )
                 else {
                     exportEvent.end( [ "result": "!marshal_service" ] )
                     throw MPError.internal( cause: "Couldn't marshal service.", details: [ user, service ] )
                 }
 
-                marshalledSite.pointee.resultState = mpw_strdup( service.resultState )
-                marshalledSite.pointee.loginType = service.loginType
-                marshalledSite.pointee.loginState = mpw_strdup( service.loginState )
-                marshalledSite.pointee.url = mpw_strdup( service.url )
-                marshalledSite.pointee.uses = service.uses
-                marshalledSite.pointee.lastUsed = time_t( service.lastUsed.timeIntervalSince1970 )
+                marshalledService.pointee.resultState = mpw_strdup( service.resultState )
+                marshalledService.pointee.loginType = service.loginType
+                marshalledService.pointee.loginState = mpw_strdup( service.loginState )
+                marshalledService.pointee.url = mpw_strdup( service.url )
+                marshalledService.pointee.uses = service.uses
+                marshalledService.pointee.lastUsed = time_t( service.lastUsed.timeIntervalSince1970 )
 
                 for question in service.questions.sorted( by: { $0.keyword < $1.keyword } ) {
-                    guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
+                    guard let marshalledQuestion = mpw_marshal_question( marshalledService, question.keyword )
                     else {
                         exportEvent.end( [ "result": "!marshal_question" ] )
                         throw MPError.internal( cause: "Couldn't marshal question.", details: [ user, service, question ] )
@@ -177,7 +177,7 @@ class MPMarshal: Observable, Updatable {
             let spinner         = MPAlert( title: "Unlocking", message: importingFile.description,
                                            content: UIActivityIndicatorView( style: .whiteLarge ) )
             let passwordField   = MPMasterPasswordField( userFile: existingFile )
-            let alertController = UIAlertController( title: "Merge Sites", message:
+            let alertController = UIAlertController( title: "Merge Users", message:
             """
             \(existingFile.fullName) already exists.
 
@@ -402,21 +402,21 @@ class MPMarshal: Observable, Updatable {
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
         return DispatchQueue.mpw.promising {
-            var replacedSites = 0, newSites = 0
-            for importedSite in importedUser.services {
-                if let existedSite = existedUser.services.first( where: { $0.serviceName == importedSite.serviceName } ) {
-                    if importedSite.lastUsed <= existedSite.lastUsed {
+            var replacedServices = 0, newServices = 0
+            for importedService in importedUser.services {
+                if let existedService = existedUser.services.first( where: { $0.serviceName == importedService.serviceName } ) {
+                    if importedService.lastUsed <= existedService.lastUsed {
                         continue
                     }
 
-                    existedUser.services.removeAll { $0 === existedSite }
-                    replacedSites += 1
+                    existedUser.services.removeAll { $0 === existedService }
+                    replacedServices += 1
                 }
                 else {
-                    newSites += 1
+                    newServices += 1
                 }
 
-                existedUser.services.append( importedSite.copy( to: existedUser ) )
+                existedUser.services.append( importedService.copy( to: existedUser ) )
             }
             var updatedUser = false
             if importedUser.lastUsed >= existedUser.lastUsed {
@@ -432,7 +432,7 @@ class MPMarshal: Observable, Updatable {
             return DispatchQueue.main.promise {
                 spinner.dismiss()
 
-                if !updatedUser && replacedSites + newSites == 0 {
+                if !updatedUser && replacedServices + newServices == 0 {
                     importEvent.end( [ "result": "success: skipped" ] )
                     MPAlert( title: "Import Skipped", message: existedUser.description, details:
                     """
@@ -447,7 +447,7 @@ class MPMarshal: Observable, Updatable {
                     """
                     Completed the import of services into \(existedUser).
 
-                    This was a merge import.  \(replacedSites) services were replaced, \(newSites) new services were created.
+                    This was a merge import.  \(replacedServices) services were replaced, \(newServices) new services were created.
                     \(updatedUser ?
                             "The user settings were updated from the import.":
                             "The existing user's settings were more recent than the import.")
@@ -687,24 +687,24 @@ class MPMarshal: Observable, Updatable {
                 ) { user in
 
                     for s in 0..<marshalledUser.services_count {
-                        let marshalledSite = (marshalledUser.services + s).pointee
-                        if let serviceName = String.valid( marshalledSite.serviceName ) {
+                        let marshalledService = (marshalledUser.services + s).pointee
+                        if let serviceName = String.valid( marshalledService.serviceName ) {
                             user.services.append( MPService(
                                     user: user,
                                     serviceName: serviceName,
-                                    algorithm: marshalledSite.algorithm,
-                                    counter: marshalledSite.counter,
-                                    resultType: marshalledSite.resultType,
-                                    resultState: .valid( marshalledSite.resultState ),
-                                    loginType: marshalledSite.loginType,
-                                    loginState: .valid( marshalledSite.loginState ),
-                                    url: .valid( marshalledSite.url ),
-                                    uses: marshalledSite.uses,
-                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
+                                    algorithm: marshalledService.algorithm,
+                                    counter: marshalledService.counter,
+                                    resultType: marshalledService.resultType,
+                                    resultState: .valid( marshalledService.resultState ),
+                                    loginType: marshalledService.loginType,
+                                    loginState: .valid( marshalledService.loginState ),
+                                    url: .valid( marshalledService.url ),
+                                    uses: marshalledService.uses,
+                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledService.lastUsed ) )
                             ) { service in
 
-                                for q in 0..<marshalledSite.questions_count {
-                                    let marshalledQuestion = (marshalledSite.questions + q).pointee
+                                for q in 0..<marshalledService.questions_count {
+                                    let marshalledQuestion = (marshalledService.questions + q).pointee
                                     if let keyword = String.valid( marshalledQuestion.keyword ) {
                                         service.questions.append( MPQuestion(
                                                 service: service,
