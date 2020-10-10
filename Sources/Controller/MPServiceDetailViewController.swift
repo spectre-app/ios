@@ -191,7 +191,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             view.valueField.leftView = MPMarginView( for: self.userView, margins: UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
 
             self.userView.isRound = true
-            self.userView.button.action( for: .primaryActionTriggered ) { [unowned self] in
+            self.userView.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let user = self.model?.user, self.model?.loginType == MPResultType.none {
                     self.viewController?.show(
                             MPUserDetailsViewController( model: user, focus: MPUserDetailsViewController.LoginTypeItem.self ), sender: self )
@@ -315,7 +315,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                 self.resultLabel => \.textColor => Theme.current.color.body
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
-                self.copyButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+                self.copyButton.action( for: .primaryActionTriggered ) { [unowned self] in
                     let event = MPTracker.shared.begin( named: "service.question #copy" )
                     self.question?.copy().then {
                         do {

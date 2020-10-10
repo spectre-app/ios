@@ -151,7 +151,7 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
                 self.isOpaque = false
                 self.backgroundColor = .clear
 
-                self.buyButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+                self.buyButton.action( for: .primaryActionTriggered ) { [unowned self] in
                     if let product = self.product {
                         InAppStore.shared.purchase( product: product )
                     }

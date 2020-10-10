@@ -26,9 +26,9 @@ class MPButton: MPEffectView {
             DispatchQueue.main.perform { self.update() }
         }
     }
-    let button = UIButton( type: .custom )
 
     private var stateObserver: Any?
+    private let button = UIButton( type: .custom )
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
                                                                      .with( priority: UILayoutPriority( 900 ) )
 
@@ -51,7 +51,15 @@ class MPButton: MPEffectView {
 
         self.button.titleLabel?.numberOfLines = 0
         self.button.titleLabel?.textAlignment = .center
-        self.button.addTarget( self, action: #selector( action(_:) ), for: .primaryActionTriggered )
+        self.button.action( for: .primaryActionTriggered ) { [unowned self] in
+            self.track()
+
+            if self.tapEffect {
+                MPTapEffectView().run( for: self )
+            }
+
+            self.action?( $0, self )
+        }
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
@@ -77,21 +85,18 @@ class MPButton: MPEffectView {
         self.systemLayoutSizeFitting( size )
     }
 
-    @objc
-    func action(_ event: UIEvent) {
-        self.track()
-
-        if self.tapEffect {
-            MPTapEffectView().run( for: self )
-        }
-
-        self.action?( event, self )
-    }
-
     func track() {
         if let identifier = self.identifier {
             MPTracker.shared.event( named: identifier )
         }
+    }
+
+    func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) {
+        self.button.action( for: controlEvents, action )
+    }
+
+    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) {
+        self.button.action( for: controlEvents, action )
     }
 
     private func update() {

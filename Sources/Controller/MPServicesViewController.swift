@@ -25,7 +25,7 @@ class MPServicesViewController: BasicServicesViewController {
 
         // - View
         self.userButton.isRound = true
-        self.userButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+        self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
             if let user = self.user {
                 self.detailsHost.show( MPUserDetailsViewController( model: user ), sender: self )
             }

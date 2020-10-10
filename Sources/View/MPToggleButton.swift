@@ -122,13 +122,11 @@ class MPToggleButton: UIView {
         }
     }
 
-    @discardableResult
-    func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) -> UIControlHandler {
+    func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) {
         self.button.action( for: controlEvents, action )
     }
 
-    @discardableResult
-    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) -> UIControlHandler {
+    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) {
         self.button.action( for: controlEvents, action )
     }
 }

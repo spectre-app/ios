@@ -366,13 +366,26 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             self.captionLabel => \.shadowColor => Theme.current.color.shadow
             self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
-            self.settingsButton.button.addTarget( self, action: #selector( settingsAction ), for: .primaryActionTriggered )
+            self.settingsButton.action( for: .primaryActionTriggered ) { [unowned self] in
+                if let service = self.service {
+                    self.servicesView?.observers.notify { $0.serviceDetailsAction( service: service ) }
+                }
+            }
 
             self.newButton.tapEffect = false
             self.newButton.isUserInteractionEnabled = false
 
             self.modeButton.tapEffect = false
-            self.modeButton.button.addTarget( self, action: #selector( modeAction ), for: .primaryActionTriggered )
+            self.modeButton.action( for: .primaryActionTriggered ) { [unowned self] in
+                switch self.mode {
+                    case .authentication:
+                        self.mode = .identification
+                    case .identification:
+                        self.mode = .authentication
+                    default:
+                        self.mode = .authentication
+                }
+            }
 
             // - Hierarchy
             self.contentView.addSubview( self.contentStack )
@@ -441,25 +454,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             if self.isSelected != selected {
                 super.setSelected( selected, animated: animated )
                 self.updateTask.request()
-            }
-        }
-
-        @objc
-        func settingsAction() {
-            if let service = self.service {
-                self.servicesView?.observers.notify { $0.serviceDetailsAction( service: service ) }
-            }
-        }
-
-        @objc
-        func modeAction() {
-            switch self.mode {
-                case .authentication:
-                    self.mode = .identification
-                case .identification:
-                    self.mode = .authentication
-                default:
-                    self.mode = .authentication
             }
         }
 

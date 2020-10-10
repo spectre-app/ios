@@ -79,7 +79,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.formatControl.selectedSegmentIndex = MPMarshalFormat.allCases.firstIndex( of: MPMarshalFormat.default ) ?? -1
         self.revealControl.selectedSegmentIndex = 1
 
-        self.exportButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+        self.exportButton.action( for: .primaryActionTriggered ) { [unowned self] in
             guard let user = self.user
             else { return }
 

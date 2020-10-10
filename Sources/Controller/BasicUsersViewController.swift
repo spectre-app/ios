@@ -245,7 +245,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
             self.nameLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
 
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+            self.avatarButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.avatar.next()
             }
 
@@ -289,7 +289,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
             self.nameField => \.font => Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
             self.nameField => \.textColor => Theme.current.color.body
 
-            self.biometricButton.button.action( for: .primaryActionTriggered ) { [unowned self] in
+            self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.attemptBiometrics()
             }
 

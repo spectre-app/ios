@@ -314,7 +314,6 @@ extension UIControl {
         static var actionHandlers = 0
     }
 
-    @objc
     var actionHandlers: [UIControlHandler] {
         get {
             objc_getAssociatedObject( self, &Key.actionHandlers ) as? [UIControlHandler] ?? []
@@ -324,43 +323,34 @@ extension UIControl {
         }
     }
 
-    @discardableResult
-    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) -> UIControlHandler {
-        let handler = UIControlHandler( handler: action )
-        self.actionHandlers.append( handler )
-        self.addTarget( handler, action: #selector( UIControlHandler.action ), for: controlEvents )
-
-        return handler
+    func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) {
+        self.action( for: controlEvents, UIControlHandler( { control, event in action() } ) )
     }
 
-    @discardableResult
-    func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) -> UIControlHandler {
-        let handler = UIControlHandler( handler: action )
+    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) {
+        self.action( for: controlEvents, UIControlHandler( { control, event in action( event ) } ) )
+    }
+
+    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent, UIControl?) -> Void) -> Void {
+        self.action( for: controlEvents, UIControlHandler( { control, event in action( event, control ) } ) )
+    }
+
+    func action(for controlEvents: UIControl.Event, _ handler: UIControlHandler) -> Void {
         self.actionHandlers.append( handler )
         self.addTarget( handler, action: #selector( UIControlHandler.action ), for: controlEvents )
-
-        return handler
     }
 }
 
-public class UIControlHandler: NSObject {
-    private let eventHandler: ((UIEvent) -> Void)?
-    private let voidHandler:  (() -> Void)?
+class UIControlHandler: NSObject {
+    private let actionHandler: (UIControl?, UIEvent) -> Void
 
-    public init(handler: @escaping (UIEvent) -> Void) {
-        self.eventHandler = handler
-        self.voidHandler = nil
-    }
-
-    public init(handler: @escaping () -> Void) {
-        self.eventHandler = nil
-        self.voidHandler = handler
+    public init(_ eventHandler: @escaping (UIControl?, UIEvent) -> ()) {
+        self.actionHandler = eventHandler
     }
 
     @objc
-    func action(_ sender: UIControl, _ event: UIEvent) {
-        self.eventHandler?( event )
-        self.voidHandler?()
+    func action(_ sender: UIControl?, _ event: UIEvent) {
+        self.actionHandler( sender, event )
     }
 }
 

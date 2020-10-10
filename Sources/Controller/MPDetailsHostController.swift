@@ -51,7 +51,9 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
         self.closeButton.alpha = .off
-        self.closeButton.button.action( for: .primaryActionTriggered ) { self.hide() }
+        self.closeButton.action( for: .primaryActionTriggered ) {  [unowned self] in
+            self.hide()
+        }
 
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { [unowned self] _, _ in
             // Inset top to push content to the bottom of the host.
