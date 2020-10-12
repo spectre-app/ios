@@ -72,7 +72,7 @@
 		93D39BBE1211113524BCBF9D /* MPEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* MPEffectView.swift */; };
 		93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
 		93D39BED3DFB61513B0D015D /* MPUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */; };
-		93D39C05281D4E4CB11F07AC /* MPResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPResult.swift */; };
+		93D39C05281D4E4CB11F07AC /* MPOperand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPOperand.swift */; };
 		93D39C0E969D1194203D5B9C /* ConstraintResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909744CE918AB4432318 /* ConstraintResolver.swift */; };
 		93D39C94D7BFAAE6C4B1471F /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
@@ -143,7 +143,7 @@
 		DA0E55A32510E98B002B3AB1 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
 		DA0E55A42510E992002B3AB1 /* MPMarshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* MPMarshal.swift */; };
 		DA0E55A52510E992002B3AB1 /* MPQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */; };
-		DA0E55A62510E992002B3AB1 /* MPResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPResult.swift */; };
+		DA0E55A62510E992002B3AB1 /* MPOperand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPOperand.swift */; };
 		DA0E55A72510E992002B3AB1 /* MPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPService.swift */; };
 		DA0E55A82510E992002B3AB1 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
 		DA0E55A92510E9BB002B3AB1 /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
@@ -403,7 +403,7 @@
 		93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuestion.swift; sourceTree = "<group>"; };
 		93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeychain.swift; sourceTree = "<group>"; };
 		93D39203C899BA783F02D3B5 /* MPEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEffectView.swift; sourceTree = "<group>"; };
-		93D39267543CBFB6B0D7F54C /* MPResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPResult.swift; sourceTree = "<group>"; };
+		93D39267543CBFB6B0D7F54C /* MPOperand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPOperand.swift; sourceTree = "<group>"; };
 		93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEmitterView.swift; sourceTree = "<group>"; };
 		93D392986FB7C71256EABBB0 /* AutoFillServicesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillServicesViewController.swift; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
@@ -712,7 +712,7 @@
 			children = (
 				93D399D8E0D5A547143642A7 /* MPMarshal.swift */,
 				93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */,
-				93D39267543CBFB6B0D7F54C /* MPResult.swift */,
+				93D39267543CBFB6B0D7F54C /* MPOperand.swift */,
 				93D39F718C1C38C46D9D5078 /* MPService.swift */,
 				93D39169E1BADEFA0517D4D2 /* MPUser.swift */,
 			);
@@ -1768,7 +1768,7 @@
 				DA0E55802510642B002B3AB1 /* Swift+MP.swift in Sources */,
 				DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */,
 				DA0E5584251064D9002B3AB1 /* WeakBox.swift in Sources */,
-				DA0E55A62510E992002B3AB1 /* MPResult.swift in Sources */,
+				DA0E55A62510E992002B3AB1 /* MPOperand.swift in Sources */,
 				93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */,
 				93D39122A70525461AEE4D62 /* BasicUsersViewController.swift in Sources */,
 				93D394F428331F661FF95123 /* AutoFillServicesViewController.swift in Sources */,
@@ -1865,7 +1865,7 @@
 				93D39B0F44709C2D285A04D1 /* Foundation+MP.swift in Sources */,
 				93D39DC523A8A2E162CEB420 /* UIKit+MP.swift in Sources */,
 				93D3973CB116392EFE182225 /* Swift+MP.swift in Sources */,
-				93D39C05281D4E4CB11F07AC /* MPResult.swift in Sources */,
+				93D39C05281D4E4CB11F07AC /* MPOperand.swift in Sources */,
 				93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */,
 				93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */,
 				93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */,

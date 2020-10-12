@@ -97,15 +97,15 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class LoginResultItem: FieldItem<MPUser> {
         init() {
             super.init( title: nil, placeholder: "set a user name",
-                        value: { try? $0.result( keyPurpose: .identification ).await().token },
+                        value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { user, login in
                             MPTracker.shared.event( named: "user >login", [
                                 "type": "\(user.loginType)",
                                 "entropy": MPAttacker.entropy( string: login ) ?? 0,
                             ] )
 
-                            user.state( keyPurpose: .identification, resultParam: login ).then {
-                                do { user.loginState = try $0.get().token }
+                            user.state( keyPurpose: .identification, resultParam: login ).token.then {
+                                do { user.loginState = try $0.get() }
                                 catch { mperror( title: "Couldn't update user name", error: error ) }
                             }
                         } )

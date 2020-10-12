@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPServiceObserver, MPQuestionObserver {
+class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPServiceObserver, MPQuestionObserver {
     public let observers = Observers<MPServiceObserver>()
 
     public let user: MPUser
@@ -126,13 +126,11 @@ class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observ
             }
         }
     }
-    var description: String {
-        "\(self.serviceName)"
+    public var isNew: Bool {
+        !self.user.services.contains( self )
     }
-    var initializing = true {
-        didSet {
-            self.dirty = false
-        }
+    var description: String {
+        self.serviceName
     }
     var dirty = false {
         didSet {
@@ -144,6 +142,11 @@ class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observ
             else {
                 self.questions.forEach { $0.dirty = false }
             }
+        }
+    }
+    private var initializing = true {
+        didSet {
+            self.dirty = false
         }
     }
 
@@ -213,9 +216,9 @@ class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observ
     public func copy(to user: MPUser) -> MPService {
         // TODO: do we need to re-encode state?
         let service = MPService( user: user, serviceName: self.serviceName, algorithm: self.algorithm, counter: self.counter,
-                           resultType: self.resultType, resultState: self.resultState,
-                           loginType: self.loginType, loginState: self.loginState,
-                           url: self.url, uses: self.uses, lastUsed: self.lastUsed )
+                                 resultType: self.resultType, resultState: self.resultState,
+                                 loginType: self.loginType, loginState: self.loginState,
+                                 url: self.url, uses: self.uses, lastUsed: self.lastUsed )
         service.questions = self.questions.map { $0.copy( to: service ) }
         return service
     }
@@ -234,7 +237,7 @@ class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observ
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.user.result( for: name ?? self.serviceName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -252,13 +255,15 @@ class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observ
                                          algorithm: algorithm ?? self.algorithm )
 
             @unknown default:
-                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
+                return MPOperation( serviceName: name ?? self.serviceName, counter: counter ?? .initial, purpose: keyPurpose,
+                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.user.state( for: name ?? self.serviceName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -276,16 +281,10 @@ class MPService: MPResult, Hashable, Comparable, CustomStringConvertible, Observ
                                         algorithm: algorithm ?? self.algorithm )
 
             @unknown default:
-                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
+                return MPOperation( serviceName: name ?? self.serviceName, counter: counter ?? .initial, purpose: keyPurpose,
+                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
-    }
-
-    @discardableResult
-    public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, by host: UIView? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.user.copy( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                        resultType: resultType, resultParam: resultParam, algorithm: algorithm, by: host )
     }
 }
 

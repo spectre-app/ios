@@ -27,10 +27,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             else if let selectedPath = selectedPath {
                 self.scrollToRow( at: selectedPath, at: .middle, animated: UIView.areAnimationsEnabled )
             }
-
-            if oldValue != self.selectedService {
-                self.observers.notify { $0.serviceWasSelected( service: self.selectedService ) }
-            }
         }
     }
     public var query:           String? {
@@ -78,6 +74,14 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    // MARK: --- Interface ---
+
+    func activate(service: MPService, purpose: MPKeyPurpose) {
+        self.selectedService = service
+
+        self.observers.notify { $0.serviceWasActivated( service: service, withPurpose: purpose ) }
     }
 
     // MARK: --- Internal ---
@@ -183,17 +187,17 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                     UIAction( title: "Copy Login Name 🅿︎", image: .icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: InAppFeature.premium.enabled() ? []: .disabled ) { action in
                         configuration.action = action
                         let event = MPTracker.shared.begin( named: "service #copy" )
-                        service.copy( keyPurpose: .identification, by: self ).then {
+                        service.result( keyPurpose: .identification ).copy( from: self ).then {
                             do {
-                                let result = try $0.get()
+                                let (operation, token) = try $0.get()
                                 event.end(
                                         [ "result": $0.name,
                                           "from": "cell>menu>login",
-                                          "counter": "\(result.counter)",
-                                          "purpose": "\(result.purpose)",
-                                          "type": "\(result.type)",
-                                          "algorithm": "\(result.algorithm)",
-                                          "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
+                                          "counter": "\(operation.counter)",
+                                          "purpose": "\(operation.purpose)",
+                                          "type": "\(operation.type)",
+                                          "algorithm": "\(operation.algorithm)",
+                                          "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
                                         ] )
                             }
                             catch {
@@ -204,17 +208,17 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                     UIAction( title: "Copy Password", image: .icon( "" ), identifier: UIAction.Identifier( "password" ) ) { action in
                         configuration.action = action
                         let event = MPTracker.shared.begin( named: "service #copyPassword" )
-                        service.copy( keyPurpose: .authentication, by: self ).then {
+                        service.result( keyPurpose: .authentication ).copy( from: self ).then {
                             do {
-                                let result = try $0.get()
+                                let (operation, token) = try $0.get()
                                 event.end(
                                         [ "result": $0.name,
                                           "from": "cell>menu>password",
-                                          "counter": "\(result.counter)",
-                                          "purpose": "\(result.purpose)",
-                                          "type": "\(result.type)",
-                                          "algorithm": "\(result.algorithm)",
-                                          "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
+                                          "counter": "\(operation.counter)",
+                                          "purpose": "\(operation.purpose)",
+                                          "type": "\(operation.type)",
+                                          "algorithm": "\(operation.algorithm)",
+                                          "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
                                         ] )
                             }
                             catch {
@@ -253,7 +257,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
-        self.selectedService = self.servicesDataSource.element( at: configuration.indexPath )?.value
+        if let service = self.servicesDataSource.element( at: configuration.indexPath )?.value {
+            self.activate( service: service, purpose: .authentication )
+        }
     }
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -482,28 +488,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
         @objc
         func cellAction() {
-            self.servicesView?.selectedService = self.service
-            if let service = self.service, self.new {
-                service.user.services.append( service )
-            }
-
-            let event = MPTracker.shared.begin( named: "service #copy" )
-            self.service?.copy( keyPurpose: self.mode, by: self ).then {
-                do {
-                    let result = try $0.get()
-                    event.end(
-                            [ "result": $0.name,
-                              "from": "cell",
-                              "counter": "\(result.counter)",
-                              "purpose": "\(result.purpose)",
-                              "type": "\(result.type)",
-                              "algorithm": "\(result.algorithm)",
-                              "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
-                            ] )
-                }
-                catch {
-                    event.end( [ "result": $0.name ] )
-                }
+            if let service = self.service {
+                self.servicesView?.activate( service: service, purpose: self.mode )
             }
         }
 
@@ -536,10 +522,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         public func update() {
             self.updateTask.cancel()
 
-            guard let service = self.service
-            else { return }
-
-            DispatchQueue.main.promise {
+            DispatchQueue.main.perform {
                 self.backgroundImage.image = self.service?.image
                 self.backgroundImage => \.backgroundColor => Theme.current.color.selection
                         .transform { [unowned self] in $0?.with( hue: self.service?.color?.hue ) }
@@ -573,14 +556,14 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                 self.newButton.alpha = self.isSelected && self.new ? .on: .off
                 self.selectionConfiguration.activated = self.isSelected
                 self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.service?.user.maskPasswords ?? true
-            }.promising {
-                service.result( keyPurpose: self.mode )
-            }.then( on: DispatchQueue.main ) {
-                do {
-                    self.resultLabel.text = try $0.get().token
-                }
-                catch {
-                    mperror( title: "Couldn't calculate service \(self.mode)", error: error )
+
+                self.service?.result( keyPurpose: self.mode ).token.then( on: .main ) {
+                    do {
+                        self.resultLabel.text = try $0.get()
+                    }
+                    catch {
+                        mperror( title: "Couldn't update service cell.", error: error )
+                    }
                 }
             }
         }
@@ -661,6 +644,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 }
 
 protocol MPServicesViewObserver {
-    func serviceWasSelected(service selectedService: MPService?)
+    func serviceWasActivated(service: MPService, withPurpose purpose: MPKeyPurpose)
     func serviceDetailsAction(service: MPService)
 }

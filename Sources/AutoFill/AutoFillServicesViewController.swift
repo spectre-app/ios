@@ -53,11 +53,10 @@ class AutoFillServicesViewController: BasicServicesViewController {
         MPFeedback.shared.play( .activate )
 
         if let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext {
-            service.result( keyPurpose: .identification ).and( service.result( keyPurpose: .authentication ) ).then {
+            service.result( keyPurpose: .identification ).token.and( service.result( keyPurpose: .authentication ).token ).then {
                 do {
-                    let result = try $0.get()
-                    extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential(
-                            user: result.0.token, password: result.1.token ) )
+                    let (login, password) = try $0.get()
+                    extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password ) )
                 }
                 catch {
                     mperror( title: "Couldn't compute service result.", error: error )

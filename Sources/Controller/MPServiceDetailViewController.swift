@@ -86,15 +86,15 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
     class PasswordResultItem: FieldItem<MPService> {
         init() {
             super.init( title: nil, placeholder: "set a password",
-                        value: { try? $0.result().await().token },
+                        value: { try? $0.result().token.await() },
                         update: { service, password in
                             MPTracker.shared.event( named: "service >password", [
                                 "type": "\(service.resultType)",
                                 "entropy": MPAttacker.entropy( string: password ) ?? 0,
                             ] )
 
-                            service.state( resultParam: password ).then {
-                                do { service.resultState = try $0.get().token }
+                            service.state( resultParam: password ).token.then {
+                                do { service.resultState = try $0.get() }
                                 catch { mperror( title: "Couldn't update service password", error: error ) }
                             }
                         },
@@ -102,7 +102,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                             let attacker = $0.user.attacker ?? .default
                             if InAppFeature.premium.enabled(),
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
-                                       attacker.timeToCrack( string: try? $0.result().await().token ) {
+                                       attacker.timeToCrack( string: try? $0.result().token.await() ) {
                                 return "Time to crack: \(timeToCrack) 🅿︎"
                             }
                             else {
@@ -166,15 +166,15 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
         init() {
             super.init( title: nil, placeholder: "set a user name",
-                        value: { try? $0.result( keyPurpose: .identification ).await().token },
+                        value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { service, login in
                             MPTracker.shared.event( named: "service >login", [
                                 "type": "\(service.loginType)",
                                 "entropy": MPAttacker.entropy( string: login ) ?? 0,
                             ] )
 
-                            service.state( keyPurpose: .identification, resultParam: login ).then {
-                                do { service.loginState = try $0.get().token }
+                            service.state( keyPurpose: .identification, resultParam: login ).token.then {
+                                do { service.loginState = try $0.get() }
                                 catch { mperror( title: "Couldn't update service name", error: error ) }
                             }
                         } )
@@ -279,9 +279,9 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
             weak var question: MPQuestion? {
                 didSet {
-                    self.question?.result().then( on: .main ) {
+                    self.question?.result().token.then( on: .main ) {
                         do {
-                            self.resultLabel.text = try $0.get().token
+                            self.resultLabel.text = try $0.get()
                             self.keywordLabel.text = self.question?.keyword.nonEmpty ?? "(generic)"
                         }
                         catch {
@@ -317,17 +317,17 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
                 self.copyButton.action( for: .primaryActionTriggered ) { [unowned self] in
                     let event = MPTracker.shared.begin( named: "service.question #copy" )
-                    self.question?.copy().then {
+                    self.question?.result().copy( from: self ).then {
                         do {
-                            let result = try $0.get()
+                            let (operation, token) = try $0.get()
                             event.end(
                                     [ "result": $0.name,
                                       "from": "service>details",
-                                      "counter": "\(result.counter)",
-                                      "purpose": "\(result.purpose)",
-                                      "type": "\(result.type)",
-                                      "algorithm": "\(result.algorithm)",
-                                      "entropy": MPAttacker.entropy( type: result.3 ) ?? MPAttacker.entropy( string: result.token ) ?? 0,
+                                      "counter": "\(operation.counter)",
+                                      "purpose": "\(operation.purpose)",
+                                      "type": "\(operation.type)",
+                                      "algorithm": "\(operation.algorithm)",
+                                      "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
                                     ] )
                         }
                         catch {

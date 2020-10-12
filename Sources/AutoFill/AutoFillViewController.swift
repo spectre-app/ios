@@ -74,8 +74,8 @@ class AutoFillViewController: ASCredentialProviderViewController {
             guard let service = user.services.first( where: { $0.serviceName == credentialIdentity.serviceIdentifier.identifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No service named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
 
-            return service.result( keyPurpose: .identification ).and( service.result( keyPurpose: .authentication ) ).promise {
-                ASPasswordCredential( user: $0.0.token, password: $0.1.token )
+            return service.result( keyPurpose: .identification ).token.and( service.result( keyPurpose: .authentication ).token ).promise {
+                ASPasswordCredential( user: $0.0, password: $0.1 )
             }
         }.failure { error in
             MPFeedback.shared.play( .error )

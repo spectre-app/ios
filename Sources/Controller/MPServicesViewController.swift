@@ -56,18 +56,6 @@ class MPServicesViewController: BasicServicesViewController {
 
     // MARK: --- MPServicesViewObserver ---
 
-    override func serviceWasSelected(service selectedService: MPService?) {
-        super.serviceWasSelected( service: selectedService )
-
-        if selectedService == nil {
-            DispatchQueue.main.perform {
-                UIView.animate( withDuration: .long ) {
-                    self.detailsHost.hide()
-                }
-            }
-        }
-    }
-
     override func serviceDetailsAction(service: MPService) {
         DispatchQueue.main.perform {
             self.detailsHost.show( MPServiceDetailsViewController( model: service ), sender: self )

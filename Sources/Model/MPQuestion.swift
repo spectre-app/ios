@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPQuestionObserver {
+class MPQuestion: MPOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPQuestionObserver {
     public let observers = Observers<MPQuestionObserver>()
 
     public let service: MPService
@@ -84,24 +84,16 @@ class MPQuestion: MPResult, Hashable, Comparable, CustomStringConvertible, Obser
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
         self.service.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                           resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
         self.service.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam, algorithm: algorithm )
-    }
-
-    @discardableResult
-    public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, by host: UIView? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.service.copy( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                        resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, by: host )
     }
 }
 

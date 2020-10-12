@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPServiceObserver, CredentialSupplier {
+class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPUserObserver, MPServiceObserver, CredentialSupplier {
     public let observers = Observers<MPUserObserver>()
 
     public var algorithm: MPAlgorithmVersion {
@@ -349,7 +349,7 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -367,13 +367,15 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                                         algorithm: algorithm ?? self.algorithm )
 
             @unknown default:
-                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
+                return MPOperation( serviceName: name ?? self.fullName, counter: counter ?? .initial, purpose: keyPurpose,
+                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -391,48 +393,16 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                                        algorithm: algorithm ?? self.algorithm )
 
             @unknown default:
-                return Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) )
-        }
-    }
-
-    @discardableResult
-    public func copy(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                     resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, by host: UIView? = nil)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
-        self.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                     resultType: resultType, resultParam: resultParam, algorithm: algorithm ).then {
-            do {
-                let token = try $0.get().token
-
-                self.use()
-                MPFeedback.shared.play( .trigger )
-
-                UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: token ] ],
-                        options: [
-                            UIPasteboard.OptionsKey.localOnly: true,
-                            UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                        ] )
-
-                MPAlert( title: "Copied \(keyPurpose) (3 min)", message: name, details:
-                """
-                Your \(keyPurpose) for \(name ?? self.fullName) is:
-                \(token)
-
-                It was copied to the pasteboard, you can now switch to your application and paste it into the \(keyPurpose) field.
-
-                Note that after 3 minutes, the \(keyPurpose) will expire from the pasteboard for security reasons.
-                """ ).show( in: host )
-            }
-            catch {
-                mperror( title: "Couldn't copy \(keyPurpose)", message: "Value for \(keyPurpose) could not be calculated", error: error )
-            }
+                return MPOperation( serviceName: name ?? self.fullName, counter: counter ?? .initial, purpose: keyPurpose,
+                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     private func mpw_result(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
                             resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
+        MPOperation( serviceName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, token:
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }
@@ -442,13 +412,14 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                     mpw_service_result( masterKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
             else { throw MPError.internal( cause: "Cannot calculate result.", details: self ) }
 
-            return (token: result, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
-        }
+            return result
+        } )
     }
 
     public func mpw_state(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
                           resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
-                    -> Promise<(token: String, counter: MPCounterValue, purpose: MPKeyPurpose, type: MPResultType, algorithm: MPAlgorithmVersion)> {
+                    -> MPOperation {
+        MPOperation( serviceName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, token:
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }
@@ -458,8 +429,8 @@ class MPUser: MPResult, Hashable, Comparable, CustomStringConvertible, Observabl
                     mpw_service_state( masterKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
             else { throw MPError.internal( cause: "Cannot calculate result.", details: self ) }
 
-            return (token: result, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm)
-        }
+            return result
+        } )
     }
 
     // MARK: --- Types ---
