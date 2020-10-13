@@ -110,7 +110,7 @@ class MPEffectView: UIView {
     private lazy var blurEffectView     = UIVisualEffectView( effect: self.blurEffect )
     private lazy var vibrancyEffectView = UIVisualEffectView( effect: self.vibrancyEffect )
 
-    init(border: CGFloat = 2, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+    init(border: CGFloat = 1.5, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
         self.borderWidth = border
         self.isBackground = background
         self.isRound = round
@@ -136,7 +136,7 @@ class MPEffectView: UIView {
         self.update()
     }
 
-    convenience init(content: UIView, border: CGFloat = 2, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+    convenience init(content: UIView, border: CGFloat = 1.5, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
         self.init( border: border, background: background, round: round, rounding: rounding, dims: false )
 
         // - View
@@ -183,7 +183,7 @@ class MPEffectView: UIView {
 
             self.layer.borderColor = self.borderColor?.cgColor
             if self.isDimmedBySelection {
-                self.alpha = self.isSelected ? .on: .short
+                self.alpha = self.isSelected ? .on: .long
             }
         }
     }

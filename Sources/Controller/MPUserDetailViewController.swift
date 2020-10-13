@@ -224,7 +224,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
             super.init( subitems: [
                 ToggleItem<MPUser>(
                         identifier: "user >autofill",
-                        title: "AutoFill Passwords",
+                        title: "AutoFill Passwords 🅿︎",
                         value: {
                             (icon: .icon( "" ),
                              selected: $0.autofill,
@@ -236,7 +236,9 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                             Expose services in password auto-fill
                             from other apps.
                             """
-                        } ),
+                        } )
+                        .addBehaviour( PremiumTapBehaviour() )
+                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
                 ToggleItem(
                         identifier: "user >biometricLock",
                         title: "Biometric Lock 🅿︎",
@@ -253,7 +255,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                             """
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
             ] )
         }
     }
