@@ -33,7 +33,10 @@ public enum IconStyle {
 }
 
 extension NSAttributedString {
-    public static func icon(_ icon: String, withSize size: CGFloat? = nil) -> NSAttributedString? {
+    public static func icon(_ icon: String?, withSize size: CGFloat? = nil) -> NSAttributedString? {
+        guard let icon = icon
+        else { return nil }
+
         let font           = IconStyle.duotone.font( withSize: size )
         let attributedIcon = NSMutableAttributedString( string: icon, attributes: [
             NSAttributedString.Key.kern: -1000,
@@ -52,7 +55,7 @@ extension NSAttributedString {
 }
 
 extension UIImage {
-    public static func icon(_ icon: String, withSize size: CGFloat? = nil) -> UIImage? {
+    public static func icon(_ icon: String?, withSize size: CGFloat? = nil) -> UIImage? {
         guard let attributedIcon = NSAttributedString.icon( icon, withSize: size )
         else { return nil }
 

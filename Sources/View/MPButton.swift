@@ -18,12 +18,16 @@ class MPButton: MPEffectView {
     }
     var title: String? {
         didSet {
-            DispatchQueue.main.perform { self.update() }
+            if self.title != oldValue {
+                self.update()
+            }
         }
     }
     var attributedTitle: NSAttributedString? {
         didSet {
-            DispatchQueue.main.perform { self.update() }
+            if self.attributedTitle != oldValue {
+                self.update()
+            }
         }
     }
 

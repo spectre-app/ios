@@ -36,6 +36,13 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             }
         }
     }
+    public var actionIcon:      String = "" {
+        didSet {
+            if oldValue != self.actionIcon {
+                self.updateTask.request()
+            }
+        }
+    }
     public var preferredFilter: ((MPService) -> Bool)? {
         didSet {
             self.updateTask.request()
@@ -180,7 +187,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                         configuration.action = action
                         service.user.services.removeAll { $0 === service }
                     },
-                    UIAction( title: "Details", image: .icon( "" ), identifier: UIAction.Identifier( "settings" ) ) { action in
+                    UIAction( title: "Details", image: .icon( self.actionIcon ), identifier: UIAction.Identifier( "settings" ) ) { action in
                         configuration.action = action
                         self.observers.notify { $0.serviceDetailsAction( service: service ) }
                     },
@@ -552,6 +559,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                 }
 
                 self.modeButton.alpha = InAppFeature.premium.enabled() ? .on: .off
+                self.settingsButton.image = .icon( self.servicesView?.actionIcon )
                 self.settingsButton.alpha = self.isSelected && !self.new ? .on: .off
                 self.newButton.alpha = self.isSelected && self.new ? .on: .off
                 self.selectionConfiguration.isActive = self.isSelected

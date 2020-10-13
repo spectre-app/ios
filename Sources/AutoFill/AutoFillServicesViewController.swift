@@ -32,6 +32,7 @@ class AutoFillServicesViewController: BasicServicesViewController {
         if let serviceIdentifiers = AutoFillModel.shared.context.serviceIdentifiers {
             allServiceIdentifiers.append( contentsOf: serviceIdentifiers )
         }
+        self.servicesTableView.actionIcon = ""
         self.servicesTableView.preferredFilter = { service in
             allServiceIdentifiers.contains( where: {
                 var serviceIdentifier = $0.identifier
