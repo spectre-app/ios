@@ -38,7 +38,10 @@ extension URLSession {
 }
 
 class MPURLUtils {
-    private static let preview  = SwiftLinkPreview( session: .optional, cache: InMemoryCache() )
+    private static let preview  = SwiftLinkPreview( session: .optional,
+                                                    workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background ),
+                                                    responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background ),
+                                                    cache: InMemoryCache() )
     private static let caches   = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
     private static var metadata = loadMetadata() {
         didSet {

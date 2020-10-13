@@ -56,6 +56,29 @@ class MPServicesViewController: BasicServicesViewController {
 
     // MARK: --- MPServicesViewObserver ---
 
+    override func serviceWasActivated(service: MPService, withPurpose purpose: MPKeyPurpose) {
+        super.serviceWasActivated( service: service, withPurpose: purpose )
+
+        let event = MPTracker.shared.begin( named: "service #copy" )
+        service.result( keyPurpose: purpose ).copy( from: self.view ).then {
+            do {
+                let (operation, token) = try $0.get()
+                event.end(
+                        [ "result": $0.name,
+                          "from": "cell",
+                          "counter": "\(operation.counter)",
+                          "purpose": "\(operation.purpose)",
+                          "type": "\(operation.type)",
+                          "algorithm": "\(operation.algorithm)",
+                          "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
+                        ] )
+            }
+            catch {
+                event.end( [ "result": $0.name ] )
+            }
+        }
+    }
+
     override func serviceDetailsAction(service: MPService) {
         DispatchQueue.main.perform {
             self.detailsHost.show( MPServiceDetailsViewController( model: service ), sender: self )

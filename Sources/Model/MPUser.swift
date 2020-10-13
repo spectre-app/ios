@@ -177,7 +177,7 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
         }
     }
 
-    private lazy var saveTask = DispatchTask( named: self.fullName, queue: .global(), deadline: .now() + .seconds( 1 ) ) {
+    private lazy var saveTask = DispatchTask( named: self.fullName, queue: .global( qos: .utility ), deadline: .now() + .seconds( 1 ) ) {
         guard self.dirty, self.file != nil
         else { return }
 
@@ -368,8 +368,8 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
 
             @unknown default:
                 return MPOperation( serviceName: name ?? self.fullName, counter: counter ?? .initial, purpose: keyPurpose,
-                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
-                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                    Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
@@ -394,8 +394,8 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
 
             @unknown default:
                 return MPOperation( serviceName: name ?? self.fullName, counter: counter ?? .initial, purpose: keyPurpose,
-                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
-                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                    Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
