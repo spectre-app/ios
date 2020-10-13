@@ -22,8 +22,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         }
     }
 
-    private lazy var detailRecognizer    = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
-    private lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
+    private lazy var detailRecognizer = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
     private let closeButton = MPButton( identifier: "details #close", attributedTitle: .icon( "" ) )
     private var popupConfiguration:        LayoutConfiguration<UIView>!
     private var fixedContentConfiguration: LayoutConfiguration<UIView>!
@@ -51,7 +50,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
         self.closeButton.alpha = .off
-        self.closeButton.action( for: .primaryActionTriggered ) {  [unowned self] in
+        self.closeButton.action( for: .primaryActionTriggered ) { [unowned self] in
             self.hide()
         }
 
@@ -111,15 +110,11 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        self.keyboardLayoutGuide.install( update: { keyboardFrame, keyboardInsets in
-            self.additionalSafeAreaInsets = keyboardInsets
+        self.keyboardLayoutGuide.install( in: self.view, update: {
+            if !self.fixedContentConfiguration.isActive {
+                self.additionalSafeAreaInsets = $0.keyboardInsets
+            }
         } )
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        self.keyboardLayoutGuide.uninstall()
-
-        super.viewWillDisappear( animated )
     }
 
     #if APP_CONTAINER
@@ -157,7 +152,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 }
                 UIView.animate( withDuration: .short, animations: {
                     detailsController.view.window?.endEditing( true )
-                    self.fixedContentConfiguration.activated = (detailsController as? MPDetailViewController)?.isContentScrollable ?? false
+                    self.fixedContentConfiguration.isActive = (detailsController as? MPDetailViewController)?.isContentScrollable ?? false
                     self.popupConfiguration.activate()
                     self.closeButton.alpha = .on
                 }, completion: { finished in

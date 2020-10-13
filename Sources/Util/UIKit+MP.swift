@@ -162,22 +162,22 @@ extension UIEdgeInsets {
         CGSize( width: self.width, height: self.height )
     }
 
-    init(in insetRect: CGRect, subtracting subtractRect: CGRect) {
-        if !insetRect.intersects( subtractRect ) {
+    init(in boundingRect: CGRect, subtracting subtractRect: CGRect) {
+        if !boundingRect.intersects( subtractRect ) {
             self = .zero
         }
         else {
-            let topLeftBounds     = insetRect.topLeft
-            let bottomRightBounds = insetRect.bottomRight
-            let topLeftFrom       = subtractRect.topLeft
-            let bottomRightFrom   = subtractRect.bottomRight
-            let topLeftInset      = bottomRightFrom - topLeftBounds
-            let bottomRightInset  = bottomRightBounds - topLeftFrom
+            let boundingTopLeft     = boundingRect.topLeft
+            let boundingBottomRight = boundingRect.bottomRight
+            let subtractTopLeft     = subtractRect.topLeft
+            let subtractBottomRight = subtractRect.bottomRight
+            let topLeftInset        = subtractBottomRight - boundingTopLeft
+            let bottomRightInset    = boundingBottomRight - subtractTopLeft
 
-            let top    = topLeftFrom.y <= topLeftBounds.y && bottomRightFrom.y < bottomRightBounds.y ? max( 0, topLeftInset.y ): 0
-            let left   = topLeftFrom.x <= topLeftBounds.x && bottomRightFrom.x < bottomRightBounds.x ? max( 0, topLeftInset.x ): 0
-            let bottom = topLeftFrom.y > topLeftBounds.y && bottomRightFrom.y >= bottomRightBounds.y ? max( 0, bottomRightInset.y ): 0
-            let right  = topLeftFrom.x > topLeftBounds.x && bottomRightFrom.x >= bottomRightBounds.x ? max( 0, bottomRightInset.x ): 0
+            let top    = subtractTopLeft.y <= boundingTopLeft.y && subtractBottomRight.y < boundingBottomRight.y ? max( 0, topLeftInset.y ): 0
+            let left   = subtractTopLeft.x <= boundingTopLeft.x && subtractBottomRight.x < boundingBottomRight.x ? max( 0, topLeftInset.x ): 0
+            let bottom = subtractTopLeft.y > boundingTopLeft.y && subtractBottomRight.y >= boundingBottomRight.y ? max( 0, bottomRightInset.y ): 0
+            let right  = subtractTopLeft.x > boundingTopLeft.x && subtractBottomRight.x >= boundingBottomRight.x ? max( 0, bottomRightInset.x ): 0
 
             self.init( top: top, left: left, bottom: bottom, right: right )
         }

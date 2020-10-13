@@ -554,7 +554,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                 self.modeButton.alpha = InAppFeature.premium.enabled() ? .on: .off
                 self.settingsButton.alpha = self.isSelected && !self.new ? .on: .off
                 self.newButton.alpha = self.isSelected && self.new ? .on: .off
-                self.selectionConfiguration.activated = self.isSelected
+                self.selectionConfiguration.isActive = self.isSelected
                 self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.service?.user.maskPasswords ?? true
 
                 self.service?.result( keyPurpose: self.mode ).token.then( on: .main ) {

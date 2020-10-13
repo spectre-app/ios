@@ -40,7 +40,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
 
     private let  usersSpinner = MPSpinnerView()
     internal let detailsHost  = MPDetailsHostController()
-    internal lazy var keyboardLayoutGuide = KeyboardLayoutGuide( in: self.view )
 
     // MARK: --- Life ---
 
@@ -96,15 +95,12 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        self.keyboardLayoutGuide.install( constraints: { keyboardLayoutGuide in
-            [
-                self.usersSpinner.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ),
-            ]
+        self.keyboardLayoutGuide.install( in: self.view, constraints: {
+            [ self.usersSpinner.bottomAnchor.constraint( equalTo: $0.topAnchor ) ]
         } )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        self.keyboardLayoutGuide.uninstall()
         self.usersSpinner.selectItem( nil )
 
         super.viewWillDisappear( animated )
@@ -380,7 +376,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
             let path = CGMutablePath()
             if self.isSelected {
                 path.addPath( CGPath.between( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
-                if self.authenticationConfiguration.activated {
+                if self.authenticationConfiguration.isActive {
                     path.addPath( CGPath.between( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
                 }
             }
@@ -468,7 +464,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
                         if self.nameField.alpha != .off {
                             self.nameField.becomeFirstResponder()
                         }
-                        else if self.authenticationConfiguration.activated {
+                        else if self.authenticationConfiguration.isActive {
                             self.passwordField.becomeFirstResponder()
                         }
                     }

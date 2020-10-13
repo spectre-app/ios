@@ -83,7 +83,7 @@ public struct LayoutTarget<T: UIView>: CustomStringConvertible {
  * A layout configuration holds a set of operations that will be performed on the target when the configuration's active state changes.
  */
 public protocol AnyLayoutConfiguration: class, CustomStringConvertible, CustomDebugStringConvertible {
-    var activated: Bool { get set }
+    var isActive: Bool { get set }
 
     @discardableResult
     func activate(animationDuration duration: TimeInterval, parent: AnyLayoutConfiguration?) -> Self
@@ -99,13 +99,13 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     //! The target upon which this configuration's operations operate.
     public let  target:    LayoutTarget<T>
     //! Whether this configuration has last been activated or deactivated.
-    private var activation             = false
-    public var  activated: Bool {
+    private var activated = false
+    public var  isActive: Bool {
         get {
-            self.activation
+            self.activated
         }
         set {
-            if newValue != self.activated {
+            if newValue != self.isActive {
                 if newValue {
                     self.activate()
                 }
@@ -129,7 +129,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     private var inactiveProperties = [ String: Any ]()
 
     public var description: String {
-        "\(self.target)[\(self.activation ? "on": "off")]"
+        "\(self.target)[\(self.activated ? "on": "off")]"
     }
 
     public var debugDescription: String {
@@ -179,11 +179,11 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     @discardableResult func apply(_ configuration: AnyLayoutConfiguration, active: Bool = true) -> Self {
         if active {
             self.activeConfigurations.append( configuration )
-            configuration.activated = self.activation
+            configuration.isActive = self.activated
         }
         else {
             self.inactiveConfigurations.append( configuration )
-            configuration.activated = !self.activation
+            configuration.isActive = !self.activated
         }
 
         return self
@@ -356,7 +356,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     //! Set a given value for the target at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.
     @discardableResult func set<V: Equatable>(_ value: @escaping @autoclosure () -> V, keyPath: ReferenceWritableKeyPath<T, V>, reverses: Bool = false) -> Self {
         let property = Property( value: value, keyPath: keyPath, reversable: reverses )
-        if self.activated {
+        if self.isActive {
             property.update( self.target.view )
         }
         else {
@@ -369,7 +369,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     //! Activate this configuration and apply its operations.
     @discardableResult
     public func activate(animationDuration duration: TimeInterval = -1, parent: AnyLayoutConfiguration? = nil) -> Self {
-        guard !self.activation
+        guard !self.activated
         else { return self }
         if duration > 0 {
             UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
@@ -441,7 +441,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                     $0.activate( animationDuration: duration, parent: self )
                 }
 
-                self.activation = true
+                self.activated = true
 
                 self.refreshViews.forEach { refresh in
                     refresh.perform( in: targetView )
@@ -459,7 +459,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     //! Deactivate this configuration and reverse its relevant operations.
     @discardableResult
     public func deactivate(animationDuration duration: TimeInterval = -1, parent: AnyLayoutConfiguration? = nil) -> Self {
-        guard self.activation
+        guard self.activated
         else { return self }
         if duration > 0 {
             UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
@@ -511,7 +511,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 $0.activate( animationDuration: duration, parent: self )
             }
 
-            self.activation = false
+            self.activated = false
 
             self.refreshViews.forEach { refresh in
                 refresh.perform( in: targetView )

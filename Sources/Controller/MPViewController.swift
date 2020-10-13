@@ -9,6 +9,7 @@ class MPViewController: UIViewController, Updatable {
     var trackScreen = true
     lazy var screen = MPTracker.shared.screen( named: Self.self.description() )
 
+    internal let keyboardLayoutGuide = KeyboardLayoutGuide()
     internal var backgroundView = MPBackgroundView( mode: .clear )
     internal var activeChildController: UIViewController? {
         didSet {
@@ -75,6 +76,7 @@ class MPViewController: UIViewController, Updatable {
 
     override func viewWillDisappear(_ animated: Bool) {
         self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
+        self.keyboardLayoutGuide.uninstall()
         self.updateTask.cancel()
 
         super.viewWillDisappear( animated )

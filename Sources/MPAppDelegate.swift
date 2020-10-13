@@ -71,6 +71,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
                 appConfig.diagnosticsDecided = true
                 self.tryDecisions()
             } )
+            controller.popoverPresentationController?.sourceView = self.window
             self.window?.rootViewController?.present( controller, animated: true )
             return
         }
@@ -83,6 +84,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
             If you enable notifications, we can inform you of known breaches and keep you current on important security events.
             """, preferredStyle: .actionSheet )
+            controller.popoverPresentationController?.sourceView = self.window
             controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
                 MPTracker.enableNotifications()
                 self.tryDecisions()

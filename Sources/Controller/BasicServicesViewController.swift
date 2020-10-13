@@ -9,6 +9,7 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
     internal lazy var topContainer = MPEffectView( content: self.searchField )
     internal let searchField       = UITextField()
     internal let servicesTableView = MPServicesTableView()
+
     var isContentScrollable = true
 
     // MARK: --- State ---
@@ -44,7 +45,7 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
         }
 
         self.servicesTableView.observers.register( observer: self )
-        self.servicesTableView.keyboardDismissMode = .onDrag
+        self.servicesTableView.keyboardDismissMode = .interactive
         self.servicesTableView.contentInsetAdjustmentBehavior = .always
 
         // - Hierarchy
@@ -75,6 +76,14 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
 
         // Need to lay out before setting initial content offset to ensure top container inset is taken into account.
         self.view.layoutIfNeeded()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.keyboardLayoutGuide.install( in: self.view, update: {
+            self.additionalSafeAreaInsets = $0.keyboardInsets
+        } )
     }
 
     override func viewDidLayoutSubviews() {
