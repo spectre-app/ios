@@ -44,7 +44,7 @@ class MPClassItemCell: MPItemCell, Updatable {
 
         self.stackView.axis = .vertical
 
-        self.effectView.addSubview( self.stackView )
+        self.effectView.addContentView( self.stackView )
 
         LayoutConfiguration( view: self.stackView )
                 .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }

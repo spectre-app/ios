@@ -51,9 +51,9 @@ class MPDateView: MPEffectView {
         self.dayLabel => \.font => Theme.current.font.largeTitle
 
         // - Hierarchy
-        self.addSubview( self.separatorView )
-        self.addSubview( self.monthLabel )
-        self.addSubview( self.dayLabel )
+        self.addContentView( self.separatorView )
+        self.addContentView( self.monthLabel )
+        self.addContentView( self.dayLabel )
 
         // - Layout
         self.widthAnchor.constraint( equalTo: self.heightAnchor, constant: .long ).isActive = true

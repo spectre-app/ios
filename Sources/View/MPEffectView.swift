@@ -119,6 +119,7 @@ class MPEffectView: UIView {
 
         super.init( frame: .zero )
 
+        // - View
         self.layer.masksToBounds = true
         self.layer.shadowRadius = 0
         self.layer.shadowOpacity = .short
@@ -127,20 +128,23 @@ class MPEffectView: UIView {
 
         self => \.borderColor => Theme.current.color.secondary
 
+        self.vibrancyEffectView.contentView.insetsLayoutMarginsFromSafeArea = false
+        self.update()
+
+        // - Hierarchy
         self.blurEffectView.contentView.addSubview( self.vibrancyEffectView )
         self.addSubview( self.blurEffectView )
 
+        // - Layout
         LayoutConfiguration( view: self.vibrancyEffectView ).constrain().activate()
         LayoutConfiguration( view: self.blurEffectView ).constrain().activate()
-
-        self.update()
     }
 
     convenience init(content: UIView, border: CGFloat = 1.5, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
         self.init( border: border, background: background, round: round, rounding: rounding, dims: false )
 
         // - View
-        self.addSubview( content )
+        self.addContentView( content )
 
         // - Layout
         LayoutConfiguration( view: content )
@@ -152,13 +156,12 @@ class MPEffectView: UIView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    func addContentView(_ view: UIView) {
+        self.vibrancyEffectView.contentView.addSubview( view )
+    }
+
     override func addSubview(_ view: UIView) {
-        if view == self.blurEffectView {
-            super.addSubview( view )
-        }
-        else {
-            self.vibrancyEffectView.contentView.addSubview( view )
-        }
+        super.addSubview( view )
     }
 
     // MARK: --- Updatable ---

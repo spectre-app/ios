@@ -6,17 +6,17 @@
 import UIKit
 
 class MPButton: MPEffectView {
-    var identifier: String?
-    var action:     ((UIEvent, MPButton) -> Void)?
+    var identifier:      String?
+    var action:          ((UIEvent, MPButton) -> Void)?
     var tapEffect = true
-    var image:      UIImage? {
+    var image:           UIImage? {
         didSet {
             if self.image != oldValue {
                 self.update()
             }
         }
     }
-    var title: String? {
+    var title:           String? {
         didSet {
             if self.title != oldValue {
                 self.update()
@@ -53,6 +53,8 @@ class MPButton: MPEffectView {
         self.title = title
         self.attributedTitle = attributedTitle
 
+        // - View
+        self.layoutMargins = .zero
         self.button.titleLabel?.numberOfLines = 0
         self.button.titleLabel?.textAlignment = .center
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
@@ -69,20 +71,18 @@ class MPButton: MPEffectView {
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
-
         self.stateObserver = self.button.observe( \.isSelected, options: .initial ) { [unowned self] _, _ in
             self.isSelected = self.button.isSelected
         }
+        self.update()
 
-        self.layoutMargins = .zero
-        self.insetsLayoutMarginsFromSafeArea = false
-        self.addSubview( self.button )
+        // - Hierarchy
+        self.addContentView( self.button )
 
+        // - Layout
         LayoutConfiguration( view: self.button )
                 .constrain( margins: true )
                 .activate()
-
-        self.update()
     }
 
     override func sizeThatFits(_ size: CGSize) -> CGSize {

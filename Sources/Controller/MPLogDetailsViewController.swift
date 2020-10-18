@@ -114,7 +114,7 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
                 self.titleLabel.textAlignment = .center
 
                 // - Hierarchy
-                self.effectView.addSubview( self.titleLabel )
+                self.effectView.addContentView( self.titleLabel )
 
                 // - Layout
                 LayoutConfiguration( view: self.titleLabel )
