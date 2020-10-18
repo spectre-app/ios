@@ -51,14 +51,14 @@ func _describe(_ type: AnyClass, short: Bool = false) -> String {
 
 extension UIView: Describable {
     public func describe(short: Bool = false) -> String {
-        let owner = self.owner
+        let owner = self.ownership
         let description: String
 
         if let identifier = self.accessibilityIdentifier?.nonEmpty {
             description = identifier
         }
         else if let owner = owner {
-            description = short ? owner.name: "\(owner.name):\(_describe( Self.self, short: true ))@\(_describe( type( of: owner.host ), short: true ))"
+            description = short ? owner.property: "\(owner.property)::\(_describe( Self.self, short: true ))@\(_describe( type( of: owner.owner ), short: true ))"
         }
         else if let index = self.superview?.subviews.firstIndex( of: self ) {
             description = short ? "[\(index)]": "[\(index)]\(_describe( Self.self ))"
@@ -67,7 +67,7 @@ extension UIView: Describable {
             description = _describe( Self.self )
         }
 
-        if !short, let ownerView = owner?.host as? UIView {
+        if !short, let ownerView = owner?.owner as? UIView {
             return "\(description) << \(ownerView.describe( short: false ))"
         }
         else {

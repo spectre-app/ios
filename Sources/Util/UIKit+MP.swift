@@ -519,7 +519,7 @@ extension UITraitCollection {
 }
 
 extension UIView {
-    public var owner: (host: UIResponder, name: String)? {
+    public var ownership: (owner: UIResponder, property: String)? {
         var nextResponder = self.next
         while let nextResponder_ = nextResponder {
             if let property = nextResponder_.property( withValue: self ) {

@@ -26,7 +26,7 @@ extension NSObject {
                     wrn( "Missing label for mirror: %@, child: %@", mirror_, child )
                 }
 
-                return child.label
+                return child.label?.replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
             }
 
             mirror = mirror_.superclassMirror
@@ -56,7 +56,8 @@ extension NSObject {
 
                     if let encoding = ivar_getTypeEncoding( ivar ), encoding.pointee == 64,
                        value === object_getIvar( self, ivar ) as AnyObject? {
-                        return .valid( ivar_getName( ivar ) )
+                        return String.valid( ivar_getName( ivar ) )?
+                                     .replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
                     }
                 }
             }
