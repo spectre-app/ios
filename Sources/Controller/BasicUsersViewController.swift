@@ -95,7 +95,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        self.keyboardLayoutGuide.install( in: self.view, constraints: {
+        self.keyboardLayoutGuide.add( constraints: {
             [ self.usersSpinner.bottomAnchor.constraint( equalTo: $0.topAnchor ) ]
         } )
     }

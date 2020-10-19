@@ -29,7 +29,7 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
         guard case .premium = feature
         else { return }
 
-        self.tapRecognizers.keys.forEach { $0.isEnabled = !InAppFeature.premium.enabled() }
+        self.isEnabled = !InAppFeature.premium.enabled()
     }
 }
 

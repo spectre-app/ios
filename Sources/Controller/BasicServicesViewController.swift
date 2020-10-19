@@ -78,14 +78,6 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
         self.view.layoutIfNeeded()
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear( animated )
-
-        self.keyboardLayoutGuide.install( in: self.view, update: {
-            self.additionalSafeAreaInsets = $0.keyboardInsets
-        } )
-    }
-
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 

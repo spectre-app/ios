@@ -5,12 +5,12 @@
 
 import UIKit
 
-class MPViewController: UIViewController, Updatable {
+class MPViewController: UIViewController, Updatable, KeyboardLayoutObserver {
     var trackScreen = true
     lazy var screen = MPTracker.shared.screen( named: Self.self.description() )
 
     internal let keyboardLayoutGuide = KeyboardLayoutGuide()
-    internal var backgroundView = MPBackgroundView( mode: .clear )
+    internal var backgroundView      = MPBackgroundView( mode: .clear )
     internal var activeChildController: UIViewController? {
         didSet {
             self.setNeedsStatusBarAppearanceUpdate()
@@ -68,6 +68,7 @@ class MPViewController: UIViewController, Updatable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
+        self.keyboardLayoutGuide.install( in: self.view, observer: self )
         self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
                 forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in
             self.setNeedsUpdate()
@@ -88,6 +89,12 @@ class MPViewController: UIViewController, Updatable {
         if self.trackScreen {
             self.screen.dismiss()
         }
+    }
+
+    // MARK: --- KeyboardLayoutObserver ---
+
+    func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+        self.additionalSafeAreaInsets = layoutGuide.keyboardInsets
     }
 
     // MARK: --- Updatable ---

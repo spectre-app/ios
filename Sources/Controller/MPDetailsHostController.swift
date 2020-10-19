@@ -107,16 +107,6 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 } )
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear( animated )
-
-        self.keyboardLayoutGuide.install( in: self.view, update: {
-            if !self.fixedContentConfiguration.isActive {
-                self.additionalSafeAreaInsets = $0.keyboardInsets
-            }
-        } )
-    }
-
     #if APP_CONTAINER
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         if motion == .motionShake {
@@ -190,6 +180,12 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 completion?()
             }
             return false
+        }
+    }
+
+    override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+        if !self.fixedContentConfiguration.isActive {
+            super.keyboardDidChange( showing: showing, layoutGuide: layoutGuide )
         }
     }
 

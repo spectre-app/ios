@@ -110,9 +110,7 @@ class MPUsersViewController: BasicUsersViewController {
         super.viewDidAppear( animated )
 
         self.keyboardLayoutGuide.add( constraints: { keyboardLayoutGuide in
-            [
-                self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 ),
-            ]
+            [ self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 ) ]
         } )
     }
 
@@ -175,6 +173,14 @@ class MPUsersViewController: BasicUsersViewController {
             } )
             self.present( alert, animated: true )
         }
+    }
+
+    // MARK: --- KeyboardLayoutObserver ---
+
+    override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+        super.keyboardDidChange( showing: showing, layoutGuide: layoutGuide )
+
+        self.userToolbarConfiguration.isActive = showing
     }
 
     // MARK: --- MPMarshalObserver ---
