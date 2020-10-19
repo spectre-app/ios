@@ -127,6 +127,9 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
             }
         }
     }
+    public var autofillDecided: Bool {
+        (self.file?.mpw_get( path: "user", "_ext_mpw", "autofill" ) as Bool?) != nil
+    }
     public var attacker: MPAttacker? {
         didSet {
             if oldValue != self.attacker, !self.initializing,

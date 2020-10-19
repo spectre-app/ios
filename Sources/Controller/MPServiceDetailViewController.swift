@@ -54,7 +54,12 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             super.init( title: "Password Counter",
                         value: { $0.counter.rawValue },
                         update: { $0.counter = MPCounterValue( rawValue: $1 ) ?? .default },
-                        step: 1, min: MPCounterValue.initial.rawValue, max: MPCounterValue.last.rawValue )
+                        step: 1, min: MPCounterValue.initial.rawValue, max: MPCounterValue.last.rawValue,
+                        caption: { _ in
+                            """
+                            Increment the counter if you need to change the service's current password.
+                            """
+                        } )
         }
     }
 
@@ -177,6 +182,11 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                 do { service.loginState = try $0.get() }
                                 catch { mperror( title: "Couldn't update service name", error: error ) }
                             }
+                        },
+                        caption: {
+                            $0.loginType == .none ?
+                                    "The service uses your Standard Login Name.":
+                                    "The service is using a service‑specific login name."
                         } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
@@ -247,7 +257,13 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                             } )
                                             item.viewController?.present( controller, animated: true )
                                         } )
-                        ] )
+                        ],
+                        caption: { _ in
+                            """
+                            Security questions are an invasive loophole for bypassing your password.
+                            Use these cryptographically private answers instead.
+                            """
+                        })
             self.deletable = true
 
             self.addBehaviour( PremiumTapBehaviour() )

@@ -55,6 +55,7 @@
 		93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B6403FE258E526E5E85 /* UIView+MP.m */; };
 		93D397CE8C3D324B39A60501 /* MPItemsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPItemsViewController.swift */; };
 		93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
+		93D39830BD42CE3468F6AFCB /* MPAutoFillSetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394C13D268B6594F0E358 /* MPAutoFillSetupViewController.swift */; };
 		93D3983CA421991D12ADDDBA /* MPLogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* MPLogSink.swift */; };
 		93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
@@ -419,6 +420,7 @@
 		93D39424D508440582DC7FD0 /* MPSpinnerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSpinnerView.swift; sourceTree = "<group>"; };
 		93D39477D638F3147366C029 /* MPAnimations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAnimations.swift; sourceTree = "<group>"; };
 		93D394B019A4203EF763DBEA /* MPUserDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUserDetailViewController.swift; sourceTree = "<group>"; };
+		93D394C13D268B6594F0E358 /* MPAutoFillSetupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAutoFillSetupViewController.swift; sourceTree = "<group>"; };
 		93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FontAwesome.swift; sourceTree = "<group>"; };
 		93D39564D6408073D59CDB6A /* MPButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPButton.swift; sourceTree = "<group>"; };
 		93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPExportViewController.swift; sourceTree = "<group>"; };
@@ -839,6 +841,7 @@
 				93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */,
 				93D393A49E8705F3E38EB779 /* MPViewController.swift */,
 				93D39DC918D45D864FA12ED1 /* BasicServicesViewController.swift */,
+				93D394C13D268B6594F0E358 /* MPAutoFillSetupViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -1870,6 +1873,7 @@
 				93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */,
 				93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */,
 				93D39E0E73178FE39CF12B45 /* BasicServicesViewController.swift in Sources */,
+				93D39830BD42CE3468F6AFCB /* MPAutoFillSetupViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

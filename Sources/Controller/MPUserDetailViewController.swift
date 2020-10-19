@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewController*/MPUserObserver, MPConfigObserver {
+class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewController*/MPUserObserver {
 
     // MARK: --- Life ---
 
@@ -27,18 +27,11 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         super.init( model: model, focus: focus )
 
         self.model.observers.register( observer: self ).userDidChange( self.model )
-        appConfig.observers.register( observer: self )
     }
 
     // MARK: --- MPUserObserver ---
 
     func userDidChange(_ user: MPUser) {
-        self.setNeedsUpdate()
-    }
-
-    // MARK: --- MPConfigObserver ---
-
-    func didChangeConfig() {
         self.setNeedsUpdate()
     }
 
@@ -108,6 +101,11 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                                 do { user.loginState = try $0.get() }
                                 catch { mperror( title: "Couldn't update user name", error: error ) }
                             }
+                        },
+                        caption: { _ in
+                            """
+                            The login name used for services that do not have a service‑specific login name. 
+                            """
                         } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
@@ -139,7 +137,12 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
                         value: { $0.defaultType },
-                        update: { $0.defaultType = $1 } )
+                        update: { $0.defaultType = $1 },
+                        caption: { _ in
+                            """
+                            The password type used when adding new services.
+                            """
+                        } )
         }
 
         override func didLoad(collectionView: UICollectionView) {
@@ -236,6 +239,11 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                             Expose services in password auto-fill
                             from other apps.
                             """
+                        } )
+                        .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) } ) {
+                            if let user = $0.model {
+                                $0.viewController?.show( MPAutoFillSetupViewController( model: user ), sender: $0.view )
+                            }
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),

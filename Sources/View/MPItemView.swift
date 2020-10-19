@@ -236,11 +236,17 @@ class Behaviour<M> {
 
 class TapBehaviour<M>: Behaviour<M> {
     var tapRecognizers = [ UIGestureRecognizer: Item<M> ]()
+    var isEnabled = true {
+        didSet {
+            self.tapRecognizers.keys.forEach { $0.isEnabled = self.isEnabled }
+        }
+    }
 
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
         let tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didReceiveGesture ) )
+        tapRecognizer.name = _describe( type( of: self ) )
         self.tapRecognizers[tapRecognizer] = item
         item.view.addGestureRecognizer( tapRecognizer )
     }
@@ -256,16 +262,24 @@ class TapBehaviour<M>: Behaviour<M> {
 }
 
 class BlockTapBehaviour<M>: TapBehaviour<M> {
-    let block: (Item<M>) -> ()
+    let enabled: (Item<M>) -> Bool
+    let tapped:  (Item<M>) -> ()
 
-    init(_ block: @escaping (Item<M>) -> ()) {
-        self.block = block
+    init(enabled: @escaping (Item<M>) -> Bool = { _ in true }, _ tapped: @escaping (Item<M>) -> ()) {
+        self.enabled = enabled
+        self.tapped = tapped
 
         super.init()
     }
 
+    override func didUpdate(item: Item<M>) {
+        super.didUpdate( item: item )
+
+        self.isEnabled = self.enabled( item )
+    }
+
     override func doTapped(item: Item<M>) {
-        self.block( item )
+        self.tapped( item )
     }
 }
 
