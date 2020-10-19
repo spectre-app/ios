@@ -81,8 +81,8 @@ class MPUsersViewController: BasicUsersViewController {
         } )
 
         self.userToolbar.items = [
-            UIBarButtonItem( barButtonSystemItem: .trash, target: self, action: #selector( didTrashUser ) ),
-            UIBarButtonItem( barButtonSystemItem: .rewind, target: self, action: #selector( didResetUser ) )
+            UIBarButtonItem( title: "🗑 Delete", style: .plain, target: self, action: #selector( didTrashUser ) ),
+            UIBarButtonItem( title: "🔑 Reset", style: .plain, target: self, action: #selector( didResetUser ) )
         ]
 
         // - Hierarchy
@@ -100,9 +100,9 @@ class MPUsersViewController: BasicUsersViewController {
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
             active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
-            active.set( 1, keyPath: \.alpha )
+            active.set( .on, keyPath: \.alpha )
             inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
-            inactive.set( 0, keyPath: \.alpha )
+            inactive.set( .off, keyPath: \.alpha )
         }
     }
 

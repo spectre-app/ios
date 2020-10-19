@@ -328,8 +328,8 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
                     .activate()
 
             self.authenticationConfiguration = LayoutConfiguration( view: self.passwordField ) { active, inactive in
-                active.set( 1, keyPath: \.alpha )
-                inactive.set( 0, keyPath: \.alpha )
+                active.set( .on, keyPath: \.alpha )
+                inactive.set( .off, keyPath: \.alpha )
             }
                     .apply( LayoutConfiguration( view: self.passwordField ) { active, inactive in
                         active.set( true, keyPath: \.isEnabled )
@@ -339,18 +339,18 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
                     .apply( LayoutConfiguration( view: self.idBadgeView ) { active, inactive in
                         active.constrainTo { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
                         active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        active.set( 1, keyPath: \.alpha )
+                        active.set( .on, keyPath: \.alpha )
                         inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
                         inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        inactive.set( 0, keyPath: \.alpha )
+                        inactive.set( .off, keyPath: \.alpha )
                     } )
                     .apply( LayoutConfiguration( view: self.authBadgeView ) { active, inactive in
                         active.constrainTo { $1.leadingAnchor.constraint( equalTo: self.avatarButton.trailingAnchor ) }
                         active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        active.set( 1, keyPath: \.alpha )
+                        active.set( .on, keyPath: \.alpha )
                         inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
                         inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        inactive.set( 0, keyPath: \.alpha )
+                        inactive.set( .off, keyPath: \.alpha )
                     } )
                     .needs( .layout( view: WeakBox( self ) ) )
         }
