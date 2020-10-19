@@ -107,7 +107,7 @@ class MPButton: MPEffectView {
         DispatchQueue.main.perform {
             if self.title?.count ?? 0 == 1 || self.attributedTitle?.length ?? 0 == 1 ||
                        (self.attributedTitle?.length ?? 0 == 3 && self.attributedTitle == NSAttributedString.icon( self.attributedTitle?.string.first?.description ?? "" )) {
-                self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+                self.button.contentEdgeInsets = .border( 12 )
                 self.squareButtonConstraint.isActive = true
             }
             else {

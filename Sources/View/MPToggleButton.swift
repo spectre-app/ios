@@ -75,7 +75,7 @@ class MPToggleButton: UIView {
 
         self.titleView.isRound = true
 
-        self.button.contentEdgeInsets = UIEdgeInsets( top: 12, left: 12, bottom: 12, right: 12 )
+        self.button.contentEdgeInsets = .border( 12 )
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.isSelected = !self.isSelected
             self.track()

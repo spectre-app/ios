@@ -601,7 +601,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             self.backgroundColor = .clear
             self.selectedBackgroundView = UIView()
             self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
-            self.contentView.layoutMargins = UIEdgeInsets( top: 80, left: 80, bottom: 80, right: 80 )
+            self.contentView.layoutMargins = .border( 80 )
 
             self.propLabel.text = "💁"
             self.propLabel.textAlignment = .center

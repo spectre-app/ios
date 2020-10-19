@@ -38,7 +38,7 @@ class MPDateView: MPEffectView {
         self.monthFormatter.setLocalizedDateFormatFromTemplate( "MMM" )
         self.dayFormatter.setLocalizedDateFormatFromTemplate( "dd" )
 
-        self.layoutMargins = UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 )
+        self.layoutMargins = .border( 4 )
 
         self.separatorView => \.backgroundColor => Theme.current.color.secondary
 

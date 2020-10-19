@@ -198,7 +198,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
-            view.valueField.leftView = MPMarginView( for: self.userView, margins: UIEdgeInsets( top: 4, left: 4, bottom: 4, right: 4 ) )
+            view.valueField.leftView = MPMarginView( for: self.userView, margins: .border( 4 ) )
 
             self.userView.isRound = true
             self.userView.action( for: .primaryActionTriggered ) { [unowned self] in
@@ -263,7 +263,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                             Security questions are an invasive loophole for bypassing your password.
                             Use these cryptographically private answers instead.
                             """
-                        })
+                        } )
             self.deletable = true
 
             self.addBehaviour( PremiumTapBehaviour() )

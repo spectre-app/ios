@@ -56,9 +56,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { [unowned self] _, _ in
             // Inset top to push content to the bottom of the host.
-            self.scrollView.contentInset = UIEdgeInsets(
-                    top: max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height ),
-                    left: 0, bottom: 0, right: 0 )
+            self.scrollView.contentInset.top = max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height )
 
             // Inset bottom to ensure content is large enough to enable scrolling.
             self.scrollView.contentInset.bottom = max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height

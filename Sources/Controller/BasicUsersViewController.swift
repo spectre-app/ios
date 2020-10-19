@@ -61,7 +61,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
         super.viewDidLoad()
 
         // - View
-        self.view.layoutMargins = UIEdgeInsets( top: 8, left: 8, bottom: 8, right: 8 )
+        self.view.layoutMargins = .border( 8 )
 
         self.usersSpinner.register( UserCell.self )
         self.usersSpinner.delegate = self
@@ -230,7 +230,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
 
             // - View
             self.isOpaque = false
-            self.contentView.layoutMargins = UIEdgeInsets( top: 20, left: 20, bottom: 20, right: 20 )
+            self.contentView.layoutMargins = .border( 20 )
 
             self.nameLabel => \.font => Theme.current.font.callout
             self.nameLabel.adjustsFontSizeToFitWidth = true
@@ -238,7 +238,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
             self.nameLabel => \.textColor => Theme.current.color.body
             self.nameLabel.numberOfLines = 0
             self.nameLabel.preferredMaxLayoutWidth = .infinity
-            self.nameLabel.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
+            self.nameLabel.alignmentRectOutsets = .horizontal()
 
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
             self.avatarButton.action( for: .primaryActionTriggered ) { [unowned self] in
@@ -279,7 +279,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
             self.nameField.alpha = .off
             self.nameField.borderStyle = .none
             self.nameField.adjustsFontSizeToFitWidth = true
-            self.nameField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
+            self.nameField.alignmentRectOutsets = .horizontal()
             self.nameField.attributedPlaceholder = NSAttributedString( string: "Your Full Name" )
             self.nameField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
             self.nameField => \.font => Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
@@ -289,9 +289,9 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
                 self.attemptBiometrics()
             }
 
-            self.idBadgeView.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 0 )
-            self.authBadgeView.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 0, bottom: 0, right: 8 )
-            self.passwordField.alignmentRectOutsets = UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 )
+            self.idBadgeView.alignmentRectOutsets = .border()
+            self.authBadgeView.alignmentRectOutsets = .border()
+            self.passwordField.alignmentRectOutsets = .horizontal()
 
             // - Hierarchy
             self.contentView.addSubview( self.idBadgeView )

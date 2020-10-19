@@ -124,6 +124,22 @@ extension CGSize {
 }
 
 extension UIEdgeInsets {
+    public static func border(_ inset: CGFloat = 8) -> UIEdgeInsets {
+        UIEdgeInsets( top: inset, left: inset, bottom: inset, right: inset )
+    }
+
+    public static func border(horizontal: CGFloat, vertical: CGFloat) -> UIEdgeInsets {
+        UIEdgeInsets( top: vertical, left: horizontal, bottom: vertical, right: horizontal )
+    }
+
+    public static func horizontal(_ inset: CGFloat = 8) -> UIEdgeInsets {
+        UIEdgeInsets( top: 0, left: inset, bottom: 0, right: inset )
+    }
+
+    public static func vertical(_ inset: CGFloat = 8) -> UIEdgeInsets {
+        UIEdgeInsets( top: inset, left: 0, bottom: inset, right: 0 )
+    }
+
     prefix public static func -(a: UIEdgeInsets) -> UIEdgeInsets {
         UIEdgeInsets( top: -a.top, left: -a.left, bottom: -a.bottom, right: -a.right )
     }

@@ -125,14 +125,12 @@ class Item<M>: AnyItem {
 
             // - Hierarchy
             self.addSubview( self.contentView )
-            self.contentView.addArrangedSubview(
-                    MPMarginView( for: self.titleLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
+            self.contentView.addArrangedSubview( MPMarginView( for: self.titleLabel, margins: .horizontal() ) )
             if let valueView = self.valueView {
                 self.contentView.addArrangedSubview( valueView )
             }
             self.contentView.addArrangedSubview( self.subitemsView )
-            self.contentView.addArrangedSubview(
-                    MPMarginView( for: self.captionLabel, margins: UIEdgeInsets( top: 0, left: 8, bottom: 0, right: 8 ) ) )
+            self.contentView.addArrangedSubview( MPMarginView( for: self.captionLabel, margins: .horizontal() ) )
 
             // - Layout
             LayoutConfiguration( view: self.contentView )

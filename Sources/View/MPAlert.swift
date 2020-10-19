@@ -146,7 +146,7 @@ class MPAlert {
         self.expandChevron.attributedText = NSAttributedString.icon( "" )
         self.expandChevron => \.textColor => Theme.current.color.body
         self.expandChevron.textAlignment = .center
-        self.expandChevron.alignmentRectOutsets = UIEdgeInsets( top: -4, left: 0, bottom: 0, right: 0 )
+        self.expandChevron.alignmentRectOutsets.top = -4
 
         self.detailLabel.text = self.details
         self.detailLabel => \.textColor => Theme.current.color.body
