@@ -6,29 +6,14 @@
 import UIKit
 
 class MPServicePreviewController: UIViewController, MPServiceObserver {
-    public var service: MPService? {
-        willSet {
-            self.service?.observers.unregister( observer: self )
-        }
-        didSet {
-            if let service = self.service {
-                service.observers.register( observer: self ).serviceDidChange( service )
-            }
-
-            self.setNeedsStatusBarAppearanceUpdate()
-        }
-    }
-
     private let serviceButton = UIButton( type: .custom )
 
     // MARK: --- Life ---
 
-    init(service: MPService? = nil) {
+    init(service: MPService) {
         super.init( nibName: nil, bundle: nil )
 
-        defer {
-            self.service = service
-        }
+        service.observers.register( observer: self ).serviceDidChange( service )
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -39,20 +24,8 @@ class MPServicePreviewController: UIViewController, MPServiceObserver {
         super.viewDidLoad()
 
         // - View
-        self.view.layoutMargins = UIEdgeInsets( top: 12, left: 12, bottom: 20, right: 12 )
-        self.view.layer.shadowRadius = 40
-        self.view.layer.shadowOpacity = .on
-        self.view.layer => \.shadowColor => Theme.current.color.shadow
-        self.view.layer.shadowOffset = .zero
-
         self.serviceButton.imageView?.contentMode = .scaleAspectFill
-        self.serviceButton.imageView?.layer.cornerRadius = 4
-        self.serviceButton.imageView?.layer.masksToBounds = true
         self.serviceButton.titleLabel! => \.font => Theme.current.font.largeTitle
-        self.serviceButton.layer.shadowRadius = 20
-        self.serviceButton.layer.shadowOpacity = .on
-        self.serviceButton.layer => \.shadowColor => Theme.current.color.shadow
-        self.serviceButton.layer.shadowOffset = .zero
 
         // - Hierarchy
         self.view.addSubview( self.serviceButton )
@@ -68,34 +41,14 @@ class MPServicePreviewController: UIViewController, MPServiceObserver {
                 .activate()
     }
 
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        if #available( iOS 13, * ) {
-            return self.service?.color?.brightness ?? 0 > 0.8 ? .darkContent: .lightContent
-        }
-        else {
-            return self.service?.color?.brightness ?? 0 > 0.8 ? .default: .lightContent
-        }
-    }
-
     // MARK: --- MPServiceObserver ---
 
     func serviceDidChange(_ service: MPService) {
         DispatchQueue.main.perform {
-            UIView.performWithoutAnimation {
-                self.view.backgroundColor = self.service?.color
-                self.serviceButton.setImage( self.service?.image, for: .normal )
-                self.serviceButton.setTitle( self.service?.image == nil ? self.service?.serviceName: nil, for: .normal )
-                self.preferredContentSize = self.service?.image?.size ?? CGSize( width: 0, height: 200 )
-
-                if let brightness = self.service?.color?.brightness, brightness > 0.8 {
-                    self.serviceButton.layer.shadowColor = UIColor.darkGray.cgColor
-                }
-                else {
-                    self.serviceButton.layer.shadowColor = UIColor.lightGray.cgColor
-                }
-
-                self.view.layoutIfNeeded()
-            }
+            self.view.backgroundColor = service.color
+            self.serviceButton.setImage( service.image, for: .normal )
+            self.serviceButton.setTitle( service.image == nil ? service.serviceName: nil, for: .normal )
+            self.preferredContentSize = service.image?.size ?? CGSize( width: 0, height: 200 )
         }
     }
 }
