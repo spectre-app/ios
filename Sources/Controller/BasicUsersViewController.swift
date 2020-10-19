@@ -127,9 +127,9 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        UserCell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
-            (cell as? UserCell)?.viewController = self
-            (cell as? UserCell)?.userFile = self.fileSource.element( at: indexPath )
+        with( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            $0.viewController = self
+            $0.userFile = self.fileSource.element( at: indexPath )
         }
     }
 

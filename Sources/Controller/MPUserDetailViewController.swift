@@ -56,8 +56,8 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPUser.Avatar) -> UICollectionViewCell? {
-            MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                ($0 as? MPAvatarCell)?.avatar = value
+            with( MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.avatar = value
             }
         }
     }
@@ -81,8 +81,8 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                ($0 as! MPResultTypeCell).resultType = value
+            with( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.resultType = value
             }
         }
     }
@@ -150,8 +150,8 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) {
-                ($0 as! MPResultTypeCell).resultType = value
+            with( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.resultType = value
             }
         }
     }
@@ -177,8 +177,8 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPAttacker?) -> UICollectionViewCell? {
-            Cell.dequeue( from: collectionView, indexPath: indexPath ) {
-                ($0 as! Cell).attacker = value
+            with( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.attacker = value
             }
         }
 

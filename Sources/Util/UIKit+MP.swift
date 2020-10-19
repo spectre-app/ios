@@ -237,28 +237,14 @@ extension UICollectionView {
 }
 
 extension UICollectionReusableView {
-    static func dequeue<C: UICollectionReusableView>(from collectionView: UICollectionView, kind: String, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> Self {
-        let cell = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind, withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! C
-
-        if let initialize = initializer {
-            initialize( cell )
-        }
-
-        return cell as! Self
+    static func dequeue(from collectionView: UICollectionView, kind: String, indexPath: IndexPath) -> Self {
+        collectionView.dequeueReusableSupplementaryView( ofKind: kind, withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! Self
     }
 }
 
 extension UICollectionViewCell {
-    static func dequeue<C: UICollectionViewCell>(from collectionView: UICollectionView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> Self {
-        let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! C
-
-        if let initialize = initializer {
-            initialize( cell )
-        }
-
-        return cell as! Self
+    static func dequeue(from collectionView: UICollectionView, indexPath: IndexPath) -> Self {
+        collectionView.dequeueReusableCell( withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! Self
     }
 }
 

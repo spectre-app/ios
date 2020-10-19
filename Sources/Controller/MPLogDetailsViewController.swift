@@ -83,8 +83,8 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: Model, value: LogLevel) -> UICollectionViewCell? {
-            Cell.dequeue( from: collectionView, indexPath: indexPath ) { cell in
-                (cell as? Cell)?.level = value
+            with( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.level = value
             }
         }
 
