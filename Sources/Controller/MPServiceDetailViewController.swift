@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServiceObserver, MPConfigObserver {
+class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServiceObserver {
 
     // MARK: --- Life ---
 
@@ -27,7 +27,6 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         super.init( model: model, focus: focus )
 
         self.model.observers.register( observer: self ).serviceDidChange( self.model )
-        appConfig.observers.register( observer: self )
     }
 
     // MARK: --- MPServiceObserver ---
@@ -38,12 +37,6 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             self.image = self.model.image
         }
 
-        self.setNeedsUpdate()
-    }
-
-    // MARK: --- MPConfigObserver ---
-
-    func didChangeConfig() {
         self.setNeedsUpdate()
     }
 

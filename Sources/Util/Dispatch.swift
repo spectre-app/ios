@@ -206,12 +206,12 @@ public class Promise<V> {
         return self
     }
 
-    /** When this promise is finished, consume its result with the given block.  Return a new promise for the block's result. */
-    public func then<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> V2) -> Promise<V2> {
+    /** When this promise is finished, transform its successful result with the given block, yielding a new promise for the block's result. */
+    public func promise<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> V2) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
-            do { try promise.finish( .success( consumer( $0 ) ) ) }
+            do { try promise.finish( .success( consumer( $0.get() ) ) ) }
             catch { promise.finish( .failure( error ) ) }
             // TODO: handle Interruption.postponed?
         } )
@@ -219,12 +219,12 @@ public class Promise<V> {
         return promise
     }
 
-    /** When this promise is finished, transform its successful result with the given block, yielding a new promise for the block's result. */
-    public func promise<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> V2) -> Promise<V2> {
+    /** When this promise is finished, consume its result with the given block.  Return a new promise for the block's result. */
+    public func thenPromise<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> V2) -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
-            do { try promise.finish( .success( consumer( $0.get() ) ) ) }
+            do { try promise.finish( .success( consumer( $0 ) ) ) }
             catch { promise.finish( .failure( error ) ) }
             // TODO: handle Interruption.postponed?
         } )

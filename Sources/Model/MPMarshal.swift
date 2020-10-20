@@ -64,7 +64,7 @@ class MPMarshal: Observable, Updatable {
                 throw MPError.issue( error, title: "Cannot Create Document Path", details: documentURL )
             }
 
-            return self.export( user: user, format: format, redacted: redacted ).then { result in
+            return self.export( user: user, format: format, redacted: redacted ).thenPromise { result in
                 saveEvent.end( [ "result": result.name ] )
 
                 if !FileManager.default.createFile( atPath: documentURL.path, contents: try result.get() ) {

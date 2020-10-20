@@ -7,12 +7,14 @@ import Foundation
 
 public protocol MPOperand {
 
+    func use()
+
     func result(for name: String?, counter: MPCounterValue?, keyPurpose: MPKeyPurpose, keyContext: String?,
-                resultType: MPResultType?, resultParam: String?, algorithm: MPAlgorithmVersion?)
+                resultType: MPResultType?, resultParam: String?, algorithm: MPAlgorithmVersion?, operand: MPOperand?)
                     -> MPOperation
 
     func state(for name: String?, counter: MPCounterValue?, keyPurpose: MPKeyPurpose, keyContext: String?,
-               resultType: MPResultType?, resultParam: String, algorithm: MPAlgorithmVersion?)
+               resultType: MPResultType?, resultParam: String, algorithm: MPAlgorithmVersion?, operand: MPOperand?)
                     -> MPOperation
 }
 
@@ -22,6 +24,7 @@ public struct MPOperation {
     let purpose:     MPKeyPurpose
     let type:        MPResultType
     let algorithm:   MPAlgorithmVersion
+    let operand:     MPOperand
     let token:       Promise<String>
 
     @discardableResult
@@ -40,6 +43,7 @@ public struct MPOperation {
                         UIPasteboard.OptionsKey.localOnly: true,
                         UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
                     ] )
+            self.operand.use()
 
             MPAlert( title: "Copied \(self.purpose) (3 min)", message: self.serviceName, details:
             """

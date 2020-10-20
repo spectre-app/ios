@@ -80,20 +80,24 @@ class MPQuestion: MPOperand, Hashable, Comparable, CustomStringConvertible, Obse
     func questionDidChange(_ question: MPQuestion) {
     }
 
-    // MARK: --- mpw ---
+    // MARK: --- MPOperand ---
+
+    func use() {
+        self.service.use()
+    }
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
         self.service.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                          resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm )
+                             resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, operand: operand ?? self )
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
         self.service.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                         resultType: resultType, resultParam: resultParam, algorithm: algorithm )
+                            resultType: resultType, resultParam: resultParam, algorithm: algorithm, operand: operand ?? self )
     }
 }
 

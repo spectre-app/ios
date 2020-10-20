@@ -57,7 +57,17 @@ class AutoFillServicesViewController: BasicServicesViewController {
             service.result( keyPurpose: .identification ).token.and( service.result( keyPurpose: .authentication ).token ).then {
                 do {
                     let (login, password) = try $0.get()
-                    extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password ) )
+                    service.use()
+
+                    extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password )
+                    ) { _ in
+                        do {
+                            let _ = try service.user.save().await()
+                        }
+                        catch {
+                            mperror( title: "Couldn't save user.", error: error )
+                        }
+                    }
                 }
                 catch {
                     mperror( title: "Couldn't compute service result.", error: error )

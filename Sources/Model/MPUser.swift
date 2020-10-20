@@ -128,7 +128,7 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
         }
     }
     public var autofillDecided: Bool {
-        (self.file?.mpw_get( path: "user", "_ext_mpw", "autofill" ) as Bool?) != nil
+        self.file?.mpw_find( path: "user", "_ext_mpw", "autofill" ) != nil
     }
     public var attacker: MPAttacker? {
         didSet {
@@ -181,12 +181,15 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
     }
 
     private lazy var saveTask = DispatchTask( named: self.fullName, queue: .global( qos: .utility ), deadline: .now() + .seconds( 1 ) ) {
+        () -> URL? in
         guard self.dirty, self.file != nil
-        else { return }
+        else { return nil }
 
-        let _ = try? MPMarshal.shared.save( user: self ).then( { result in
+        return try MPMarshal.shared.save( user: self ).then( {
+            defer { self.dirty = false }
+
             do {
-                let destination = try result.get()
+                let destination = try $0.get()
                 if let origin = self.origin, origin != destination,
                    FileManager.default.fileExists( atPath: origin.path ) {
                     do { try FileManager.default.removeItem( at: origin ) }
@@ -200,8 +203,6 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
             catch {
                 mperror( title: "Couldn't save changes.", details: self, error: error )
             }
-
-            self.dirty = false
         } ).await()
     }
 
@@ -274,6 +275,10 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
         self.masterKeyFactory = nil
     }
 
+    func save() -> Promise<URL?> {
+        self.saveTask.request()
+    }
+
     // MARK: Hashable
 
     func hash(into hasher: inout Hasher) {
@@ -333,12 +338,6 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
     func serviceDidChange(_ service: MPService) {
     }
 
-    // MARK: --- Interface ---
-
-    public func use() {
-        self.lastUsed = Date()
-    }
-
     // MARK: --- CredentialSupplier ---
 
     var credentialHost: String {
@@ -348,64 +347,68 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
         self.autofill ? self.services.map { AutoFill.Credential( supplier: self, name: $0.serviceName ) }: nil
     }
 
-    // MARK: --- mpw ---
+    // MARK: --- MPOperand ---
+
+    public func use() {
+        self.lastUsed = Date()
+    }
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? self.defaultType, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm )
+                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
                 return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                                        algorithm: algorithm ?? self.algorithm )
+                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
                 return self.mpw_result( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm )
+                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
                 return MPOperation( serviceName: name ?? self.fullName, counter: counter ?? .initial, purpose: keyPurpose,
-                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
                                     Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
                                        resultType: resultType ?? self.defaultType, resultParam: resultParam,
-                                       algorithm: algorithm ?? self.algorithm )
+                                       algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
                 return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
                                        resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
-                                       algorithm: algorithm ?? self.algorithm )
+                                       algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
                 return self.mpw_state( for: name ?? self.fullName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
                                        resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                       algorithm: algorithm ?? self.algorithm )
+                                       algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
                 return MPOperation( serviceName: name ?? self.fullName, counter: counter ?? .initial, purpose: keyPurpose,
-                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
+                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
                                     Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     private func mpw_result(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
-                            resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
+                            resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion, operand: MPOperand)
                     -> MPOperation {
-        MPOperation( serviceName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, token:
+        MPOperation( serviceName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }
@@ -419,10 +422,10 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
         } )
     }
 
-    public func mpw_state(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
-                          resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion)
+    private func mpw_state(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
+                           resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion, operand: MPOperand)
                     -> MPOperation {
-        MPOperation( serviceName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, token:
+        MPOperation( serviceName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
         DispatchQueue.mpw.promise {
             guard let masterKey = self.masterKeyFactory?.newKey( for: algorithm )
             else { throw MPError.internal( cause: "Cannot calculate result since master key is missing.", details: self ) }

@@ -233,57 +233,57 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
     func questionDidChange(_ question: MPQuestion) {
     }
 
-    // MARK: --- mpw ---
+    // MARK: --- MPOperand ---
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil)
+                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.user.result( for: name ?? self.serviceName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
-                                         algorithm: algorithm ?? self.algorithm )
+                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
                 return self.user.result( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                                         algorithm: algorithm ?? self.algorithm )
+                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
                 return self.user.result( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                         algorithm: algorithm ?? self.algorithm )
+                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
                 return MPOperation( serviceName: name ?? self.serviceName, counter: counter ?? .initial, purpose: keyPurpose,
-                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
-                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                    Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil)
+                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
         switch keyPurpose {
             case .authentication:
                 return self.user.state( for: name ?? self.serviceName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? self.resultType, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm )
+                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
                 return self.user.state( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? self.loginType, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm )
+                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
                 return self.user.state( for: name ?? self.serviceName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm )
+                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
                 return MPOperation( serviceName: name ?? self.serviceName, counter: counter ?? .initial, purpose: keyPurpose,
-                                        type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, token:
-                                        Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                    Promise( .failure( MPError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 }
