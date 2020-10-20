@@ -10,14 +10,12 @@ class MPItemsViewController<M>: MPViewController {
     public let model: M
     public var color: UIColor? {
         didSet {
-            self.backgroundView => \.backgroundColor => Theme.current.color.panel
-                    .transform { [unowned self] in $0?.with( hue: self.color?.hue ) }
+            self.setNeedsUpdate()
         }
     }
     public var image: UIImage? {
         didSet {
-            self.backgroundView.image = self.image
-            self.backgroundView.layoutMargins.top = self.image == nil ? 40: 108
+            self.setNeedsUpdate()
         }
     }
 
@@ -49,7 +47,6 @@ class MPItemsViewController<M>: MPViewController {
         super.viewDidLoad()
 
         // - View
-        self.backgroundView.mode = .panel
         self.backgroundView.layoutMargins.bottom = 40
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowRadius = 8
@@ -103,6 +100,15 @@ class MPItemsViewController<M>: MPViewController {
 
     override func update() {
         super.update()
+
+        if let color = self.color {
+            self.backgroundView.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: color.hue ) )
+        }
+        else {
+            self.backgroundView.mode = .panel
+        }
+        self.backgroundView.image = self.image
+        self.backgroundView.layoutMargins.top = self.image == nil ? 40: 108
 
         self.items.forEach { $0.update() }
     }

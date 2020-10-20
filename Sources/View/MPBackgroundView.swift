@@ -30,8 +30,8 @@ class MPBackgroundView: UIView, ThemeObserver {
                 case .tint:
                     self.tintColorDidChange()
 
-                case .custom:
-                    ()
+                case .custom(let color):
+                    self.backgroundColor = color
             }
         }
     }
@@ -44,23 +44,30 @@ class MPBackgroundView: UIView, ThemeObserver {
         }
     }
     var imageView = UIImageView()
-
-    private var imageMask      = CAGradientLayer()
-    private var gradientColor: CGGradient? {
+    override var backgroundColor: UIColor? {
+        get {
+            super.backgroundColor
+        }
+        set {
+            super.backgroundColor = newValue
+        }
+    }
+    private var  imageMask      = CAGradientLayer()
+    private var  gradientColor:   CGGradient? {
         didSet {
             if oldValue != self.gradientColor {
                 self.setNeedsDisplay()
             }
         }
     }
-    private var gradientPoint  = CGPoint() {
+    private var  gradientPoint  = CGPoint() {
         didSet {
             if oldValue != self.gradientPoint {
                 self.setNeedsDisplay()
             }
         }
     }
-    private var gradientRadius = CGFloat( 0 ) {
+    private var  gradientRadius = CGFloat( 0 ) {
         didSet {
             if oldValue != self.gradientRadius {
                 self.setNeedsDisplay()
@@ -153,6 +160,6 @@ class MPBackgroundView: UIView, ThemeObserver {
     // MARK: --- Types ---
 
     enum Mode {
-        case clear, gradient, backdrop, panel, tint, custom
+        case clear, gradient, backdrop, panel, tint, custom(color: UIColor?)
     }
 }

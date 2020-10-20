@@ -353,7 +353,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                 }
             }
         }
-        private let backgroundImage = MPBackgroundView( mode: .custom )
+        private let backgroundImage = MPBackgroundView( mode: .clear )
         private let modeButton      = MPButton( identifier: "services.service #mode", image: .icon( "" ), background: false )
         private let settingsButton  = MPButton( identifier: "services.service #service_settings", image: .icon( "" ), background: false )
         private let newButton       = MPButton( identifier: "services.service #add", image: .icon( "" ), background: false )
