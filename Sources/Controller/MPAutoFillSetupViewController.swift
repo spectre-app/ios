@@ -79,7 +79,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
 
     class LoginResultItem: FieldItem<MPUser> {
         init() {
-            super.init( title: nil, placeholder: "set a user name",
+            super.init( title: nil, placeholder: "set a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { user, login in
                             MPTracker.shared.event( named: "user >login", [
@@ -89,7 +89,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
 
                             user.state( keyPurpose: .identification, resultParam: login ).token.then {
                                 do { user.loginState = try $0.get() }
-                                catch { mperror( title: "Couldn't update user name", error: error ) }
+                                catch { mperror( title: "Couldn't update login name", error: error ) }
                             }
                         } )
 

@@ -127,7 +127,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
     class LoginTypeItem: PickerItem<MPService, MPResultType> {
         init() {
-            super.init( identifier: "service >loginType", title: "User Name Type 🅿︎",
+            super.init( identifier: "service >loginType", title: "Login Name Type 🅿︎",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -163,7 +163,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         let userView = MPButton( identifier: "service.login #user" )
 
         init() {
-            super.init( title: nil, placeholder: "set a user name",
+            super.init( title: nil, placeholder: "set a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { service, login in
                             MPTracker.shared.event( named: "service >login", [

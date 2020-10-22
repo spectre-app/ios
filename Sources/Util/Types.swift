@@ -145,7 +145,7 @@ extension MPKeyPurpose: CustomStringConvertible {
             case .authentication:
                 return "password"
             case .identification:
-                return "user name"
+                return "login name"
             case .recovery:
                 return "security answer"
             @unknown default:
