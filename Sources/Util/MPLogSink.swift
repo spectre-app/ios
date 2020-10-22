@@ -6,49 +6,58 @@
 import Foundation
 import os
 
+@discardableResult
 public func pii(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ format: StaticString, _ args: Any?...) {
+                _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: appConfig.isDebug ? .debug: .trace, format, args )
 }
 
+@discardableResult
 public func trc(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ format: StaticString, _ args: Any?...) {
+                _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
 }
 
+@discardableResult
 public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ format: StaticString, _ args: Any?...) {
+                _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .debug, format, args )
 }
 
+@discardableResult
 public func inf(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ format: StaticString, _ args: Any?...) {
+                _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .info, format, args )
 }
 
+@discardableResult
 public func wrn(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ format: StaticString, _ args: Any?...) {
+                _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .warning, format, args )
 }
 
+@discardableResult
 public func err(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ format: StaticString, _ args: Any?...) {
+                _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .error, format, args )
 }
 
+@discardableResult
 public func ftl(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ format: StaticString, _ args: Any?...) {
+                _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .fatal, format, args )
 }
 
+@discardableResult
 public func log(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                level: LogLevel, _ format: StaticString, _ args: [Any?]) {
+                level: LogLevel, _ format: StaticString, _ args: [Any?]) -> Bool {
 
     if mpw_verbosity < level {
-        return
+        return false
     }
 
-    let message = String( format: format.description, arguments: args.map { arg in
+    // Translate parameters for C API compatibility.
+    return withVaList( args.map { arg in
         if let error = arg as? LocalizedError {
             return [ error.failureReason, error.errorDescription ].compactMap { $0 }.joined( separator: ": " )
         }
@@ -57,9 +66,26 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
         else { return Int( bitPattern: nil ) }
 
         return arg as? CVarArg ?? String( reflecting: arg )
-    } )
+    } ) { args in
+        file.withCString { file in
+            function.withCString { function in
+                format.description.withCString { format in
+                    var event = MPLogEvent( occurrence: time( nil ), level: level, file: file, line: line, function: function, formatter: {
+                        // Define how our arguments should be interpolated into the format.
+                        if $0?.pointee.formatted == nil, let args = $0?.pointee.args {
+                            $0?.pointee.formatted = mpw_strdup( CFStringCreateWithFormatAndArguments(
+                                    nil, nil, String.valid( $0?.pointee.format ) as CFString?, args ) as String )
+                        }
 
-    mpw_log_ssink( level, file, line, function, message )
+                        return $0?.pointee.formatted ?? $0?.pointee.format
+                    }, formatted: nil, format: format, args: args )
+
+                    // Sink the log event.
+                    return mpw_log_esink( &event )
+                }
+            }
+        }
+    }
 }
 
 extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
@@ -115,8 +141,8 @@ public class MPLogSink: MPConfigObserver {
             else { return }
 
             mpw_verbosity = .debug
-            mpw_log_sink_register( { event in
-                guard let event = event?.pointee
+            mpw_log_sink_register( { eventPointer in
+                guard let event = eventPointer?.pointee
                 else { return false }
 
                 let file  = String.valid( event.file ) ?? "mpw"
@@ -136,14 +162,15 @@ public class MPLogSink: MPConfigObserver {
                     @unknown default: ()
                 }
 
-                os_log( level, dso: #dsohandle, log: log, "%@", String.valid( event.message ) ?? "-" )
+                os_log( level, dso: #dsohandle, log: log, "%@ | %@", event.level.description,
+                        String.valid( event.formatter( eventPointer ) ) ?? "-" )
                 return true
             } )
-            mpw_log_sink_register( { event in
-                guard let event = event
+            mpw_log_sink_register( {
+                guard let event = $0?.pointee
                 else { return false }
 
-                return MPLogSink.shared.record( event.pointee )
+                return MPLogSink.shared.record( event )
             } )
 
             appConfig.observers.register( observer: self ).didChangeConfig()
@@ -152,15 +179,22 @@ public class MPLogSink: MPConfigObserver {
         }
     }
 
-    public func enumerate(level: LogLevel) -> [MPLogRecord] {
+    func enumerate(level: LogLevel) -> [MPLogRecord] {
         self.queue.sync { self.records.filter( { $0.level <= level } ).sorted() }
     }
 
     fileprivate func record(_ event: MPLogEvent) -> Bool {
-        guard let record = MPLogRecord( event )
+        guard let file = String.valid( event.file ),
+              let function = String.valid( event.function ),
+              let message = String.valid( event.formatted )
         else { return false }
 
-        self.queue.sync { self.records.append( record ) }
+        self.queue.sync {
+            self.records.append(
+                    MPLogRecord( occurrence: Date( timeIntervalSince1970: TimeInterval( event.occurrence ) ),
+                                 level: event.level, file: file, line: event.line, function: function, message: message )
+            )
+        }
         return true
     }
 
@@ -171,7 +205,7 @@ public class MPLogSink: MPConfigObserver {
     }
 }
 
-public struct MPLogRecord: Comparable {
+struct MPLogRecord: Comparable {
     public let occurrence: Date
     public let level:      LogLevel
     public let file:       String
@@ -183,20 +217,6 @@ public struct MPLogRecord: Comparable {
     }
     public var source:     String {
         "\(self.fileName):\(self.line)"
-    }
-
-    public init?(_ event: MPLogEvent) {
-        guard let file = String.valid( event.file ),
-              let function = String.valid( event.function ),
-              let message = String.valid( event.message )
-        else { return nil }
-
-        self.occurrence = Date( timeIntervalSince1970: TimeInterval( event.occurrence ) )
-        self.level = event.level
-        self.file = file
-        self.line = event.line
-        self.function = function
-        self.message = message
     }
 
     public static func <(lhs: MPLogRecord, rhs: MPLogRecord) -> Bool {

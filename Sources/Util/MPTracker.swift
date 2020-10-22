@@ -13,17 +13,11 @@ class MPTracker: MPConfigObserver {
     private init() {
         #if APP_CONTAINER
         // Sentry
-        if let sentryDSN = sentryDSN.b64Decrypt() {
-            SentrySDK.start( options: [
-                "dsn": sentryDSN,
-                "debug": false, // appConfig.isDebug,
-                "environment": appConfig.isDebug ? "Development": appConfig.isPublic ? "Public": "Private",
-                "enabled": appConfig.diagnostics,
-                "enableAutoSessionTracking": true,
-                "attachStacktrace": true,
-            ] )
-            SentrySDK.configureScope { $0.setTags( [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ] ) }
+        SentrySDK.start {
+            $0.dsn = appConfig.diagnostics ? sentryDSN.b64Decrypt(): nil
+            $0.environment = appConfig.isDebug ? "Development": appConfig.isPublic ? "Public": "Private"
         }
+        SentrySDK.configureScope { $0.setTags( [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ] ) }
 
         // Countly
         if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
@@ -43,13 +37,12 @@ class MPTracker: MPConfigObserver {
         }
 
         // Breadcrumbs & errors
-        mpw_log_sink_register( {
-            guard let logEvent = $0?.pointee, logEvent.level <= .info,
-                  let record = MPLogRecord( logEvent )
+        mpw_log_sink_register( { logPointer in
+            guard let logEvent = logPointer?.pointee, logEvent.level <= .info
             else { return false }
 
             var sentryLevel = SentryLevel.info
-            switch record.level {
+            switch logEvent.level {
                 case .trace, .debug:
                     sentryLevel = .debug
                 case .info:
@@ -62,21 +55,25 @@ class MPTracker: MPConfigObserver {
                     sentryLevel = .fatal
                 @unknown default: ()
             }
+            let tags = [ "file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
+                         "line": "\(logEvent.line)",
+                         "function": String.valid( logEvent.function ) ?? "-" ]
 
-            if record.level <= .error {
+            if logEvent.level <= .error {
                 let event = Event( level: sentryLevel )
                 event.logger = "mpw"
-                event.message = record.message
-                event.timestamp = record.occurrence
-                event.tags = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                event.message = SentryMessage( formatted: String.valid( logEvent.formatter( logPointer ) ) ?? "-" )
+                event.message.message = .valid( logEvent.format )
+                event.timestamp = Date( timeIntervalSince1970: TimeInterval( logEvent.occurrence ) )
+                event.tags = tags
                 SentrySDK.capture( event: event )
             }
             else {
                 let breadcrumb = Breadcrumb( level: sentryLevel, category: "mpw" )
                 breadcrumb.type = "log"
-                breadcrumb.message = record.message
-                breadcrumb.timestamp = record.occurrence
-                breadcrumb.data = [ "file": record.fileName, "line": "\(record.line)", "function": record.function ]
+                breadcrumb.message = .valid( logEvent.format )
+                breadcrumb.timestamp = Date( timeIntervalSince1970: TimeInterval( logEvent.occurrence ) )
+                breadcrumb.data = tags
                 SentrySDK.addBreadcrumb( crumb: breadcrumb )
             }
 
@@ -235,11 +232,11 @@ class MPTracker: MPConfigObserver {
 
     public func didChangeConfig() {
         if appConfig.isApp && appConfig.diagnostics {
-            SentrySDK.currentHub().getClient()?.options.enabled = true
+            SentrySDK.currentHub().getClient()?.options.dsn = sentryDSN.b64Decrypt()
             Countly.sharedInstance().giveConsentForAllFeatures()
         }
         else {
-            SentrySDK.currentHub().getClient()?.options.enabled = false
+            SentrySDK.currentHub().getClient()?.options.dsn = nil
             Countly.sharedInstance().cancelConsentForAllFeatures()
         }
     }
