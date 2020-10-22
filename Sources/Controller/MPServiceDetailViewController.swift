@@ -83,7 +83,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
     class PasswordResultItem: FieldItem<MPService> {
         init() {
-            super.init( title: nil, placeholder: "set a password",
+            super.init( title: nil, placeholder: "enter a password",
                         value: { try? $0.result().token.await() },
                         update: { service, password in
                             MPTracker.shared.event( named: "service >password", [
@@ -163,7 +163,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         let userView = MPButton( identifier: "service.login #user" )
 
         init() {
-            super.init( title: nil, placeholder: "set a login name",
+            super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { service, login in
                             MPTracker.shared.event( named: "service >login", [

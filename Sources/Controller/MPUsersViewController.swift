@@ -180,7 +180,7 @@ class MPUsersViewController: BasicUsersViewController {
     override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
         super.keyboardDidChange( showing: showing, layoutGuide: layoutGuide )
 
-        self.userToolbarConfiguration.isActive = showing
+        self.userToolbarConfiguration.isActive = showing && self.selectedFile != nil
     }
 
     // MARK: --- MPMarshalObserver ---

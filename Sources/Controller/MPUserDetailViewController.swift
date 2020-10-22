@@ -89,7 +89,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class LoginResultItem: FieldItem<MPUser> {
         init() {
-            super.init( title: nil, placeholder: "set a login name",
+            super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { user, login in
                             MPTracker.shared.event( named: "user >login", [

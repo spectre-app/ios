@@ -12,25 +12,26 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
 
     override func loadItems() -> [Item<MPUser>] {
         [ ImageItem(
-                title: "AutoFill Passwords", value: { _ in .icon( "" ) },
+                title: "AutoFill Passwords", value: { _ in .icon( "", withSize: 64 ) },
                 caption: { _ in
                     """
-                    Getting started with AutoFill on your \(UIDevice.current.name).
+                    Getting started with AutoFill on your \(UIDevice.current.model).
                     """
                 } ),
             SeparatorItem(),
             Item(
-                    title: "Standard Login",
+                    title: "Step 1\nSet a standard login name",
                     caption: { _ in
                         """
-                        To fill a password, \(productName) needs to know the login name for your services.\n
-                        The standard login name is used for any service you haven't assigned a specific login name for.\n
-                        (Usually, this is your e-mail address.)
+                        To autofill, \(productName) will need your service's login name.
+                        No need to set one for every service individually!\n
+                        Use your most usual login name as your standard login.
+                        Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
                         """
                     }
 
             ),
-            LoginTypeItem(), LoginResultItem(), SeparatorItem(),
+            LoginTypeItem(), LoginResultItem(),
         ]
     }
 
@@ -79,7 +80,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
 
     class LoginResultItem: FieldItem<MPUser> {
         init() {
-            super.init( title: nil, placeholder: "set a login name",
+            super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { user, login in
                             MPTracker.shared.event( named: "user >login", [

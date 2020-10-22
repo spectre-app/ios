@@ -236,7 +236,10 @@ class TapBehaviour<M>: Behaviour<M> {
     var tapRecognizers = [ UIGestureRecognizer: Item<M> ]()
     var isEnabled = true {
         didSet {
-            self.tapRecognizers.keys.forEach { $0.isEnabled = self.isEnabled }
+            self.tapRecognizers.forEach {
+                $0.key.isEnabled = self.isEnabled
+                $0.value.view.contentView.isUserInteractionEnabled = !self.isEnabled
+            }
         }
     }
 
@@ -245,8 +248,10 @@ class TapBehaviour<M>: Behaviour<M> {
 
         let tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didReceiveGesture ) )
         tapRecognizer.name = _describe( type( of: self ) )
+        tapRecognizer.isEnabled = self.isEnabled
         self.tapRecognizers[tapRecognizer] = item
         item.view.addGestureRecognizer( tapRecognizer )
+        item.view.contentView.isUserInteractionEnabled = !self.isEnabled
     }
 
     @objc func didReceiveGesture(_ recognizer: UIGestureRecognizer) {
