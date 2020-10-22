@@ -31,6 +31,20 @@ class MPServicesViewController: BasicServicesViewController {
             }
         }
         self.searchField.rightView = self.userButton
+        self.servicesTableView.serviceActions = [
+            .init( identifier: "services.service #service_settings", title: "Details", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
+                self.detailsHost.show( MPServiceDetailsViewController( model: service ), sender: self )
+            },
+            .init( identifier: "services.service #service_copy", title: "Copy", icon: "", appearance: [ .cell ] ) { service, mode, appearance in
+                service.result( keyPurpose: mode! ).copy( fromView: self.view, identifier: "service>cell" )
+            },
+            .init( identifier: "services.service #service_copy_login", title: "Copy Login", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
+                service.result( keyPurpose: .identification ).copy( fromView: self.view, identifier: "service>cell>menu" )
+            },
+            .init( identifier: "services.service #service_copy_password", title: "Copy Password", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
+                service.result( keyPurpose: .authentication ).copy( fromView: self.view, identifier: "service>cell>menu" )
+            },
+        ]
 
         // - Hierarchy
         self.addChild( self.detailsHost )
@@ -52,37 +66,6 @@ class MPServicesViewController: BasicServicesViewController {
 
         // Add space consumed by header and top container to details safe area.
         self.detailsHost.additionalSafeAreaInsets.top = self.topContainer.frame.maxY - self.view.safeAreaInsets.top
-    }
-
-    // MARK: --- MPServicesViewObserver ---
-
-    override func serviceWasActivated(service: MPService, withPurpose purpose: MPKeyPurpose) {
-        super.serviceWasActivated( service: service, withPurpose: purpose )
-
-        let event = MPTracker.shared.begin( named: "service #copy" )
-        service.result( keyPurpose: purpose ).copy( from: self.view ).then {
-            do {
-                let (operation, token) = try $0.get()
-                event.end(
-                        [ "result": $0.name,
-                          "from": "cell",
-                          "counter": "\(operation.counter)",
-                          "purpose": "\(operation.purpose)",
-                          "type": "\(operation.type)",
-                          "algorithm": "\(operation.algorithm)",
-                          "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
-                        ] )
-            }
-            catch {
-                event.end( [ "result": $0.name ] )
-            }
-        }
-    }
-
-    override func serviceDetailsAction(service: MPService) {
-        DispatchQueue.main.perform {
-            self.detailsHost.show( MPServiceDetailsViewController( model: service ), sender: self )
-        }
     }
 
     // MARK: --- UITextFieldDelegate ---

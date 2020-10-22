@@ -16,6 +16,7 @@ class AutoFillServicesViewController: BasicServicesViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // - View
         self.backgroundView.mode = .panel
         self.backgroundView.layoutMargins.bottom = 40
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
@@ -32,7 +33,6 @@ class AutoFillServicesViewController: BasicServicesViewController {
         if let serviceIdentifiers = AutoFillModel.shared.context.serviceIdentifiers {
             allServiceIdentifiers.append( contentsOf: serviceIdentifiers )
         }
-        self.servicesTableView.actionIcon = ""
         self.servicesTableView.preferredFilter = { service in
             allServiceIdentifiers.contains( where: {
                 var serviceIdentifier = $0.identifier
@@ -44,20 +44,33 @@ class AutoFillServicesViewController: BasicServicesViewController {
                 return serviceIdentifier.contains( service.serviceName ) || service.serviceName.contains( serviceIdentifier )
             } )
         }
+        self.servicesTableView.serviceActions = [
+            .init( identifier: "services.service #service_fill", title: "Fill Login", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
+                switch appearance {
+                    case .cell:
+                        self.completeRequest( service: service, identifier: "service>cell" )
+                    case .menu:
+                        self.completeRequest( service: service, identifier: "service>cell>menu" )
+                }
+            },
+        ]
     }
 
-    // MARK: --- MPServicesViewObserver ---
+    // MARK: --- Private ---
 
-    override func serviceDetailsAction(service: MPService) {
-        super.serviceDetailsAction( service: service )
-
-        MPFeedback.shared.play( .activate )
-
+    func completeRequest(service: MPService, identifier: String) {
+        let event = MPTracker.shared.begin( named: "service #copy" )
         if let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext {
             service.result( keyPurpose: .identification ).token.and( service.result( keyPurpose: .authentication ).token ).then {
                 do {
                     let (login, password) = try $0.get()
                     service.use()
+                    event.end(
+                            [ "result": $0.name,
+                              "from": identifier,
+                              "algorithm": "\(service.algorithm)",
+                              "entropy": MPAttacker.entropy( type: service.resultType ) ?? MPAttacker.entropy( string: password ) ?? 0,
+                            ] )
 
                     extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password )
                     ) { _ in
@@ -71,6 +84,7 @@ class AutoFillServicesViewController: BasicServicesViewController {
                 }
                 catch {
                     mperror( title: "Couldn't compute service result.", error: error )
+                    event.end( [ "result": $0.name, "from": identifier, "error": error.localizedDescription ] )
                 }
             }
         }

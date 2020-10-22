@@ -66,11 +66,10 @@ class MPButton: MPEffectView {
 
             self.action?( $0, self )
         }
-        self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
-        self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .horizontal )
-        self.button.setContentCompressionResistancePriority( .defaultHigh + 1, for: .vertical )
-        self.button.setContentHuggingPriority( .defaultHigh, for: .vertical )
+        self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
+        self.button.setContentCompressionResistancePriority( .defaultHigh + 2, for: .vertical )
+        self.button.setContentCompressionResistancePriority( .defaultHigh + 2, for: .horizontal )
         self.stateObserver = self.button.observe( \.isSelected, options: .initial ) { [unowned self] _, _ in
             self.isSelected = self.button.isSelected
         }

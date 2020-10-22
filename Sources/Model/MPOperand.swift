@@ -33,8 +33,10 @@ public struct MPOperation {
         Promise( .success( self ) ).and( self.token ).then( on: queue, consumer )
     }
 
-    public func copy(from view: UIView) -> Promise<(MPOperation, String)> {
-        self.token.promise { token in
+    @discardableResult public func copy(fromView view: UIView, identifier: String) -> Promise<(MPOperation, String)> {
+        let event = MPTracker.shared.begin( named: "service #copy" )
+
+        return self.token.promise { token in
             MPFeedback.shared.play( .trigger )
 
             UIPasteboard.general.setItems(
@@ -56,6 +58,22 @@ public struct MPOperation {
             """ ).show( in: view )
 
             return (self, token)
+        }.then {
+            do {
+                let (operation, token) = try $0.get()
+                event.end(
+                        [ "result": $0.name,
+                          "from": identifier,
+                          "counter": "\(operation.counter)",
+                          "purpose": "\(operation.purpose)",
+                          "type": "\(operation.type)",
+                          "algorithm": "\(operation.algorithm)",
+                          "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
+                        ] )
+            }
+            catch {
+                event.end( [ "result": $0.name, "from": identifier, "error": error.localizedDescription ] )
+            }
         }
     }
 }

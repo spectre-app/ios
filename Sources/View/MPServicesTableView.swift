@@ -6,8 +6,7 @@
 import UIKit
 import AVKit
 
-class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, Observable, MPUserObserver, Updatable {
-    public let observers = Observers<MPServicesViewObserver>()
+class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver, Updatable {
     public var user: MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
@@ -36,11 +35,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             }
         }
     }
-    public var actionIcon:      String = "" {
+    public var serviceActions = [ ServiceAction ]() {
         didSet {
-            if oldValue != self.actionIcon {
-                self.updateTask.request()
-            }
+            self.updateTask.request()
         }
     }
     public var preferredFilter: ((MPService) -> Bool)? {
@@ -81,14 +78,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    // MARK: --- Interface ---
-
-    func activate(service: MPService, purpose: MPKeyPurpose) {
-        self.selectedService = service
-
-        self.observers.notify { $0.serviceWasActivated( service: service, withPurpose: purpose ) }
     }
 
     // MARK: --- Internal ---
@@ -186,54 +175,13 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                     UIAction( title: "Delete", image: .icon( "" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
                         configuration.action = action
                         service.user.services.removeAll { $0 === service }
-                    },
-                    UIAction( title: "Details", image: .icon( self.actionIcon ), identifier: UIAction.Identifier( "settings" ) ) { action in
+                    }
+                ] + self.serviceActions.filter( { $0.appearance.contains( .menu ) } ).map { serviceAction in
+                    UIAction( title: serviceAction.title, image: .icon( serviceAction.icon ), identifier: UIAction.Identifier( serviceAction.identifier ) ) { action in
                         configuration.action = action
-                        self.observers.notify { $0.serviceDetailsAction( service: service ) }
-                    },
-                    UIAction( title: "Copy Login Name 🅿︎", image: .icon( "" ), identifier: UIAction.Identifier( "login" ), attributes: InAppFeature.premium.enabled() ? []: .disabled ) { action in
-                        configuration.action = action
-                        let event = MPTracker.shared.begin( named: "service #copy" )
-                        service.result( keyPurpose: .identification ).copy( from: self ).then {
-                            do {
-                                let (operation, token) = try $0.get()
-                                event.end(
-                                        [ "result": $0.name,
-                                          "from": "cell>menu>login",
-                                          "counter": "\(operation.counter)",
-                                          "purpose": "\(operation.purpose)",
-                                          "type": "\(operation.type)",
-                                          "algorithm": "\(operation.algorithm)",
-                                          "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
-                                        ] )
-                            }
-                            catch {
-                                event.end( [ "result": $0.name ] )
-                            }
-                        }
-                    },
-                    UIAction( title: "Copy Password", image: .icon( "" ), identifier: UIAction.Identifier( "password" ) ) { action in
-                        configuration.action = action
-                        let event = MPTracker.shared.begin( named: "service #copyPassword" )
-                        service.result( keyPurpose: .authentication ).copy( from: self ).then {
-                            do {
-                                let (operation, token) = try $0.get()
-                                event.end(
-                                        [ "result": $0.name,
-                                          "from": "cell>menu>password",
-                                          "counter": "\(operation.counter)",
-                                          "purpose": "\(operation.purpose)",
-                                          "type": "\(operation.type)",
-                                          "algorithm": "\(operation.algorithm)",
-                                          "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
-                                        ] )
-                            }
-                            catch {
-                                event.end( [ "result": $0.name ] )
-                            }
-                        }
-                    },
-                ] )
+                        serviceAction.action( service, nil, .menu )
+                    }
+                } )
             } )
         }
     }
@@ -262,13 +210,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
-    @available(iOS 13, *)
-    func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
-        if let service = self.servicesDataSource.element( at: configuration.indexPath )?.value {
-            self.activate( service: service, purpose: .authentication )
-        }
-    }
-
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if let service = self.servicesDataSource.element( at: indexPath )?.value, editingStyle == .delete {
             MPTracker.shared.event( named: "service #delete" )
@@ -294,7 +235,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         let cell = ServiceCell.dequeue( from: tableView, indexPath: indexPath )
         cell.servicesView = self
         cell.result = result
-        cell.new = cell.result == self.newServiceResult
         cell.update()
         return cell
     }
@@ -338,13 +278,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         public var service: MPService? {
             self.result?.value
         }
-        public var new = false {
-            didSet {
-                if oldValue != self.new {
-                    self.updateTask.request()
-                }
-            }
-        }
 
         private var mode            = MPKeyPurpose.authentication {
             didSet {
@@ -355,8 +288,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         }
         private let backgroundImage = MPBackgroundView( mode: .clear )
         private let modeButton      = MPButton( identifier: "services.service #mode", image: .icon( "" ), background: false )
-        private let settingsButton  = MPButton( identifier: "services.service #service_settings", image: .icon( "" ), background: false )
         private let newButton       = MPButton( identifier: "services.service #add", image: .icon( "" ), background: false )
+        private let actionsStack    = UIStackView()
         private let selectionView   = UIView()
         private let resultLabel     = UITextField()
         private let captionLabel    = UILabel()
@@ -385,9 +318,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             self.selectedBackgroundView = self.backgroundImage
 
             self.contentView.insetsLayoutMarginsFromSafeArea = false
-            self.contentView.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( cellAction ) ) )
 
             self.contentStack.axis = .vertical
+
+            self.actionsStack.axis = .vertical
+            self.actionsStack.distribution = .fillEqually
 
             self.resultLabel.adjustsFontSizeToFitWidth = true
             self.resultLabel => \.font => Theme.current.font.password.transform { $0?.withSize( 32 ) }
@@ -402,14 +337,13 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             self.captionLabel => \.shadowColor => Theme.current.color.shadow
             self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
-            self.settingsButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                if let service = self.service {
-                    self.servicesView?.observers.notify { $0.serviceDetailsAction( service: service ) }
-                }
-            }
-
             self.newButton.tapEffect = false
             self.newButton.isUserInteractionEnabled = false
+            self.newButton.action( for: .primaryActionTriggered ) { [unowned self] in
+                if let service = self.service, service.isNew {
+                    service.user.services.append( service )
+                }
+            }
 
             self.modeButton.tapEffect = false
             self.modeButton.action( for: .primaryActionTriggered ) { [unowned self] in
@@ -426,7 +360,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             // - Hierarchy
             self.contentView.addSubview( self.contentStack )
             self.contentView.addSubview( self.modeButton )
-            self.contentView.addSubview( self.settingsButton )
+            self.contentView.addSubview( self.actionsStack )
             self.contentView.addSubview( self.newButton )
 
             // - Layout
@@ -436,7 +370,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
 
-            LayoutConfiguration( view: self.settingsButton )
+            LayoutConfiguration( view: self.actionsStack )
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -452,7 +386,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeButton.trailingAnchor ) }
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.settingsButton.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.actionsStack.leadingAnchor ) }
+                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.newButton.leadingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
@@ -473,9 +408,22 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             self.selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
                 active.constrainTo {
                     $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
-                                   .with( priority: .defaultHigh + 1 )
+                                   .with( priority: .defaultHigh + 10 )
                 }
             }.needs( .update() )
+        }
+
+        override func didMoveToSuperview() {
+            super.didMoveToSuperview()
+
+            self.actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+            self.servicesView?.serviceActions.filter( { $0.appearance.contains( .cell ) } ).forEach { serviceAction in
+                self.actionsStack.addArrangedSubview( MPButton( identifier: serviceAction.identifier, image: .icon( serviceAction.icon ), background: false ) { [unowned self] _, _ in
+                    if let service = self.service {
+                        serviceAction.action( service, self.mode, .cell )
+                    }
+                } )
+            }
         }
 
         override var isSelected: Bool {
@@ -490,13 +438,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             if self.isSelected != selected {
                 super.setSelected( selected, animated: animated )
                 self.updateTask.request()
-            }
-        }
-
-        @objc
-        func cellAction() {
-            if let service = self.service {
-                self.servicesView?.activate( service: service, purpose: self.mode )
             }
         }
 
@@ -534,8 +475,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                 self.backgroundImage => \.backgroundColor => Theme.current.color.selection
                         .transform { [unowned self] in $0?.with( hue: self.service?.color?.hue ) }
 
+                let isNew = self.service?.isNew ?? false
                 if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.attributedKey ) } ) {
-                    if self.new {
+                    if isNew {
                         resultCaption.append( NSAttributedString( string: " (new service)" ) )
                     }
                     self.captionLabel.attributedText = resultCaption
@@ -559,9 +501,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
                 }
 
                 self.modeButton.alpha = InAppFeature.premium.enabled() ? .on: .off
-                self.settingsButton.image = .icon( self.servicesView?.actionIcon )
-                self.settingsButton.alpha = self.isSelected && !self.new ? .on: .off
-                self.newButton.alpha = self.isSelected && self.new ? .on: .off
+                self.actionsStack.alpha = self.isSelected && !isNew ? .on: .off
+                self.newButton.alpha = self.isSelected && isNew ? .on: .off
                 self.selectionConfiguration.isActive = self.isSelected
                 self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.service?.user.maskPasswords ?? true
 
@@ -649,9 +590,16 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
             self.player = nil
         }
     }
-}
 
-protocol MPServicesViewObserver {
-    func serviceWasActivated(service: MPService, withPurpose purpose: MPKeyPurpose)
-    func serviceDetailsAction(service: MPService)
+    struct ServiceAction {
+        let identifier: String
+        let title:      String
+        let icon:       String
+        let appearance: [Appearance]
+        let action:     (MPService, MPKeyPurpose?, Appearance) -> Void
+
+        enum Appearance {
+            case cell, menu
+        }
+    }
 }

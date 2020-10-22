@@ -325,24 +325,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                    let event = MPTracker.shared.begin( named: "service.question #copy" )
-                    self.question?.result().copy( from: self ).then {
-                        do {
-                            let (operation, token) = try $0.get()
-                            event.end(
-                                    [ "result": $0.name,
-                                      "from": "service>details",
-                                      "counter": "\(operation.counter)",
-                                      "purpose": "\(operation.purpose)",
-                                      "type": "\(operation.type)",
-                                      "algorithm": "\(operation.algorithm)",
-                                      "entropy": MPAttacker.entropy( type: operation.type ) ?? MPAttacker.entropy( string: token ) ?? 0,
-                                    ] )
-                        }
-                        catch {
-                            event.end( [ "result": $0.name ] )
-                        }
-                    }
+                    self.question?.result().copy( fromView: self, identifier: "service>details" )
                 }
 
                 // - Hierarchy

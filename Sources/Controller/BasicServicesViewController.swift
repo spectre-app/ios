@@ -5,7 +5,7 @@
 
 import UIKit
 
-class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MPServicesViewObserver, MPDetailViewController {
+class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MPDetailViewController {
     internal lazy var topContainer = MPEffectView( content: self.searchField )
     internal let searchField       = UITextField()
     internal let servicesTableView = MPServicesTableView()
@@ -44,7 +44,6 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
             self.servicesTableView.query = self.searchField.text
         }
 
-        self.servicesTableView.observers.register( observer: self )
         self.servicesTableView.keyboardDismissMode = .interactive
         self.servicesTableView.contentInsetAdjustmentBehavior = .always
 
@@ -86,17 +85,6 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
                 max( 0, self.servicesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y
                         - (self.servicesTableView.bounds.origin.y + self.servicesTableView.safeAreaInsets.top)
                         - 8 )
-    }
-
-    // MARK: --- MPServicesViewObserver ---
-
-    func serviceWasActivated(service: MPService, withPurpose purpose: MPKeyPurpose) {
-        if service.isNew {
-            service.user.services.append( service )
-        }
-    }
-
-    func serviceDetailsAction(service: MPService) {
     }
 
     // MARK: --- UITextFieldDelegate ---
