@@ -22,7 +22,7 @@ public class MPSpinnerView: UICollectionView {
         }
         set {
             if newValue != self.indexPathsForSelectedItems?.first?.item {
-                self.selectItem( newValue )
+                self.requestSelection( item: newValue )
             }
         }
     }
@@ -46,9 +46,11 @@ public class MPSpinnerView: UICollectionView {
     }
 
     @discardableResult
-    public func selectItem(_ item: Int?, animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically) -> Bool {
-        let selectPath = item.flatMap { IndexPath( item: $0, section: 0 ) }
-        let selectedPath = self.selectedItem.flatMap { IndexPath( item: $0, section: 0 ) }
+    public func requestSelection(item: Int?, inSection section: Int = 0,
+                                 animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
+                    -> Bool {
+        let selectPath = item.flatMap { IndexPath( item: $0, section: section ) }
+        let selectedPath = self.indexPathsForSelectedItems?.first
 
         if let selectPath = selectPath, selectPath == selectedPath ||
                 !(self.delegate?.collectionView?( self, shouldSelectItemAt: selectPath ) ?? true) {
@@ -76,10 +78,10 @@ public class MPSpinnerView: UICollectionView {
     @objc
     private func didTap(recognizer: UITapGestureRecognizer) {
         if self.scrolledItem == self.selectedItem {
-            self.selectItem( nil )
+            self.requestSelection( item: nil )
         }
         else {
-            self.selectItem( self.scrolledItem )
+            self.requestSelection( item: self.scrolledItem )
         }
     }
 
@@ -98,6 +100,10 @@ public class MPSpinnerView: UICollectionView {
 
         override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
             super.invalidateLayout( with: context )
+
+            DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { [weak self] in
+                self?.collectionView?.flashScrollIndicators()
+            }
 
             if context.invalidateEverything || context.invalidateDataSourceCounts {
                 self.itemAttributes.removeAll()

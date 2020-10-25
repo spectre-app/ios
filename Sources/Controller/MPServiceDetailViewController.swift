@@ -75,7 +75,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPService, value: MPResultType) -> UICollectionViewCell? {
-            with(MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath )) {
+            using(MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath )) {
                 $0.resultType = value
             }
         }
@@ -148,7 +148,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPService, value: MPResultType) -> UICollectionViewCell? {
-            with( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.resultType = value.nonEmpty
 
                 if value == .none {

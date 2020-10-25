@@ -9,7 +9,7 @@
 import UIKit
 import LocalAuthentication
 
-class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICollectionViewDataSource, MPMarshalObserver {
+class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMarshalObserver {
     internal var selectedFile: MPMarshal.UserFile? {
         didSet {
             if oldValue != self.selectedFile {
@@ -35,7 +35,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
             }
         }
     }
-    internal lazy var fileSource = DataSource<MPMarshal.UserFile>( collectionView: self.usersSpinner )
+    internal lazy var fileSource = UsersSource( viewController: self )
     private var userEvent: MPTracker.TimedEvent?
 
     private let  usersSpinner = MPSpinnerView()
@@ -65,7 +65,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
 
         self.usersSpinner.register( UserCell.self )
         self.usersSpinner.delegate = self
-        self.usersSpinner.dataSource = self
+        self.usersSpinner.dataSource = self.fileSource
         self.usersSpinner.backgroundColor = .clear
         self.usersSpinner.indicatorStyle = .white
 
@@ -101,7 +101,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        self.usersSpinner.selectItem( nil )
+        self.usersSpinner.requestSelection( item: nil )
 
         super.viewWillDisappear( animated )
     }
@@ -109,28 +109,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
     // MARK: --- Interface ---
 
     func login(user: MPUser) {
-        self.usersSpinner.selectItem( nil )
-    }
-
-    // MARK: --- UICollectionViewDataSource ---
-
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { [weak collectionView] in
-            collectionView?.flashScrollIndicators()
-        }
-
-        return self.fileSource.numberOfSections
-    }
-
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        self.fileSource.numberOfItems( in: section )
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        with( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-            $0.viewController = self
-            $0.userFile = self.fileSource.element( at: indexPath )
-        }
+        self.usersSpinner.requestSelection( item: nil )
     }
 
     // MARK: --- UICollectionViewDelegate ---
@@ -156,6 +135,22 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, UICo
     }
 
     // MARK: --- Types ---
+
+    class UsersSource: DataSource<MPMarshal.UserFile> {
+        let viewController: BasicUsersViewController
+
+        init(viewController: BasicUsersViewController) {
+            self.viewController = viewController
+            super.init( collectionView: viewController.usersSpinner )
+        }
+
+        override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            using( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.viewController = self.viewController
+                $0.userFile = self.element( at: indexPath )
+            }
+        }
+    }
 
     class UserCell: UICollectionViewCell, ThemeObserver, InAppFeatureObserver {
         public override var isSelected: Bool {

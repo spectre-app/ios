@@ -5,11 +5,11 @@
 
 import UIKit
 
-open class DataSource<E: Hashable> {
-    private let tableView:      UITableView?
-    private let collectionView: UICollectionView?
-    private var elementsConsumed  = false
-    private var elementsBySection = [ [ E? ] ]()
+open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
+    private let tableView:         UITableView?
+    private let collectionView:    UICollectionView?
+    private var elementsBySection: [[E?]]
+    private var elementsConsumed = false
 
     public var isEmpty: Bool {
         self.elementsBySection.reduce( true ) { $0 && $1.isEmpty }
@@ -18,20 +18,10 @@ open class DataSource<E: Hashable> {
     public init(tableView: UITableView? = nil, collectionView: UICollectionView? = nil, sectionsOfElements: [[E]]? = nil) {
         self.tableView = tableView
         self.collectionView = collectionView
-        self.elementsBySection = sectionsOfElements ?? self.elementsBySection
+        self.elementsBySection = sectionsOfElements ?? []
     }
 
     // MARK: --- Interface ---
-
-    public var numberOfSections: Int {
-        self.elementsConsumed = true
-        return self.elementsBySection.count
-    }
-
-    public func numberOfItems(in section: Int) -> Int {
-        self.elementsConsumed = true
-        return section < self.elementsBySection.count ? self.elementsBySection[section].count: 0
-    }
 
     open func indexPath(for item: E?) -> IndexPath? {
         self.indexPath( for: item, in: self.elementsBySection )
@@ -186,16 +176,100 @@ open class DataSource<E: Hashable> {
 
     @discardableResult
     open func remove(_ item: E, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
-        if let indexPath = self.indexPath( for: item ) {
-            self.perform( animated: animated, completion: completion ) {
-                self.elementsBySection[indexPath.section].remove( at: indexPath.item )
-                self.collectionView?.deleteItems( at: [ indexPath ] )
-                self.tableView?.deleteRows( at: [ indexPath ], with: .automatic )
-            }
-            return true
-        }
+        self.remove( at: self.indexPath( for: item ) )
+    }
 
-        return false
+    @discardableResult
+    open func remove(at indexPath: IndexPath?, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
+        guard let indexPath = indexPath,
+              indexPath.section < self.elementsBySection.count && indexPath.item < self.elementsBySection[indexPath.section].count
+        else { return false }
+
+        self.perform( animated: animated, completion: completion ) {
+            self.elementsBySection[indexPath.section].remove( at: indexPath.item )
+            self.collectionView?.deleteItems( at: [ indexPath ] )
+            self.tableView?.deleteRows( at: [ indexPath ], with: .automatic )
+        }
+        return true
+    }
+
+    @discardableResult
+    open func move(at fromIndexPath: IndexPath, to toIndexPath: IndexPath, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
+        guard fromIndexPath.section < self.elementsBySection.count && fromIndexPath.item < self.elementsBySection[fromIndexPath.section].count,
+              toIndexPath.section < self.elementsBySection.count && toIndexPath.item < self.elementsBySection[toIndexPath.section].count
+        else { return false }
+
+        self.perform( animated: animated, completion: completion ) {
+            let element = self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
+
+            var toItem = toIndexPath.item
+            if toIndexPath.section == fromIndexPath.section && toIndexPath.item >= fromIndexPath.item {
+                toItem -= 1
+            }
+
+            self.elementsBySection[toIndexPath.section].insert( element, at: toItem )
+            self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
+            self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
+        }
+        return true
+    }
+
+    // MARK: --- UICollectionViewDataSource ---
+
+    public func numberOfSections(in collectionView: UICollectionView) -> Int {
+        self.elementsConsumed = true
+        return self.elementsBySection.count
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        self.elementsConsumed = true
+        return section < self.elementsBySection.count ? self.elementsBySection[section].count: 0
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        fatalError( "collectionView(_:cellForItemAt:) has not been implemented" )
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
+        false
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        self.move( at: sourceIndexPath, to: destinationIndexPath )
+    }
+
+    // MARK: --- UITableViewDataSource ---
+
+    public func numberOfSections(in tableView: UITableView) -> Int {
+        self.elementsConsumed = true
+        return self.elementsBySection.count
+    }
+
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        self.elementsConsumed = true
+        return section < self.elementsBySection.count ? self.elementsBySection[section].count: 0
+    }
+
+    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        fatalError( "tableView(_:cellForRowAt:) has not been implemented" )
+    }
+
+    public func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        false
+    }
+
+    public func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if case .delete = editingStyle {
+            self.remove( at: indexPath )
+        }
+    }
+
+    public func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        true
+    }
+
+    public func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        self.move( at: sourceIndexPath, to: destinationIndexPath )
     }
 
     // MARK: --- Private ---

@@ -133,7 +133,7 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPConfig, value: Theme) -> UICollectionViewCell? {
-            with( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            using( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.theme = value
             }
         }

@@ -6,7 +6,7 @@
 import UIKit
 import AVKit
 
-class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSource, MPUserObserver, Updatable {
+class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updatable {
     public var user: MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
@@ -46,9 +46,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         }
     }
 
-    private lazy var servicesDataSource = DataSource<MPQuery.Result<MPService>>( tableView: self )
-    private var newServiceResult: MPQuery.Result<MPService>?
-    private lazy var updateTask = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
+    private lazy var servicesDataSource = ServicesSource( view: self )
+    private lazy var updateTask         = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
 
     // MARK: --- State ---
 
@@ -69,7 +68,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         self.register( ServiceCell.self )
         self.register( LiefsteCell.self )
         self.delegate = self
-        self.dataSource = self
+        self.dataSource = self.servicesDataSource
         self.backgroundColor = .clear
         self.isOpaque = false
         self.separatorStyle = .singleLine
@@ -90,7 +89,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
         if let user = self.user, user.masterKeyFactory != nil {
             selectedResult = self.servicesDataSource.firstElement( where: { $0?.value === self.selectedService } )
-            let selectionFollowsQuery = self.newServiceResult === selectedResult || selectedResult?.isExact ?? false
+            var newServiceResult = self.servicesDataSource.firstElement( where: { $0?.value.isNew ?? false } )
+            let selectionFollowsQuery = map( selectedResult ) { $0.value.isNew || $0.isExact } ?? false
 
             // Filter services by query.
             let results = MPQuery( self.query ).filter( user.services.sorted(), by: { $0.serviceName } )
@@ -117,26 +117,25 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
 
             // Add "new service" result if there is a query and no exact result
             if let query = self.query, !query.isEmpty, exactResult == nil {
-                self.newServiceResult?.value.serviceName = query
-
-                if self.newServiceResult == nil || LiefsteCell.is( result: self.newServiceResult ) {
-                    self.newServiceResult = MPQuery.Result<MPService>( value: MPService( user: user, serviceName: query ), keySupplier: { $0.serviceName } )
+                if let newServiceResult = newServiceResult, !LiefsteCell.is( result: newServiceResult ) {
+                    newServiceResult.value.serviceName = query
+                }
+                else {
+                    newServiceResult = MPQuery.Result<MPService>( value: MPService( user: user, serviceName: query ), keySupplier: { $0.serviceName } )
                 }
 
-                self.newServiceResult?.matches( query: query )
-                elementsBySection.append( [ self.newServiceResult ] )
+                newServiceResult?.matches( query: query )
+                elementsBySection.append( [ newServiceResult ] )
             }
             else {
-                self.newServiceResult = nil
+                newServiceResult = nil
             }
 
             // Special case for selected service: keep selection on the service result that matches the query
             if selectionFollowsQuery {
-                selectedResult = exactResult ?? self.newServiceResult
+                selectedResult = exactResult ?? newServiceResult
             }
-            if self.newServiceResult != selectedResult,
-               let selectedResult_ = selectedResult,
-               !results.contains( selectedResult_ ) {
+            if newServiceResult != selectedResult, let selectedResult_ = selectedResult, !results.contains( selectedResult_ ) {
                 selectedResult = nil
             }
         }
@@ -163,8 +162,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as? LiefsteCell)?.didEndDisplaying()
     }
-
-    // MARK: --- UITableViewDataSource ---
 
     @available(iOS 13, *)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
@@ -210,35 +207,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if let service = self.servicesDataSource.element( at: indexPath )?.value, editingStyle == .delete {
-            MPTracker.shared.event( named: "service #delete" )
-
-            service.user.services.removeAll { $0 === service }
-        }
-    }
-
-    func numberOfSections(in tableView: UITableView) -> Int {
-        self.servicesDataSource.numberOfSections
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.servicesDataSource.numberOfItems( in: section )
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let result = self.servicesDataSource.element( at: indexPath )
-        if LiefsteCell.is( result: result ) {
-            return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
-        }
-
-        let cell = ServiceCell.dequeue( from: tableView, indexPath: indexPath )
-        cell.servicesView = self
-        cell.result = result
-        cell.update()
-        return cell
-    }
-
     // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
@@ -258,6 +226,36 @@ class MPServicesTableView: UITableView, UITableViewDelegate, UITableViewDataSour
     }
 
     // MARK: --- Types ---
+
+    class ServicesSource: DataSource<MPQuery.Result<MPService>> {
+        let view: MPServicesTableView
+
+        init(view: MPServicesTableView) {
+            self.view = view
+            super.init( tableView: view )
+        }
+
+        override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+            if let service = self.element( at: indexPath )?.value, editingStyle == .delete {
+                MPTracker.shared.event( named: "service #delete" )
+
+                service.user.services.removeAll { $0 === service }
+            }
+        }
+
+        override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            let result = self.element( at: indexPath )
+            if LiefsteCell.is( result: result ) {
+                return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
+            }
+
+            let cell = ServiceCell.dequeue( from: tableView, indexPath: indexPath )
+            cell.servicesView = self.view
+            cell.result = result
+            cell.update()
+            return cell
+        }
+    }
 
     class ServiceCell: UITableViewCell, Updatable, MPServiceObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
         public weak var servicesView: MPServicesTableView?

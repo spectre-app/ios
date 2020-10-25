@@ -11,9 +11,20 @@ let productVersion    = Bundle.main.object( forInfoDictionaryKey: "CFBundleShort
 let productIdentifier = Bundle.main.bundleIdentifier ?? "app.spectre"
 let productGroup      = "group.app.spectre"
 
-func with<V>(_ value: V, _ initializer: (V) -> Void) -> V {
+func using<V>(_ value: V, _ initializer: (V) -> Void) -> V {
     initializer( value )
     return value
+}
+
+func map<V, R>(_ value: V, _ initializer: (V) -> R) -> R {
+    initializer( value )
+}
+
+func map<V, R>(_ value: V?, _ initializer: (V) -> R) -> R? {
+    guard let value = value
+    else { return nil }
+
+    return initializer( value )
 }
 
 func ratio(of value: UInt8, from: Double, to: Double) -> Double {

@@ -41,6 +41,7 @@ class Item<M>: AnyItem {
 
     private let captionProvider: (M) -> CustomStringConvertible?
     private let subitems:        [Item<M>]
+    private let subitemMode = SubItemMode.inline
     private (set) lazy var view = createItemView()
 
     var updatesPostponed: Bool {
@@ -74,6 +75,12 @@ class Item<M>: AnyItem {
         self.view.update()
         self.behaviours.forEach { $0.didUpdate( item: self ) }
         self.subitems.forEach { $0.update() }
+    }
+
+    // MARK: --- Types ---
+
+    enum SubItemMode {
+        case inline, pager
     }
 
     class ItemView<M>: UIView, Updatable {
@@ -859,10 +866,10 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         (value as? CustomStringConvertible)?.description
     }
 
-    class PickerItemView<M>: ItemView<M>, UICollectionViewDelegate, UICollectionViewDataSource {
+    class PickerItemView<M>: ItemView<M>, UICollectionViewDelegate {
         let item: PickerItem<M, V>
         let collectionView = PickerView()
-        lazy var dataSource = DataSource<V>( collectionView: self.collectionView )
+        lazy var dataSource = PickerSource( view: self )
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -875,7 +882,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
         override func createValueView() -> UIView? {
             self.collectionView.delegate = self
-            self.collectionView.dataSource = self
+            self.collectionView.dataSource = self.dataSource
             return self.collectionView
         }
 
@@ -911,21 +918,6 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
             }
         }
 
-        // MARK: --- UICollectionViewDataSource ---
-
-        func numberOfSections(in collectionView: UICollectionView) -> Int {
-            self.dataSource.numberOfSections
-        }
-
-        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            self.dataSource.numberOfItems( in: section )
-        }
-
-        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            self.item.cell( collectionView: collectionView, indexPath: indexPath,
-                            model: self.item.model!, value: self.dataSource.element( at: indexPath )! )!
-        }
-
         // MARK: --- UICollectionViewDelegate ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -935,6 +927,20 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
                 }
 
                 self.item.update( model, value )
+            }
+        }
+
+        class PickerSource: DataSource<V> {
+            let view: PickerItemView
+
+            init(view: PickerItemView) {
+                self.view = view
+                super.init( collectionView: view.collectionView )
+            }
+
+            override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+                self.view.item.cell( collectionView: collectionView, indexPath: indexPath,
+                                     model: self.view.item.model!, value: self.element( at: indexPath )! )!
             }
         }
 
@@ -1116,11 +1122,11 @@ class ListItem<M, V: Hashable>: Item<M> {
         ListItemView<M>( withItem: self )
     }
 
-    class ListItemView<M>: ItemView<M>, UITableViewDelegate, UITableViewDataSource {
+    class ListItemView<M>: ItemView<M>, UITableViewDelegate {
         let item: ListItem<M, V>
         let tableView         = TableView()
         let activityIndicator = UIActivityIndicatorView( style: .whiteLarge )
-        lazy var dataSource = DataSource<V>( tableView: self.tableView )
+        lazy var dataSource = ListSource( view: self )
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -1133,7 +1139,7 @@ class ListItem<M, V: Hashable>: Item<M> {
 
         override func createValueView() -> UIView? {
             self.tableView.delegate = self
-            self.tableView.dataSource = self
+            self.tableView.dataSource = self.dataSource
             self.tableView.tableHeaderView = self.activityIndicator
             self.activityIndicator.startAnimating()
             return self.tableView
@@ -1163,33 +1169,32 @@ class ListItem<M, V: Hashable>: Item<M> {
 
         // MARK: --- UITableViewDelegate ---
 
-        // MARK: --- UITableViewDataSource ---
+        // MARK: --- Types ---
 
-        func numberOfSections(in tableView: UITableView) -> Int {
-            self.dataSource.numberOfSections
-        }
+        class ListSource: DataSource<V> {
+            let view: ListItemView
 
-        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            self.dataSource.numberOfItems( in: section )
-        }
+            init(view: ListItemView) {
+                self.view = view
+                super.init( tableView: view.tableView )
+            }
 
-        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            self.item.cell( tableView: tableView, indexPath: indexPath,
-                            model: self.item.model!, value: self.dataSource.element( at: indexPath )! )!
-        }
+            override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+                self.view.item.cell( tableView: tableView, indexPath: indexPath,
+                                     model: self.view.item.model!, value: self.element( at: indexPath )! )!
+            }
 
-        func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            self.item.deletable
-        }
+            override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+                self.view.item.deletable
+            }
 
-        func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-            if editingStyle == .delete, self.item.deletable,
-               let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
-                self.item.delete( model: model, value: value )
+            override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+                if editingStyle == .delete, self.view.item.deletable,
+                   let model = self.view.item.model, let value = self.element( at: indexPath ) {
+                    self.view.item.delete( model: model, value: value )
+                }
             }
         }
-
-        // MARK: --- UITableViewDelegate ---
 
         class TableView: UITableView {
 

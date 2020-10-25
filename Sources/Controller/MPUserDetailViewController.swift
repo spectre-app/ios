@@ -56,7 +56,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPUser.Avatar) -> UICollectionViewCell? {
-            with( MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            using( MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.avatar = value
             }
         }
@@ -81,7 +81,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            with( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.resultType = value
             }
         }
@@ -150,7 +150,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            with( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.resultType = value
             }
         }
@@ -177,7 +177,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPAttacker?) -> UICollectionViewCell? {
-            with( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            using( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.attacker = value
             }
         }

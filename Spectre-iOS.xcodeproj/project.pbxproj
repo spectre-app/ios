@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6A2187B575B0BF2FD282AE1F /* Pods_Spectre_AutoFill_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64EE2A62D96C986FFA55567B /* Pods_Spectre_AutoFill_iOS.framework */; };
+		93D390276912B43B33158168 /* MPPagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */; };
 		93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
 		93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
 		93D390D2B19CB69F721DD7A6 /* MPTintField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* MPTintField.swift */; };
@@ -57,6 +58,7 @@
 		93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
 		93D39830BD42CE3468F6AFCB /* MPAutoFillSetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394C13D268B6594F0E358 /* MPAutoFillSetupViewController.swift */; };
 		93D3983CA421991D12ADDDBA /* MPLogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* MPLogSink.swift */; };
+		93D39854B7171FE34024CEED /* MPPagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */; };
 		93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990C92C01413465156FF /* MPAlert.swift */; };
 		93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
 		93D398FB645DCA89A4BCC5A2 /* MPMarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MPMarginView.swift */; };
@@ -479,6 +481,7 @@
 		93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillUsersViewController.swift; sourceTree = "<group>"; };
 		93D39E1D19BCA02E43657384 /* MPUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUtils.swift; sourceTree = "<group>"; };
 		93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPNavigationController.swift; sourceTree = "<group>"; };
+		93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPPagerView.swift; sourceTree = "<group>"; };
 		93D39F718C1C38C46D9D5078 /* MPService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPService.swift; sourceTree = "<group>"; };
 		93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicePreviewController.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAvatarCell.swift; sourceTree = "<group>"; };
@@ -746,6 +749,7 @@
 				93D39B3112D0D128E6369596 /* MPTintLabel.swift */,
 				93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */,
 				93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */,
+				93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1777,6 +1781,7 @@
 				93D394F428331F661FF95123 /* AutoFillServicesViewController.swift in Sources */,
 				93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */,
 				93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */,
+				93D390276912B43B33158168 /* MPPagerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1874,6 +1879,7 @@
 				93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */,
 				93D39E0E73178FE39CF12B45 /* BasicServicesViewController.swift in Sources */,
 				93D39830BD42CE3468F6AFCB /* MPAutoFillSetupViewController.swift in Sources */,
+				93D39854B7171FE34024CEED /* MPPagerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

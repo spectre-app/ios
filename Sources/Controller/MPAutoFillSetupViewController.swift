@@ -72,7 +72,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
         }
 
         override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            with( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.resultType = value
             }
         }
