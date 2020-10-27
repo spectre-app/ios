@@ -521,6 +521,19 @@ extension UITraitCollection {
 }
 
 extension UIView {
+    public static func find(superviewOf child: UIView) -> Self? {
+        var superview = child.superview
+        while superview != nil {
+            if let superview = superview as? Self {
+                return superview
+            }
+
+            superview = superview?.superview
+        }
+
+        return nil
+    }
+
     public var ownership: (owner: UIResponder, property: String)? {
         var nextResponder = self.next
         while let nextResponder_ = nextResponder {

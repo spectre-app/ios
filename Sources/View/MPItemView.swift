@@ -41,16 +41,17 @@ class Item<M>: AnyItem {
 
     private let captionProvider: (M) -> CustomStringConvertible?
     private let subitems:        [Item<M>]
-    private let subitemMode = SubItemMode.inline
+    private let subitemMode:     SubItemMode
     private (set) lazy var view = createItemView()
 
     var updatesPostponed: Bool {
         self.viewController?.updatesPostponed ?? true
     }
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
+    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), as subitemMode: SubItemMode = .inline,
          caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.subitems = subitems
+        self.subitemMode = subitemMode
         self.captionProvider = captionProvider
 
         super.init( title: title )
@@ -84,10 +85,11 @@ class Item<M>: AnyItem {
     }
 
     class ItemView: UIView, Updatable {
-        let titleLabel   = UILabel()
-        let captionLabel = UILabel()
-        let contentView  = UIStackView()
-        let subitemsView = UIStackView()
+        let titleLabel    = UILabel()
+        let captionLabel  = UILabel()
+        let contentView   = UIStackView()
+        let subitemsStack = UIStackView()
+        let subitemsPager = MPPagerView()
 
         private lazy var valueView = self.createValueView()
         private let item: Item<M>
@@ -117,12 +119,14 @@ class Item<M>: AnyItem {
             self.titleLabel => \.font => Theme.current.font.headline
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
 
-            self.subitemsView.axis = .horizontal
-            self.subitemsView.distribution = .fillEqually
-            self.subitemsView.alignment = .lastBaseline
-            self.subitemsView.spacing = 20
-            self.subitemsView.preservesSuperviewLayoutMargins = true
-            self.subitemsView.isLayoutMarginsRelativeArrangement = true
+            self.subitemsStack.axis = .horizontal
+            self.subitemsStack.distribution = .fillEqually
+            self.subitemsStack.alignment = .lastBaseline
+            self.subitemsStack.spacing = 20
+            self.subitemsStack.preservesSuperviewLayoutMargins = true
+            self.subitemsStack.isLayoutMarginsRelativeArrangement = true
+            self.subitemsStack.isHidden = true
+            self.subitemsPager.isHidden = true
 
             self.captionLabel => \.textColor => Theme.current.color.secondary
             self.captionLabel.textAlignment = .center
@@ -136,7 +140,8 @@ class Item<M>: AnyItem {
             if let valueView = self.valueView {
                 self.contentView.addArrangedSubview( valueView )
             }
-            self.contentView.addArrangedSubview( self.subitemsView )
+            self.contentView.addArrangedSubview( self.subitemsStack )
+            self.contentView.addArrangedSubview( self.subitemsPager )
             self.contentView.addArrangedSubview( MPMarginView( for: self.captionLabel, margins: .horizontal() ) )
 
             // - Layout
@@ -147,8 +152,15 @@ class Item<M>: AnyItem {
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
 
-            LayoutConfiguration( view: self.subitemsView )
+            LayoutConfiguration( view: self.subitemsStack )
                     .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultHigh ) }
+                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
+                    .activate()
+
+            LayoutConfiguration( view: self.subitemsPager )
+                    .constrainTo {
+                        $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultLow + 1 )
+                    }
                     .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                     .activate()
         }
@@ -164,6 +176,8 @@ class Item<M>: AnyItem {
                 valueView.superview?.readableContentGuide.widthAnchor.constraint( equalTo: valueView.widthAnchor )
                                                                      .with( priority: .defaultLow + 1 ).isActive = true
             }
+
+            self.subitemsPager.pages = self.item.subitems.map { $0.view }
         }
 
         // MARK: --- Updatable ---
@@ -183,19 +197,28 @@ class Item<M>: AnyItem {
             self.captionLabel.text = self.item.model.flatMap { self.item.captionProvider( $0 )?.description }
             self.captionLabel.isHidden = self.captionLabel.text == nil
 
-            for i in 0..<max( self.item.subitems.count, self.subitemsView.arrangedSubviews.count ) {
-                let subitemView     = i < self.item.subitems.count ? self.item.subitems[i].view: nil
-                let arrangedSubview = i < self.subitemsView.arrangedSubviews.count ? self.subitemsView.arrangedSubviews[i]: nil
+            switch self.item.subitemMode {
+                case .inline:
+                    for i in 0..<max( self.item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
+                        let subitemView  = i < self.item.subitems.count ? self.item.subitems[i].view: nil
+                        let arrangedView = i < self.subitemsStack.arrangedSubviews.count ? self.subitemsStack.arrangedSubviews[i]: nil
 
-                if arrangedSubview != subitemView {
-                    arrangedSubview?.removeFromSuperview()
+                        if arrangedView != subitemView {
+                            arrangedView?.removeFromSuperview()
 
-                    if let subitemView = subitemView {
-                        self.subitemsView.insertArrangedSubview( subitemView, at: i )
+                            if let subitemView = subitemView {
+                                self.subitemsStack.insertArrangedSubview( subitemView, at: i )
+                            }
+                        }
                     }
-                }
+                    self.subitemsStack.isHidden = self.subitemsStack.arrangedSubviews.count == 0
+                    self.subitemsPager.isHidden = true
+
+                case .pager:
+                    self.subitemsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+                    self.subitemsStack.isHidden = true
+                    self.subitemsPager.isHidden = false
             }
-            self.subitemsView.isHidden = self.subitemsView.arrangedSubviews.count == 0
         }
     }
 }

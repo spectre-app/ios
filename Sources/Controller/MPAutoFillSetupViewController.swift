@@ -18,19 +18,32 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
                     Getting started with AutoFill on your \(UIDevice.current.model).
                     """
                 } ),
-            SeparatorItem(),
-            Item(
-                    title: "Step 1\nSet a standard login name",
-                    caption: { _ in
-                        """
-                        To autofill, \(productName) will need your service's login name.
-                        No need to set one for every service individually!\n
-                        Use your most usual login name as your standard login.
-                        Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
-                        """
-                    }
+            SeparatorItem( subitems: [
+                Item(
+                        title: "Step 1\nSet a standard login name",
+                        caption: { _ in
+                            """
+                            To autofill, \(productName) will need your service's login name.
+                            No need to set one for every service individually!\n
+                            Use your most usual login name as your standard login.
+                            Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
+                            """
+                        }
 
-            ),
+                ),
+                Item(
+                        title: "Step 2\nSet a standard login name",
+                        caption: { _ in
+                            """
+                            To autofill, \(productName) will need your service's login name.
+                            No need to set one for every service individually!\n
+                            Use your most usual login name as your standard login.
+                            Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
+                            """
+                        }
+
+                ),
+            ], as: .pager ),
             LoginTypeItem(), LoginResultItem(),
         ]
     }
