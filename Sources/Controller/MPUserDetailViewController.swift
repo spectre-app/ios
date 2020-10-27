@@ -111,7 +111,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
         }
 
-        override func createItemView() -> FieldItemView<MPUser> {
+        override func createItemView() -> FieldItemView {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
             view.valueField.autocapitalizationType = .none
@@ -123,7 +123,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         override func update() {
             super.update()
 
-            (self.view as? FieldItemView<MPUser>)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
+            (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
         }
     }
 

@@ -109,7 +109,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                         } )
         }
 
-        override func createItemView() -> FieldItemView<MPService> {
+        override func createItemView() -> FieldItemView {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
             view.valueField.autocapitalizationType = .none
@@ -121,7 +121,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         override func update() {
             super.update()
 
-            (self.view as? FieldItemView<MPService>)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
+            (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
     }
 
@@ -185,7 +185,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
         }
 
-        override func createItemView() -> FieldItemView<MPService> {
+        override func createItemView() -> FieldItemView {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
             view.valueField.autocapitalizationType = .none
@@ -214,7 +214,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             self.userView.title = self.model?.user.fullName.name( style: .abbreviated )
             self.userView.sizeToFit()
 
-            (self.view as? FieldItemView<MPService>)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
+            (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
         }
     }
 
@@ -362,7 +362,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                         update: { $0.url = $1 } )
         }
 
-        override func createItemView() -> FieldItemView<MPService> {
+        override func createItemView() -> FieldItemView {
             let itemView = super.createItemView()
             itemView.valueField.autocapitalizationType = .none
             itemView.valueField.autocorrectionType = .no

@@ -56,8 +56,8 @@ class Item<M>: AnyItem {
         super.init( title: title )
     }
 
-    func createItemView() -> ItemView<M> {
-        ItemView<M>( withItem: self )
+    func createItemView() -> ItemView {
+        ItemView( withItem: self )
     }
 
     @discardableResult
@@ -83,7 +83,7 @@ class Item<M>: AnyItem {
         case inline, pager
     }
 
-    class ItemView<M>: UIView, Updatable {
+    class ItemView: UIView, Updatable {
         let titleLabel   = UILabel()
         let captionLabel = UILabel()
         let contentView  = UIStackView()
@@ -345,11 +345,11 @@ class RequiresDebug<M>: ConditionalBehaviour<M> {
 }
 
 class SeparatorItem<M>: Item<M> {
-    override func createItemView() -> ItemView<M> {
-        SeparatorItemView<M>( withItem: self )
+    override func createItemView() -> ItemView {
+        SeparatorItemView( withItem: self )
     }
 
-    class SeparatorItemView<M>: ItemView<M> {
+    class SeparatorItemView: ItemView {
         let item: SeparatorItem
         let separatorView = UIView()
 
@@ -385,11 +385,11 @@ class ValueItem<M, V>: Item<M> {
 }
 
 class LabelItem<M>: ValueItem<M, Any> {
-    override func createItemView() -> LabelItemView<M> {
-        LabelItemView<M>( withItem: self )
+    override func createItemView() -> LabelItemView {
+        LabelItemView( withItem: self )
     }
 
-    class LabelItemView<M>: ItemView<M> {
+    class LabelItemView: ItemView {
         let item: LabelItem
         let valueLabel = UILabel()
 
@@ -434,11 +434,11 @@ class LabelItem<M>: ValueItem<M, Any> {
 }
 
 class ImageItem<M>: ValueItem<M, UIImage> {
-    override func createItemView() -> ImageItemView<M> {
-        ImageItemView<M>( withItem: self )
+    override func createItemView() -> ImageItemView {
+        ImageItemView( withItem: self )
     }
 
-    class ImageItemView<M>: ItemView<M> {
+    class ImageItemView: ItemView {
         let item: ImageItem
         let valueImage = UIImageView()
 
@@ -480,11 +480,11 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
-    override func createItemView() -> ToggleItemView<M> {
-        ToggleItemView<M>( withItem: self )
+    override func createItemView() -> ToggleItemView {
+        ToggleItemView( withItem: self )
     }
 
-    class ToggleItemView<M>: ItemView<M> {
+    class ToggleItemView: ItemView {
         let item: ToggleItem
         lazy var button = MPToggleButton( identifier: self.item.identifier )
 
@@ -532,11 +532,11 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
         super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
-    override func createItemView() -> ButtonItemView<M> {
-        ButtonItemView<M>( withItem: self )
+    override func createItemView() -> ButtonItemView {
+        ButtonItemView( withItem: self )
     }
 
-    class ButtonItemView<M>: ItemView<M> {
+    class ButtonItemView: ItemView {
         let item: ButtonItem
 
         lazy var button = MPButton( identifier: self.item.identifier ) { [unowned self] _, _ in
@@ -567,11 +567,11 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
 }
 
 class DateItem<M>: ValueItem<M, Date> {
-    override func createItemView() -> DateItemView<M> {
-        DateItemView<M>( withItem: self )
+    override func createItemView() -> DateItemView {
+        DateItemView( withItem: self )
     }
 
-    class DateItemView<M>: ItemView<M> {
+    class DateItemView: ItemView {
         let item: DateItem
         let valueView = UIView()
         let dateView  = MPDateView()
@@ -620,8 +620,8 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
-    override func createItemView() -> FieldItemView<M> {
-        FieldItemView<M>( withItem: self )
+    override func createItemView() -> FieldItemView {
+        FieldItemView( withItem: self )
     }
 
     // MARK: UITextFieldDelegate
@@ -634,7 +634,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         return true
     }
 
-    class FieldItemView<M>: ItemView<M> {
+    class FieldItemView: ItemView {
         let item: FieldItem
         let valueField = UITextField()
 
@@ -681,8 +681,8 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
         super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
-    override func createItemView() -> AreaItemView<M> {
-        AreaItemView<M>( withItem: self )
+    override func createItemView() -> AreaItemView {
+        AreaItemView( withItem: self )
     }
 
     // MARK: UITextViewDelegate
@@ -698,7 +698,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
         }
     }
 
-    class AreaItemView<M>: ItemView<M> {
+    class AreaItemView: ItemView {
         let item: AreaItem
         let valueView = UITextView()
 
@@ -767,11 +767,11 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
         super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
-    override func createItemView() -> StepperItemView<M> {
-        StepperItemView<M>( withItem: self )
+    override func createItemView() -> StepperItemView {
+        StepperItemView( withItem: self )
     }
 
-    class StepperItemView<M>: ItemView<M> {
+    class StepperItemView: ItemView {
         let item: StepperItem
         let valueView  = UIView()
         let valueLabel = UILabel()
@@ -851,8 +851,8 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         super.init( title: title, subitems: subitems, value: value, caption: caption )
     }
 
-    override func createItemView() -> PickerItemView<M> {
-        PickerItemView<M>( withItem: self )
+    override func createItemView() -> PickerItemView {
+        PickerItemView( withItem: self )
     }
 
     func didLoad(collectionView: UICollectionView) {
@@ -866,7 +866,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         (value as? CustomStringConvertible)?.description
     }
 
-    class PickerItemView<M>: ItemView<M>, UICollectionViewDelegate {
+    class PickerItemView: ItemView, UICollectionViewDelegate {
         let item: PickerItem<M, V>
         let collectionView = PickerView()
         lazy var dataSource = PickerSource( view: self )
@@ -966,6 +966,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
             init() {
                 super.init( frame: UIScreen.main.bounds, collectionViewLayout: self.layout )
+
                 self.backgroundColor = .clear
                 self.register( Separator.self, decorationKind: "Separator" )
             }
@@ -1118,11 +1119,11 @@ class ListItem<M, V: Hashable>: Item<M> {
     func delete(model: M, value: V) {
     }
 
-    override func createItemView() -> ListItemView<M> {
-        ListItemView<M>( withItem: self )
+    override func createItemView() -> ListItemView {
+        ListItemView( withItem: self )
     }
 
-    class ListItemView<M>: ItemView<M>, UITableViewDelegate {
+    class ListItemView: ItemView, UITableViewDelegate {
         let item: ListItem<M, V>
         let tableView         = TableView()
         let activityIndicator = UIActivityIndicatorView( style: .whiteLarge )
