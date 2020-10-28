@@ -1121,6 +1121,58 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
     }
 }
 
+class PagerItem<M, V: Item<M>>: ValueItem<M, [V]> {
+    override var model: M? {
+        didSet {
+            (self.view as? PagerItemView)?.pageItems.forEach { $0.model = self.model }
+        }
+    }
+
+    init(title: String? = nil, subitems: [Item<M>] = [], pages: @escaping (M) -> [V],
+         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+        super.init( title: title, subitems: subitems, value: pages, caption: caption )
+    }
+
+    override func createItemView() -> PagerItemView {
+        PagerItemView( withItem: self )
+    }
+
+    class PagerItemView: ItemView, UICollectionViewDelegate {
+        let item: PagerItem<M, V>
+        let collectionView = MPPagerView()
+        lazy var pageItems = self.item.value ?? []
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(withItem item: Item<M>) {
+            self.item = item as! PagerItem<M, V>
+            super.init( withItem: item )
+        }
+
+        override func createValueView() -> UIView? {
+            self.collectionView.delegate = self
+            return self.collectionView
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
+            self.pageItems.forEach { $0.model = self.item.model }
+            self.collectionView.pages = self.pageItems.map { $0.view }
+        }
+
+        override func update() {
+            super.update()
+
+            self.pageItems.forEach { $0.update() }
+        }
+
+        // MARK: --- UICollectionViewDelegate ---
+    }
+}
+
 class ListItem<M, V: Hashable>: Item<M> {
     let values: (M) -> [V]
     var deletable = false
