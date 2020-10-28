@@ -6,6 +6,20 @@
 import UIKit
 
 class MPMarginView: UIView {
+    override var isHidden: Bool {
+        get {
+            self.subviews.first?.isHidden ?? super.isHidden
+        }
+        set {
+            if let view = self.subviews.first {
+                view.isHidden = newValue
+            }
+            else {
+                super.isHidden = newValue
+            }
+        }
+    }
+
     init(for view: UIView, margins: UIEdgeInsets? = nil) {
         super.init( frame: .zero )
 

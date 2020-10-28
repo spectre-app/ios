@@ -33,6 +33,21 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     }
 }
 
+class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
+
+    init(mode: Effect) {
+        super.init( mode: mode, condition: { _ in InAppFeature.premium.enabled() } )
+
+        InAppFeature.observers.register( observer: self )
+    }
+
+    // MARK: --- InAppFeatureObserver ---
+
+    func featureDidChange(_ feature: InAppFeature) {
+        self.setNeedsUpdate()
+    }
+}
+
 class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     // MARK: --- Life ---

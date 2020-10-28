@@ -27,6 +27,24 @@ func map<V, R>(_ value: V?, _ initializer: (V) -> R) -> R? {
     return initializer( value )
 }
 
+func cached<F: Hashable, T>(_ block: @escaping (F) -> T) -> (F) -> T {
+    var cache = [ F: T ]()
+
+    return { f in
+        if let cached = cache[f] {
+            return cached
+        }
+
+        let missed = block( f )
+        cache[f] = missed
+        return missed
+    }
+}
+
+func always<F, T>(_ value: T) -> (F) -> T {
+    { _ in value }
+}
+
 func ratio(of value: UInt8, from: Double, to: Double) -> Double {
     from + (to - from) * (Double( value ) / Double( UInt8.max ))
 }

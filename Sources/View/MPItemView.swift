@@ -158,9 +158,7 @@ class Item<M>: AnyItem {
                     .activate()
 
             LayoutConfiguration( view: self.subitemsPager )
-                    .constrainTo {
-                        $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultLow + 1 )
-                    }
+                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultLow + 1 ) }
                     .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                     .activate()
         }
@@ -173,8 +171,8 @@ class Item<M>: AnyItem {
         /** The view was loaded and added to the view hierarchy. */
         func didLoad() {
             if let valueView = self.valueView {
-                valueView.superview?.readableContentGuide.widthAnchor.constraint( equalTo: valueView.widthAnchor )
-                                                                     .with( priority: .defaultLow + 1 ).isActive = true
+                valueView.superview?.readableContentGuide.widthAnchor
+                        .constraint( equalTo: valueView.widthAnchor ).with( priority: .defaultLow + 1 ).isActive = true
             }
 
             self.subitemsPager.pages = self.item.subitems.map { $0.view }
@@ -343,21 +341,6 @@ class ConditionalBehaviour<M>: Behaviour<M> {
         case enables
         case reveals
         case hides
-    }
-}
-
-class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
-
-    init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in InAppFeature.premium.enabled() } )
-
-        InAppFeature.observers.register( observer: self )
-    }
-
-    // MARK: --- InAppFeatureObserver ---
-
-    func featureDidChange(_ feature: InAppFeature) {
-        self.setNeedsUpdate()
     }
 }
 
