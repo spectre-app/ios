@@ -41,17 +41,18 @@ class Item<M>: AnyItem {
 
     private let captionProvider: (M) -> CustomStringConvertible?
     private let subitems:        [Item<M>]
-    private let subitemMode:     SubItemMode
+    private let subitemAxis:     NSLayoutConstraint.Axis
     private (set) lazy var view = createItemView()
 
     var updatesPostponed: Bool {
         self.viewController?.updatesPostponed ?? true
     }
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](), as subitemMode: SubItemMode = .inline,
+    init(title: String? = nil,
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.subitems = subitems
-        self.subitemMode = subitemMode
+        self.subitemAxis = subitemAxis
         self.captionProvider = captionProvider
 
         super.init( title: title )
@@ -89,7 +90,6 @@ class Item<M>: AnyItem {
         let captionLabel  = UILabel()
         let contentView   = UIStackView()
         let subitemsStack = UIStackView()
-        let subitemsPager = MPPagerView()
 
         private lazy var valueView = self.createValueView()
         private let item: Item<M>
@@ -119,14 +119,8 @@ class Item<M>: AnyItem {
             self.titleLabel => \.font => Theme.current.font.headline
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
 
-            self.subitemsStack.axis = .horizontal
-            self.subitemsStack.distribution = .fillEqually
-            self.subitemsStack.alignment = .lastBaseline
-            self.subitemsStack.spacing = 20
             self.subitemsStack.preservesSuperviewLayoutMargins = true
             self.subitemsStack.isLayoutMarginsRelativeArrangement = true
-            self.subitemsStack.isHidden = true
-            self.subitemsPager.isHidden = true
 
             self.captionLabel => \.textColor => Theme.current.color.secondary
             self.captionLabel.textAlignment = .center
@@ -141,7 +135,6 @@ class Item<M>: AnyItem {
                 self.contentView.addArrangedSubview( valueView )
             }
             self.contentView.addArrangedSubview( self.subitemsStack )
-            self.contentView.addArrangedSubview( self.subitemsPager )
             self.contentView.addArrangedSubview( MPMarginView( for: self.captionLabel, margins: .horizontal() ) )
 
             // - Layout
@@ -154,11 +147,6 @@ class Item<M>: AnyItem {
 
             LayoutConfiguration( view: self.subitemsStack )
                     .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultHigh ) }
-                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
-                    .activate()
-
-            LayoutConfiguration( view: self.subitemsPager )
-                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultLow + 1 ) }
                     .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                     .activate()
         }
@@ -175,19 +163,14 @@ class Item<M>: AnyItem {
                         .constraint( equalTo: valueView.widthAnchor ).with( priority: .defaultLow + 1 ).isActive = true
             }
 
-            self.subitemsPager.pages = self.item.subitems.map { $0.view }
+            self.item.subitems.forEach { $0.view.didLoad() }
         }
 
         // MARK: --- Updatable ---
 
         func update() {
-            let behaveHidden = self.item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: self.item ) ?? $0) }
-            let behaveEnabled = self.item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: self.item ) ?? $0) }
-
-            self.isHidden = behaveHidden
-            self.alpha = behaveEnabled ? .on: .short
-            self.contentView.isUserInteractionEnabled = behaveEnabled
-            self.tintAdjustmentMode = behaveEnabled ? .automatic: .dimmed
+            updateHidden( self.item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: self.item ) ?? $0) } )
+            updateEnabled( self.item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: self.item ) ?? $0) } )
 
             self.titleLabel.text = self.item.title
             self.titleLabel.isHidden = self.item.title == nil
@@ -195,28 +178,43 @@ class Item<M>: AnyItem {
             self.captionLabel.text = self.item.model.flatMap { self.item.captionProvider( $0 )?.description }
             self.captionLabel.isHidden = self.captionLabel.text == nil
 
-            switch self.item.subitemMode {
-                case .inline:
-                    for i in 0..<max( self.item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
-                        let subitemView  = i < self.item.subitems.count ? self.item.subitems[i].view: nil
-                        let arrangedView = i < self.subitemsStack.arrangedSubviews.count ? self.subitemsStack.arrangedSubviews[i]: nil
+            for i in 0..<max( self.item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
+                let subitemView  = i < self.item.subitems.count ? self.item.subitems[i].view: nil
+                let arrangedView = i < self.subitemsStack.arrangedSubviews.count ? self.subitemsStack.arrangedSubviews[i]: nil
 
-                        if arrangedView != subitemView {
-                            arrangedView?.removeFromSuperview()
+                if arrangedView != subitemView {
+                    arrangedView?.removeFromSuperview()
 
-                            if let subitemView = subitemView {
-                                self.subitemsStack.insertArrangedSubview( subitemView, at: i )
-                            }
-                        }
+                    if let subitemView = subitemView {
+                        self.subitemsStack.insertArrangedSubview( subitemView, at: i )
                     }
-                    self.subitemsStack.isHidden = self.subitemsStack.arrangedSubviews.count == 0
-                    self.subitemsPager.isHidden = true
-
-                case .pager:
-                    self.subitemsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-                    self.subitemsStack.isHidden = true
-                    self.subitemsPager.isHidden = false
+                }
             }
+            self.subitemsStack.isHidden = self.subitemsStack.arrangedSubviews.count == 0
+            self.subitemsStack.axis = self.item.subitemAxis
+
+            switch self.item.subitemAxis {
+                case .horizontal:
+                    self.subitemsStack.alignment = .lastBaseline
+                    self.subitemsStack.distribution = .fillEqually
+                    self.subitemsStack.spacing = 20
+
+                case .vertical: fallthrough
+                @unknown default:
+                    self.subitemsStack.alignment = .fill
+                    self.subitemsStack.distribution = .fill
+                    self.subitemsStack.spacing = 20
+            }
+        }
+
+        func updateHidden(_ hidden: Bool) {
+            self.isHidden = hidden
+        }
+
+        func updateEnabled(_ enabled: Bool) {
+            self.alpha = enabled ? .on: .short
+            self.contentView.isUserInteractionEnabled = enabled
+            self.tintAdjustmentMode = enabled ? .automatic: .dimmed
         }
     }
 }
@@ -381,12 +379,16 @@ class ValueItem<M, V>: Item<M> {
     var value: V? {
         self.model.flatMap { self.valueProvider( $0 ) }
     }
+    let update: ((M, V) -> Void)?
 
-    init(title: String? = nil, subitems: [Item<M>] = [ Item<M> ](),
+    init(title: String? = nil,
          value valueProvider: @escaping (M) -> V? = { _ in nil },
+         update: ((M, V) -> Void)? = nil,
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.valueProvider = valueProvider
-        super.init( title: title, subitems: subitems, caption: caption )
+        self.update = update
+        super.init( title: title, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 }
 
@@ -472,18 +474,20 @@ class ImageItem<M>: ValueItem<M, UIImage> {
     }
 }
 
-class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool)> {
+class ToggleItem<M>: ValueItem<M, Bool> {
     let identifier: String
-    let update:     (M, Bool) -> Void
+    let icon:       (M) -> UIImage?
 
-    init(identifier: String, title: String? = nil, subitems: [Item<M>] = [],
-         value: @escaping (M) -> (icon: UIImage?, selected: Bool, enabled: Bool),
-         update: @escaping (M, Bool) -> Void = { _, _ in },
+    init(identifier: String, title: String? = nil,
+         icon: @escaping (M) -> UIImage?,
+         value: @escaping (M) -> Bool,
+         update: ((M, Bool) -> ())? = nil,
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.identifier = identifier
-        self.update = update
+        self.icon = icon
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 
     override func createItemView() -> ToggleItemView {
@@ -506,7 +510,7 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         override func createValueView() -> UIView? {
             self.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let model = self.item.model {
-                    self.item.update( model, self.button.isSelected )
+                    self.item.update?( model, self.button.isSelected )
                     self.item.setNeedsUpdate()
                 }
             }
@@ -516,10 +520,12 @@ class ToggleItem<M>: ValueItem<M, (icon: UIImage?, selected: Bool, enabled: Bool
         override func update() {
             super.update()
 
-            let value = self.item.value
-            self.button.image = value?.icon
-            self.button.isEnabled = value?.enabled ?? false
-            self.button.isSelected = value?.selected ?? false
+            self.button.image = self.item.model.flatMap { self.item.icon( $0 ) }
+            self.button.isSelected = self.item.value ?? false
+        }
+
+        override func updateEnabled(_ enabled: Bool) {
+            self.button.isEnabled = enabled
         }
     }
 }
@@ -528,14 +534,15 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
     let identifier: String
     let action:     (ButtonItem<M>) -> Void
 
-    init(identifier: String, title: String? = nil, subitems: [Item<M>] = [],
+    init(identifier: String, title: String? = nil,
          value: @escaping (M) -> (label: String?, image: UIImage?),
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
-         action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
+         action: @escaping (ButtonItem<M>) -> () = { _ in }) {
         self.identifier = identifier
         self.action = action
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, value: value, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 
     override func createItemView() -> ButtonItemView {
@@ -615,15 +622,14 @@ class DateItem<M>: ValueItem<M, Date> {
 
 class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     let placeholder: String?
-    let update:      ((M, String) -> Void)?
 
-    init(title: String? = nil, placeholder: String?, subitems: [Item<M>] = [],
+    init(title: String? = nil, placeholder: String?,
          value: @escaping (M) -> String? = { _ in nil },
-         update: ((M, String) -> Void)? = nil,
+         update: ((M, String) -> ())? = nil,
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.placeholder = placeholder
-        self.update = update
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 
     override func createItemView() -> FieldItemView {
@@ -631,6 +637,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     }
 
     // MARK: UITextFieldDelegate
+
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         self.update != nil
     }
@@ -677,15 +684,6 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
 }
 
 class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
-    let update: ((M, V) -> Void)?
-
-    init(title: String? = nil, subitems: [Item<M>] = [],
-         value: @escaping (M) -> V? = { _ in nil },
-         update: ((M, V) -> Void)? = nil,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
-        self.update = update
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
-    }
 
     override func createItemView() -> AreaItemView {
         AreaItemView( withItem: self )
@@ -758,19 +756,18 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 }
 
 class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertible>: ValueItem<M, V> {
-    let update: (M, V) -> Void
-    let step:   V, min: V, max: V
+    let step: V, min: V, max: V
 
-    init(title: String? = nil, subitems: [Item<M>] = [],
+    init(title: String? = nil,
          value: @escaping (M) -> V? = { _ in nil },
-         update: @escaping (M, V) -> Void = { _, _ in },
+         update: ((M, V) -> ())? = nil,
          step: V, min: V, max: V,
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
-        self.update = update
         self.step = step
         self.min = min
         self.max = max
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 
     override func createItemView() -> StepperItemView {
@@ -782,15 +779,13 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
         let valueView  = UIView()
         let valueLabel = UILabel()
         lazy var downButton = MPButton( attributedTitle: .icon( "" ), background: false ) { [unowned self]  _, _ in
-            if let model = self.item.model, let value = self.item.value,
-               value > self.item.min {
-                self.item.update( model, value - self.item.step )
+            if let model = self.item.model, let value = self.item.value, value > self.item.min {
+                self.item.update?( model, value - self.item.step )
             }
         }
         lazy var upButton = MPButton( attributedTitle: .icon( "" ), background: false ) { [unowned self] _, _ in
-            if let model = self.item.model, let value = self.item.value,
-               value < self.item.max {
-                self.item.update( model, value + self.item.step )
+            if let model = self.item.model, let value = self.item.value, value < self.item.max {
+                self.item.update?( model, value + self.item.step )
             }
         }
 
@@ -842,38 +837,35 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
     }
 }
 
-class PickerItem<M, V: Hashable>: ValueItem<M, V> {
+class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     let identifier: String
     let values:     (M) -> [V?]
-    let update:     (M, V) -> Void
 
-    init(identifier: String, title: String? = nil, values: @escaping (M) -> [V?], subitems: [Item<M>] = [],
-         value: @escaping (M) -> V, update: @escaping (M, V) -> Void = { _, _ in },
+    init(identifier: String, title: String? = nil,
+         values: @escaping (M) -> [V?],
+         value: @escaping (M) -> V,
+         update: ((M, V) -> ())? = nil,
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.identifier = identifier
         self.values = values
-        self.update = update
 
-        super.init( title: title, subitems: subitems, value: value, caption: caption )
+        super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 
     override func createItemView() -> PickerItemView {
         PickerItemView( withItem: self )
     }
 
-    func didLoad(collectionView: UICollectionView) {
+    func populate(_ cell: C, indexPath: IndexPath, value: V) {
     }
 
-    func cell(collectionView: UICollectionView, indexPath: IndexPath, model: M, value: V) -> UICollectionViewCell? {
-        nil
-    }
-
-    func identifier(indexPath: IndexPath, model: M, value: V) -> String? {
+    func identifier(indexPath: IndexPath, value: V) -> String? {
         (value as? CustomStringConvertible)?.description
     }
 
     class PickerItemView: ItemView, UICollectionViewDelegate {
-        let item: PickerItem<M, V>
+        let item: PickerItem
         let collectionView = PickerView()
         lazy var dataSource = PickerSource( view: self )
 
@@ -882,7 +874,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         }
 
         override init(withItem item: Item<M>) {
-            self.item = item as! PickerItem<M, V>
+            self.item = item as! PickerItem
             super.init( withItem: item )
         }
 
@@ -895,7 +887,7 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
         override func didLoad() {
             super.didLoad()
 
-            self.item.didLoad( collectionView: self.collectionView )
+            self.collectionView.register( C.self )
         }
 
         override func update() {
@@ -928,11 +920,11 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             if let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
-                if let itemIdentifier = self.item.identifier( indexPath: indexPath, model: model, value: value ) {
+                if let itemIdentifier = self.item.identifier( indexPath: indexPath, value: value ) {
                     MPTracker.shared.event( named: self.item.identifier, [ "value": itemIdentifier ] )
                 }
 
-                self.item.update( model, value )
+                self.item.update?( model, value )
             }
         }
 
@@ -945,8 +937,9 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
             }
 
             override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-                self.view.item.cell( collectionView: collectionView, indexPath: indexPath,
-                                     model: self.view.item.model!, value: self.element( at: indexPath )! )!
+                using( C.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                    self.view.item.populate( $0, indexPath: indexPath, value: self.element( at: indexPath )! )
+                }
             }
         }
 
@@ -1104,16 +1097,11 @@ class PickerItem<M, V: Hashable>: ValueItem<M, V> {
     }
 }
 
-class PagerItem<M, V: Item<M>>: ValueItem<M, [V]> {
+class PagerItem<M>: ValueItem<M, [Item<M>]> {
     override var model: M? {
         didSet {
             (self.view as? PagerItemView)?.pageItems.forEach { $0.model = self.model }
         }
-    }
-
-    init(title: String? = nil, subitems: [Item<M>] = [], pages: @escaping (M) -> [V],
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
-        super.init( title: title, subitems: subitems, value: pages, caption: caption )
     }
 
     override func createItemView() -> PagerItemView {
@@ -1121,8 +1109,8 @@ class PagerItem<M, V: Item<M>>: ValueItem<M, [V]> {
     }
 
     class PagerItemView: ItemView, UICollectionViewDelegate {
-        let item: PagerItem<M, V>
-        let collectionView = MPPagerView()
+        let item: PagerItem
+        let pagerView = MPPagerView()
         lazy var pageItems = self.item.value ?? []
 
         required init?(coder aDecoder: NSCoder) {
@@ -1130,20 +1118,21 @@ class PagerItem<M, V: Item<M>>: ValueItem<M, [V]> {
         }
 
         override init(withItem item: Item<M>) {
-            self.item = item as! PagerItem<M, V>
+            self.item = item as! PagerItem
             super.init( withItem: item )
         }
 
         override func createValueView() -> UIView? {
-            self.collectionView.delegate = self
-            return self.collectionView
+            self.pagerView
         }
 
         override func didLoad() {
             super.didLoad()
 
+            self.pagerView.delegate = self
             self.pageItems.forEach { $0.model = self.item.model }
-            self.collectionView.pages = self.pageItems.map { $0.view }
+            self.pagerView.pages = self.pageItems.map { $0.view }
+            self.pageItems.forEach { $0.view.didLoad() }
         }
 
         override func update() {
@@ -1156,25 +1145,23 @@ class PagerItem<M, V: Item<M>>: ValueItem<M, [V]> {
     }
 }
 
-class ListItem<M, V: Hashable>: Item<M> {
+class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
     let values: (M) -> [V]
     var deletable = false
 
-    init(title: String? = nil, values: @escaping (M) -> [V], subitems: [Item<M>] = [],
+    init(title: String? = nil,
+         values: @escaping (M) -> [V],
+         subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.values = values
 
-        super.init( title: title, subitems: subitems, caption: caption )
+        super.init( title: title, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 
-    func didLoad(tableView: UITableView) {
+    func populate(_ cell: C, indexPath: IndexPath, value: V) {
     }
 
-    func cell(tableView: UITableView, indexPath: IndexPath, model: M, value: V) -> UITableViewCell? {
-        nil
-    }
-
-    func delete(model: M, value: V) {
+    func delete(indexPath: IndexPath, value: V) {
     }
 
     override func createItemView() -> ListItemView {
@@ -1182,7 +1169,7 @@ class ListItem<M, V: Hashable>: Item<M> {
     }
 
     class ListItemView: ItemView, UITableViewDelegate {
-        let item: ListItem<M, V>
+        let item: ListItem
         let tableView         = TableView()
         let activityIndicator = UIActivityIndicatorView( style: .whiteLarge )
         lazy var dataSource = ListSource( view: self )
@@ -1192,7 +1179,7 @@ class ListItem<M, V: Hashable>: Item<M> {
         }
 
         override init(withItem item: Item<M>) {
-            self.item = item as! ListItem<M, V>
+            self.item = item as! ListItem
             super.init( withItem: item )
         }
 
@@ -1207,7 +1194,7 @@ class ListItem<M, V: Hashable>: Item<M> {
         override func didLoad() {
             super.didLoad()
 
-            self.item.didLoad( tableView: self.tableView )
+            self.tableView.register( C.self )
         }
 
         override func update() {
@@ -1239,8 +1226,9 @@ class ListItem<M, V: Hashable>: Item<M> {
             }
 
             override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-                self.view.item.cell( tableView: tableView, indexPath: indexPath,
-                                     model: self.view.item.model!, value: self.element( at: indexPath )! )!
+                using( C.dequeue( from: tableView, indexPath: indexPath ) ) {
+                    self.view.item.populate( $0, indexPath: indexPath, value: self.element( at: indexPath )! )
+                }
             }
 
             override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -1248,9 +1236,8 @@ class ListItem<M, V: Hashable>: Item<M> {
             }
 
             override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-                if editingStyle == .delete, self.view.item.deletable,
-                   let model = self.view.item.model, let value = self.element( at: indexPath ) {
-                    self.view.item.delete( model: model, value: value )
+                if editingStyle == .delete, self.view.item.deletable, let value = self.element( at: indexPath ) {
+                    self.view.item.delete( indexPath: indexPath, value: value )
                 }
             }
         }

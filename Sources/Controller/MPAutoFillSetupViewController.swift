@@ -11,41 +11,45 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
     // MARK: --- Life ---
 
     override func loadItems() -> [Item<MPUser>] {
-        [ ImageItem(
-                title: "AutoFill Passwords", value: { _ in .icon( "", withSize: 64 ) },
-                caption: { _ in
-                    """
-                    Getting started with AutoFill on your \(UIDevice.current.model).
-                    """
-                } ),
+        [ ImageItem( title: "AutoFill Passwords", value: { _ in .icon( "", withSize: 64 ) },
+                     caption: { _ in
+                         """
+                         Getting started with AutoFill on your \(UIDevice.current.model).
+                         """
+                     } ),
             SeparatorItem(),
             PagerItem( value: { _ in
                 [
-                    Item(
-                            title: "Step 1\nSet a standard login name",
-                            caption: { _ in
-                                """
-                                To autofill, \(productName) will need your service's login name.
-                                No need to set one for every service individually!\n
-                                Use your most usual login name as your standard login.
-                                Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
-                                """
-                            }
-                    ),
-                    Item(
-                            title: "Step 2\nSet a standard login name",
-                            caption: { _ in
-                                """
-                                To autofill, \(productName) will need your service's login name.
-                                No need to set one for every service individually!\n
-                                Use your most usual login name as your standard login.
-                                Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
-                                """
-                            }
-                    ),
+                    Item( subitems: [
+                        Item(
+                                title: "Step 1\nSet a standard login name",
+                                caption: { _ in
+                                    """
+                                    To autofill, \(productName) will need your service's login name.
+                                    No need to set one for every service individually!\n
+                                    Use your most usual login name as your standard login.
+                                    Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
+                                    """
+                                }
+                        ),
+                        LoginTypeItem(), LoginResultItem(),
+                    ], axis: .vertical ),
+                    Item( subitems: [
+                        Item(
+                                title: "Step 2\nSet a standard login name",
+                                caption: { _ in
+                                    """
+                                    To autofill, \(productName) will need your service's login name.
+                                    No need to set one for every service individually!\n
+                                    Use your most usual login name as your standard login.
+                                    Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
+                                    """
+                                }
+                        ),
+                        LoginTypeItem(), LoginResultItem(),
+                    ], axis: .vertical ),
                 ]
             } ),
-            LoginTypeItem(), LoginResultItem(),
         ]
     }
 
@@ -67,7 +71,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
 
     // MARK: --- Types ---
 
-    class LoginTypeItem: PickerItem<MPUser, MPResultType> {
+    class LoginTypeItem: PickerItem<MPUser, MPResultType, MPResultTypeCell> {
         init() {
             super.init( identifier: "user >loginType",
                         values: { _ in
@@ -77,18 +81,11 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.loginType },
-                        update: { $0.loginType = $1 } )
+                        value: { $0.loginType }, update: { $0.loginType = $1 } )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( MPResultTypeCell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.resultType = value
-            }
+        override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+            cell.resultType = value
         }
     }
 

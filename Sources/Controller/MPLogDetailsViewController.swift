@@ -37,7 +37,11 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
         init() {
             super.init( identifier: "logbook #feedback",
                         value: { _ in (label: "Let's Talk 🅿︎", image: nil) },
-                        caption: { _ in "We're here to help.  You can also reach us at:\nsupport@volto.app" } ) {
+                        caption: { _ in
+                            """
+                            We're here to help.  You can also reach us at:\nsupport@volto.app
+                            """
+                        } ) {
                 if let viewController = $0.viewController {
                     let options = ConversationOptions()
                     options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
@@ -54,7 +58,11 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
         init() {
             super.init( identifier: "logbook #crash",
                         value: { _ in (label: "Force Crash 🅳", image: nil) },
-                        caption: { _ in "Terminate the app with a crash, triggering a crash report on the next launch." } ) { _ in
+                        caption: { _ in
+                            """
+                            Terminate the app with a crash, triggering a crash report on the next launch.
+                            """
+                        } ) { _ in
                 fatalError( "Forced Crash" )
             }
 
@@ -62,30 +70,21 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
         }
     }
 
-    class LogLevelPicker: PickerItem<Model, LogLevel> {
+    class LogLevelPicker: PickerItem<Model, LogLevel, LogLevelPicker.Cell> {
         init() {
-            super.init(
-                    identifier: "logbook >level",
-                    title: "Logbook",
-                    values: { _ in LogLevel.allCases.reversed() },
-                    value: { $0.logbookLevel },
-                    update: { $0.logbookLevel = $1 },
-                    caption: { _ in
-                        """
-                        Show only messages at the selected level or higher.
-                        Debug and trace messages are not recorded unless the level is set accordingly.
-                        """
-                    } )
+            super.init( identifier: "logbook >level", title: "Logbook",
+                        values: { _ in LogLevel.allCases.reversed() },
+                        value: { $0.logbookLevel }, update: { $0.logbookLevel = $1 },
+                        caption: { _ in
+                            """
+                            Show only messages at the selected level or higher.
+                            Debug and trace messages are not recorded unless the level is set accordingly.
+                            """
+                        } )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( Cell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: Model, value: LogLevel) -> UICollectionViewCell? {
-            using( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.level = value
-            }
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: LogLevel) {
+            cell.level = value
         }
 
         class Cell: MPItemCell {

@@ -43,26 +43,18 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
     }
 
-    class AvatarItem: PickerItem<MPUser, MPUser.Avatar> {
+    class AvatarItem: PickerItem<MPUser, MPUser.Avatar, MPAvatarCell> {
         init() {
-            super.init( identifier: "user >avatar", title: "Avatar",
-                        values: { _ in MPUser.Avatar.allCases },
-                        value: { $0.avatar },
-                        update: { $0.avatar = $1 } )
+            super.init( identifier: "user >avatar", title: "Avatar", values: { _ in MPUser.Avatar.allCases },
+                        value: { $0.avatar }, update: { $0.avatar = $1 } )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( MPAvatarCell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPUser.Avatar) -> UICollectionViewCell? {
-            using( MPAvatarCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.avatar = value
-            }
+        override func populate(_ cell: MPAvatarCell, indexPath: IndexPath, value: MPUser.Avatar) {
+            cell.avatar = value
         }
     }
 
-    class LoginTypeItem: PickerItem<MPUser, MPResultType> {
+    class LoginTypeItem: PickerItem<MPUser, MPResultType, MPResultTypeCell> {
         init() {
             super.init( identifier: "user >loginType", title: "Standard Login",
                         values: { _ in
@@ -72,18 +64,11 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.loginType },
-                        update: { $0.loginType = $1 } )
+                        value: { $0.loginType }, update: { $0.loginType = $1 } )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( MPResultTypeCell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.resultType = value
-            }
+        override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+            cell.resultType = value
         }
     }
 
@@ -127,7 +112,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
         }
     }
 
-    class DefaultTypeItem: PickerItem<MPUser, MPResultType> {
+    class DefaultTypeItem: PickerItem<MPUser, MPResultType, MPResultTypeCell> {
         init() {
             super.init( identifier: "user >defaultType", title: "Default Password Type",
                         values: { _ in
@@ -136,8 +121,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                                     MPResultType.recommendedTypes[.authentication],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.defaultType },
-                        update: { $0.defaultType = $1 },
+                        value: { $0.defaultType }, update: { $0.defaultType = $1 },
                         caption: { _ in
                             """
                             The password type used when adding new services.
@@ -145,23 +129,15 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                         } )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( MPResultTypeCell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPResultType) -> UICollectionViewCell? {
-            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.resultType = value
-            }
+        override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+            cell.resultType = value
         }
     }
 
-    class AttackerItem: PickerItem<MPUser, MPAttacker?> {
+    class AttackerItem: PickerItem<MPUser, MPAttacker?, AttackerItem.Cell> {
         init() {
-            super.init( identifier: "user >attacker", title: "Defense Strategy 🅿︎",
-                        values: { _ in MPAttacker.allCases },
-                        value: { $0.attacker ?? .default },
-                        update: { $0.attacker = $1 },
+            super.init( identifier: "user >attacker", title: "Defense Strategy 🅿︎", values: { _ in MPAttacker.allCases },
+                        value: { $0.attacker ?? .default }, update: { $0.attacker = $1 },
                         caption: { _ in
                             """
                             Yearly budget of the primary attacker persona you're seeking to repel (@ \(cost_per_kwh)$/kWh).
@@ -172,14 +148,8 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( Cell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPUser, value: MPAttacker?) -> UICollectionViewCell? {
-            using( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.attacker = value
-            }
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: MPAttacker?) {
+            cell.attacker = value
         }
 
         class Cell: MPClassItemCell {
@@ -203,21 +173,13 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class UsageFeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ToggleItem<MPUser>(
-                        identifier: "user >maskPasswords",
-                        title: "Mask Passwords",
-                        value: {
-                            (icon: .icon( "" ),
-                             selected: $0.maskPasswords,
-                             enabled: true)
-                        },
-                        update: { $0.maskPasswords = $1 },
-                        caption: { _ in
-                            """
-                            Do not reveal passwords on screen.
-                            Useful to deter screen snooping.
-                            """
-                        } ),
+                ToggleItem<MPUser>( identifier: "user >maskPasswords", title: "Mask Passwords", icon: { _ in .icon( "" ) },
+                                    value: { $0.maskPasswords }, update: { $0.maskPasswords = $1 }, caption: { _ in
+                    """
+                    Do not reveal passwords on screen.
+                    Useful to deter screen snooping.
+                    """
+                } ),
             ] )
         }
     }
@@ -225,21 +187,13 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class SystemFeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ToggleItem<MPUser>(
-                        identifier: "user >autofill",
-                        title: "AutoFill Passwords 🅿︎",
-                        value: {
-                            (icon: .icon( "" ),
-                             selected: $0.autofill,
-                             enabled: true)
-                        },
-                        update: { $0.autofill = $1 },
-                        caption: { _ in
-                            """
-                            Expose services in password auto-fill
-                            from other apps.
-                            """
-                        } )
+                ToggleItem<MPUser>( identifier: "user >autofill", title: "AutoFill Passwords 🅿︎", icon: { _ in .icon( "" ) },
+                                    value: { $0.autofill }, update: { $0.autofill = $1 }, caption: { _ in
+                    """
+                    Expose services in password auto-fill
+                    from other apps.
+                    """
+                } )
                         .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) } ) {
                             if let user = $0.model {
                                 $0.viewController?.show( MPAutoFillSetupViewController( model: user ), sender: $0.view )
@@ -247,21 +201,15 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
-                ToggleItem(
-                        identifier: "user >biometricLock",
-                        title: "Biometric Lock 🅿︎",
-                        value: {
-                            (icon: MPKeychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon,
-                             selected: $0.biometricLock,
-                             enabled: MPKeychainKeyFactory.factor != .biometricNone)
-                        },
-                        update: { $0.biometricLock = $1 },
-                        caption: { _ in
-                            """
-                            Sign in using biometrics (eg. TouchID, FaceID).
-                            Saves your master key in the device's key chain.
-                            """
-                        } )
+                ToggleItem( identifier: "user >biometricLock", title: "Biometric Lock 🅿︎",
+                            icon: { _ in MPKeychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon },
+                            value: { $0.biometricLock }, update: { $0.biometricLock = $1 }, caption: { _ in
+                    """
+                    Sign in using biometrics (eg. TouchID, FaceID).
+                    Saves your master key in the device's key chain.
+                    """
+                } )
+                        //            MPKeychainKeyFactory.factor != .biometricNone
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
             ] )

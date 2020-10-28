@@ -66,76 +66,51 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
 
     class DiagnosticsItem: ToggleItem<MPConfig> {
         init() {
-            super.init(
-                    identifier: "app >diagnostics",
-                    title: "Diagnostics",
-                    value: {
-                        (icon: .icon( "" ),
-                         selected: $0.diagnostics,
-                         enabled: true)
-                    },
-                    update: { $0.diagnostics = $1 },
-                    caption: { _ in
-                        """
-                        Share anonymized issue information to enable quick resolution.
-                        """
-                    } )
+            super.init( identifier: "app >diagnostics", title: "Diagnostics", icon: { _ in .icon( "" ) },
+                        value: { $0.diagnostics }, update: { $0.diagnostics = $1 }, caption: { _ in
+                """
+                Share anonymized issue information to enable quick resolution.
+                """
+            } )
         }
     }
 
     class NotificationsItem: ToggleItem<MPConfig> {
         init() {
-            super.init(
-                    identifier: "app >notifications",
-                    title: "Notifications",
-                    value: { _ in
-                        (icon: .icon( "" ),
-                         selected: MPTracker.enabledNotifications(),
-                         enabled: true)
-                    },
-                    update: {
-                        if $1 {
-                            MPTracker.enableNotifications()
-                        }
-                        else {
-                            MPTracker.disableNotifications()
-                        }
-                    },
-                    caption: { _ in
-                        """
-                        Be notified of important events that may affect your online security.
-                        """
-                    } )
+            super.init( identifier: "app >notifications", title: "Notifications", icon: { _ in .icon( "" ) },
+                        value: { _ in MPTracker.enabledNotifications() }, update: {
+                if $1 {
+                    MPTracker.enableNotifications()
+                }
+                else {
+                    MPTracker.disableNotifications()
+                }
+            }, caption: { _ in
+                """
+                Be notified of important events that may affect your online security.
+                """
+            } )
         }
     }
 
-    class ThemeItem: PickerItem<MPConfig, Theme> {
+    class ThemeItem: PickerItem<MPConfig, Theme, ThemeItem.Cell> {
         init() {
-            super.init(
-                    identifier: "app >theme",
-                    title: "Application Themes 🅿︎",
-                    values: { _ in
-                        [ Theme? ].joined(
-                                separator: [ nil ],
-                                [ .default ],
-                                Theme.allCases ).unique()
-                    },
-                    value: { Theme.with( path: $0.theme ) ?? .default },
-                    update: { $0.theme = $1.path },
-                    caption: { _ in Theme.current } )
+            super.init( identifier: "app >theme", title: "Application Themes 🅿︎",
+                        values: { _ in
+                            [ Theme? ].joined(
+                                    separator: [ nil ],
+                                    [ .default ],
+                                    Theme.allCases ).unique()
+                        },
+                        value: { Theme.with( path: $0.theme ) ?? .default }, update: { $0.theme = $1.path },
+                        caption: { _ in Theme.current } )
 
             self.addBehaviour( PremiumTapBehaviour() )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( Cell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPConfig, value: Theme) -> UICollectionViewCell? {
-            using( Cell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.theme = value
-            }
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: Theme) {
+            cell.theme = value
         }
 
         class Cell: MPItemCell {
@@ -158,7 +133,7 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
         }
     }
 
-    class InfoItem: ListItem<MPConfig, InfoItem.Link> {
+    class InfoItem: ListItem<MPConfig, InfoItem.Link, InfoItem.Cell> {
         init() {
             super.init( title: "Links", values: { _ in
                 [
@@ -170,16 +145,8 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
             } )
         }
 
-        override func didLoad(tableView: UITableView) {
-            super.didLoad( tableView: tableView )
-
-            tableView.register( Cell.self )
-        }
-
-        override func cell(tableView: UITableView, indexPath: IndexPath, model: MPConfig, value: Link) -> UITableViewCell? {
-            Cell.dequeue( from: tableView, indexPath: indexPath ) {
-                ($0 as? Cell)?.link = value
-            }
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: Link) {
+            cell.link = value
         }
 
         struct Link: Hashable {

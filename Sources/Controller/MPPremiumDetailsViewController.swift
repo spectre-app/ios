@@ -94,13 +94,16 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     class HeaderItem: ImageItem<Void> {
         init() {
-            super.init( title: "\(productName) Premium",
-                        value: { _ in .icon( "", withSize: 64 ) },
-                        caption: { _ in "Unlock enhanced comfort and security features." } )
+            super.init( title: "\(productName) Premium", value: { _ in .icon( "", withSize: 64 ) },
+                        caption: { _ in
+                            """
+                            Unlock enhanced comfort and security features.
+                            """
+                        } )
         }
     }
 
-    class SubscribeItem: ListItem<Void, SKProduct>, InAppStoreObserver {
+    class SubscribeItem: ListItem<Void, SKProduct, SubscribeItem.Cell>, InAppStoreObserver {
         init() {
             super.init( title: "Enroll", values: { InAppStore.shared.products( forSubscription: .premium ) } )
 
@@ -108,16 +111,8 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
             InAppStore.shared.observers.register( observer: self )
         }
 
-        override func didLoad(tableView: UITableView) {
-            super.didLoad( tableView: tableView )
-
-            tableView.register( Cell.self )
-        }
-
-        override func cell(tableView: UITableView, indexPath: IndexPath, model: (), value: SKProduct) -> UITableViewCell? {
-            Cell.dequeue( from: tableView, indexPath: indexPath ) {
-                ($0 as? Cell)?.product = value
-            }
+        override func populate(_ cell: SubscribeItem.Cell, indexPath: IndexPath, value: SKProduct) {
+            cell.product = value
         }
 
         // MARK: --- InAppStoreObserver ---
@@ -196,9 +191,12 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     class SubscribedItem: ImageItem<Void> {
         init() {
-            super.init( title: "Enrolled",
-                        value: { _ in .icon( "", withSize: 64 ) },
-                        caption: { _ in "Thank you for making \(productName) possible!" } )
+            super.init( title: "Enrolled", value: { _ in .icon( "", withSize: 64 ) },
+                        caption: { _ in
+                            """
+                            Thank you for making \(productName) possible!
+                            """
+                        } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
         }
@@ -212,22 +210,13 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     class OverrideItem: ToggleItem<Void>, InAppFeatureObserver {
         init() {
-            super.init(
-                    identifier: "premium >override",
-                    title: """
-                           Subscribed 🅳
-                           """,
-                    value: {
-                        (icon: .icon( "" ),
-                         selected: InAppFeature.premium.enabled(),
-                         enabled: true)
-                    },
-                    update: { InAppFeature.premium.enabled( $1 ) },
-                    caption: { _ in
-                        """
-                        Developer override for premium features.
-                        """
-                    } )
+            super.init( identifier: "premium >override", title: "Subscribed 🅳", icon: { _ in .icon( "" ) },
+                        value: { _ in InAppFeature.premium.enabled() }, update: { InAppFeature.premium.enabled( $1 ) },
+                        caption: { _ in
+                            """
+                            Developer override for premium features.
+                            """
+                        } )
 
             InAppFeature.observers.register( observer: self )
         }

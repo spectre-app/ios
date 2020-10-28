@@ -45,8 +45,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
     class PasswordCounterItem: StepperItem<MPService, UInt32> {
         init() {
             super.init( title: "Password Counter",
-                        value: { $0.counter.rawValue },
-                        update: { $0.counter = MPCounterValue( rawValue: $1 ) ?? .default },
+                        value: { $0.counter.rawValue }, update: { $0.counter = MPCounterValue( rawValue: $1 ) ?? .default },
                         step: 1, min: MPCounterValue.initial.rawValue, max: MPCounterValue.last.rawValue,
                         caption: { _ in
                             """
@@ -56,7 +55,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class PasswordTypeItem: PickerItem<MPService, MPResultType> {
+    class PasswordTypeItem: PickerItem<MPService, MPResultType, MPResultTypeCell> {
         init() {
             super.init( identifier: "service >resultType", title: "Password Type",
                         values: { _ in
@@ -66,36 +65,28 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.resultType },
-                        update: { $0.resultType = $1 } )
+                        value: { $0.resultType }, update: { $0.resultType = $1 } )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( MPResultTypeCell.self )
-        }
-
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPService, value: MPResultType) -> UICollectionViewCell? {
-            using(MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath )) {
-                $0.resultType = value
-            }
+        override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+            cell.resultType = value
         }
     }
 
     class PasswordResultItem: FieldItem<MPService> {
         init() {
             super.init( title: nil, placeholder: "enter a password",
-                        value: { try? $0.result().token.await() },
-                        update: { service, password in
-                            MPTracker.shared.event( named: "service >password", [
-                                "type": "\(service.resultType)",
-                                "entropy": MPAttacker.entropy( string: password ) ?? 0,
-                            ] )
+                        value: { try? $0.result().token.await() }, update: { service, password in
+                MPTracker.shared.event( named: "service >password", [
+                    "type": "\(service.resultType)",
+                    "entropy": MPAttacker.entropy( string: password ) ?? 0,
+                ] )
 
-                            service.state( resultParam: password ).token.then {
-                                do { service.resultState = try $0.get() }
-                                catch { mperror( title: "Couldn't update service password", error: error ) }
-                            }
-                        },
+                service.state( resultParam: password ).token.then {
+                    do { service.resultState = try $0.get() }
+                    catch { mperror( title: "Couldn't update service password", error: error ) }
+                }
+            },
                         caption: {
                             let attacker = $0.user.attacker ?? .default
                             if InAppFeature.premium.enabled(),
@@ -125,7 +116,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class LoginTypeItem: PickerItem<MPService, MPResultType> {
+    class LoginTypeItem: PickerItem<MPService, MPResultType, MPResultTypeCell> {
         init() {
             super.init( identifier: "service >loginType", title: "Login Name Type 🅿︎",
                         values: { _ in
@@ -136,25 +127,18 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.loginType },
-                        update: { $0.loginType = $1 } )
+                        value: { $0.loginType }, update: { $0.loginType = $1 } )
 
             self.addBehaviour( PremiumTapBehaviour() )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
-        override func didLoad(collectionView: UICollectionView) {
-            collectionView.register( MPResultTypeCell.self )
-        }
+        override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+            cell.resultType = value.nonEmpty
 
-        override func cell(collectionView: UICollectionView, indexPath: IndexPath, model: MPService, value: MPResultType) -> UICollectionViewCell? {
-            using( MPResultTypeCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.resultType = value.nonEmpty
-
-                if value == .none {
-                    $0.name = nil
-                    $0.class = "Standard Login"
-                }
+            if value == .none {
+                cell.name = nil
+                cell.class = "Standard Login"
             }
         }
     }
@@ -218,7 +202,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class SecurityAnswerItem: ListItem<MPService, MPQuestion> {
+    class SecurityAnswerItem: ListItem<MPService, MPQuestion, SecurityAnswerItem.Cell> {
         init() {
             super.init( title: "Security Answers 🅿︎",
                         values: {
@@ -263,22 +247,14 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
-        override func didLoad(tableView: UITableView) {
-            super.didLoad( tableView: tableView )
-
-            tableView.register( Cell.self )
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: MPQuestion) {
+            cell.question = value
         }
 
-        override func cell(tableView: UITableView, indexPath: IndexPath, model: MPService, value: MPQuestion) -> UITableViewCell? {
-            Cell.dequeue( from: tableView, indexPath: indexPath ) {
-                ($0 as? Cell)?.question = value
-            }
-        }
-
-        override func delete(model: MPService, value: MPQuestion) {
+        override func delete(indexPath: IndexPath, value: MPQuestion) {
             trc( "Trashing security question: %@", value )
 
-            model.questions.removeAll { $0 === value }
+            self.model?.questions.removeAll { $0 === value }
         }
 
         class Cell: UITableViewCell {
@@ -358,8 +334,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
     class URLItem: FieldItem<MPService> {
         init() {
             super.init( title: "URL", placeholder: "eg. https://www.apple.com",
-                        value: { $0.url },
-                        update: { $0.url = $1 } )
+                        value: { $0.url }, update: { $0.url = $1 } )
         }
 
         override func createItemView() -> FieldItemView {
