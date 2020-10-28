@@ -42,7 +42,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
                                     To autofill, \(productName) will need your service's login name.
                                     No need to set one for every service individually!\n
                                     Use your most usual login name as your standard login.
-                                    Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname. 
+                                    Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname.
                                     """
                                 }
                         ),

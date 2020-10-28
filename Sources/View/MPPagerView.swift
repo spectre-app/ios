@@ -157,11 +157,11 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
                 switch scrollDirection {
                     case .vertical:
                         layoutAttributes.size = self.systemLayoutSizeFitting(
-                                layoutAttributes.size, withHorizontalFittingPriority: .fittingSizeLevel, verticalFittingPriority: .defaultHigh )
+                                layoutAttributes.size, withHorizontalFittingPriority: .fittingSizeLevel, verticalFittingPriority: .required )
 
                     case .horizontal:
                         layoutAttributes.size = self.systemLayoutSizeFitting(
-                                layoutAttributes.size, withHorizontalFittingPriority: .defaultHigh, verticalFittingPriority: .fittingSizeLevel )
+                                layoutAttributes.size, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel )
 
                     @unknown default:
                         ()

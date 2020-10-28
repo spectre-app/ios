@@ -879,26 +879,31 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         }
 
         override func createValueView() -> UIView? {
-            self.collectionView.delegate = self
-            self.collectionView.dataSource = self.dataSource
-            return self.collectionView
+            self.collectionView
         }
 
         override func didLoad() {
             super.didLoad()
 
             self.collectionView.register( C.self )
+            self.collectionView.delegate = self
+            self.collectionView.dataSource = self.dataSource
+            self.updateDataSource()
         }
 
-        override func update() {
-            super.update()
-
+        func updateDataSource() {
             let values = self.item.model.flatMap { self.item.values( $0 ) } ?? []
             self.dataSource.update( values.split( separator: nil ).map( { [ V? ]( $0 ) } ) ) { [unowned self] _ in
                 DispatchQueue.main.async {
                     self.updateSelection()
                 }
             }
+        }
+
+        override func update() {
+            super.update()
+
+            self.updateDataSource()
         }
 
         // MARK: --- Private ---
@@ -968,21 +973,27 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
 
                 self.backgroundColor = .clear
                 self.register( Separator.self, decorationKind: "Separator" )
+                self.setContentCompressionResistancePriority( .defaultHigh - 1, for: .horizontal )
             }
 
             class PickerLayout: UICollectionViewLayout {
-                private var attributes      = [ UICollectionView.ElementCategory: [ IndexPath: UICollectionViewLayoutAttributes ] ]()
-                private var initialPaths    = [ UICollectionView.ElementCategory: [ IndexPath ] ]()
-                private let initialItemSize = CGSize( width: 50, height: 50 )
                 private let spacing         = CGFloat( 12 )
+                private let initialItemSize = CGSize( width: 50, height: 50 )
 
-                private lazy var  contentSize = self.initialItemSize {
+                private var attributes   = [ UICollectionView.ElementCategory: [ IndexPath: UICollectionViewLayoutAttributes ] ]()
+                private var initialPaths = [ UICollectionView.ElementCategory: [ IndexPath ] ]()
+                private var contentSize  = CGSize( width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric ) {
                     didSet {
                         self.collectionView?.invalidateIntrinsicContentSize()
                     }
                 }
                 open override var collectionViewContentSize: CGSize {
-                    self.contentSize
+                    if self.contentSize.width == UIView.noIntrinsicMetric {
+                        // Need to compute self-sized cell attributes.  We do this by forcing the collection view to lay out visible cells.
+                        self.collectionView?.superview?.layoutIfNeeded()
+                    }
+
+                    return self.contentSize
                 }
 
                 open override func prepare() {
@@ -1133,6 +1144,7 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
             self.pageItems.forEach { $0.model = self.item.model }
             self.pagerView.pages = self.pageItems.map { $0.view }
             self.pageItems.forEach { $0.view.didLoad() }
+            self.pageItems.forEach { $0.update() }
         }
 
         override func update() {
