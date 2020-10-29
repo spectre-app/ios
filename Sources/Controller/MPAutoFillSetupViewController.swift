@@ -40,22 +40,33 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
                                 caption: { _ in
                                     """
                                     Biometrics uses the device's sensors to authenticate you.
-                                    It's the most convenient way to prove your identity.\n
-                                    Don't enable this feature if anyone other than you has biometric access to this device.
+                                    It's the most convenient way to prove your identity.
                                     """
                                 }
                         ),
                         ToggleItem( identifier: "user >biometricLock",
                                     icon: { _ in MPKeychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon },
-                                    value: { $0.biometricLock }, update: { $0.biometricLock = $1 }, caption: { _ in
+                                    value: { $0.biometricLock }, update: { $0.biometricLock = $1 }, caption: {
                             """
-                            Sign in using biometrics (eg. TouchID, FaceID).
-                            Saves your master key in the device's key chain.
+                            To use this feature safely, only register \($0.fullName)'s \(MPKeychainKeyFactory.factor.biometry) to \(MPKeychainKeyFactory.factor).
                             """
                         } )
                                 //            MPKeychainKeyFactory.factor != .biometricNone
                                 .addBehaviour( PremiumTapBehaviour() )
                                 .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+                    ], axis: .vertical ),
+                    Item( subitems: [
+                        ImageItem(
+                                title: "Step 3\nEnable AutoFill in Settings",
+                                value: { _ in
+                                    UIImage(named: "enable-autofill")
+                                },
+                                caption: { _ in
+                                    """
+                                    Allow AutoFill to pull in \(productName) credentials on your device from the Settings app.
+                                    """
+                                }
+                        ),
                     ], axis: .vertical ),
                 ]
             } ),

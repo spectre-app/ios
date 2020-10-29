@@ -460,9 +460,15 @@ class ImageItem<M>: ValueItem<M, UIImage> {
         }
 
         override func createValueView() -> UIView? {
+            self.valueImage
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
+            self.valueImage.contentMode = .scaleAspectFit
             self.valueImage.setContentHuggingPriority( .defaultHigh, for: .horizontal )
             self.valueImage.setContentHuggingPriority( .defaultHigh, for: .vertical )
-            return self.valueImage
         }
 
         override func update() {

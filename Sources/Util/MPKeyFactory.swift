@@ -288,6 +288,19 @@ public class MPKeychainKeyFactory: MPKeyFactory {
             }
         }
 
+        public var biometry: String {
+            switch self {
+                case .biometricTouch:
+                    return "fingerprints"
+
+                case .biometricFace:
+                    return "appearance"
+
+                case .biometricNone:
+                    return "biometrics"
+            }
+        }
+
         var icon: UIImage? {
             switch self {
                 case .biometricTouch:
