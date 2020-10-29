@@ -984,7 +984,9 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
                 private var initialPaths = [ UICollectionView.ElementCategory: [ IndexPath ] ]()
                 private var contentSize  = CGSize( width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric ) {
                     didSet {
-                        self.collectionView?.invalidateIntrinsicContentSize()
+                        if oldValue != self.contentSize {
+                            self.collectionView?.invalidateIntrinsicContentSize()
+                        }
                     }
                 }
                 open override var collectionViewContentSize: CGSize {

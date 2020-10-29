@@ -15,13 +15,8 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
 
     // MARK: --- State ---
 
-    override var contentSize:          CGSize {
-        didSet {
-            self.invalidateIntrinsicContentSize()
-        }
-    }
     override var intrinsicContentSize: CGSize {
-        self.isHidden ? super.intrinsicContentSize: self.layout.collectionViewContentSize + self.adjustedContentInset.size
+        CGSize( width: UIView.noIntrinsicMetric, height: self.isHidden ? UIView.noIntrinsicMetric: self.layout.collectionViewContentSize.height )
     }
 
     public var pages = [ UIView ]() {
@@ -37,9 +32,8 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
 
         self.isPagingEnabled = true
         self.backgroundColor = .clear
-        self.contentInset = .vertical()
-        self.contentInsetAdjustmentBehavior = .never
-        self.layout.scrollDirection = .horizontal
+        self.insetsLayoutMarginsFromSafeArea = false
+        self.preservesSuperviewLayoutMargins = true
 
         self.delegate = self
         self.dataSource = self.source
@@ -50,125 +44,130 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    @discardableResult
-    public func requestSelection(item: Int?, inSection section: Int = 0,
-                                 animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
-                    -> Bool {
-        let selectPath = item.flatMap { IndexPath( item: $0, section: section ) }
-        let selectedPath = self.indexPathsForSelectedItems?.first
-
-        if let selectPath = selectPath, selectPath == selectedPath ||
-                !(self.delegate?.collectionView?( self, shouldSelectItemAt: selectPath ) ?? true) {
-            return false
-        }
-        if let selectedPath = selectedPath, selectedPath.item != selectPath?.item &&
-                !(self.delegate?.collectionView?( self, shouldDeselectItemAt: selectedPath ) ?? true) {
-            return false
-        }
-
-        self.selectItem( at: selectPath, animated: animated, scrollPosition: scrollPosition )
-
-        if let selectedPath = selectedPath {
-            self.delegate?.collectionView?( self, didDeselectItemAt: selectedPath )
-        }
-        if let selectPath = selectPath {
-            self.delegate?.collectionView?( self, didSelectItemAt: selectPath )
-        }
-
-        return true
-    }
-
     // MARK: --- UICollectionViewDelegateFlowLayout ---
 
     // MARK: --- Types ---
 
-    internal class PagerLayout: UICollectionViewFlowLayout {
+    internal class PagerLayout: UICollectionViewLayout {
+        private var attributes = [ IndexPath: UICollectionViewLayoutAttributes ]() {
+            didSet {
+                if oldValue != self.attributes {
+                    self.collectionView?.invalidateIntrinsicContentSize()
+                }
+            }
+        }
+        var pageHeight: CGFloat {
+            self.attributes.reduce( 0, { max( $0, $1.value.size.height ) } )
+        }
+        private var contentSize = CGSize( width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric ) {
+            didSet {
+                if oldValue != self.contentSize {
+                    self.collectionView?.invalidateIntrinsicContentSize()
+                }
+            }
+        }
+        open override var collectionViewContentSize: CGSize {
+            self.contentSize
+        }
 
         // MARK: --- Life ---
 
         override init() {
             super.init()
-
-            self.minimumLineSpacing = 0
-            self.minimumInteritemSpacing = 0
-            self.sectionInset = .zero
         }
 
         required init?(coder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
-            if let collectionView = self.collectionView {
-                let newItemSize = (collectionView.bounds.size - collectionView.adjustedContentInset.size)
-                        .union( CGSize( width: 1, height: 1 ) )
-//                self.itemSize = newItemSize
-                self.estimatedItemSize = newItemSize
+        override func prepare() {
+            super.prepare()
+
+            guard let collectionView = self.collectionView
+            else { return }
+
+            var page      = 0
+            let pageWidth = max( 50, collectionView.frame.size.width ), pageHeight = max( 50, self.pageHeight )
+            for section in 0..<collectionView.numberOfSections {
+                for item in 0..<collectionView.numberOfItems( inSection: section ) {
+                    let indexPath = IndexPath( item: item, section: section )
+                    var attrs     = self.attributes[indexPath]
+                    if attrs == nil {
+                        attrs = using( UICollectionViewLayoutAttributes( forCellWith: indexPath ) ) {
+                            $0.size.height = pageHeight
+                        }
+                        self.attributes[indexPath] = attrs
+                    }
+                    attrs?.size.width = pageWidth
+                    attrs?.frame.origin = CGPoint( x: pageWidth * CGFloat( page ), y: 0 )
+
+                    page += 1
+                }
             }
 
-            super.invalidateLayout( with: context )
-        }
-
-        // MARK: --- State ---
-
-        override var collectionViewContentSize: CGSize {
-            switch self.scrollDirection {
-                case .vertical:
-                    return CGSize( width: self.layoutAttributesForElements( in: .infinite )?.reduce( 1 ) {
-                        max( $0, $1.size.width )
-                    } ?? 1,
-                                   height: super.collectionViewContentSize.height )
-
-                case .horizontal:
-                    return CGSize( width: super.collectionViewContentSize.width,
-                                   height: self.layoutAttributesForElements( in: .infinite )?.reduce( 1 ) {
-                                       max( $0, $1.size.height )
-                                   } ?? 1 )
-
-                @unknown default:
-                    return super.collectionViewContentSize.union( CGSize( width: 1, height: 1 ) )
-            }
+            self.contentSize = CGSize( width: pageWidth * CGFloat( page ), height: pageHeight )
         }
 
         override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-            true
+            newBounds.size.width != self.collectionView?.frame.size.width
+        }
+
+        open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
+                                                  withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+            if let currentAttributes = self.attributes[originalAttributes.indexPath],
+               currentAttributes.size.height != preferredAttributes.size.height {
+                currentAttributes.size.height = preferredAttributes.size.height
+                return true
+            }
+
+            return false
+        }
+
+        open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+            self.attributes.values.filter( { rect.intersects( $0.frame ) } )
+        }
+
+        open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+            self.attributes[indexPath]
         }
     }
 
     internal class PagerSource: DataSource<UIView> {
         override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            using( PagerCell.dequeue( from: collectionView, indexPath: indexPath ) ) { cell in
-                if let view = self.element( at: indexPath ) {
-                    cell.contentView.subviews.filter { $0 != view }.forEach {
-                        $0.removeFromSuperview()
-                    }
-                    if view.superview != cell.contentView {
-                        cell.contentView.addSubview( view )
-                        LayoutConfiguration( view: view ).constrain().activate()
-                    }
-                }
+            using( PagerCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.pageView = self.element( at: indexPath )
             }
         }
     }
 
     class PagerCell: UICollectionViewCell {
-        override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
-            if let scrollDirection = MPPagerView.find( superviewOf: self )?.layout.scrollDirection {
-                switch scrollDirection {
-                    case .vertical:
-                        layoutAttributes.size = self.systemLayoutSizeFitting(
-                                layoutAttributes.size, withHorizontalFittingPriority: .fittingSizeLevel, verticalFittingPriority: .required )
-
-                    case .horizontal:
-                        layoutAttributes.size = self.systemLayoutSizeFitting(
-                                layoutAttributes.size, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel )
-
-                    @unknown default:
-                        ()
+        var pageView: UIView? {
+            didSet {
+                self.contentView.subviews.filter { $0 != self.pageView }.forEach {
+                    $0.removeFromSuperview()
+                }
+                if let pageView = self.pageView, pageView.superview != self.contentView {
+                    self.contentView.addSubview( pageView )
+                    LayoutConfiguration( view: pageView ).constrain( margins: true ).activate()
                 }
             }
+        }
 
-            return layoutAttributes
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        override init(frame: CGRect) {
+            super.init( frame: frame )
+
+            self.insetsLayoutMarginsFromSafeArea = false
+            self.preservesSuperviewLayoutMargins = true
+            self.contentView.insetsLayoutMarginsFromSafeArea = false
+            self.contentView.preservesSuperviewLayoutMargins = true
+        }
+
+        override func systemLayoutSizeFitting(_ targetSize: CGSize, withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority) -> CGSize {
+            super.systemLayoutSizeFitting( targetSize, withHorizontalFittingPriority: .required, verticalFittingPriority: verticalFittingPriority )
         }
     }
 }

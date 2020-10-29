@@ -45,34 +45,6 @@ public class MPSpinnerView: UICollectionView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    @discardableResult
-    public func requestSelection(item: Int?, inSection section: Int = 0,
-                                 animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
-                    -> Bool {
-        let selectPath = item.flatMap { IndexPath( item: $0, section: section ) }
-        let selectedPath = self.indexPathsForSelectedItems?.first
-
-        if let selectPath = selectPath, selectPath == selectedPath ||
-                !(self.delegate?.collectionView?( self, shouldSelectItemAt: selectPath ) ?? true) {
-            return false
-        }
-        if let selectedPath = selectedPath, selectedPath.item != selectPath?.item &&
-                !(self.delegate?.collectionView?( self, shouldDeselectItemAt: selectedPath ) ?? true) {
-            return false
-        }
-
-        self.selectItem( at: selectPath, animated: animated, scrollPosition: scrollPosition )
-
-        if let selectedPath = selectedPath {
-            self.delegate?.collectionView?( self, didDeselectItemAt: selectedPath )
-        }
-        if let selectPath = selectPath {
-            self.delegate?.collectionView?( self, didSelectItemAt: selectPath )
-        }
-
-        return true
-    }
-
     // MARK: --- Private ---
 
     @objc

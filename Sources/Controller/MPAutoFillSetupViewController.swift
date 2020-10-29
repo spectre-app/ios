@@ -36,17 +36,26 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
                     ], axis: .vertical ),
                     Item( subitems: [
                         Item(
-                                title: "Step 2\nSet a standard login name",
+                                title: "Step 2\nEnable biometric authentication",
                                 caption: { _ in
                                     """
-                                    To autofill, \(productName) will need your service's login name.
-                                    No need to set one for every service individually!\n
-                                    Use your most usual login name as your standard login.
-                                    Select "\(MPResultType.statefulPersonal.abbreviation)" to save an e‑mail address or nickname.
+                                    Biometrics uses the device's sensors to authenticate you.
+                                    It's the most convenient way to prove your identity.\n
+                                    Don't enable this feature if anyone other than you has biometric access to this device.
                                     """
                                 }
                         ),
-                        LoginTypeItem(), LoginResultItem(),
+                        ToggleItem( identifier: "user >biometricLock",
+                                    icon: { _ in MPKeychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon },
+                                    value: { $0.biometricLock }, update: { $0.biometricLock = $1 }, caption: { _ in
+                            """
+                            Sign in using biometrics (eg. TouchID, FaceID).
+                            Saves your master key in the device's key chain.
+                            """
+                        } )
+                                //            MPKeychainKeyFactory.factor != .biometricNone
+                                .addBehaviour( PremiumTapBehaviour() )
+                                .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
                     ], axis: .vertical ),
                 ]
             } ),

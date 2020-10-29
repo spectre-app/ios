@@ -67,11 +67,11 @@ extension UIView: Describable {
             description = _describe( Self.self )
         }
 
-        if !short, let ownerView = owner?.owner as? UIView {
-            return "\(description) << \(ownerView.describe( short: false ))"
-        }
-        else {
+//        if !short, let ownerView = owner?.owner as? UIView {
+//            return "\(description) << \(ownerView.describe( short: false ))"
+//        }
+//        else {
             return description
-        }
+//        }
     }
 }
