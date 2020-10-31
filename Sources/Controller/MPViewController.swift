@@ -39,7 +39,7 @@ class MPViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         !self.isViewLoaded || self.view.superview == nil
     }
     private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( 100 ), update: self, animated: true )
-    private var willEnterForegroundObserver: NSObjectProtocol?
+    private var notificationObservers = [ NSObjectProtocol ]()
 
     // MARK: --- Life ---
 
@@ -69,14 +69,20 @@ class MPViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         super.viewDidAppear( animated )
 
         self.keyboardLayoutGuide.install( in: self.view, observer: self )
-        self.willEnterForegroundObserver = NotificationCenter.default.addObserver(
-                forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [unowned self] _ in
-            self.setNeedsUpdate()
-        }
+        self.notificationObservers = [
+            NotificationCenter.default.addObserver(
+                    forName: UIApplication.willResignActiveNotification, object: nil, queue: .main ) { [weak self] _ in self?.willResignActive() },
+            NotificationCenter.default.addObserver(
+                    forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main ) { [weak self] _ in self?.didEnterBackground() },
+            NotificationCenter.default.addObserver(
+                    forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [weak self] _ in self?.willEnterForeground() },
+            NotificationCenter.default.addObserver(
+                    forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main ) { [weak self] _ in self?.didBecomeActive() },
+        ]
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        self.willEnterForegroundObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
+        self.notificationObservers.forEach { NotificationCenter.default.removeObserver( $0 ) }
         self.keyboardLayoutGuide.uninstall()
         self.updateTask.cancel()
 
@@ -89,6 +95,18 @@ class MPViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         if self.trackScreen {
             self.screen.dismiss()
         }
+    }
+
+    func willResignActive() {
+    }
+
+    func didEnterBackground() {
+    }
+
+    func willEnterForeground() {
+    }
+
+    func didBecomeActive() {
     }
 
     // MARK: --- KeyboardLayoutObserver ---

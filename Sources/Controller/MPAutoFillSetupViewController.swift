@@ -5,8 +5,17 @@
 
 import Foundation
 import UIKit
+import AuthenticationServices
 
 class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserViewController*/MPUserObserver {
+
+    var autoFillState: ASCredentialIdentityStoreState? {
+        didSet {
+            if oldValue != self.autoFillState {
+                self.setNeedsUpdate()
+            }
+        }
+    }
 
     // MARK: --- Life ---
 
@@ -59,14 +68,26 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
                         ImageItem(
                                 title: "Step 3\nEnable AutoFill in Settings",
                                 value: { _ in
-                                    UIImage(named: "enable-autofill")
+                                    UIImage( named: "enable-autofill" )
                                 },
                                 caption: { _ in
                                     """
-                                    Allow AutoFill to pull in \(productName) credentials on your device from the Settings app.
+                                    Turn on AutoFill from the Settings app and select the \(productName) app.
                                     """
                                 }
                         ),
+                        ToggleItem( identifier: "autofill >enable",
+                                    icon: { _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "" ): .icon( "" ) },
+                                    value: { _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
+                            URL( string: UIApplication.openSettingsURLString ).flatMap { UIApplication.shared.open( $0 ) }
+                        }, caption: { _ in
+                            """
+                            Tap "< Settings"
+                            Find "Passwords"
+                            Enable "AutoFill"
+                            Turn On \(productName)
+                            """
+                        } )
                     ], axis: .vertical ),
                 ]
             } ),
@@ -81,6 +102,13 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
         super.init( model: model, focus: focus )
 
         self.model.observers.register( observer: self ).userDidChange( self.model )
+        ASCredentialIdentityStore.shared.getState { self.autoFillState = $0 }
+    }
+
+    override func willEnterForeground() {
+        super.willEnterForeground()
+
+        ASCredentialIdentityStore.shared.getState { self.autoFillState = $0 }
     }
 
     // MARK: --- MPUserObserver ---
