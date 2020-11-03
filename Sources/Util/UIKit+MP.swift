@@ -105,6 +105,10 @@ extension CGSize {
         lhs.height -= rhs.height
     }
 
+    var isEmpty : Bool {
+        self.width == 0 || self.height == 0
+    }
+
     init(_ point: CGPoint) {
         self.init( width: point.x, height: point.y )
     }

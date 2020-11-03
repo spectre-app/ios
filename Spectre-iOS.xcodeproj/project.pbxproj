@@ -65,6 +65,7 @@
 		93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
 		93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985695447159F2D4BE76 /* AutoFillModel.swift */; };
 		93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
+		93D399FB0C4228E18FDFAC9F /* MPPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391A0FB6EB085237A8BF3 /* MPPickerView.swift */; };
 		93D39A2954B245FC0D925312 /* MPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPService.swift */; };
 		93D39A467E6B7BB3B646E004 /* MPTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* MPTracker.swift */; };
 		93D39AA18A00A587610444F4 /* MPToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */; };
@@ -77,6 +78,7 @@
 		93D39BED3DFB61513B0D015D /* MPUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */; };
 		93D39C05281D4E4CB11F07AC /* MPOperand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPOperand.swift */; };
 		93D39C0E969D1194203D5B9C /* ConstraintResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909744CE918AB4432318 /* ConstraintResolver.swift */; };
+		93D39C76D6160B82127FBBB2 /* MPPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391A0FB6EB085237A8BF3 /* MPPickerView.swift */; };
 		93D39C94D7BFAAE6C4B1471F /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
 		93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* MPUtils.swift */; };
 		93D39D506D830E25948A9EB5 /* MPEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */; };
@@ -404,6 +406,7 @@
 		93D39169E1BADEFA0517D4D2 /* MPUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUser.swift; sourceTree = "<group>"; };
 		93D3917402B9BC4575713560 /* MPTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTracker.swift; sourceTree = "<group>"; };
 		93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuestion.swift; sourceTree = "<group>"; };
+		93D391A0FB6EB085237A8BF3 /* MPPickerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPPickerView.swift; sourceTree = "<group>"; };
 		93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPKeychain.swift; sourceTree = "<group>"; };
 		93D39203C899BA783F02D3B5 /* MPEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEffectView.swift; sourceTree = "<group>"; };
 		93D39267543CBFB6B0D7F54C /* MPOperand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPOperand.swift; sourceTree = "<group>"; };
@@ -750,6 +753,7 @@
 				93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */,
 				93D399B27F5C5F2D42EA7C0B /* MPUntouchableView.swift */,
 				93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */,
+				93D391A0FB6EB085237A8BF3 /* MPPickerView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1782,6 +1786,7 @@
 				93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */,
 				93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */,
 				93D390276912B43B33158168 /* MPPagerView.swift in Sources */,
+				93D39C76D6160B82127FBBB2 /* MPPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1880,6 +1885,7 @@
 				93D39E0E73178FE39CF12B45 /* BasicServicesViewController.swift in Sources */,
 				93D39830BD42CE3468F6AFCB /* MPAutoFillSetupViewController.swift in Sources */,
 				93D39854B7171FE34024CEED /* MPPagerView.swift in Sources */,
+				93D399FB0C4228E18FDFAC9F /* MPPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

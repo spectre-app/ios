@@ -202,6 +202,10 @@ extension Numeric {
     public var nonEmpty: Self? {
         self == Self.init( exactly: 0 ) ? nil: self
     }
+
+    public func ifEmpty<T>(_ emptyValue: T) -> Self where T: BinaryInteger {
+        self == Self.init( exactly: 0 ) ? Self.init( exactly: emptyValue )!: self
+    }
 }
 
 extension String.StringInterpolation {

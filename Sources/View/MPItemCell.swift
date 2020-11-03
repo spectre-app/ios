@@ -6,6 +6,9 @@
 import UIKit
 
 class MPItemCell: UICollectionViewCell {
+
+    // MARK: --- State ---
+
     override var isSelected: Bool {
         didSet {
             DispatchQueue.main.perform {
@@ -21,6 +24,9 @@ class MPItemCell: UICollectionViewCell {
     }
 
     let effectView = MPEffectView( round: true, dims: true )
+    let debugLabel = UILabel()
+
+    // MARK: --- Life ---
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -32,11 +38,15 @@ class MPItemCell: UICollectionViewCell {
         self.effectView.layoutMargins = .border( 6 )
 
         self.contentView.addSubview( self.effectView )
+        self.contentView.addSubview( self.debugLabel )
 
         LayoutConfiguration( view: self.contentView )
                 .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                 .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ) }
                 .constrain()
+                .activate()
+        LayoutConfiguration( view: self.debugLabel )
+                .constrain( anchors: .bottomBox )
                 .activate()
         LayoutConfiguration( view: self.effectView )
                 .constrain()
