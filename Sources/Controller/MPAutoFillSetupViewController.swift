@@ -132,7 +132,10 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
         super.update()
 
         if self.autoFillState?.isEnabled ?? false && self.model.autofill {
-            self.hide()
+            self.hide {
+                MPAlert( title: "AutoFill Enabled", message: "\(self.model.fullName)'s services are now available from AutoFill." )
+                        .show()
+            }
         }
     }
 
