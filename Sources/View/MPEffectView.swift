@@ -126,8 +126,6 @@ class MPEffectView: UIView {
         self.layer => \.shadowColor => Theme.current.color.shadow
         self.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
-        self => \.borderColor => Theme.current.color.secondary
-
         self.vibrancyEffectView.contentView.insetsLayoutMarginsFromSafeArea = false
         self.update()
 
@@ -164,6 +162,12 @@ class MPEffectView: UIView {
         super.addSubview( view )
     }
 
+    override func tintColorDidChange() {
+        super.tintColorDidChange()
+
+        self.update()
+    }
+
     // MARK: --- Updatable ---
 
     private func update() {
@@ -184,7 +188,7 @@ class MPEffectView: UIView {
                 self.blurEffect = nil
             }
 
-            self.layer.borderColor = self.borderColor?.cgColor
+            self.layer.borderColor = (self.borderColor ?? self.tintColor)?.cgColor
             if self.isDimmedBySelection {
                 self.alpha = self.isSelected ? .on: .long
             }

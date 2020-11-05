@@ -7,7 +7,8 @@ import Foundation
 import UIKit
 import AuthenticationServices
 
-class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserViewController*/MPUserObserver {
+class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailViewController, /*MPUserViewController*/MPUserObserver {
+    var isCloseHidden:       Bool = true
 
     var autoFillState: ASCredentialIdentityStoreState? {
         didSet {
@@ -145,6 +146,16 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
         self.setNeedsUpdate()
     }
 
+    // MARK: --- Updatable ---
+
+    override func update() {
+        super.update()
+
+        if self.autoFillState?.isEnabled ?? false && self.model.autofill {
+            self.hide()
+        }
+    }
+
     // MARK: --- Types ---
 
     class LoginTypeItem: PickerItem<MPUser, MPResultType, MPResultTypeCell> {
@@ -180,8 +191,6 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, /*MPUserView
                                 catch { mperror( title: "Couldn't update login name", error: error ) }
                             }
                         } )
-
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
         }
 
         override func createItemView() -> FieldItemView {

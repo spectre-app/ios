@@ -7,18 +7,34 @@ import UIKit
 
 protocol MPDetailViewController: UIViewController {
     var isContentScrollable: Bool { get }
+    var isCloseHidden:       Bool { get }
+
+    func hide(completion: (() -> Void)?)
+}
+
+extension MPDetailViewController {
+    var isContentScrollable: Bool {
+        false
+    }
+    var isCloseHidden:       Bool {
+        false
+    }
+
+    func hide(completion: (() -> Void)? = nil) {
+        (self.parent as? MPDetailsHostController)?.hide( completion: completion )
+    }
 }
 
 class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     public let scrollView  = UIScrollView()
     public let contentView = MPUntouchableView()
     public var isShowing: Bool {
-        self.detailsController != nil
+        self.activeController != nil
     }
 
-    private var detailsController: UIViewController? {
+    private var activeController: UIViewController? {
         didSet {
-            self.activeChildController = self.detailsController
+            self.activeChildController = self.activeController
         }
     }
 
@@ -127,25 +143,26 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
     override func show(_ vc: UIViewController, sender: Any?) {
         self.hide {
-            self.detailsController = vc
+            self.activeController = vc
 
-            if let detailsController = self.detailsController {
+            if let activeController = self.activeController {
                 UIView.performWithoutAnimation {
-                    self.addChild( detailsController )
-                    detailsController.view.frame.size = self.contentView.bounds.size.union(
-                            detailsController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
-                    detailsController.beginAppearanceTransition( true, animated: true )
-                    self.contentView.addSubview( detailsController.view )
-                    LayoutConfiguration( view: detailsController.view ).constrain( margins: true ).activate()
+                    self.addChild( activeController )
+                    activeController.view.frame.size = self.contentView.bounds.size.union(
+                            activeController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
+                    activeController.beginAppearanceTransition( true, animated: true )
+                    self.contentView.addSubview( activeController.view )
+                    LayoutConfiguration( view: activeController.view ).constrain( margins: true ).activate()
                 }
                 UIView.animate( withDuration: .short, animations: {
-                    detailsController.view.window?.endEditing( true )
-                    self.fixedContentConfiguration.isActive = (detailsController as? MPDetailViewController)?.isContentScrollable ?? false
+                    let detailController = activeController as? MPDetailViewController
+                    self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
+                    self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
+                    activeController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()
-                    self.closeButton.alpha = .on
                 }, completion: { finished in
-                    detailsController.endAppearanceTransition()
-                    detailsController.didMove( toParent: self )
+                    activeController.endAppearanceTransition()
+                    activeController.didMove( toParent: self )
                 } )
             }
         }
@@ -153,7 +170,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
     @discardableResult
     public func hide(completion: (() -> Void)? = nil) -> Bool {
-        if let detailsController = self.detailsController {
+        if let detailsController = self.activeController {
             DispatchQueue.main.perform {
                 detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
@@ -166,7 +183,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
                     self.contentView.layoutIfNeeded()
-                    self.detailsController = nil
+                    self.activeController = nil
                     completion?()
                 } )
             }

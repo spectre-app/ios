@@ -9,25 +9,29 @@ import UIKit
  * A view that presents a collection of items with a single item at the centre.
  * The item the spinner has at its centre when at rest is the selected item.
  */
-class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
-    private lazy var source = PagerSource( collectionView: self, sectionsOfElements: [ self.pages ] )
-    private let layout = PagerLayout()
+class MPPagerView: UIView, UICollectionViewDelegate {
+    private let collectionView = PagerCollectionView()
+    private lazy var source        = PagerSource( collectionView: self.collectionView, sectionsOfElements: [ self.pages ] )
+    private lazy var indicatorView = PagerIndicator( pagerView: self )
 
     // MARK: --- State ---
 
-    override var intrinsicContentSize: CGSize {
-        CGSize( width: UIView.noIntrinsicMetric,
-                height: self.isHidden ? UIView.noIntrinsicMetric: self.layout.collectionViewContentSize.height )
-    }
+    var pageIndicator = true
 
+    public var page  = 0 {
+        didSet {
+            self.indicatorView.setNeedsUpdate()
+        }
+    }
     public var pages = [ UIView ]() {
         didSet {
-            if self.dataSource !== self.source {
-                self.dataSource = self.source
+            if self.collectionView.dataSource !== self.source {
+                self.collectionView.dataSource = self.source
             }
             if oldValue != self.pages {
                 self.source.update( [ self.pages ] )
             }
+            self.indicatorView.setNeedsUpdate()
         }
     }
 
@@ -38,31 +42,59 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
     }
 
     public init() {
-        super.init( frame: UIScreen.main.bounds, collectionViewLayout: self.layout )
+        super.init( frame: .zero )
 
-        self.isPagingEnabled = true
+        // - View
         self.backgroundColor = .clear
         self.insetsLayoutMarginsFromSafeArea = false
-        self.preservesSuperviewLayoutMargins = true
+        self.collectionView.insetsLayoutMarginsFromSafeArea = false
+        self.collectionView.preservesSuperviewLayoutMargins = true
+        self.collectionView.backgroundColor = .clear
+        self.collectionView.isPagingEnabled = true
+        self.collectionView.delegate = self
+        self.collectionView.register( PagerCell.self )
 
-        self.delegate = self
-        self.register( PagerCell.self )
+        // - Hierarchy
+        self.addSubview( self.collectionView )
+        self.addSubview( self.indicatorView )
+
+        // - Layout
+        LayoutConfiguration( view: self.indicatorView )
+                .constrain( margins: true, anchors: .bottomCenter ).activate()
+        LayoutConfiguration( view: self.collectionView )
+                .constrain( anchors: .topBox )
+                .constrainTo { $1.bottomAnchor.constraint( equalTo: self.indicatorView.topAnchor ) }
+                .activate()
     }
 
-    override func updateConstraints() {
-        super.updateConstraints()
+    // MARK: --- UICollectionViewDelegate ---
 
-        // If any cells have become too small for their current constraints, force re-measuring of layout attributes.
-        for cell in self.visibleCells {
-            if cell.bounds.height < cell.systemLayoutSizeFitting( cell.bounds.size ).height {
-                self.bounds.origin.x += 1
-                self.bounds.origin.x -= 1
-                break
-            }
-        }
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        self.page = Int( CGFloat( self.pages.count - 1 ) * scrollView.contentOffset.x /
+                                 (scrollView.contentSize.width - scrollView.bounds.width) )
     }
 
     // MARK: --- Types ---
+
+    internal class PagerCollectionView: UICollectionView {
+
+        // MARK: --- State ---
+
+        override var intrinsicContentSize: CGSize {
+            CGSize( width: UIView.noIntrinsicMetric,
+                    height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
+        }
+
+        // MARK: --- Life ---
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        init() {
+            super.init( frame: UIScreen.main.bounds, collectionViewLayout: PagerLayout() )
+        }
+    }
 
     internal class PagerLayout: UICollectionViewLayout {
         private var pageSize    = CGSize.zero
@@ -90,7 +122,7 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
             else { return }
 
             if context.invalidateEverything {
-                self.pageSize.width = collectionView.frame.size.width
+                self.pageSize.width = collectionView.bounds.size.width
             }
             if context.invalidateEverything || !(context.invalidatedItemIndexPaths ?? []).isEmpty {
                 self.pageSize.height = self.attributes.reduce( 0, { max( $0, $1.value.size.height ) } )
@@ -129,7 +161,7 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
 
         open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                                   withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
-            self.attributes[originalAttributes.indexPath]?.size.height != preferredAttributes.size.height
+            originalAttributes.size.height != preferredAttributes.size.height
         }
 
         override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutInvalidationContext {
@@ -170,12 +202,14 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
     internal class PagerSource: DataSource<UIView> {
         override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             using( PagerCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.collectonView = collectionView
                 $0.pageView = self.element( at: indexPath )
             }
         }
     }
 
     class PagerCell: UICollectionViewCell {
+        var collectonView: UICollectionView?
         var pageView: UIView? {
             didSet {
                 self.contentView.subviews.filter { $0 != self.pageView }.forEach {
@@ -199,18 +233,16 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
             self.preservesSuperviewLayoutMargins = true
             self.contentView.insetsLayoutMarginsFromSafeArea = false
             self.contentView.preservesSuperviewLayoutMargins = true
-            self.contentView.autoresizingMask = [ .flexibleWidth, .flexibleHeight ]
+            LayoutConfiguration( view: self.contentView ).constrain().activate()
         }
 
         override func layoutSubviews() {
             super.layoutSubviews()
 
-            // Detect when the constraints in the page change such that it wants a larger size.
+            // Detect when the constraints in the page have changed such that it wants a larger page height.
             let fitting = self.systemLayoutSizeFitting( self.bounds.size )
             if self.bounds.size.height < fitting.height {
-                OperationQueue.main.addOperation {
-                    self.superview?.setNeedsUpdateConstraints()
-                }
+                self.collectonView?.collectionViewLayout.invalidateLayout()
             }
         }
 
@@ -219,6 +251,78 @@ class MPPagerView: UICollectionView, UICollectionViewDelegateFlowLayout {
                     targetSize,
                     withHorizontalFittingPriority: .required,
                     verticalFittingPriority: verticalFittingPriority )
+        }
+    }
+
+    class PagerIndicator: UIView, Updatable {
+        private lazy var updateTask = DispatchTask( queue: .main, update: self, animated: true )
+
+        let pagerView: MPPagerView
+        let stackView = UIStackView()
+
+        // - Life
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        init(pagerView: MPPagerView) {
+            self.pagerView = pagerView
+            super.init( frame: .zero )
+
+            // - View
+            self => \.backgroundColor => Theme.current.color.mute
+            self.layoutMargins = .border( horizontal: 6, vertical: 4 )
+            self.stackView.axis = .horizontal
+            self.stackView.spacing = 4
+
+            // - Hierarchy
+            self.addSubview( self.stackView )
+
+            // - Layout
+            LayoutConfiguration( view: self.stackView ).constrain( margins: true ).activate()
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+
+            self.layer.cornerRadius = min( self.bounds.size.width, self.bounds.size.height ) / 2
+        }
+
+        // - Updatable
+
+        func setNeedsUpdate() {
+            self.updateTask.request()
+        }
+
+        func update() {
+            while self.stackView.arrangedSubviews.count > self.pagerView.pages.count {
+                self.stackView.arrangedSubviews.first?.removeFromSuperview()
+            }
+            while self.stackView.arrangedSubviews.count < self.pagerView.pages.count {
+                self.stackView.addArrangedSubview( PageIndicator() )
+            }
+            for (s, subview) in self.stackView.arrangedSubviews.enumerated() {
+                subview.alpha = s == self.pagerView.page ? .on: .short
+            }
+        }
+    }
+
+    class PageIndicator: UIView {
+        override var intrinsicContentSize: CGSize {
+            CGSize( width: 8, height: 8 )
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+
+            self.layer.cornerRadius = min( self.bounds.size.width, self.bounds.size.height ) / 2
+        }
+
+        override func tintColorDidChange() {
+            super.tintColorDidChange()
+
+            self.backgroundColor = self.tintColor
         }
     }
 }

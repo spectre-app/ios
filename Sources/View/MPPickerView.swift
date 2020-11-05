@@ -113,7 +113,7 @@ class MPPickerView: UICollectionView {
 
         open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                                   withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
-            self.attributes[originalAttributes.representedElementCategory]?[originalAttributes.indexPath]?.size != preferredAttributes.size
+            originalAttributes.size != preferredAttributes.size
         }
 
         override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutInvalidationContext {

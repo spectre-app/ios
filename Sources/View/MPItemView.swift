@@ -258,6 +258,38 @@ class Behaviour<M> {
     }
 }
 
+class ColorizeBehaviour<M>: Behaviour<M> {
+    let color:     UIColor
+    let condition: (M) -> Bool
+
+    init(color: UIColor, condition: @escaping (M) -> Bool) {
+        self.color = color
+        self.condition = condition
+        super.init()
+    }
+
+    override func didUpdate(item: Item<M>) {
+        super.didUpdate( item: item )
+
+        if let model = item.model, self.condition( model ) {
+            item.view.tintColor = self.color
+        }
+        else {
+            item.view.tintColor = nil
+        }
+
+        if let view = item.view as? FieldItem.FieldItemView {
+            if let tintColor = item.view.tintColor {
+                (view.valueField => \.textColor).unbind()
+                view.valueField.textColor = tintColor
+            }
+            else {
+                view.valueField => \.textColor => Theme.current.color.body
+            }
+        }
+    }
+}
+
 class TapBehaviour<M>: Behaviour<M> {
     var tapRecognizers = [ UIGestureRecognizer: Item<M> ]()
     var isEnabled = true {
@@ -502,7 +534,13 @@ class ToggleItem<M>: ValueItem<M, Bool> {
 
     class ToggleItemView: ItemView {
         let item: ToggleItem
-        lazy var button = MPToggleButton( identifier: self.item.identifier )
+        lazy var button = MPToggleButton( identifier: self.item.identifier ) { [unowned self] isSelected in
+            if let model = self.item.model {
+                self.item.update?( model, isSelected )
+            }
+
+            return self.item.value ?? false
+        }
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -514,13 +552,7 @@ class ToggleItem<M>: ValueItem<M, Bool> {
         }
 
         override func createValueView() -> UIView? {
-            self.button.action( for: .primaryActionTriggered ) { [unowned self] in
-                if let model = self.item.model {
-                    self.item.update?( model, self.button.isSelected )
-                    self.item.setNeedsUpdate()
-                }
-            }
-            return self.button
+            self.button
         }
 
         override func update() {
@@ -967,7 +999,7 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
         PagerItemView( withItem: self )
     }
 
-    class PagerItemView: ItemView, UICollectionViewDelegate {
+    class PagerItemView: ItemView {
         let item: PagerItem
         let pagerView = MPPagerView()
         lazy var pageItems = self.item.value ?? []
@@ -988,11 +1020,10 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
         override func didLoad() {
             super.didLoad()
 
-            self.pagerView.delegate = self
             self.pageItems.forEach { $0.model = self.item.model }
             self.pagerView.pages = self.pageItems.map { $0.view }
             self.pageItems.forEach { $0.view.didLoad() }
-            self.pageItems.forEach { $0.update() }
+            self.pageItems.forEach { $0.update() } // TODO: self.update?
         }
 
         override func update() {
@@ -1000,8 +1031,6 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
 
             self.pageItems.forEach { $0.update() }
         }
-
-        // MARK: --- UICollectionViewDelegate ---
     }
 }
 

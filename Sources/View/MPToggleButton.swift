@@ -8,18 +8,19 @@ import UIKit
 class MPToggleButton: UIView {
     private let button     = UIButton()
     private let checkLabel = UILabel()
-    private lazy var titleView = MPEffectView( content: self.button )
+    private lazy var contentView = MPEffectView( content: self.button )
 
     var tapEffect = true
     var identifier: String?
+    var action:     (Bool) -> Bool?
     var isSelected: Bool {
         get {
             self.button.isSelected
         }
         set {
-            self.button.isSelected = newValue
-
             DispatchQueue.main.perform {
+                self.button.isSelected = newValue
+
                 UIView.animate( withDuration: .short ) {
                     self.button.alpha = self.isSelected ? .on: .short
 //                    self.button.imageView?.alpha = self.isSelected ? .on: .short
@@ -61,8 +62,9 @@ class MPToggleButton: UIView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(identifier: String? = nil) {
+    init(identifier: String? = nil, action: @escaping (Bool) -> Bool?) {
         self.identifier = identifier
+        self.action = action
         super.init( frame: .zero )
 
         self.checkLabel => \.font => Theme.current.font.callout
@@ -73,11 +75,11 @@ class MPToggleButton: UIView {
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
 
-        self.titleView.isRound = true
+        self.contentView.isRound = true
 
         self.button.contentEdgeInsets = .border( 12 )
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
-            self.isSelected = !self.isSelected
+            self.action( !self.isSelected ).flatMap { self.isSelected = $0 }
             self.track()
 
             if self.tapEffect {
@@ -89,13 +91,13 @@ class MPToggleButton: UIView {
 
         self.layoutMargins = self.button.contentEdgeInsets
 
-        self.addSubview( self.titleView )
+        self.addSubview( self.contentView )
         self.addSubview( self.checkLabel )
 
         self.widthAnchor.constraint( equalTo: self.heightAnchor ).isActive = true
         self.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ).isActive = true
 
-        LayoutConfiguration( view: self.titleView )
+        LayoutConfiguration( view: self.contentView )
                 .constrain( margins: true )
                 .activate()
         LayoutConfiguration( view: self.checkLabel )
