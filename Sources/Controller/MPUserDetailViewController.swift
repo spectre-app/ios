@@ -190,8 +190,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                 ToggleItem<MPUser>( identifier: "user >autofill", title: "AutoFill Passwords 🅿︎", icon: { _ in .icon( "" ) },
                                     value: { $0.autofill }, update: { $0.autofill = $1 }, caption: { _ in
                     """
-                    Expose services in password auto-fill
-                    from other apps.
+                    Auto-fill your service passwords from other apps.
                     """
                 } )
                         .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) } ) {
