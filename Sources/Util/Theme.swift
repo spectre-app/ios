@@ -441,7 +441,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.font.caption1.set( UIFont.poppins( .regular, asTextStyle: .caption1 ), withTextStyle: .caption1 )
         self.font.caption2.set( UIFont.poppins( .medium, asTextStyle: .caption2 ), withTextStyle: .caption2 )
         self.font.footnote.set( UIFont.poppins( .medium, asTextStyle: .footnote ), withTextStyle: .footnote )
-        self.font.password.set( UIFont.sourceCodePro( .bold, ofSize: 20 ), withTextStyle: .largeTitle )
+        self.font.password.set( UIFont.sourceCodePro( .semibold, ofSize: 16 ), withTextStyle: .largeTitle )
         self.font.mono.set( UIFont.sourceCodePro( .thin, ofSize: UIFont.systemFontSize ), withTextStyle: .body )
         self.color.body.set( UIColor.darkText )
         self.color.secondary.set( UIColor.darkGray.with( alpha: .long ) )

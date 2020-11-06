@@ -172,26 +172,27 @@ class MPEffectView: UIView {
 
     private func update() {
         DispatchQueue.main.perform {
-            self.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
+            let isDimmed = self.isDimmedBySelection && !self.isSelected
 
             if self.isBackground {
                 self.layer.borderWidth = self.borderWidth
-                if #available( iOS 13, * ) {
-                    self.blurEffect = UIBlurEffect( style: .systemUltraThinMaterial )
-                }
-                else {
-                    self.blurEffect = UIBlurEffect( style: .prominent )
-                }
+                self.blurEffect = UIBlurEffect( style: {
+                    if #available( iOS 13, * ) {
+                        return isDimmed ? .systemUltraThinMaterial: .systemThinMaterial
+                    }
+                    else {
+                        return isDimmed ? .regular: .prominent
+                    }
+                }() )
             }
             else {
                 self.layer.borderWidth = .off
                 self.blurEffect = nil
             }
 
+            self.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
             self.layer.borderColor = (self.borderColor ?? self.tintColor)?.cgColor
-            if self.isDimmedBySelection {
-                self.alpha = self.isSelected ? .on: .long
-            }
+            self.alpha = isDimmed ? .long: .on
         }
     }
 }

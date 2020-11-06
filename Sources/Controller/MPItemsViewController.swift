@@ -56,7 +56,7 @@ class MPItemsViewController<M>: MPViewController {
         self.backgroundView.layer.masksToBounds = true
 
         self.itemsView.axis = .vertical
-        self.itemsView.spacing = 20
+        self.itemsView.spacing = 32
         for item in self.items {
             item.viewController = self
             self.itemsView.addArrangedSubview( item.view )

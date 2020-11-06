@@ -12,8 +12,8 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
     override func loadItems() -> [Item<MPService>] {
         [ PasswordCounterItem(), SeparatorItem(),
-          PasswordTypeItem(), PasswordResultItem(), SeparatorItem(),
-          LoginTypeItem(), LoginResultItem(), SeparatorItem(),
+          PasswordTypeItem(), SeparatorItem(),
+          LoginTypeItem(), SeparatorItem(),
           SecurityAnswerItem(), SeparatorItem(),
           URLItem(), SeparatorItem(),
           InfoItem() ]
@@ -65,7 +65,19 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.resultType }, update: { $0.resultType = $1 } )
+                        value: { $0.resultType }, update: { $0.resultType = $1 },
+                        subitems: [ PasswordResultItem() ],
+                        caption: {
+                            let attacker = $0.user.attacker ?? .default
+                            if InAppFeature.premium.enabled(),
+                               let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
+                                       attacker.timeToCrack( string: try? $0.result().token.await() ) {
+                                return "Time to crack: \(timeToCrack) 🅿︎"
+                            }
+                            else {
+                                return "Time to crack: unknown 🅿︎"
+                            }
+                        })
         }
 
         override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
@@ -86,18 +98,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                     do { service.resultState = try $0.get() }
                     catch { mperror( title: "Couldn't update service password", error: error ) }
                 }
-            },
-                        caption: {
-                            let attacker = $0.user.attacker ?? .default
-                            if InAppFeature.premium.enabled(),
-                               let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
-                                       attacker.timeToCrack( string: try? $0.result().token.await() ) {
-                                return "Time to crack: \(timeToCrack) 🅿︎"
-                            }
-                            else {
-                                return "Time to crack: unknown 🅿︎"
-                            }
-                        } )
+            } )
         }
 
         override func createItemView() -> FieldItemView {
@@ -127,7 +128,13 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.loginType }, update: { $0.loginType = $1 } )
+                        value: { $0.loginType }, update: { $0.loginType = $1 },
+                        subitems: [ LoginResultItem() ],
+                        caption: {
+                            $0.loginType == .none ?
+                                    "The service uses your Standard Login Name.":
+                                    "The service is using a service‑specific login name."
+                        } )
 
             self.addBehaviour( PremiumTapBehaviour() )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
@@ -159,11 +166,6 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                 do { service.loginState = try $0.get() }
                                 catch { mperror( title: "Couldn't update service name", error: error ) }
                             }
-                        },
-                        caption: {
-                            $0.loginType == .none ?
-                                    "The service uses your Standard Login Name.":
-                                    "The service is using a service‑specific login name."
                         } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )

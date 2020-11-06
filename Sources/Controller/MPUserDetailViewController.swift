@@ -12,7 +12,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     override func loadItems() -> [Item<MPUser>] {
         [ IdenticonItem(), AvatarItem(), ActionsItem(), SeparatorItem(),
-          LoginTypeItem(), LoginResultItem(), DefaultTypeItem(), SeparatorItem(),
+          LoginTypeItem(), DefaultTypeItem(), SeparatorItem(),
           AttackerItem(), SeparatorItem(),
           UsageFeaturesItem(), SystemFeaturesItem(), SeparatorItem(),
           InfoItem(),
@@ -64,7 +64,13 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                                     [ MPResultType.statefulPersonal ],
                                     MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
                         },
-                        value: { $0.loginType }, update: { $0.loginType = $1 } )
+                        value: { $0.loginType }, update: { $0.loginType = $1 },
+                        subitems: [ LoginResultItem() ],
+                        caption: { _ in
+                            """
+                            The login name used for services that do not have a service‑specific login name. 
+                            """
+                        })
         }
 
         override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
@@ -86,11 +92,6 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                                 do { user.loginState = try $0.get() }
                                 catch { mperror( title: "Couldn't update login name", error: error ) }
                             }
-                        },
-                        caption: { _ in
-                            """
-                            The login name used for services that do not have a service‑specific login name. 
-                            """
                         } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
