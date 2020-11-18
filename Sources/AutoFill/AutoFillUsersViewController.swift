@@ -42,7 +42,7 @@ class AutoFillUsersViewController: BasicUsersViewController {
         super.viewDidAppear( animated )
 
         if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
-            self.selectedFile = self.fileSource.firstElement( where: { $0?.fullName == userName } )
+            self.usersSpinner.requestSelection( at: self.fileSource.indexPath( where: { $0?.fullName == userName } ) )
         }
     }
 

@@ -26,9 +26,6 @@ public class MPSpinnerView: UICollectionView {
             }
         }
     }
-    public override var safeAreaInsets: UIEdgeInsets {
-        .zero
-    }
 
     // MARK: --- Life ---
 
@@ -36,7 +33,6 @@ public class MPSpinnerView: UICollectionView {
         super.init( frame: .zero, collectionViewLayout: Layout() )
 
         self.isPagingEnabled = true
-        self.insetsLayoutMarginsFromSafeArea = false
         self.contentInsetAdjustmentBehavior = .never
         self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
     }
@@ -60,49 +56,64 @@ public class MPSpinnerView: UICollectionView {
     // MARK: --- Types ---
 
     internal class Layout: UICollectionViewLayout {
-        internal var itemCount         = 0
-        internal var bounds            = CGRect.zero, oldBounds = CGRect.zero
-        internal var itemAttributes    = [ Int: UICollectionViewLayoutAttributes ]()
-        internal var itemOldAttributes = [ Int: UICollectionViewLayoutAttributes ]()
-        internal var contentSize       = CGSize.zero
+        var count      = 0
+        var attributes = [ IndexPath: UICollectionViewLayoutAttributes ]()
+        var bounds     = CGRect.zero
+        var size       = CGSize.zero
 
         override var collectionViewContentSize: CGSize {
-            self.contentSize
+            self.size
+        }
+
+        override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+            newBounds != self.bounds
+        }
+
+        override func invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
+            self.bounds = newBounds
+            return super.invalidationContext( forBoundsChange: newBounds )
         }
 
         override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
             super.invalidateLayout( with: context )
 
-            DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { [weak self] in
-                self?.collectionView?.flashScrollIndicators()
-            }
-
             if context.invalidateEverything || context.invalidateDataSourceCounts {
-                self.itemAttributes.removeAll()
-
-                if let collectionView = self.collectionView {
-                    self.bounds = collectionView.bounds
-                    self.itemCount = collectionView.numberOfSections == 0 ? 0: collectionView.numberOfItems( inSection: 0 )
+                DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { [weak self] in
+                    self?.collectionView?.flashScrollIndicators()
                 }
-            }
-            else if let invalidatedItemIndexPaths = context.invalidatedItemIndexPaths {
-                invalidatedItemIndexPaths.forEach { self.itemAttributes.removeValue( forKey: $0.item ) }
+
+                self.bounds = self.collectionView?.bounds ?? .null
+                self.count = self.collectionView?.numberOfSections == 0 ? 0: self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
             }
         }
 
         override func prepare() {
             super.prepare()
 
-            self.contentSize = CGSize( width: self.bounds.width, height: self.bounds.height * CGFloat( self.itemCount ) )
-            self.layout( items: &self.itemAttributes, inBounds: self.bounds )
-        }
+            self.size = CGSize( width: 0, height: self.bounds.size.height * CGFloat( self.count ) )
+            let scan = self.bounds.origin.y / self.bounds.size.height
 
-        func layout(items: inout [Int: UICollectionViewLayoutAttributes], inBounds bounds: CGRect) {
-            let scan = bounds.size.height > 0 ? bounds.origin.y / bounds.size.height: 0
+            // Align attributes keys when indexPaths change.
+            let attributes = self.attributes.values.filter { $0.indexPath.item < self.count }
+            self.attributes.removeAll( keepingCapacity: true )
+            for attrs in attributes {
+                self.attributes[attrs.indexPath] = attrs
+            }
 
-            for item in 0..<self.itemCount {
-                var offset       = CGFloat.zero, scale = CGFloat.zero, alpha = CGFloat.zero
-                let itemDistance = scan - CGFloat( item )
+            // Create new attributes.
+            for i in 0..<self.count {
+                let indexPath = IndexPath( item: i, section: 0 )
+
+                if !self.attributes.keys.contains( indexPath ) {
+                    self.attributes[indexPath] = using( UICollectionViewLayoutAttributes( forCellWith: indexPath ) ) {
+                        $0.size = self.bounds.size
+                    }
+                }
+            }
+
+            for attrs in self.attributes.values {
+                let offset: CGFloat, scale: CGFloat, alpha: CGFloat
+                let itemDistance = scan - CGFloat( attrs.indexPath.item )
                 if itemDistance > 0 {
                     // subview shows before scanned item.
                     offset = -100 * pow( itemDistance, 2 )
@@ -116,78 +127,21 @@ public class MPSpinnerView: UICollectionView {
                     alpha = max( 0, 1 - pow( itemDistance * 0.8, 2 ) )
                 }
 
-                let attributes = items[item] ?? UICollectionViewLayoutAttributes( forCellWith: IndexPath( item: item, section: 0 ) )
-                if attributes.size == .zero {
-                    attributes.size = bounds.size
-                }
-                attributes.center = bounds.center
-                attributes.zIndex = -item
-                attributes.alpha = alpha
-                attributes.isHidden = alpha == 0
-                attributes.transform = CGAffineTransform( translationX: 0, y: offset ).scaledBy( x: scale, y: scale )
-                items[item] = attributes
+                attrs.size = self.bounds.size
+                attrs.center = self.bounds.center
+                attrs.zIndex = -attrs.indexPath.item
+                attrs.alpha = alpha
+                attrs.isHidden = alpha == .off
+                attrs.transform = CGAffineTransform( translationX: 0, y: offset ).scaledBy( x: scale, y: scale )
             }
-        }
-
-        override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
-            guard self.oldBounds.height > 0
-            else { return proposedContentOffset }
-
-            let scan = self.oldBounds.size.height > 0 ? self.oldBounds.origin.y / self.oldBounds.size.height: 0
-            return CGPoint( x: self.oldBounds.origin.x, y: scan * self.bounds.height )
-        }
-
-        override func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
-            super.prepare( forAnimatedBoundsChange: oldBounds )
-
-            self.oldBounds = oldBounds
-            self.itemOldAttributes = self.itemAttributes.mapValues { $0.copy() as! UICollectionViewLayoutAttributes }
-            self.layout( items: &self.itemOldAttributes, inBounds: oldBounds )
-        }
-
-        override func finalizeAnimatedBoundsChange() {
-            super.finalizeAnimatedBoundsChange()
-
-            self.oldBounds = .zero
-            self.itemOldAttributes.removeAll()
-        }
-
-        override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-            self.itemOldAttributes[itemIndexPath.item] ?? self.itemAttributes[itemIndexPath.item]
-        }
-
-        override func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-            self.itemAttributes[itemIndexPath.item]
-        }
-
-        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-            guard self.bounds.height > 0
-            else { return nil }
-
-            let fromItem = Int( rect.minY / self.bounds.height ), toItem = Int( rect.maxY / self.bounds.height )
-            return Range( fromItem...toItem ).clamped( to: 0..<self.itemCount ).compactMap { self.itemAttributes[$0] }
         }
 
         override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-            self.itemAttributes[indexPath.item]
+            self.attributes[indexPath]
         }
 
-        override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-            guard newBounds != self.bounds
-            else { return false }
-
-            self.bounds = newBounds
-            return true
-        }
-
-        override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
-            if let currentAttributes = self.itemAttributes[originalAttributes.indexPath.item],
-               currentAttributes.size.height != preferredAttributes.size.height {
-                currentAttributes.size.height = preferredAttributes.size.height
-                return true
-            }
-
-            return false
+        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+            Array( self.attributes.values )
         }
     }
 }

@@ -105,7 +105,7 @@ extension CGSize {
         lhs.height -= rhs.height
     }
 
-    var isEmpty : Bool {
+    var isEmpty: Bool {
         self.width == 0 || self.height == 0
     }
 
@@ -239,12 +239,21 @@ extension UICollectionView {
         self.collectionViewLayout.register( nib, forDecorationViewOfKind: kind )
     }
 
-
     @discardableResult
     public func requestSelection(item: Int?, inSection section: Int = 0,
                                  animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
                     -> Bool {
-        let selectPath = item.flatMap { IndexPath( item: $0, section: section ) }
+        if let item = item {
+            let x = IndexPath( item: item, section: section )
+            return self.requestSelection( at: x, animated: animated, scrollPosition: scrollPosition )
+        } else {
+            return self.requestSelection( at: nil, animated: animated, scrollPosition: scrollPosition )
+        }
+    }
+
+    @discardableResult
+    public func requestSelection(at selectPath: IndexPath?, animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
+                    -> Bool {
         let selectedPath = self.indexPathsForSelectedItems?.first
 
         if let selectPath = selectPath, selectPath == selectedPath ||

@@ -16,7 +16,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                 trc( "Selected user: %@", self.selectedFile )
 
                 UIView.animate( withDuration: .short ) {
-                    self.usersSpinner.selectedItem = self.fileSource.indexPath( for: self.selectedFile )?.item
                     self.userEvent?.end( [ "result": "deselected" ] )
 
                     if let selectedItem = self.usersSpinner.selectedItem {
@@ -38,7 +37,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
     internal lazy var fileSource = UsersSource( viewController: self )
     private var userEvent: MPTracker.TimedEvent?
 
-    private let  usersSpinner = MPSpinnerView()
+    internal let usersSpinner = MPSpinnerView()
     internal let detailsHost  = MPDetailsHostController()
 
     // MARK: --- Life ---
@@ -77,8 +76,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
 
         // - Layout
         LayoutConfiguration( view: self.usersSpinner )
-                .constrain( anchors: .topBox )
-                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ).with( priority: .defaultHigh ) }
+                .constrain()
                 .activate()
 
         LayoutConfiguration( view: self.detailsHost.view )
@@ -90,14 +88,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         super.viewWillAppear( animated )
 
         MPMarshal.shared.setNeedsUpdate()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear( animated )
-
-        self.keyboardLayoutGuide.add( constraints: {
-            [ self.usersSpinner.bottomAnchor.constraint( equalTo: $0.topAnchor ) ]
-        } )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -298,7 +288,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
-                    .constrain()
+                    .constrain( margins: true, anchors: .horizontalCenter )
                     .activate()
             LayoutConfiguration( view: self.nameLabel )
                     .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
@@ -368,11 +358,16 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         override func layoutSubviews() {
             super.layoutSubviews()
 
-            let path = CGMutablePath()
+            let path          = CGMutablePath()
+            let idBadgeRect   = self.convert( self.idBadgeView.alignmentRect, from: self.contentView )
+            let nameRect      = self.convert( self.nameLabel.alignmentRect, from: self.contentView )
+            let authBadgeRect = self.convert( self.authBadgeView.alignmentRect, from: self.contentView )
+            let passwordRect  = self.convert( self.passwordField.alignmentRect, from: self.contentView )
+
             if self.isSelected {
-                path.addPath( CGPath.between( self.idBadgeView.alignmentRect, self.nameLabel.alignmentRect ) )
+                path.addPath( CGPath.between( idBadgeRect, nameRect ) )
                 if self.authenticationConfiguration.isActive {
-                    path.addPath( CGPath.between( self.authBadgeView.alignmentRect, self.passwordField.alignmentRect ) )
+                    path.addPath( CGPath.between( authBadgeRect, passwordRect ) )
                 }
             }
             self.path = path.isEmpty ? nil: path
@@ -441,6 +436,8 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         private func update() {
             DispatchQueue.main.perform {
                 UIView.animate( withDuration: .long ) {
+                    self.authenticationConfiguration.isActive = self.isSelected
+
                     self.nameLabel.alpha = self.isSelected && self.userFile == nil ? .off: .on
                     self.nameField.alpha = .on - self.nameLabel.alpha
 
@@ -454,8 +451,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                     self.biometricButton.sizeToFit()
 
                     if self.isSelected {
-                        self.authenticationConfiguration.activate()
-
                         if self.nameField.alpha != .off {
                             self.nameField.becomeFirstResponder()
                         }
@@ -464,7 +459,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                         }
                     }
                     else {
-                        self.authenticationConfiguration.deactivate()
                         self.passwordField.resignFirstResponder()
                         self.nameField.resignFirstResponder()
                     }
