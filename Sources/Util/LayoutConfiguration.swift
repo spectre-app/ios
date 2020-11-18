@@ -8,28 +8,30 @@ import UIKit
 struct Anchor: OptionSet {
     let rawValue: UInt
 
-    static let leading        = Anchor( rawValue: 1 << 0 )
-    static let trailing       = Anchor( rawValue: 1 << 1 )
-    static let left           = Anchor( rawValue: 1 << 2 )
-    static let right          = Anchor( rawValue: 1 << 3 )
-    static let top            = Anchor( rawValue: 1 << 4 )
-    static let bottom         = Anchor( rawValue: 1 << 5 )
-    static let width          = Anchor( rawValue: 1 << 6 )
-    static let height         = Anchor( rawValue: 1 << 7 )
-    static let centerX        = Anchor( rawValue: 1 << 8 )
-    static let centerY        = Anchor( rawValue: 1 << 9 )
-    static let center         = Anchor( arrayLiteral: Anchor.centerX, Anchor.centerY )
-    static let horizontally   = Anchor( arrayLiteral: Anchor.leading, Anchor.trailing )
-    static let vertically     = Anchor( arrayLiteral: Anchor.top, Anchor.bottom )
-    static let box            = Anchor( arrayLiteral: Anchor.horizontally, Anchor.vertically )
-    static let leadingBox     = Anchor( arrayLiteral: Anchor.leading, Anchor.vertically )
-    static let leadingCenter  = Anchor( arrayLiteral: Anchor.leading, Anchor.centerY )
-    static let trailingBox    = Anchor( arrayLiteral: Anchor.trailing, Anchor.vertically )
-    static let trailingCenter = Anchor( arrayLiteral: Anchor.trailing, Anchor.centerY )
-    static let topBox         = Anchor( arrayLiteral: Anchor.top, Anchor.horizontally )
-    static let topCenter      = Anchor( arrayLiteral: Anchor.top, Anchor.centerX )
-    static let bottomBox      = Anchor( arrayLiteral: Anchor.bottom, Anchor.horizontally )
-    static let bottomCenter   = Anchor( arrayLiteral: Anchor.bottom, Anchor.centerX )
+    static let leading          = Anchor( rawValue: 1 << 0 )
+    static let trailing         = Anchor( rawValue: 1 << 1 )
+    static let left             = Anchor( rawValue: 1 << 2 )
+    static let right            = Anchor( rawValue: 1 << 3 )
+    static let top              = Anchor( rawValue: 1 << 4 )
+    static let bottom           = Anchor( rawValue: 1 << 5 )
+    static let width            = Anchor( rawValue: 1 << 6 )
+    static let height           = Anchor( rawValue: 1 << 7 )
+    static let centerX          = Anchor( rawValue: 1 << 8 )
+    static let centerY          = Anchor( rawValue: 1 << 9 )
+    static let center           = Anchor( arrayLiteral: Anchor.centerX, Anchor.centerY )
+    static let leadingCenter    = Anchor( arrayLiteral: Anchor.leading, Anchor.centerY )
+    static let trailingCenter   = Anchor( arrayLiteral: Anchor.trailing, Anchor.centerY )
+    static let horizontal       = Anchor( arrayLiteral: Anchor.leading, Anchor.trailing )
+    static let vertical         = Anchor( arrayLiteral: Anchor.top, Anchor.bottom )
+    static let horizontalCenter = Anchor( arrayLiteral: Anchor.horizontal, Anchor.centerY )
+    static let verticalCenter   = Anchor( arrayLiteral: Anchor.vertical, Anchor.centerX )
+    static let box              = Anchor( arrayLiteral: Anchor.horizontal, Anchor.vertical )
+    static let leadingBox       = Anchor( arrayLiteral: Anchor.leading, Anchor.vertical )
+    static let trailingBox      = Anchor( arrayLiteral: Anchor.trailing, Anchor.vertical )
+    static let topBox           = Anchor( arrayLiteral: Anchor.top, Anchor.horizontal )
+    static let topCenter        = Anchor( arrayLiteral: Anchor.top, Anchor.centerX )
+    static let bottomBox        = Anchor( arrayLiteral: Anchor.bottom, Anchor.horizontal )
+    static let bottomCenter     = Anchor( arrayLiteral: Anchor.bottom, Anchor.centerX )
 }
 
 public struct LayoutTarget<T: UIView>: CustomStringConvertible {
@@ -97,9 +99,9 @@ private let dummyView = UIView()
 public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserver {
 
     //! The target upon which this configuration's operations operate.
-    public let  target:    LayoutTarget<T>
+    public let  target:   LayoutTarget<T>
     //! Whether this configuration has last been activated or deactivated.
-    private var activated = false
+    private var activated              = false
     public var  isActive: Bool {
         get {
             self.activated
@@ -287,22 +289,38 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .centerX ) {
-            self.constrainTo {
+            self.constrainToAll {
                 if margins {
-                    return (host ?? $0).layoutMarginsGuide.centerXAnchor.constraint( equalTo: $1.centerXAnchor )
+                    return [
+                        (host ?? $0).layoutMarginsGuide.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ),
+                        (host ?? $0).layoutMarginsGuide.centerXAnchor.constraint( equalTo: $1.centerXAnchor ),
+                        (host ?? $0).layoutMarginsGuide.trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ),
+                    ]
                 }
                 else {
-                    return (host ?? $0).centerXAnchor.constraint( equalTo: $1.centerXAnchor )
+                    return [
+                        (host ?? $0).leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ),
+                        (host ?? $0).centerXAnchor.constraint( equalTo: $1.centerXAnchor ),
+                        (host ?? $0).trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ),
+                    ]
                 }
             }
         }
         if anchors.contains( .centerY ) {
-            self.constrainTo {
+            self.constrainToAll {
                 if margins {
-                    return (host ?? $0).layoutMarginsGuide.centerYAnchor.constraint( equalTo: $1.centerYAnchor )
+                    return [
+                        (host ?? $0).layoutMarginsGuide.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ),
+                        (host ?? $0).layoutMarginsGuide.centerYAnchor.constraint( equalTo: $1.centerYAnchor ),
+                        (host ?? $0).layoutMarginsGuide.bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ),
+                    ]
                 }
                 else {
-                    return (host ?? $0).centerYAnchor.constraint( equalTo: $1.centerYAnchor )
+                    return [
+                        (host ?? $0).topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ),
+                        (host ?? $0).centerYAnchor.constraint( equalTo: $1.centerYAnchor ),
+                        (host ?? $0).bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ),
+                    ]
                 }
             }
         }

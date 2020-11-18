@@ -67,8 +67,8 @@ class MPItemsViewController<M>: MPViewController {
 
         // - Layout
         LayoutConfiguration( view: self.itemsView )
-                .constrain( margins: true, anchors: .vertically )
-                .constrain( anchors: .horizontally )
+                .constrain( margins: true, anchors: .vertical )
+                .constrain( anchors: .horizontal )
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                 .activate()
 

@@ -95,7 +95,7 @@ class MPUsersViewController: BasicUsersViewController {
                 .activate()
 
         LayoutConfiguration( view: self.userToolbar )
-                .constrain( anchors: .horizontally )
+                .constrain( anchors: .horizontal )
                 .activate()
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
