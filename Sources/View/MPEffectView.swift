@@ -48,6 +48,9 @@ class MPEffectView: UIView {
             }
         }
     }
+    public var   isDimmed:            Bool {
+        self.isDimmedBySelection && !self.isSelected
+    }
     override var frame:               CGRect {
         didSet {
             if self.isRound && self.frame != oldValue {
@@ -120,11 +123,11 @@ class MPEffectView: UIView {
         super.init( frame: .zero )
 
         // - View
-        self.layer.masksToBounds = true
-        self.layer.shadowRadius = 0
-        self.layer.shadowOpacity = .short
-        self.layer => \.shadowColor => Theme.current.color.shadow
-        self.layer.shadowOffset = CGSize( width: 0, height: 1 )
+        self.blurEffectView.layer.masksToBounds = true
+        self.blurEffectView.layer.shadowRadius = 0
+        self.blurEffectView.layer.shadowOpacity = .short
+        self.blurEffectView.layer => \.shadowColor => Theme.current.color.shadow
+        self.blurEffectView.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
         self.vibrancyEffectView.contentView.insetsLayoutMarginsFromSafeArea = false
         self.update()
@@ -158,10 +161,6 @@ class MPEffectView: UIView {
         self.vibrancyEffectView.contentView.addSubview( view )
     }
 
-    override func addSubview(_ view: UIView) {
-        super.addSubview( view )
-    }
-
     override func tintColorDidChange() {
         super.tintColorDidChange()
 
@@ -172,27 +171,25 @@ class MPEffectView: UIView {
 
     private func update() {
         DispatchQueue.main.perform {
-            let isDimmed = self.isDimmedBySelection && !self.isSelected
-
             if self.isBackground {
-                self.layer.borderWidth = self.borderWidth
+                self.blurEffectView.layer.borderWidth = self.borderWidth
                 self.blurEffect = UIBlurEffect( style: {
                     if #available( iOS 13, * ) {
-                        return isDimmed ? .systemUltraThinMaterial: .systemThinMaterial
+                        return self.isDimmed ? .systemUltraThinMaterial: .systemThinMaterial
                     }
                     else {
-                        return isDimmed ? .regular: .prominent
+                        return self.isDimmed ? .regular: .prominent
                     }
                 }() )
             }
             else {
-                self.layer.borderWidth = .off
+                self.blurEffectView.layer.borderWidth = .off
                 self.blurEffect = nil
             }
 
-            self.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
-            self.layer.borderColor = (self.borderColor ?? self.tintColor)?.cgColor
-            self.alpha = isDimmed ? .long: .on
+            self.blurEffectView.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
+            self.blurEffectView.layer.borderColor = (self.borderColor ?? self.tintColor)?.cgColor
+            self.blurEffectView.alpha = self.isDimmed ? .long: .on
         }
     }
 }
