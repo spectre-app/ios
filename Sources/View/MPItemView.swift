@@ -399,9 +399,14 @@ class SeparatorItem<M>: Item<M> {
         }
 
         override func createValueView() -> UIView? {
+            self.separatorView
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
             self.separatorView => \.backgroundColor => Theme.current.color.mute
             self.separatorView.heightAnchor.constraint( equalToConstant: 1 ).isActive = true
-            return self.separatorView
         }
     }
 }
@@ -443,13 +448,17 @@ class LabelItem<M>: ValueItem<M, Any> {
         }
 
         override func createValueView() -> UIView? {
+            self.valueLabel
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
             self.valueLabel => \.font => Theme.current.font.largeTitle
             self.valueLabel.textAlignment = .center
             self.valueLabel => \.textColor => Theme.current.color.body
             self.valueLabel => \.shadowColor => Theme.current.color.shadow
             self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
-
-            return self.valueLabel
         }
 
         override func update() {
@@ -637,6 +646,12 @@ class DateItem<M>: ValueItem<M, Date> {
         }
 
         override func createValueView() -> UIView? {
+            self.valueView
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
             self.valueView.addSubview( self.dateView )
 
             LayoutConfiguration( view: self.dateView )
@@ -646,8 +661,6 @@ class DateItem<M>: ValueItem<M, Date> {
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
-
-            return self.valueView
         }
 
         override func update() {
@@ -699,6 +712,12 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         }
 
         override func createValueView() -> UIView? {
+            self.valueField
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
             self.valueField.delegate = self.item
             self.valueField => \.textColor => Theme.current.color.body
             self.valueField.textAlignment = .center
@@ -709,7 +728,6 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
                     self.item.update?( model, text )
                 }
             }
-            return self.valueField
         }
 
         override func update() {
@@ -754,11 +772,16 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
         }
 
         override func createValueView() -> UIView? {
+            self.valueView
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
             self.valueView.delegate = self.item
             self.valueView => \.font => Theme.current.font.mono
             self.valueView => \.textColor => Theme.current.color.body
             self.valueView.backgroundColor = .clear
-            return self.valueView
         }
 
         override func didMoveToWindow() {
@@ -837,6 +860,12 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
         }
 
         override func createValueView() -> UIView? {
+            self.valueView
+        }
+
+        override func didLoad() {
+            super.didLoad()
+
             self.valueLabel => \.font => Theme.current.font.largeTitle
             self.valueLabel.textAlignment = .center
             self.valueLabel => \.textColor => Theme.current.color.body
@@ -863,8 +892,6 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
                     .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
                     .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                     .activate()
-
-            return self.valueView
         }
 
         override func update() {
@@ -923,7 +950,6 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         override func didLoad() {
             super.didLoad()
 
-            self.collectionView.register( C.self )
             self.collectionView.delegate = self
             self.collectionView.dataSource = self.dataSource
             self.updateDataSource()
@@ -977,6 +1003,8 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
             init(view: PickerItemView) {
                 self.view = view
                 super.init( collectionView: view.collectionView )
+
+                view.collectionView.register( C.self )
             }
 
             override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -1073,17 +1101,16 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         }
 
         override func createValueView() -> UIView? {
-            self.tableView.delegate = self
-            self.tableView.dataSource = self.dataSource
-            self.tableView.tableHeaderView = self.activityIndicator
-            self.activityIndicator.startAnimating()
-            return self.tableView
+            self.tableView
         }
 
         override func didLoad() {
             super.didLoad()
 
-            self.tableView.register( C.self )
+            self.tableView.delegate = self
+            self.tableView.dataSource = self.dataSource
+            self.tableView.tableHeaderView = self.activityIndicator
+            self.activityIndicator.startAnimating()
         }
 
         override func update() {
@@ -1112,6 +1139,8 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             init(view: ListItemView) {
                 self.view = view
                 super.init( tableView: view.tableView )
+
+                view.tableView.register( C.self )
             }
 
             override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
