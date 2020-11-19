@@ -95,6 +95,9 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
             }
         }
     }
+    public var exportDate: Date? {
+        self.file?.mpw_get( path: "export", "date" )
+    }
 
     public var maskPasswords = false {
         didSet {
@@ -154,12 +157,12 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
             }
         }
     }
-    public var description: String {
+    public var  description: String {
         if let identicon = self.identicon.encoded() {
             return "\(self.fullName): \(identicon)"
         }
         else {
-            return "\(self.fullName): \(withUnsafeBytes( of: self.masterKeyID.hex, { String.valid( $0 ) } ) ?? "-")"
+            return "\(self.fullName): \(self.masterKeyID)"
         }
     }
     private var initializing = true {

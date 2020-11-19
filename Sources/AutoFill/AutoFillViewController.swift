@@ -54,6 +54,9 @@ class AutoFillViewController: ASCredentialProviderViewController {
         dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
+        do { let _ = try MPMarshal.shared.setNeedsUpdate().await() }
+        catch { err( "Cannot read user documents: %@", error ) }
+
         DispatchQueue.mpw.promising {
             if let user = AutoFillModel.shared.users.first( where: { $0.fullName == credentialIdentity.recordIdentifier } ) {
                 return Promise( .success( user ) )
@@ -112,6 +115,18 @@ class AutoFillViewController: ASCredentialProviderViewController {
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
         dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
+
+        let usersViewController = AutoFillUsersViewController()
+
+        // - Hierarchy
+        self.addChild( usersViewController )
+        self.view.addSubview( usersViewController.view )
+        usersViewController.didMove( toParent: self )
+
+        // - Layout
+        LayoutConfiguration( view: usersViewController.view )
+                .constrain()
+                .activate()
     }
 
     override func prepareInterfaceForExtensionConfiguration() {

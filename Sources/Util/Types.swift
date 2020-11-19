@@ -109,6 +109,16 @@ extension MPIdenticon: Equatable {
     }
 }
 
+extension MPKeyID: Equatable, CustomStringConvertible {
+    public static func ==(lhs: Self, rhs: Self) -> Bool {
+        withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, { rhs in lhs.elementsEqual( rhs ) } ) } )
+    }
+
+    public var description: String {
+        withUnsafeBytes( of: self.hex, { String.valid( $0 ) ?? "-" } )
+    }
+}
+
 extension MPIdenticonColor {
     public func ui() -> UIColor {
         switch self {
@@ -246,6 +256,17 @@ extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
 
     public func mpw_get(path: StaticString...) -> String? {
         withVaStrings( path ) { .valid( mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
+    }
+
+    public func mpw_get(path: StaticString...) -> Date? {
+        withVaStrings( path ) {
+            let time = mpw_timegm( mpw_marshal_data_vget_str( self.pointee.data, $0 ) )
+            if time == ERR {
+                return nil
+            }
+
+            return Date( timeIntervalSince1970: TimeInterval( time ) )
+        }
     }
 
     public func mpw_set(_ value: Bool, path: StaticString...) -> Bool {

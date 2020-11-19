@@ -24,6 +24,10 @@ class AutoFillModel: MPMarshalObserver {
 
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
         self.userFiles = userFiles
+
+        for userFile in self.userFiles {
+            self.users.removeAll( where: { userFile.fullName == $0.fullName && userFile.hasChanges( from: $0 ) } )
+        }
     }
 
     // MARK: --- Types ---

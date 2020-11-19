@@ -632,12 +632,12 @@ class MPMarshal: Observable, Updatable {
         public let exportDate: Date
         public let redacted:   Bool
 
-        public let algorithm: MPAlgorithmVersion
-        public let avatar:    MPUser.Avatar
-        public let fullName:  String
-        public let identicon: MPIdenticon
-        public let keyID:     MPKeyID
-        public let lastUsed:  Date
+        public let algorithm:   MPAlgorithmVersion
+        public let avatar:      MPUser.Avatar
+        public let fullName:    String
+        public let identicon:   MPIdenticon
+        public let masterKeyID: MPKeyID
+        public let lastUsed:    Date
 
         public let biometricLock: Bool
         public let autofill:      Bool
@@ -661,11 +661,18 @@ class MPMarshal: Observable, Updatable {
             self.avatar = MPUser.Avatar( rawValue: info.avatar ) ?? .avatar_0
             self.fullName = fullName
             self.identicon = info.identicon
-            self.keyID = info.keyID
+            self.masterKeyID = info.keyID
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
             self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
             self.autofill = self.file.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
+        }
+
+        public func hasChanges(from user: MPUser) -> Bool {
+            self.fullName != user.fullName || self.avatar != user.avatar ||
+                    self.exportDate != user.exportDate ?? self.exportDate || self.lastUsed != user.lastUsed ||
+                    self.identicon != user.identicon || self.masterKeyID != user.masterKeyID ||
+                    self.biometricLock != user.biometricLock || self.autofill != user.autofill
         }
 
         public func authenticate(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
@@ -678,7 +685,7 @@ class MPMarshal: Observable, Updatable {
                         avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
                         fullName: String.valid( marshalledUser.fullName ) ?? self.fullName,
                         identicon: marshalledUser.identicon,
-                        masterKeyID: self.resetKey ? MPNoKeyID: self.keyID,
+                        masterKeyID: self.resetKey ? MPNoKeyID: self.masterKeyID,
                         defaultType: marshalledUser.defaultType,
                         loginType: marshalledUser.loginType,
                         loginState: .valid( marshalledUser.loginState ),
@@ -749,7 +756,7 @@ class MPMarshal: Observable, Updatable {
                     return "\(self.fullName): \(identicon) [\(self.format)]"
                 }
                 else {
-                    return "\(self.fullName): \(self.keyID) [\(self.format)]"
+                    return "\(self.fullName): \(self.masterKeyID) [\(self.format)]"
                 }
             }
         }

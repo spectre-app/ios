@@ -87,7 +87,8 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        MPMarshal.shared.setNeedsUpdate()
+        do { let _ = try MPMarshal.shared.setNeedsUpdate().await() }
+        catch { err( "Cannot read user documents: %@", error ) }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
