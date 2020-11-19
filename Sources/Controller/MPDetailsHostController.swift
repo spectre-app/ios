@@ -65,7 +65,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
         self.scrollView.contentInsetAdjustmentBehavior = .always
         self.scrollView.addGestureRecognizer( self.detailRecognizer )
 
-        self.closeButton.alpha = .off
+        self.closeButton.isHidden = true
         self.closeButton.action( for: .primaryActionTriggered ) { [unowned self] in
             self.hide()
         }
@@ -158,9 +158,11 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     let detailController = activeController as? MPDetailViewController
                     self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
                     self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
+                    self.closeButton.isHidden = false
                     activeController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()
                 }, completion: { finished in
+                    self.closeButton.isHidden = self.closeButton.alpha == .off
                     activeController.endAppearanceTransition()
                     activeController.didMove( toParent: self )
                 } )
@@ -175,13 +177,14 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 detailsController.willMove( toParent: nil )
                 detailsController.beginAppearanceTransition( false, animated: true )
                 UIView.animate( withDuration: .short, animations: {
+                    self.closeButton.alpha = .off
                     self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
                     self.popupConfiguration.deactivate()
-                    self.closeButton.alpha = .off
                 }, completion: { finished in
                     detailsController.view.removeFromSuperview()
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
+                    self.closeButton.isHidden = true
                     self.contentView.layoutIfNeeded()
                     self.activeController = nil
                     completion?()
