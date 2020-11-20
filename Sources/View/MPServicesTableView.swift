@@ -23,7 +23,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             if self.indexPathForSelectedRow != selectedPath {
                 self.selectRow( at: selectedPath, animated: UIView.areAnimationsEnabled, scrollPosition: .middle )
             }
-            else if let selectedPath = selectedPath {
+            else if let selectedPath = selectedPath, !(self.indexPathsForVisibleRows?.contains( selectedPath ) ?? false) {
                 self.scrollToRow( at: selectedPath, at: .middle, animated: UIView.areAnimationsEnabled )
             }
         }
@@ -65,8 +65,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     init() {
         super.init( frame: .zero, style: .plain )
 
-        self.register( ServiceCell.self )
-        self.register( LiefsteCell.self )
         self.delegate = self
         self.dataSource = self.servicesDataSource
         self.backgroundColor = .clear
@@ -90,7 +88,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         if let user = self.user, user.masterKeyFactory != nil {
             selectedResult = self.servicesDataSource.firstElement( where: { $0?.value === self.selectedService } )
             var newServiceResult = self.servicesDataSource.firstElement( where: { $0?.value.isNew ?? false } )
-            let selectionFollowsQuery = map( selectedResult ) { $0.value.isNew || $0.isExact } ?? false
+            let selectionFollowsQuery = selectedResult.flatMap { $0.value.isNew || $0.isExact } ?? false
 
             // Filter services by query.
             let results = MPQuery( self.query ).filter( user.services.sorted(), by: { $0.serviceName } )
@@ -207,6 +205,14 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.value
+    }
+
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.value
+    }
+
     // MARK: --- MPUserObserver ---
 
     func userDidLogin(_ user: MPUser) {
@@ -232,7 +238,14 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
         init(view: MPServicesTableView) {
             self.view = view
+            view.register( ServiceCell.self )
+            view.register( LiefsteCell.self )
+
             super.init( tableView: view )
+        }
+
+        override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+            !(self.element( at: indexPath )?.value.isNew ?? true)
         }
 
         override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -499,8 +512,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                 }
 
                 self.modeButton.alpha = InAppFeature.premium.enabled() ? .on: .off
+                self.modeButton.isUserInteractionEnabled = self.modeButton.alpha != .off
                 self.actionsStack.alpha = self.isSelected && !isNew ? .on: .off
+                self.actionsStack.isUserInteractionEnabled = self.actionsStack.alpha != .off
                 self.newButton.alpha = self.isSelected && isNew ? .on: .off
+                self.newButton.isUserInteractionEnabled = self.newButton.alpha != .off
                 self.selectionConfiguration.isActive = self.isSelected
                 self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.service?.user.maskPasswords ?? true
 

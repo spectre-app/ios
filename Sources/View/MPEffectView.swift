@@ -189,7 +189,7 @@ class MPEffectView: UIView {
 
             self.blurEffectView.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
             self.blurEffectView.layer.borderColor = (self.borderColor ?? self.tintColor)?.cgColor
-            self.blurEffectView.alpha = self.isDimmed ? .long: .on
+            self.blurEffectView.alpha = self.isDimmed ? .short: .on
         }
     }
 }

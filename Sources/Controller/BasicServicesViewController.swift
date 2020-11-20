@@ -40,7 +40,7 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
         self.searchField.autocorrectionType = .no
         self.searchField.returnKeyType = .done
         self.searchField.delegate = self
-        self.searchField.action( for: .editingChanged ) { [unowned self] in
+        self.searchField.action( for: [ .editingChanged, .editingDidBegin ] ) { [unowned self] in
             self.servicesTableView.query = self.searchField.text
         }
 

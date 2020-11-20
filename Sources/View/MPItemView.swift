@@ -1002,9 +1002,9 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
 
             init(view: PickerItemView) {
                 self.view = view
-                super.init( collectionView: view.collectionView )
-
                 view.collectionView.register( C.self )
+
+                super.init( collectionView: view.collectionView )
             }
 
             override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -1138,9 +1138,9 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
 
             init(view: ListItemView) {
                 self.view = view
-                super.init( tableView: view.tableView )
-
                 view.tableView.register( C.self )
+
+                super.init( tableView: view.tableView )
             }
 
             override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
