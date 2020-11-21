@@ -366,14 +366,14 @@ _build() {
                     *'arm'*)
                         SDKROOT="$(xcrun --show-sdk-path --sdk iphoneos)"
                         export PATH="$(xcrun --show-sdk-platform-path --sdk iphoneos)/usr/bin:$PATH"
-                        export CPPFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -O2 -g -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $CPPFLAGS"
-                        export LDFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $LDFLAGS"
+                        export CPPFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -O2 -g -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $CPPFLAGS"
+                        export LDFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $LDFLAGS"
                     ;;
                     *)
                         SDKROOT="$(xcrun --show-sdk-path --sdk iphonesimulator)"
                         export PATH="$(xcrun --show-sdk-platform-path --sdk iphonesimulator)/usr/bin:$PATH"
-                        export CPPFLAGS="-arch $arch -flto -O2 -g -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $CPPFLAGS"
-                        export LDFLAGS="-arch $arch -flto -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-8.0} $LDFLAGS"
+                        export CPPFLAGS="-arch $arch -flto -O2 -g -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $CPPFLAGS"
+                        export LDFLAGS="-arch $arch -flto -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $LDFLAGS"
                     ;;
                 esac
             ;;

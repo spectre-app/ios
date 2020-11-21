@@ -35,7 +35,9 @@ class MPTracker: MPConfigObserver {
             countlyConfig.appKey = countlyKey
             countlyConfig.features = [ CLYFeature.pushNotifications ]
             countlyConfig.requiresConsent = true
-            #if !PUBLIC
+            #if PUBLIC
+            countlyConfig.pushTestMode = nil
+            #else
             countlyConfig.pushTestMode = appConfig.isDebug ? .development: .testFlightOrAdHoc
             #endif
             countlyConfig.alwaysUsePOST = true
@@ -240,11 +242,11 @@ class MPTracker: MPConfigObserver {
 
     public func didChangeConfig() {
         if appConfig.isApp && appConfig.diagnostics {
-            SentrySDK.currentHub().getClient()?.options.dsn = sentryDSN.b64Decrypt()
+            SentrySDK.currentHub().getClient()?.options.enabled = true
             Countly.sharedInstance().giveConsentForAllFeatures()
         }
         else {
-            SentrySDK.currentHub().getClient()?.options.dsn = nil
+            SentrySDK.currentHub().getClient()?.options.enabled = false
             Countly.sharedInstance().cancelConsentForAllFeatures()
         }
     }

@@ -12,7 +12,7 @@ target 'Spectre-iOS' do
   pod 'SwiftLinkPreview'
 
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
-  pod 'Countly'
+  pod 'Countly', :git => 'https://github.com/Countly/countly-sdk-ios.git'
   pod 'FreshchatSDK'
 
   pod 'Reveal-SDK', :configurations => ['Debug']
@@ -30,10 +30,4 @@ target 'Spectre-macOS' do
 
   use_modular_headers!
   use_frameworks!
-
-  pod 'Logging'
-  pod 'SwiftLinkPreview'
-
-  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
-  pod 'Countly'
 end
