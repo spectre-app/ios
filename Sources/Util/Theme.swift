@@ -428,6 +428,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
     // MPTheme.base
     private init() {
         self.name = ""
+        self.mood = "Device native colour scheme."
 
         // Global default style
         self.font.largeTitle.set( UIFont.poppins( .light, asTextStyle: .largeTitle ), withTextStyle: .largeTitle )
