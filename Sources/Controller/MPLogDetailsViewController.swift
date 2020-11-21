@@ -70,10 +70,10 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
         }
     }
 
-    class LogLevelPicker: PickerItem<Model, LogLevel, LogLevelPicker.Cell> {
+    class LogLevelPicker: PickerItem<Model, MPLogLevel, LogLevelPicker.Cell> {
         init() {
             super.init( identifier: "logbook >level", title: "Logbook",
-                        values: { _ in LogLevel.allCases.reversed() },
+                        values: { _ in MPLogLevel.allCases.reversed() },
                         value: { $0.logbookLevel }, update: { $0.logbookLevel = $1 },
                         caption: { _ in
                             """
@@ -83,12 +83,12 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
                         } )
         }
 
-        override func populate(_ cell: Cell, indexPath: IndexPath, value: LogLevel) {
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: MPLogLevel) {
             cell.level = value
         }
 
         class Cell: MPItemCell {
-            var level = LogLevel.trace {
+            var level = MPLogLevel.trace {
                 didSet {
                     DispatchQueue.main.perform {
                         self.titleLabel.text = self.level.description

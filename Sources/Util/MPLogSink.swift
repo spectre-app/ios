@@ -50,7 +50,7 @@ public func ftl(file: String = #file, line: Int32 = #line, function: String = #f
 
 @discardableResult
 public func log(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                level: LogLevel, _ format: StaticString, _ args: [Any?]) -> Bool {
+                level: MPLogLevel, _ format: StaticString, _ args: [Any?]) -> Bool {
 
     if mpw_verbosity < level {
         return false
@@ -88,15 +88,15 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
     }
 }
 
-extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ LogLevel ]( (.fatal)...(.trace) )
+extension MPLogLevel: Strideable, CaseIterable, CustomStringConvertible {
+    public static let allCases = [ MPLogLevel ]( (.fatal)...(.trace) )
 
-    public func distance(to other: LogLevel) -> Int32 {
+    public func distance(to other: MPLogLevel) -> Int32 {
         other.rawValue - self.rawValue
     }
 
-    public func advanced(by n: Int32) -> LogLevel {
-        LogLevel( rawValue: self.rawValue + n )!
+    public func advanced(by n: Int32) -> MPLogLevel {
+        MPLogLevel( rawValue: self.rawValue + n )!
     }
 
     public var description: String {
@@ -122,7 +122,7 @@ extension LogLevel: Strideable, CaseIterable, CustomStringConvertible {
 public class MPLogSink: MPConfigObserver {
     public static let shared = MPLogSink()
 
-    public var level: LogLevel {
+    public var level: MPLogLevel {
         get {
             mpw_verbosity
         }
@@ -179,7 +179,7 @@ public class MPLogSink: MPConfigObserver {
         }
     }
 
-    func enumerate(level: LogLevel) -> [MPLogRecord] {
+    func enumerate(level: MPLogLevel) -> [MPLogRecord] {
         self.queue.sync { self.records.filter( { $0.level <= level } ).sorted() }
     }
 
@@ -207,7 +207,7 @@ public class MPLogSink: MPConfigObserver {
 
 struct MPLogRecord: Comparable {
     public let occurrence: Date
-    public let level:      LogLevel
+    public let level:      MPLogLevel
     public let file:       String
     public let line:       Int32
     public let function:   String

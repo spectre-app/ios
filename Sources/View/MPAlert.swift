@@ -39,7 +39,7 @@ class MPAlert {
     private let messageFactory: () -> String?
     private let detailsFactory: () -> String?
     private let contentFactory: () -> UIView?
-    private let level:          LogLevel
+    private let level:          MPLogLevel
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -47,7 +47,7 @@ class MPAlert {
 
     init(title: @escaping @autoclosure () -> String?, message: @escaping @autoclosure () -> String? = nil,
          details: @escaping @autoclosure () -> String? = nil, content: @escaping @autoclosure () -> UIView? = nil,
-         level: LogLevel = .info) {
+         level: MPLogLevel = .info) {
         self.titleFactory = title
         self.messageFactory = message
         self.detailsFactory = details
