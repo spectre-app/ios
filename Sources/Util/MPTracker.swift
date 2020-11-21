@@ -6,12 +6,14 @@
 import Foundation
 import Sentry
 import Countly
+#if RELEASE && !PUBLIC
+import Updraft
+#endif
 
 class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
 
     private init() {
-        #if APP_CONTAINER
         // Sentry
         SentrySDK.start {
             $0.dsn = appConfig.diagnostics ? sentryDSN.b64Decrypt(): nil
@@ -19,10 +21,17 @@ class MPTracker: MPConfigObserver {
         }
         SentrySDK.configureScope { $0.setTags( [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ] ) }
 
+        // Updraft
+        #if RELEASE && !PUBLIC
+        if let updraftSdk = updraftSdk.b64Decrypt(), let updraftKey = updraftKey.b64Decrypt() {
+            Updraft.shared.start( sdkKey: updraftSdk, appKey: updraftKey )
+        }
+        #endif
+
         // Countly
         if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
             let countlyConfig = CountlyConfig()
-            countlyConfig.host = "https://countly.volto.app"
+            countlyConfig.host = "https://countly.spectre.app"
             countlyConfig.appKey = countlyKey
             countlyConfig.features = [ CLYFeature.pushNotifications ]
             countlyConfig.requiresConsent = true
@@ -82,7 +91,6 @@ class MPTracker: MPConfigObserver {
 
         self.logout()
         appConfig.observers.register( observer: self ).didChangeConfig()
-        #endif
     }
 
     #if APP_CONTAINER

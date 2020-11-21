@@ -12,10 +12,12 @@ target 'Spectre-iOS' do
   pod 'SwiftLinkPreview'
 
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
-  pod 'FreshchatSDK'
   pod 'Countly'
+  pod 'FreshchatSDK'
 
   pod 'Reveal-SDK', :configurations => ['Debug']
+
+  pod 'UpdraftSDK', :configurations => ['Release']
 
   target 'Spectre-AutoFill-iOS' do
     inherit! :search_paths
