@@ -12,7 +12,7 @@ class MPQuery {
         self.query = query
     }
 
-    func filter<V>(_ values: [V], by keySupplier: @escaping (V) -> String) -> [Result<V>] {
+    func filter<V>(_ values: [V], key keySupplier: @escaping (V) -> String) -> [Result<V>] {
         values.map { value in Result( value: value, keySupplier: keySupplier ) }
               .filter { result in result.matches( query: self.query ) }
     }
@@ -23,10 +23,9 @@ class MPQuery {
         public private(set) var attributedKey = NSAttributedString()
         public private(set) var matches       = [ String.Index ]()
         public var isExact: Bool {
-            get {
-                (self.attributedKey.string.indices).elementsEqual( self.matches )
-            }
+            (self.attributedKey.string.indices).elementsEqual( self.matches )
         }
+        public var flags = Set<Int>()
 
         init(value: V, keySupplier: @escaping (V) -> String) {
             self.value = value

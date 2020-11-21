@@ -751,13 +751,11 @@ class MPMarshal: Observable, Updatable {
         // MARK: --- CustomStringConvertible ---
 
         var description: String {
-            get {
-                if let identicon = self.identicon.encoded() {
-                    return "\(self.fullName): \(identicon) [\(self.format)]"
-                }
-                else {
-                    return "\(self.fullName): \(self.masterKeyID) [\(self.format)]"
-                }
+            if let identicon = self.identicon.encoded() {
+                return "\(self.fullName): \(identicon) [\(self.format)]"
+            }
+            else {
+                return "\(self.fullName): \(self.masterKeyID) [\(self.format)]"
             }
         }
 

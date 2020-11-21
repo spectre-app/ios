@@ -81,15 +81,14 @@ public class MPSpinnerView: UICollectionView {
                 DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) ) { [weak self] in
                     self?.collectionView?.flashScrollIndicators()
                 }
-
-                self.bounds = self.collectionView?.bounds ?? .null
-                self.count = self.collectionView?.numberOfSections == 0 ? 0: self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
             }
         }
 
         override func prepare() {
             super.prepare()
 
+            self.bounds = self.collectionView?.bounds ?? .null
+            self.count = self.collectionView?.numberOfSections == 0 ? 0: self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
             self.size = CGSize( width: 0, height: self.bounds.size.height * CGFloat( self.count ) )
             let scan = self.bounds.origin.y / self.bounds.size.height
 

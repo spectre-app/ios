@@ -91,7 +91,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             let selectionFollowsQuery = selectedResult.flatMap { $0.value.isNew || $0.isExact } ?? false
 
             // Filter services by query.
-            let results = MPQuery( self.query ).filter( user.services.sorted(), by: { $0.serviceName } )
+            let results = MPQuery( self.query ).filter( user.services.sorted(), key: { $0.serviceName } )
             let exactResult = results.first( where: { $0.isExact } )
 
             // Divide the results into sections.
@@ -100,9 +100,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                     remaining = [ MPQuery.Result<MPService>? ]()
                 for result in results {
                     if preferredFilter( result.value ) {
+                        result.flags.insert( Flag.preferred.rawValue )
                         preferred.append( result )
                     }
                     else {
+                        result.flags.remove( Flag.preferred.rawValue )
                         remaining.append( result )
                     }
                 }
@@ -232,6 +234,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     }
 
     // MARK: --- Types ---
+
+    enum Flag: Int {
+        case preferred
+    }
 
     class ServicesSource: DataSource<MPQuery.Result<MPService>> {
         let view: MPServicesTableView
@@ -482,9 +488,12 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.updateTask.cancel()
 
             DispatchQueue.main.perform {
+                self.backgroundImage.color = self.service?.color
                 self.backgroundImage.image = self.service?.image
                 self.backgroundImage => \.backgroundColor => Theme.current.color.selection
-                        .transform { [unowned self] in $0?.with( hue: self.service?.color?.hue ) }
+                        .transform { [weak self] in $0?.with( hue: self?.service?.color?.hue ) }
+                self => \.backgroundColor => Theme.current.color.shadow
+                        .transform { [weak self] in self?.result?.flags.contains( Flag.preferred.rawValue ) ?? false ? $0: .clear }
 
                 let isNew = self.service?.isNew ?? false
                 if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.attributedKey ) } ) {

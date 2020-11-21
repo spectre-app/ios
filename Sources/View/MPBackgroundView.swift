@@ -35,6 +35,14 @@ class MPBackgroundView: UIView, ThemeObserver {
             }
         }
     }
+    var color: UIColor? {
+        get {
+            self.imageView.backgroundColor
+        }
+        set {
+            self.imageView.backgroundColor = newValue
+        }
+    }
     var image: UIImage? {
         get {
             self.imageView.image
@@ -44,14 +52,6 @@ class MPBackgroundView: UIView, ThemeObserver {
         }
     }
     var imageView = UIImageView()
-    override var backgroundColor: UIColor? {
-        get {
-            super.backgroundColor
-        }
-        set {
-            super.backgroundColor = newValue
-        }
-    }
     private var  imageMask      = CAGradientLayer()
     private var  gradientColor:   CGGradient? {
         didSet {
