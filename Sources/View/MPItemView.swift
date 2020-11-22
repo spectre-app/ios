@@ -956,6 +956,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         override func didLoad() {
             super.didLoad()
 
+            self.collectionView.register( C.self )
             self.collectionView.delegate = self
             self.collectionView.dataSource = self.dataSource
             self.updateDataSource()
@@ -1008,7 +1009,6 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
 
             init(view: PickerItemView) {
                 self.view = view
-                view.collectionView.register( C.self )
 
                 super.init( collectionView: view.collectionView )
             }
@@ -1113,6 +1113,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         override func didLoad() {
             super.didLoad()
 
+            self.tableView.register( C.self )
             self.tableView.delegate = self
             self.tableView.dataSource = self.dataSource
             self.tableView.tableHeaderView = self.activityIndicator
@@ -1144,7 +1145,6 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
 
             init(view: ListItemView) {
                 self.view = view
-                view.tableView.register( C.self )
 
                 super.init( tableView: view.tableView )
             }

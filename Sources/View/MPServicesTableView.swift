@@ -65,6 +65,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     init() {
         super.init( frame: .zero, style: .plain )
 
+        self.register( ServiceCell.self )
+        self.register( LiefsteCell.self )
+
         self.delegate = self
         self.dataSource = self.servicesDataSource
         self.backgroundColor = .clear
@@ -244,8 +247,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
         init(view: MPServicesTableView) {
             self.view = view
-            view.register( ServiceCell.self )
-            view.register( LiefsteCell.self )
 
             super.init( tableView: view )
         }
