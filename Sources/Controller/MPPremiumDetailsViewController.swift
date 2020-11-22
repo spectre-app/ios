@@ -86,7 +86,7 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
           ] ),
           SeparatorItem( subitems: [
               OverrideItem(),
-          ] ).addBehaviour( RequiresDebug( mode: .reveals ) ),
+          ] ).addBehaviour( RequiresPrivate( mode: .reveals ) ),
         ]
     }
 

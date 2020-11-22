@@ -380,6 +380,12 @@ class RequiresDebug<M>: ConditionalBehaviour<M> {
     }
 }
 
+class RequiresPrivate<M>: ConditionalBehaviour<M> {
+    init(mode: Effect) {
+        super.init( mode: mode, condition: { _ in !appConfig.isPublic } )
+    }
+}
+
 class SeparatorItem<M>: Item<M> {
     override func createItemView() -> ItemView {
         SeparatorItemView( withItem: self )
