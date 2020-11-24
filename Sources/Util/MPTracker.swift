@@ -5,15 +5,56 @@
 
 import Foundation
 import Sentry
-import Countly
+#if APP_CONTAINER
 #if RELEASE && !PUBLIC
 import Updraft
+#endif
+import Countly
 #endif
 
 class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
 
-    private init() {
+    #if APP_CONTAINER
+    static func enabledNotifications() -> Bool {
+        UIApplication.shared.isRegisteredForRemoteNotifications
+    }
+
+    static func enableNotifications() {
+        appConfig.notificationsDecided = true
+        UIApplication.shared.registerForRemoteNotifications()
+
+        Countly.sharedInstance().askForNotificationPermission { _, _ in
+            UNUserNotificationCenter.current().getNotificationSettings {
+                if $0.authorizationStatus != .authorized {
+                    if let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+                        UIApplication.shared.open( settingsURL )
+                    }
+                }
+            }
+        }
+    }
+
+    static func disableNotifications() {
+        appConfig.notificationsDecided = true
+        UIApplication.shared.unregisterForRemoteNotifications()
+    }
+    #endif
+
+    lazy var deviceIdentifier = self.identifier( for: "device", attributes: [
+        kSecAttrDescription: "Unique identifier for the device on this app.",
+        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+        kSecAttrSynchronizable: false,
+    ] ).uuidString
+
+    lazy var ownerIdentifier = self.identifier( for: "owner", attributes: [
+        kSecAttrDescription: "Unique identifier for the owner of this app.",
+        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+        kSecAttrSynchronizable: true,
+    ] ).uuidString
+
+    func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                 extensionController: UIViewController? = nil) {
         // Sentry
         SentrySDK.start {
             $0.dsn = appConfig.diagnostics ? sentryDSN.b64Decrypt(): nil
@@ -21,6 +62,7 @@ class MPTracker: MPConfigObserver {
         }
         SentrySDK.configureScope { $0.setTags( [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ] ) }
 
+        #if APP_CONTAINER
         // Updraft
         #if RELEASE && !PUBLIC
         if let updraftSdk = updraftSdk.b64Decrypt(), let updraftKey = updraftKey.b64Decrypt() {
@@ -46,6 +88,7 @@ class MPTracker: MPConfigObserver {
             countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
             Countly.sharedInstance().start( with: countlyConfig )
         }
+        #endif
 
         // Breadcrumbs & errors
         mpw_log_sink_register( { logPointer in
@@ -93,45 +136,10 @@ class MPTracker: MPConfigObserver {
 
         self.logout()
         appConfig.observers.register( observer: self ).didChangeConfig()
+
+        self.event( file: file, line: line, function: function, dso: dso,
+                    named: "\(productName) #launch", [ "version": productVersion, "build": productBuild ] )
     }
-
-    #if APP_CONTAINER
-    static func enabledNotifications() -> Bool {
-        UIApplication.shared.isRegisteredForRemoteNotifications
-    }
-
-    static func enableNotifications() {
-        appConfig.notificationsDecided = true
-        UIApplication.shared.registerForRemoteNotifications()
-
-        Countly.sharedInstance().askForNotificationPermission { _, _ in
-            UNUserNotificationCenter.current().getNotificationSettings {
-                if $0.authorizationStatus != .authorized {
-                    if let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
-                        UIApplication.shared.open( settingsURL )
-                    }
-                }
-            }
-        }
-    }
-
-    static func disableNotifications() {
-        appConfig.notificationsDecided = true
-        UIApplication.shared.unregisterForRemoteNotifications()
-    }
-    #endif
-
-    lazy var deviceIdentifier = self.identifier( for: "device", attributes: [
-        kSecAttrDescription: "Unique identifier for the device on this app.",
-        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-        kSecAttrSynchronizable: false,
-    ] ).uuidString
-
-    lazy var ownerIdentifier = self.identifier( for: "owner", attributes: [
-        kSecAttrDescription: "Unique identifier for the owner of this app.",
-        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-        kSecAttrSynchronizable: true,
-    ] ).uuidString
 
     func identifier(for named: String, attributes: [CFString: Any] = [:]) -> UUID {
         let query: [CFString: Any] = [
@@ -158,11 +166,6 @@ class MPTracker: MPConfigObserver {
         return uuid
     }
 
-    func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-        self.event( file: file, line: line, function: function, dso: dso,
-                    named: "\(productName) #launch", [ "version": productVersion, "build": productBuild ] )
-    }
-
     func login(user: MPUser) {
         guard let userId = withUnsafeBytes( of: user.masterKeyID.bytes, { $0.bindMemory( to: UInt8.self ).digest()?.hex() } ),
               let userName = user.fullName.digest()?.hex()
@@ -182,14 +185,18 @@ class MPTracker: MPConfigObserver {
         user.username = userName
         user.data = userConfig
         SentrySDK.setUser( user )
+        #if APP_CONTAINER
         Countly.sharedInstance().userLogged( in: userId )
         Countly.user().name = userName as NSString
         Countly.user().custom = userConfig as NSDictionary
+        #endif
     }
 
     func logout() {
         SentrySDK.setUser( nil )
+        #if APP_CONTAINER
         Countly.sharedInstance().userLoggedOut()
+        #endif
     }
 
     func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
@@ -233,9 +240,11 @@ class MPTracker: MPConfigObserver {
         SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
         // Countly
+        #if APP_CONTAINER
         Countly.sharedInstance().recordEvent(
                 name, segmentation: stringParameters,
                 count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
+        #endif
     }
 
     // MARK: --- MPConfigObserver ---
@@ -243,11 +252,15 @@ class MPTracker: MPConfigObserver {
     public func didChangeConfig() {
         if appConfig.isApp && appConfig.diagnostics {
             SentrySDK.currentHub().getClient()?.options.enabled = true
+            #if APP_CONTAINER
             Countly.sharedInstance().giveConsentForAllFeatures()
+            #endif
         }
         else {
             SentrySDK.currentHub().getClient()?.options.enabled = false
+            #if APP_CONTAINER
             Countly.sharedInstance().cancelConsentForAllFeatures()
+            #endif
         }
     }
 
@@ -282,7 +295,9 @@ class MPTracker: MPConfigObserver {
             SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
             // Countly
+            #if APP_CONTAINER
             Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )
+            #endif
         }
 
         func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,

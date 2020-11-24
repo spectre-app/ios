@@ -30,6 +30,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
         super.viewDidLoad()
 
         dbg( "viewDidLoad" )
+        MPTracker.shared.startup( extensionController: self )
         AutoFillModel.shared.context = AutoFillModel.Context()
     }
 
