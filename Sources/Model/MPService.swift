@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import SwiftLinkPreview
 
 class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPServiceObserver, MPQuestionObserver {
     public let observers = Observers<MPServiceObserver>()
@@ -11,16 +12,9 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
     public let user: MPUser
     public var serviceName: String {
         didSet {
-            if oldValue != self.serviceName {
-                self.dirty = true
-                self.observers.notify { $0.serviceDidChange( self ) }
-
-                #if APP_CONTAINER
-                MPURLUtils.preview( url: self.serviceName, result: { info in
-                    self.color = info.color?.uiColor
-                    self.image = info.imageData.flatMap { UIImage( data: $0 ) }
-                } )
-                #endif
+            using( MPServicePreview.cached( for: self.serviceName ) ) {
+                self.image = UIImage.load( data: $0.imageData )
+                self.color = $0.color?.uiColor
             }
         }
     }
@@ -169,17 +163,13 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
         self.questions = questions
-        self.color = serviceName.color()
+
+        using( MPServicePreview.cached( for: self.serviceName ) ) {
+            self.image = UIImage.load( data: $0.imageData )
+            self.color = $0.color?.uiColor
+        }
 
         defer {
-            // TODO: make efficient
-            #if APP_CONTAINER
-            MPURLUtils.preview( url: self.serviceName, result: { info in
-                self.color = info.color?.uiColor
-                self.image = info.imageData.flatMap { UIImage( data: $0 ) }
-            } )
-            #endif
-
             initialize( self )
             self.initializing = false
         }
@@ -211,6 +201,22 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
         self.lastUsed = Date()
         self.uses += 1
         self.user.use()
+    }
+
+    public func refresh() {
+        MPServicePreview.latest( for: self.serviceName ).then( on: .main ) {
+            do {
+                let preview = try $0.get()
+                self.image = UIImage.load( data: preview.imageData )
+                self.color = preview.color?.uiColor
+            }
+            catch PreviewError.noURLHasBeenFound( _ ) {
+            }
+            catch {
+                wrn( "No service preview. [>TRC]" )
+                pii( "[>] %@", error )
+            }
+        }
     }
 
     public func copy(to user: MPUser) -> MPService {

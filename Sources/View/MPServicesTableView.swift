@@ -99,20 +99,16 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
             // Divide the results into sections.
             if let preferredFilter = self.preferredFilter {
-                var preferred = [ MPQuery.Result<MPService>? ](),
-                    remaining = [ MPQuery.Result<MPService>? ]()
-                for result in results {
-                    if preferredFilter( result.value ) {
-                        result.flags.insert( Flag.preferred.rawValue )
-                        preferred.append( result )
+                elementsBySection.append( results.ordered( first: {
+                    if preferredFilter( $0.value ) {
+                        $0.flags.insert( Flag.preferred.rawValue )
+                        return true
                     }
                     else {
-                        result.flags.remove( Flag.preferred.rawValue )
-                        remaining.append( result )
+                        $0.flags.remove( Flag.preferred.rawValue )
+                        return false
                     }
-                }
-                elementsBySection.append( preferred )
-                elementsBySection.append( remaining )
+                } ) )
             }
             else {
                 elementsBySection.append( results )
@@ -160,6 +156,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as? LiefsteCell)?.willDisplay()
+        (cell as? ServiceCell)?.service?.refresh()
     }
 
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {

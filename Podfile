@@ -9,6 +9,8 @@ target 'Spectre-iOS' do
   use_modular_headers!
   use_frameworks!
 
+  pod 'Macaw'
+
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
   pod 'Countly', :git => 'https://github.com/Countly/countly-sdk-ios.git'
   pod 'FreshchatSDK'
@@ -25,6 +27,8 @@ target 'Spectre-AutoFill-iOS' do
 
   use_modular_headers!
   use_frameworks!
+
+  pod 'Macaw'
 
   pod 'SwiftLinkPreview'
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'

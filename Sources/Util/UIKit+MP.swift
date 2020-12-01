@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import Macaw
 
 extension CGPath {
     static func between(_ fromRect: CGRect, _ toRect: CGRect) -> CGPath {
@@ -246,7 +247,8 @@ extension UICollectionView {
         if let item = item {
             let x = IndexPath( item: item, section: section )
             return self.requestSelection( at: x, animated: animated, scrollPosition: scrollPosition )
-        } else {
+        }
+        else {
             return self.requestSelection( at: nil, animated: animated, scrollPosition: scrollPosition )
         }
     }
@@ -526,6 +528,25 @@ extension UIFont {
         }
 
         return self
+    }
+}
+
+extension UIImage {
+    static func load(data: Data?) -> UIImage? {
+        guard let data = data
+        else { return nil }
+
+        if let image = UIImage( data: data ) {
+            return image
+        }
+
+        if let text = String( data: data, encoding: .utf8 ), !text.isEmpty,
+           let svg = try? SVGParser.parse( text: text ) {
+            let ratio = (svg.bounds?.size().h ?? 1) / (svg.bounds?.size().w ?? 1)
+            return svg.toNativeImage( size: Size( Double( UIScreen.main.nativeBounds.width ), Double( UIScreen.main.nativeBounds.height ) * ratio ) )
+        }
+
+        return nil
     }
 }
 

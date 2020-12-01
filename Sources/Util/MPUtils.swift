@@ -11,6 +11,7 @@ let productVersion    = Bundle.main.object( forInfoDictionaryKey: "CFBundleShort
 let productIdentifier = Bundle.main.bundleIdentifier ?? "app.spectre"
 let productGroup      = "group.app.spectre"
 
+@discardableResult
 func using<V>(_ value: V, _ initializer: (V) -> Void) -> V {
     initializer( value )
     return value

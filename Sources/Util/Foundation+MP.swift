@@ -5,6 +5,26 @@
 
 import Foundation
 
+extension Array {
+    func ordered(first: ((Element) -> Bool)? = nil, last: ((Element) -> Bool)? = nil) -> [Element] {
+        var firstElements = [ Element ](), middleElements = [ Element ](), lastElements = [ Element ]()
+
+        for element in self {
+            if first?( element ) ?? false {
+                firstElements.append( element )
+            }
+            else if last?( element ) ?? false {
+                lastElements.append( element )
+            }
+            else {
+                middleElements.append( element )
+            }
+        }
+
+        return firstElements + middleElements + lastElements
+    }
+}
+
 extension Collection where Element == UInt8 {
     func hex() -> String {
         let hex = NSMutableString( capacity: self.count * 2 )
@@ -130,7 +150,7 @@ extension OperationQueue {
 }
 
 extension TimeInterval {
-    public static let immediate : TimeInterval = .off
+    public static let immediate: TimeInterval = .off
 
     public static func seconds(_ seconds: Double) -> TimeInterval {
         TimeInterval( seconds )
@@ -155,4 +175,92 @@ extension TimeInterval {
 
 extension UserDefaults {
     public static let shared = UserDefaults( suiteName: productGroup ) ?? UserDefaults.standard
+}
+
+extension URLRequest {
+    init(method: Method, url: URL) {
+        self.init( url: url )
+
+        self.httpMethod = method.description
+    }
+
+    enum Method: CustomStringConvertible {
+        case get, head, post, put, delete, connect, options, trace, patch
+
+        var description: String {
+            switch self {
+                case .get:
+                    return "get"
+                case .head:
+                    return "head"
+                case .post:
+                    return "post"
+                case .put:
+                    return "put"
+                case .delete:
+                    return "delete"
+                case .connect:
+                    return "connect"
+                case .options:
+                    return "options"
+                case .trace:
+                    return "trace"
+                case .patch:
+                    return "patch"
+            }
+        }
+    }
+}
+
+extension URLSession {
+    public static let required = URLSession( configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue(
+            queue: DispatchQueue( label: "\(productName): Network Required", qos: .userInitiated, attributes: [ .concurrent ] ) ) )
+    public static let optional = URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(
+            queue: DispatchQueue( label: "\(productName): Network Optional", qos: .background, attributes: [ .concurrent ] ) ) )
+
+    public static func requiredConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpShouldSetCookies = false
+        configuration.httpCookieAcceptPolicy = .never
+        configuration.sharedContainerIdentifier = productGroup
+        configuration.httpAdditionalHeaders = [
+            "User-Agent": "\(productName)/\(productVersion) (\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) Mozilla/5.0 AppleWebKit/605.1.15"
+        ]
+        if #available( iOS 13.0, * ) {
+            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        }
+        return configuration
+    }
+
+    public static func optionalConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.isDiscretionary = true
+        configuration.httpShouldSetCookies = false
+        configuration.httpCookieAcceptPolicy = .never
+        configuration.sharedContainerIdentifier = productGroup
+        configuration.httpAdditionalHeaders = [
+            "User-Agent": "\(productName)/\(productVersion) (\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) Mozilla/5.0 AppleWebKit/605.1.15"
+        ]
+        if #available( iOS 13.0, * ) {
+            configuration.allowsConstrainedNetworkAccess = false
+            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        }
+        return configuration
+    }
+
+    public func promise(with request: URLRequest) -> Promise<(Data, URLResponse)> {
+        let promise = Promise<(Data, URLResponse)>()
+        self.dataTask( with: request ) {
+            if let error = $2 {
+                promise.finish( .failure( error ) )
+            }
+            else if let data = $0, let response = $1 {
+                promise.finish( .success( (data, response) ) )
+            }
+            else {
+                promise.finish( .failure( MPError.internal( cause: "Missing error, data or response to URL request.", details: request ) ) )
+            }
+        }.resume()
+        return promise
+    }
 }
