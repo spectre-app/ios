@@ -13,6 +13,15 @@ public func pii(file: String = #file, line: Int32 = #line, function: String = #f
 }
 
 @discardableResult
+public func trp(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                _ condition: Bool, _ format: StaticString = "<trap>", _ args: Any?...) -> Bool {
+    guard condition
+    else { return false }
+
+    return log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
+}
+
+@discardableResult
 public func trc(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )

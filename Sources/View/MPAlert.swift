@@ -16,16 +16,19 @@ class MPAlert {
         active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: 4 ) }
         inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
     }
-    private lazy var activationConfiguration = LayoutConfiguration( view: self.view ) { (active, inactive) in
-        active.apply( LayoutConfiguration( view: self.titleLabel ).set( Theme.current.font.title1.get(), keyPath: \.font ) )
-        active.apply( LayoutConfiguration( view: self.messageLabel ).set( Theme.current.font.title2.get(), keyPath: \.font ) )
-        active.apply( LayoutConfiguration( view: self.expandChevron ).set( true, keyPath: \.isHidden ) )
-        active.apply( LayoutConfiguration( view: self.detailLabel ).set( false, keyPath: \.isHidden ) )
-        inactive.apply( LayoutConfiguration( view: self.titleLabel ).set( Theme.current.font.headline.get(), keyPath: \.font ) )
-        inactive.apply( LayoutConfiguration( view: self.messageLabel ).set( Theme.current.font.subheadline.get(), keyPath: \.font ) )
-        inactive.apply( LayoutConfiguration( view: self.expandChevron ).set( self.detailLabel.text?.isEmpty ?? true, keyPath: \.isHidden ) )
-        inactive.apply( LayoutConfiguration( view: self.detailLabel ).set( true, keyPath: \.isHidden ) )
-    }
+    private lazy var activationConfiguration = LayoutConfiguration( view: self.view )
+            .apply( LayoutConfiguration( view: self.titleLabel ).didSet {
+                $0 => \.font => ($1 ? Theme.current.font.headline: Theme.current.font.headline)
+            } )
+            .apply( LayoutConfiguration( view: self.messageLabel ).didSet {
+                $0 => \.font => ($1 ? Theme.current.font.subheadline: Theme.current.font.subheadline)
+            } )
+            .apply( LayoutConfiguration( view: self.expandChevron ).didSet {
+                $0.isHidden = $1 || self.detailLabel.text?.isEmpty ?? true
+            } )
+            .apply( LayoutConfiguration( view: self.detailLabel ).didSet {
+                $0.isHidden = !$1
+            } )
     private lazy var dismissTask = DispatchTask( named: "Dismiss Alert: \(self.title ?? "-")", queue: .main,
                                                  deadline: .now() + .seconds( 3 ), execute: { self.dismiss() } )
 
@@ -129,6 +132,7 @@ class MPAlert {
         let contentStack = UIStackView( arrangedSubviews: [
             self.expandChevron, self.titleLabel, self.messageLabel, content, self.detailLabel
         ].compactMap { $0 } )
+        contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.axis = .vertical
         contentStack.alignment = .center
         contentStack.spacing = 8
@@ -149,10 +153,10 @@ class MPAlert {
         self.expandChevron.alignmentRectOutsets.top = -4
 
         self.detailLabel.text = self.details
-        self.detailLabel => \.textColor => Theme.current.color.body
+        self.detailLabel => \.textColor => Theme.current.color.secondary
         self.detailLabel.textAlignment = .center
         self.detailLabel.numberOfLines = 0
-        self.detailLabel => \.font => Theme.current.font.body
+        self.detailLabel => \.font => Theme.current.font.footnote
 
         let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
         dismissRecognizer.direction = .down
@@ -160,7 +164,6 @@ class MPAlert {
         activateRecognizer.direction = .up
 
         let view = MPEffectView( content: contentStack )
-        view.insetsLayoutMarginsFromSafeArea = true
         view.addGestureRecognizer( dismissRecognizer )
         view.addGestureRecognizer( activateRecognizer )
         view.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( self.didTap ) ) )

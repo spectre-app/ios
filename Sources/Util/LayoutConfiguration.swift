@@ -125,7 +125,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     private var constrainers       = [ (UIView, LayoutTarget<T>) -> [NSLayoutConstraint] ]()
     private var activeConstraints  = Set<NSLayoutConstraint>()
     private var refreshViews       = [ Refresh ]()
-    private var actions            = [ (UIView) -> Void ]()
+    private var actions            = [ (T, Bool) -> Void ]()
     private var properties         = [ AnyProperty ]()
     private var activeProperties   = [ String: Any ]()
     private var inactiveProperties = [ String: Any ]()
@@ -356,19 +356,22 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Run this action when the configuration becomes active.
-    @discardableResult func perform(_ action: @escaping (UIView) -> ()) -> Self {
+    @discardableResult func didSet(_ action: @escaping (T, Bool) -> ()) -> Self {
         self.actions.append( action )
+        self.target.view.flatMap { action( $0, self.isActive ) }
         return self
     }
 
-    //! Request that this configuration's target become the first responder when the configuration becomes active.
-    @discardableResult func becomeFirstResponder() -> Self {
-        self.perform { $0.becomeFirstResponder() }
-    }
-
-    //! Request that this configuration's target resigns first responder when the configuration becomes active.
-    @discardableResult func resignFirstResponder() -> Self {
-        self.perform { $0.resignFirstResponder() }
+    //! Request that this configuration's target become the first responder when it activates, and resigns when it deactivates.
+    @discardableResult func activeResponder() -> Self {
+        self.didSet {
+            if $1 {
+                $0.becomeFirstResponder()
+            }
+            else {
+                $0.resignFirstResponder()
+            }
+        }
     }
 
     //! Set a given value for the target at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.
@@ -402,7 +405,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         DispatchQueue.main.perform {
             UIView.animate( withDuration: duration ) {
                 let owningView = self.target.owningView
-                let targetView = self.target.view ?? owningView
+                let targetView = self.target.view
 
                 self.inactiveConfigurations.forEach {
                     trc( "%@:%@: -> deactivate inactive child: %@", parent, self.target, $0 )
@@ -453,7 +456,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 self.properties.forEach { $0.activate( self.target.view ) }
                 Theme.current.observers.register( observer: self )
 
-                targetView.flatMap { targetView in self.actions.forEach { $0( targetView ) } }
+                targetView.flatMap { targetView in self.actions.forEach { $0( targetView, true ) } }
+
                 self.activeConfigurations.forEach {
                     trc( "%@:%@: -> activate active child: %@", parent, self.target, $0 )
                     $0.activate( animationDuration: duration, parent: self )
@@ -490,8 +494,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         trc( "%@: deactivate: %@", parent, self )
 
         DispatchQueue.main.perform {
-            let owningView = self.target.owningView
-            let targetView = self.target.view ?? owningView
+            let targetView = self.target.view
 
             self.activeConfigurations.forEach {
                 trc( "%@:%@: -> deactivate active child: %@", parent, self.target, $0 )
@@ -523,6 +526,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
             self.properties.forEach { $0.deactivate( self.target.view ) }
             Theme.current.observers.unregister( observer: self )
+
+            targetView.flatMap { targetView in self.actions.forEach { $0( targetView, false ) } }
 
             self.inactiveConfigurations.forEach {
                 trc( "%@:%@: -> activate inactive child: %@", parent, self.target, $0 )
