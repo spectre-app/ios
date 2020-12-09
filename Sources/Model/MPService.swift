@@ -105,8 +105,8 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
             if (oldValue == nil) != (self.image == nil) {
                 self.observers.notify { $0.serviceDidChange( self ) }
             }
-            else if oldValue !== self.image, let oldValue = oldValue, let image = self.image,
-                    oldValue.pngData() == image.pngData() {
+            else if oldValue !== self.image, let oldValue = oldValue, let image = self.image, !oldValue.isEqual( image ),
+                    oldValue.size != image.size || oldValue.pngData() != image.pngData() {
                 self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
