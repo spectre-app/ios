@@ -104,7 +104,8 @@ extension DispatchQueue {
 
 public class Promise<V> {
     private var result: Result<V, Error>?
-    private var targets = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void) ]()
+    private var targets   = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void) ]()
+    private let semaphore = DispatchQueue( label: "Promise" )
 
     public init(_ result: Result<V, Error>? = nil) {
         if let result = result {
@@ -152,10 +153,11 @@ public class Promise<V> {
     /** Submit the promised result, completing the promise for all that are awaiting it. */
     @discardableResult
     public func finish(_ result: Result<V, Error>) -> Self {
-        assert( self.result == nil, "Tried to finish promise with \(result), but was already finished with \(self.result!)" )
-        self.result = result
-
-        self.targets.forEach { target in
+        self.semaphore.sync { () -> [(queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void)] in
+            assert( self.result == nil, "Tried to finish promise with \(result), but was already finished with \(self.result!)" )
+            self.result = result
+            return self.targets
+        }.forEach { target in
             if let queue = target.queue {
                 queue.perform { target.consumer( result ) }
             }
@@ -196,11 +198,11 @@ public class Promise<V> {
     /** When this promise is finished, consume its result with the given block. */
     @discardableResult
     public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void) -> Self {
-        if let result = self.result, queue?.isActive ?? true {
+        if let result = self.semaphore.sync( execute: { self.result } ), queue?.isActive ?? true {
             consumer( result )
         }
         else {
-            self.targets.append( (queue: queue, consumer: consumer) )
+            self.semaphore.sync { self.targets.append( (queue: queue, consumer: consumer) ) }
         }
 
         return self
@@ -284,14 +286,14 @@ public class Promise<V> {
 
     /** Obtain the result of this promise if it has already been submitted, or block the current thread until it is. */
     public func await() throws -> V {
-        if let result = self.result {
+        if let result = self.semaphore.sync( execute: { self.result } ) {
             return try result.get()
         }
 
         // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         let group = DispatchGroup()
         group.enter()
-        self.targets.append( (queue: nil, consumer: { _ in group.leave() }) )
+        self.semaphore.sync { self.targets.append( (queue: nil, consumer: { _ in group.leave() }) ) }
         group.wait()
 
         return try self.await()
