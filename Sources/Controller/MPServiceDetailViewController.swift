@@ -33,8 +33,8 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
     func serviceDidChange(_ service: MPService) {
         DispatchQueue.main.perform {
-            self.color = self.model.color
-            self.image = self.model.image
+            self.color = self.model.preview.color
+            self.image = self.model.preview.image
         }
 
         self.setNeedsUpdate()

@@ -12,9 +12,10 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
     public let user: MPUser
     public var serviceName: String {
         didSet {
-            using( MPServicePreview.cached( for: self.serviceName ) ) {
-                self.image = UIImage.load( data: $0.imageData )
-                self.color = $0.color?.uiColor
+            if oldValue != self.serviceName {
+                self.dirty = true
+                self.preview = MPServicePreview.preview( for: self.serviceName )
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
@@ -92,21 +93,9 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
             }
         }
     }
-    public var color: UIColor? {
+    public lazy var preview: MPServicePreview = MPServicePreview.preview( for: self.serviceName ) {
         didSet {
-            if oldValue != self.color {
-                self.observers.notify { $0.serviceDidChange( self ) }
-            }
-        }
-    }
-    public var image: UIImage? {
-        didSet {
-            trc( "[preview set] %@: image %@ -> %@", self.serviceName, oldValue, self.image )
-            if (oldValue == nil) != (self.image == nil) {
-                self.observers.notify { $0.serviceDidChange( self ) }
-            }
-            else if oldValue !== self.image, let oldValue = oldValue, let image = self.image, !oldValue.isEqual( image ),
-                    oldValue.size != image.size || oldValue.pngData() != image.pngData() {
+            if oldValue != self.preview {
                 self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
@@ -164,11 +153,6 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
         self.lastUsed = lastUsed ?? Date()
         self.questions = questions
 
-        using( MPServicePreview.cached( for: self.serviceName ) ) {
-            self.image = UIImage.load( data: $0.imageData )
-            self.color = $0.color?.uiColor
-        }
-
         defer {
             initialize( self )
             self.initializing = false
@@ -204,11 +188,9 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
     }
 
     public func refresh() {
-        MPServicePreview.latest( for: self.serviceName ).then( on: .main ) {
+        MPServicePreview.latest( for: self.serviceName ).then {
             do {
-                let preview = try $0.get()
-                self.image = UIImage.load( data: preview.imageData )
-                self.color = preview.color?.uiColor
+                self.preview = try $0.get()
             }
             catch PreviewError.noURLHasBeenFound( _ ) {
             }

@@ -45,10 +45,10 @@ class MPServicePreviewController: UIViewController, MPServiceObserver {
 
     func serviceDidChange(_ service: MPService) {
         DispatchQueue.main.perform {
-            self.view.backgroundColor = service.color
-            self.serviceButton.setImage( service.image, for: .normal )
-            self.serviceButton.setTitle( service.image == nil ? service.serviceName: nil, for: .normal )
-            self.preferredContentSize = service.image?.size ?? CGSize( width: 0, height: 200 )
+            self.view.backgroundColor = service.preview.color
+            self.serviceButton.setImage( service.preview.image, for: .normal )
+            self.serviceButton.setTitle( service.preview.image == nil ? service.serviceName: nil, for: .normal )
+            self.preferredContentSize = service.preview.image?.size ?? CGSize( width: 0, height: 200 )
         }
     }
 }

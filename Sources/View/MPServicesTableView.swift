@@ -173,7 +173,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         configuration.event = MPTracker.shared.begin( named: "service #menu" )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.color?.with( alpha: .long )
+        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.preview.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -185,7 +185,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.color?.with( alpha: .long )
+        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.preview.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -376,8 +376,12 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         private let captionLabel    = UILabel()
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
         private lazy var updateTask   = DispatchTask( named: self.service?.serviceName, queue: .main, update: self )
-
-        private var selectionConfiguration: LayoutConfiguration<UIStackView>!
+        private lazy var selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
+            active.constrainTo {
+                $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
+                               .with( priority: .defaultHigh + 10 )
+            }
+        }.needs( .update() )
 
         // MARK: --- Life ---
 
@@ -447,8 +451,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             // - Layout
             LayoutConfiguration( view: self.modeButton )
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
+                    .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                    .constrainTo { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.actionsStack )
@@ -485,13 +490,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                     .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
                     .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 2 )
                     .activate()
-
-            self.selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
-                active.constrainTo {
-                    $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
-                                   .with( priority: .defaultHigh + 10 )
-                }
-            }.needs( .update() )
         }
 
         override func didMoveToSuperview() {
@@ -552,10 +550,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.updateTask.cancel()
 
             DispatchQueue.main.perform {
-                self.backgroundImage.color = self.service?.color
-                self.backgroundImage.image = self.service?.image
+                self.backgroundImage.color = self.service?.preview.color
+                self.backgroundImage.image = self.service?.preview.image
                 self.backgroundImage => \.backgroundColor => Theme.current.color.selection
-                        .transform { [weak self] in $0?.with( hue: self?.service?.color?.hue ) }
+                        .transform { [weak self] in $0?.with( hue: self?.service?.preview.color?.hue ) }
                 self => \.backgroundColor => Theme.current.color.shadow
                         .transform { [weak self] in self?.result?.isPreferred ?? false ? $0: .clear }
 
