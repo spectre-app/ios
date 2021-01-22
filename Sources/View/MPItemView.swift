@@ -964,7 +964,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
 
         func updateDataSource() {
             let values = self.item.model.flatMap { self.item.values( $0 ) } ?? []
-            self.dataSource.update( values.split( separator: nil ).map( { [ V? ]( $0 ) } ) ) { [unowned self] _ in
+            self.dataSource.update( values.split( separator: nil ).map( { $0.compactMap { $0 } } ) ) { [unowned self] _ in
                 DispatchQueue.main.async {
                     self.updateSelection()
                 }

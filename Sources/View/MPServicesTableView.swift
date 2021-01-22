@@ -19,7 +19,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     }
     public var selectedService: MPService? {
         didSet {
-            let selectedPath = self.servicesDataSource.indexPath( where: { $0?.value == self.selectedService } )
+            let selectedPath = self.servicesDataSource.indexPath( where: { $0.service == self.selectedService } )
+
             if self.indexPathForSelectedRow != selectedPath {
                 self.selectRow( at: selectedPath, animated: UIView.areAnimationsEnabled, scrollPosition: .middle )
             }
@@ -85,64 +86,45 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     func update() {
         self.updateTask.cancel()
 
-        var selectedResult: MPQuery.Result<MPService>?
-        var elementsBySection = [ [ MPQuery.Result<MPService>? ] ]()
+        var elementsBySection = [ [ ServiceItem ] ]()
 
         if let user = self.user, user.masterKeyFactory != nil {
-            selectedResult = self.servicesDataSource.firstElement( where: { $0?.value === self.selectedService } )
-            var newServiceResult = self.servicesDataSource.firstElement( where: { $0?.value.isNew ?? false } )
-            let selectionFollowsQuery = selectedResult.flatMap { $0.value.isNew || $0.isExact } ?? false
-
-            // Filter services by query.
-            let results = MPQuery( self.query ).filter( user.services.sorted(), key: { $0.serviceName } )
-            let exactResult = results.first( where: { $0.isExact } )
-
-            // Divide the results into sections.
-            if let preferredFilter = self.preferredFilter {
-                elementsBySection.append( results.ordered( first: {
-                    if preferredFilter( $0.value ) {
-                        $0.flags.insert( Flag.preferred.rawValue )
-                        return true
-                    }
-                    else {
-                        $0.flags.remove( Flag.preferred.rawValue )
-                        return false
-                    }
-                } ) )
-            }
-            else {
-                elementsBySection.append( results )
-            }
+            // Filter services by query and order by preference.
+            let results = ServiceItem.filtered( user.services, query: self.query ?? "", preferred: self.preferredFilter )
+            elementsBySection.append( results )
 
             // Add "new service" result if there is a query and no exact result
+            let exactResult = results.first( where: { $0.isExact } )
             if let query = self.query, !query.isEmpty, exactResult == nil {
-                if let newServiceResult = newServiceResult, !LiefsteCell.is( result: newServiceResult ) {
-                    newServiceResult.value.serviceName = query
-                }
-                else {
-                    newServiceResult = MPQuery.Result<MPService>( value: MPService( user: user, serviceName: query ), keySupplier: { $0.serviceName } )
-                }
-
-                newServiceResult?.matches( query: query )
-                elementsBySection.append( [ newServiceResult ] )
+                elementsBySection.append( [ using( self.servicesDataSource.newItem ) {
+                    $0?.service.serviceName = query
+                    $0?.query = query
+                } ?? using( ServiceItem( service: MPService( user: user, serviceName: query ), query: query, preferred: false ) ) {
+                    self.servicesDataSource.newItem = $0
+                } ] )
             }
             else {
-                newServiceResult = nil
+                self.servicesDataSource.newItem = nil
             }
 
             // Special case for selected service: keep selection on the service result that matches the query
-            if selectionFollowsQuery {
-                selectedResult = exactResult ?? newServiceResult
-            }
-            if newServiceResult != selectedResult, let selectedResult_ = selectedResult, !results.contains( selectedResult_ ) {
-                selectedResult = nil
+            if let selectedItem = self.servicesDataSource.selectedItem {
+                if let newItem = self.servicesDataSource.newItem, selectedItem == newItem {
+                    self.servicesDataSource.selectedItem = newItem
+                }
+                else if selectedItem.isExact {
+                    self.servicesDataSource.selectedItem = exactResult
+                }
+                else {
+                    self.servicesDataSource.selectedItem = results.first { $0.id == selectedItem.id }
+                }
             }
         }
 
         DispatchQueue.main.perform {
             // Update the services table to show the newly filtered services
             self.servicesDataSource.update( elementsBySection ) { _ in
-                self.selectedService = selectedResult?.value
+                self.selectRow( at: self.servicesDataSource.indexPath( for: self.servicesDataSource.selectedItem ), animated: true, scrollPosition: .middle )
             }
 
             // Light-weight reload the cell content without fully reloading the cell rows.
@@ -163,9 +145,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         (cell as? LiefsteCell)?.didEndDisplaying()
     }
 
-    @available(iOS 13, *)
+    @available( iOS 13, * )
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        (self.servicesDataSource.element( at: indexPath )?.value).flatMap { service in
+        (self.servicesDataSource.element( at: indexPath )?.service).flatMap { service in
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in MPServicePreviewController( service: service ) }, actionProvider: { _, configuration in
                 UIMenu( title: service.serviceName, children: [
@@ -183,7 +165,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
     }
 
-    @available(iOS 13, *)
+    @available( iOS 13, * )
     func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
@@ -191,11 +173,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         configuration.event = MPTracker.shared.begin( named: "service #menu" )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.value.color?.with( alpha: .long )
+        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
-    @available(iOS 13, *)
+    @available( iOS 13, * )
     func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
@@ -203,16 +185,16 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.value.color?.with( alpha: .long )
+        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.value
+        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.service
     }
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.value
+        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.service
     }
 
     // MARK: --- MPUserObserver ---
@@ -235,12 +217,96 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     // MARK: --- Types ---
 
-    enum Flag: Int {
-        case preferred
+    class ServiceItem: Hashable, Identifiable, Comparable {
+        class func filtered(_ services: [MPService], query: String, preferred: ((MPService) -> Bool)?) -> [ServiceItem] {
+            var items = services.map { ServiceItem( service: $0, query: query, preferred: preferred?( $0 ) ?? false ) }
+                                .filter { $0.isMatched }.sorted()
+
+            if preferred != nil {
+                items = items.ordered( first: { $0.isPreferred } )
+            }
+
+            return items
+        }
+
+        let service: MPService
+        var subtitle = NSAttributedString()
+        var matches  = [ String.Index ]()
+        var query    = "" {
+            didSet {
+                let key           = self.service.serviceName
+                let attributedKey = NSMutableAttributedString( string: key )
+                defer { self.subtitle = attributedKey }
+                self.isExact = key == self.query
+
+                if self.isExact {
+                    self.matches = Array( attributedKey.string.indices )
+                    self.isMatched = true
+                    attributedKey.addAttribute( NSAttributedString.Key.backgroundColor, value: UIColor.red,
+                                                range: NSRange( key.startIndex..<key.endIndex, in: key ) )
+                    return
+                }
+
+                self.matches = [ String.Index ]()
+                if key.isEmpty || self.query.isEmpty {
+                    self.isMatched = self.query.isEmpty
+                    return
+                }
+
+                // Consume query and key characters until one of them runs out, recording any matches against the result's key.
+                var q = self.query.startIndex, k = key.startIndex, n = k
+                while ((q < self.query.endIndex) && (k < key.endIndex)) {
+                    n = key.index( after: k )
+
+                    if self.query[q] == key[k] {
+                        self.matches.append( k )
+                        attributedKey.addAttribute( NSAttributedString.Key.backgroundColor, value: UIColor.red,
+                                                    range: NSRange( k..<n, in: key ) )
+                        q = self.query.index( after: q )
+                    }
+
+                    k = n
+                }
+
+                // If the match against the query broke before the end of the query, it failed.
+                self.isMatched = !(q < self.query.endIndex)
+            }
+        }
+
+        var isMatched = false
+        var isExact   = false
+        let isPreferred: Bool
+
+        var id: String {
+            self.service.serviceName
+        }
+
+        init(service: MPService, query: String = "", preferred: Bool) {
+            self.service = service
+            self.isPreferred = preferred
+
+            defer {
+                self.query = query
+            }
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine( self.service )
+        }
+
+        static func ==(lhs: ServiceItem, rhs: ServiceItem) -> Bool {
+            lhs.subtitle == rhs.subtitle && lhs.service == rhs.service
+        }
+
+        static func <(lhs: ServiceItem, rhs: ServiceItem) -> Bool {
+            lhs.service < rhs.service
+        }
     }
 
-    class ServicesSource: DataSource<MPQuery.Result<MPService>> {
-        let view: MPServicesTableView
+    class ServicesSource: DataSource<ServiceItem> {
+        let view:         MPServicesTableView
+        var newItem:      ServiceItem?
+        var selectedItem: ServiceItem?
 
         init(view: MPServicesTableView) {
             self.view = view
@@ -249,11 +315,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
 
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            !(self.element( at: indexPath )?.value.isNew ?? true)
+            !(self.element( at: indexPath )?.service.isNew ?? true)
         }
 
         override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-            if let service = self.element( at: indexPath )?.value, editingStyle == .delete {
+            if let service = self.element( at: indexPath )?.service, editingStyle == .delete {
                 MPTracker.shared.event( named: "service #delete" )
 
                 service.user.services.removeAll { $0 === service }
@@ -276,7 +342,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     class ServiceCell: UITableViewCell, Updatable, MPServiceObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
         public weak var servicesView: MPServicesTableView?
-        public weak var result:       MPQuery.Result<MPService>? {
+        public weak var result:       ServiceItem? {
             willSet {
                 self.service?.observers.unregister( observer: self )
                 self.service?.user.observers.unregister( observer: self )
@@ -291,7 +357,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             }
         }
         public var service: MPService? {
-            self.result?.value
+            self.result?.service
         }
 
         private var mode            = MPKeyPurpose.authentication {
@@ -491,10 +557,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                 self.backgroundImage => \.backgroundColor => Theme.current.color.selection
                         .transform { [weak self] in $0?.with( hue: self?.service?.color?.hue ) }
                 self => \.backgroundColor => Theme.current.color.shadow
-                        .transform { [weak self] in self?.result?.flags.contains( Flag.preferred.rawValue ) ?? false ? $0: .clear }
+                        .transform { [weak self] in self?.result?.isPreferred ?? false ? $0: .clear }
 
                 let isNew = self.service?.isNew ?? false
-                if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.attributedKey ) } ) {
+                if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
                     if isNew {
                         resultCaption.append( NSAttributedString( string: " (new service)" ) )
                     }
@@ -544,8 +610,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         private let propLabel   = UILabel()
         private var player: AVPlayer?
 
-        class func `is`(result: MPQuery.Result<MPService>?) -> Bool {
-            result?.value.serviceName == "liefste"
+        class func `is`(result: ServiceItem?) -> Bool {
+            result?.service.serviceName == "liefste"
         }
 
         // MARK: --- Life ---

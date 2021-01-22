@@ -111,12 +111,12 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        self.selectedFile = self.fileSource.element( item: self.usersSpinner.selectedItem )
+        self.selectedFile = self.fileSource.element( item: self.usersSpinner.selectedItem ) ?? nil
         (self.usersSpinner.cellForItem( at: indexPath ) as? UserCell)?.userEvent = self.userEvent
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        self.selectedFile = self.fileSource.element( item: self.usersSpinner.selectedItem )
+        self.selectedFile = self.fileSource.element( item: self.usersSpinner.selectedItem ) ?? nil
     }
 
     // MARK: --- MPMarshalObserver ---
@@ -127,7 +127,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
 
     // MARK: --- Types ---
 
-    class UsersSource: DataSource<MPMarshal.UserFile> {
+    class UsersSource: DataSource<MPMarshal.UserFile?> {
         let viewController: BasicUsersViewController
 
         init(viewController: BasicUsersViewController) {
@@ -138,7 +138,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             using( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.viewController = self.viewController
-                $0.userFile = self.element( at: indexPath )
+                $0.userFile = self.element( at: indexPath ) ?? nil
             }
         }
     }

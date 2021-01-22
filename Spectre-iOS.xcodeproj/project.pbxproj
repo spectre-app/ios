@@ -91,7 +91,6 @@
 		93D39E0E73178FE39CF12B45 /* BasicServicesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BasicServicesViewController.swift */; };
 		93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
 		93D39E31D32AFAF973C302E6 /* MPBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3911FED606FAE34608C50 /* MPBackgroundView.swift */; };
-		93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
 		93D39E4BA0810541D1A91953 /* MPMarshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* MPMarshal.swift */; };
 		93D39EAA842D58A3306E6EFB /* Dispatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3940575E4CC62A8F6CE04 /* Dispatch.swift */; };
 		93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3957AAB49A40DB9943A4D /* MPExportViewController.swift */; };
@@ -121,7 +120,6 @@
 		DA0E5585251064E9002B3AB1 /* UIView+MP.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B6403FE258E526E5E85 /* UIView+MP.m */; };
 		DA0E558625106500002B3AB1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
 		DA0E558725106518002B3AB1 /* Observers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3900653D9D95598C41DFA /* Observers.swift */; };
-		DA0E558925106542002B3AB1 /* MPQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3915A208E1B01BDD05A3E /* MPQuery.swift */; };
 		DA0E558B2510E985002B3AB1 /* MPLogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* MPLogSink.swift */; };
 		DA0E558C2510E985002B3AB1 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398E83036023785BE6806 /* Theme.swift */; };
 		DA0E558D2510E985002B3AB1 /* Foundation+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */; };
@@ -401,7 +399,6 @@
 		93D390CB091CCF46AF6EAB4C /* AutoFill.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFill.swift; sourceTree = "<group>"; };
 		93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPToggleButton.swift; sourceTree = "<group>"; };
 		93D3911FED606FAE34608C50 /* MPBackgroundView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPBackgroundView.swift; sourceTree = "<group>"; };
-		93D3915A208E1B01BDD05A3E /* MPQuery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuery.swift; sourceTree = "<group>"; };
 		93D39169E1BADEFA0517D4D2 /* MPUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUser.swift; sourceTree = "<group>"; };
 		93D3917402B9BC4575713560 /* MPTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPTracker.swift; sourceTree = "<group>"; };
 		93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPQuestion.swift; sourceTree = "<group>"; };
@@ -775,7 +772,6 @@
 				93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */,
 				93D395FD92D751588A645D15 /* MPKeyFactory.swift */,
 				93D39941059143124D09AE05 /* MPLogSink.swift */,
-				93D3915A208E1B01BDD05A3E /* MPQuery.swift */,
 				93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */,
 				93D3917402B9BC4575713560 /* MPTracker.swift */,
 				93D39D251169E42F0AAC451F /* MPServicePreview.swift */,
@@ -1750,7 +1746,6 @@
 				DA0E55A82510E992002B3AB1 /* MPUser.swift in Sources */,
 				DA0E55942510E985002B3AB1 /* InAppStore.swift in Sources */,
 				DA0E55912510E985002B3AB1 /* Debug.swift in Sources */,
-				DA0E558925106542002B3AB1 /* MPQuery.swift in Sources */,
 				DA0E55AA2510E9BB002B3AB1 /* MPItemView.swift in Sources */,
 				DA0E55BC2510E9BB002B3AB1 /* MPResultTypeCell.swift in Sources */,
 				DA0E55A32510E98B002B3AB1 /* MPAlert.swift in Sources */,
@@ -1816,7 +1811,6 @@
 				93D393B953CB94FC9E964625 /* MPServicePreview.swift in Sources */,
 				93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */,
 				93D39470EC1F954780E354CB /* MPImageView.swift in Sources */,
-				93D39E39D98B1A46DAC48058 /* MPQuery.swift in Sources */,
 				DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */,
 				93D3929442591D379DD3B240 /* MPServiceDetailViewController.swift in Sources */,
 				93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */,

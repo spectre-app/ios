@@ -8,7 +8,7 @@ import UIKit
 open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
     private let tableView:         UITableView?
     private let collectionView:    UICollectionView?
-    private var elementsBySection: [[E?]]
+    private var elementsBySection: [[E]]
     private var elementsConsumed = false
 
     public var isEmpty: Bool {
@@ -24,14 +24,14 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
     // MARK: --- Interface ---
 
     open func indexPath(for item: E?) -> IndexPath? {
-        self.indexPath( for: item, in: self.elementsBySection )
+        item.flatMap { self.indexPath( for: $0, in: self.elementsBySection ) }
     }
 
-    open func indexPath(where predicate: (E?) -> Bool) -> IndexPath? {
+    open func indexPath(where predicate: (E) -> Bool) -> IndexPath? {
         self.indexPath( where: predicate, in: self.elementsBySection )
     }
 
-    open func firstElement(where predicate: (E?) -> Bool) -> E? {
+    open func firstElement(where predicate: (E) -> Bool) -> E? {
         self.elementsBySection.flatMap { $0 }.first( where: predicate ).flatMap { $0 }
     }
 
@@ -51,9 +51,9 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                 self.elementsBySection[section][item]: nil
     }
 
-    open func elements() -> AnySequence<(indexPath: IndexPath, element: E?)> {
+    open func elements() -> AnySequence<(indexPath: IndexPath, element: E)> {
         // TODO: inline these types
-        let s: LazySequence<FlattenSequence<LazyMapSequence<EnumeratedSequence<[[E?]]>, LazyMapSequence<EnumeratedSequence<[E?]>, (indexPath: IndexPath, element: E?)>>>>
+        let s: LazySequence<FlattenSequence<LazyMapSequence<EnumeratedSequence<[[E]]>, LazyMapSequence<EnumeratedSequence<[E]>, (indexPath: IndexPath, element: E)>>>>
                 = self.elementsBySection.enumerated().lazy.flatMap {
             let (section, sectionElements) = $0
 
@@ -63,11 +63,11 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                 return (indexPath: IndexPath( item: item, section: section ), element: element)
             }
         }
-        return AnySequence<(indexPath: IndexPath, element: E?)>( s )
+        return AnySequence<(indexPath: IndexPath, element: E)>( s )
     }
 
-    open func update(_ elementsBySection: [[E?]],
-                     reloadItems: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: [E?]? = nil,
+    open func update(_ elementsBySection: [[E]],
+                     reloadItems: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: Set<E>? = nil,
                      animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)? = nil) {
         trc( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, elementsBySection )
 
@@ -81,11 +81,12 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             let updateIncrementally = !animated
             var reloadPaths         = reloadPaths ?? []
 
-            if elementsBySection == self.elementsBySection {
+            if elementsBySection.elementsEqual( self.elementsBySection, by: { $0.elementsEqual( $1, by: { self.isEqual( lhs: $0, rhs: $1 ) } ) } ) {
                 for (section, elements) in self.elementsBySection.enumerated() {
                     for (item, element) in elements.enumerated() {
-                        if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
-                            let indexPath = IndexPath( item: item, section: section )
+                        let indexPath = IndexPath( item: item, section: section )
+
+                        if reloadItems || reloadElements?.contains( element ) ?? false || self.element( at: indexPath ) != element {
                             trc( "reload item %@", indexPath )
                             reloadPaths.append( indexPath )
                         }
@@ -108,7 +109,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                     if section >= self.elementsBySection.count {
                         trc( "insert section %d", section )
                         if updateIncrementally {
-                            self.elementsBySection.append( [ E? ]() )
+                            self.elementsBySection.append( [ E ]() )
                         }
                         self.collectionView?.insertSections( IndexSet( integer: section ) )
                         self.tableView?.insertSections( IndexSet( integer: section ), with: .automatic )
@@ -129,12 +130,12 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                                 self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
                                 self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
                             }
-                            else if reloadItems || reloadElements?.contains( where: { $0 == element } ) ?? false {
-                                trc( "reload item %@", fromIndexPath )
-                                if updateIncrementally {
-                                    self.elementsBySection[fromIndexPath.section][fromIndexPath.item] = element
-                                }
-                                reloadPaths.append( fromIndexPath )
+                            else if reloadItems || (reloadElements?.contains( element ) ?? false) || self.element( at: fromIndexPath ) != element {
+                                trc( "reload item %@", toIndexPath )
+//                                if updateIncrementally {
+//                                    self.elementsBySection[toIndexPath.section][toIndexPath.item] = element
+//                                }
+                                reloadPaths.append( toIndexPath )
                             }
                         }
                         else {
@@ -274,6 +275,10 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
     // MARK: --- Private ---
 
+    func isEqual(lhs: E, rhs: E) -> Bool {
+        lhs == rhs
+    }
+
     private func perform(animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
         DispatchQueue.main.perform {
             if self.tableView == nil && self.collectionView == nil {
@@ -291,13 +296,14 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         }
     }
 
-    private func indexPath<E: Hashable>(for item: E?, in sections: [[E?]]?) -> IndexPath? {
-        self.indexPath( where: { $0 == item }, in: sections )
+    private func indexPath(for item: E, in sections: [[E]]?) -> IndexPath? {
+        self.indexPath( where: { self.isEqual( lhs: $0, rhs: item ) }, in: sections )
     }
 
-    private func indexPath<E: Hashable>(where predicate: (E?) -> Bool, in sections: [[E?]]?) -> IndexPath? {
-        var section = 0
+    private func indexPath(where predicate: (E) -> Bool, in sections: [[E]]?) -> IndexPath? {
         if let sections = sections {
+            var section = 0
+
             for sectionItems in sections {
                 if let index = sectionItems.firstIndex( where: predicate ) {
                     return IndexPath( item: index, section: section )
@@ -310,3 +316,10 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         return nil
     }
 }
+
+extension DataSource where E: Identifiable {
+    func isEqual(lhs: E, rhs: E) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+

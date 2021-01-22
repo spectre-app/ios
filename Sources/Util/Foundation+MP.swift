@@ -264,3 +264,10 @@ extension URLSession {
         return promise
     }
 }
+
+// Stub for iOS 13 type.
+public protocol Identifiable {
+    associatedtype ID : Hashable
+
+    var id: Self.ID { get }
+}
