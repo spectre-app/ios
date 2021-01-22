@@ -46,7 +46,7 @@ extension NSAttributedString {
         if let iconScalar = icon.unicodeScalars.first, let toneScalar = Unicode.Scalar( 0x100000 + iconScalar.value ) {
             attributedIcon.append( NSAttributedString( string: String( String.UnicodeScalarView( [ toneScalar ] ) ), attributes: [
                 NSAttributedString.Key.font: font,
-                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: 0.5 ),
+                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: .short ),
             ] ) )
         }
 

@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPEffectView: UIView {
+class MPEffectView: UIView, ThemeObserver {
     public var   borderWidth:         CGFloat {
         didSet {
             if self.borderWidth != oldValue {
@@ -157,14 +157,25 @@ class MPEffectView: UIView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove( toSuperview: newSuperview )
+
+        if newSuperview != nil {
+            Theme.current.observers.register( observer: self )
+        }
+        else {
+            Theme.current.observers.unregister( observer: self )
+        }
+    }
+
     func addContentView(_ view: UIView) {
         self.vibrancyEffectView.contentView.addSubview( view )
     }
 
-    override func tintColorDidChange() {
-        super.tintColorDidChange()
+    // MARK: --- ThemeObserver ---
 
-        self.update()
+    func didChangeTheme() {
+        self.setNeedsDisplay()
     }
 
     // MARK: --- Updatable ---
@@ -188,7 +199,7 @@ class MPEffectView: UIView {
             }
 
             self.blurEffectView.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
-            self.blurEffectView.layer.borderColor = (self.borderColor ?? self.tintColor)?.cgColor
+            self.blurEffectView.layer.borderColor = (self.borderColor ?? Theme.current.color.secondary.get())?.cgColor
             self.blurEffectView.alpha = self.isDimmed ? .short: .on
         }
     }

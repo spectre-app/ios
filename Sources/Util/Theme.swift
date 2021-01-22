@@ -202,6 +202,12 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
 }
 
 public struct ThemePattern {
+    static let spectre   = ThemePattern(
+            dark: .hex( "0E3345" ),
+            dusk: .hex( "173D50" ),
+            flat: .hex( "57CBCC" ),
+            dawn: .hex( "87A4A9" ),
+            pale: .hex( "FFFFFF" ) )
     static let dream   = ThemePattern(
             dark: .hex( "385359" ),
             dusk: .hex( "4C6C73" ),
@@ -317,6 +323,8 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
 
     // Register all theme objects
     public static let  allCases  = [ Theme.base,
+                                     Theme( path: ".spectre", pattern: .spectre,
+                                            mood: "It's just a mental reflection." ),
                                      Theme( path: ".dream", pattern: .dream,
                                             mood: "This weather is for dreaming." ),
                                      Theme( path: ".aged", pattern: .aged,
@@ -495,7 +503,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.shadow.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.mute.set( light: pattern.dusk?.with( alpha: .short ), dark: pattern.dawn?.with( alpha: .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
-            self.color.tint.set( light: pattern.dusk, dark: pattern.dawn )
+            self.color.tint.set( light: pattern.flat, dark: pattern.flat )
         }
         override?( self )
 
