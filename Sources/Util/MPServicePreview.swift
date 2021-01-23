@@ -19,7 +19,7 @@ class MPServicePreview: Equatable {
 
         // If a preview exists on disk, use it.
         do {
-            if let previewURL = self.caches?.appendingPathComponent( "preview-\(serviceURL)" ).appendingPathExtension( "json" ),
+            if let previewURL = FileManager.caches?.appendingPathComponent( "preview-\(serviceURL)" ).appendingPathExtension( "json" ),
                FileManager.default.fileExists( atPath: previewURL.path ) {
                 let preview = MPServicePreview( url: serviceURL, data:
                 try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewURL ) ) )
@@ -105,7 +105,7 @@ class MPServicePreview: Equatable {
                 }
 
                 // Serialize it to disk for future runs.
-                if let previewURL = self.caches?.appendingPathComponent( "preview-\(serviceURL)" ).appendingPathExtension( "json" ) {
+                if let previewURL = FileManager.caches?.appendingPathComponent( "preview-\(serviceURL)" ).appendingPathExtension( "json" ) {
                     try JSONEncoder().encode( preview.data ).write( to: previewURL )
                 }
 
@@ -148,7 +148,6 @@ class MPServicePreview: Equatable {
                                                        workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background, attributes: [ .concurrent ] ),
                                                        responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background, attributes: [ .concurrent ] ),
                                                        cache: InMemoryCache() )
-    private static let caches      = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
     private static var previews    = NSCache<NSString, MPServicePreview>()
     private static var promises    = [ String: Promise<MPServicePreview> ]()
     private static let semaphore   = DispatchQueue( label: "MPServicePreview" )

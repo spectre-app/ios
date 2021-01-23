@@ -100,6 +100,13 @@ extension Decimal {
     }
 }
 
+extension FileManager {
+    public static let caches    = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
+                                                     .appendingPathComponent( "Library/Caches" )
+    public static let documents = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
+                                                     .appendingPathComponent( "Documents" )
+}
+
 extension Locale {
     public static let C = Locale( identifier: "en_US_POSIX" )
 }
@@ -267,7 +274,7 @@ extension URLSession {
 
 // Stub for iOS 13 type.
 public protocol Identifiable {
-    associatedtype ID : Hashable
+    associatedtype ID: Hashable
 
     var id: Self.ID { get }
 }

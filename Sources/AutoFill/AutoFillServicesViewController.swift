@@ -45,6 +45,7 @@ class AutoFillServicesViewController: BasicServicesViewController {
             } )
         }
         self.servicesTableView.serviceActions = [
+            .init( identifier: "", title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
             .init( identifier: "services.service #service_fill", title: "Fill Login", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
                 switch appearance {
                     case .cell:

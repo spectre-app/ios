@@ -17,9 +17,7 @@ class MPMarshal: Observable, Updatable {
         }
     }
 
-    private let marshalQueue      = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
-    private let documentDirectory = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
-                                                       .appendingPathComponent( "Documents" )
+    private let marshalQueue = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
     private lazy var updateTask = DispatchTask( queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ), update: self )
 
     // MARK: --- Interface ---
@@ -501,11 +499,12 @@ class MPMarshal: Observable, Updatable {
 
     private func userDocuments() throws -> [URL] {
         var isDirectory: ObjCBool = false
-        guard let documentsDirectory = self.documentDirectory,
-              FileManager.default.fileExists( atPath: documentsDirectory.path, isDirectory: &isDirectory ), isDirectory.boolValue
+        guard let documents = FileManager.documents,
+              FileManager.default.fileExists( atPath: documents.path, isDirectory: &isDirectory ),
+              isDirectory.boolValue
         else { return [] }
 
-        return try FileManager.default.contentsOfDirectory( at: documentsDirectory, includingPropertiesForKeys: nil, options: .skipsHiddenFiles )
+        return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil, options: .skipsHiddenFiles )
     }
 
     private func userFile(at documentURL: URL) throws -> UserFile? {
@@ -529,7 +528,7 @@ class MPMarshal: Observable, Updatable {
 
     private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
         guard let formatExtension = String.valid( mpw_format_extension( format ) ),
-              let directory = directory ?? self.documentDirectory
+              let directory = directory ?? FileManager.documents
         else { return nil }
 
         return directory.appendingPathComponent( name.replacingOccurrences( of: "/", with: "_" ), isDirectory: false )
