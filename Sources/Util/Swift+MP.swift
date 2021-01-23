@@ -133,6 +133,22 @@ extension String {
         return self.valid( pointer.baseAddress, length: pointer.count, consume: consume )
     }
 
+    subscript(_ pattern: String) -> [[Substring?]] {
+        get {
+            do {
+                let regex = try NSRegularExpression( pattern: pattern )
+                return regex.matches( in: self, range: NSMakeRange( 0, self.count ) ).map { match in
+                    (0..<match.numberOfRanges).map { group in
+                        Range( match.range( at: group ), in: self ).flatMap { self[$0] }
+                    }
+                }
+            }
+            catch {
+                return [ [] ]
+            }
+        }
+    }
+
     public var nonEmpty: Self? {
         self.isEmpty ? nil: self
     }
@@ -161,9 +177,7 @@ extension String {
         let brightness = CGFloat( ratio( of: digest[2], from: 0.5, to: 0.7 ) )
         return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: .on )
     }
-}
 
-extension String {
     func b64Decrypt() -> String? {
         var secretLength = mpw_base64_decode_max( self ), keyLength = 0
         guard secretLength > 0

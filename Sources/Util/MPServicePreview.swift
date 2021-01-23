@@ -7,18 +7,25 @@ import Foundation
 import SwiftLinkPreview
 
 class MPServicePreview: Equatable {
-    static func preview(for url: String) -> MPServicePreview {
-        let url = self.clean( url: url )
+    static func preview(for serviceName: String) -> MPServicePreview {
+        let serviceURL = self.url( for: serviceName )
 
-        if let preview = self.previews.object( forKey: url as NSString ) {
+        // If a cached preview is known, use it.
+        if let preview = self.semaphore.sync( execute: {
+            self.previews.object( forKey: serviceURL as NSString )
+        } ) {
             return preview
         }
 
+        // If a preview exists on disk, use it.
         do {
-            if let previewURL = self.caches?.appendingPathComponent( "preview-\(url)" ).appendingPathExtension( "json" ),
+            if let previewURL = self.caches?.appendingPathComponent( "preview-\(serviceURL)" ).appendingPathExtension( "json" ),
                FileManager.default.fileExists( atPath: previewURL.path ) {
-                let preview = MPServicePreview( url: url, data: try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewURL ) ) )
-                self.previews.setObject( preview, forKey: url as NSString, cost: preview.data.imageData?.count ?? 0 )
+                let preview = MPServicePreview( url: serviceURL, data:
+                try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewURL ) ) )
+                self.semaphore.sync {
+                    self.previews.setObject( preview, forKey: serviceURL as NSString, cost: preview.data.imageData?.count ?? 0 )
+                }
                 return preview
             }
         }
@@ -26,57 +33,87 @@ class MPServicePreview: Equatable {
             mperror( title: "Couldn't load service preview", error: error )
         }
 
-        let preview = MPServicePreview( url: url, data: PreviewData( color: ColorData( uiColor: url.color() ) ) )
-        self.previews.setObject( preview, forKey: url as NSString )
+        // Create & cache a stub preview based on the service name.
+        let preview = MPServicePreview( url: serviceURL, data: PreviewData( color: ColorData( uiColor: serviceURL.color() ) ) )
+        self.semaphore.sync {
+            self.previews.setObject( preview, forKey: serviceURL as NSString )
+        }
         return preview
     }
 
-    static func latest(for url: String) -> Promise<MPServicePreview> {
-        let url = self.clean( url: url )
+    static func latest(for serviceName: String) -> Promise<MPServicePreview> {
+        let serviceURL = self.url( for: serviceName )
 
-        if let promise = self.promises[url] {
+        // If a lookup is already promised, reuse it.
+        if let promise = self.semaphore.sync( execute: {
+            self.promises[serviceURL]
+        } ) {
             return promise
         }
 
         let promise = Promise<MPServicePreview>()
-        self.promises[url] = promise
+        self.semaphore.sync {
+            self.promises[serviceURL] = promise
+        }
 
-        let preview = self.preview( for: url )
+        // If a preview exists with a known image < 30 days old, don't refresh it yet.
+        let preview = self.preview( for: serviceURL )
         if let date = preview.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
-            trc( "[preview cached] %@: %d", url, preview.data.imageData?.count ?? 0 )
+            trc( "[preview cached] %@: %d", serviceURL, preview.data.imageData?.count ?? 0 )
             promise.finish( .success( preview ) )
             return promise
         }
 
-        self.linkPreview.preview( url, onSuccess: { response in
+        // Resolve candidate image URLs for the service.
+        // If the service URL is not a pure domain, install a fallback resolver for the service domain.
+        var resolution = self.resolve( serviceURL: serviceURL, into: preview )
+        if let serviceDomain = serviceURL[#"^[^/]*\.([^/]+\.[^/]+)(/.*)?$"#].first?[1] {
+            resolution = resolution.or( self.resolve( serviceURL: String( serviceDomain ), into: preview ) )
+        }
+        resolution.finishes( promise )
+
+        return promise
+    }
+
+    private static func resolve(serviceURL: String, into preview: MPServicePreview) -> Promise<MPServicePreview> {
+        let promise = Promise<MPServicePreview>()
+
+        self.linkPreview.preview( serviceURL, onSuccess: { response in
+            // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
             guard let imageURL = [ response.image, response.icon ]
                     .compactMap( { self.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
                     ?? self.byImageSize( [ response.image, response.icon ] + (response.images ?? []) )
                            .ordered( last: { $0.pathExtension == "gif" } ).first
             else {
-                trc( "[preview missing] %@: %@", url, response )
+                trc( "[preview missing] %@: %@", serviceURL, response )
                 promise.finish( .failure( MPError.issue(
                         title: "No candidate images on site.", details: String( describing: response ) ) ) )
                 return
             }
 
+            // Fetch the image's data.
             preview.data.imageURL = imageURL.absoluteString
             URLSession.optional.promise( with: URLRequest( url: imageURL ) ).promise {
-                trc( "[preview fetched] %@: %d", url, $0.0.count )
+                trc( "[preview fetched] %@: %d", serviceURL, $0.0.count )
 
+                // Persist it into the cached preview.
                 preview.data.imageDate = Date()
                 preview.data.imageData = $0.0
-                self.previews.setObject( preview, forKey: url as NSString, cost: preview.data.imageData?.count ?? 0 )
-                self.promises[url] = nil
+                self.semaphore.sync {
+                    self.previews.setObject( preview, forKey: serviceURL as NSString, cost: preview.data.imageData?.count ?? 0 )
+                    self.promises[serviceURL] = nil
+                }
 
-                if let previewURL = self.caches?.appendingPathComponent( "preview-\(url)" ).appendingPathExtension( "json" ) {
+                // Serialize it to disk for future runs.
+                if let previewURL = self.caches?.appendingPathComponent( "preview-\(serviceURL)" ).appendingPathExtension( "json" ) {
                     try JSONEncoder().encode( preview.data ).write( to: previewURL )
                 }
 
                 return preview
             }.finishes( promise )
         }, onError: { error in
-            trc( "[preview error] %@: %@", url, error )
+            trc( "[preview error] %@: %@", serviceURL, error )
+            self.promises[serviceURL] = nil
             promise.finish( .failure( error ) )
         } )
 
@@ -85,7 +122,7 @@ class MPServicePreview: Equatable {
 
     // MARK: --- Life ---
 
-    var url: String
+    var url:   String
     var data:  PreviewData
     var image: UIImage? {
         self.data.image
@@ -114,9 +151,10 @@ class MPServicePreview: Equatable {
     private static let caches      = try? FileManager.default.url( for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true )
     private static var previews    = NSCache<NSString, MPServicePreview>()
     private static var promises    = [ String: Promise<MPServicePreview> ]()
+    private static let semaphore   = DispatchQueue( label: "MPServicePreview" )
 
-    private static func clean(url: String) -> String {
-        url.replacingOccurrences( of: "/", with: "::" ).replacingOccurrences( of: ".*@", with: "", options: .regularExpression )
+    private static func url(for serviceName: String) -> String {
+        serviceName.replacingOccurrences( of: "/", with: "::" ).replacingOccurrences( of: ".*@", with: "", options: .regularExpression )
     }
 
     private static func byImageSize<S: Sequence>(_ urls: S) -> [URL] where S.Element == String? {

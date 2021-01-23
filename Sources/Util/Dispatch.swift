@@ -260,6 +260,18 @@ public class Promise<V> {
         return promise
     }
 
+    /** Return a new promise that finishes with a successful result of this promise or falls back to the result of the given promise. */
+    public func or(_ other: @autoclosure @escaping () -> Promise<V>) -> Promise<V> {
+        self.thenPromising {
+            switch $0 {
+                case .success:
+                    return self
+                case .failure:
+                    return other()
+            }
+        }
+    }
+
     /** Return a new promise that finishes after both this and the given promise have finished. */
     public func and(_ other: Promise<V>) -> Promise<V> where V == Void {
         self.promising { other }
