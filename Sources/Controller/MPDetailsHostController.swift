@@ -146,17 +146,17 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
             self.activeController = vc
 
             if let activeController = self.activeController {
+                let detailController = activeController as? MPDetailViewController
                 UIView.performWithoutAnimation {
                     self.addChild( activeController )
                     activeController.view.frame.size = self.contentView.bounds.size.union(
                             activeController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
                     activeController.beginAppearanceTransition( true, animated: true )
+                    self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
                     self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view ).constrain( margins: true ).activate()
                 }
                 UIView.animate( withDuration: .short, animations: {
-                    let detailController = activeController as? MPDetailViewController
-                    self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
                     self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
                     activeController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()

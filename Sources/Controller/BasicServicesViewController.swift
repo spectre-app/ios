@@ -70,13 +70,6 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
                 .activate()
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear( animated )
-
-        // Need to lay out before setting initial content offset to ensure top container inset is taken into account.
-        self.view.layoutIfNeeded()
-    }
-
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 

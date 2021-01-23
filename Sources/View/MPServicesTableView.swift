@@ -7,14 +7,14 @@ import UIKit
 import AVKit
 
 class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updatable {
-    public var user: MPUser? {
+    public var   user:          MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
             self.query = nil
         }
         didSet {
             self.user?.observers.register( observer: self )
-            self.update()
+            self.updateTask.request()
         }
     }
     public var selectedService: MPService? {
@@ -49,6 +49,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     private lazy var servicesDataSource = ServicesSource( view: self )
     private lazy var updateTask         = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
+    var updatesPostponed: Bool {
+        // Updates prior to attachment may result in an incorrect initial content offset.
+        self.window == nil
+    }
 
     // MARK: --- State ---
 
