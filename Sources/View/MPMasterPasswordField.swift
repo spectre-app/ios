@@ -61,7 +61,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
     private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
-    private lazy var updateTask = DispatchTask( queue: .main, deadline: .now() + .milliseconds( .random( in: 300..<500 ) ), update: self )
+    private lazy var updateTask = DispatchTask( deadline: .now() + .milliseconds( .random( in: 300..<500 ) ), update: self )
 
     // MARK: --- Life ---
 

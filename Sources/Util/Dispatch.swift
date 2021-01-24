@@ -409,7 +409,7 @@ public class DispatchTask<V> {
 }
 
 extension DispatchTask where V == Void {
-    public convenience init(named identifier: String? = nil, queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+    public convenience init(named identifier: String? = nil, queue: DispatchQueue = .main, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
                             qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], update updatable: Updatable, animated: Bool = false) {
         self.init( named: "\(type( of: updatable )): \(identifier ?? "-")", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
             guard let updatable = updatable

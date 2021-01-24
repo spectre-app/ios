@@ -8,8 +8,7 @@ import UIKit
 class AnyItem: NSObject, Updatable {
     let title: String?
 
-    private lazy var updateTask = DispatchTask( named: self.title, queue: .main, deadline: .now() + .milliseconds( 100 ),
-                                                update: self, animated: true )
+    private lazy var updateTask = DispatchTask( named: self.title, deadline: .now() + .milliseconds( 100 ), update: self, animated: true )
 
     init(title: String? = nil) {
         self.title = title

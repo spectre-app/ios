@@ -255,7 +255,7 @@ class MPPagerView: UIView, UICollectionViewDelegate {
     }
 
     class PagerIndicator: UIView, Updatable {
-        private lazy var updateTask = DispatchTask( queue: .main, update: self, animated: true )
+        private lazy var updateTask = DispatchTask( update: self, animated: true )
 
         let pagerView: MPPagerView
         let stackView = UIStackView()

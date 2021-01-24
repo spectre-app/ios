@@ -51,7 +51,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     private lazy var updateTask         = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
     var updatesPostponed: Bool {
         // Updates prior to attachment may result in an incorrect initial content offset.
-        self.window == nil
+        DispatchQueue.main.sync { self.window == nil }
     }
 
     // MARK: --- State ---
@@ -379,7 +379,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         private let resultLabel     = UITextField()
         private let captionLabel    = UILabel()
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
-        private lazy var updateTask   = DispatchTask( named: self.service?.serviceName, queue: .main, update: self )
+        private lazy var updateTask   = DispatchTask( named: self.service?.serviceName, update: self )
         private lazy var selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
             active.constrainTo {
                 $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )

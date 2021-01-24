@@ -10,7 +10,7 @@ class MPClassItemCell: MPItemCell, Updatable {
     private let nameLabel     = UILabel()
     private let classLabel    = UILabel()
     private lazy var stackView  = UIStackView( arrangedSubviews: [ self.nameLabel, self.separatorView, self.classLabel ] )
-    private lazy var updateTask = DispatchTask( named: self.name, queue: .main, update: self )
+    private lazy var updateTask = DispatchTask( named: self.name, update: self )
 
     var name:    String? {
         didSet {
