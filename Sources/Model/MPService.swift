@@ -14,7 +14,7 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
         didSet {
             if oldValue != self.serviceName {
                 self.dirty = true
-                self.preview = MPServicePreview.preview( for: self.serviceName )
+                self.preview = MPServicePreview.for( self.serviceName )
                 self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
@@ -93,7 +93,7 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
             }
         }
     }
-    public lazy var preview: MPServicePreview = MPServicePreview.preview( for: self.serviceName ) {
+    public lazy var preview: MPServicePreview = MPServicePreview.for( self.serviceName ) {
         didSet {
             if oldValue != self.preview {
                 self.observers.notify { $0.serviceDidChange( self ) }
@@ -188,15 +188,9 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
     }
 
     public func refresh() {
-        MPServicePreview.latest( for: self.serviceName ).then {
-            do {
-                self.preview = try $0.get()
-            }
-            catch PreviewError.noURLHasBeenFound( _ ) {
-            }
-            catch {
-                wrn( "No service preview. [>TRC]" )
-                pii( "[>] %@", error )
+        self.preview.update().success { updated in
+            if updated {
+                self.observers.notify { $0.serviceDidChange( self ) }
             }
         }
     }
