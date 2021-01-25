@@ -16,8 +16,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
                BuildableName = "Spectre.app"
-               BlueprintName = "Spectre-iOS"
-               ReferencedContainer = "container:Spectre-iOS.xcodeproj">
+               BlueprintName = "Spectre"
+               ReferencedContainer = "container:Spectre.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -52,8 +52,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
             BuildableName = "Spectre.app"
-            BlueprintName = "Spectre-iOS"
-            ReferencedContainer = "container:Spectre-iOS.xcodeproj">
+            BlueprintName = "Spectre"
+            ReferencedContainer = "container:Spectre.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -83,8 +83,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
             BuildableName = "Spectre.app"
-            BlueprintName = "Spectre-iOS"
-            ReferencedContainer = "container:Spectre-iOS.xcodeproj">
+            BlueprintName = "Spectre"
+            ReferencedContainer = "container:Spectre.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -1,9 +1,8 @@
 workspace 'Spectre'
-project 'Spectre-iOS'
-project 'Spectre-macOS'
+project 'Spectre'
 
-target 'Spectre-iOS' do
-  project 'Spectre-iOS'
+target 'Spectre' do
+  project 'Spectre'
   platform :ios, '12.4'
 
   use_modular_headers!
@@ -21,8 +20,8 @@ target 'Spectre-iOS' do
   pod 'UpdraftSDK', :configurations => ['Release']
 end
 
-target 'Spectre-AutoFill-iOS' do
-  project 'Spectre-iOS'
+target 'Spectre-AutoFill' do
+  project 'Spectre'
   platform :ios, '12.4'
 
   use_modular_headers!
@@ -34,12 +33,4 @@ target 'Spectre-AutoFill-iOS' do
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
 
   pod 'Reveal-SDK', :configurations => ['Debug']
-end
-
-target 'Spectre-macOS' do
-  project 'Spectre-macOS'
-  platform :osx, '10.11'
-
-  use_modular_headers!
-  use_frameworks!
 end

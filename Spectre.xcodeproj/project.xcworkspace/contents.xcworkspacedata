@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:MasterPassword-iOS.xcodeproj">
+      location = "self:Spectre.xcodeproj">
    </FileRef>
 </Workspace>

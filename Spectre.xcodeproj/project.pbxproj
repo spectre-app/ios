@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05304C58F6EE78145A11924E /* Pods_Spectre_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE81C0F3EAC747D9B18925FE /* Pods_Spectre_iOS.framework */; };
-		43BA4B14E6EAF7C923B3BBAF /* Pods_Spectre_AutoFill_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FB2E0325E60A3F9D679EDAC /* Pods_Spectre_AutoFill_iOS.framework */; };
+		4357EF342897F83AAECE9C24 /* Pods_Spectre.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D9A8115923B8DDE8237E9BF /* Pods_Spectre.framework */; };
+		8F1100A6204DF2C772C69C18 /* Pods_Spectre_AutoFill.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */; };
 		93D390276912B43B33158168 /* MPPagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */; };
 		93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
 		93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
@@ -338,7 +338,7 @@
 			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = DA0E5529250D6F7F002B3AB1;
-			remoteInfo = "Spectre-AutoFill-iOS";
+			remoteInfo = "Spectre-AutoFill";
 		};
 		DA0E5579251052D1002B3AB1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -385,10 +385,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		001F7E871F8301AA2C04AF48 /* Pods-Spectre-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.release.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.release.xcconfig"; sourceTree = "<group>"; };
-		0FB2E0325E60A3F9D679EDAC /* Pods_Spectre_AutoFill_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_AutoFill_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1C44E5E24A356D967A8638CB /* Pods-Spectre-AutoFill-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill-iOS.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill-iOS/Pods-Spectre-AutoFill-iOS.debug.xcconfig"; sourceTree = "<group>"; };
-		73911A6E8D0ED0522F716833 /* Pods-Spectre-AutoFill-iOS.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill-iOS.public.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill-iOS/Pods-Spectre-AutoFill-iOS.public.xcconfig"; sourceTree = "<group>"; };
+		018A899658EF7807876BD088 /* Pods-Spectre.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre.public.xcconfig"; path = "Target Support Files/Pods-Spectre/Pods-Spectre.public.xcconfig"; sourceTree = "<group>"; };
+		27FFC4753DD6FA4FE2F9176A /* Pods-Spectre-AutoFill.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.debug.xcconfig"; sourceTree = "<group>"; };
+		475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_AutoFill.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
 		93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillViewController.swift; sourceTree = "<group>"; };
 		93D3903B1B32B494FBD792EC /* MPServicesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicesTableView.swift; sourceTree = "<group>"; };
@@ -484,7 +483,9 @@
 		93D39F718C1C38C46D9D5078 /* MPService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPService.swift; sourceTree = "<group>"; };
 		93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicePreviewController.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAvatarCell.swift; sourceTree = "<group>"; };
-		BE81C0F3EAC747D9B18925FE /* Pods_Spectre_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D9A8115923B8DDE8237E9BF /* Pods_Spectre.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.release.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.release.xcconfig"; sourceTree = "<group>"; };
+		D4037F137D913F600418DC09 /* Pods-Spectre.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre.debug.xcconfig"; path = "Target Support Files/Pods-Spectre/Pods-Spectre.debug.xcconfig"; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0E5532250D6F7F002B3AB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -676,9 +677,8 @@
 		DAC632871486D95D0075AEA5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		DACA29721705E1A8002C6C22 /* dictionary.lst */ = {isa = PBXFileReference; fileEncoding = 1; lastKnownFileType = text; path = dictionary.lst; sourceTree = "<group>"; };
 		DAEBC45214F6364500987BF6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		DEBDAFA94AE915016CCADADC /* Pods-Spectre-AutoFill-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill-iOS.release.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill-iOS/Pods-Spectre-AutoFill-iOS.release.xcconfig"; sourceTree = "<group>"; };
-		F8BB5456204D6EF7313EF86F /* Pods-Spectre-iOS.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.public.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.public.xcconfig"; sourceTree = "<group>"; };
-		FD4D902922EA7C7E95510108 /* Pods-Spectre-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-iOS.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS.debug.xcconfig"; sourceTree = "<group>"; };
+		E031B36E37668A9E5B3200BF /* Pods-Spectre-AutoFill.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.public.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.public.xcconfig"; sourceTree = "<group>"; };
+		F564A2A37D7D01F0A3BF1728 /* Pods-Spectre.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre.release.xcconfig"; path = "Target Support Files/Pods-Spectre/Pods-Spectre.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -689,7 +689,7 @@
 				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
 				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
-				43BA4B14E6EAF7C923B3BBAF /* Pods_Spectre_AutoFill_iOS.framework in Frameworks */,
+				8F1100A6204DF2C772C69C18 /* Pods_Spectre_AutoFill.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -702,7 +702,7 @@
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
 				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
-				05304C58F6EE78145A11924E /* Pods_Spectre_iOS.framework in Frameworks */,
+				4357EF342897F83AAECE9C24 /* Pods_Spectre.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,7 +794,7 @@
 			path = Util;
 			sourceTree = "<group>";
 		};
-		93D39A2239FFFE6BEC83E191 /* core */ = {
+		93D39A2239FFFE6BEC83E191 /* api */ = {
 			isa = PBXGroup;
 			children = (
 				DAB07C9B1F7725C500CC6D43 /* aes.c */,
@@ -820,8 +820,8 @@
 				93D396C311C3725870343EE0 /* mpw-util.c */,
 				93D39CF7DB942C69D1C5D6BE /* mpw-util.h */,
 			);
-			name = core;
-			path = "../platform-independent/c/core/src";
+			name = api;
+			path = api/c;
 			sourceTree = "<group>";
 		};
 		93D39E0C533C1943D2425F07 /* Controller */ = {
@@ -850,12 +850,12 @@
 		C9DC157ABDB9805DFF33D123 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				1C44E5E24A356D967A8638CB /* Pods-Spectre-AutoFill-iOS.debug.xcconfig */,
-				DEBDAFA94AE915016CCADADC /* Pods-Spectre-AutoFill-iOS.release.xcconfig */,
-				73911A6E8D0ED0522F716833 /* Pods-Spectre-AutoFill-iOS.public.xcconfig */,
-				FD4D902922EA7C7E95510108 /* Pods-Spectre-iOS.debug.xcconfig */,
-				001F7E871F8301AA2C04AF48 /* Pods-Spectre-iOS.release.xcconfig */,
-				F8BB5456204D6EF7313EF86F /* Pods-Spectre-iOS.public.xcconfig */,
+				D4037F137D913F600418DC09 /* Pods-Spectre.debug.xcconfig */,
+				F564A2A37D7D01F0A3BF1728 /* Pods-Spectre.release.xcconfig */,
+				018A899658EF7807876BD088 /* Pods-Spectre.public.xcconfig */,
+				27FFC4753DD6FA4FE2F9176A /* Pods-Spectre-AutoFill.debug.xcconfig */,
+				ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */,
+				E031B36E37668A9E5B3200BF /* Pods-Spectre-AutoFill.public.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -873,26 +873,11 @@
 			path = AutoFill;
 			sourceTree = "<group>";
 		};
-		DA4A0BDE201443F4004E2CE5 /* iOS */ = {
-			isa = PBXGroup;
-			children = (
-				DA650F6824A6B58E00518890 /* Spectre.entitlements */,
-				DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */,
-				DA4A0C1F201531B9004E2CE5 /* Info.plist */,
-				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
-				DA0E552C250D6F7F002B3AB1 /* AutoFill */,
-				93D39E0C533C1943D2425F07 /* Controller */,
-				93D39760DAE73795CA63D02A /* Util */,
-				93D39472440F87F0B0FAD295 /* View */,
-			);
-			path = iOS;
-			sourceTree = "<group>";
-		};
 		DA5BFA39147E415C00F98B1E = {
 			isa = PBXGroup;
 			children = (
-				93D39A2239FFFE6BEC83E191 /* core */,
-				DABD3B9F1711E2DB00CF925C /* Source */,
+				93D39A2239FFFE6BEC83E191 /* api */,
+				DABD3B9F1711E2DB00CF925C /* Sources */,
 				DACA22121705DDC5002C6C22 /* Libraries */,
 				DACA23B41705DF7D002C6C22 /* Resources */,
 				DA5BFA47147E415C00F98B1E /* Frameworks */,
@@ -937,8 +922,8 @@
 				DABB981515100B4000B05417 /* SystemConfiguration.framework */,
 				93D394077F8FAB8167647187 /* Twitter.framework */,
 				DA5BFA48147E415C00F98B1E /* UIKit.framework */,
-				0FB2E0325E60A3F9D679EDAC /* Pods_Spectre_AutoFill_iOS.framework */,
-				BE81C0F3EAC747D9B18925FE /* Pods_Spectre_iOS.framework */,
+				9D9A8115923B8DDE8237E9BF /* Pods_Spectre.framework */,
+				475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1060,14 +1045,21 @@
 			path = lib;
 			sourceTree = "<group>";
 		};
-		DABD3B9F1711E2DB00CF925C /* Source */ = {
+		DABD3B9F1711E2DB00CF925C /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				DA4A0BDE201443F4004E2CE5 /* iOS */,
-				93D392613DA65A3C5867A2B1 /* Model */,
+				DA650F6824A6B58E00518890 /* Spectre.entitlements */,
+				DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */,
 				DA3954B32066D2B5004621DB /* Prefix.pch */,
+				DA4A0C1F201531B9004E2CE5 /* Info.plist */,
+				DA4A0C20201531BA004E2CE5 /* MPAppDelegate.swift */,
+				DA0E552C250D6F7F002B3AB1 /* AutoFill */,
+				93D39E0C533C1943D2425F07 /* Controller */,
+				93D392613DA65A3C5867A2B1 /* Model */,
+				93D39760DAE73795CA63D02A /* Util */,
+				93D39472440F87F0B0FAD295 /* View */,
 			);
-			path = Source;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		DAC51069247C7258006CC5D6 /* include */ = {
@@ -1182,7 +1174,7 @@
 				DAA7BB8720C4C10F00101DC7 /* libsodium-ios */,
 			);
 			name = Libraries;
-			path = ../lib;
+			path = lib;
 			sourceTree = "<group>";
 		};
 		DACA23B41705DF7D002C6C22 /* Resources */ = {
@@ -1214,7 +1206,7 @@
 			buildConfigurationList = DAB7AE411F3D464A00C856B1 /* Build configuration list for PBXLegacyTarget "libjson-c-ios" */;
 			buildPhases = (
 			);
-			buildToolPath = "../lib/bin/build_libjson-c-ios";
+			buildToolPath = "lib/bin/build_libjson-c-ios";
 			buildWorkingDirectory = "";
 			dependencies = (
 			);
@@ -1228,7 +1220,7 @@
 			buildConfigurationList = DAB7AE481F3D468300C856B1 /* Build configuration list for PBXLegacyTarget "libsodium-ios" */;
 			buildPhases = (
 			);
-			buildToolPath = "../lib/bin/build_libsodium-ios";
+			buildToolPath = "lib/bin/build_libsodium-ios";
 			buildWorkingDirectory = "";
 			dependencies = (
 			);
@@ -1239,11 +1231,11 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
-		DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill-iOS */ = {
+		DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill-iOS" */;
+			buildConfigurationList = DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill" */;
 			buildPhases = (
-				EF76CE9A812A3B380633B150 /* [CP] Check Pods Manifest.lock */,
+				24C3D10512B59BD4B9676E41 /* [CP] Check Pods Manifest.lock */,
 				DA0E5526250D6F7F002B3AB1 /* Sources */,
 				DA0E5527250D6F7F002B3AB1 /* Frameworks */,
 				DA0E5528250D6F7F002B3AB1 /* Resources */,
@@ -1254,23 +1246,23 @@
 				DA0E557A251052D1002B3AB1 /* PBXTargetDependency */,
 				DA0E557C251052D4002B3AB1 /* PBXTargetDependency */,
 			);
-			name = "Spectre-AutoFill-iOS";
+			name = "Spectre-AutoFill";
 			productName = "Spectre-AutoFill";
 			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		DA5BFA43147E415C00F98B1E /* Spectre-iOS */ = {
+		DA5BFA43147E415C00F98B1E /* Spectre */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre-iOS" */;
+			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre" */;
 			buildPhases = (
-				8814783AF27851DB67E66821 /* [CP] Check Pods Manifest.lock */,
+				48AEE836966757E856CF870E /* [CP] Check Pods Manifest.lock */,
 				DA5BFA40147E415C00F98B1E /* Sources */,
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
 				DA0E5537250D6F7F002B3AB1 /* Embed App Extensions */,
 				DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */,
-				E3DFC3CA1571966671A4846B /* [CP] Embed Pods Frameworks */,
-				1797FA338154B7315063475D /* [CP] Copy Pods Resources */,
+				FA35C1C35E346A6267315897 /* [CP] Embed Pods Frameworks */,
+				780CF0ACFA088B2C381A3E86 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1279,7 +1271,7 @@
 				DAB7AE4E1F3D618700C856B1 /* PBXTargetDependency */,
 				DA0E557625105196002B3AB1 /* PBXTargetDependency */,
 			);
-			name = "Spectre-iOS";
+			name = Spectre;
 			productName = MasterPassword;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
 			productType = "com.apple.product-type.application";
@@ -1330,7 +1322,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre-iOS" */;
+			buildConfigurationList = DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1428,10 +1420,10 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DA5BFA43147E415C00F98B1E /* Spectre-iOS */,
+				DA5BFA43147E415C00F98B1E /* Spectre */,
 				DAB7AE3D1F3D464A00C856B1 /* libjson-c-ios */,
 				DAB7AE471F3D468300C856B1 /* libsodium-ios */,
-				DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill-iOS */,
+				DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill */,
 			);
 		};
 /* End PBXProject section */
@@ -1591,24 +1583,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1797FA338154B7315063475D /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		8814783AF27851DB67E66821 /* [CP] Check Pods Manifest.lock */ = {
+		24C3D10512B59BD4B9676E41 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1623,11 +1598,50 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Spectre-iOS-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Spectre-AutoFill-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		48AEE836966757E856CF870E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Spectre-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		780CF0ACFA088B2C381A3E86 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */ = {
@@ -1650,43 +1664,21 @@
 			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nSENTRY_ORG=lyndir SENTRY_PROJECT=volto sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E3DFC3CA1571966671A4846B /* [CP] Embed Pods Frameworks */ = {
+		FA35C1C35E346A6267315897 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre-iOS/Pods-Spectre-iOS-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		EF76CE9A812A3B380633B150 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Spectre-AutoFill-iOS-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1886,7 +1878,7 @@
 /* Begin PBXTargetDependency section */
 		DA0E557625105196002B3AB1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill-iOS */;
+			target = DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill */;
 			targetProxy = DA0E557525105196002B3AB1 /* PBXContainerItemProxy */;
 		};
 		DA0E557A251052D1002B3AB1 /* PBXTargetDependency */ = {
@@ -2015,7 +2007,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Source/Prefix.pch;
+				GCC_PREFIX_HEADER = Sources/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"RELEASE=1",
 					"NS_BLOCK_ASSERTIONS=1",
@@ -2060,7 +2052,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBSC_ERRORS = YES;
 				IBSC_WARNINGS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
 				LLVM_LTO = YES;
 				MARKETING_VERSION = 3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -2076,7 +2068,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "RELEASE PUBLIC";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_INCLUDE_PATHS = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
@@ -2089,10 +2081,10 @@
 		};
 		DA09744A1E95703B00F0BFE8 /* Public */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F8BB5456204D6EF7313EF86F /* Pods-Spectre-iOS.public.xcconfig */;
+			baseConfigurationReference = 018A899658EF7807876BD088 /* Pods-Spectre.public.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2100,18 +2092,18 @@
 					"APP_CONTAINER=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = Source/iOS/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
@@ -2123,9 +2115,9 @@
 		};
 		DA0E5538250D6F7F002B3AB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1C44E5E24A356D967A8638CB /* Pods-Spectre-AutoFill-iOS.debug.xcconfig */;
+			baseConfigurationReference = 27FFC4753DD6FA4FE2F9176A /* Pods-Spectre-AutoFill.debug.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/AutoFill/AutoFill.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2133,19 +2125,19 @@
 					"APP_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = Source/iOS/AutoFill/Info.plist;
+				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
@@ -2156,9 +2148,9 @@
 		};
 		DA0E5539250D6F7F002B3AB1 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DEBDAFA94AE915016CCADADC /* Pods-Spectre-AutoFill-iOS.release.xcconfig */;
+			baseConfigurationReference = ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/AutoFill/AutoFill.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2166,19 +2158,19 @@
 					"APP_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = Source/iOS/AutoFill/Info.plist;
+				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
@@ -2189,9 +2181,9 @@
 		};
 		DA0E553A250D6F7F002B3AB1 /* Public */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 73911A6E8D0ED0522F716833 /* Pods-Spectre-AutoFill-iOS.public.xcconfig */;
+			baseConfigurationReference = E031B36E37668A9E5B3200BF /* Pods-Spectre-AutoFill.public.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/AutoFill/AutoFill.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2199,19 +2191,19 @@
 					"APP_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = Source/iOS/AutoFill/Info.plist;
+				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
@@ -2323,7 +2315,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Source/Prefix.pch;
+				GCC_PREFIX_HEADER = Sources/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"MPW_JSON=1",
@@ -2366,7 +2358,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBSC_ERRORS = YES;
 				IBSC_WARNINGS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
 				LINKER_DISPLAYS_MANGLED_NAMES = YES;
 				LLVM_LTO = NO;
 				MARKETING_VERSION = 3.0;
@@ -2384,7 +2376,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_INCLUDE_PATHS = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
@@ -2498,7 +2490,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Source/Prefix.pch;
+				GCC_PREFIX_HEADER = Sources/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"RELEASE=1",
 					"NS_BLOCK_ASSERTIONS=1",
@@ -2542,7 +2534,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBSC_ERRORS = YES;
 				IBSC_WARNINGS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
 				LLVM_LTO = YES;
 				MARKETING_VERSION = 3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -2558,7 +2550,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = RELEASE;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_INCLUDE_PATHS = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/iOS/Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
@@ -2571,10 +2563,10 @@
 		};
 		DA5BFA6E147E415C00F98B1E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FD4D902922EA7C7E95510108 /* Pods-Spectre-iOS.debug.xcconfig */;
+			baseConfigurationReference = D4037F137D913F600418DC09 /* Pods-Spectre.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2582,18 +2574,18 @@
 					"APP_CONTAINER=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = Source/iOS/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
@@ -2605,10 +2597,10 @@
 		};
 		DA5BFA6F147E415C00F98B1E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 001F7E871F8301AA2C04AF48 /* Pods-Spectre-iOS.release.xcconfig */;
+			baseConfigurationReference = F564A2A37D7D01F0A3BF1728 /* Pods-Spectre.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Source/iOS/Spectre.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2616,18 +2608,18 @@
 					"APP_CONTAINER=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = Source/iOS/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/../lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/../lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
@@ -2756,7 +2748,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill-iOS" */ = {
+		DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA0E5538250D6F7F002B3AB1 /* Debug */,
@@ -2766,7 +2758,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre-iOS" */ = {
+		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA5BFA6B147E415C00F98B1E /* Debug */,
@@ -2776,7 +2768,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre-iOS" */ = {
+		DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA5BFA6E147E415C00F98B1E /* Debug */,
