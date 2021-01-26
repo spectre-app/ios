@@ -5,6 +5,14 @@
 
 import Foundation
 
+// The va_list C type is incompatible with CVaListPointer on x86_64.
+// FIXME: https://bugs.swift.org/browse/SR-13779
+#if arch( x86_64 )
+typealias va_list_c = va_list
+#else
+typealias va_list_c = CVaListPointer?
+#endif
+
 func withVaStrings<R>(_ strings: [StaticString], terminate: Bool = true, body: (CVaListPointer) -> R) -> R {
     var va: [CVarArg] = strings.map { $0.utf8Start }
     if terminate {

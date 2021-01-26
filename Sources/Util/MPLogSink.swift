@@ -66,31 +66,37 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
     }
 
     // Translate parameters for C API compatibility.
-    return withVaList( args.map { arg in
-        if let error = arg as? LocalizedError {
-            return [ error.failureReason, error.errorDescription ].compactMap { $0 }.joined( separator: ": " )
-        }
+    return file.withCString { file in
+        function.withCString { function in
+            format.description.withCString { format in
+                withVaList( args.map { arg in
+                    if let error = arg as? LocalizedError {
+                        return [ error.failureReason, error.errorDescription ].compactMap { $0 }.joined( separator: ": " )
+                    }
 
-        guard let arg = arg
-        else { return Int( bitPattern: nil ) }
+                    guard let arg = arg
+                    else { return Int( bitPattern: nil ) }
 
-        return arg as? CVarArg ?? String( reflecting: arg )
-    } ) { args in
-        file.withCString { file in
-            function.withCString { function in
-                format.description.withCString { format in
-                    var event = MPLogEvent( occurrence: time( nil ), level: level, file: file, line: line, function: function, formatter: {
-                        // Define how our arguments should be interpolated into the format.
-                        if $0?.pointee.formatted == nil, let args = $0?.pointee.args {
-                            $0?.pointee.formatted = mpw_strdup( CFStringCreateWithFormatAndArguments(
-                                    nil, nil, String.valid( $0?.pointee.format ) as CFString?, args ) as String )
-                        }
+                    return arg as? CVarArg ?? String( reflecting: arg )
+                } ) {
+                    // The va_list C type is incompatible with CVaListPointer on x86_64.
+                    // FIXME: https://bugs.swift.org/browse/SR-13779
+                    withUnsafeBytes( of: $0 ) { args in
+                        var event = MPLogEvent(
+                                occurrence: time( nil ), level: level, file: file, line: line, function: function, formatter: { event in
+                            // Define how our arguments should be interpolated into the format.
+                            if event?.pointee.formatted == nil, let args = event?.pointee.args {
+                                event?.pointee.formatted = mpw_strdup( CFStringCreateWithFormatAndArguments(
+                                        nil, nil, String.valid( event?.pointee.format ) as CFString?,
+                                        UnsafeRawPointer( args ).load( as: CVaListPointer.self ) ) as String )
+                            }
 
-                        return $0?.pointee.formatted ?? $0?.pointee.format
-                    }, formatted: nil, format: format, args: args )
+                            return event?.pointee.formatted ?? event?.pointee.format
+                        }, formatted: nil, format: format, args: args.baseAddress?.assumingMemoryBound( to: va_list_c.self ) )
 
-                    // Sink the log event.
-                    return mpw_log_esink( &event )
+                        // Sink the log event.
+                        return mpw_log_esink( &event )
+                    }
                 }
             }
         }
@@ -210,7 +216,7 @@ public class MPLogSink: MPConfigObserver {
     // MARK: --- MPConfigObserver ---
 
     public func didChangeConfig() {
-        self.level = appConfig.isDebug ? .debug: appConfig.diagnostics ? .info: .warning
+        self.level = appConfig.isDebug ? .trace: appConfig.diagnostics ? .info: .warning
     }
 }
 
