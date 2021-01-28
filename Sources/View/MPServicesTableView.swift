@@ -7,7 +7,7 @@ import UIKit
 import AVKit
 
 class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updatable {
-    public var   user:          MPUser? {
+    public var user:            MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
             self.query = nil
@@ -15,18 +15,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         didSet {
             self.user?.observers.register( observer: self )
             self.updateTask.request()
-        }
-    }
-    public var selectedService: MPService? {
-        didSet {
-            let selectedPath = self.servicesDataSource.indexPath( where: { $0.service == self.selectedService } )
-
-            if self.indexPathForSelectedRow != selectedPath {
-                self.selectRow( at: selectedPath, animated: UIView.areAnimationsEnabled, scrollPosition: .middle )
-            }
-            else if let selectedPath = selectedPath, !(self.indexPathsForVisibleRows?.contains( selectedPath ) ?? false) {
-                self.scrollToRow( at: selectedPath, at: .middle, animated: UIView.areAnimationsEnabled )
-            }
         }
     }
     public var query:           String? {
@@ -108,6 +96,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                 } ] )
             }
             else {
+                elementsBySection.append( [] )
                 self.servicesDataSource.newItem = nil
             }
 
@@ -125,17 +114,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             }
         }
 
-        DispatchQueue.main.perform {
-            // Update the services table to show the newly filtered services
-            self.servicesDataSource.update( elementsBySection ) { _ in
-                self.selectRow( at: self.servicesDataSource.indexPath( for: self.servicesDataSource.selectedItem ), animated: true, scrollPosition: .middle )
-            }
-
-            // Light-weight reload the cell content without fully reloading the cell rows.
-            self.servicesDataSource.elements().forEach { path, element in
-                (self.cellForRow( at: path ) as? ServiceCell)?.result = element
-            }
-        }
+        // Update the services table to show the newly filtered services
+        self.servicesDataSource.update( elementsBySection, selected: Set( [ self.servicesDataSource.selectedItem ] ) )
     }
 
     // MARK: --- UITableViewDelegate ---
@@ -194,11 +174,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.service
+        self.servicesDataSource.selectedItem = self.servicesDataSource.element( at: self.indexPathForSelectedRow )
     }
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        self.selectedService = self.servicesDataSource.element( at: self.indexPathForSelectedRow )?.service
+        self.servicesDataSource.selectedItem = self.servicesDataSource.element( at: self.indexPathForSelectedRow )
     }
 
     // MARK: --- MPUserObserver ---
@@ -221,7 +201,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     // MARK: --- Types ---
 
-    class ServiceItem: Hashable, Identifiable, Comparable {
+    class ServiceItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
         class func filtered(_ services: [MPService], query: String, preferred: ((MPService) -> Bool)?) -> [ServiceItem] {
             var items = services.map { ServiceItem( service: $0, query: query, preferred: preferred?( $0 ) ?? false ) }
                                 .filter { $0.isMatched }.sorted()
@@ -231,6 +211,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             }
 
             return items
+        }
+
+        var debugDescription: String {
+            "{ServiceItem: id=\(self.id), isMatched=\(self.isMatched), isExact=\(self.isExact), isPreferred=\(self.isPreferred), subtitle=\(self.subtitle), service=\(self.service)}"
         }
 
         let service: MPService

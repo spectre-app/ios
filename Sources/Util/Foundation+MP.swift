@@ -273,8 +273,14 @@ extension URLSession {
 }
 
 // Stub for iOS 13 type.
-public protocol Identifiable {
+protocol Identifiable {
     associatedtype ID: Hashable
 
     var id: Self.ID { get }
+}
+
+extension Identifiable where Self: AnyObject {
+    var id: ObjectIdentifier {
+        ObjectIdentifier( self )
+    }
 }

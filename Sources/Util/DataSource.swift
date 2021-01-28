@@ -5,6 +5,10 @@
 
 import UIKit
 
+// NOTE:
+// Due to a bug in performBatchUpdates, moving elements from one section to another while deleting the source section
+// is not animated due to it triggering a full reloadData. The work-around is to leave the section empty (or remove it separately).
+// http://www.openradar.me/48941363
 open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
     private let tableView:         UITableView?
     private let collectionView:    UICollectionView?
@@ -24,7 +28,11 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
     // MARK: --- Interface ---
 
     open func indexPath(for item: E?) -> IndexPath? {
-        item.flatMap { self.indexPath( for: $0, in: self.elementsBySection ) }
+        item.flatMap { self.indexPath( for: $0, in: self.elementsBySection, elementsMatch: { $0 == $1 } ) }
+    }
+
+    open func indexPath(for item: E?) -> IndexPath? where E: Identifiable {
+        item.flatMap { self.indexPath( for: $0, in: self.elementsBySection, elementsMatch: { $0.id == $1.id } ) }
     }
 
     open func indexPath(where predicate: (E) -> Bool) -> IndexPath? {
@@ -66,112 +74,162 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         return AnySequence<(indexPath: IndexPath, element: E)>( s )
     }
 
-    open func update(_ elementsBySection: [[E]],
-                     reloadItems: Bool = false, reloadPaths: [IndexPath]? = nil, reloadElements: Set<E>? = nil,
-                     animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)? = nil) {
-        trc( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, elementsBySection )
+    open func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
+                     reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
+                     animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil) {
+        self.update( toElementsBySection, selected: selectElements, selecting: selectPaths,
+                     reload: reloadAll, reloaded: reloadElements, reloading: reloadPaths,
+                     animated: animated, completion: completion, elementsMatch: { $0 == $1 } )
+    }
+
+    open func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
+                     reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
+                     animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil) where E: Identifiable {
+        self.update( toElementsBySection, selected: selectElements, selecting: selectPaths,
+                     reload: reloadAll, reloaded: reloadElements, reloading: reloadPaths,
+                     animated: animated, completion: completion, elementsMatch: { $0.id == $1.id } )
+    }
+
+    private func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
+                        reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
+                        animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil, elementsMatch: @escaping (E, E) -> Bool) {
+        trc( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, toElementsBySection )
 
         if !self.elementsConsumed {
-            self.elementsBySection = elementsBySection
+            self.elementsBySection = toElementsBySection
+            self.select( selectElements, paths: selectPaths )
             completion?( true )
             return
         }
 
-        self.perform( animated: animated, completion: completion ) {
-            let updateIncrementally = !animated
-            var reloadPaths         = reloadPaths ?? []
+        self.perform( animated: animated, completion: { success in
+            if success {
+                self.select( selectElements, paths: selectPaths )
+            }
 
-            if elementsBySection.elementsEqual( self.elementsBySection, by: { $0.elementsEqual( $1, by: { self.isEqual( lhs: $0, rhs: $1 ) } ) } ) {
-                for (section, elements) in self.elementsBySection.enumerated() {
-                    for (item, element) in elements.enumerated() {
-                        let indexPath = IndexPath( item: item, section: section )
-
-                        if reloadItems || reloadElements?.contains( element ) ?? false || self.element( at: indexPath ) != element {
-                            trc( "reload item %@", indexPath )
-                            reloadPaths.append( indexPath )
-                        }
+            completion?( success )
+        } ) {
+            // Check if element values have changed and mark updated paths for reload.
+            var reloadPaths = reloadPaths ?? []
+            for toElements in toElementsBySection {
+                for toElement in toElements {
+                    if let fromIndexPath = self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ),
+                       reloadAll || (reloadElements?.contains( toElement ) ?? false) || self.element( at: fromIndexPath ) != toElement {
+                        // Element reload requested or required due to the new element being different from the old.
+                        self.elementsBySection[fromIndexPath.section][fromIndexPath.item] = toElement
+                        reloadPaths.append( fromIndexPath )
                     }
                 }
             }
-            else {
-                // Update the internal data sections and determine which sections changed.
-                for section in (0..<max( self.elementsBySection.count, elementsBySection.count )).reversed() {
-                    if section >= elementsBySection.count {
-                        trc( "delete section %d", section )
-                        if updateIncrementally {
-                            self.elementsBySection.remove( at: section )
-                        }
-                        self.collectionView?.deleteSections( IndexSet( integer: section ) )
-                        self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
-                    }
-                }
-                for section in 0..<max( self.elementsBySection.count, elementsBySection.count ) {
-                    if section >= self.elementsBySection.count {
-                        trc( "insert section %d", section )
-                        if updateIncrementally {
-                            self.elementsBySection.append( [ E ]() )
-                        }
-                        self.collectionView?.insertSections( IndexSet( integer: section ) )
-                        self.tableView?.insertSections( IndexSet( integer: section ), with: .automatic )
-                    }
-                }
-
-                // Figure out how the section items have changed.
-                for (section, elements) in elementsBySection.enumerated() {
-                    for (item, element) in elements.enumerated() {
-                        let toIndexPath = IndexPath( item: item, section: section )
-                        if let fromIndexPath = self.indexPath( for: element, in: self.elementsBySection ) {
-                            if toIndexPath != fromIndexPath {
-                                trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
-                                if updateIncrementally {
-                                    self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
-                                    self.elementsBySection[toIndexPath.section].insert( element, at: toIndexPath.item )
-                                }
-                                self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
-                                self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
-                            }
-                            else if reloadItems || (reloadElements?.contains( element ) ?? false) || self.element( at: fromIndexPath ) != element {
-                                trc( "reload item %@", toIndexPath )
-//                                if updateIncrementally {
-//                                    self.elementsBySection[toIndexPath.section][toIndexPath.item] = element
-//                                }
-                                reloadPaths.append( toIndexPath )
-                            }
-                        }
-                        else {
-                            trc( "insert item %@", toIndexPath )
-                            if updateIncrementally {
-                                self.elementsBySection[toIndexPath.section].insert( element, at: toIndexPath.item )
-                            }
-                            self.collectionView?.insertItems( at: [ toIndexPath ] )
-                            self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
-                        }
-                    }
-                }
-
-                // Add inserted rows.
-                for (section, elements) in self.elementsBySection.enumerated() {
-                    for (item, element) in elements.enumerated().reversed() {
-                        let fromIndexPath = IndexPath( item: item, section: section )
-                        if self.indexPath( for: element, in: elementsBySection ) == nil {
-                            trc( "delete item %@", fromIndexPath )
-                            if updateIncrementally {
-                                self.elementsBySection[section].remove( at: item )
-                            }
-                            self.collectionView?.deleteItems( at: [ fromIndexPath ] )
-                            self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
-                        }
-                    }
-                }
-            }
-
-            self.elementsBySection = elementsBySection
-
             if reloadPaths.count > 0 {
                 trc( "reload items %@", reloadPaths )
                 self.collectionView?.reloadItems( at: reloadPaths )
                 self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
             }
+
+            // Check if element layout has changed and apply deletes, inserts & moves required to adopt new layout, in that order.
+            if !self.elementsBySection.elementsEqual( toElementsBySection, by: { $0.elementsEqual( $1, by: elementsMatch ) } ) {
+
+                // Add empty dataSource sections for newly introduced sections.
+                for toSection in 0..<toElementsBySection.count {
+                    if toSection >= self.elementsBySection.count {
+                        trc( "insert section %d", toSection )
+                        self.elementsBySection.append( [ E ]() )
+                        self.collectionView?.insertSections( IndexSet( integer: toSection ) )
+                        self.tableView?.insertSections( IndexSet( integer: toSection ), with: .automatic )
+                    }
+                }
+
+                // Delete dataSource elements no longer reflected in the new sections.
+                for (fromSection, fromElements) in self.elementsBySection.enumerated() {
+                    for (fromItem, fromElement) in fromElements.enumerated().reversed() {
+                        if self.indexPath( for: fromElement, in: toElementsBySection, elementsMatch: elementsMatch ) == nil {
+                            let fromIndexPath = IndexPath( item: fromItem, section: fromSection )
+                            trc( "delete item %@", fromIndexPath )
+                            self.elementsBySection[fromSection].remove( at: fromItem )
+                            self.collectionView?.deleteItems( at: [ fromIndexPath ] )
+                            self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
+                        }
+                    }
+                }
+
+                // Reflect the new sections by moving or reloading existing elements and inserting missing ones.
+                for (toSection, toElements) in toElementsBySection.enumerated() {
+                    for (toItem, toElement) in toElements.enumerated() {
+                        if self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) == nil {
+                            // New element missing in old dataSource.
+                            let toIndexPath   = IndexPath( item: toItem, section: toSection )
+                            // NOTE: Moves have not yet been applied, so we don't know the exact indexPath to insert into.
+                            // We make a best-effort insertion, ensuring not to overrun the dataSource's section array.
+                            // Subsequent move phase should fix any inaccuracies.
+                            let fromIndexPath = IndexPath( item: min( toIndexPath.item, self.elementsBySection[toIndexPath.section].endIndex ), section: toIndexPath.section )
+                            trc( "insert item %@", fromIndexPath )
+                            self.elementsBySection[fromIndexPath.section].insert( toElement, at: fromIndexPath.item )
+                            self.collectionView?.insertItems( at: [ fromIndexPath ] )
+                            self.tableView?.insertRows( at: [ fromIndexPath ], with: .automatic )
+                        }
+                    }
+                }
+
+                // Reflect the new sections by moving or reloading existing elements and inserting missing ones.
+                for (toSection, toElements) in toElementsBySection.enumerated() {
+                    for (toItem, toElement) in toElements.enumerated() {
+                        if let fromIndexPath = self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) {
+                            // New element exists in old dataSource.
+                            let toIndexPath = IndexPath( item: toItem, section: toSection )
+
+                            if toIndexPath != fromIndexPath {
+                                // New element at different path from old dataSource.
+                                trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
+                                self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
+                                self.elementsBySection[toIndexPath.section].insert( toElement, at: toIndexPath.item )
+                                self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
+                                self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
+                            }
+                        }
+                    }
+                }
+
+                // Remove dataSource sections no longer present in the new sections (should be empty of items now).
+                for section in (0..<self.elementsBySection.count).reversed() {
+                    if section >= toElementsBySection.count {
+                        trc( "delete section %d", section )
+                        self.elementsBySection.remove( at: section )
+                        self.collectionView?.deleteSections( IndexSet( integer: section ) )
+                        self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
+                    }
+                }
+            }
+
+            // Should be a no-op now.
+            self.elementsBySection = toElementsBySection
+        }
+    }
+
+    open func select(_ elements: Set<E?>? = nil, paths: [IndexPath]? = nil, animated: Bool = true) {
+        guard elements != nil || paths != nil
+        else { return }
+
+        var selectionPaths = paths ?? []
+        selectionPaths.append( contentsOf: elements?.compactMap { self.indexPath( for: $0 ) } ?? [] )
+
+        if selectionPaths.isEmpty || self.tableView?.allowsMultipleSelection ?? false || self.collectionView?.allowsMultipleSelection ?? false {
+            self.tableView?.indexPathsForSelectedRows?.filter { !selectionPaths.contains( $0 ) }.forEach {
+                trc( "deselect item %@", $0 )
+                self.tableView?.deselectRow( at: $0, animated: animated )
+            }
+            self.collectionView?.indexPathsForSelectedItems?.filter { !selectionPaths.contains( $0 ) }.forEach {
+                trc( "deselect item %@", $0 )
+                self.collectionView?.deselectItem( at: $0, animated: animated )
+            }
+        }
+        else if selectionPaths.count > 1 {
+            selectionPaths = [ selectionPaths[0] ]
+        }
+        selectionPaths.forEach {
+            trc( "select item %@", $0 )
+            self.tableView?.selectRow( at: $0, animated: animated, scrollPosition: .middle )
+            self.collectionView?.selectItem( at: $0, animated: animated, scrollPosition: .centeredVertically )
         }
     }
 
@@ -275,10 +333,6 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
     // MARK: --- Private ---
 
-    func isEqual(lhs: E, rhs: E) -> Bool {
-        lhs == rhs
-    }
-
     private func perform(animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
         DispatchQueue.main.perform {
             if self.tableView == nil && self.collectionView == nil {
@@ -296,30 +350,20 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         }
     }
 
-    private func indexPath(for item: E, in sections: [[E]]?) -> IndexPath? {
-        self.indexPath( where: { self.isEqual( lhs: $0, rhs: item ) }, in: sections )
+    private func indexPath(for item: E, in sections: [[E]]? = nil, elementsMatch: (E, E) -> Bool) -> IndexPath? {
+        self.indexPath( where: { elementsMatch( item, $0 ) }, in: sections )
     }
 
-    private func indexPath(where predicate: (E) -> Bool, in sections: [[E]]?) -> IndexPath? {
-        if let sections = sections {
-            var section = 0
-
-            for sectionItems in sections {
-                if let index = sectionItems.firstIndex( where: predicate ) {
-                    return IndexPath( item: index, section: section )
-                }
-
-                section += 1
+    private func indexPath(where predicate: (E) -> Bool, in sections: [[E]]? = nil) -> IndexPath? {
+        var section = 0
+        for sectionItems in sections ?? self.elementsBySection {
+            if let index = sectionItems.firstIndex( where: predicate ) {
+                return IndexPath( item: index, section: section )
             }
+
+            section += 1
         }
 
         return nil
     }
 }
-
-extension DataSource where E: Identifiable {
-    func isEqual(lhs: E, rhs: E) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-

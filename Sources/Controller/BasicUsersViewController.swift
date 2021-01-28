@@ -9,6 +9,12 @@
 import UIKit
 import LocalAuthentication
 
+extension Optional: Identifiable where Wrapped == MPMarshal.UserFile {
+    var id: String {
+        self.flatMap { $0.id } ?? ""
+    }
+}
+
 class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMarshalObserver {
     internal var selectedFile: MPMarshal.UserFile? {
         didSet {
@@ -122,7 +128,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
     // MARK: --- MPMarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
-        self.fileSource.update( [ userFiles.sorted() ], reloadItems: true )
+        self.fileSource.update( [ userFiles.sorted() ] )
     }
 
     // MARK: --- Types ---

@@ -118,7 +118,7 @@ class MPService: MPOperand, Hashable, Comparable, CustomStringConvertible, Obser
     var dirty = false {
         didSet {
             if self.dirty {
-                if !self.initializing && self.dirty {
+                if !self.initializing && !self.isNew {
                     self.user.dirty = true
                 }
             }

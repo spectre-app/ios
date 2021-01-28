@@ -186,6 +186,6 @@ class MPUsersViewController: BasicUsersViewController {
     // MARK: --- MPMarshalObserver ---
 
     override func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
-        self.fileSource.update( [ userFiles.sorted() + [ nil ] ], reloadItems: true )
+        self.fileSource.update( [ userFiles.sorted() + [ nil ] ] )
     }
 }

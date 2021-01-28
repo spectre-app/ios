@@ -144,14 +144,14 @@ class MPMarshal: Observable, Updatable {
         let importEvent = MPTracker.shared.begin( named: "marshal #importData" )
 
         return DispatchQueue.mpw.promising {
-            let importingFile = try self.userFile( for: data )
+            let importingFile = try UserFile( data: data )
             guard let importingURL = self.url( for: importingFile.fullName, format: importingFile.format )
             else {
                 importEvent.end( [ "result": "!url" ] )
                 throw MPError.issue( title: "User Not Savable", details: importingFile )
             }
 
-            if let existingFile = try self.userFile( at: importingURL ) {
+            if let existingFile = try UserFile( origin: importingURL ) {
                 return self.import( data: data, from: importingFile, into: existingFile, viewController: viewController ).then {
                     importEvent.end( [ "result": $0.name ] )
                 }
@@ -507,21 +507,6 @@ class MPMarshal: Observable, Updatable {
         return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil, options: .skipsHiddenFiles )
     }
 
-    private func userFile(at documentURL: URL) throws -> UserFile? {
-        guard FileManager.default.fileExists( atPath: documentURL.path ),
-              let document = FileManager.default.contents( atPath: documentURL.path )
-        else { return nil }
-
-        return try self.userFile( for: document, at: documentURL )
-    }
-
-    private func userFile(for document: Data, at documentURL: URL? = nil) throws -> UserFile {
-        guard let document = String( data: document, encoding: .utf8 )
-        else { throw MPError.issue( title: "Cannot Read User Document", details: documentURL ) }
-
-        return try UserFile( origin: documentURL, document: document )
-    }
-
     private func url(for user: MPUser, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
         self.url( for: user.fullName, in: directory, format: format )
     }
@@ -544,7 +529,7 @@ class MPMarshal: Observable, Updatable {
 
     func update() {
         do {
-            self.userFiles = try self.userDocuments().compactMap { try self.userFile( at: $0 ) }
+            self.userFiles = try self.userDocuments().compactMap { try UserFile( origin: $0 ) }
         }
         catch {
             mperror( title: "Couldn't read user documents.", error: error )
@@ -621,10 +606,10 @@ class MPMarshal: Observable, Updatable {
         }
     }
 
-    class UserFile: Hashable, Comparable, CustomStringConvertible, CredentialSupplier {
+    class UserFile: Hashable, Identifiable, Comparable, CustomStringConvertible, CredentialSupplier {
         public lazy var keychainKeyFactory = MPKeychainKeyFactory( fullName: self.fullName )
 
-        public let origin: URL?
+        public var origin: URL?
         public var file:   UnsafeMutablePointer<MPMarshalledFile>
 
         public let format:     MPMarshalFormat
@@ -643,9 +628,42 @@ class MPMarshal: Observable, Updatable {
 
         public var resetKey = false
 
-        init(origin: URL?, document: String) throws {
+        public var id: String {
+            self.fullName
+        }
+
+        static func load(origin: URL) throws -> UnsafeMutablePointer<MPMarshalledFile>? {
+            guard FileManager.default.fileExists( atPath: origin.path ),
+                  let data = FileManager.default.contents( atPath: origin.path )
+            else { return nil }
+
+            guard let document = String( data: data, encoding: .utf8 )
+            else { throw MPError.issue( title: "Cannot Read User Document", details: origin ) }
+
             guard let file = mpw_marshal_read( nil, document )
             else { throw MPError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
+
+            return file
+        }
+
+        convenience init?(origin: URL) throws {
+            guard let file = try UserFile.load( origin: origin )
+            else { return nil }
+
+            try self.init( file: file, origin: origin )
+        }
+
+        convenience init(data: Data, origin: URL? = nil) throws {
+            guard let document = String( data: data, encoding: .utf8 )
+            else { throw MPError.issue( title: "Cannot Read User Document", details: origin ) }
+
+            guard let file = mpw_marshal_read( nil, document )
+            else { throw MPError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
+
+            try self.init( file: file, origin: origin )
+        }
+
+        init(file: UnsafeMutablePointer<MPMarshalledFile>, origin: URL? = nil) throws {
             guard file.pointee.error.type == .success
             else { throw MPError.marshal( file.pointee.error, title: "Cannot Load User", details: origin ) }
             guard let info = file.pointee.info?.pointee, info.format != .none, let fullName = String.valid( info.fullName )
@@ -663,22 +681,22 @@ class MPMarshal: Observable, Updatable {
             self.masterKeyID = info.keyID
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
-            self.biometricLock = self.file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
-            self.autofill = self.file.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
-        }
-
-        public func hasChanges(from user: MPUser) -> Bool {
-            self.fullName != user.fullName || self.avatar != user.avatar ||
-                    self.exportDate != user.exportDate ?? self.exportDate || self.lastUsed != user.lastUsed ||
-                    self.identicon != user.identicon || self.masterKeyID != user.masterKeyID ||
-                    self.biometricLock != user.biometricLock || self.autofill != user.autofill
+            self.biometricLock = file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
+            self.autofill = file.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
         }
 
         public func authenticate(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
             (self.resetKey ? Promise( .success( nil ) ): keyFactory.provide().optional()).promising( on: .mpw ) {
+                // Check origin for updates.
+                if let origin = self.origin, let file = try UserFile.load( origin: origin ) {
+                    self.file = file
+                }
+
+                // Authenticate against the file with the given keyFactory.
                 guard let marshalledUser = mpw_marshal_auth( self.file, $0 )?.pointee, self.file.pointee.error.type == .success
                 else { throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User", details: self.fullName ) }
 
+                // Yield a fully authenticated user.
                 return MPUser(
                         algorithm: marshalledUser.algorithm,
                         avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
@@ -730,11 +748,33 @@ class MPMarshal: Observable, Updatable {
         // MARK: --- Hashable ---
 
         func hash(into hasher: inout Hasher) {
+            hasher.combine( self.origin )
+            hasher.combine( self.file )
+            hasher.combine( self.format )
+            hasher.combine( self.exportDate )
+            hasher.combine( self.redacted )
+            hasher.combine( self.algorithm )
+            hasher.combine( self.avatar )
             hasher.combine( self.fullName )
+            hasher.combine( self.identicon.encoded() )
+            hasher.combine( self.masterKeyID )
+            hasher.combine( self.lastUsed )
+            hasher.combine( self.biometricLock )
+            hasher.combine( self.autofill )
         }
 
         static func ==(lhs: UserFile, rhs: UserFile) -> Bool {
-            lhs.fullName == rhs.fullName
+            lhs.origin == rhs.origin && lhs.format == rhs.format && lhs.exportDate == rhs.exportDate && lhs.redacted == rhs.redacted &&
+                    lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.fullName == rhs.fullName &&
+                    lhs.identicon == rhs.identicon && lhs.masterKeyID == rhs.masterKeyID && lhs.lastUsed == rhs.lastUsed &&
+                    lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
+        }
+
+        static func !=(lhs: MPUser, rhs: UserFile) -> Bool {
+            lhs.origin != rhs.origin || lhs.exportDate != rhs.exportDate ||
+                    lhs.algorithm != rhs.algorithm || lhs.avatar != rhs.avatar || lhs.fullName != rhs.fullName ||
+                    lhs.identicon != rhs.identicon || lhs.masterKeyID != rhs.masterKeyID || lhs.lastUsed != rhs.lastUsed ||
+                    lhs.biometricLock != rhs.biometricLock || lhs.autofill != rhs.autofill
         }
 
         // MARK: --- Comparable ---

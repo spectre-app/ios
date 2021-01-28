@@ -109,9 +109,13 @@ extension MPIdenticon: Equatable {
     }
 }
 
-extension MPKeyID: Equatable, CustomStringConvertible {
+extension MPKeyID: Hashable, CustomStringConvertible {
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, { rhs in lhs.elementsEqual( rhs ) } ) } )
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        withUnsafeBytes( of: self.bytes, { hasher.combine( bytes: $0 ) } )
     }
 
     public var description: String {

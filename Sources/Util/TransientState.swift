@@ -5,7 +5,7 @@
 
 import Foundation
 
-/** A state that is only active while a block operation that uses it is running, and can be checked globally. */
+/** A global state that is only active while a block operation that uses it is running. */
 public enum TransientState {
     static let observers = Observers<TransientStateObserver>()
     static var activeStates = [ TransientState: Int ]() {

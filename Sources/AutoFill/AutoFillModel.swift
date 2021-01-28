@@ -26,7 +26,7 @@ class AutoFillModel: MPMarshalObserver {
         self.userFiles = userFiles
 
         for userFile in self.userFiles {
-            self.users.removeAll( where: { userFile.fullName == $0.fullName && userFile.hasChanges( from: $0 ) } )
+            self.users.removeAll( where: { $0.fullName == userFile.fullName && $0 != userFile } )
         }
     }
 

@@ -49,7 +49,7 @@ class AutoFillUsersViewController: BasicUsersViewController {
     // MARK: --- MPMarshalObserver ---
 
     override func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
-        self.fileSource.update( [ userFiles.filter( { $0.autofill } ).sorted() ], reloadItems: true )
+        self.fileSource.update( [ userFiles.filter( { $0.autofill } ).sorted() ] )
     }
 
     // MARK: --- Types ---
