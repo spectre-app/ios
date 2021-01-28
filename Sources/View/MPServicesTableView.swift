@@ -283,7 +283,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
 
         static func ==(lhs: ServiceItem, rhs: ServiceItem) -> Bool {
-            lhs.subtitle == rhs.subtitle && lhs.service == rhs.service
+            lhs.subtitle == rhs.subtitle && lhs.service === rhs.service
         }
 
         static func <(lhs: ServiceItem, rhs: ServiceItem) -> Bool {
@@ -330,7 +330,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     class ServiceCell: UITableViewCell, Updatable, MPServiceObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
         public weak var servicesView: MPServicesTableView?
-        public weak var result:       ServiceItem? {
+        public var result:       ServiceItem? {
             willSet {
                 self.service?.observers.unregister( observer: self )
                 self.service?.user.observers.unregister( observer: self )
