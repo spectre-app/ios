@@ -1,6 +1,12 @@
 workspace 'Spectre'
 project 'Spectre'
 
+# Unfortunately, this plugin causes build errors as of 2021-01-28.
+# plugin 'cocoapods-binary'
+# all_binary!
+# keep_source_code_for_prebuilt_frameworks!
+# enable_bitcode_for_prebuilt_frameworks!
+
 target 'Spectre' do
   project 'Spectre'
   platform :ios, '12.4'
@@ -11,7 +17,7 @@ target 'Spectre' do
   pod 'Macaw'
 
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
-  pod 'Countly', :git => 'https://github.com/Countly/countly-sdk-ios.git'
+  pod 'Countly'
   pod 'FreshchatSDK'
   pod 'SwiftLinkPreview'
 
