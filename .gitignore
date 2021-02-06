@@ -2,6 +2,7 @@
 Podfile.lock
 Gemfile.lock
 Pods
+design/icon
 
 # OS
 .DS_Store
