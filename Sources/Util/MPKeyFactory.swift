@@ -45,6 +45,14 @@ public class MPKeyFactory {
         }
     }
 
+    public func authenticatedIdentifier(for algorithm: MPAlgorithmVersion) -> Promise<String?> {
+        keyQueue.promise {
+            withUnsafeBytes( of: self.getKey( for: algorithm )?.pointee.bytes ) {
+                $0.bindMemory( to: UInt8.self ).digest()?.hex()
+            }
+        }
+    }
+
     public func newKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
         guard let masterKey = self.getKey( for: algorithm )
         else { return nil }

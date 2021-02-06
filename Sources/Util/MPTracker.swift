@@ -167,32 +167,35 @@ class MPTracker: MPConfigObserver {
     }
 
     func login(user: MPUser) {
-        guard let userId = withUnsafeBytes( of: user.masterKeyID.bytes, { $0.bindMemory( to: UInt8.self ).digest()?.hex() } ),
-              let userName = user.fullName.digest()?.hex()
-        else { return }
+        user.masterKeyFactory?.authenticatedIdentifier( for: user.algorithm ).success { userId in
+            guard let userId = userId
+            else { return }
 
-        let userConfig: [String: Any] = [
-            "algorithm": user.algorithm,
-            "avatar": user.avatar,
-            "biometricLock": user.biometricLock,
-            "maskPasswords": user.maskPasswords,
-            "defaultType": user.defaultType,
-            "loginType": user.loginType,
-            "services": user.services.count,
-        ]
+            let userConfig: [String: Any] = [
+                "algorithm": user.algorithm,
+                "avatar": user.avatar,
+                "biometricLock": user.biometricLock,
+                "maskPasswords": user.maskPasswords,
+                "defaultType": user.defaultType,
+                "loginType": user.loginType,
+                "services": user.services.count,
+            ]
 
-        let user = User( userId: userId )
-        user.username = userName
-        user.data = userConfig
-        SentrySDK.setUser( user )
-        #if APP_CONTAINER
-        Countly.sharedInstance().userLogged( in: userId )
-        Countly.user().name = userName as NSString
-        Countly.user().custom = userConfig as NSDictionary
-        #endif
+            let user = User( userId: userId )
+            user.data = userConfig
+            SentrySDK.setUser( user )
+            #if APP_CONTAINER
+            Countly.sharedInstance().userLogged( in: userId )
+            Countly.user().custom = userConfig as NSDictionary
+            #endif
+
+            self.event( named: "user #login", userConfig )
+        }
     }
 
     func logout() {
+        self.event( named: "user #logout" )
+
         SentrySDK.setUser( nil )
         #if APP_CONTAINER
         Countly.sharedInstance().userLoggedOut()
