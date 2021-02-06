@@ -37,9 +37,10 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = MPNavigationController( rootViewController: MPUsersViewController() )
         self.window!.makeKeyAndVisible()
 
-        if let freshchatKey = freshchatKey.b64Decrypt() {
-            Freshchat.sharedInstance().initWith(
-                    FreshchatConfig( appID: "***REMOVED***", andAppKey: freshchatKey ) )
+        if let freshchatApp = freshchatApp.b64Decrypt(), let freshchatKey = freshchatKey.b64Decrypt() {
+            let freshchatConfig = FreshchatConfig( appID: freshchatApp, andAppKey: freshchatKey )
+            freshchatConfig.domain = "msdk.eu.freshchat.com"
+            Freshchat.sharedInstance().initWith( freshchatConfig )
         }
 
         return true

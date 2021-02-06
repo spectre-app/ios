@@ -137,10 +137,10 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
         init() {
             super.init( title: "Links", values: { _ in
                 [
-                    Link( title: "Home", url: URL( string: "https://masterpassword.app" ) ),
-                    Link( title: "Support", url: URL( string: "http://help.masterpasswordapp.com" ) ),
-                    Link( title: "White Paper", url: URL( string: "https://masterpassword.app/masterpassword-algorithm.pdf" ) ),
-                    Link( title: "Source Portal", url: URL( string: "https://gitlab.com/MasterPassword/MasterPassword" ) ),
+                    Link( title: "Home", url: URL( string: "https://spectre.app" ) ),
+                    Link( title: "Support", url: URL( string: "http://support.spectre.app" ) ),
+                    Link( title: "White Paper", url: URL( string: "https://spectre.app/masterpassword-algorithm.pdf" ) ),
+                    Link( title: "Source Portal", url: URL( string: "https://source.spectre.app" ) ),
                 ]
             } )
         }
