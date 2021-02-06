@@ -264,7 +264,7 @@ extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
 
     public func mpw_get(path: StaticString...) -> Date? {
         withVaStrings( path ) {
-            let time = mpw_timegm( mpw_marshal_data_vget_str( self.pointee.data, $0 ) )
+            let time = mpw_get_timegm( mpw_marshal_data_vget_str( self.pointee.data, $0 ) )
             if time == ERR {
                 return nil
             }
