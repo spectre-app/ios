@@ -10,6 +10,8 @@ import UIKit
 // is not animated due to it triggering a full reloadData. The work-around is to leave the section empty (or remove it separately).
 // http://www.openradar.me/48941363
 open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
+    private let semaphore        = DispatchGroup()
+    private let queue            = DispatchQueue( label: "DataSource" )
     private let tableView:         UITableView?
     private let collectionView:    UICollectionView?
     private var elementsBySection: [[E]]
@@ -19,13 +21,28 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         self.elementsBySection.reduce( true ) { $0 && $1.isEmpty }
     }
 
-    public init(tableView: UITableView? = nil, collectionView: UICollectionView? = nil, sectionsOfElements: [[E]]? = nil) {
+    public init(tableView: UITableView, sectionsOfElements: [[E]] = []) {
         self.tableView = tableView
+        self.collectionView = nil
+        self.elementsBySection = sectionsOfElements
+    }
+
+    public init(collectionView: UICollectionView, sectionsOfElements: [[E]] = []) {
+        self.tableView = nil
         self.collectionView = collectionView
-        self.elementsBySection = sectionsOfElements ?? []
+        self.elementsBySection = sectionsOfElements
     }
 
     // MARK: --- Interface ---
+
+    open func count(section: Int? = nil) -> Int {
+        if let section = section {
+            return self.elementsBySection[section].count
+        }
+        else {
+            return self.elementsBySection.reduce( 0 ) { $0 + $1.count }
+        }
+    }
 
     open func indexPath(for item: E?) -> IndexPath? {
         item.flatMap { self.indexPath( for: $0, in: self.elementsBySection, elementsMatch: { $0 == $1 } ) }
@@ -37,6 +54,15 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
     open func indexPath(where predicate: (E) -> Bool) -> IndexPath? {
         self.indexPath( where: predicate, in: self.elementsBySection )
+    }
+
+    open func firstElement(section: Int? = nil) -> E? {
+        if let section = section {
+            return self.elementsBySection[section].first
+        }
+        else {
+            return self.elementsBySection.reduce( nil ) { $0 ?? $1.first }
+        }
     }
 
     open func firstElement(where predicate: (E) -> Bool) -> E? {
@@ -60,20 +86,19 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
     }
 
     open func elements() -> AnySequence<(indexPath: IndexPath, element: E)> {
-        // TODO: inline these types
-        let s: LazySequence<FlattenSequence<LazyMapSequence<EnumeratedSequence<[[E]]>, LazyMapSequence<EnumeratedSequence<[E]>, (indexPath: IndexPath, element: E)>>>>
-                = self.elementsBySection.enumerated().lazy.flatMap {
-            let (section, sectionElements) = $0
+        AnySequence( self.elementsBySection.enumerated().lazy.flatMap {
+            (enumeratedSection) -> LazyMapSequence<EnumeratedSequence<[E]>, (indexPath: IndexPath, element: E)> in
+            let (section, sectionElements) = enumeratedSection
 
-            return sectionElements.enumerated().lazy.map {
-                let (item, element) = $0
+            return sectionElements.enumerated().lazy.map { (enumeratedElement) in
+                let (item, element) = enumeratedElement
 
                 return (indexPath: IndexPath( item: item, section: section ), element: element)
             }
-        }
-        return AnySequence<(indexPath: IndexPath, element: E)>( s )
+        } )
     }
 
+    // Note: IndexPath parameters should represent element paths as in the new dataSource.
     open func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
                      reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
                      animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil) {
@@ -82,6 +107,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                      animated: animated, completion: completion, elementsMatch: { $0 == $1 } )
     }
 
+    // Note: IndexPath parameters should represent element paths as in the new dataSource.
     open func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
                      reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
                      animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil) where E: Identifiable {
@@ -90,45 +116,77 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                      animated: animated, completion: completion, elementsMatch: { $0.id == $1.id } )
     }
 
+    // Note: IndexPath parameters should represent element paths as in the new dataSource.
     private func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
                         reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
                         animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil, elementsMatch: @escaping (E, E) -> Bool) {
+        self.queue.sync {
+            self.semaphore.wait()
+            self.semaphore.enter()
+        }
+
         trc( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, toElementsBySection )
 
-        if !self.elementsConsumed {
+        if !self.elementsConsumed || !animated {
             self.elementsBySection = toElementsBySection
+            if (self.elementsConsumed) {
+                self.tableView?.reloadData()
+                self.collectionView?.reloadData()
+            }
             self.select( selectElements, paths: selectPaths )
+            self.semaphore.leave()
             completion?( true )
             return
         }
 
-        self.perform( animated: animated, completion: { success in
+        // RELOAD: Check if element values have changed and mark updated paths for reload.
+        var reloadPaths = reloadPaths ?? []
+        for (toSection, toElements) in toElementsBySection.enumerated() {
+            for (toItem, toElement) in toElements.enumerated() {
+                let toIndexPath = IndexPath( item: toItem, section: toSection )
+                if reloadAll || (reloadElements?.contains( toElement ) ?? false) || {
+                    let fromElement = self.firstElement( where: { elementsMatch( $0, toElement ) } );
+                    return fromElement != nil && fromElement != toElement }() {
+                    // Element reload requested or required due to the new element being different from the old.
+                    reloadPaths.append( toIndexPath )
+                }
+            }
+        }
+
+        self.performBatchUpdates( completion: { success in
             if success {
+                // We reload after updates since it's illegal to move & reload an indexPath at the same time.
+                if !reloadPaths.isEmpty {
+                    trc( "reload items %@", reloadPaths )
+                    self.collectionView?.reloadItems( at: reloadPaths )
+                    self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
+                }
+
                 self.select( selectElements, paths: selectPaths )
             }
 
+            self.semaphore.leave()
             completion?( success )
-        } ) {
-            // Check if element values have changed and mark updated paths for reload.
-            var reloadPaths = reloadPaths ?? []
-            for toElements in toElementsBySection {
-                for toElement in toElements {
-                    if let fromIndexPath = self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ),
-                       reloadAll || (reloadElements?.contains( toElement ) ?? false) || self.element( at: fromIndexPath ) != toElement {
-                        // Element reload requested or required due to the new element being different from the old.
-                        self.elementsBySection[fromIndexPath.section][fromIndexPath.item] = toElement
-                        reloadPaths.append( fromIndexPath )
-                    }
-                }
-            }
-            if reloadPaths.count > 0 {
-                trc( "reload items %@", reloadPaths )
-                self.collectionView?.reloadItems( at: reloadPaths )
-                self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
-            }
+        }, updates: {
+            // OPERATION | INDEXPATH
+            // --------- | ---------
+            // reload    | at:   before updates
+            // delete    | at:   before updates
+            // move      | from: before updates
+            //           | to:   after updates
+            // insert    | at:   after updates
 
             // Check if element layout has changed and apply deletes, inserts & moves required to adopt new layout, in that order.
             if !self.elementsBySection.elementsEqual( toElementsBySection, by: { $0.elementsEqual( $1, by: elementsMatch ) } ) {
+                // Remove dataSource sections no longer present in the new sections (should be empty of items now).
+                for section in (0..<self.elementsBySection.count).reversed() {
+                    if section >= toElementsBySection.count {
+                        trc( "delete section %d", section )
+                        self.elementsBySection.remove( at: section )
+                        self.collectionView?.deleteSections( IndexSet( integer: section ) )
+                        self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
+                    }
+                }
 
                 // Add empty dataSource sections for newly introduced sections.
                 for toSection in 0..<toElementsBySection.count {
@@ -140,70 +198,39 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                     }
                 }
 
-                // Delete dataSource elements no longer reflected in the new sections.
+                // DELETE/MOVE: Delete dataSource elements no longer reflected in the new sections.
                 for (fromSection, fromElements) in self.elementsBySection.enumerated() {
                     for (fromItem, fromElement) in fromElements.enumerated().reversed() {
-                        if self.indexPath( for: fromElement, in: toElementsBySection, elementsMatch: elementsMatch ) == nil {
-                            let fromIndexPath = IndexPath( item: fromItem, section: fromSection )
+                        let fromIndexPath = IndexPath( item: fromItem, section: fromSection )
+                        if let toIndexPath = self.indexPath( for: fromElement, in: toElementsBySection, elementsMatch: elementsMatch ) {
+                            trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
+                            self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
+                            self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
+                        }
+                        else {
                             trc( "delete item %@", fromIndexPath )
-                            self.elementsBySection[fromSection].remove( at: fromItem )
                             self.collectionView?.deleteItems( at: [ fromIndexPath ] )
                             self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
                         }
                     }
                 }
 
-                // Reflect the new sections by moving or reloading existing elements and inserting missing ones.
+                // INSERT: Reflect the new sections by moving or reloading existing elements and inserting missing ones.
                 for (toSection, toElements) in toElementsBySection.enumerated() {
                     for (toItem, toElement) in toElements.enumerated() {
                         if self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) == nil {
                             // New element missing in old dataSource.
-                            let toIndexPath   = IndexPath( item: toItem, section: toSection )
-                            // NOTE: Moves have not yet been applied, so we don't know the exact indexPath to insert into.
-                            // We make a best-effort insertion, ensuring not to overrun the dataSource's section array.
-                            // Subsequent move phase should fix any inaccuracies.
-                            let fromIndexPath = IndexPath( item: min( toIndexPath.item, self.elementsBySection[toIndexPath.section].endIndex ), section: toIndexPath.section )
-                            trc( "insert item %@", fromIndexPath )
-                            self.elementsBySection[fromIndexPath.section].insert( toElement, at: fromIndexPath.item )
-                            self.collectionView?.insertItems( at: [ fromIndexPath ] )
-                            self.tableView?.insertRows( at: [ fromIndexPath ], with: .automatic )
-                        }
-                    }
-                }
-
-                // Reflect the new sections by moving or reloading existing elements and inserting missing ones.
-                for (toSection, toElements) in toElementsBySection.enumerated() {
-                    for (toItem, toElement) in toElements.enumerated() {
-                        if let fromIndexPath = self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) {
-                            // New element exists in old dataSource.
                             let toIndexPath = IndexPath( item: toItem, section: toSection )
-
-                            if toIndexPath != fromIndexPath {
-                                // New element at different path from old dataSource.
-                                trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
-                                self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
-                                self.elementsBySection[toIndexPath.section].insert( toElement, at: toIndexPath.item )
-                                self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
-                                self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
-                            }
+                            trc( "insert item %@", toIndexPath )
+                            self.collectionView?.insertItems( at: [ toIndexPath ] )
+                            self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
                         }
-                    }
-                }
-
-                // Remove dataSource sections no longer present in the new sections (should be empty of items now).
-                for section in (0..<self.elementsBySection.count).reversed() {
-                    if section >= toElementsBySection.count {
-                        trc( "delete section %d", section )
-                        self.elementsBySection.remove( at: section )
-                        self.collectionView?.deleteSections( IndexSet( integer: section ) )
-                        self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
                     }
                 }
             }
 
-            // Should be a no-op now.
             self.elementsBySection = toElementsBySection
-        }
+        } )
     }
 
     open func select(_ elements: Set<E?>? = nil, paths: [IndexPath]? = nil, animated: Bool = true) {
@@ -244,11 +271,11 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
               indexPath.section < self.elementsBySection.count && indexPath.item < self.elementsBySection[indexPath.section].count
         else { return false }
 
-        self.perform( animated: animated, completion: completion ) {
+        self.performBatchUpdates( completion: completion, updates: {
             self.elementsBySection[indexPath.section].remove( at: indexPath.item )
             self.collectionView?.deleteItems( at: [ indexPath ] )
             self.tableView?.deleteRows( at: [ indexPath ], with: .automatic )
-        }
+        } )
         return true
     }
 
@@ -258,7 +285,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
               toIndexPath.section < self.elementsBySection.count && toIndexPath.item < self.elementsBySection[toIndexPath.section].count
         else { return false }
 
-        self.perform( animated: animated, completion: completion ) {
+        self.performBatchUpdates( completion: completion, updates: {
             let element = self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
 
             var toItem = toIndexPath.item
@@ -269,7 +296,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             self.elementsBySection[toIndexPath.section].insert( element, at: toItem )
             self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
             self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
-        }
+        } )
         return true
     }
 
@@ -333,20 +360,10 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
     // MARK: --- Private ---
 
-    private func perform(animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> Void)?, updates: @escaping () -> Void) {
-        DispatchQueue.main.perform {
-            if self.tableView == nil && self.collectionView == nil {
-                preconditionFailure( "Data source not associated with a data view." )
-            }
-
-            if !animated {
-                updates()
-                completion?( true )
-            }
-            else {
-                self.tableView?.performBatchUpdates( updates, completion: completion )
-                self.collectionView?.performBatchUpdates( updates, completion: completion )
-            }
+    private func performBatchUpdates(completion: ((Bool) -> Void)? = nil, updates: @escaping () -> Void) {
+        DispatchQueue.main.perform( group: self.semaphore ) {
+            self.tableView?.performBatchUpdates( updates, completion: completion )
+            self.collectionView?.performBatchUpdates( updates, completion: completion )
         }
     }
 
