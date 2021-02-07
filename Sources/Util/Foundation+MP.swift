@@ -6,7 +6,7 @@
 import Foundation
 
 extension Array {
-    func ordered(first: ((Element) -> Bool)? = nil, last: ((Element) -> Bool)? = nil) -> [Element] {
+    func reordered(first: ((Element) -> Bool)? = nil, last: ((Element) -> Bool)? = nil) -> [Element] {
         var firstElements = [ Element ](), middleElements = [ Element ](), lastElements = [ Element ]()
 
         for element in self {

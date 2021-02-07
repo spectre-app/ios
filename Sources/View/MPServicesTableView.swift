@@ -7,7 +7,7 @@ import UIKit
 import AVKit
 
 class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updatable {
-    public var user:            MPUser? {
+    public var user:             MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
             self.query = nil
@@ -17,7 +17,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.updateTask.request()
         }
     }
-    public var query:           String? {
+    public var query:            String? {
         didSet {
             if oldValue != self.query {
                 self.updateTask.request()
@@ -29,11 +29,12 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.updateTask.request()
         }
     }
-    public var preferredFilter: ((MPService) -> Bool)? {
+    public var preferredFilter:  ((MPService) -> Bool)? {
         didSet {
             self.updateTask.request()
         }
     }
+    public var preferredService: String?
 
     private lazy var servicesDataSource = ServicesSource( view: self )
     private lazy var updateTask         = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
@@ -86,14 +87,21 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             elementsBySection.append( results )
 
             // Add "new service" result if there is a query and no exact result
-            let exactResult = results.first( where: { $0.isExact } )
-            if let query = self.query, !query.isEmpty, exactResult == nil {
-                elementsBySection.append( [ using( self.servicesDataSource.newItem ) {
+            if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
+                elementsBySection.append([ using( self.servicesDataSource.newItem ) {
                     $0?.service.serviceName = query
                     $0?.query = query
-                } ?? using( ServiceItem( service: MPService( user: user, serviceName: query ), query: query, preferred: false ) ) {
-                    self.servicesDataSource.newItem = $0
-                } ] )
+                } ??
+                        using( ServiceItem( service: MPService( user: user, serviceName: query ), query: query ) ) {
+                            self.servicesDataSource.newItem = $0
+                        } ])
+            }
+            // Add "new service" result if there is a preferred service and no preferred results
+            else if let preferredService = self.preferredService?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
+                elementsBySection.insert([ self.servicesDataSource.preferredItem ??
+                        using( ServiceItem( service: MPService( user: user, serviceName: preferredService ), preferred: true) ) {
+                            self.servicesDataSource.preferredItem = $0
+                        } ], at: 0)
             }
             else {
                 elementsBySection.append( [] )
@@ -104,9 +112,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             if let selectedItem = self.servicesDataSource.selectedItem {
                 if let newItem = self.servicesDataSource.newItem, selectedItem == newItem {
                     self.servicesDataSource.selectedItem = newItem
-                }
-                else if selectedItem.isExact {
-                    self.servicesDataSource.selectedItem = exactResult
                 }
                 else {
                     self.servicesDataSource.selectedItem = results.first { $0.id == selectedItem.id }
@@ -207,7 +212,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                                 .filter { $0.isMatched }.sorted()
 
             if preferred != nil {
-                items = items.ordered( first: { $0.isPreferred } )
+                items = items.reordered( first: { $0.isPreferred } )
             }
 
             return items
@@ -269,7 +274,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.service.serviceName
         }
 
-        init(service: MPService, query: String = "", preferred: Bool) {
+        init(service: MPService, query: String = "", preferred: Bool = false) {
             self.service = service
             self.isPreferred = preferred
 
@@ -292,9 +297,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     }
 
     class ServicesSource: DataSource<ServiceItem> {
-        let view:         MPServicesTableView
-        var newItem:      ServiceItem?
-        var selectedItem: ServiceItem?
+        let view:          MPServicesTableView
+        var newItem:       ServiceItem?
+        var preferredItem: ServiceItem?
+        var selectedItem:  ServiceItem?
 
         init(view: MPServicesTableView) {
             self.view = view
@@ -330,7 +336,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     class ServiceCell: UITableViewCell, Updatable, MPServiceObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
         public weak var servicesView: MPServicesTableView?
-        public var result:       ServiceItem? {
+        public var result:  ServiceItem? {
             willSet {
                 self.service?.observers.unregister( observer: self )
                 self.service?.user.observers.unregister( observer: self )
@@ -386,7 +392,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             // - View
             self.isOpaque = false
             self.clipsToBounds = true
-            self.backgroundColor = .clear
+            self => \.backgroundColor => Theme.current.color.backdrop
 
             self.selectedBackgroundView = self.backgroundImage
 

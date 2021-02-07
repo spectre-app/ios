@@ -35,15 +35,11 @@ class AutoFillServicesViewController: BasicServicesViewController {
         }
         self.servicesTableView.preferredFilter = { service in
             allServiceIdentifiers.contains( where: {
-                var serviceIdentifier = $0.identifier
-                if case .URL = $0.type, let url = URL( string: $0.identifier ),
-                   let host = url.host {
-                    serviceIdentifier = host
-                }
-
+                let serviceIdentifier = URL( string: $0.identifier )?.host ?? $0.identifier
                 return serviceIdentifier.contains( service.serviceName ) || service.serviceName.contains( serviceIdentifier )
             } )
         }
+        self.servicesTableView.preferredService = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
         self.servicesTableView.serviceActions = [
             .init( identifier: "", title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
             .init( identifier: "services.service #service_fill", title: "Fill Login", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in

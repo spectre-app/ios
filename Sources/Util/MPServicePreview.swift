@@ -144,7 +144,7 @@ class MPServicePreview: Equatable {
             guard let imageURL = [ response.image, response.icon ]
                     .compactMap( { MPServicePreview.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
                     ?? MPServicePreview.byImageSize( [ response.image, response.icon ] + (response.images ?? []) )
-                                       .ordered( last: { $0.pathExtension == "gif" } ).first
+                                       .reordered( last: { $0.pathExtension == "gif" } ).first
             else {
                 trc( "[preview missing] %@: %@", self.url, response )
                 promise.finish( .failure( MPError.issue(
