@@ -44,6 +44,9 @@ class AutoFillUsersViewController: BasicUsersViewController {
         if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
             self.usersSpinner.requestSelection( at: self.fileSource.indexPath( where: { $0?.fullName == userName } ) )
         }
+        else if self.fileSource.count() == 1, let only = self.fileSource.elements().first( where: { _ in true } )?.indexPath {
+            self.usersSpinner.requestSelection( at: only )
+        }
     }
 
     // MARK: --- MPMarshalObserver ---
