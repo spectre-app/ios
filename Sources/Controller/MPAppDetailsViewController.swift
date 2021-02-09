@@ -66,7 +66,8 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
 
     class DiagnosticsItem: ToggleItem<MPConfig> {
         init() {
-            super.init( identifier: "app >diagnostics", title: "Diagnostics", icon: { _ in .icon( "" ) },
+            super.init( track: .subject( "app", action: "diagnostics" ),
+                        title: "Diagnostics", icon: { _ in .icon( "" ) },
                         value: { $0.diagnostics }, update: { $0.diagnostics = $1 }, caption: { _ in
                 """
                 Share anonymized issue information to enable quick resolution.
@@ -77,7 +78,8 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
 
     class NotificationsItem: ToggleItem<MPConfig> {
         init() {
-            super.init( identifier: "app >notifications", title: "Notifications", icon: { _ in .icon( "" ) },
+            super.init( track: .subject( "app", action: "notifications" ),
+                        title: "Notifications", icon: { _ in .icon( "" ) },
                         value: { _ in MPTracker.enabledNotifications() }, update: {
                 if $1 {
                     MPTracker.enableNotifications()
@@ -95,7 +97,8 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
 
     class ThemeItem: PickerItem<MPConfig, Theme, ThemeItem.Cell> {
         init() {
-            super.init( identifier: "app >theme", title: "Application Themes 🅿︎",
+            super.init( track: .subject( "app", action: "theme" ),
+                        title: "Application Themes 🅿︎",
                         values: { _ in
                             [ Theme? ].joined(
                                     separator: [ nil ],
@@ -127,7 +130,8 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
 
     class ManageSubscriptionItem: ButtonItem<MPConfig> {
         init() {
-            super.init( identifier: "app #subscription", value: { _ in (label: "Premium Subscription", image: nil) }, action: { item in
+            super.init( track: .subject( "app", action: "subscription" ),
+                        value: { _ in (label: "Premium Subscription", image: nil) }, action: { item in
                 item.viewController?.show( MPPremiumDetailsViewController(), sender: item )
             } )
         }

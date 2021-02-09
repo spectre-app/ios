@@ -27,11 +27,11 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                     if let selectedItem = self.usersSpinner.selectedItem {
                         MPFeedback.shared.play( .activate )
 
-                        MPTracker.shared.event( named: "users >user", [
+                        MPTracker.shared.event( track: .subject( "users", action: "user", [
                             "value": selectedItem,
                             "items": self.usersSpinner.numberOfItems( inSection: 0 ),
-                        ] )
-                        self.userEvent = MPTracker.shared.begin( named: "users #user" )
+                        ] ) )
+                        self.userEvent = MPTracker.shared.begin( track: .subject( "users", action: "user" ) )
                     }
                     else {
                         self.userEvent = nil
@@ -191,19 +191,21 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         }
         internal weak var viewController: BasicUsersViewController?
 
-        private var avatar          = MPUser.Avatar.avatar_add {
+        private var avatar    = MPUser.Avatar.avatar_add {
             didSet {
                 self.update()
             }
         }
-        private let nameLabel       = UILabel()
-        private let nameField       = UITextField()
-        private let avatarButton    = MPButton( identifier: "users.user #avatar", background: false )
-        private let biometricButton = MPTimedButton( identifier: "users.user #auth_biometric", image: .icon( "" ), background: false )
+        private let nameLabel = UILabel()
+        private let nameField = UITextField()
+        private lazy var avatarButton = MPButton( track: .subject( "users.user", action: "avatar" ),
+                                                  background: false ) { _, _ in self.avatar.next() }
+        private lazy var biometricButton = MPTimedButton( track: .subject( "users.user", action: "auth" ),
+                                                          image: .icon( "" ), background: false ) { _, _ in self.attemptBiometrics() }
         private var passwordEvent:               MPTracker.TimedEvent?
-        private let passwordField   = MPMasterPasswordField()
-        private let idBadgeView     = UIImageView( image: .icon( "" ) )
-        private let authBadgeView   = UIImageView( image: .icon( "" ) )
+        private let passwordField = MPMasterPasswordField()
+        private let idBadgeView   = UIImageView( image: .icon( "" ) )
+        private let authBadgeView = UIImageView( image: .icon( "" ) )
         private var authenticationConfiguration: LayoutConfiguration<MPMasterPasswordField>!
         private var path:                        CGPath? {
             didSet {
@@ -233,9 +235,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             self.nameLabel.alignmentRectOutsets = .horizontal()
 
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                self.avatar.next()
-            }
 
             self.passwordField.borderStyle = .roundedRect
             self.passwordField => \.font => Theme.current.font.callout
@@ -244,26 +243,34 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             self.passwordField.rightView = self.biometricButton
             self.passwordField.rightViewMode = .always
             self.passwordField.authenticater = { keyFactory in
-                self.passwordEvent = MPTracker.shared.begin( named: "users.user #auth_password" )
+                self.passwordEvent = MPTracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
 
                 return self.userFile?.authenticate( using: keyFactory ) ??
                         MPUser( fullName: keyFactory.fullName ).login( using: keyFactory )
             }
             self.passwordField.authenticated = { result in
                 trc( "User password authentication: %@", result )
-                self.passwordEvent?.end(
-                        [ "result": result.name,
-                          "length": self.passwordField.text?.count ?? 0,
-                          "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
-                        ] )
 
                 do {
                     let user = try result.get()
                     MPFeedback.shared.play( .trigger )
+                    self.passwordEvent?.end(
+                            [ "result": "success",
+                              "type": "password",
+                              "length": self.passwordField.text?.count ?? 0,
+                              "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
+                            ] )
                     self.userEvent?.end( [ "result": "password" ] )
                     self.viewController?.login( user: user )
                 }
                 catch {
+                    self.biometricButton.timing?.end(
+                            [ "result": "failure",
+                              "type": "password",
+                              "length": self.passwordField.text?.count ?? 0,
+                              "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
+                              "error": error,
+                            ] )
                     mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
                 }
             }
@@ -276,10 +283,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             self.nameField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
             self.nameField => \.font => Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
             self.nameField => \.textColor => Theme.current.color.body
-
-            self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                self.attemptBiometrics()
-            }
 
             self.idBadgeView.alignmentRectOutsets = .border()
             self.authBadgeView.alignmentRectOutsets = .border()
@@ -418,18 +421,26 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                 userFile.authenticate( using: $0 )
             }.then( on: .main ) { [unowned self] result in
                 trc( "User biometric authentication: %@", result )
-                self.biometricButton.timing?.end(
-                        [ "result": result.name,
-                          "factor": MPKeychainKeyFactory.factor.description,
-                        ] )
 
                 do {
                     let user = try result.get()
                     MPFeedback.shared.play( .trigger )
+                    self.biometricButton.timing?.end(
+                            [ "result": "success",
+                              "type": "biometric",
+                              "factor": MPKeychainKeyFactory.factor.description,
+                            ] )
                     self.userEvent?.end( [ "result": "biometric" ] )
                     self.viewController?.login( user: user )
                 }
                 catch {
+                    self.biometricButton.timing?.end(
+                            [ "result": "failure",
+                              "type": "biometric",
+                              "factor": MPKeychainKeyFactory.factor.description,
+                              "error": error,
+                            ] )
+
                     switch error {
                         case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
                             wrn( "Biometrics cancelled: %@", error )

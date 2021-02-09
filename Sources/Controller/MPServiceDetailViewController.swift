@@ -57,7 +57,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
     class PasswordTypeItem: PickerItem<MPService, MPResultType, MPResultTypeCell> {
         init() {
-            super.init( identifier: "service >resultType", title: "Password Type",
+            super.init( track: .subject( "service", action: "resultType" ), title: "Password Type",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -77,7 +77,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                             else {
                                 return "Time to crack: unknown 🅿︎"
                             }
-                        })
+                        } )
         }
 
         override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
@@ -89,10 +89,10 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         init() {
             super.init( title: nil, placeholder: "enter a password",
                         value: { try? $0.result().token.await() }, update: { service, password in
-                MPTracker.shared.event( named: "service >password", [
+                MPTracker.shared.event( track: .subject( "service", action: "result", [
                     "type": "\(service.resultType)",
                     "entropy": MPAttacker.entropy( string: password ) ?? 0,
-                ] )
+                ] ) )
 
                 service.state( resultParam: password ).token.then {
                     do { service.resultState = try $0.get() }
@@ -119,7 +119,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
     class LoginTypeItem: PickerItem<MPService, MPResultType, MPResultTypeCell> {
         init() {
-            super.init( identifier: "service >loginType", title: "Login Name Type 🅿︎",
+            super.init( track: .subject( "service", action: "loginType" ), title: "Login Name Type 🅿︎",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -151,16 +151,16 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
     }
 
     class LoginResultItem: FieldItem<MPService> {
-        let userView = MPButton( identifier: "service.login #user" )
+        let userButton = MPButton( track: .subject( "service.login", action: "user" ) )
 
         init() {
             super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { service, login in
-                            MPTracker.shared.event( named: "service >login", [
+                            MPTracker.shared.event( track: .subject( "service", action: "login", [
                                 "type": "\(service.loginType)",
                                 "entropy": MPAttacker.entropy( string: login ) ?? 0,
-                            ] )
+                            ] ) )
 
                             service.state( keyPurpose: .identification, resultParam: login ).token.then {
                                 do { service.loginState = try $0.get() }
@@ -177,10 +177,10 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
-            view.valueField.leftView = MPMarginView( for: self.userView, margins: .border( 4 ) )
+            view.valueField.leftView = MPMarginView( for: self.userButton, margins: .border( 4 ) )
 
-            self.userView.isRound = true
-            self.userView.action( for: .primaryActionTriggered ) { [unowned self] in
+            self.userButton.isRound = true
+            self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let user = self.model?.user, self.model?.loginType == MPResultType.none {
                     self.viewController?.show(
                             MPUserDetailsViewController( model: user, focus: MPUserDetailsViewController.LoginTypeItem.self ), sender: self )
@@ -197,8 +197,8 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         override func update() {
             super.update()
 
-            self.userView.title = self.model?.user.fullName.name( style: .abbreviated )
-            self.userView.sizeToFit()
+            self.userButton.title = self.model?.user.fullName.name( style: .abbreviated )
+            self.userButton.sizeToFit()
 
             (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
         }
@@ -213,7 +213,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                             }.values.sorted()
                         },
                         subitems: [
-                            ButtonItem( identifier: "service.question #add",
+                            ButtonItem( track: .subject( "service.question", action: "add" ),
                                         value: { _ in (label: "Add Security Question", image: nil) },
                                         action: { item in
                                             let controller = UIAlertController( title: "Security Question", message:
@@ -262,7 +262,9 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         class Cell: UITableViewCell {
             private let keywordLabel = UILabel()
             private let resultLabel  = UILabel()
-            private let copyButton   = MPButton( identifier: "service.question #copy", title: "copy" )
+            private lazy var copyButton = MPButton( track: .subject( "service.question", action: "copy",
+                                                                     [ "words": self.question?.keyword.split( separator: " " ).count ?? 0 ] ),
+                                                    title: "copy" )
 
             weak var question: MPQuestion? {
                 didSet {
@@ -303,7 +305,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                    self.question?.result().copy( fromView: self, identifier: "service>details" )
+                    self.question?.result().copy( fromView: self, trackingFrom: "service>details" )
                 }
 
                 // - Hierarchy

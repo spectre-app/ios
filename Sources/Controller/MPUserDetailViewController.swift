@@ -45,7 +45,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class AvatarItem: PickerItem<MPUser, MPUser.Avatar, MPAvatarCell> {
         init() {
-            super.init( identifier: "user >avatar", title: "Avatar", values: { _ in MPUser.Avatar.allCases },
+            super.init( track: .subject( "user", action: "avatar" ), title: "Avatar", values: { _ in MPUser.Avatar.allCases },
                         value: { $0.avatar }, update: { $0.avatar = $1 } )
         }
 
@@ -56,7 +56,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class LoginTypeItem: PickerItem<MPUser, MPResultType, MPResultTypeCell> {
         init() {
-            super.init( identifier: "user >loginType", title: "Standard Login",
+            super.init( track: .subject( "user", action: "loginType" ), title: "Standard Login",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -70,7 +70,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                             """
                             The login name used for services that do not have a service‑specific login name. 
                             """
-                        })
+                        } )
         }
 
         override func populate(_ cell: MPResultTypeCell, indexPath: IndexPath, value: MPResultType) {
@@ -83,10 +83,10 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
             super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { user, login in
-                            MPTracker.shared.event( named: "user >login", [
+                            MPTracker.shared.event( track: .subject( "user", action: "login", [
                                 "type": "\(user.loginType)",
                                 "entropy": MPAttacker.entropy( string: login ) ?? 0,
-                            ] )
+                            ] ) )
 
                             user.state( keyPurpose: .identification, resultParam: login ).token.then {
                                 do { user.loginState = try $0.get() }
@@ -115,7 +115,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class DefaultTypeItem: PickerItem<MPUser, MPResultType, MPResultTypeCell> {
         init() {
-            super.init( identifier: "user >defaultType", title: "Default Password Type",
+            super.init( track: .subject( "user", action: "defaultType" ), title: "Default Password Type",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -137,7 +137,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class AttackerItem: PickerItem<MPUser, MPAttacker?, AttackerItem.Cell> {
         init() {
-            super.init( identifier: "user >attacker", title: "Defense Strategy 🅿︎", values: { _ in MPAttacker.allCases },
+            super.init( track: .subject( "user", action: "attacker" ), title: "Defense Strategy 🅿︎", values: { _ in MPAttacker.allCases },
                         value: { $0.attacker ?? .default }, update: { $0.attacker = $1 },
                         caption: { _ in
                             """
@@ -174,7 +174,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class UsageFeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ToggleItem<MPUser>( identifier: "user >maskPasswords", title: "Mask Passwords", icon: { _ in .icon( "" ) },
+                ToggleItem<MPUser>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords", icon: { _ in .icon( "" ) },
                                     value: { $0.maskPasswords }, update: { $0.maskPasswords = $1 }, caption: { _ in
                     """
                     Do not reveal passwords on screen.
@@ -188,7 +188,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class SystemFeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ToggleItem<MPUser>( identifier: "user >autofill", title: "AutoFill Passwords 🅿︎", icon: { _ in .icon( "" ) },
+                ToggleItem<MPUser>( track: .subject( "user", action: "autofill" ), title: "AutoFill Passwords 🅿︎", icon: { _ in .icon( "" ) },
                                     value: { $0.autofill }, update: { $0.autofill = $1 }, caption: { _ in
                     """
                     Auto-fill your service passwords from other apps.
@@ -201,7 +201,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
-                ToggleItem( identifier: "user >biometricLock", title: "Biometric Lock 🅿︎",
+                ToggleItem( track: .subject( "user", action: "biometricLock" ), title: "Biometric Lock 🅿︎",
                             icon: { _ in MPKeychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon },
                             value: { $0.biometricLock }, update: { $0.biometricLock = $1 }, caption: { _ in
                     """
@@ -219,7 +219,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class ActionsItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ButtonItem( identifier: "user #export", value: { _ in (label: "Export", image: nil) }, action: { item in
+                ButtonItem( track: .subject( "user", action: "export" ), value: { _ in (label: "Export", image: nil) }, action: { item in
                     if let user = item.model {
                         let controller = MPExportViewController( user: user )
                         controller.popoverPresentationController?.sourceView = item.view
@@ -227,10 +227,10 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                         item.viewController?.present( controller, animated: true )
                     }
                 } ),
-                ButtonItem( identifier: "user #app_settings", value: { _ in (label: "Settings", image: nil) }, action: { item in
+                ButtonItem( track: .subject( "user", action: "app" ), value: { _ in (label: "Settings", image: nil) }, action: { item in
                     item.viewController?.show( MPAppDetailsViewController(), sender: item )
                 } ),
-                ButtonItem( identifier: "user #logout", value: { _ in (label: "Log out", image: nil) }, action: { item in
+                ButtonItem( track: .subject( "user", action: "signout" ), value: { _ in (label: "Log out", image: nil) }, action: { item in
                     item.model?.logout()
                 } ),
             ] )

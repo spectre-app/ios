@@ -332,9 +332,9 @@ public class DispatchTask<V> {
     private var requestPromise: Promise<V>?
     private lazy var requestQueue = DispatchQueue( label: "\(productName): DispatchTask: \(self.name)", qos: .userInitiated )
 
-    public init(named identifier: String, queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+    public init(named name: String, queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
                 qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) {
-        self.name = identifier
+        self.name = name
         self.workQueue = queue
         self.deadline = deadline
         self.group = group
@@ -409,9 +409,9 @@ public class DispatchTask<V> {
 }
 
 extension DispatchTask where V == Void {
-    public convenience init(named identifier: String? = nil, queue: DispatchQueue = .main, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+    public convenience init(named name: String? = nil, queue: DispatchQueue = .main, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
                             qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], update updatable: Updatable, animated: Bool = false) {
-        self.init( named: "\(type( of: updatable )): \(identifier ?? "-")", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
+        self.init( named: "\(type( of: updatable )): \(name ?? "-")", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
             guard let updatable = updatable
             else { throw Promise<V>.Interruption.invalidated }
 

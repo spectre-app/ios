@@ -21,13 +21,15 @@ class MPUsersViewController: BasicUsersViewController {
 
         // - View
         self.appToolbar.axis = .horizontal
-        self.appToolbar.addArrangedSubview( MPButton( identifier: "users #app_settings", image: .icon( "" ), background: false ) { [unowned self] _, _ in
+        self.appToolbar.addArrangedSubview( MPButton( track: .subject( "users", action: "app" ),
+                                                      image: .icon( "" ), background: false ) { [unowned self] _, _ in
             self.detailsHost.show( MPAppDetailsViewController(), sender: self )
         } )
-        self.appToolbar.addArrangedSubview( MPTimedButton( identifier: "users #auth_incognito", image: .icon( "" ), background: false ) { [unowned self] _, incognitoButton in
+        self.appToolbar.addArrangedSubview( MPTimedButton( track: .subject( "users.user", action: "auth" ),
+                                                           image: .icon( "" ), background: false ) { [unowned self] _, incognitoButton in
             guard let incognitoButton = incognitoButton as? MPTimedButton
             else { return }
-            let incognitoEvent = MPTracker.shared.begin( named: "users #user" )
+            let userEvent = MPTracker.shared.begin( track: .subject( "users", action: "user" ) )
 
             let controller = UIAlertController( title: "Incognito Login", message:
             """
@@ -43,21 +45,29 @@ class MPUsersViewController: BasicUsersViewController {
             }
             passwordField.authenticated = { result in
                 trc( "Incognito authentication: %@", result )
-                incognitoButton.timing?.end(
-                        [ "result": result.name,
-                          "length": passwordField.text?.count ?? 0,
-                          "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
-                        ] )
-
                 spinner.dismiss()
                 controller.dismiss( animated: true ) {
                     do {
                         let user = try result.get()
                         MPFeedback.shared.play( .trigger )
-                        incognitoEvent.end( [ "result": "incognito" ] )
+                        incognitoButton.timing?.end(
+                                [ "result": "failure",
+                                  "type": "incognito",
+                                  "length": passwordField.text?.count ?? 0,
+                                  "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
+                                ] )
+                        userEvent.end( [ "result": "incognito" ] )
                         self.navigationController?.pushViewController( MPServicesViewController( user: user ), animated: true )
                     }
                     catch {
+                        incognitoButton.timing?.end(
+                                [ "result": "failure",
+                                  "type": "incognito",
+                                  "length": passwordField.text?.count ?? 0,
+                                  "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
+                                  "error": error,
+                                ] )
+                        userEvent.end( [ "result": "deselected" ] )
                         mperror( title: "Couldn't unlock user", error: error )
                     }
                 }

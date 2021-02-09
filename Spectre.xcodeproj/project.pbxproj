@@ -2142,7 +2142,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_EXTENSION $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_AUTOFILL $(inherited)";
 			};
 			name = Debug;
 		};
@@ -2175,7 +2175,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_EXTENSION $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_AUTOFILL $(inherited)";
 			};
 			name = Release;
 		};
@@ -2208,7 +2208,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_EXTENSION $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_AUTOFILL $(inherited)";
 			};
 			name = Public;
 		};

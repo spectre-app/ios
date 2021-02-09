@@ -33,8 +33,8 @@ public struct MPOperation {
         Promise( .success( self ) ).and( self.token ).then( on: queue, consumer )
     }
 
-    @discardableResult public func copy(fromView view: UIView, identifier: String) -> Promise<(MPOperation, String)> {
-        let event = MPTracker.shared.begin( named: "service #copy" )
+    @discardableResult public func copy(fromView view: UIView, trackingFrom: String) -> Promise<(MPOperation, String)> {
+        let event = MPTracker.shared.begin( track: .subject( "service", action: "use" ) )
 
         return self.token.promise { token in
             MPFeedback.shared.play( .trigger )
@@ -63,7 +63,8 @@ public struct MPOperation {
                 let (operation, token) = try $0.get()
                 event.end(
                         [ "result": $0.name,
-                          "from": identifier,
+                          "from": trackingFrom,
+                          "action": "copy",
                           "counter": "\(operation.counter)",
                           "purpose": "\(operation.purpose)",
                           "type": "\(operation.type)",
@@ -72,7 +73,7 @@ public struct MPOperation {
                         ] )
             }
             catch {
-                event.end( [ "result": $0.name, "from": identifier, "error": error.localizedDescription ] )
+                event.end( [ "result": $0.name, "from": trackingFrom, "error": error.localizedDescription ] )
             }
         }
     }

@@ -527,16 +527,16 @@ class ImageItem<M>: ValueItem<M, UIImage> {
 }
 
 class ToggleItem<M>: ValueItem<M, Bool> {
-    let identifier: String
-    let icon:       (M) -> UIImage?
+    let tracking: MPTracking
+    let icon:     (M) -> UIImage?
 
-    init(identifier: String, title: String? = nil,
+    init(track: MPTracking, title: String? = nil,
          icon: @escaping (M) -> UIImage?,
          value: @escaping (M) -> Bool,
          update: ((M, Bool) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
-        self.identifier = identifier
+        self.tracking = track
         self.icon = icon
 
         super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
@@ -548,7 +548,7 @@ class ToggleItem<M>: ValueItem<M, Bool> {
 
     class ToggleItemView: ItemView {
         let item: ToggleItem
-        lazy var button = MPToggleButton( identifier: self.item.identifier ) { [unowned self] isSelected in
+        lazy var button = MPToggleButton( track: self.item.tracking ) { [unowned self] isSelected in
             if let model = self.item.model {
                 self.item.update?( model, isSelected )
             }
@@ -583,15 +583,15 @@ class ToggleItem<M>: ValueItem<M, Bool> {
 }
 
 class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
-    let identifier: String
-    let action:     (ButtonItem<M>) -> Void
+    let tracking: MPTracking
+    let action:   (ButtonItem<M>) -> Void
 
-    init(identifier: String, title: String? = nil,
+    init(track: MPTracking, title: String? = nil,
          value: @escaping (M) -> (label: String?, image: UIImage?),
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
          action: @escaping (ButtonItem<M>) -> () = { _ in }) {
-        self.identifier = identifier
+        self.tracking = track
         self.action = action
 
         super.init( title: title, value: value, subitems: subitems, axis: subitemAxis, caption: caption )
@@ -604,7 +604,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
     class ButtonItemView: ItemView {
         let item: ButtonItem
 
-        lazy var button = MPButton( identifier: self.item.identifier ) { [unowned self] _, _ in
+        lazy var button = MPButton( track: self.item.tracking ) { [unowned self] _, _ in
             self.item.action( self.item )
         }
 
@@ -908,16 +908,16 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
 }
 
 class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
-    let identifier: String
-    let values:     (M) -> [V?]
+    let tracking: MPTracking?
+    let values:   (M) -> [V?]
 
-    init(identifier: String, title: String? = nil,
+    init(track: MPTracking? = nil, title: String? = nil,
          values: @escaping (M) -> [V?],
          value: @escaping (M) -> V,
          update: ((M, V) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
-        self.identifier = identifier
+        self.tracking = track
         self.values = values
 
         super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
@@ -930,8 +930,12 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     func populate(_ cell: C, indexPath: IndexPath, value: V) {
     }
 
-    func identifier(indexPath: IndexPath, value: V) -> String? {
-        (value as? CustomStringConvertible)?.description
+    func tracking(indexPath: IndexPath, value: V) -> MPTracking? {
+        if let tracking = self.tracking, let value = (value as? CustomStringConvertible)?.description {
+            return tracking.with( parameters: [ "value": value ] )
+        }
+
+        return self.tracking
     }
 
     class PickerItemView: ItemView, UICollectionViewDelegate {
@@ -995,8 +999,8 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             if let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
-                if let itemIdentifier = self.item.identifier( indexPath: indexPath, value: value ) {
-                    MPTracker.shared.event( named: self.item.identifier, [ "value": itemIdentifier ] )
+                if let tracking = self.item.tracking( indexPath: indexPath, value: value ) {
+                    MPTracker.shared.event( track: tracking )
                 }
 
                 self.item.update?( model, value )

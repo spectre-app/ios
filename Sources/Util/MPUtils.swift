@@ -17,6 +17,10 @@ func using<V>(_ value: V, _ initializer: (V) -> Void) -> V {
     return value
 }
 
+func map<F, T>(_ from: F, _ map: [F: T]) -> T? {
+    map[from]
+}
+
 func cached<F: Hashable, T>(_ block: @escaping (F) -> T) -> (F) -> T {
     var cache = [ F: T ]()
 

@@ -11,7 +11,7 @@ class MPToggleButton: UIView {
     private lazy var contentView = MPEffectView( content: self.button )
 
     var tapEffect = true
-    var identifier: String?
+    var tracking: MPTracking?
     var action:     (Bool) -> Bool?
     var isSelected: Bool {
         get {
@@ -62,8 +62,8 @@ class MPToggleButton: UIView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(identifier: String? = nil, action: @escaping (Bool) -> Bool?) {
-        self.identifier = identifier
+    init(track: MPTracking? = nil, action: @escaping (Bool) -> Bool?) {
+        self.tracking = track
         self.action = action
         super.init( frame: .zero )
 
@@ -119,8 +119,8 @@ class MPToggleButton: UIView {
     }
 
     func track() {
-        if let identifier = self.identifier {
-            MPTracker.shared.event( named: identifier, [ "value": self.isSelected ] )
+        if let tracking = self.tracking {
+            MPTracker.shared.event( track: tracking.with( parameters: [ "value": self.isSelected ] ) )
         }
     }
 

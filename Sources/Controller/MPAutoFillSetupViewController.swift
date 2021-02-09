@@ -8,7 +8,7 @@ import UIKit
 import AuthenticationServices
 
 class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailViewController, /*MPUserViewController*/MPUserObserver {
-    var isCloseHidden:       Bool = true
+    var isCloseHidden: Bool = true
 
     var autoFillState: ASCredentialIdentityStoreState? {
         didSet {
@@ -48,7 +48,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
                             \(MPKeychainKeyFactory.factor) is the quickest way to unlock your passwords.
                             """
                         } ),
-                        ToggleItem( identifier: "user >biometricLock",
+                        ToggleItem( track: .subject( "autofill_setup", action: "biometricLock" ),
                                     icon: { _ in MPKeychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon },
                                     value: { $0.biometricLock }, update: { $0.biometricLock = $1 } )
                                 //            MPKeychainKeyFactory.factor != .biometricNone
@@ -77,7 +77,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
                             ② Turn on ⦗AutoFill Passwords⦘ for ⦗\(productName)⦘
                             """
                         } ),
-                        ToggleItem( identifier: "autofill >enable",
+                        ToggleItem( track: .subject( "autofill_setup", action: "settings" ),
                                     icon: { _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "" ): .icon( "" ) },
                                     value: { _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
                             URL( string: UIApplication.openSettingsURLString ).flatMap { UIApplication.shared.open( $0 ) }
@@ -92,7 +92,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
                             Enable auto-filling \($0.fullName)'s services from other apps.
                             """
                         } ),
-                        ToggleItem<MPUser>( identifier: "user >autofill", icon: { _ in .icon( "" ) },
+                        ToggleItem<MPUser>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "" ) },
                                             value: { $0.autofill }, update: { $0.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                                 .addBehaviour( PremiumTapBehaviour() )
@@ -133,7 +133,8 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
 
         if self.autoFillState?.isEnabled ?? false && self.model.autofill {
             self.hide {
-                MPAlert( title: "AutoFill Enabled", message: "\(self.model.fullName)'s services are now available from AutoFill." )
+                MPAlert( title: "AutoFill Enabled",
+                         message: "\(self.model.fullName)'s services are now available from AutoFill." )
                         .show()
             }
         }
@@ -143,7 +144,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
 
     class LoginTypeItem: PickerItem<MPUser, MPResultType, MPResultTypeCell> {
         init() {
-            super.init( identifier: "user >loginType",
+            super.init( track: .subject( "autofill_setup", action: "loginType" ),
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -164,10 +165,10 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
             super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
                         update: { user, login in
-                            MPTracker.shared.event( named: "user >login", [
+                            MPTracker.shared.event( track: .subject( "autofill_setup", action: "login", [
                                 "type": "\(user.loginType)",
                                 "entropy": MPAttacker.entropy( string: login ) ?? 0,
-                            ] )
+                            ] ) )
 
                             user.state( keyPurpose: .identification, resultParam: login ).token.then {
                                 do { user.loginState = try $0.get() }

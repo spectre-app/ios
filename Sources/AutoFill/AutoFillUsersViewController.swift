@@ -10,7 +10,8 @@ import UIKit
 import AuthenticationServices
 
 class AutoFillUsersViewController: BasicUsersViewController {
-    private lazy var cancelButton = MPButton( identifier: "autofill #cancel", image: .icon( "" ), background: false ) { _, _ in
+    private lazy var cancelButton = MPButton( track: .subject( "users", action: "cancel"),
+                                              image: .icon( "" ), background: false ) { _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Cancel button pressed." ) )
     }
 

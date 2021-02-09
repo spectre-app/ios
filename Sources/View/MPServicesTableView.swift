@@ -88,20 +88,20 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
             // Add "new service" result if there is a query and no exact result
             if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
-                elementsBySection.append([ using( self.servicesDataSource.newItem ) {
+                elementsBySection.append( [ using( self.servicesDataSource.newItem ) {
                     $0?.service.serviceName = query
                     $0?.query = query
                 } ??
                         using( ServiceItem( service: MPService( user: user, serviceName: query ), query: query ) ) {
                             self.servicesDataSource.newItem = $0
-                        } ])
+                        } ] )
             }
             // Add "new service" result if there is a preferred service and no preferred results
             else if let preferredService = self.preferredService?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
-                elementsBySection.insert([ self.servicesDataSource.preferredItem ??
-                        using( ServiceItem( service: MPService( user: user, serviceName: preferredService ), preferred: true) ) {
+                elementsBySection.insert( [ self.servicesDataSource.preferredItem ??
+                        using( ServiceItem( service: MPService( user: user, serviceName: preferredService ), preferred: true ) ) {
                             self.servicesDataSource.preferredItem = $0
-                        } ], at: 0)
+                        } ], at: 0 )
             }
             else {
                 elementsBySection.append( [] )
@@ -140,12 +140,14 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in MPServicePreviewController( service: service ) }, actionProvider: { _, configuration in
                 UIMenu( title: service.serviceName, children: [
-                    UIAction( title: "Delete", image: .icon( "" ), identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
+                    UIAction( title: "Delete", image: .icon( "" ),
+                              identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
                         configuration.action = action
                         service.user.services.removeAll { $0 === service }
                     }
                 ] + self.serviceActions.filter( { $0.appearance.contains( .menu ) } ).map { serviceAction in
-                    UIAction( title: serviceAction.title, image: .icon( serviceAction.icon ), identifier: UIAction.Identifier( serviceAction.identifier ) ) { action in
+                    UIAction( title: serviceAction.title, image: .icon( serviceAction.icon ),
+                              identifier: serviceAction.tracking.flatMap { UIAction.Identifier( $0.action ) } ) { action in
                         configuration.action = action
                         serviceAction.action( service, nil, .menu )
                     }
@@ -159,7 +161,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        configuration.event = MPTracker.shared.begin( named: "service #menu" )
+        configuration.event = MPTracker.shared.begin( track: .subject( "services.service", action: "menu" ) )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.preview.color?.with( alpha: .long )
@@ -314,7 +316,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
         override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
             if let service = self.element( at: indexPath )?.service, editingStyle == .delete {
-                MPTracker.shared.event( named: "service #delete" )
+                MPTracker.shared.event( track: .subject( "services.service", action: "delete" ) )
 
                 service.user.services.removeAll { $0 === service }
             }
@@ -362,8 +364,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             }
         }
         private let backgroundImage = MPBackgroundView( mode: .clear )
-        private let modeButton      = MPButton( identifier: "services.service #mode", image: .icon( "" ), background: false )
-        private let newButton       = MPButton( identifier: "services.service #add", image: .icon( "" ), background: false )
+        private let modeButton      = MPButton( track: .subject( "services.service", action: "mode" ),
+                                                image: .icon( "" ), background: false )
+        private let newButton       = MPButton( track: .subject( "services.service", action: "add" ),
+                                                image: .icon( "" ), background: false )
         private let actionsStack    = UIStackView()
         private let selectionView   = UIView()
         private let resultLabel     = UITextField()
@@ -491,7 +495,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
             self.actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
             self.servicesView?.serviceActions.filter( { $0.appearance.contains( .cell ) } ).forEach { serviceAction in
-                self.actionsStack.addArrangedSubview( MPButton( identifier: serviceAction.identifier, image: .icon( serviceAction.icon ), background: false ) { [unowned self] _, _ in
+                self.actionsStack.addArrangedSubview( MPButton( track: serviceAction.tracking, image: .icon( serviceAction.icon ), background: false ) { [unowned self] _, _ in
                     if let service = self.service {
                         serviceAction.action( service, self.mode, .cell )
                     }
@@ -649,7 +653,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
 
         func willDisplay() {
-            MPTracker.shared.event( named: "liefste" )
+            MPTracker.shared.event( track: .subject( "services", action: "liefste" ) )
 
             self.player = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
             self.player?.play()
@@ -671,7 +675,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     }
 
     struct ServiceAction {
-        let identifier: String
+        let tracking:   MPTracking?
         let title:      String
         let icon:       String
         let appearance: [Appearance]

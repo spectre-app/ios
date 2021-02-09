@@ -35,7 +35,7 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
 
     class FeedbackItem: ButtonItem<Model> {
         init() {
-            super.init( identifier: "logbook #feedback",
+            super.init( track: .subject( "logbook", action: "feedback" ),
                         value: { _ in (label: "Let's Talk 🅿︎", image: nil) },
                         caption: { _ in
                             """
@@ -56,7 +56,7 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
 
     class CrashItem: ButtonItem<Model> {
         init() {
-            super.init( identifier: "logbook #crash",
+            super.init( track: .subject( "logbook", action: "crash" ),
                         value: { _ in (label: "Force Crash 🅳", image: nil) },
                         caption: { _ in
                             """
@@ -72,7 +72,7 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
 
     class LogLevelPicker: PickerItem<Model, MPLogLevel, LogLevelPicker.Cell> {
         init() {
-            super.init( identifier: "logbook >level", title: "Logbook",
+            super.init( track: .subject( "logbook", action: "level" ), title: "Logbook",
                         values: { _ in MPLogLevel.allCases.reversed() },
                         value: { $0.logbookLevel }, update: { $0.logbookLevel = $1 },
                         caption: { _ in

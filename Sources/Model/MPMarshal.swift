@@ -36,7 +36,7 @@ class MPMarshal: Observable, Updatable {
     }
 
     public func save(user: MPUser, format: MPMarshalFormat = .default, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
-        let saveEvent = MPTracker.shared.begin( named: "marshal #save" )
+        let saveEvent = MPTracker.shared.begin( track: .subject( "user", action: "save" ) )
 
         return self.marshalQueue.promising {
             guard let documentURL = self.url( for: user, in: directory, format: format )
@@ -76,7 +76,7 @@ class MPMarshal: Observable, Updatable {
     }
 
     public func export(user: MPUser, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
-        let exportEvent = MPTracker.shared.begin( named: "marshal #export" )
+        let exportEvent = MPTracker.shared.begin( track: .subject( "user", action: "export" ) )
 
         return DispatchQueue.mpw.promising {
             guard let keyFactory = user.masterKeyFactory
@@ -141,7 +141,7 @@ class MPMarshal: Observable, Updatable {
     }
 
     public func `import`(data: Data, viewController: UIViewController) -> Promise<Void> {
-        let importEvent = MPTracker.shared.begin( named: "marshal #importData" )
+        let importEvent = MPTracker.shared.begin( track: .subject( "user", action: "importData" ) )
 
         return DispatchQueue.mpw.promising {
             let importingFile = try UserFile( data: data )
@@ -167,7 +167,7 @@ class MPMarshal: Observable, Updatable {
     // MARK: --- Private ---
 
     private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile, viewController: UIViewController) -> Promise<Void> {
-        let importEvent = MPTracker.shared.begin( named: "marshal #importIntoFile" )
+        let importEvent = MPTracker.shared.begin( track: .subject( "user", action: "importIntoFile" ) )
 
         return DispatchQueue.main.promising {
             let promise = Promise<Void>()
@@ -190,7 +190,7 @@ class MPMarshal: Observable, Updatable {
                 promise.finish( .failure( MPError.cancelled ) )
             } )
             alertController.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
-                let replaceEvent = MPTracker.shared.begin( named: "marshal.importIntoFile #replace" )
+                let replaceEvent = MPTracker.shared.begin( track: .subject( "user.importIntoFile", action: "replace" ) )
 
                 guard let authentication = passwordField.authenticate( { keyFactory in
                     importingFile.authenticate( using: keyFactory )
@@ -238,7 +238,7 @@ class MPMarshal: Observable, Updatable {
                 } )
             } )
             alertController.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                let mergeEvent = MPTracker.shared.begin( named: "marshal.importIntoFile #merge" )
+                let mergeEvent = MPTracker.shared.begin( track: .subject( "user.importIntoFile", action: "merge" ) )
 
                 guard let authentication = passwordField.authenticate( { keyFactory in
                     Promise( .success(
@@ -268,7 +268,7 @@ class MPMarshal: Observable, Updatable {
                                 }
                         }
                         else if let importedUser = importedUser {
-                            let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockUser" )
+                            let unlockEvent = MPTracker.shared.begin( track: .subject( "user.importIntoFile.merge", action: "unlockUser" ) )
 
                             let alertController = UIAlertController( title: "Unlock Existing User", message:
                             """
@@ -322,7 +322,7 @@ class MPMarshal: Observable, Updatable {
                             viewController.present( alertController, animated: true )
                         }
                         else if let existedUser = existedUser {
-                            let unlockEvent = MPTracker.shared.begin( named: "marshal.importIntoFile.merge #unlockImport" )
+                            let unlockEvent = MPTracker.shared.begin( track: .subject( "user.importIntoFile.merge", action: "unlockImport" ) )
 
                             let alertController = UIAlertController( title: "Unlock Import", message:
                             """
@@ -392,7 +392,7 @@ class MPMarshal: Observable, Updatable {
     }
 
     private func `import`(from importedUser: MPUser, into existedUser: MPUser, viewController: UIViewController) -> Promise<Void> {
-        let importEvent = MPTracker.shared.begin( named: "marshal #importIntoUser" )
+        let importEvent = MPTracker.shared.begin( track: .subject( "user", action: "importIntoUser" ) )
 
         let spinner = MPAlert( title: "Merging", message: existedUser.description,
                                content: UIActivityIndicatorView( style: .whiteLarge ) )
@@ -458,7 +458,7 @@ class MPMarshal: Observable, Updatable {
     }
 
     private func `import`(data: Data, from importingFile: UserFile, into documentURL: URL, viewController: UIViewController) -> Promise<Void> {
-        let importEvent = MPTracker.shared.begin( named: "marshal #importIntoURL" )
+        let importEvent = MPTracker.shared.begin( track: .subject( "user", action: "importIntoURL" ) )
 
         let spinner = MPAlert( title: "Replacing", message: documentURL.lastPathComponent,
                                content: UIActivityIndicatorView( style: .whiteLarge ) )

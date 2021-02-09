@@ -124,7 +124,9 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
         // MARK: --- Types ---
 
         class Cell: UITableViewCell {
-            private let buyButton    = MPButton( identifier: "premium.subscription #subscribe", title: "Subscribe" )
+            private lazy var buyButton = MPButton( track: .subject( "premium.subscription", action: "subscribe",
+                                                                    [ "product": self.product?.productIdentifier ?? "n/a" ] ),
+                                                   title: "Subscribe" )
             private let captionLabel = UILabel()
 
             var product: SKProduct? {
@@ -210,7 +212,8 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     class OverrideItem: ToggleItem<Void>, InAppFeatureObserver {
         init() {
-            super.init( identifier: "premium >override", title: "Subscribed 🅳", icon: { _ in .icon( "" ) },
+            super.init( track: .subject( "premium", action: "override" ),
+                        title: "Subscribed 🅳", icon: { _ in .icon( "" ) },
                         value: { _ in InAppFeature.premium.enabled() }, update: { InAppFeature.premium.enabled( $1 ) },
                         caption: { _ in
                             """

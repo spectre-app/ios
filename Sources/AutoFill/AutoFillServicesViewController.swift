@@ -41,13 +41,13 @@ class AutoFillServicesViewController: BasicServicesViewController {
         }
         self.servicesTableView.preferredService = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
         self.servicesTableView.serviceActions = [
-            .init( identifier: "", title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
-            .init( identifier: "services.service #service_fill", title: "Fill Login", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
+            .init( tracking: nil, title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
+            .init( tracking: .subject( "services.service", action: "fill" ), title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
                 switch appearance {
                     case .cell:
-                        self.completeRequest( service: service, identifier: "service>cell" )
+                        self.completeRequest( service: service, trackingFrom: "service>cell" )
                     case .menu:
-                        self.completeRequest( service: service, identifier: "service>cell>menu" )
+                        self.completeRequest( service: service, trackingFrom: "service>cell>menu" )
                 }
             },
         ]
@@ -55,8 +55,8 @@ class AutoFillServicesViewController: BasicServicesViewController {
 
     // MARK: --- Private ---
 
-    func completeRequest(service: MPService, identifier: String) {
-        let event = MPTracker.shared.begin( named: "service #copy" )
+    func completeRequest(service: MPService, trackingFrom: String) {
+        let event = MPTracker.shared.begin( track: .subject( "service", action: "use" ) )
         if let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext {
             service.result( keyPurpose: .identification ).token.and( service.result( keyPurpose: .authentication ).token ).then {
                 do {
@@ -64,7 +64,11 @@ class AutoFillServicesViewController: BasicServicesViewController {
                     service.use()
                     event.end(
                             [ "result": $0.name,
-                              "from": identifier,
+                              "from": trackingFrom,
+                              "action": "fill",
+                              "counter": "\(service.counter)",
+                              "purpose": "\(MPKeyPurpose.identification)",
+                              "type": "\(service.resultType)",
                               "algorithm": "\(service.algorithm)",
                               "entropy": MPAttacker.entropy( type: service.resultType ) ?? MPAttacker.entropy( string: password ) ?? 0,
                             ] )
@@ -81,7 +85,7 @@ class AutoFillServicesViewController: BasicServicesViewController {
                 }
                 catch {
                     mperror( title: "Couldn't compute service result.", error: error )
-                    event.end( [ "result": $0.name, "from": identifier, "error": error.localizedDescription ] )
+                    event.end( [ "result": $0.name, "from": trackingFrom, "error": error.localizedDescription ] )
                 }
             }
         }

@@ -6,7 +6,7 @@
 import UIKit
 
 class MPServicesViewController: BasicServicesViewController {
-    private let userButton  = MPButton( identifier: "services #user_settings" )
+    private let userButton  = MPButton( track: .subject( "services", action: "user" ) )
     private let detailsHost = MPDetailsHostController()
 
     override var user: MPUser? {
@@ -32,17 +32,21 @@ class MPServicesViewController: BasicServicesViewController {
         }
         self.searchField.rightView = self.userButton
         self.servicesTableView.serviceActions = [
-            .init( identifier: "services.service #service_settings", title: "Details", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
+            .init( tracking: .subject( "services.service", action: "settings" ),
+                   title: "Details", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
                 self.detailsHost.show( MPServiceDetailsViewController( model: service ), sender: self )
             },
-            .init( identifier: "services.service #service_copy", title: "Copy", icon: "", appearance: [ .cell ] ) { service, mode, appearance in
-                service.result( keyPurpose: mode! ).copy( fromView: self.view, identifier: "service>cell" )
+            .init( tracking: .subject( "services.service", action: "copy" ),
+                   title: "Copy", icon: "", appearance: [ .cell ] ) { service, mode, appearance in
+                service.result( keyPurpose: mode! ).copy( fromView: self.view, trackingFrom: "service>cell" )
             },
-            .init( identifier: "services.service #service_copy_login", title: "Copy Login", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
-                service.result( keyPurpose: .identification ).copy( fromView: self.view, identifier: "service>cell>menu" )
+            .init( tracking: .subject( "services.service", action: "copy" ),
+                   title: "Copy Login", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
+                service.result( keyPurpose: .identification ).copy( fromView: self.view, trackingFrom: "service>cell>menu" )
             },
-            .init( identifier: "services.service #service_copy_password", title: "Copy Password", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
-                service.result( keyPurpose: .authentication ).copy( fromView: self.view, identifier: "service>cell>menu" )
+            .init( tracking: .subject( "services.service", action: "copy" ),
+                   title: "Copy Password", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
+                service.result( keyPurpose: .authentication ).copy( fromView: self.view, trackingFrom: "service>cell>menu" )
             },
         ]
 

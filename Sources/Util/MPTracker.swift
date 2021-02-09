@@ -12,6 +12,24 @@ import Updraft
 import Countly
 #endif
 
+struct MPTracking {
+    let subject:    String
+    let action:     String
+    let parameters: () -> [String: Any]
+
+    static func subject(_ subject: String, action: String, _ parameters: @autoclosure @escaping () -> [String: Any] = [:]) -> MPTracking {
+        MPTracking( subject: subject, action: action, parameters: parameters )
+    }
+
+    func scoped(_ scope: String) -> MPTracking {
+        MPTracking( subject: "\(scope)::\(self.subject)", action: self.action, parameters: self.parameters )
+    }
+
+    func with(parameters: @autoclosure @escaping () -> [String: Any] = [:]) -> MPTracking {
+        MPTracking( subject: self.subject, action: self.action, parameters: { self.parameters().merging( parameters() ) } )
+    }
+}
+
 class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
 
@@ -95,27 +113,16 @@ class MPTracker: MPConfigObserver {
             guard let logEvent = logPointer?.pointee, logEvent.level <= .info
             else { return false }
 
-            var sentryLevel = SentryLevel.info
-            switch logEvent.level {
-                case .trace, .debug:
-                    sentryLevel = .debug
-                case .info:
-                    sentryLevel = .info
-                case .warning:
-                    sentryLevel = .warning
-                case .error:
-                    sentryLevel = .error
-                case .fatal:
-                    sentryLevel = .fatal
-                @unknown default: ()
-            }
-            let tags = [ "file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
-                         "line": "\(logEvent.line)",
-                         "function": String.valid( logEvent.function ) ?? "-" ]
+            let level: SentryLevel = map( logEvent.level, [
+                .trace: .debug, .debug: .debug, .info: .info, .warning: .warning, .error: .error, .fatal: .fatal ] ) ?? .debug
+            let tags               =
+                    [ "file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
+                      "line": "\(logEvent.line)",
+                      "function": String.valid( logEvent.function ) ?? "-" ]
 
             if logEvent.level <= .error {
-                let event = Event( level: sentryLevel )
-                event.logger = "mpw"
+                let event = Event( level: level )
+                event.logger = "api"
                 event.message = SentryMessage( formatted: String.valid( logEvent.formatter( logPointer ) ) ?? "-" )
                 event.message.message = .valid( logEvent.format )
                 event.timestamp = Date( timeIntervalSince1970: TimeInterval( logEvent.occurrence ) )
@@ -123,7 +130,7 @@ class MPTracker: MPConfigObserver {
                 SentrySDK.capture( event: event )
             }
             else {
-                let breadcrumb = Breadcrumb( level: sentryLevel, category: "mpw" )
+                let breadcrumb = Breadcrumb( level: level, category: "api" )
                 breadcrumb.type = "log"
                 breadcrumb.message = .valid( logEvent.format )
                 breadcrumb.timestamp = Date( timeIntervalSince1970: TimeInterval( logEvent.occurrence ) )
@@ -138,10 +145,10 @@ class MPTracker: MPConfigObserver {
         appConfig.observers.register( observer: self ).didChangeConfig()
 
         self.event( file: file, line: line, function: function, dso: dso,
-                    named: "\(productName) #launch", [ "version": productVersion, "build": productBuild ] )
+                    track: .subject( productName, action: "startup", [ "version": productVersion, "build": productBuild ] ) )
     }
 
-    func identifier(for named: String, attributes: [CFString: Any] = [:]) -> UUID {
+    private func identifier(for named: String, attributes: [CFString: Any] = [:]) -> UUID {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: "identifier",
@@ -189,12 +196,12 @@ class MPTracker: MPConfigObserver {
             Countly.user().custom = userConfig as NSDictionary
             #endif
 
-            self.event( named: "user #login", userConfig )
+            self.event( track: .subject( "user", action: "signed_in", userConfig ) )
         }
     }
 
     func logout() {
-        self.event( named: "user #logout" )
+        self.event( track: .subject( "user", action: "signed_out" ) )
 
         SentrySDK.setUser( nil )
         #if APP_CONTAINER
@@ -208,15 +215,24 @@ class MPTracker: MPConfigObserver {
     }
 
     func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               named name: String) -> TimedEvent {
-        dbg( file: file, line: line, function: function, dso: dso, "> %@", name )
-
-        return TimedEvent( named: name, start: Date() )
+               track: MPTracking) -> TimedEvent {
+        dbg( file: file, line: line, function: function, dso: dso, "> %@ #%@", track.subject, track.action )
+        return TimedEvent( track: track, start: Date() )
     }
 
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
+               track: MPTracking) {
+        self.event( file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters() )
+    }
+
+    private func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                       named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
         var eventParameters = parameters
+        #if APP_CONTAINER
+        eventParameters["using"] = "app"
+        #elseif APP_AUTOFILL
+        eventParameters["using"] = "autofill"
+        #endif
 
         var duration = TimeInterval( 0 )
         if let timing = timing {
@@ -304,13 +320,13 @@ class MPTracker: MPConfigObserver {
         }
 
         func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   event: String) -> TimedEvent {
-            self.tracker.begin( file: file, line: line, function: function, dso: dso, named: "\(self.name) #\(event)" )
+                   track: MPTracking) -> TimedEvent {
+            self.tracker.begin( file: file, line: line, function: function, dso: dso, track: track.scoped( self.name ) )
         }
 
         func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   event: String, _ parameters: [String: Any] = [:]) {
-            self.tracker.event( file: file, line: line, function: function, dso: dso, named: "\(self.name) #\(event)", parameters )
+                   track: MPTracking) {
+            self.tracker.event( file: file, line: line, function: function, dso: dso, track: track.scoped( self.name ) )
         }
 
         func dismiss(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
@@ -318,13 +334,13 @@ class MPTracker: MPConfigObserver {
     }
 
     class TimedEvent {
-        let name:  String
-        let start: Date
+        let tracking: MPTracking
+        let start:    Date
 
         private var ended = false
 
-        init(named name: String, start: Date) {
-            self.name = name
+        init(track: MPTracking, start: Date) {
+            self.tracking = track
             self.start = start
         }
 
@@ -337,7 +353,9 @@ class MPTracker: MPConfigObserver {
             guard !self.ended
             else { return }
 
-            MPTracker.shared.event( file: file, line: line, function: function, dso: dso, named: self.name, parameters, timing: self )
+            MPTracker.shared.event( file: file, line: line, function: function, dso: dso,
+                                    named: "\(self.tracking.subject) #\(self.tracking.action)",
+                                    self.tracking.parameters().merging( parameters ), timing: self )
             self.ended = true
         }
 
@@ -345,7 +363,7 @@ class MPTracker: MPConfigObserver {
             guard !self.ended
             else { return }
 
-            dbg( file: file, line: line, function: function, dso: dso, "X %@", self.name )
+            dbg( file: file, line: line, function: function, dso: dso, "> %@ X%@", self.tracking.subject, self.tracking.action )
             self.ended = true
         }
     }

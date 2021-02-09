@@ -6,7 +6,7 @@
 import UIKit
 
 class MPButton: MPEffectView {
-    var identifier:      String?
+    var tracking:        MPTracking?
     var action:          ((UIEvent, MPButton) -> Void)?
     var tapEffect = true
     var image:           UIImage? {
@@ -42,10 +42,10 @@ class MPButton: MPEffectView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(identifier: String? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
+    init(track: MPTracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
          border: CGFloat = 1, background: Bool = true, round: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
          action: ((UIEvent, MPButton) -> Void)? = nil) {
-        self.identifier = identifier
+        self.tracking = track
         self.action = action
         super.init( border: border, background: background, round: round, rounding: rounding, dims: false )
 
@@ -89,8 +89,8 @@ class MPButton: MPEffectView {
     }
 
     func track() {
-        if let identifier = self.identifier {
-            MPTracker.shared.event( named: identifier )
+        if let tracking = self.tracking {
+            MPTracker.shared.event( track: tracking )
         }
     }
 
@@ -131,8 +131,8 @@ class MPTimedButton: MPButton {
     var timing: MPTracker.TimedEvent?
 
     override func track() {
-        if let identifier = self.identifier {
-            self.timing = MPTracker.shared.begin( named: identifier )
+        if let tracking = self.tracking {
+            self.timing = MPTracker.shared.begin( track: tracking )
         }
     }
 }
