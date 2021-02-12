@@ -396,7 +396,6 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             // - View
             self.isOpaque = false
             self.clipsToBounds = true
-            self => \.backgroundColor => Theme.current.color.backdrop
 
             self.selectedBackgroundView = self.backgroundImage
 
@@ -548,12 +547,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.updateTask.cancel()
 
             DispatchQueue.main.perform {
-                self.backgroundImage.color = self.service?.preview.color
+                self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
+
+                self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.service?.preview.color?.hue ) )
                 self.backgroundImage.image = self.service?.preview.image
-                self.backgroundImage => \.backgroundColor => Theme.current.color.selection
-                        .transform { [weak self] in $0?.with( hue: self?.service?.preview.color?.hue ) }
-                self => \.backgroundColor => Theme.current.color.shadow
-                        .transform { [weak self] in self?.result?.isPreferred ?? false ? $0: .clear }
+                self.backgroundImage.imageColor = self.service?.preview.color
 
                 let isNew = self.service?.isNew ?? false
                 if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {

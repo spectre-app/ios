@@ -6,7 +6,7 @@
 import UIKit
 
 class MPBackgroundView: UIView, ThemeObserver {
-    var mode      = Mode.backdrop {
+    var mode = Mode.backdrop {
         willSet {
             (self => \.backgroundColor).unbind()
             self.gradientColor = nil
@@ -35,7 +35,7 @@ class MPBackgroundView: UIView, ThemeObserver {
             }
         }
     }
-    var color: UIColor? {
+    var imageColor: UIColor? {
         get {
             self.imageView.backgroundColor
         }
@@ -43,7 +43,7 @@ class MPBackgroundView: UIView, ThemeObserver {
             self.imageView.backgroundColor = newValue
         }
     }
-    var image: UIImage? {
+    var image:      UIImage? {
         get {
             self.imageView.image
         }
@@ -51,29 +51,37 @@ class MPBackgroundView: UIView, ThemeObserver {
             self.imageView.image = newValue
         }
     }
-    var imageView = UIImageView()
-    private var  imageMask      = CAGradientLayer()
-    private var  gradientColor:   CGGradient? {
+
+    let imageView = UIImageView()
+    let imageTint = UIView()
+    override var backgroundColor: UIColor? {
+        didSet {
+            self.imageTint.backgroundColor = self.backgroundColor.flatMap { $0.alpha == .on ? $0.with( alpha: .long ): .clear }
+        }
+    }
+    private var imageMask      = CAGradientLayer()
+    private var gradientColor:        CGGradient? {
         didSet {
             if oldValue != self.gradientColor {
                 self.setNeedsDisplay()
             }
         }
     }
-    private var  gradientPoint  = CGPoint() {
+    private var gradientPoint  = CGPoint() {
         didSet {
             if oldValue != self.gradientPoint {
                 self.setNeedsDisplay()
             }
         }
     }
-    private var  gradientRadius = CGFloat( 0 ) {
+    private var gradientRadius = CGFloat( 0 ) {
         didSet {
             if oldValue != self.gradientRadius {
                 self.setNeedsDisplay()
             }
         }
     }
+    private var imageViewObservation: NSKeyValueObservation?
 
     // MARK: --- Life ---
 
@@ -82,18 +90,25 @@ class MPBackgroundView: UIView, ThemeObserver {
 
         // - View
         self.imageView.contentMode = .scaleAspectFill
+        self.imageView.layer.compositingFilter = "luminosityBlendMode"
         self.imageView.layer.mask = self.imageMask
         self.imageMask.needsDisplayOnBoundsChange = true
         self.imageMask.colors = [
+            UIColor.black.with( alpha: .long ).cgColor,
             UIColor.black.with( alpha: .short ).cgColor,
-            UIColor.black.with( alpha: 0.05 ).cgColor,
+            UIColor.black.with( alpha: .short * .short ).cgColor,
             UIColor.clear.cgColor ]
+        self.imageViewObservation = self.imageView.observe( \.bounds ) { _, _ in self.imageMask.frame = self.imageView.bounds }
 
         // - Hierarchy
-        self.addSubview( self.imageView )
+        self.addSubview( self.imageTint )
+        self.imageTint.addSubview( self.imageView )
 
         // - Layout
         LayoutConfiguration( view: self.imageView )
+                .constrain()
+                .activate()
+        LayoutConfiguration( view: self.imageTint )
                 .constrain( anchors: .topBox )
                 .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .constrainTo { $1.heightAnchor.constraint( equalToConstant: 200 ).with( priority: .defaultHigh ) }
@@ -130,8 +145,6 @@ class MPBackgroundView: UIView, ThemeObserver {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-
-        self.imageMask.frame = self.imageView.bounds
 
         if case .gradient = self.mode {
             self.gradientPoint = self.bounds.top

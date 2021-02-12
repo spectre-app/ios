@@ -107,8 +107,10 @@ class MPItemsViewController<M>: MPViewController {
         }
         else {
             self.backgroundView.mode = .panel
+            self.view.tintColor = nil
         }
         self.backgroundView.image = self.image
+        self.backgroundView.imageColor = self.color
         self.backgroundView.layoutMargins.top = self.image == nil ? 40: 108
 
         self.items.forEach { $0.update() }
