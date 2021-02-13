@@ -156,6 +156,80 @@ class InAppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObser
     }
 }
 
+class AppStore: NSObject, SKStoreProductViewControllerDelegate {
+    public static let shared = AppStore()
+
+    private let countryCode3to2
+            = [ "AFG": "AF", "ALB": "AL", "DZA": "DZ", "AND": "AD", "AGO": "AO", "AIA": "AI", "ATG": "AG", "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "AZE": "AZ", "BHS": "BS", "BHR": "BH", "BGD": "BD", "BRB": "BB", "BLR": "BY", "BEL": "BE", "BLZ": "BZ", "BEN": "BJ", "BMU": "BM", "BTN": "BT", "BOL": "BO", "BIH": "BA", "BWA": "BW", "BRA": "BR", "BRN": "BN", "BGR": "BG", "BFA": "BF", "KHM": "KH", "CMR": "CM", "CAN": "CA", "CPV": "CV", "CYM": "KY", "CAF": "CF", "TCD": "TD", "CHL": "CL", "CHN": "CN", "COL": "CO", "COG": "CG", "COD": "CD", "CRI": "CR", "CIV": "CI", "HRV": "HR", "CYP": "CY", "CZE": "CZ", "DNK": "DK", "DMA": "DM", "DOM": "DO", "ECU": "EC", "EGY": "EG", "SLV": "SV", "EST": "EE", "ETH": "ET", "FJI": "FJ", "FIN": "FI", "FRA": "FR", "GAB": "GA", "GMB": "GM", "GEO": "GE", "DEU": "DE", "GHA": "GH", "GRC": "GR", "GRD": "GD", "GTM": "GT", "GIN": "GN", "GNB": "GW", "GUY": "GY", "HND": "HN", "HKG": "HK", "HUN": "HU", "ISL": "IS", "IND": "IN", "IDN": "ID", "IRQ": "IQ", "IRL": "IE", "ISR": "IL", "ITA": "IT", "JAM": "JM", "JPN": "JP", "JOR": "JO", "KAZ": "KZ", "KEN": "KE", "KOR": "KR", "KWT": "KW", "KGZ": "KG", "LAO": "LA", "LVA": "LV", "LBN": "LB", "LBR": "LR", "LBY": "LY", "LIE": "LI", "LTU": "LT", "LUX": "LU", "MAC": "MO", "MKD": "MK", "MDG": "MG", "MWI": "MW", "MYS": "MY", "MDV": "MV", "MLI": "ML", "MLT": "MT", "MRT": "MR", "MUS": "MU", "MEX": "MX", "FSM": "FM", "MDA": "MD", "MCO": "MC", "MNG": "MN", "MNE": "ME", "MSR": "MS", "MAR": "MA", "MOZ": "MZ", "MMR": "MM", "NAM": "NA", "NRU": "NR", "NPL": "NP", "NLD": "NL", "NZL": "NZ", "NIC": "NI", "NER": "NE", "NGA": "NG", "NOR": "NO", "OMN": "OM", "PAK": "PK", "PLW": "PW", "PSE": "PS", "PAN": "PA", "PNG": "PG", "PRY": "PY", "PER": "PE", "PHL": "PH", "POL": "PL", "PRT": "PT", "QAT": "QA", "ROU": "RO", "RUS": "RU", "RWA": "RW", "KNA": "KN", "LCA": "LC", "VCT": "VC", "WSM": "WS", "STP": "ST", "SAU": "SA", "SEN": "SN", "SRB": "RS", "SYC": "SC", "SLE": "SL", "SGP": "SG", "SVK": "SK", "SVN": "SI", "SLB": "SB", "ZAF": "ZA", "ESP": "ES", "LKA": "LK", "SUR": "SR", "SWZ": "SZ", "SWE": "SE", "CHE": "CH", "TWN": "TW", "TJK": "TJ", "TZA": "TZ", "THA": "TH", "TON": "TO", "TTO": "TT", "TUN": "TN", "TUR": "TR", "TKM": "TM", "TCA": "TC", "UGA": "UG", "UKR": "UA", "ARE": "AE", "GBR": "GB", "USA": "US", "URY": "UY", "UZB": "UZ", "VUT": "VU", "VEN": "VE", "VNM": "VN", "VGB": "VG", "YEM": "YE", "ZMB": "ZM", "ZWE": "ZW" ]
+
+    func isUpToDate(appleID: Int? = nil, buildVersion: String? = nil) -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
+        var countryCode2 = "US"
+        if #available( iOS 13.0, * ) {
+            if let countryCode3 = SKPaymentQueue.default().storefront?.countryCode {
+                countryCode2 = self.countryCode3to2[countryCode3] ?? countryCode2
+            }
+        }
+
+        let searchURLString = "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\(countryCode2)&limit=1"
+        guard let searchURL = URL( string: searchURLString )
+        else { return Promise( .failure( MPError.internal( cause: "Couldn't resolve store URL", details: searchURLString ) ) ) }
+
+        return URLSession.required.promise( with: URLRequest( url: searchURL ) ).promise {
+            if let error = (try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any])?["errorMessage"] as? String {
+                throw MPError.issue( title: "iTunes store lookup issue.", details: error )
+            }
+            guard let metadata = (((try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any])?["results"] as? [Any])?.first as? [String: Any])
+            else { throw MPError.state( title: "Missing iTunes application metadata." ) }
+            guard let storeVersion = metadata["version"] as? String
+            else { throw MPError.state( title: "Missing version in iTunes metadata." ) }
+
+            let buildVersion = buildVersion ?? productVersion
+            let buildComponents = buildVersion.components( separatedBy: "." )
+            let storeComponents = storeVersion.components( separatedBy: "." )
+            for c in 0..<max( storeComponents.count, buildComponents.count ) {
+                if c < storeComponents.count && c < buildComponents.count {
+                    let storeComponent = (storeComponents[c] as NSString).integerValue
+                    let buildComponent = (buildComponents[c] as NSString).integerValue
+                    if storeComponent > buildComponent {
+                        // Store version component higher than build, build is outdated.
+                        return (upToDate: false, buildVersion: buildVersion, storeVersion: storeVersion)
+                    }
+                    else if storeComponent < buildComponent {
+                        // Store version component lower than build, build is more recent.
+                        return (upToDate: true, buildVersion: buildVersion, storeVersion: storeVersion)
+                    }
+                }
+                else if storeComponents.count > buildComponents.count {
+                    // Store version has more components than build and prior components were identical, build outdated.
+                    return (upToDate: false, buildVersion: buildVersion, storeVersion: storeVersion)
+                }
+                else {
+                    return (upToDate: true, buildVersion: buildVersion, storeVersion: storeVersion)
+                }
+            }
+
+            return (upToDate: true, buildVersion: buildVersion, storeVersion: storeVersion)
+        }
+    }
+
+    func present(appleID: Int? = nil, in viewController: UIViewController) {
+        let controller = SKStoreProductViewController()
+        controller.delegate = self
+        controller.loadProduct( withParameters: [ SKStoreProductParameterITunesItemIdentifier: appleID ?? productAppleID ] ) { success, error in
+            if !success || error != nil {
+                wrn( "Couldn't load store controller: %@", error )
+            }
+        }
+        viewController.present( controller, animated: true )
+    }
+
+    // MARK: --- SKStoreProductViewControllerDelegate ---
+
+    func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
+        viewController.dismiss( animated: true )
+    }
+}
+
 extension SKProduct {
     func localizedPrice(quantity: Int = 1) -> String {
         let price = self.price.doubleValue * Double( quantity )

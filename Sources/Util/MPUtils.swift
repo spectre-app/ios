@@ -10,6 +10,7 @@ let productBuild      = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersi
 let productVersion    = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
 let productIdentifier = Bundle.main.bundleIdentifier ?? "app.spectre"
 let productGroup      = "group.app.spectre"
+let productAppleID    = 1526402806
 
 @discardableResult
 func using<V>(_ value: V, _ initializer: (V) -> Void) -> V {

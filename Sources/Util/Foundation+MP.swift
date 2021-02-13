@@ -184,6 +184,22 @@ extension UserDefaults {
     public static let shared = UserDefaults( suiteName: productGroup ) ?? UserDefaults.standard
 }
 
+extension URLComponents {
+    public func verifySignature() -> Bool {
+        guard let signature = self.queryItems?.first( where: { $0.name == "signature" } )?.value as String?
+        else { return false }
+
+        guard let url = self.url, var components = URLComponents( url: url, resolvingAgainstBaseURL: false )
+        else { return false }
+
+        components.queryItems = components.queryItems?.filter( { $0.name != "signature" } ).nonEmpty
+        guard let unsignedString = components.url?.absoluteString
+        else { return false }
+
+        return signature == unsignedString.digest()?.base64EncodedString()
+    }
+}
+
 extension URLRequest {
     init(method: Method, url: URL) {
         self.init( url: url )
@@ -255,8 +271,8 @@ extension URLSession {
         return configuration
     }
 
-    public func promise(with request: URLRequest) -> Promise<(Data, URLResponse)> {
-        let promise = Promise<(Data, URLResponse)>()
+    public func promise(with request: URLRequest) -> Promise<(data: Data, response: URLResponse)> {
+        let promise = Promise<(data: Data, response: URLResponse)>()
         self.dataTask( with: request ) {
             if let error = $2 {
                 promise.finish( .failure( error ) )

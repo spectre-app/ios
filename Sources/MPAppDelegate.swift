@@ -9,13 +9,16 @@
 import UIKit
 import CoreServices
 import Network
+import StoreKit
+import SafariServices
 
 @UIApplicationMain
 class MPAppDelegate: UIResponder, UIApplicationDelegate {
 
     lazy var window: UIWindow? = UIWindow()
 
-    // MARK: --- Life ---
+    // MARK: --- UIApplicationDelegate ---
+
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Require encrypted DNS.  Note: WebKit (eg. WKWebView/SFSafariViewController) ignores this.
         if #available( iOS 14.0, * ) {
@@ -95,11 +98,19 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
-        let viewController = (app.keyWindow?.rootViewController)!
+        guard let viewController = app.keyWindow?.rootViewController
+        else { return false }
 
         if let components = URLComponents( url: url, resolvingAgainstBaseURL: false ),
-           components.scheme == "spectre", components.path == "import" {
-            if let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 ) {
+           components.scheme == "spectre" {
+            // spectre:import?data=<export>
+            if components.path == "import" {
+                guard let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 )
+                else {
+                    wrn( "Import URL missing data parameter: %@", url )
+                    return false
+                }
+
                 MPMarshal.shared.import( data: data, viewController: viewController ).then {
                     if case .failure(let error) = $0 {
                         mperror( title: "Couldn't import user", error: error )
@@ -108,8 +119,81 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
                 return true
             }
 
-            wrn( "Import URL missing data parameter: %@", url )
+            // spectre:web?url=<url>
+            else if components.path == "web" {
+                guard components.verifySignature()
+                else {
+                    wrn( "Untrusted: %@", url )
+                    return false
+                }
+                let openString = components.queryItems?.first( where: { $0.name == "url" } )?.value ?? "https://spectre.app"
+                guard let openURL = URL( string: openString )
+                else {
+                    wrn( "Cannot open malformed URL: %@", openString )
+                    return false
+                }
+
+                viewController.present( SFSafariViewController( url: openURL ), animated: true )
+                return true
+            }
+
+            // spectre:review
+            else if components.path == "review" {
+                guard components.verifySignature()
+                else {
+                    wrn( "Untrusted: %@", url )
+                    return false
+                }
+
+                SKStoreReviewController.requestReview()
+                return true
+            }
+
+            // spectre:store[?id=<appleid>]
+            else if components.path == "store" {
+                guard components.verifySignature()
+                else {
+                    wrn( "Untrusted: %@", url )
+                    return false
+                }
+
+                let id = (components.queryItems?.first( where: { $0.name == "id" } )?.value as NSString?)?.integerValue
+                AppStore.shared.present( appleID: id, in: viewController )
+                return true
+            }
+
+            // spectre:update[?id=<appleid>[&build=<version>]]
+            else if components.path == "update" {
+                guard components.verifySignature()
+                else {
+                    wrn( "Untrusted: %@", url )
+                    return false
+                }
+
+                let id = (components.queryItems?.first( where: { $0.name == "id" } )?.value as NSString?)?.integerValue
+                let build = components.queryItems?.first( where: { $0.name == "build" } )?.value
+                AppStore.shared.isUpToDate( appleID: id, buildVersion: build ).then {
+                    do {
+                        let result = try $0.get()
+                        if result.upToDate {
+                            MPAlert( title: "Your \(productName) app is up-to-date!", message: result.buildVersion,
+                                     details: "build[\(result.buildVersion)] > store[\(result.storeVersion)]" )
+                                    .show()
+                        }
+                        else {
+                            inf( "%@ is outdated: build[%@] < store[%@]", productName, result.buildVersion, result.storeVersion )
+                            AppStore.shared.present( in: viewController )
+                        }
+                    }
+                    catch {
+                        mperror( title: "Couldn't check for updates", error: error )
+                    }
+                }
+                return true
+            }
         }
+
+        // file share
         else if let utisValue = UTTypeCreateAllIdentifiersForTag(
                 kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
                 let utis = utisValue as? Array<String> {
@@ -141,9 +225,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        err( "Couldn't register for remote notifications. [>TRC]" )
+        wrn( "Couldn't register for remote notifications. [>TRC]" )
         pii( "[>] %@", error )
     }
-
-    // MARK: --- MPConfigObserver ---
 }

@@ -121,9 +121,7 @@ class MPServicePreview: Equatable {
     private static func byImageSize<S: Sequence>(_ urls: S) -> [URL] where S.Element == String? {
         urls.compactMap { self.validURL( $0 ) }
             .compactMap { URLSession.optional.promise( with: URLRequest( method: .head, url: $0 ) ) }
-            .compactMap { (promise: Promise<(Data, URLResponse)>) -> URLResponse? in
-                (try? promise.await())?.1
-            }
+            .compactMap { promise -> URLResponse? in (try? promise.await())?.response }
             .filter { $0.mimeType?.contains( "image/" ) ?? false }
             .sorted { $0.expectedContentLength > $1.expectedContentLength }
             .compactMap { $0.url }

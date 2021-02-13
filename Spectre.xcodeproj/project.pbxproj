@@ -21,7 +21,7 @@
 		93D39216BF04B39B4E90B8D6 /* WeakBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393E2C339F220532F1D53 /* WeakBox.swift */; };
 		93D392506D66E48D27338086 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
 		93D39284CA724E394A9E91FD /* Plumbing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398D4B9F2323DC419DC82 /* Plumbing.swift */; };
-		93D3928A525C7A67E22F908B /* InAppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* InAppStore.swift */; };
+		93D3928A525C7A67E22F908B /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppStore.swift */; };
 		93D392937A9E6664CA09124D /* MPServicePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */; };
 		93D3929442591D379DD3B240 /* MPServiceDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPServiceDetailViewController.swift */; };
 		93D3929C87281367272F69F1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
@@ -129,7 +129,7 @@
 		DA0E55912510E985002B3AB1 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
 		DA0E55922510E985002B3AB1 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		DA0E55932510E985002B3AB1 /* UIKit+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+MP.swift */; };
-		DA0E55942510E985002B3AB1 /* InAppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* InAppStore.swift */; };
+		DA0E55942510E985002B3AB1 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppStore.swift */; };
 		DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
 		DA0E55962510E985002B3AB1 /* MPServicePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPServicePreview.swift */; };
 		DA0E55972510E985002B3AB1 /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
@@ -440,7 +440,7 @@
 		93D397326B833076646FF697 /* DataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataSource.swift; sourceTree = "<group>"; };
 		93D39754A28ADCAE0E58937F /* Swift+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Swift+MP.swift"; sourceTree = "<group>"; };
 		93D3975A310BEA6C16903C25 /* TransientState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransientState.swift; sourceTree = "<group>"; };
-		93D397930CDEF625FC438ECE /* InAppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InAppStore.swift; sourceTree = "<group>"; };
+		93D397930CDEF625FC438ECE /* AppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		93D39813D4D15F649C54ADE0 /* Updatable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Updatable.swift; sourceTree = "<group>"; };
 		93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAppDetailsViewController.swift; sourceTree = "<group>"; };
 		93D3985695447159F2D4BE76 /* AutoFillModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillModel.swift; sourceTree = "<group>"; };
@@ -763,7 +763,7 @@
 				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
 				93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */,
 				93D39BAACC08C85F91D1C5C2 /* Graph.swift */,
-				93D397930CDEF625FC438ECE /* InAppStore.swift */,
+				93D397930CDEF625FC438ECE /* AppStore.swift */,
 				93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */,
 				93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */,
 				93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */,
@@ -1736,7 +1736,7 @@
 				DA0E558625106500002B3AB1 /* TransientState.swift in Sources */,
 				DA0E5569251022EB002B3AB1 /* mpw-algorithm_v2.c in Sources */,
 				DA0E55A82510E992002B3AB1 /* MPUser.swift in Sources */,
-				DA0E55942510E985002B3AB1 /* InAppStore.swift in Sources */,
+				DA0E55942510E985002B3AB1 /* AppStore.swift in Sources */,
 				DA0E55912510E985002B3AB1 /* Debug.swift in Sources */,
 				DA0E55AA2510E9BB002B3AB1 /* MPItemView.swift in Sources */,
 				DA0E55BC2510E9BB002B3AB1 /* MPResultTypeCell.swift in Sources */,
@@ -1856,7 +1856,7 @@
 				93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */,
 				93D3972C722A7A007223F2AD /* MPPremiumDetailsViewController.swift in Sources */,
 				93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */,
-				93D3928A525C7A67E22F908B /* InAppStore.swift in Sources */,
+				93D3928A525C7A67E22F908B /* AppStore.swift in Sources */,
 				93D397A1D5DA3D612D5874EF /* Period.swift in Sources */,
 				93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */,
 				93D39B0F44709C2D285A04D1 /* Foundation+MP.swift in Sources */,

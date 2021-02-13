@@ -23,6 +23,10 @@ extension Array {
             return [ E? ]( elements.compactMap( { $0 } ).joined() )
         }
     }
+
+    public var nonEmpty: Self? {
+        self.isEmpty ? nil: self
+    }
 }
 
 extension Array where Element: Equatable {
@@ -195,7 +199,7 @@ extension String {
     }
 
     func digest() -> Data? {
-        withUnsafeBytes( of: self.cString( using: .utf8 ) ) { $0.bindMemory( to: UInt8.self ).digest() }
+        withCString( encodedAs: UTF8.self ) { UnsafeBufferPointer( start: $0, count: self.lengthOfBytes( using: .utf8 ) ).digest() }
     }
 }
 
