@@ -137,7 +137,7 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
         }
     }
 
-    class InfoItem: ListItem<MPConfig, InfoItem.Link, InfoItem.Cell> {
+    class InfoItem: LinksItem<MPConfig> {
         init() {
             super.init( title: "Links", values: { _ in
                 [
@@ -147,61 +147,6 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
                     Link( title: "Source Portal", url: URL( string: "https://source.spectre.app" ) ),
                 ]
             } )
-        }
-
-        override func populate(_ cell: Cell, indexPath: IndexPath, value: Link) {
-            cell.link = value
-        }
-
-        struct Link: Hashable {
-            let title: String
-            let url:   URL?
-        }
-
-        class Cell: UITableViewCell {
-            var link: Link? {
-                didSet {
-                    DispatchQueue.main.perform {
-                        self.button.setTitle( self.link?.title, for: .normal )
-                    }
-                }
-            }
-
-            private let button = UIButton()
-
-            // MARK: --- Life ---
-
-            required init?(coder aDecoder: NSCoder) {
-                fatalError( "init(coder:) is not supported for this class" )
-            }
-
-            override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-                super.init( style: style, reuseIdentifier: reuseIdentifier )
-
-                // - View
-                self.isOpaque = false
-                self.backgroundColor = .clear
-
-                self.button => \.titleLabel!.font => Theme.current.font.callout
-                self.button => \.currentTitleColor => Theme.current.color.body
-                self.button => \.currentTitleShadowColor => Theme.current.color.shadow
-                self.button.titleLabel!.shadowOffset = CGSize( width: 0, height: 1 )
-                self.button.action( for: .primaryActionTriggered ) { [unowned self] in
-                    if let url = self.link?.url {
-                        trc( "Opening link: %@", url )
-
-                        UIApplication.shared.open( url )
-                    }
-                }
-
-                // - Hierarchy
-                self.contentView.addSubview( self.button )
-
-                // - Layout
-                LayoutConfiguration( view: self.button )
-                        .constrain()
-                        .activate()
-            }
         }
     }
 }
