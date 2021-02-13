@@ -128,14 +128,16 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         trc( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, toElementsBySection )
 
         if !self.elementsConsumed || !animated {
-            self.elementsBySection = toElementsBySection
-            if (self.elementsConsumed) {
-                self.tableView?.reloadData()
-                self.collectionView?.reloadData()
+            DispatchQueue.main.perform( group: self.semaphore ) {
+                self.elementsBySection = toElementsBySection
+                if (self.elementsConsumed) {
+                    self.tableView?.reloadData()
+                    self.collectionView?.reloadData()
+                }
+                self.select( selectElements, paths: selectPaths )
+                self.semaphore.leave()
+                completion?( true )
             }
-            self.select( selectElements, paths: selectPaths )
-            self.semaphore.leave()
-            completion?( true )
             return
         }
 
