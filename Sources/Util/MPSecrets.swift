@@ -9,7 +9,6 @@ import Foundation
 let appSecret    = ""
 let appSalt      = ""
 let sentryDSN    = ""
-let bugsnagKey   = ""
 let countlyKey   = ""
 let countlySalt  = ""
 let updraftSdk   = ""
