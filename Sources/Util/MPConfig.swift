@@ -98,7 +98,7 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
         self.diagnostics = UserDefaults.shared.bool( forKey: "diagnostics" )
         self.diagnosticsDecided = UserDefaults.shared.bool( forKey: "diagnosticsDecided" )
         self.notificationsDecided = UserDefaults.shared.bool( forKey: "notificationsDecided" )
-        self.theme = (InAppFeature.premium.enabled() ? UserDefaults.shared.string( forKey: "theme" ): nil) ?? Theme.default.path
+        self.theme = (InAppFeature.premium.isEnabled ? UserDefaults.shared.string( forKey: "theme" ): nil) ?? Theme.default.path
     }
 }
 

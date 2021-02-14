@@ -21,7 +21,7 @@
 		93D39216BF04B39B4E90B8D6 /* WeakBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393E2C339F220532F1D53 /* WeakBox.swift */; };
 		93D392506D66E48D27338086 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
 		93D39284CA724E394A9E91FD /* Plumbing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398D4B9F2323DC419DC82 /* Plumbing.swift */; };
-		93D3928A525C7A67E22F908B /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppStore.swift */; };
+		93D3928A525C7A67E22F908B /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppFeature.swift */; };
 		93D392937A9E6664CA09124D /* MPServicePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */; };
 		93D3929442591D379DD3B240 /* MPServiceDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPServiceDetailViewController.swift */; };
 		93D3929C87281367272F69F1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
@@ -33,6 +33,7 @@
 		93D394687CCE5DACAE237129 /* Describe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396FE084F709867C7C6CC /* Describe.swift */; };
 		93D39470EC1F954780E354CB /* MPImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396EF81F724F74A21AFA9 /* MPImageView.swift */; };
 		93D3949F5F5BFEDA9E2B86CE /* MPDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398A0CC7A860ADA1315EF /* MPDateView.swift */; };
+		93D394B61590BE7C5E928BA0 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E70A7274BA100D5735C /* AppStore.swift */; };
 		93D394F428331F661FF95123 /* AutoFillServicesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D392986FB7C71256EABBB0 /* AutoFillServicesViewController.swift */; };
 		93D3952C2984BC63002825C5 /* LayoutConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */; };
 		93D39557916D91E959F0133A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398E83036023785BE6806 /* Theme.swift */; };
@@ -129,7 +130,6 @@
 		DA0E55912510E985002B3AB1 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
 		DA0E55922510E985002B3AB1 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		DA0E55932510E985002B3AB1 /* UIKit+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+MP.swift */; };
-		DA0E55942510E985002B3AB1 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppStore.swift */; };
 		DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
 		DA0E55962510E985002B3AB1 /* MPServicePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPServicePreview.swift */; };
 		DA0E55972510E985002B3AB1 /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
@@ -174,6 +174,7 @@
 		DA0E55BE251112BB002B3AB1 /* MPDetailsHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* MPDetailsHostController.swift */; };
 		DA0E55BF251112C1002B3AB1 /* MPItemsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* MPItemsViewController.swift */; };
 		DA0E55C0251112D0002B3AB1 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
+		DA2FBD4325D89FB3000F3D8C /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppFeature.swift */; };
 		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
 		DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
 		DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
@@ -440,7 +441,7 @@
 		93D397326B833076646FF697 /* DataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataSource.swift; sourceTree = "<group>"; };
 		93D39754A28ADCAE0E58937F /* Swift+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Swift+MP.swift"; sourceTree = "<group>"; };
 		93D3975A310BEA6C16903C25 /* TransientState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransientState.swift; sourceTree = "<group>"; };
-		93D397930CDEF625FC438ECE /* AppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		93D397930CDEF625FC438ECE /* AppFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppFeature.swift; sourceTree = "<group>"; };
 		93D39813D4D15F649C54ADE0 /* Updatable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Updatable.swift; sourceTree = "<group>"; };
 		93D3982288CE686F671A3201 /* MPAppDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAppDetailsViewController.swift; sourceTree = "<group>"; };
 		93D3985695447159F2D4BE76 /* AutoFillModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillModel.swift; sourceTree = "<group>"; };
@@ -479,6 +480,7 @@
 		93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillUsersViewController.swift; sourceTree = "<group>"; };
 		93D39E1D19BCA02E43657384 /* MPUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUtils.swift; sourceTree = "<group>"; };
 		93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPNavigationController.swift; sourceTree = "<group>"; };
+		93D39E70A7274BA100D5735C /* AppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPPagerView.swift; sourceTree = "<group>"; };
 		93D39F718C1C38C46D9D5078 /* MPService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPService.swift; sourceTree = "<group>"; };
 		93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicePreviewController.swift; sourceTree = "<group>"; };
@@ -755,6 +757,9 @@
 		93D39760DAE73795CA63D02A /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				93D397930CDEF625FC438ECE /* AppFeature.swift */,
+				93D39E70A7274BA100D5735C /* AppStore.swift */,
+				93D390CB091CCF46AF6EAB4C /* AutoFill.swift */,
 				93D3909744CE918AB4432318 /* ConstraintResolver.swift */,
 				93D397326B833076646FF697 /* DataSource.swift */,
 				93D39A6EC596E8AE5D8F8714 /* Debug.swift */,
@@ -763,7 +768,6 @@
 				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
 				93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */,
 				93D39BAACC08C85F91D1C5C2 /* Graph.swift */,
-				93D397930CDEF625FC438ECE /* AppStore.swift */,
 				93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */,
 				93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */,
 				93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */,
@@ -773,8 +777,8 @@
 				93D395FD92D751588A645D15 /* MPKeyFactory.swift */,
 				93D39941059143124D09AE05 /* MPLogSink.swift */,
 				93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */,
-				93D3917402B9BC4575713560 /* MPTracker.swift */,
 				93D39D251169E42F0AAC451F /* MPServicePreview.swift */,
+				93D3917402B9BC4575713560 /* MPTracker.swift */,
 				93D39E1D19BCA02E43657384 /* MPUtils.swift */,
 				93D3900653D9D95598C41DFA /* Observers.swift */,
 				93D39651387222CBD2F9CCE0 /* Period.swift */,
@@ -787,9 +791,8 @@
 				93D39647B07609C89AA66767 /* UIKit+MP.swift */,
 				93D396E496C23EC3C008D6F7 /* UIView+MP.h */,
 				93D39B6403FE258E526E5E85 /* UIView+MP.m */,
-				93D393E2C339F220532F1D53 /* WeakBox.swift */,
 				93D39813D4D15F649C54ADE0 /* Updatable.swift */,
-				93D390CB091CCF46AF6EAB4C /* AutoFill.swift */,
+				93D393E2C339F220532F1D53 /* WeakBox.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1416,6 +1419,8 @@
 				"pt-PT",
 			);
 			mainGroup = DA5BFA39147E415C00F98B1E;
+			packageReferences = (
+			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1736,7 +1741,6 @@
 				DA0E558625106500002B3AB1 /* TransientState.swift in Sources */,
 				DA0E5569251022EB002B3AB1 /* mpw-algorithm_v2.c in Sources */,
 				DA0E55A82510E992002B3AB1 /* MPUser.swift in Sources */,
-				DA0E55942510E985002B3AB1 /* AppStore.swift in Sources */,
 				DA0E55912510E985002B3AB1 /* Debug.swift in Sources */,
 				DA0E55AA2510E9BB002B3AB1 /* MPItemView.swift in Sources */,
 				DA0E55BC2510E9BB002B3AB1 /* MPResultTypeCell.swift in Sources */,
@@ -1764,6 +1768,7 @@
 				DA0E55802510642B002B3AB1 /* Swift+MP.swift in Sources */,
 				DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */,
 				DA0E5584251064D9002B3AB1 /* WeakBox.swift in Sources */,
+				DA2FBD4325D89FB3000F3D8C /* AppFeature.swift in Sources */,
 				DA0E55A62510E992002B3AB1 /* MPOperand.swift in Sources */,
 				93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */,
 				93D39122A70525461AEE4D62 /* BasicUsersViewController.swift in Sources */,
@@ -1856,7 +1861,7 @@
 				93D397BBE3BC5FC8EDBDB2DB /* UIView+MP.m in Sources */,
 				93D3972C722A7A007223F2AD /* MPPremiumDetailsViewController.swift in Sources */,
 				93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */,
-				93D3928A525C7A67E22F908B /* AppStore.swift in Sources */,
+				93D3928A525C7A67E22F908B /* AppFeature.swift in Sources */,
 				93D397A1D5DA3D612D5874EF /* Period.swift in Sources */,
 				93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */,
 				93D39B0F44709C2D285A04D1 /* Foundation+MP.swift in Sources */,
@@ -1870,6 +1875,7 @@
 				93D39830BD42CE3468F6AFCB /* MPAutoFillSetupViewController.swift in Sources */,
 				93D39854B7171FE34024CEED /* MPPagerView.swift in Sources */,
 				93D399FB0C4228E18FDFAC9F /* MPPickerView.swift in Sources */,
+				93D394B61590BE7C5E928BA0 /* AppStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

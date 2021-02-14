@@ -69,7 +69,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                         subitems: [ PasswordResultItem() ],
                         caption: {
                             let attacker = $0.user.attacker ?? .default
-                            if InAppFeature.premium.enabled(),
+                            if InAppFeature.premium.isEnabled,
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
                                        attacker.timeToCrack( string: try? $0.result().token.await() ) {
                                 return "Time to crack: \(timeToCrack) 🅿︎"

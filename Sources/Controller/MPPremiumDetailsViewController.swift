@@ -29,14 +29,14 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
         guard case .premium = feature
         else { return }
 
-        self.isEnabled = !InAppFeature.premium.enabled()
+        self.isEnabled = !InAppFeature.premium.isEnabled
     }
 }
 
 class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
 
     init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in InAppFeature.premium.enabled() } )
+        super.init( mode: mode, condition: { _ in InAppFeature.premium.isEnabled } )
 
         InAppFeature.observers.register( observer: self )
     }
@@ -58,8 +58,14 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     init(focus: Item<Void>.Type? = nil) {
         super.init( model: (), focus: focus )
+    }
 
-        InAppStore.shared.restorePurchases()
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        if !InAppSubscription.premium.isActive || !InAppFeature.premium.isEnabled {
+            AppStore.shared.restorePurchases()
+        }
     }
 
     override func loadItems() -> [Item<Void>] {
@@ -105,10 +111,10 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
     class SubscribeItem: ListItem<Void, SKProduct, SubscribeItem.Cell>, InAppStoreObserver {
         init() {
-            super.init( title: "Enroll", values: { InAppStore.shared.products( forSubscription: .premium ) } )
+            super.init( title: "Enroll", values: { AppStore.shared.products( forSubscription: .premium ) } )
 
             self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
-            InAppStore.shared.observers.register( observer: self )
+            AppStore.shared.observers.register( observer: self )
         }
 
         override func populate(_ cell: SubscribeItem.Cell, indexPath: IndexPath, value: SKProduct) {
@@ -165,7 +171,7 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
 
                 self.buyButton.action( for: .primaryActionTriggered ) { [unowned self] in
                     if let product = self.product {
-                        InAppStore.shared.purchase( product: product )
+                        AppStore.shared.purchase( product: product )
                     }
                 }
 
@@ -214,7 +220,7 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
         init() {
             super.init( track: .subject( "premium", action: "override" ),
                         title: "Subscribed 🅳", icon: { _ in .icon( "" ) },
-                        value: { _ in InAppFeature.premium.enabled() }, update: { InAppFeature.premium.enabled( $1 ) },
+                        value: { _ in InAppFeature.premium.isEnabled }, update: { InAppFeature.premium.enable( $1 ) },
                         caption: { _ in
                             """
                             Developer override for premium features.

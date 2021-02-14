@@ -20,6 +20,7 @@ target 'Spectre' do
   pod 'Countly'
   pod 'FreshchatSDK'
   pod 'SwiftLinkPreview'
+  pod 'TPInAppReceipt'
 
   pod 'Reveal-SDK', :configurations => ['Debug']
 

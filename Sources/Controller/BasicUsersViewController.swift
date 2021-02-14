@@ -410,7 +410,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         // MARK: --- Private ---
 
         private func attemptBiometrics() {
-            guard InAppFeature.premium.enabled(), let userFile = self.userFile, userFile.biometricLock
+            guard InAppFeature.premium.isEnabled, let userFile = self.userFile, userFile.biometricLock
             else { return }
 
             let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
@@ -463,7 +463,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                     self.avatarButton.image = self.avatar.image
                     self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
 
-                    self.biometricButton.isHidden = !InAppFeature.premium.enabled() || !(self.userFile?.biometricLock ?? false) ||
+                    self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||
                             !(self.userFile?.keychainKeyFactory.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
                     self.biometricButton.image = MPKeychainKeyFactory.factor.icon
                     self.biometricButton.sizeToFit()

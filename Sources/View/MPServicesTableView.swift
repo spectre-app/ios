@@ -564,7 +564,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                     self.captionLabel.attributedText = nil
                 }
 
-                if !InAppFeature.premium.enabled() {
+                if !InAppFeature.premium.isEnabled {
                     self.mode = .authentication
                 }
                 switch self.mode {
@@ -578,7 +578,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                         self.modeButton.image = nil
                 }
 
-                self.modeButton.alpha = InAppFeature.premium.enabled() ? .on: .off
+                self.modeButton.alpha = InAppFeature.premium.isEnabled ? .on: .off
                 self.modeButton.isUserInteractionEnabled = self.modeButton.alpha != .off
                 self.actionsStack.alpha = self.isSelected && !isNew ? .on: .off
                 self.actionsStack.isUserInteractionEnabled = self.actionsStack.alpha != .off
