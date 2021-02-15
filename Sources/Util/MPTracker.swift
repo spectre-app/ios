@@ -124,7 +124,7 @@ class MPTracker: MPConfigObserver {
                 let event = Event( level: level )
                 event.logger = "api"
                 event.message = SentryMessage( formatted: String.valid( logEvent.formatter( logPointer ) ) ?? "-" )
-                event.message.message = .valid( logEvent.format )
+                event.message?.message = .valid( logEvent.format )
                 event.timestamp = Date( timeIntervalSince1970: TimeInterval( logEvent.occurrence ) )
                 event.tags = tags
                 SentrySDK.capture( event: event )
