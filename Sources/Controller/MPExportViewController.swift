@@ -24,7 +24,7 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
     override var user: MPUser? {
         didSet {
             DispatchQueue.main.perform {
-                self.subtitleLabel.text = self.user?.fullName
+                self.subtitleLabel.text = self.user?.userName
             }
         }
     }

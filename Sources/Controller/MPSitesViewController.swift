@@ -5,14 +5,14 @@
 
 import UIKit
 
-class MPServicesViewController: BasicServicesViewController {
-    private let userButton  = MPButton( track: .subject( "services", action: "user" ) )
+class MPSitesViewController: BasicSitesViewController {
+    private let userButton  = MPButton( track: .subject( "sites", action: "user" ) )
     private let detailsHost = MPDetailsHostController()
 
     override var user: MPUser? {
         didSet {
             DispatchQueue.main.perform {
-                self.userButton.title = self.user?.fullName.name( style: .abbreviated )
+                self.userButton.title = self.user?.userName.name( style: .abbreviated )
                 self.userButton.sizeToFit()
             }
         }
@@ -31,22 +31,22 @@ class MPServicesViewController: BasicServicesViewController {
             }
         }
         self.searchField.rightView = self.userButton
-        self.servicesTableView.serviceActions = [
-            .init( tracking: .subject( "services.service", action: "settings" ),
-                   title: "Details", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
-                self.detailsHost.show( MPServiceDetailsViewController( model: service ), sender: self )
+        self.sitesTableView.siteActions = [
+            .init( tracking: .subject( "sites.site", action: "settings" ),
+                   title: "Details", icon: "", appearance: [ .cell, .menu ] ) { site, mode, appearance in
+                self.detailsHost.show( MPSiteDetailsViewController( model: site ), sender: self )
             },
-            .init( tracking: .subject( "services.service", action: "copy" ),
-                   title: "Copy", icon: "", appearance: [ .cell ] ) { service, mode, appearance in
-                service.result( keyPurpose: mode! ).copy( fromView: self.view, trackingFrom: "service>cell" )
+            .init( tracking: .subject( "sites.site", action: "copy" ),
+                   title: "Copy", icon: "", appearance: [ .cell ] ) { site, mode, appearance in
+                site.result( keyPurpose: mode! ).copy( fromView: self.view, trackingFrom: "site>cell" )
             },
-            .init( tracking: .subject( "services.service", action: "copy" ),
-                   title: "Copy Login", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
-                service.result( keyPurpose: .identification ).copy( fromView: self.view, trackingFrom: "service>cell>menu" )
+            .init( tracking: .subject( "sites.site", action: "copy" ),
+                   title: "Copy Login", icon: "", appearance: [ .menu ] ) { site, mode, appearance in
+                site.result( keyPurpose: .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
-            .init( tracking: .subject( "services.service", action: "copy" ),
-                   title: "Copy Password", icon: "", appearance: [ .menu ] ) { service, mode, appearance in
-                service.result( keyPurpose: .authentication ).copy( fromView: self.view, trackingFrom: "service>cell>menu" )
+            .init( tracking: .subject( "sites.site", action: "copy" ),
+                   title: "Copy Password", icon: "", appearance: [ .menu ] ) { site, mode, appearance in
+                site.result( keyPurpose: .authentication ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
         ]
 

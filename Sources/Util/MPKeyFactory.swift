@@ -9,20 +9,20 @@ import LocalAuthentication
 private let keyQueue     = DispatchQueue( label: "\(productName): Key Factory", qos: .utility )
 private var keyFactories = [ String: MPKeyFactory ]()
 
-private func keyFactoryProvider(_ algorithm: MPAlgorithmVersion, _ fullName: UnsafePointer<CChar>?) -> UnsafePointer<MPMasterKey>? {
+private func keyFactoryProvider(_ algorithm: MPAlgorithmVersion, _ userName: UnsafePointer<CChar>?) -> UnsafePointer<MPUserKey>? {
     keyQueue.await {
-        String.valid( fullName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
+        String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
     }
 }
 
 public class MPKeyFactory {
-    private var masterKeysCache = [ MPAlgorithmVersion: UnsafePointer<MPMasterKey> ]()
-    public let  fullName: String
+    private var userKeysCache = [ MPAlgorithmVersion: UnsafePointer<MPUserKey> ]()
+    public let  userName: String
 
     // MARK: --- Life ---
 
-    init(fullName: String) {
-        self.fullName = fullName
+    init(userName: String) {
+        self.userName = userName
     }
 
     deinit {
@@ -31,17 +31,17 @@ public class MPKeyFactory {
 
     // MARK: --- Interface ---
 
-    public func provide() -> Promise<MPMasterKeyProvider> {
+    public func provide() -> Promise<MPUserKeyProvider> {
         keyQueue.promise {
-            keyFactories[self.fullName] = self
+            keyFactories[self.userName] = self
             return keyFactoryProvider
         }
     }
 
     public func invalidate() {
         keyQueue.await {
-            self.masterKeysCache.forEach { $1.deallocate() }
-            self.masterKeysCache.removeAll()
+            self.userKeysCache.forEach { $1.deallocate() }
+            self.userKeysCache.removeAll()
         }
     }
 
@@ -53,73 +53,73 @@ public class MPKeyFactory {
         }
     }
 
-    public func newKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
-        guard let masterKey = self.getKey( for: algorithm )
+    public func newKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
+        guard let userKey = self.getKey( for: algorithm )
         else { return nil }
 
-        // Create a copy of the master key to be consumed by the caller.
-        let providedMasterKey = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
-        providedMasterKey.initialize( from: masterKey, count: 1 )
-        return UnsafePointer<MPMasterKey>( providedMasterKey )
+        // Create a copy of the user key to be consumed by the caller.
+        let providedUserKey = UnsafeMutablePointer<MPUserKey>.allocate( capacity: 1 )
+        providedUserKey.initialize( from: userKey, count: 1 )
+        return UnsafePointer<MPUserKey>( providedUserKey )
     }
 
     // MARK: --- Private ---
 
-    private func getKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
+    private func getKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
         keyQueue.await {
-            // Try to resolve the master key from the cache.
-            if let masterKey = self.masterKeysCache[algorithm] {
-                return masterKey
+            // Try to resolve the user key from the cache.
+            if let userKey = self.userKeysCache[algorithm] {
+                return userKey
             }
 
-            // Try to produce the master key in the factory.
-            if let masterKey = self.createKey( for: algorithm ) {
-                self.setKey( masterKey, algorithm: algorithm )
-                return masterKey
+            // Try to produce the user key in the factory.
+            if let userKey = self.createKey( for: algorithm ) {
+                self.setKey( userKey, algorithm: algorithm )
+                return userKey
             }
 
             return nil
         }
     }
 
-    fileprivate func setKey(_ key: UnsafePointer<MPMasterKey>, algorithm: MPAlgorithmVersion) {
+    fileprivate func setKey(_ key: UnsafePointer<MPUserKey>, algorithm: MPAlgorithmVersion) {
         keyQueue.await {
-            self.masterKeysCache[algorithm] = key
+            self.userKeysCache[algorithm] = key
         }
     }
 
-    fileprivate func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
+    fileprivate func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
         nil
     }
 }
 
-public class MPPasswordKeyFactory: MPKeyFactory {
-    private let masterPassword: String
+public class MPSecretKeyFactory: MPKeyFactory {
+    private let userSecret: String
 
     // MARK: --- Life ---
 
-    public init(fullName: String, masterPassword: String) {
-        self.masterPassword = masterPassword
-        super.init( fullName: fullName )
+    public init(userName: String, userSecret: String) {
+        self.userSecret = userSecret
+        super.init( userName: userName )
     }
 
     // MARK: --- Interface ---
 
     public var identicon: MPIdenticon {
-        mpw_identicon( self.fullName, self.masterPassword )
+        mpw_identicon( self.userName, self.userSecret )
     }
 
     public func toKeychain() -> Promise<MPKeychainKeyFactory> {
-        MPKeychainKeyFactory( fullName: self.fullName ).unlock().promising {
+        MPKeychainKeyFactory( userName: self.userName ).unlock().promising {
             $0.saveKeys( MPAlgorithmVersion.allCases.map( { ($0, self.newKey( for: $0 )) } ) )
         }
     }
 
     // MARK: --- Private ---
 
-    fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
+    fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
         DispatchQueue.mpw.await {
-            mpw_master_key( self.fullName, self.masterPassword, algorithm )
+            mpw_user_key( self.userName, self.userSecret, algorithm )
         }
     }
 }
@@ -129,11 +129,11 @@ public class MPBufferKeyFactory: MPKeyFactory {
 
     // MARK: --- Life ---
 
-    public init(fullName: String, masterKey: UnsafePointer<MPMasterKey>, algorithm: MPAlgorithmVersion) {
+    public init(userName: String, userKey: UnsafePointer<MPUserKey>, algorithm: MPAlgorithmVersion) {
         self.algorithm = algorithm
-        super.init( fullName: fullName )
+        super.init( userName: userName )
 
-        self.setKey( masterKey, algorithm: algorithm )
+        self.setKey( userKey, algorithm: algorithm )
     }
 }
 
@@ -197,8 +197,8 @@ public class MPKeychainKeyFactory: MPKeyFactory {
 
         let context = LAContext()
         context.touchIDAuthenticationAllowableReuseDuration = 3
-        context.localizedReason = "Unlock \(self.fullName)"
-        context.localizedFallbackTitle = "Use Password"
+        context.localizedReason = "Unlock \(self.userName)"
+        context.localizedFallbackTitle = "Use Personal Secret"
         self._context = context
 
         return context
@@ -206,19 +206,19 @@ public class MPKeychainKeyFactory: MPKeyFactory {
 
     // MARK: --- Life ---
 
-    public override init(fullName: String) {
-        super.init( fullName: fullName )
+    public override init(userName: String) {
+        super.init( userName: userName )
     }
 
     // MARK: --- Interface ---
 
     public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
-        MPKeychain.hasKey( for: self.fullName, algorithm: algorithm )
+        MPKeychain.hasKey( for: self.userName, algorithm: algorithm )
     }
 
     public func purgeKeys() {
         for algorithm in MPAlgorithmVersion.allCases {
-            MPKeychain.deleteKey( for: self.fullName, algorithm: algorithm )
+            MPKeychain.deleteKey( for: self.userName, algorithm: algorithm )
         }
 
         self.invalidate()
@@ -235,12 +235,12 @@ public class MPKeychainKeyFactory: MPKeyFactory {
     public func unlock() -> Promise<MPKeychainKeyFactory> {
         let promise = Promise<MPKeychainKeyFactory>()
 
-        self.context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.fullName)" ) { result, error in
+        self.context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.userName)" ) { result, error in
             if let error = error {
                 promise.finish( .failure( error ) )
             }
             else if !result {
-                promise.finish( .failure( MPError.internal( cause: "Biometrics authentication denied.", details: self.fullName ) ) )
+                promise.finish( .failure( MPError.internal( cause: "Biometrics authentication denied.", details: self.userName ) ) )
             }
             else {
                 promise.finish( .success( self ) )
@@ -252,9 +252,9 @@ public class MPKeychainKeyFactory: MPKeyFactory {
 
     // MARK: --- Private ---
 
-    fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPMasterKey>? {
+    fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
         do {
-            return try MPKeychain.loadKey( for: self.fullName, algorithm: algorithm, context: self.context ).await()
+            return try MPKeychain.loadKey( for: self.userName, algorithm: algorithm, context: self.context ).await()
         }
         catch {
             mperror( title: "Biometric Authentication Failed", error: error )
@@ -262,7 +262,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
         }
     }
 
-    fileprivate func saveKeys(_ items: [(MPAlgorithmVersion, UnsafePointer<MPMasterKey>?)]) -> Promise<MPKeychainKeyFactory> {
+    fileprivate func saveKeys(_ items: [(MPAlgorithmVersion, UnsafePointer<MPUserKey>?)]) -> Promise<MPKeychainKeyFactory> {
         keyQueue.promising {
             var promise = Promise( .success( () ) )
 
@@ -270,7 +270,7 @@ public class MPKeychainKeyFactory: MPKeyFactory {
                 if let key = item.1 {
                     self.setKey( key, algorithm: item.0 )
                     promise = promise.and(
-                            MPKeychain.saveKey( for: self.fullName, algorithm: item.0, keyFactory: self, context: self.context ) )
+                            MPKeychain.saveKey( for: self.userName, algorithm: item.0, keyFactory: self, context: self.context ) )
                 }
             }
 

@@ -85,56 +85,56 @@ final class AutoFill {
     // MARK: --- Types ---
 
     class Credential: Hashable, CustomDebugStringConvertible {
-        let hostName: String
-        let serviceName: String
+        let userName: String
+        let siteName: String
 
         var debugDescription: String {
-            "<Credential: \(self.hostName) :: \(self.serviceName)>"
+            "<Credential: \(self.userName) :: \(self.siteName)>"
         }
 
         init(supplier: CredentialSupplier, name: String) {
-            self.hostName = supplier.credentialHost
-            self.serviceName = name
+            self.userName = supplier.credentialOwner
+            self.siteName = name
         }
 
         init?(dictionary: [String: String]?) {
-            guard let host = dictionary?["host"], let service = dictionary?["service"]
+            guard let user = dictionary?["user"], let site = dictionary?["site"]
             else { return nil }
 
-            self.hostName = host
-            self.serviceName = service
+            self.userName = user
+            self.siteName = site
         }
 
         func supplied(by supplier: CredentialSupplier) -> Bool {
-            self.hostName == supplier.credentialHost
+            self.userName == supplier.credentialOwner
         }
 
         func identity() -> ASPasswordCredentialIdentity {
-            ASPasswordCredentialIdentity( serviceIdentifier: ASCredentialServiceIdentifier( identifier: self.serviceName, type: .domain ),
-                                          user: self.hostName, recordIdentifier: self.hostName )
+            ASPasswordCredentialIdentity( serviceIdentifier: ASCredentialServiceIdentifier( identifier: self.siteName, type: .domain ),
+                                          user: self.userName, recordIdentifier: self.userName )
         }
 
         func dictionary() -> [String: String] {
             [
-                "host": self.hostName,
-                "service": self.serviceName,
+                "user": self.userName,
+                "site": self.siteName,
             ]
         }
 
         // MARK: --- Hashable ---
 
         func hash(into hasher: inout Hasher) {
-            hasher.combine( self.hostName )
-            hasher.combine( self.serviceName )
+            hasher.combine( self.userName )
+            hasher.combine( self.siteName )
         }
 
         static func ==(lhs: Credential, rhs: Credential) -> Bool {
-            lhs.hostName == rhs.hostName && lhs.serviceName == rhs.serviceName
+            lhs.userName == rhs.userName && lhs.siteName == rhs.siteName
         }
     }
 }
 
 protocol CredentialSupplier {
-    var credentialHost: String { get }
-    var credentials:    [AutoFill.Credential]? { get }
+    var credentialOwner: String { get }
+    var credentials:     [AutoFill.Credential]? { get }
 }

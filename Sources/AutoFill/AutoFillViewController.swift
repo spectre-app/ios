@@ -59,26 +59,26 @@ class AutoFillViewController: ASCredentialProviderViewController {
         catch { err( "Cannot read user documents: %@", error ) }
 
         DispatchQueue.mpw.promising {
-            if let user = AutoFillModel.shared.users.first( where: { $0.fullName == credentialIdentity.recordIdentifier } ) {
+            if let user = AutoFillModel.shared.users.first( where: { $0.userName == credentialIdentity.recordIdentifier } ) {
                 return Promise( .success( user ) )
             }
 
-            guard let userFile = AutoFillModel.shared.userFiles.first( where: { $0.fullName == credentialIdentity.recordIdentifier } )
+            guard let userFile = AutoFillModel.shared.userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
-            let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
+            let keychainKeyFactory = MPKeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.hasKey( for: userFile.algorithm )
-            else { throw ASExtensionError( .userInteractionRequired, "No key in keychain for: \(userFile.fullName)" ) }
+            else { throw ASExtensionError( .userInteractionRequired, "No key in keychain for: \(userFile.userName)" ) }
 
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
         }.promising { (user: MPUser) in
             AutoFillModel.shared.users.append( user )
 
-            guard let service = user.services.first( where: { $0.serviceName == credentialIdentity.serviceIdentifier.identifier } )
-            else { throw ASExtensionError( .credentialIdentityNotFound, "No service named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.fullName)" ) }
+            guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
+            else { throw ASExtensionError( .credentialIdentityNotFound, "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) }
 
-            return service.result( keyPurpose: .identification ).token.and( service.result( keyPurpose: .authentication ).token ).promise {
+            return site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).promise {
                 ASPasswordCredential( user: $0.0, password: $0.1 )
             }
         }.failure { error in
@@ -107,12 +107,6 @@ class AutoFillViewController: ASCredentialProviderViewController {
         }
     }
 
-    /*
-     Implement this method if provideCredentialWithoutUserInteraction(for:) can fail with
-     ASExtensionError.userInteractionRequired. In this case, the system may present your extension's
-     UI and call this method. Show appropriate UI for authenticating the user then provide the password
-     by completing the extension request with the associated ASPasswordCredential.
-    */
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
         dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )

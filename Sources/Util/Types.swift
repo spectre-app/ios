@@ -243,7 +243,7 @@ extension MPResultType: CustomStringConvertible, CaseIterable {
         self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
     }
 
-    func has(feature f: MPServiceFeature) -> Bool {
+    func has(feature f: MPSiteFeature) -> Bool {
         self.rawValue & UInt32( f.rawValue ) == UInt32( f.rawValue )
     }
 }

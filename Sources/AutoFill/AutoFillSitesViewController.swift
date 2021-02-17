@@ -1,6 +1,6 @@
 //
 //  MPUsersViewController.swift
-//  Master Password
+//  Spectre
 //
 //  Created by Maarten Billemont on 2018-01-21.
 //  Copyright © 2018 Maarten Billemont. All rights reserved.
@@ -9,7 +9,7 @@
 import UIKit
 import AuthenticationServices
 
-class AutoFillServicesViewController: BasicServicesViewController {
+class AutoFillSitesViewController: BasicSitesViewController {
 
     // MARK: --- Life ---
 
@@ -33,21 +33,21 @@ class AutoFillServicesViewController: BasicServicesViewController {
         if let serviceIdentifiers = AutoFillModel.shared.context.serviceIdentifiers {
             allServiceIdentifiers.append( contentsOf: serviceIdentifiers )
         }
-        self.servicesTableView.preferredFilter = { service in
+        self.sitesTableView.preferredFilter = { site in
             allServiceIdentifiers.contains( where: {
-                let serviceIdentifier = URL( string: $0.identifier )?.host ?? $0.identifier
-                return serviceIdentifier.contains( service.serviceName ) || service.serviceName.contains( serviceIdentifier )
+                let serviceHost = URL( string: $0.identifier )?.host ?? $0.identifier
+                return serviceHost.contains( site.siteName ) || site.siteName.contains( serviceHost )
             } )
         }
-        self.servicesTableView.preferredService = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
-        self.servicesTableView.serviceActions = [
+        self.sitesTableView.preferredSite = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
+        self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
-            .init( tracking: .subject( "services.service", action: "fill" ), title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { service, mode, appearance in
+            .init( tracking: .subject( "sites.site", action: "fill" ), title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { site, mode, appearance in
                 switch appearance {
                     case .cell:
-                        self.completeRequest( service: service, trackingFrom: "service>cell" )
+                        self.completeRequest( site: site, trackingFrom: "site>cell" )
                     case .menu:
-                        self.completeRequest( service: service, trackingFrom: "service>cell>menu" )
+                        self.completeRequest( site: site, trackingFrom: "site>cell>menu" )
                 }
             },
         ]
@@ -55,28 +55,28 @@ class AutoFillServicesViewController: BasicServicesViewController {
 
     // MARK: --- Private ---
 
-    func completeRequest(service: MPService, trackingFrom: String) {
-        let event = MPTracker.shared.begin( track: .subject( "service", action: "use" ) )
+    func completeRequest(site: MPSite, trackingFrom: String) {
+        let event = MPTracker.shared.begin( track: .subject( "site", action: "use" ) )
         if let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext {
-            service.result( keyPurpose: .identification ).token.and( service.result( keyPurpose: .authentication ).token ).then {
+            site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).then {
                 do {
                     let (login, password) = try $0.get()
-                    service.use()
+                    site.use()
                     event.end(
                             [ "result": $0.name,
                               "from": trackingFrom,
                               "action": "fill",
-                              "counter": "\(service.counter)",
+                              "counter": "\(site.counter)",
                               "purpose": "\(MPKeyPurpose.identification)",
-                              "type": "\(service.resultType)",
-                              "algorithm": "\(service.algorithm)",
-                              "entropy": MPAttacker.entropy( type: service.resultType ) ?? MPAttacker.entropy( string: password ) ?? 0,
+                              "type": "\(site.resultType)",
+                              "algorithm": "\(site.algorithm)",
+                              "entropy": MPAttacker.entropy( type: site.resultType ) ?? MPAttacker.entropy( string: password ) ?? 0,
                             ] )
 
                     extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password )
                     ) { _ in
                         do {
-                            let _ = try service.user.save().await()
+                            let _ = try site.user.save().await()
                         }
                         catch {
                             mperror( title: "Couldn't save user.", error: error )
@@ -84,7 +84,7 @@ class AutoFillServicesViewController: BasicServicesViewController {
                     }
                 }
                 catch {
-                    mperror( title: "Couldn't compute service result.", error: error )
+                    mperror( title: "Couldn't compute site result.", error: error )
                     event.end( [ "result": $0.name, "from": trackingFrom, "error": error.localizedDescription ] )
                 }
             }

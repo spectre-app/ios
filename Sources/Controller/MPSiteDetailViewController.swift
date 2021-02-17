@@ -6,11 +6,11 @@
 import Foundation
 import UIKit
 
-class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServiceObserver {
+class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver {
 
     // MARK: --- Life ---
 
-    override func loadItems() -> [Item<MPService>] {
+    override func loadItems() -> [Item<MPSite>] {
         [ PasswordCounterItem(), SeparatorItem(),
           PasswordTypeItem(), SeparatorItem(),
           LoginTypeItem(), SeparatorItem(),
@@ -23,15 +23,15 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override init(model: MPService, focus: Item<MPService>.Type? = nil) {
+    override init(model: MPSite, focus: Item<MPSite>.Type? = nil) {
         super.init( model: model, focus: focus )
 
-        self.model.observers.register( observer: self ).serviceDidChange( self.model )
+        self.model.observers.register( observer: self ).siteDidChange( self.model )
     }
 
-    // MARK: --- MPServiceObserver ---
+    // MARK: --- MPSiteObserver ---
 
-    func serviceDidChange(_ service: MPService) {
+    func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
             self.color = self.model.preview.color
             self.image = self.model.preview.image
@@ -42,22 +42,22 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
 
     // MARK: --- Types ---
 
-    class PasswordCounterItem: StepperItem<MPService, UInt32> {
+    class PasswordCounterItem: StepperItem<MPSite, UInt32> {
         init() {
             super.init( title: "Password Counter",
                         value: { $0.counter.rawValue }, update: { $0.counter = MPCounterValue( rawValue: $1 ) ?? .default },
                         step: 1, min: MPCounterValue.initial.rawValue, max: MPCounterValue.last.rawValue,
                         caption: { _ in
                             """
-                            Increment the counter if you need to change the service's current password.
+                            Increment the counter if you need to change the site's current password.
                             """
                         } )
         }
     }
 
-    class PasswordTypeItem: PickerItem<MPService, MPResultType, MPResultTypeCell> {
+    class PasswordTypeItem: PickerItem<MPSite, MPResultType, MPResultTypeCell> {
         init() {
-            super.init( track: .subject( "service", action: "resultType" ), title: "Password Type",
+            super.init( track: .subject( "site", action: "resultType" ), title: "Password Type",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -85,18 +85,18 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class PasswordResultItem: FieldItem<MPService> {
+    class PasswordResultItem: FieldItem<MPSite> {
         init() {
             super.init( title: nil, placeholder: "enter a password",
-                        value: { try? $0.result().token.await() }, update: { service, password in
-                MPTracker.shared.event( track: .subject( "service", action: "result", [
-                    "type": "\(service.resultType)",
+                        value: { try? $0.result().token.await() }, update: { site, password in
+                MPTracker.shared.event( track: .subject( "site", action: "result", [
+                    "type": "\(site.resultType)",
                     "entropy": MPAttacker.entropy( string: password ) ?? 0,
                 ] ) )
 
-                service.state( resultParam: password ).token.then {
-                    do { service.resultState = try $0.get() }
-                    catch { mperror( title: "Couldn't update service password", error: error ) }
+                site.state( resultParam: password ).token.then {
+                    do { site.resultState = try $0.get() }
+                    catch { mperror( title: "Couldn't update site password", error: error ) }
                 }
             } )
         }
@@ -117,9 +117,9 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class LoginTypeItem: PickerItem<MPService, MPResultType, MPResultTypeCell> {
+    class LoginTypeItem: PickerItem<MPSite, MPResultType, MPResultTypeCell> {
         init() {
-            super.init( track: .subject( "service", action: "loginType" ), title: "Login Name Type 🅿︎",
+            super.init( track: .subject( "site", action: "loginType" ), title: "Login Name Type 🅿︎",
                         values: { _ in
                             [ MPResultType? ].joined(
                                     separator: [ nil ],
@@ -132,8 +132,8 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                         subitems: [ LoginResultItem() ],
                         caption: {
                             $0.loginType == .none ?
-                                    "The service uses your Standard Login Name.":
-                                    "The service is using a service‑specific login name."
+                                    "The site uses your Standard Login Name.":
+                                    "The site is using a site‑specific login name."
                         } )
 
             self.addBehaviour( PremiumTapBehaviour() )
@@ -150,21 +150,21 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class LoginResultItem: FieldItem<MPService> {
-        let userButton = MPButton( track: .subject( "service.login", action: "user" ) )
+    class LoginResultItem: FieldItem<MPSite> {
+        let userButton = MPButton( track: .subject( "site.login", action: "user" ) )
 
         init() {
             super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
-                        update: { service, login in
-                            MPTracker.shared.event( track: .subject( "service", action: "login", [
-                                "type": "\(service.loginType)",
+                        update: { site, login in
+                            MPTracker.shared.event( track: .subject( "site", action: "login", [
+                                "type": "\(site.loginType)",
                                 "entropy": MPAttacker.entropy( string: login ) ?? 0,
                             ] ) )
 
-                            service.state( keyPurpose: .identification, resultParam: login ).token.then {
-                                do { service.loginState = try $0.get() }
-                                catch { mperror( title: "Couldn't update service name", error: error ) }
+                            site.state( keyPurpose: .identification, resultParam: login ).token.then {
+                                do { site.loginState = try $0.get() }
+                                catch { mperror( title: "Couldn't update site name", error: error ) }
                             }
                         } )
 
@@ -197,28 +197,28 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         override func update() {
             super.update()
 
-            self.userButton.title = self.model?.user.fullName.name( style: .abbreviated )
+            self.userButton.title = self.model?.user.userName.name( style: .abbreviated )
             self.userButton.sizeToFit()
 
             (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
         }
     }
 
-    class SecurityAnswerItem: ListItem<MPService, MPQuestion, SecurityAnswerItem.Cell> {
+    class SecurityAnswerItem: ListItem<MPSite, MPQuestion, SecurityAnswerItem.Cell> {
         init() {
             super.init( title: "Security Answers 🅿︎",
                         values: {
-                            $0.questions.reduce( [ "": MPQuestion( service: $0, keyword: "" ) ] ) {
+                            $0.questions.reduce( [ "": MPQuestion( site: $0, keyword: "" ) ] ) {
                                 $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
                             }.values.sorted()
                         },
                         subitems: [
-                            ButtonItem( track: .subject( "service.question", action: "add" ),
+                            ButtonItem( track: .subject( "site.question", action: "add" ),
                                         value: { _ in (label: "Add Security Question", image: nil) },
                                         action: { item in
                                             let controller = UIAlertController( title: "Security Question", message:
                                             """
-                                            Enter the most significant noun for the service's security question.
+                                            Enter the most significant noun for the site's security question.
                                             """, preferredStyle: .alert )
                                             controller.addTextField {
                                                 $0.placeholder = "eg. teacher"
@@ -228,11 +228,11 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                                             }
                                             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
                                             controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
-                                                guard let service = item?.model, let keyword = controller?.textFields?.first?.text?.nonEmpty
+                                                guard let site = item?.model, let keyword = controller?.textFields?.first?.text?.nonEmpty
                                                 else { return }
 
-                                                trc( "Adding security question <%@> for: %@", keyword, service )
-                                                service.questions.append( MPQuestion( service: service, keyword: keyword ) )
+                                                trc( "Adding security question <%@> for: %@", keyword, site )
+                                                site.questions.append( MPQuestion( site: site, keyword: keyword ) )
                                             } )
                                             item.viewController?.present( controller, animated: true )
                                         } )
@@ -262,7 +262,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         class Cell: UITableViewCell {
             private let keywordLabel = UILabel()
             private let resultLabel  = UILabel()
-            private lazy var copyButton = MPButton( track: .subject( "service.question", action: "copy",
+            private lazy var copyButton = MPButton( track: .subject( "site.question", action: "copy",
                                                                      [ "words": self.question?.keyword.split( separator: " " ).count ?? 0 ] ),
                                                     title: "copy" )
 
@@ -305,7 +305,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                    self.question?.result().copy( fromView: self, trackingFrom: "service>details" )
+                    self.question?.result().copy( fromView: self, trackingFrom: "site>details" )
                 }
 
                 // - Hierarchy
@@ -335,7 +335,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class URLItem: FieldItem<MPService> {
+    class URLItem: FieldItem<MPSite> {
         init() {
             super.init( title: "URL", placeholder: "eg. https://www.apple.com",
                         value: { $0.url }, update: { $0.url = $1 } )
@@ -350,7 +350,7 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class InfoItem: Item<MPService> {
+    class InfoItem: Item<MPSite> {
         init() {
             super.init( title: nil, subitems: [
                 UsesItem(),
@@ -360,19 +360,19 @@ class MPServiceDetailsViewController: MPItemsViewController<MPService>, MPServic
         }
     }
 
-    class UsesItem: LabelItem<MPService> {
+    class UsesItem: LabelItem<MPSite> {
         init() {
             super.init( title: "Total Uses", value: { $0.uses } )
         }
     }
 
-    class UsedItem: DateItem<MPService> {
+    class UsedItem: DateItem<MPSite> {
         init() {
             super.init( title: "Last Used", value: { $0.lastUsed } )
         }
     }
 
-    class AlgorithmItem: LabelItem<MPService> {
+    class AlgorithmItem: LabelItem<MPSite> {
         init() {
             super.init( title: "Algorithm", value: { $0.algorithm } )
         }

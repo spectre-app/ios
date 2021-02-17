@@ -5,15 +5,15 @@
 
 import UIKit
 
-class MPServicePreviewController: UIViewController, MPServiceObserver {
-    private let serviceButton = UIButton( type: .custom )
+class MPSitePreviewController: UIViewController, MPSiteObserver {
+    private let siteButton = UIButton( type: .custom )
 
     // MARK: --- Life ---
 
-    init(service: MPService) {
+    init(site: MPSite) {
         super.init( nibName: nil, bundle: nil )
 
-        service.observers.register( observer: self ).serviceDidChange( service )
+        site.observers.register( observer: self ).siteDidChange( site )
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -24,14 +24,14 @@ class MPServicePreviewController: UIViewController, MPServiceObserver {
         super.viewDidLoad()
 
         // - View
-        self.serviceButton.imageView?.contentMode = .scaleAspectFill
-        self.serviceButton.titleLabel! => \.font => Theme.current.font.largeTitle
+        self.siteButton.imageView?.contentMode = .scaleAspectFill
+        self.siteButton.titleLabel! => \.font => Theme.current.font.largeTitle
 
         // - Hierarchy
-        self.view.addSubview( self.serviceButton )
+        self.view.addSubview( self.siteButton )
 
         // - Layout
-        LayoutConfiguration( view: self.serviceButton )
+        LayoutConfiguration( view: self.siteButton )
                 .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
                 .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
                 .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
@@ -41,14 +41,14 @@ class MPServicePreviewController: UIViewController, MPServiceObserver {
                 .activate()
     }
 
-    // MARK: --- MPServiceObserver ---
+    // MARK: --- MPSiteObserver ---
 
-    func serviceDidChange(_ service: MPService) {
+    func siteDidChange(_ site: MPSite) {
         DispatchQueue.main.perform {
-            self.view.backgroundColor = service.preview.color
-            self.serviceButton.setImage( service.preview.image, for: .normal )
-            self.serviceButton.setTitle( service.preview.image == nil ? service.serviceName: nil, for: .normal )
-            self.preferredContentSize = service.preview.image?.size ?? CGSize( width: 0, height: 200 )
+            self.view.backgroundColor = site.preview.color
+            self.siteButton.setImage( site.preview.image, for: .normal )
+            self.siteButton.setTitle( site.preview.image == nil ? site.siteName: nil, for: .normal )
+            self.preferredContentSize = site.preview.image?.size ?? CGSize( width: 0, height: 200 )
         }
     }
 }

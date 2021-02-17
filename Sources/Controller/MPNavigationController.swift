@@ -1,6 +1,6 @@
 //
 //  MPUsersViewController.swift
-//  Master Password
+//  Spectre
 //
 //  Created by Maarten Billemont on 2018-01-21.
 //  Copyright © 2018 Maarten Billemont. All rights reserved.

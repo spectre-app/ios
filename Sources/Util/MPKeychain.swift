@@ -7,7 +7,7 @@ import UIKit
 import LocalAuthentication
 
 public class MPKeychain {
-    private static func keyQuery(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext?) throws
+    private static func keyQuery(for userName: String, algorithm: MPAlgorithmVersion, context: LAContext?) throws
                     -> [CFString: Any] {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
@@ -18,10 +18,10 @@ public class MPKeychain {
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: [ MPKeyPurpose.authentication.scope, algorithm.description ]
                     .compactMap { $0 }.joined( separator: "." ),
-            kSecAttrAccount: fullName,
+            kSecAttrAccount: userName,
             kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
-            kSecUseOperationPrompt: "Access \(fullName)'s master key.",
+            kSecUseOperationPrompt: "Access \(userName)'s user key.",
             kSecUseAuthenticationUI: kSecUseAuthenticationUIFail,
         ]
         if #available( iOS 13, * ) {
@@ -40,10 +40,10 @@ public class MPKeychain {
         return query
     }
 
-    public static func hasKey(for fullName: String, algorithm: MPAlgorithmVersion)
+    public static func hasKey(for userName: String, algorithm: MPAlgorithmVersion)
                     -> Bool {
         do {
-            var query = try self.keyQuery( for: fullName, algorithm: algorithm, context: nil )
+            var query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
             query[kSecReturnAttributes] = false
             query[kSecReturnData] = false
 
@@ -54,64 +54,64 @@ public class MPKeychain {
             return status == errSecSuccess || status == errSecInteractionNotAllowed
         }
         catch {
-            wrn( "Issue looking for master key in keychain: %@", error )
+            wrn( "Issue looking for user key in keychain: %@", error )
             return false
         }
     }
 
     @discardableResult
-    public static func deleteKey(for fullName: String, algorithm: MPAlgorithmVersion)
+    public static func deleteKey(for userName: String, algorithm: MPAlgorithmVersion)
                     -> Promise<Void> {
         DispatchQueue.mpw.promise {
-            let query = try self.keyQuery( for: fullName, algorithm: algorithm, context: nil )
+            let query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
 
             let status = SecItemDelete( query as CFDictionary )
             guard status == errSecSuccess || status == errSecItemNotFound
-            else { throw MPError.issue( status, title: "Biometrics Key Not Deleted", details: fullName ) }
+            else { throw MPError.issue( status, title: "Biometrics Key Not Deleted", details: userName ) }
         }
     }
 
-    public static func loadKey(for fullName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
-                    -> Promise<UnsafePointer<MPMasterKey>> {
-        let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access master key for:\n\(fullName)",
+    public static func loadKey(for userName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
+                    -> Promise<UnsafePointer<MPUserKey>> {
+        let spinner = MPAlert( title: "Biometrics Authentication", message: "Please authenticate to access user key for:\n\(userName)",
                                content: UIActivityIndicatorView( style: .white ) )
         spinner.show( dismissAutomatically: false )
 
         return DispatchQueue.mpw.promise {
-            var query = try self.keyQuery( for: fullName, algorithm: algorithm, context: context )
+            var query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
             query[kSecReturnData] = true
 
             var result: CFTypeRef?
             let status = SecItemCopyMatching( query as CFDictionary, &result )
             guard status == errSecSuccess
-            else { throw MPError.issue( status, title: "Biometrics Key Denied", details: fullName ) }
+            else { throw MPError.issue( status, title: "Biometrics Key Denied", details: userName ) }
 
-            guard let data = result as? Data, data.count == MemoryLayout<MPMasterKey>.size
-            else { throw MPError.internal( cause: "Biometrics Key Not Valid", details: fullName ) }
+            guard let data = result as? Data, data.count == MemoryLayout<MPUserKey>.size
+            else { throw MPError.internal( cause: "Biometrics Key Not Valid", details: userName ) }
 
-            let masterKeyBytes = UnsafeMutablePointer<MPMasterKey>.allocate( capacity: 1 )
-            data.withUnsafeBytes { masterKeyBytes.initialize( to: $0.load( as: MPMasterKey.self ) ) }
-            return UnsafePointer( masterKeyBytes )
+            let userKeyBytes = UnsafeMutablePointer<MPUserKey>.allocate( capacity: 1 )
+            data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: MPUserKey.self ) ) }
+            return UnsafePointer( userKeyBytes )
         }.then {
             spinner.dismiss()
         }
     }
 
     @discardableResult
-    public static func saveKey(for fullName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext)
+    public static func saveKey(for userName: String, algorithm: MPAlgorithmVersion, keyFactory: MPKeyFactory, context: LAContext)
                     -> Promise<Void> {
         DispatchQueue.mpw.promise {
-            let query = try self.keyQuery( for: fullName, algorithm: algorithm, context: context )
+            let query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
 
-            guard let masterKey = keyFactory.newKey( for: algorithm )
-            else { throw MPError.internal( cause: "Cannot save master key since key provider cannot provide one.", details: fullName ) }
-            defer { masterKey.deallocate() }
+            guard let userKey = keyFactory.newKey( for: algorithm )
+            else { throw MPError.internal( cause: "Cannot save user key since key provider cannot provide one.", details: userName ) }
+            defer { userKey.deallocate() }
 
             let attributes: [CFString: Any] = [
-                kSecValueData: Data( buffer: UnsafeBufferPointer( start: masterKey, count: 1 ) ),
+                kSecValueData: Data( buffer: UnsafeBufferPointer( start: userKey, count: 1 ) ),
                 kSecAttrSynchronizable: false,
-                kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(fullName)",
-                kSecAttrDescription: "\(productName) master key (\(algorithm))",
+                kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(userName)",
+                kSecAttrDescription: "\(productName) user key (\(algorithm))",
             ]
 
             var status = SecItemUpdate( query as CFDictionary, attributes as CFDictionary )
@@ -119,7 +119,7 @@ public class MPKeychain {
                 status = SecItemAdd( query.merging( attributes, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
             }
             guard status == errSecSuccess
-            else { throw MPError.issue( status, title: "Biometrics Key Not Saved", details: fullName ) }
+            else { throw MPError.issue( status, title: "Biometrics Key Not Saved", details: userName ) }
         }
     }
 }

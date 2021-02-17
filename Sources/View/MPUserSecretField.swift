@@ -5,7 +5,7 @@
 
 import UIKit
 
-class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
+class MPUserSecretField: UITextField, UITextFieldDelegate, Updatable {
     var userFile:  MPMarshal.UserFile?
     var nameField: UITextField? {
         willSet {
@@ -35,11 +35,11 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
             if let passwordField = self.passwordField {
                 passwordField.delegate = self
                 passwordField.isSecureTextEntry = true
-                passwordField.placeholder = "Your master password"
+                passwordField.placeholder = "Your personal secret"
                 passwordField.returnKeyType = .continue
                 passwordField.inputAccessoryView = self.identiconAccessory
-                passwordField.rightView = self.passwordIndicator
-                passwordField.leftView = UIView( frame: self.passwordIndicator.frame )
+                passwordField.rightView = self.activityIndicator
+                passwordField.leftView = UIView( frame: self.activityIndicator.frame )
                 passwordField.leftViewMode = .always
                 passwordField.rightViewMode = .always
                 passwordField.textAlignment = .center
@@ -55,10 +55,10 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
             self.setNeedsIdenticon()
         }
     }
-    var authenticater: ((MPPasswordKeyFactory) throws -> Promise<MPUser>)?
+    var authenticater: ((MPSecretKeyFactory) throws -> Promise<MPUser>)?
     var authenticated: ((Result<MPUser, Error>) -> Void)?
 
-    private let passwordIndicator  = UIActivityIndicatorView( style: .gray )
+    private let activityIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
     private lazy var updateTask = DispatchTask( deadline: .now() + .milliseconds( .random( in: 300..<500 ) ), update: self )
@@ -74,7 +74,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
         self.nameField = nameField
         super.init( frame: .zero )
 
-        self.passwordIndicator.frame = self.passwordIndicator.frame.insetBy( dx: -8, dy: 0 )
+        self.activityIndicator.frame = self.activityIndicator.frame.insetBy( dx: -8, dy: 0 )
 
         self.identiconLabel => \.font => Theme.current.font.password.transform { $0?.withSize( UIFont.labelFontSize ) }
         self.identiconLabel => \.textColor => Theme.current.color.body
@@ -113,7 +113,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
 
     public func setNeedsIdenticon() {
         DispatchQueue.main.perform {
-            if (self.userFile?.fullName ?? self.nameField?.text) == nil || self.passwordField?.text == nil {
+            if (self.userFile?.userName ?? self.nameField?.text) == nil || self.passwordField?.text == nil {
                 self.updateTask.cancel()
                 self.identiconLabel.attributedText = nil
             }
@@ -131,18 +131,18 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
         return false
     }
 
-    public func authenticate<U>(_ handler: ((MPPasswordKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
+    public func authenticate<U>(_ handler: ((MPSecretKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
         DispatchQueue.main.await {
             guard let handler = handler,
-                  let fullName = self.userFile?.fullName ?? self.nameField?.text, fullName.count > 0,
-                  let masterPassword = self.passwordField?.text, masterPassword.count > 0
+                  let userName = self.userFile?.userName ?? self.nameField?.text, userName.count > 0,
+                  let userSecret = self.passwordField?.text, userSecret.count > 0
             else { return nil }
 
             self.passwordField?.isEnabled = false
-            self.passwordIndicator.startAnimating()
+            self.activityIndicator.startAnimating()
 
             return DispatchQueue.mpw.promising {
-                try handler( MPPasswordKeyFactory( fullName: fullName, masterPassword: masterPassword ) )
+                try handler( MPSecretKeyFactory( userName: userName, userSecret: userSecret ) )
             }.then( on: .main ) { result in
                 self.passwordField?.text = nil
                 self.passwordField?.isEnabled = true
@@ -154,7 +154,7 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
                         self.passwordField?.becomeFirstResponder()
                         self.passwordField?.shake()
                 }
-                self.passwordIndicator.stopAnimating()
+                self.activityIndicator.stopAnimating()
             }
         }
     }
@@ -163,11 +163,11 @@ class MPMasterPasswordField: UITextField, UITextFieldDelegate, Updatable {
 
     func update() {
         DispatchQueue.main.perform {
-            let userName       = self.userFile?.fullName ?? self.nameField?.text
-            let masterPassword = self.passwordField?.text
+            let userName   = self.userFile?.userName ?? self.nameField?.text
+            let userSecret = self.passwordField?.text
 
             DispatchQueue.mpw.perform {
-                let identicon = mpw_identicon( userName, masterPassword )
+                let identicon = mpw_identicon( userName, userSecret )
 
                 DispatchQueue.main.perform {
                     self.identiconLabel.attributedText = identicon.attributedText()

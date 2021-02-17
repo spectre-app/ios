@@ -8,7 +8,7 @@ import UIKit
 class MPQuestion: MPOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPQuestionObserver {
     public let observers = Observers<MPQuestionObserver>()
 
-    public let service: MPService
+    public let site: MPSite
     public var keyword: String {
         didSet {
             if oldValue != self.keyword {
@@ -39,15 +39,15 @@ class MPQuestion: MPOperand, Hashable, Comparable, CustomStringConvertible, Obse
     var dirty = false {
         didSet {
             if self.dirty {
-                self.service.dirty = true
+                self.site.dirty = true
             }
         }
     }
 
     // MARK: --- Life ---
 
-    init(service: MPService, keyword: String, resultType: MPResultType? = nil, resultState: String? = nil) {
-        self.service = service
+    init(site: MPSite, keyword: String, resultType: MPResultType? = nil, resultState: String? = nil) {
+        self.site = site
         self.keyword = keyword
         self.resultType = resultType ?? .templatePhrase
         self.resultState = resultState
@@ -55,8 +55,8 @@ class MPQuestion: MPOperand, Hashable, Comparable, CustomStringConvertible, Obse
 
     // MARK: --- Interface ---
 
-    func copy(to service: MPService) -> MPQuestion {
-        MPQuestion( service: service, keyword: self.keyword, resultType: self.resultType, resultState: self.resultState )
+    func copy(to site: MPSite) -> MPQuestion {
+        MPQuestion( site: site, keyword: self.keyword, resultType: self.resultType, resultState: self.resultState )
     }
 
     // MARK: Hashable
@@ -83,20 +83,20 @@ class MPQuestion: MPOperand, Hashable, Comparable, CustomStringConvertible, Obse
     // MARK: --- MPOperand ---
 
     func use() {
-        self.service.use()
+        self.site.use()
     }
 
     public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
-        self.service.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+        self.site.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                              resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, operand: operand ?? self )
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: MPOperand? = nil)
                     -> MPOperation {
-        self.service.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+        self.site.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                             resultType: resultType, resultParam: resultParam, algorithm: algorithm, operand: operand ?? self )
     }
 }

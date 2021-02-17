@@ -174,7 +174,7 @@ class MPTracker: MPConfigObserver {
     }
 
     func login(user: MPUser) {
-        user.masterKeyFactory?.authenticatedIdentifier( for: user.algorithm ).success { userId in
+        user.userKeyFactory?.authenticatedIdentifier( for: user.algorithm ).success { userId in
             guard let userId = userId
             else { return }
 
@@ -185,7 +185,7 @@ class MPTracker: MPConfigObserver {
                 "maskPasswords": user.maskPasswords,
                 "defaultType": user.defaultType,
                 "loginType": user.loginType,
-                "services": user.services.count,
+                "sites": user.sites.count,
             ]
 
             let user = User( userId: userId )

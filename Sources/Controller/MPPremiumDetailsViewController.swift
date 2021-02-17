@@ -74,13 +74,13 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
           SubscribedItem(),
           Item<Void>( subitems: [
               FeatureItem( name: "Biometric Lock", icon: "",
-                           caption: "A touch or smile and we can recognize you now. Skip the master password." ),
+                           caption: "A touch or smile and we can recognize you now. Skip your personal secret." ),
               FeatureItem( name: "Password Auto-Fill", icon: "",
                            caption: "Your passwords exactly when you need them, instantly, from any app." ),
           ] ),
           Item<Void>( subitems: [
               FeatureItem( name: "Login Name Generator", icon: "",
-                           caption: "Upgrade your inter-service anonymity with unique login names. Who is who?" ),
+                           caption: "Upgrade your inter-site anonymity with unique login names. Who is who?" ),
               FeatureItem( name: "Security Answer Generator", icon: "",
                            caption: "Say « No » to those pretentiously invasive \"security\" questions." ),
           ] ),

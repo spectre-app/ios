@@ -16,13 +16,13 @@
 				<string>Icon-1024.png</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>Spectre services export</string>
+			<string>Spectre sites export</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>app.spectre.user.mpsites</string>
-				<string>com.lyndir.masterpassword.sites</string>
+				<string>com.lyndir.Spectre.sites</string>
 			</array>
 		</dict>
 		<dict>
@@ -39,7 +39,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>app.spectre.user.json</string>
-				<string>com.lyndir.masterpassword.json</string>
+				<string>com.lyndir.Spectre.json</string>
 			</array>
 		</dict>
 	</array>
@@ -72,6 +72,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
@@ -141,7 +143,7 @@
 				<string>public.utf8-plain-text</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Spectre services export</string>
+			<string>Spectre sites export</string>
 			<key>UTTypeIconFiles</key>
 			<array>
 				<string>Icon-64.png</string>
@@ -177,7 +179,7 @@
 			<key>UTTypeIdentifier</key>
 			<string>app.spectre.user.json</string>
 			<key>UTTypeReferenceURL</key>
-			<string>https://gitlab.com/MasterPassword/MasterPassword/-/wikis/File-Format</string>
+			<string>https://gitlab.com/Spectre/Spectre/-/wikis/File-Format</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

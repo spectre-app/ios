@@ -11,7 +11,7 @@
 		8F1100A6204DF2C772C69C18 /* Pods_Spectre_AutoFill.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */; };
 		93D390276912B43B33158168 /* MPPagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */; };
 		93D39034C6EAEAE0C47ED2F4 /* MPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* MPViewController.swift */; };
-		93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
+		93D390D13B1FAA3CF0CAF377 /* MPUserSecretField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPUserSecretField.swift */; };
 		93D390D2B19CB69F721DD7A6 /* MPTintField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* MPTintField.swift */; };
 		93D39122A70525461AEE4D62 /* BasicUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990ACF0E11CD40EA6319 /* BasicUsersViewController.swift */; };
 		93D391377514DB16467A3CDC /* MPUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */; };
@@ -22,19 +22,19 @@
 		93D392506D66E48D27338086 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
 		93D39284CA724E394A9E91FD /* Plumbing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398D4B9F2323DC419DC82 /* Plumbing.swift */; };
 		93D3928A525C7A67E22F908B /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppFeature.swift */; };
-		93D392937A9E6664CA09124D /* MPServicePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */; };
-		93D3929442591D379DD3B240 /* MPServiceDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPServiceDetailViewController.swift */; };
+		93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */; };
+		93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */; };
 		93D3929C87281367272F69F1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
 		93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
 		93D3930DDA8EE099DDBC2D78 /* Observers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3900653D9D95598C41DFA /* Observers.swift */; };
 		93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */; };
-		93D393B953CB94FC9E964625 /* MPServicePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPServicePreview.swift */; };
-		93D393C161EB8FA55FA5174F /* MPServicesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPServicesTableView.swift */; };
+		93D393B953CB94FC9E964625 /* MPSitePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPSitePreview.swift */; };
+		93D393C161EB8FA55FA5174F /* MPSitesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */; };
 		93D394687CCE5DACAE237129 /* Describe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396FE084F709867C7C6CC /* Describe.swift */; };
 		93D39470EC1F954780E354CB /* MPImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396EF81F724F74A21AFA9 /* MPImageView.swift */; };
 		93D3949F5F5BFEDA9E2B86CE /* MPDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398A0CC7A860ADA1315EF /* MPDateView.swift */; };
 		93D394B61590BE7C5E928BA0 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E70A7274BA100D5735C /* AppStore.swift */; };
-		93D394F428331F661FF95123 /* AutoFillServicesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D392986FB7C71256EABBB0 /* AutoFillServicesViewController.swift */; };
+		93D394F428331F661FF95123 /* AutoFillSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D392986FB7C71256EABBB0 /* AutoFillSitesViewController.swift */; };
 		93D3952C2984BC63002825C5 /* LayoutConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */; };
 		93D39557916D91E959F0133A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398E83036023785BE6806 /* Theme.swift */; };
 		93D3958E8F03ACE57445E833 /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BAACC08C85F91D1C5C2 /* Graph.swift */; };
@@ -42,7 +42,7 @@
 		93D395B715D15F2B56F2A2EE /* mpw-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* mpw-types.c */; };
 		93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39424D508440582DC7FD0 /* MPSpinnerView.swift */; };
 		93D395FF978C5B91FA5268DC /* MPItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39949A9E5C95F193F4315 /* MPItemView.swift */; };
-		93D3960D18CFE6BBCD31C84E /* MPServicesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D2352657D352B2B13B6 /* MPServicesViewController.swift */; };
+		93D3960D18CFE6BBCD31C84E /* MPSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */; };
 		93D3961E8FACE81A8B060D5E /* MPKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */; };
 		93D39676011DF46822C3BEAC /* MPFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909E003FF5E936687AA6 /* MPFeedback.swift */; };
 		93D396BC81D6634C478E0881 /* Persisting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CB804B95B268383FCB2 /* Persisting.swift */; };
@@ -68,7 +68,7 @@
 		93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985695447159F2D4BE76 /* AutoFillModel.swift */; };
 		93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		93D399FB0C4228E18FDFAC9F /* MPPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391A0FB6EB085237A8BF3 /* MPPickerView.swift */; };
-		93D39A2954B245FC0D925312 /* MPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPService.swift */; };
+		93D39A2954B245FC0D925312 /* MPSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPSite.swift */; };
 		93D39A467E6B7BB3B646E004 /* MPTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* MPTracker.swift */; };
 		93D39AA18A00A587610444F4 /* MPToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* MPToggleButton.swift */; };
 		93D39AA2456367CDF6A7A296 /* MPQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */; };
@@ -89,7 +89,7 @@
 		93D39DC523A8A2E162CEB420 /* UIKit+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+MP.swift */; };
 		93D39DE4534EF967532011C2 /* KeyboardLayoutGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */; };
 		93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39813D4D15F649C54ADE0 /* Updatable.swift */; };
-		93D39E0E73178FE39CF12B45 /* BasicServicesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BasicServicesViewController.swift */; };
+		93D39E0E73178FE39CF12B45 /* BasicSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BasicSitesViewController.swift */; };
 		93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
 		93D39E31D32AFAF973C302E6 /* MPBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3911FED606FAE34608C50 /* MPBackgroundView.swift */; };
 		93D39E4BA0810541D1A91953 /* MPMarshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* MPMarshal.swift */; };
@@ -131,7 +131,7 @@
 		DA0E55922510E985002B3AB1 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		DA0E55932510E985002B3AB1 /* UIKit+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+MP.swift */; };
 		DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
-		DA0E55962510E985002B3AB1 /* MPServicePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPServicePreview.swift */; };
+		DA0E55962510E985002B3AB1 /* MPSitePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* MPSitePreview.swift */; };
 		DA0E55972510E985002B3AB1 /* MPKeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* MPKeyFactory.swift */; };
 		DA0E55982510E985002B3AB1 /* MPConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C3FA9FA2CA5B234741E /* MPConfig.swift */; };
 		DA0E55992510E985002B3AB1 /* MPKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391CA68F34BB05A4B8AC3 /* MPKeychain.swift */; };
@@ -148,19 +148,19 @@
 		DA0E55A42510E992002B3AB1 /* MPMarshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* MPMarshal.swift */; };
 		DA0E55A52510E992002B3AB1 /* MPQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */; };
 		DA0E55A62510E992002B3AB1 /* MPOperand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* MPOperand.swift */; };
-		DA0E55A72510E992002B3AB1 /* MPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPService.swift */; };
+		DA0E55A72510E992002B3AB1 /* MPSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* MPSite.swift */; };
 		DA0E55A82510E992002B3AB1 /* MPUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* MPUser.swift */; };
 		DA0E55A92510E9BB002B3AB1 /* MPTapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */; };
 		DA0E55AA2510E9BB002B3AB1 /* MPItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39949A9E5C95F193F4315 /* MPItemView.swift */; };
 		DA0E55AB2510E9BB002B3AB1 /* MPItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39865ECFD34CF3ADF930D /* MPItemCell.swift */; };
 		DA0E55AC2510E9BB002B3AB1 /* MPAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39477D638F3147366C029 /* MPAnimations.swift */; };
-		DA0E55AD2510E9BB002B3AB1 /* MPServicePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */; };
-		DA0E55AE2510E9BB002B3AB1 /* MPMasterPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */; };
+		DA0E55AD2510E9BB002B3AB1 /* MPSitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */; };
+		DA0E55AE2510E9BB002B3AB1 /* MPUserSecretField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* MPUserSecretField.swift */; };
 		DA0E55AF2510E9BB002B3AB1 /* MPAvatarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */; };
 		DA0E55B02510E9BB002B3AB1 /* MPDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398A0CC7A860ADA1315EF /* MPDateView.swift */; };
 		DA0E55B12510E9BB002B3AB1 /* MPEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* MPEffectView.swift */; };
 		DA0E55B22510E9BB002B3AB1 /* MPEmitterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */; };
-		DA0E55B32510E9BB002B3AB1 /* MPServicesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPServicesTableView.swift */; };
+		DA0E55B32510E9BB002B3AB1 /* MPSitesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */; };
 		DA0E55B42510E9BB002B3AB1 /* MPButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39564D6408073D59CDB6A /* MPButton.swift */; };
 		DA0E55B52510E9BB002B3AB1 /* MPTintField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* MPTintField.swift */; };
 		DA0E55B62510E9BB002B3AB1 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
@@ -256,7 +256,7 @@
 		DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* mpw-algorithm.c */; };
 		DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
 		DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
-		DABC7BB8251C14160021ADD8 /* BasicServicesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BasicServicesViewController.swift */; };
+		DABC7BB8251C14160021ADD8 /* BasicSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BasicSitesViewController.swift */; };
 		DABC7BBB251C1B410021ADD8 /* MPUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
 		DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */ = {isa = PBXBuildFile; fileRef = DACA29721705E1A8002C6C22 /* dictionary.lst */; };
@@ -391,7 +391,7 @@
 		475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_AutoFill.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
 		93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillViewController.swift; sourceTree = "<group>"; };
-		93D3903B1B32B494FBD792EC /* MPServicesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicesTableView.swift; sourceTree = "<group>"; };
+		93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesTableView.swift; sourceTree = "<group>"; };
 		93D3909744CE918AB4432318 /* ConstraintResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintResolver.swift; sourceTree = "<group>"; };
 		93D3909E003FF5E936687AA6 /* MPFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPFeedback.swift; sourceTree = "<group>"; };
 		93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v2.c"; sourceTree = "<group>"; };
@@ -407,9 +407,9 @@
 		93D39203C899BA783F02D3B5 /* MPEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEffectView.swift; sourceTree = "<group>"; };
 		93D39267543CBFB6B0D7F54C /* MPOperand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPOperand.swift; sourceTree = "<group>"; };
 		93D3926A5BF83C0816D6D00E /* MPEmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPEmitterView.swift; sourceTree = "<group>"; };
-		93D392986FB7C71256EABBB0 /* AutoFillServicesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillServicesViewController.swift; sourceTree = "<group>"; };
+		93D392986FB7C71256EABBB0 /* AutoFillSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillSitesViewController.swift; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
-		93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPMasterPasswordField.swift; sourceTree = "<group>"; };
+		93D3931E2B7B432862570208 /* MPUserSecretField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUserSecretField.swift; sourceTree = "<group>"; };
 		93D39326375ED0DDA441ADC2 /* Foundation+MP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Foundation+MP.swift"; sourceTree = "<group>"; };
 		93D3936B3B1AE0B330FF49A5 /* MPAttacker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAttacker.swift; sourceTree = "<group>"; };
 		93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUserViewController.swift; sourceTree = "<group>"; };
@@ -470,20 +470,20 @@
 		93D39C3FA9FA2CA5B234741E /* MPConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPConfig.swift; sourceTree = "<group>"; };
 		93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPResultTypeCell.swift; sourceTree = "<group>"; };
 		93D39CB804B95B268383FCB2 /* Persisting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persisting.swift; sourceTree = "<group>"; };
-		93D39CDC84DDABE512D49739 /* MPServiceDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServiceDetailViewController.swift; sourceTree = "<group>"; };
+		93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteDetailViewController.swift; sourceTree = "<group>"; };
 		93D39CF7DB942C69D1C5D6BE /* mpw-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-util.h"; sourceTree = "<group>"; };
-		93D39D2352657D352B2B13B6 /* MPServicesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicesViewController.swift; sourceTree = "<group>"; };
-		93D39D251169E42F0AAC451F /* MPServicePreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicePreview.swift; sourceTree = "<group>"; };
+		93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesViewController.swift; sourceTree = "<group>"; };
+		93D39D251169E42F0AAC451F /* MPSitePreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitePreview.swift; sourceTree = "<group>"; };
 		93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LayoutConfiguration.swift; sourceTree = "<group>"; };
 		93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v3.c"; sourceTree = "<group>"; };
-		93D39DC918D45D864FA12ED1 /* BasicServicesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicServicesViewController.swift; sourceTree = "<group>"; };
+		93D39DC918D45D864FA12ED1 /* BasicSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicSitesViewController.swift; sourceTree = "<group>"; };
 		93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillUsersViewController.swift; sourceTree = "<group>"; };
 		93D39E1D19BCA02E43657384 /* MPUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPUtils.swift; sourceTree = "<group>"; };
 		93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPNavigationController.swift; sourceTree = "<group>"; };
 		93D39E70A7274BA100D5735C /* AppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		93D39F096A8C3E51C4DC2CDC /* MPPagerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPPagerView.swift; sourceTree = "<group>"; };
-		93D39F718C1C38C46D9D5078 /* MPService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPService.swift; sourceTree = "<group>"; };
-		93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPServicePreviewController.swift; sourceTree = "<group>"; };
+		93D39F718C1C38C46D9D5078 /* MPSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSite.swift; sourceTree = "<group>"; };
+		93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitePreviewController.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* MPAvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPAvatarCell.swift; sourceTree = "<group>"; };
 		9D9A8115923B8DDE8237E9BF /* Pods_Spectre.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.release.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.release.xcconfig"; sourceTree = "<group>"; };
@@ -717,7 +717,7 @@
 				93D399D8E0D5A547143642A7 /* MPMarshal.swift */,
 				93D3919570F5FA9F5A3C0F63 /* MPQuestion.swift */,
 				93D39267543CBFB6B0D7F54C /* MPOperand.swift */,
-				93D39F718C1C38C46D9D5078 /* MPService.swift */,
+				93D39F718C1C38C46D9D5078 /* MPSite.swift */,
 				93D39169E1BADEFA0517D4D2 /* MPUser.swift */,
 			);
 			path = Model;
@@ -738,10 +738,10 @@
 				93D39865ECFD34CF3ADF930D /* MPItemCell.swift */,
 				93D39949A9E5C95F193F4315 /* MPItemView.swift */,
 				93D39613B68BCF56DD931C91 /* MPMarginView.swift */,
-				93D3931E2B7B432862570208 /* MPMasterPasswordField.swift */,
+				93D3931E2B7B432862570208 /* MPUserSecretField.swift */,
 				93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */,
-				93D39F997E40F20C5B75ADAD /* MPServicePreviewController.swift */,
-				93D3903B1B32B494FBD792EC /* MPServicesTableView.swift */,
+				93D39F997E40F20C5B75ADAD /* MPSitePreviewController.swift */,
+				93D3903B1B32B494FBD792EC /* MPSitesTableView.swift */,
 				93D39424D508440582DC7FD0 /* MPSpinnerView.swift */,
 				93D399D065D5339AC9DDF60E /* MPTapEffectView.swift */,
 				93D3985EDA6E3B7A05799E2C /* MPTintField.swift */,
@@ -777,7 +777,7 @@
 				93D395FD92D751588A645D15 /* MPKeyFactory.swift */,
 				93D39941059143124D09AE05 /* MPLogSink.swift */,
 				93D39B35F97CEFC707FD6D48 /* MPSecrets.swift */,
-				93D39D251169E42F0AAC451F /* MPServicePreview.swift */,
+				93D39D251169E42F0AAC451F /* MPSitePreview.swift */,
 				93D3917402B9BC4575713560 /* MPTracker.swift */,
 				93D39E1D19BCA02E43657384 /* MPUtils.swift */,
 				93D3900653D9D95598C41DFA /* Observers.swift */,
@@ -838,13 +838,13 @@
 				93D398F2CFC7C9A494146E83 /* MPLogDetailsViewController.swift */,
 				93D39E4EBBF1CB8FC90528B7 /* MPNavigationController.swift */,
 				93D3971B848750CA84382132 /* MPPremiumDetailsViewController.swift */,
-				93D39CDC84DDABE512D49739 /* MPServiceDetailViewController.swift */,
-				93D39D2352657D352B2B13B6 /* MPServicesViewController.swift */,
+				93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */,
+				93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */,
 				93D394B019A4203EF763DBEA /* MPUserDetailViewController.swift */,
 				93D39BEF8D21F9BC5C3A9F16 /* MPUsersViewController.swift */,
 				93D3939FFDE9DAE872BB1766 /* MPUserViewController.swift */,
 				93D393A49E8705F3E38EB779 /* MPViewController.swift */,
-				93D39DC918D45D864FA12ED1 /* BasicServicesViewController.swift */,
+				93D39DC918D45D864FA12ED1 /* BasicSitesViewController.swift */,
 				93D394C13D268B6594F0E358 /* MPAutoFillSetupViewController.swift */,
 			);
 			path = Controller;
@@ -869,7 +869,7 @@
 				DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */,
 				DA0E5532250D6F7F002B3AB1 /* Info.plist */,
 				93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */,
-				93D392986FB7C71256EABBB0 /* AutoFillServicesViewController.swift */,
+				93D392986FB7C71256EABBB0 /* AutoFillSitesViewController.swift */,
 				93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */,
 				93D3985695447159F2D4BE76 /* AutoFillModel.swift */,
 			);
@@ -1275,7 +1275,7 @@
 				DA0E557625105196002B3AB1 /* PBXTargetDependency */,
 			);
 			name = Spectre;
-			productName = MasterPassword;
+			productName = Spectre;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -1694,7 +1694,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA0E55B22510E9BB002B3AB1 /* MPEmitterView.swift in Sources */,
-				DA0E55AE2510E9BB002B3AB1 /* MPMasterPasswordField.swift in Sources */,
+				DA0E55AE2510E9BB002B3AB1 /* MPUserSecretField.swift in Sources */,
 				DABC7BBB251C1B410021ADD8 /* MPUserViewController.swift in Sources */,
 				DA0E55B62510E9BB002B3AB1 /* MPTintLabel.swift in Sources */,
 				DAF80F05251AE651001C2963 /* AutoFillUsersViewController.swift in Sources */,
@@ -1720,13 +1720,13 @@
 				DA0E556F251022EB002B3AB1 /* aes.c in Sources */,
 				DA0E558E2510E985002B3AB1 /* ConstraintResolver.swift in Sources */,
 				DA0E556A251022EB002B3AB1 /* mpw-marshal.c in Sources */,
-				DA0E55AD2510E9BB002B3AB1 /* MPServicePreviewController.swift in Sources */,
-				DA0E55962510E985002B3AB1 /* MPServicePreview.swift in Sources */,
+				DA0E55AD2510E9BB002B3AB1 /* MPSitePreviewController.swift in Sources */,
+				DA0E55962510E985002B3AB1 /* MPSitePreview.swift in Sources */,
 				DA0E55A42510E992002B3AB1 /* MPMarshal.swift in Sources */,
 				DA0E556C251022EB002B3AB1 /* mpw-algorithm_v3.c in Sources */,
 				DA0E55932510E985002B3AB1 /* UIKit+MP.swift in Sources */,
 				DA0E558725106518002B3AB1 /* Observers.swift in Sources */,
-				DA0E55A72510E992002B3AB1 /* MPService.swift in Sources */,
+				DA0E55A72510E992002B3AB1 /* MPSite.swift in Sources */,
 				DA0E556B251022EB002B3AB1 /* mpw-algorithm_v0.c in Sources */,
 				DA0E55B72510E9BB002B3AB1 /* MPMarginView.swift in Sources */,
 				DA0E55BB2510E9BB002B3AB1 /* MPSpinnerView.swift in Sources */,
@@ -1762,9 +1762,9 @@
 				DA0E558B2510E985002B3AB1 /* MPLogSink.swift in Sources */,
 				93D39DA73327FB4E3D600A31 /* Updatable.swift in Sources */,
 				DA0E55B92510E9BB002B3AB1 /* MPBackgroundView.swift in Sources */,
-				DABC7BB8251C14160021ADD8 /* BasicServicesViewController.swift in Sources */,
+				DABC7BB8251C14160021ADD8 /* BasicSitesViewController.swift in Sources */,
 				DA0E559E2510E985002B3AB1 /* Describe.swift in Sources */,
-				DA0E55B32510E9BB002B3AB1 /* MPServicesTableView.swift in Sources */,
+				DA0E55B32510E9BB002B3AB1 /* MPSitesTableView.swift in Sources */,
 				DA0E55802510642B002B3AB1 /* Swift+MP.swift in Sources */,
 				DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */,
 				DA0E5584251064D9002B3AB1 /* WeakBox.swift in Sources */,
@@ -1772,7 +1772,7 @@
 				DA0E55A62510E992002B3AB1 /* MPOperand.swift in Sources */,
 				93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */,
 				93D39122A70525461AEE4D62 /* BasicUsersViewController.swift in Sources */,
-				93D394F428331F661FF95123 /* AutoFillServicesViewController.swift in Sources */,
+				93D394F428331F661FF95123 /* AutoFillSitesViewController.swift in Sources */,
 				93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */,
 				93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */,
 				93D390276912B43B33158168 /* MPPagerView.swift in Sources */,
@@ -1797,19 +1797,19 @@
 				93D398C964D8B1FC0F320085 /* MPUser.swift in Sources */,
 				93D39BED3DFB61513B0D015D /* MPUsersViewController.swift in Sources */,
 				93D395F689CD91219767B35C /* MPSpinnerView.swift in Sources */,
-				93D3960D18CFE6BBCD31C84E /* MPServicesViewController.swift in Sources */,
+				93D3960D18CFE6BBCD31C84E /* MPSitesViewController.swift in Sources */,
 				93D396EB0D88ED2F30F76123 /* MPNavigationController.swift in Sources */,
 				DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */,
-				93D39A2954B245FC0D925312 /* MPService.swift in Sources */,
-				93D393C161EB8FA55FA5174F /* MPServicesTableView.swift in Sources */,
+				93D39A2954B245FC0D925312 /* MPSite.swift in Sources */,
+				93D393C161EB8FA55FA5174F /* MPSitesTableView.swift in Sources */,
 				93D39C999EF9BD048E3892AA /* MPUtils.swift in Sources */,
 				93D39139805FC516B6C2C181 /* MPButton.swift in Sources */,
-				93D392937A9E6664CA09124D /* MPServicePreviewController.swift in Sources */,
-				93D393B953CB94FC9E964625 /* MPServicePreview.swift in Sources */,
+				93D392937A9E6664CA09124D /* MPSitePreviewController.swift in Sources */,
+				93D393B953CB94FC9E964625 /* MPSitePreview.swift in Sources */,
 				93D398854968B51F6B8DB031 /* MPAlert.swift in Sources */,
 				93D39470EC1F954780E354CB /* MPImageView.swift in Sources */,
 				DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */,
-				93D3929442591D379DD3B240 /* MPServiceDetailViewController.swift in Sources */,
+				93D3929442591D379DD3B240 /* MPSiteDetailViewController.swift in Sources */,
 				93D39F3343B552CB459F73EF /* MPResultTypeCell.swift in Sources */,
 				93D397750EE34A4995A884BA /* MPTapEffectView.swift in Sources */,
 				93D3949F5F5BFEDA9E2B86CE /* MPDateView.swift in Sources */,
@@ -1825,7 +1825,7 @@
 				93D39AB0E8841E744F4B6F4C /* MPItemCell.swift in Sources */,
 				93D39ED3EFFF0F0C7C2731BD /* MPExportViewController.swift in Sources */,
 				93D391377514DB16467A3CDC /* MPUserViewController.swift in Sources */,
-				93D390D13B1FAA3CF0CAF377 /* MPMasterPasswordField.swift in Sources */,
+				93D390D13B1FAA3CF0CAF377 /* MPUserSecretField.swift in Sources */,
 				93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */,
 				93D397E201A63B9E1F22CC6A /* MPDetailsHostController.swift in Sources */,
 				93D39B58BB6046893F274C8D /* MPAppDetailsViewController.swift in Sources */,
@@ -1871,7 +1871,7 @@
 				93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */,
 				93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */,
 				93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */,
-				93D39E0E73178FE39CF12B45 /* BasicServicesViewController.swift in Sources */,
+				93D39E0E73178FE39CF12B45 /* BasicSitesViewController.swift in Sources */,
 				93D39830BD42CE3468F6AFCB /* MPAutoFillSetupViewController.swift in Sources */,
 				93D39854B7171FE34024CEED /* MPPagerView.swift in Sources */,
 				93D399FB0C4228E18FDFAC9F /* MPPickerView.swift in Sources */,

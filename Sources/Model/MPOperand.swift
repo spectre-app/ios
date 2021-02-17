@@ -19,7 +19,7 @@ public protocol MPOperand {
 }
 
 public struct MPOperation {
-    let serviceName: String
+    let siteName: String
     let counter:     MPCounterValue
     let purpose:     MPKeyPurpose
     let type:        MPResultType
@@ -34,7 +34,7 @@ public struct MPOperation {
     }
 
     @discardableResult public func copy(fromView view: UIView, trackingFrom: String) -> Promise<(MPOperation, String)> {
-        let event = MPTracker.shared.begin( track: .subject( "service", action: "use" ) )
+        let event = MPTracker.shared.begin( track: .subject( "site", action: "use" ) )
 
         return self.token.promise { token in
             MPFeedback.shared.play( .trigger )
@@ -47,9 +47,9 @@ public struct MPOperation {
                     ] )
             self.operand.use()
 
-            MPAlert( title: "Copied \(self.purpose) (3 min)", message: self.serviceName, details:
+            MPAlert( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
             """
-            Your \(self.purpose) for \(self.serviceName) is:
+            Your \(self.purpose) for \(self.siteName) is:
             \(token)
 
             It was copied to the pasteboard, you can now switch to your application and paste it into the \(self.purpose) field.

@@ -79,15 +79,15 @@ class MPMarshal: Observable, Updatable {
         let exportEvent = MPTracker.shared.begin( track: .subject( "user", action: "export" ) )
 
         return DispatchQueue.mpw.promising {
-            guard let keyFactory = user.masterKeyFactory
+            guard let keyFactory = user.userKeyFactory
             else {
                 exportEvent.end( [ "result": "!keyFactory" ] )
                 throw MPError.state( title: "Not Authenticated", details: user )
             }
 
             return keyFactory.provide()
-        }.promise( on: .mpw ) { (keyProvider: @escaping MPMasterKeyProvider) in
-            guard let marshalledUser = mpw_marshal_user( user.fullName, keyProvider, user.algorithm )
+        }.promise( on: .mpw ) { (keyProvider: @escaping MPUserKeyProvider) in
+            guard let marshalledUser = mpw_marshal_user( user.userName, keyProvider, user.algorithm )
             else {
                 exportEvent.end( [ "result": "!marshal_user" ] )
                 throw MPError.internal( cause: "Couldn't marshal user.", details: user )
@@ -96,31 +96,31 @@ class MPMarshal: Observable, Updatable {
             marshalledUser.pointee.redacted = redacted
             marshalledUser.pointee.avatar = user.avatar.rawValue
             marshalledUser.pointee.identicon = user.identicon
-            marshalledUser.pointee.keyID = user.masterKeyID
+            marshalledUser.pointee.keyID = user.userKeyID
             marshalledUser.pointee.defaultType = user.defaultType
             marshalledUser.pointee.loginType = user.loginType
             marshalledUser.pointee.loginState = mpw_strdup( user.loginState )
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
-            for service in user.services.sorted( by: { $0.serviceName < $1.serviceName } ) {
-                guard let marshalledService = mpw_marshal_service( marshalledUser, service.serviceName, service.resultType, service.counter, service.algorithm )
+            for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
+                guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                 else {
-                    exportEvent.end( [ "result": "!marshal_service" ] )
-                    throw MPError.internal( cause: "Couldn't marshal service.", details: [ user, service ] )
+                    exportEvent.end( [ "result": "!marshal_site" ] )
+                    throw MPError.internal( cause: "Couldn't marshal site.", details: [ user, site ] )
                 }
 
-                marshalledService.pointee.resultState = mpw_strdup( service.resultState )
-                marshalledService.pointee.loginType = service.loginType
-                marshalledService.pointee.loginState = mpw_strdup( service.loginState )
-                marshalledService.pointee.url = mpw_strdup( service.url )
-                marshalledService.pointee.uses = service.uses
-                marshalledService.pointee.lastUsed = time_t( service.lastUsed.timeIntervalSince1970 )
+                marshalledSite.pointee.resultState = mpw_strdup( site.resultState )
+                marshalledSite.pointee.loginType = site.loginType
+                marshalledSite.pointee.loginState = mpw_strdup( site.loginState )
+                marshalledSite.pointee.url = mpw_strdup( site.url )
+                marshalledSite.pointee.uses = site.uses
+                marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
 
-                for question in service.questions.sorted( by: { $0.keyword < $1.keyword } ) {
-                    guard let marshalledQuestion = mpw_marshal_question( marshalledService, question.keyword )
+                for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
+                    guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
                     else {
                         exportEvent.end( [ "result": "!marshal_question" ] )
-                        throw MPError.internal( cause: "Couldn't marshal question.", details: [ user, service, question ] )
+                        throw MPError.internal( cause: "Couldn't marshal question.", details: [ user, site, question ] )
                     }
 
                     marshalledQuestion.pointee.type = question.resultType
@@ -145,7 +145,7 @@ class MPMarshal: Observable, Updatable {
 
         return DispatchQueue.mpw.promising {
             let importingFile = try UserFile( data: data )
-            guard let importingURL = self.url( for: importingFile.fullName, format: importingFile.format )
+            guard let importingURL = self.url( for: importingFile.userName, format: importingFile.format )
             else {
                 importEvent.end( [ "result": "!url" ] )
                 throw MPError.issue( title: "User Not Savable", details: importingFile )
@@ -174,16 +174,16 @@ class MPMarshal: Observable, Updatable {
 
             let spinner         = MPAlert( title: "Unlocking", message: importingFile.description,
                                            content: UIActivityIndicatorView( style: .whiteLarge ) )
-            let passwordField   = MPMasterPasswordField( userFile: existingFile )
+            let secretField     = MPUserSecretField( userFile: existingFile )
             let alertController = UIAlertController( title: "Merge Users", message:
             """
-            \(existingFile.fullName) already exists.
+            \(existingFile.userName) already exists.
 
             Replacing will delete the existing user and replace it with the imported user.
 
             Merging will import only the new information from the import file into the existing user.
             """, preferredStyle: .alert )
-            alertController.addTextField { passwordField.passwordField = $0 }
+            alertController.addTextField { secretField.passwordField = $0 }
             alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
                 importEvent.end( [ "result": "cancel" ] )
 
@@ -192,12 +192,12 @@ class MPMarshal: Observable, Updatable {
             alertController.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                 let replaceEvent = MPTracker.shared.begin( track: .subject( "user.importIntoFile", action: "replace" ) )
 
-                guard let authentication = passwordField.authenticate( { keyFactory in
+                guard let authentication = secretField.authenticate( { keyFactory in
                     importingFile.authenticate( using: keyFactory )
                 } )
                 else {
-                    mperror( title: "Couldn't import user", message: "Missing master password", in: viewController.view )
-                    replaceEvent.end( [ "result": "!masterPassword" ] )
+                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+                    replaceEvent.end( [ "result": "!userSecret" ] )
                     viewController.present( alertController, animated: true )
                     return
                 }
@@ -232,7 +232,7 @@ class MPMarshal: Observable, Updatable {
                     }
                     catch {
                         mperror( title: "Couldn't import user", message: "User authentication failed", error: error, in: viewController.view )
-                        replaceEvent.end( [ "result": "!masterKey" ] )
+                        replaceEvent.end( [ "result": "!userKey" ] )
                         viewController.present( alertController, animated: true )
                     }
                 } )
@@ -240,14 +240,14 @@ class MPMarshal: Observable, Updatable {
             alertController.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                 let mergeEvent = MPTracker.shared.begin( track: .subject( "user.importIntoFile", action: "merge" ) )
 
-                guard let authentication = passwordField.authenticate( { keyFactory in
+                guard let authentication = secretField.authenticate( { keyFactory in
                     Promise( .success(
                             (try? importingFile.authenticate( using: keyFactory ).await(),
                              try? existingFile.authenticate( using: keyFactory ).await()) ) )
                 } )
                 else {
-                    mperror( title: "Couldn't import user", message: "Missing master password", in: viewController.view )
-                    mergeEvent.end( [ "result": "!masterPassword" ] )
+                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+                    mergeEvent.end( [ "result": "!userSecret" ] )
                     viewController.present( alertController, animated: true )
                     return
                 }
@@ -272,19 +272,19 @@ class MPMarshal: Observable, Updatable {
 
                             let alertController = UIAlertController( title: "Unlock Existing User", message:
                             """
-                            The existing user is locked with a different master password.
+                            The existing user is locked with a different personal secret.
 
-                            The continue merging, also provide the existing user's master password.
+                            To continue merging, also provide the existing user's personal secret.
 
                             Replacing will delete the existing user and replace it with the imported user.
                             """, preferredStyle: .alert )
 
-                            let passwordField = MPMasterPasswordField( userFile: existingFile )
-                            passwordField.authenticater = { keyFactory in
+                            let secretField = MPUserSecretField( userFile: existingFile )
+                            secretField.authenticater = { keyFactory in
                                 spinner.show( in: viewController.view, dismissAutomatically: false )
                                 return existingFile.authenticate( using: keyFactory )
                             }
-                            passwordField.authenticated = { result in
+                            secretField.authenticated = { result in
                                 trc( "Existing user authentication: %@", result )
 
                                 spinner.dismiss()
@@ -300,12 +300,12 @@ class MPMarshal: Observable, Updatable {
                                     catch {
                                         mperror( title: "Couldn't import user", message: "User authentication failed",
                                                  details: existingFile, error: error, in: viewController.view )
-                                        unlockEvent.end( [ "result": "!masterKey" ] )
+                                        unlockEvent.end( [ "result": "!userKey" ] )
                                         viewController.present( alertController, animated: true )
                                     }
                                 }
                             }
-                            alertController.addTextField { passwordField.passwordField = $0 }
+                            alertController.addTextField { secretField.passwordField = $0 }
                             alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
                                 unlockEvent.end( [ "result": "cancel" ] )
                                 mergeEvent.end( [ "result": "failed: cancel" ] )
@@ -313,30 +313,31 @@ class MPMarshal: Observable, Updatable {
                                 promise.finish( .failure( MPError.cancelled ) )
                             } )
                             alertController.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
-                                if !passwordField.try() {
-                                    mperror( title: "Couldn't import user", message: "Missing master password", in: viewController.view )
-                                    unlockEvent.end( [ "result": "!masterPassword" ] )
+                                if !secretField.try() {
+                                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+                                    unlockEvent.end( [ "result": "!userSecret" ] )
                                     viewController.present( alertController, animated: true )
                                 }
                             } )
                             viewController.present( alertController, animated: true )
                         }
                         else if let existedUser = existedUser {
-                            let unlockEvent = MPTracker.shared.begin( track: .subject( "user.importIntoFile.merge", action: "unlockImport" ) )
+                            let unlockEvent
+                                    = MPTracker.shared.begin( track: .subject( "user.importIntoFile.merge", action: "unlockImport" ) )
 
                             let alertController = UIAlertController( title: "Unlock Import", message:
                             """
-                            The import user is locked with a different master password.
+                            The import user is locked with a different personal secret.
 
-                            The continue merging, also provide the imported user's master password.
+                            The continue merging, also provide the imported user's personal secret.
                             """, preferredStyle: .alert )
 
-                            let passwordField = MPMasterPasswordField( userFile: importingFile )
-                            passwordField.authenticater = { keyFactory in
+                            let secretField = MPUserSecretField( userFile: importingFile )
+                            secretField.authenticater = { keyFactory in
                                 spinner.show( in: viewController.view, dismissAutomatically: false )
                                 return importingFile.authenticate( using: keyFactory )
                             }
-                            passwordField.authenticated = { result in
+                            secretField.authenticated = { result in
                                 trc( "Import user authentication: %@", result )
 
                                 spinner.dismiss()
@@ -352,12 +353,12 @@ class MPMarshal: Observable, Updatable {
                                     catch {
                                         mperror( title: "Couldn't import user", message: "User authentication failed",
                                                  details: importingFile, error: error, in: viewController.view )
-                                        unlockEvent.end( [ "result": "!masterKey" ] )
+                                        unlockEvent.end( [ "result": "!userKey" ] )
                                         viewController.present( alertController, animated: true )
                                     }
                                 }
                             }
-                            alertController.addTextField { passwordField.passwordField = $0 }
+                            alertController.addTextField { secretField.passwordField = $0 }
                             alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
                                 unlockEvent.end( [ "result": "cancel" ] )
                                 mergeEvent.end( [ "result": "failed: cancel" ] )
@@ -365,9 +366,9 @@ class MPMarshal: Observable, Updatable {
                                 promise.finish( .failure( MPError.cancelled ) )
                             } )
                             alertController.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
-                                if !passwordField.try() {
-                                    mperror( title: "Couldn't import user", message: "Missing master password", in: viewController.view )
-                                    unlockEvent.end( [ "result": "!masterPassword" ] )
+                                if !secretField.try() {
+                                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+                                    unlockEvent.end( [ "result": "!userSecret" ] )
                                     viewController.present( alertController, animated: true )
                                 }
                             } )
@@ -375,7 +376,7 @@ class MPMarshal: Observable, Updatable {
                         }
                         else {
                             mperror( title: "Couldn't import user", message: "User authentication failed", in: viewController.view )
-                            mergeEvent.end( [ "result": "!masterKey" ] )
+                            mergeEvent.end( [ "result": "!userKey" ] )
                             viewController.present( alertController, animated: true )
                         }
                     }
@@ -400,21 +401,21 @@ class MPMarshal: Observable, Updatable {
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
         return DispatchQueue.mpw.promising {
-            var replacedServices = 0, newServices = 0
-            for importedService in importedUser.services {
-                if let existedService = existedUser.services.first( where: { $0.serviceName == importedService.serviceName } ) {
-                    if importedService.lastUsed <= existedService.lastUsed {
+            var replacedSites = 0, newSites = 0
+            for importedSite in importedUser.sites {
+                if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
+                    if importedSite.lastUsed <= existedSite.lastUsed {
                         continue
                     }
 
-                    existedUser.services.removeAll { $0 === existedService }
-                    replacedServices += 1
+                    existedUser.sites.removeAll { $0 === existedSite }
+                    replacedSites += 1
                 }
                 else {
-                    newServices += 1
+                    newSites += 1
                 }
 
-                existedUser.services.append( importedService.copy( to: existedUser ) )
+                existedUser.sites.append( importedSite.copy( to: existedUser ) )
             }
             var updatedUser = false
             if importedUser.lastUsed >= existedUser.lastUsed {
@@ -423,14 +424,14 @@ class MPMarshal: Observable, Updatable {
                 existedUser.algorithm = importedUser.algorithm
                 existedUser.defaultType = importedUser.defaultType
                 existedUser.lastUsed = importedUser.lastUsed
-                existedUser.masterKeyID = importedUser.masterKeyID
+                existedUser.userKeyID = importedUser.userKeyID
                 updatedUser = true
             }
 
             return DispatchQueue.main.promise {
                 spinner.dismiss()
 
-                if !updatedUser && replacedServices + newServices == 0 {
+                if !updatedUser && replacedSites + newSites == 0 {
                     importEvent.end( [ "result": "success: skipped" ] )
                     MPAlert( title: "Import Skipped", message: existedUser.description, details:
                     """
@@ -443,9 +444,9 @@ class MPMarshal: Observable, Updatable {
                     importEvent.end( [ "result": "success: complete" ] )
                     MPAlert( title: "Import Complete", message: existedUser.description, details:
                     """
-                    Completed the import of services into \(existedUser).
+                    Completed the import of sites into \(existedUser).
 
-                    This was a merge import.  \(replacedServices) services were replaced, \(newServices) new services were created.
+                    This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
                     \(updatedUser ?
                             "The user settings were updated from the import.":
                             "The existing user's settings were more recent than the import.")
@@ -508,7 +509,7 @@ class MPMarshal: Observable, Updatable {
     }
 
     private func url(for user: MPUser, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
-        self.url( for: user.fullName, in: directory, format: format )
+        self.url( for: user.userName, in: directory, format: format )
     }
 
     private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
@@ -592,7 +593,7 @@ class MPMarshal: Observable, Updatable {
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
-            "\(productName) Export: \(self.user.fullName)"
+            "\(productName) Export: \(self.user.userName)"
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController, thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize) -> UIImage? {
@@ -607,7 +608,7 @@ class MPMarshal: Observable, Updatable {
     }
 
     class UserFile: Hashable, Identifiable, Comparable, CustomStringConvertible, CredentialSupplier {
-        public lazy var keychainKeyFactory = MPKeychainKeyFactory( fullName: self.fullName )
+        public lazy var keychainKeyFactory = MPKeychainKeyFactory( userName: self.userName )
 
         public var origin: URL?
         public var file:   UnsafeMutablePointer<MPMarshalledFile>
@@ -616,12 +617,12 @@ class MPMarshal: Observable, Updatable {
         public let exportDate: Date
         public let redacted:   Bool
 
-        public let algorithm:   MPAlgorithmVersion
-        public let avatar:      MPUser.Avatar
-        public let fullName:    String
-        public let identicon:   MPIdenticon
-        public let masterKeyID: MPKeyID
-        public let lastUsed:    Date
+        public let algorithm: MPAlgorithmVersion
+        public let avatar:    MPUser.Avatar
+        public let userName:  String
+        public let identicon: MPIdenticon
+        public let userKeyID: MPKeyID
+        public let lastUsed:  Date
 
         public let biometricLock: Bool
         public let autofill:      Bool
@@ -629,7 +630,7 @@ class MPMarshal: Observable, Updatable {
         public var resetKey = false
 
         public var id: String {
-            self.fullName
+            self.userName
         }
 
         static func load(origin: URL) throws -> UnsafeMutablePointer<MPMarshalledFile>? {
@@ -666,7 +667,7 @@ class MPMarshal: Observable, Updatable {
         init(file: UnsafeMutablePointer<MPMarshalledFile>, origin: URL? = nil) throws {
             guard file.pointee.error.type == .success
             else { throw MPError.marshal( file.pointee.error, title: "Cannot Load User", details: origin ) }
-            guard let info = file.pointee.info?.pointee, info.format != .none, let fullName = String.valid( info.fullName )
+            guard let info = file.pointee.info?.pointee, info.format != .none, let userName = String.valid( info.userName )
             else { throw MPError.state( title: "Corrupted User Document", details: origin ) }
 
             self.origin = origin
@@ -676,9 +677,9 @@ class MPMarshal: Observable, Updatable {
             self.redacted = info.redacted
             self.algorithm = info.algorithm
             self.avatar = MPUser.Avatar( rawValue: info.avatar ) ?? .avatar_0
-            self.fullName = fullName
+            self.userName = userName
             self.identicon = info.identicon
-            self.masterKeyID = info.keyID
+            self.userKeyID = info.keyID
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
             self.biometricLock = file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
@@ -694,15 +695,15 @@ class MPMarshal: Observable, Updatable {
 
                 // Authenticate against the file with the given keyFactory.
                 guard let marshalledUser = mpw_marshal_auth( self.file, $0 )?.pointee, self.file.pointee.error.type == .success
-                else { throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User", details: self.fullName ) }
+                else { throw MPError.marshal( self.file.pointee.error, title: "Issue Authenticating User", details: self.userName ) }
 
                 // Yield a fully authenticated user.
                 return MPUser(
                         algorithm: marshalledUser.algorithm,
                         avatar: MPUser.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
-                        fullName: String.valid( marshalledUser.fullName ) ?? self.fullName,
+                        userName: String.valid( marshalledUser.userName ) ?? self.userName,
                         identicon: marshalledUser.identicon,
-                        masterKeyID: self.resetKey ? MPNoKeyID: self.masterKeyID,
+                        userKeyID: self.resetKey ? MPNoKeyID: self.userKeyID,
                         defaultType: marshalledUser.defaultType,
                         loginType: marshalledUser.loginType,
                         loginState: .valid( marshalledUser.loginState ),
@@ -710,28 +711,28 @@ class MPMarshal: Observable, Updatable {
                         origin: self.origin, file: self.file
                 ) { user in
 
-                    for s in 0..<marshalledUser.services_count {
-                        let marshalledService = (marshalledUser.services + s).pointee
-                        if let serviceName = String.valid( marshalledService.serviceName ) {
-                            user.services.append( MPService(
+                    for s in 0..<marshalledUser.sites_count {
+                        let marshalledSite = (marshalledUser.sites + s).pointee
+                        if let siteName = String.valid( marshalledSite.siteName ) {
+                            user.sites.append( MPSite(
                                     user: user,
-                                    serviceName: serviceName,
-                                    algorithm: marshalledService.algorithm,
-                                    counter: marshalledService.counter,
-                                    resultType: marshalledService.resultType,
-                                    resultState: .valid( marshalledService.resultState ),
-                                    loginType: marshalledService.loginType,
-                                    loginState: .valid( marshalledService.loginState ),
-                                    url: .valid( marshalledService.url ),
-                                    uses: marshalledService.uses,
-                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledService.lastUsed ) )
-                            ) { service in
+                                    siteName: siteName,
+                                    algorithm: marshalledSite.algorithm,
+                                    counter: marshalledSite.counter,
+                                    resultType: marshalledSite.resultType,
+                                    resultState: .valid( marshalledSite.resultState ),
+                                    loginType: marshalledSite.loginType,
+                                    loginState: .valid( marshalledSite.loginState ),
+                                    url: .valid( marshalledSite.url ),
+                                    uses: marshalledSite.uses,
+                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
+                            ) { site in
 
-                                for q in 0..<marshalledService.questions_count {
-                                    let marshalledQuestion = (marshalledService.questions + q).pointee
+                                for q in 0..<marshalledSite.questions_count {
+                                    let marshalledQuestion = (marshalledSite.questions + q).pointee
                                     if let keyword = String.valid( marshalledQuestion.keyword ) {
-                                        service.questions.append( MPQuestion(
-                                                service: service,
+                                        site.questions.append( MPQuestion(
+                                                site: site,
                                                 keyword: keyword,
                                                 resultType: marshalledQuestion.type,
                                                 resultState: .valid( marshalledQuestion.state )
@@ -755,9 +756,9 @@ class MPMarshal: Observable, Updatable {
             hasher.combine( self.redacted )
             hasher.combine( self.algorithm )
             hasher.combine( self.avatar )
-            hasher.combine( self.fullName )
+            hasher.combine( self.userName )
             hasher.combine( self.identicon.encoded() )
-            hasher.combine( self.masterKeyID )
+            hasher.combine( self.userKeyID )
             hasher.combine( self.lastUsed )
             hasher.combine( self.biometricLock )
             hasher.combine( self.autofill )
@@ -765,15 +766,15 @@ class MPMarshal: Observable, Updatable {
 
         static func ==(lhs: UserFile, rhs: UserFile) -> Bool {
             lhs.origin == rhs.origin && lhs.format == rhs.format && lhs.exportDate == rhs.exportDate && lhs.redacted == rhs.redacted &&
-                    lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.fullName == rhs.fullName &&
-                    lhs.identicon == rhs.identicon && lhs.masterKeyID == rhs.masterKeyID && lhs.lastUsed == rhs.lastUsed &&
+                    lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
+                    lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
                     lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
         }
 
         static func !=(lhs: MPUser, rhs: UserFile) -> Bool {
             lhs.origin != rhs.origin || lhs.exportDate != rhs.exportDate ||
-                    lhs.algorithm != rhs.algorithm || lhs.avatar != rhs.avatar || lhs.fullName != rhs.fullName ||
-                    lhs.identicon != rhs.identicon || lhs.masterKeyID != rhs.masterKeyID || lhs.lastUsed != rhs.lastUsed ||
+                    lhs.algorithm != rhs.algorithm || lhs.avatar != rhs.avatar || lhs.userName != rhs.userName ||
+                    lhs.identicon != rhs.identicon || lhs.userKeyID != rhs.userKeyID || lhs.lastUsed != rhs.lastUsed ||
                     lhs.biometricLock != rhs.biometricLock || lhs.autofill != rhs.autofill
         }
 
@@ -784,30 +785,30 @@ class MPMarshal: Observable, Updatable {
                 return lhs.lastUsed > rhs.lastUsed
             }
 
-            return lhs.fullName > rhs.fullName
+            return lhs.userName > rhs.userName
         }
 
         // MARK: --- CustomStringConvertible ---
 
         var description: String {
             if let identicon = self.identicon.encoded() {
-                return "\(self.fullName): \(identicon) [\(self.format)]"
+                return "\(self.userName): \(identicon) [\(self.format)]"
             }
             else {
-                return "\(self.fullName): \(self.masterKeyID) [\(self.format)]"
+                return "\(self.userName): \(self.userKeyID) [\(self.format)]"
             }
         }
 
         // MARK: --- CredentialSupplier ---
 
-        var credentialHost: String {
-            self.fullName
+        var credentialOwner: String {
+            self.userName
         }
         var credentials: [AutoFill.Credential]? {
             guard self.autofill
             else { return nil }
 
-            return self.file.mpw_find( path: "services" )?.compactMap {
+            return self.file.mpw_find( path: "sites" )?.compactMap {
                 String.valid( $0.obj_key ).flatMap { AutoFill.Credential( supplier: self, name: $0 ) }
             }
         }
@@ -829,8 +830,8 @@ extension MPMarshalError: LocalizedError {
                 return "The marshall file uses an unsupported format version. (\(self.type))"
             case .errorMissing:
                 return "A required value is missing or not specified. (\(self.type))"
-            case .errorMasterPassword:
-                return "The given master password is not valid. (\(self.type))"
+            case .errorUserSecret:
+                return "The given personal secret is not valid. (\(self.type))"
             case .errorIllegal:
                 return "An illegal value was specified. (\(self.type))"
             case .errorInternal:

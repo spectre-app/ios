@@ -143,7 +143,7 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
                 [
                     Link( title: "Home", url: URL( string: "https://spectre.app" ) ),
                     Link( title: "Support", url: URL( string: "http://support.spectre.app" ) ),
-                    Link( title: "White Paper", url: URL( string: "https://spectre.app/masterpassword-algorithm.pdf" ) ),
+                    Link( title: "White Paper", url: URL( string: "https://spectre.app/Spectre-algorithm.pdf" ) ),
                     Link( title: "Source Portal", url: URL( string: "https://source.spectre.app" ) ),
                 ]
             } )

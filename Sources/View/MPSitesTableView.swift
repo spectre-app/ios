@@ -6,7 +6,7 @@
 import UIKit
 import AVKit
 
-class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updatable {
+class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updatable {
     public var user:             MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
@@ -24,20 +24,20 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             }
         }
     }
-    public var serviceActions = [ ServiceAction ]() {
+    public var siteActions = [ SiteAction ]() {
         didSet {
             self.updateTask.request()
         }
     }
-    public var preferredFilter:  ((MPService) -> Bool)? {
+    public var preferredFilter: ((MPSite) -> Bool)? {
         didSet {
             self.updateTask.request()
         }
     }
-    public var preferredService: String?
+    public var preferredSite:   String?
 
-    private lazy var servicesDataSource = ServicesSource( view: self )
-    private lazy var updateTask         = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
+    private lazy var sitesDataSource = SitesSource( view: self )
+    private lazy var updateTask      = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
     var updatesPostponed: Bool {
         // Updates prior to attachment may result in an incorrect initial content offset.
         DispatchQueue.main.sync { self.window == nil }
@@ -59,11 +59,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     init() {
         super.init( frame: .zero, style: .plain )
 
-        self.register( ServiceCell.self )
+        self.register( SiteCell.self )
         self.register( LiefsteCell.self )
 
         self.delegate = self
-        self.dataSource = self.servicesDataSource
+        self.dataSource = self.sitesDataSource
         self.backgroundColor = .clear
         self.isOpaque = false
         self.separatorStyle = .singleLine
@@ -79,55 +79,55 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
     func update() {
         self.updateTask.cancel()
 
-        var elementsBySection = [ [ ServiceItem ] ]()
+        var elementsBySection = [ [ SiteItem ] ]()
 
-        if let user = self.user, user.masterKeyFactory != nil {
-            // Filter services by query and order by preference.
-            let results = ServiceItem.filtered( user.services, query: self.query ?? "", preferred: self.preferredFilter )
+        if let user = self.user, user.userKeyFactory != nil {
+            // Filter sites by query and order by preference.
+            let results = SiteItem.filtered( user.sites, query: self.query ?? "", preferred: self.preferredFilter )
             elementsBySection.append( results )
 
-            // Add "new service" result if there is a query and no exact result
+            // Add "new site" result if there is a query and no exact result
             if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
-                elementsBySection.append( [ using( self.servicesDataSource.newItem ) {
-                    $0?.service.serviceName = query
+                elementsBySection.append( [ using( self.sitesDataSource.newItem ) {
+                    $0?.site.siteName = query
                     $0?.query = query
                 } ??
-                        using( ServiceItem( service: MPService( user: user, serviceName: query ), query: query ) ) {
-                            self.servicesDataSource.newItem = $0
+                        using( SiteItem( site: MPSite( user: user, siteName: query ), query: query ) ) {
+                            self.sitesDataSource.newItem = $0
                         } ] )
             }
-            // Add "new service" result if there is a preferred service and no preferred results
-            else if let preferredService = self.preferredService?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
-                elementsBySection.insert( [ self.servicesDataSource.preferredItem ??
-                        using( ServiceItem( service: MPService( user: user, serviceName: preferredService ), preferred: true ) ) {
-                            self.servicesDataSource.preferredItem = $0
+            // Add "new site" result if there is a preferred site and no preferred results
+            else if let preferredSite = self.preferredSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
+                elementsBySection.insert( [ self.sitesDataSource.preferredItem ??
+                        using( SiteItem( site: MPSite( user: user, siteName: preferredSite ), preferred: true ) ) {
+                            self.sitesDataSource.preferredItem = $0
                         } ], at: 0 )
             }
             else {
                 elementsBySection.append( [] )
-                self.servicesDataSource.newItem = nil
+                self.sitesDataSource.newItem = nil
             }
 
-            // Special case for selected service: keep selection on the service result that matches the query
-            if let selectedItem = self.servicesDataSource.selectedItem {
-                if let newItem = self.servicesDataSource.newItem, selectedItem == newItem {
-                    self.servicesDataSource.selectedItem = newItem
+            // Special case for selected site: keep selection on the site result that matches the query
+            if let selectedItem = self.sitesDataSource.selectedItem {
+                if let newItem = self.sitesDataSource.newItem, selectedItem == newItem {
+                    self.sitesDataSource.selectedItem = newItem
                 }
                 else {
-                    self.servicesDataSource.selectedItem = results.first { $0.id == selectedItem.id }
+                    self.sitesDataSource.selectedItem = results.first { $0.id == selectedItem.id }
                 }
             }
         }
 
-        // Update the services table to show the newly filtered services
-        self.servicesDataSource.update( elementsBySection, selected: Set( [ self.servicesDataSource.selectedItem ] ) )
+        // Update the sites table to show the newly filtered sites
+        self.sitesDataSource.update( elementsBySection, selected: Set( [ self.sitesDataSource.selectedItem ] ) )
     }
 
     // MARK: --- UITableViewDelegate ---
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as? LiefsteCell)?.willDisplay()
-        (cell as? ServiceCell)?.service?.refresh()
+        (cell as? SiteCell)?.site?.refresh()
     }
 
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -136,20 +136,20 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
 
     @available( iOS 13, * )
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        (self.servicesDataSource.element( at: indexPath )?.service).flatMap { service in
+        (self.sitesDataSource.element( at: indexPath )?.site).flatMap { site in
             UIContextMenuConfiguration(
-                    indexPath: indexPath, previewProvider: { _ in MPServicePreviewController( service: service ) }, actionProvider: { _, configuration in
-                UIMenu( title: service.serviceName, children: [
+                    indexPath: indexPath, previewProvider: { _ in MPSitePreviewController( site: site ) }, actionProvider: { _, configuration in
+                UIMenu( title: site.siteName, children: [
                     UIAction( title: "Delete", image: .icon( "" ),
                               identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
                         configuration.action = action
-                        service.user.services.removeAll { $0 === service }
+                        site.user.sites.removeAll { $0 === site }
                     }
-                ] + self.serviceActions.filter( { $0.appearance.contains( .menu ) } ).map { serviceAction in
-                    UIAction( title: serviceAction.title, image: .icon( serviceAction.icon ),
-                              identifier: serviceAction.tracking.flatMap { UIAction.Identifier( $0.action ) } ) { action in
+                ] + self.siteActions.filter( { $0.appearance.contains( .menu ) } ).map { siteAction in
+                    UIAction( title: siteAction.title, image: .icon( siteAction.icon ),
+                              identifier: siteAction.tracking.flatMap { UIAction.Identifier( $0.action ) } ) { action in
                         configuration.action = action
-                        serviceAction.action( service, nil, .menu )
+                        siteAction.action( site, nil, .menu )
                     }
                 } )
             } )
@@ -161,10 +161,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        configuration.event = MPTracker.shared.begin( track: .subject( "services.service", action: "menu" ) )
+        configuration.event = MPTracker.shared.begin( track: .subject( "sites.site", action: "menu" ) )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.preview.color?.with( alpha: .long )
+        parameters.backgroundColor = self.sitesDataSource.element( at: indexPath )?.site.preview.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -176,16 +176,16 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.servicesDataSource.element( at: indexPath )?.service.preview.color?.with( alpha: .long )
+        parameters.backgroundColor = self.sitesDataSource.element( at: indexPath )?.site.preview.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.servicesDataSource.selectedItem = self.servicesDataSource.element( at: self.indexPathForSelectedRow )
+        self.sitesDataSource.selectedItem = self.sitesDataSource.element( at: self.indexPathForSelectedRow )
     }
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        self.servicesDataSource.selectedItem = self.servicesDataSource.element( at: self.indexPathForSelectedRow )
+        self.sitesDataSource.selectedItem = self.sitesDataSource.element( at: self.indexPathForSelectedRow )
     }
 
     // MARK: --- MPUserObserver ---
@@ -202,15 +202,15 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         self.updateTask.request()
     }
 
-    func userDidUpdateServices(_ user: MPUser) {
+    func userDidUpdateSites(_ user: MPUser) {
         self.updateTask.request()
     }
 
     // MARK: --- Types ---
 
-    class ServiceItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
-        class func filtered(_ services: [MPService], query: String, preferred: ((MPService) -> Bool)?) -> [ServiceItem] {
-            var items = services.map { ServiceItem( service: $0, query: query, preferred: preferred?( $0 ) ?? false ) }
+    class SiteItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
+        class func filtered(_ sites: [MPSite], query: String, preferred: ((MPSite) -> Bool)?) -> [SiteItem] {
+            var items = sites.map { SiteItem( site: $0, query: query, preferred: preferred?( $0 ) ?? false ) }
                                 .filter { $0.isMatched }.sorted()
 
             if preferred != nil {
@@ -221,15 +221,15 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
 
         var debugDescription: String {
-            "{ServiceItem: id=\(self.id), isMatched=\(self.isMatched), isExact=\(self.isExact), isPreferred=\(self.isPreferred), subtitle=\(self.subtitle), service=\(self.service)}"
+            "{SiteItem: id=\(self.id), isMatched=\(self.isMatched), isExact=\(self.isExact), isPreferred=\(self.isPreferred), subtitle=\(self.subtitle), site=\(self.site)}"
         }
 
-        let service: MPService
+        let site: MPSite
         var subtitle = NSAttributedString()
         var matches  = [ String.Index ]()
         var query    = "" {
             didSet {
-                let key           = self.service.serviceName
+                let key           = self.site.siteName
                 let attributedKey = NSMutableAttributedString( string: key )
                 defer { self.subtitle = attributedKey }
                 self.isExact = key == self.query
@@ -273,11 +273,11 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         let isPreferred: Bool
 
         var id: String {
-            self.service.serviceName
+            self.site.siteName
         }
 
-        init(service: MPService, query: String = "", preferred: Bool = false) {
-            self.service = service
+        init(site: MPSite, query: String = "", preferred: Bool = false) {
+            self.site = site
             self.isPreferred = preferred
 
             defer {
@@ -286,39 +286,39 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
 
         func hash(into hasher: inout Hasher) {
-            hasher.combine( self.service )
+            hasher.combine( self.site )
         }
 
-        static func ==(lhs: ServiceItem, rhs: ServiceItem) -> Bool {
-            lhs.subtitle == rhs.subtitle && lhs.service === rhs.service
+        static func ==(lhs: SiteItem, rhs: SiteItem) -> Bool {
+            lhs.subtitle == rhs.subtitle && lhs.site === rhs.site
         }
 
-        static func <(lhs: ServiceItem, rhs: ServiceItem) -> Bool {
-            lhs.service < rhs.service
+        static func <(lhs: SiteItem, rhs: SiteItem) -> Bool {
+            lhs.site < rhs.site
         }
     }
 
-    class ServicesSource: DataSource<ServiceItem> {
-        let view:          MPServicesTableView
-        var newItem:       ServiceItem?
-        var preferredItem: ServiceItem?
-        var selectedItem:  ServiceItem?
+    class SitesSource: DataSource<SiteItem> {
+        let view:          MPSitesTableView
+        var newItem:       SiteItem?
+        var preferredItem: SiteItem?
+        var selectedItem:  SiteItem?
 
-        init(view: MPServicesTableView) {
+        init(view: MPSitesTableView) {
             self.view = view
 
             super.init( tableView: view )
         }
 
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            !(self.element( at: indexPath )?.service.isNew ?? true)
+            !(self.element( at: indexPath )?.site.isNew ?? true)
         }
 
         override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-            if let service = self.element( at: indexPath )?.service, editingStyle == .delete {
-                MPTracker.shared.event( track: .subject( "services.service", action: "delete" ) )
+            if let site = self.element( at: indexPath )?.site, editingStyle == .delete {
+                MPTracker.shared.event( track: .subject( "sites.site", action: "delete" ) )
 
-                service.user.services.removeAll { $0 === service }
+                site.user.sites.removeAll { $0 === site }
             }
         }
 
@@ -328,32 +328,32 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                 return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
             }
 
-            let cell = ServiceCell.dequeue( from: tableView, indexPath: indexPath )
-            cell.servicesView = self.view
+            let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
+            cell.sitesView = self.view
             cell.result = result
             cell.update()
             return cell
         }
     }
 
-    class ServiceCell: UITableViewCell, Updatable, MPServiceObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
-        public weak var servicesView: MPServicesTableView?
-        public var result:  ServiceItem? {
+    class SiteCell: UITableViewCell, Updatable, MPSiteObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
+        public weak var sitesView: MPSitesTableView?
+        public var result:  SiteItem? {
             willSet {
-                self.service?.observers.unregister( observer: self )
-                self.service?.user.observers.unregister( observer: self )
+                self.site?.observers.unregister( observer: self )
+                self.site?.user.observers.unregister( observer: self )
             }
             didSet {
-                if let service = self.service {
-                    service.observers.register( observer: self )
-                    service.user.observers.register( observer: self )
+                if let site = self.site {
+                    site.observers.register( observer: self )
+                    site.user.observers.register( observer: self )
                 }
 
                 self.updateTask.request()
             }
         }
-        public var service: MPService? {
-            self.result?.service
+        public var site: MPSite? {
+            self.result?.site
         }
 
         private var mode            = MPKeyPurpose.authentication {
@@ -364,16 +364,16 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             }
         }
         private let backgroundImage = MPBackgroundView( mode: .clear )
-        private let modeButton      = MPButton( track: .subject( "services.service", action: "mode" ),
+        private let modeButton      = MPButton( track: .subject( "sites.site", action: "mode" ),
                                                 image: .icon( "" ), background: false )
-        private let newButton       = MPButton( track: .subject( "services.service", action: "add" ),
+        private let newButton       = MPButton( track: .subject( "sites.site", action: "add" ),
                                                 image: .icon( "" ), background: false )
         private let actionsStack    = UIStackView()
         private let selectionView   = UIView()
         private let resultLabel     = UITextField()
         private let captionLabel    = UILabel()
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
-        private lazy var updateTask   = DispatchTask( named: self.service?.serviceName, update: self )
+        private lazy var updateTask   = DispatchTask( named: self.site?.siteName, update: self )
         private lazy var selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
             active.constrainTo {
                 $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
@@ -422,8 +422,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.newButton.tapEffect = false
             self.newButton.isUserInteractionEnabled = false
             self.newButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                if let service = self.service, service.isNew {
-                    service.user.services.append( service )
+                if let site = self.site, site.isNew {
+                    site.user.sites.append( site )
                 }
             }
 
@@ -493,10 +493,10 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             super.didMoveToSuperview()
 
             self.actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-            self.servicesView?.serviceActions.filter( { $0.appearance.contains( .cell ) } ).forEach { serviceAction in
-                self.actionsStack.addArrangedSubview( MPButton( track: serviceAction.tracking, image: .icon( serviceAction.icon ), background: false ) { [unowned self] _, _ in
-                    if let service = self.service {
-                        serviceAction.action( service, self.mode, .cell )
+            self.sitesView?.siteActions.filter( { $0.appearance.contains( .cell ) } ).forEach { siteAction in
+                self.actionsStack.addArrangedSubview( MPButton( track: siteAction.tracking, image: .icon( siteAction.icon ), background: false ) { [unowned self] _, _ in
+                    if let site = self.site {
+                        siteAction.action( site, self.mode, .cell )
                     }
                 } )
             }
@@ -523,9 +523,9 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             self.updateTask.request()
         }
 
-        // MARK: --- MPServiceObserver ---
+        // MARK: --- MPSiteObserver ---
 
-        func serviceDidChange(_ service: MPService) {
+        func siteDidChange(_ site: MPSite) {
             self.updateTask.request()
         }
 
@@ -549,14 +549,14 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
             DispatchQueue.main.perform {
                 self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
 
-                self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.service?.preview.color?.hue ) )
-                self.backgroundImage.image = self.service?.preview.image
-                self.backgroundImage.imageColor = self.service?.preview.color
+                self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
+                self.backgroundImage.image = self.site?.preview.image
+                self.backgroundImage.imageColor = self.site?.preview.color
 
-                let isNew = self.service?.isNew ?? false
+                let isNew = self.site?.isNew ?? false
                 if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
                     if isNew {
-                        resultCaption.append( NSAttributedString( string: " (new service)" ) )
+                        resultCaption.append( NSAttributedString( string: " (new site)" ) )
                     }
                     self.captionLabel.attributedText = resultCaption
                 }
@@ -585,14 +585,14 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
                 self.newButton.alpha = self.isSelected && isNew ? .on: .off
                 self.newButton.isUserInteractionEnabled = self.newButton.alpha != .off
                 self.selectionConfiguration.isActive = self.isSelected
-                self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.service?.user.maskPasswords ?? true
+                self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
 
-                self.service?.result( keyPurpose: self.mode ).token.then( on: .main ) {
+                self.site?.result( keyPurpose: self.mode ).token.then( on: .main ) {
                     do {
                         self.resultLabel.text = try $0.get()
                     }
                     catch {
-                        mperror( title: "Couldn't update service cell.", error: error )
+                        mperror( title: "Couldn't update site cell.", error: error )
                     }
                 }
             }
@@ -604,8 +604,8 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         private let propLabel   = UILabel()
         private var player: AVPlayer?
 
-        class func `is`(result: ServiceItem?) -> Bool {
-            result?.service.serviceName == "liefste"
+        class func `is`(result: SiteItem?) -> Bool {
+            result?.site.siteName == "liefste"
         }
 
         // MARK: --- Life ---
@@ -651,7 +651,7 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
 
         func willDisplay() {
-            MPTracker.shared.event( track: .subject( "services", action: "liefste" ) )
+            MPTracker.shared.event( track: .subject( "sites", action: "liefste" ) )
 
             self.player = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
             self.player?.play()
@@ -672,12 +672,12 @@ class MPServicesTableView: UITableView, UITableViewDelegate, MPUserObserver, Upd
         }
     }
 
-    struct ServiceAction {
+    struct SiteAction {
         let tracking:   MPTracking?
         let title:      String
         let icon:       String
         let appearance: [Appearance]
-        let action:     (MPService, MPKeyPurpose?, Appearance) -> Void
+        let action:     (MPSite, MPKeyPurpose?, Appearance) -> Void
 
         enum Appearance {
             case cell, menu

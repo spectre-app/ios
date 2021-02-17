@@ -1,6 +1,6 @@
 //
 //  MPUsersViewController.swift
-//  Master Password
+//  Spectre
 //
 //  Created by Maarten Billemont on 2018-01-21.
 //  Copyright © 2018 Maarten Billemont. All rights reserved.
@@ -43,7 +43,7 @@ class AutoFillUsersViewController: BasicUsersViewController {
         super.viewDidAppear( animated )
 
         if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
-            self.usersSpinner.requestSelection( at: self.fileSource.indexPath( where: { $0?.fullName == userName } ) )
+            self.usersSpinner.requestSelection( at: self.fileSource.indexPath( where: { $0?.userName == userName } ) )
         }
         else if self.fileSource.count() == 1, let only = self.fileSource.elements().first( where: { _ in true } )?.indexPath {
             self.usersSpinner.requestSelection( at: only )
@@ -61,6 +61,6 @@ class AutoFillUsersViewController: BasicUsersViewController {
     override func login(user: MPUser) {
         super.login( user: user )
 
-        self.detailsHost.show( AutoFillServicesViewController( user: user ), sender: self )
+        self.detailsHost.show( AutoFillSitesViewController( user: user ), sender: self )
     }
 }

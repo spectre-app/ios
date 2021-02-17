@@ -5,10 +5,10 @@
 
 import UIKit
 
-class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MPDetailViewController {
+class BasicSitesViewController: MPUserViewController, UITextFieldDelegate, MPDetailViewController {
     internal lazy var topContainer = MPEffectView( content: self.searchField )
-    internal let searchField       = UITextField()
-    internal let servicesTableView = MPServicesTableView()
+    internal let searchField    = UITextField()
+    internal let sitesTableView = MPSitesTableView()
 
     var isContentScrollable = true
 
@@ -16,7 +16,7 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
 
     override var user: MPUser? {
         didSet {
-            self.servicesTableView.user = self.user
+            self.sitesTableView.user = self.user
         }
     }
 
@@ -26,7 +26,7 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
         super.viewDidLoad()
 
         // - View
-        self.searchField.attributedPlaceholder = NSAttributedString( string: "Service Name" )
+        self.searchField.attributedPlaceholder = NSAttributedString( string: "Site Domain" )
         self.searchField => \.attributedPlaceholder => .font => Theme.current.font.body
         self.searchField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
         self.searchField => \.textColor => Theme.current.color.body
@@ -41,18 +41,18 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
         self.searchField.returnKeyType = .done
         self.searchField.delegate = self
         self.searchField.action( for: [ .editingChanged, .editingDidBegin ] ) { [unowned self] in
-            self.servicesTableView.query = self.searchField.text
+            self.sitesTableView.query = self.searchField.text
         }
 
-        self.servicesTableView.keyboardDismissMode = .interactive
-        self.servicesTableView.contentInsetAdjustmentBehavior = .always
+        self.sitesTableView.keyboardDismissMode = .interactive
+        self.sitesTableView.contentInsetAdjustmentBehavior = .always
 
         // - Hierarchy
-        self.view.addSubview( self.servicesTableView )
+        self.view.addSubview( self.sitesTableView )
         self.view.addSubview( self.topContainer )
 
         // - Layout
-        LayoutConfiguration( view: self.servicesTableView )
+        LayoutConfiguration( view: self.sitesTableView )
                 .constrain()
                 .activate()
 
@@ -73,10 +73,10 @@ class BasicServicesViewController: MPUserViewController, UITextFieldDelegate, MP
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        // Offset services content's top inset to make space for the top container.
-        self.servicesTableView.contentInset.top =
-                max( 0, self.servicesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y
-                        - (self.servicesTableView.bounds.origin.y + self.servicesTableView.safeAreaInsets.top)
+        // Offset sites table's top inset to make space for the top container.
+        self.sitesTableView.contentInset.top =
+                max( 0, self.sitesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y
+                        - (self.sitesTableView.bounds.origin.y + self.sitesTableView.safeAreaInsets.top)
                         - 8 )
     }
 

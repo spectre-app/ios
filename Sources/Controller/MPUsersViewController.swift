@@ -1,6 +1,6 @@
 //
 //  MPUsersViewController.swift
-//  Master Password
+//  Spectre
 //
 //  Created by Maarten Billemont on 2018-01-21.
 //  Copyright © 2018 Maarten Billemont. All rights reserved.
@@ -36,14 +36,14 @@ class MPUsersViewController: BasicUsersViewController {
             While in incognito mode, no user information is kept on the device.
             """, preferredStyle: .alert )
 
-            let passwordField = MPMasterPasswordField()
-            let spinner       = MPAlert( title: "Unlocking", message: passwordField.nameField?.text,
+            let secretField = MPUserSecretField()
+            let spinner     = MPAlert( title: "Unlocking", message: secretField.nameField?.text,
                                          content: UIActivityIndicatorView( style: .whiteLarge ) )
-            passwordField.authenticater = { keyFactory in
+            secretField.authenticater = { keyFactory in
                 spinner.show( dismissAutomatically: false )
-                return MPUser( fullName: keyFactory.fullName, file: nil ).login( using: keyFactory )
+                return MPUser( userName: keyFactory.userName, file: nil ).login( using: keyFactory )
             }
-            passwordField.authenticated = { result in
+            secretField.authenticated = { result in
                 trc( "Incognito authentication: %@", result )
                 spinner.dismiss()
                 controller.dismiss( animated: true ) {
@@ -53,18 +53,18 @@ class MPUsersViewController: BasicUsersViewController {
                         incognitoButton.timing?.end(
                                 [ "result": "failure",
                                   "type": "incognito",
-                                  "length": passwordField.text?.count ?? 0,
-                                  "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
+                                  "length": secretField.text?.count ?? 0,
+                                  "entropy": MPAttacker.entropy( string: secretField.text ) ?? 0,
                                 ] )
                         userEvent.end( [ "result": "incognito" ] )
-                        self.navigationController?.pushViewController( MPServicesViewController( user: user ), animated: true )
+                        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
                     }
                     catch {
                         incognitoButton.timing?.end(
                                 [ "result": "failure",
                                   "type": "incognito",
-                                  "length": passwordField.text?.count ?? 0,
-                                  "entropy": MPAttacker.entropy( string: passwordField.text ) ?? 0,
+                                  "length": secretField.text?.count ?? 0,
+                                  "entropy": MPAttacker.entropy( string: secretField.text ) ?? 0,
                                   "error": error,
                                 ] )
                         userEvent.end( [ "result": "deselected" ] )
@@ -73,8 +73,8 @@ class MPUsersViewController: BasicUsersViewController {
                 }
             }
 
-            controller.addTextField { passwordField.nameField = $0 }
-            controller.addTextField { passwordField.passwordField = $0 }
+            controller.addTextField { secretField.nameField = $0 }
+            controller.addTextField { secretField.passwordField = $0 }
             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
                 incognitoButton.timing?.end( [ "result": "cancel" ] )
             } )
@@ -82,7 +82,7 @@ class MPUsersViewController: BasicUsersViewController {
                 guard let self = self
                 else { return }
 
-                if !passwordField.try() {
+                if !secretField.try() {
                     mperror( title: "Couldn't unlock user", message: "Missing credentials" )
                     self.present( controller, animated: true )
                 }
@@ -129,7 +129,7 @@ class MPUsersViewController: BasicUsersViewController {
     override func login(user: MPUser) {
         super.login( user: user )
 
-        self.navigationController?.pushViewController( MPServicesViewController( user: user ), animated: true )
+        self.navigationController?.pushViewController( MPSitesViewController( user: user ), animated: true )
     }
 
     // MARK: --- Private ---
@@ -142,8 +142,8 @@ class MPUsersViewController: BasicUsersViewController {
             This will delete the user and all of its recorded state:
             \(userFile)
 
-            Note: You can re-create the user at any time and add back your services to fully regenerate their stateless passwords and other content.
-            When re-creating the user, make sure to use the exact same name and master password.
+            Note: You can re-create the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
+            When re-creating the user, make sure to use the exact same name and personal secret.
             The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
@@ -167,13 +167,13 @@ class MPUsersViewController: BasicUsersViewController {
     @objc
     private func didResetUser() {
         if let userFile = self.selectedFile {
-            let alert = UIAlertController( title: "Reset Master Password?", message:
+            let alert = UIAlertController( title: "Reset Personal Secret?", message:
             """
-            This will allow you to change the master password for:
+            This will allow you to change the personal secret for:
             \(userFile)
 
-            Note: When the user's master password changes, its service passwords and other generated content will also change accordingly.
-            The master password can always be changed back to revert to the user's current service passwords and generated content.
+            Note: When your personal secret changes, all site passwords and other generated content will also change accordingly.
+            The personal secret can always be changed back to revert to your current site passwords and generated content.
             """, preferredStyle: .alert )
             alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
             alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in

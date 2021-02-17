@@ -1,6 +1,6 @@
 //
 //  MPUsersViewController.swift
-//  Master Password
+//  Spectre
 //
 //  Created by Maarten Billemont on 2018-01-21.
 //  Copyright © 2018 Maarten Billemont. All rights reserved.
@@ -164,7 +164,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                 DispatchQueue.main.perform {
                     if !self.isSelected {
                         self.nameField.text = nil
-                        self.passwordField.text = nil
+                        self.secretField.text = nil
                     }
                     else {
                         self.attemptBiometrics()
@@ -184,7 +184,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         internal weak var userEvent:      MPTracker.TimedEvent?
         internal weak var userFile:       MPMarshal.UserFile? {
             didSet {
-                self.passwordField.userFile = self.userFile
+                self.secretField.userFile = self.userFile
                 self.avatar = self.userFile?.avatar ?? .avatar_add
                 self.update()
             }
@@ -202,11 +202,11 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                                                   background: false ) { _, _ in self.avatar.next() }
         private lazy var biometricButton = MPTimedButton( track: .subject( "users.user", action: "auth" ),
                                                           image: .icon( "" ), background: false ) { _, _ in self.attemptBiometrics() }
-        private var passwordEvent:               MPTracker.TimedEvent?
-        private let passwordField = MPMasterPasswordField()
+        private var secretEvent:                 MPTracker.TimedEvent?
+        private let secretField   = MPUserSecretField()
         private let idBadgeView   = UIImageView( image: .icon( "" ) )
         private let authBadgeView = UIImageView( image: .icon( "" ) )
-        private var authenticationConfiguration: LayoutConfiguration<MPMasterPasswordField>!
+        private var authenticationConfiguration: LayoutConfiguration<MPUserSecretField>!
         private var path:                        CGPath? {
             didSet {
                 if oldValue != self.path {
@@ -236,39 +236,39 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
 
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
 
-            self.passwordField.borderStyle = .roundedRect
-            self.passwordField => \.font => Theme.current.font.callout
-            self.passwordField.placeholder = "Your master password"
-            self.passwordField.nameField = self.nameField
-            self.passwordField.rightView = self.biometricButton
-            self.passwordField.rightViewMode = .always
-            self.passwordField.authenticater = { keyFactory in
-                self.passwordEvent = MPTracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
+            self.secretField.borderStyle = .roundedRect
+            self.secretField => \.font => Theme.current.font.callout
+            self.secretField.placeholder = "Your personal secret"
+            self.secretField.nameField = self.nameField
+            self.secretField.rightView = self.biometricButton
+            self.secretField.rightViewMode = .always
+            self.secretField.authenticater = { keyFactory in
+                self.secretEvent = MPTracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
 
                 return self.userFile?.authenticate( using: keyFactory ) ??
-                        MPUser( fullName: keyFactory.fullName ).login( using: keyFactory )
+                        MPUser( userName: keyFactory.userName ).login( using: keyFactory )
             }
-            self.passwordField.authenticated = { result in
-                trc( "User password authentication: %@", result )
+            self.secretField.authenticated = { result in
+                trc( "User secret authentication: %@", result )
 
                 do {
                     let user = try result.get()
                     MPFeedback.shared.play( .trigger )
-                    self.passwordEvent?.end(
+                    self.secretEvent?.end(
                             [ "result": "success",
-                              "type": "password",
-                              "length": self.passwordField.text?.count ?? 0,
-                              "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
+                              "type": "secret",
+                              "length": self.secretField.text?.count ?? 0,
+                              "entropy": MPAttacker.entropy( string: self.secretField.text ) ?? 0,
                             ] )
-                    self.userEvent?.end( [ "result": "password" ] )
+                    self.userEvent?.end( [ "result": "secret" ] )
                     self.viewController?.login( user: user )
                 }
                 catch {
-                    self.biometricButton.timing?.end(
+                    self.secretEvent?.end(
                             [ "result": "failure",
-                              "type": "password",
-                              "length": self.passwordField.text?.count ?? 0,
-                              "entropy": MPAttacker.entropy( string: self.passwordField.text ) ?? 0,
+                              "type": "secret",
+                              "length": self.secretField.text?.count ?? 0,
+                              "entropy": MPAttacker.entropy( string: self.secretField.text ) ?? 0,
                               "error": error,
                             ] )
                     mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
@@ -279,14 +279,14 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             self.nameField.borderStyle = .none
             self.nameField.adjustsFontSizeToFitWidth = true
             self.nameField.alignmentRectOutsets = .horizontal()
-            self.nameField.attributedPlaceholder = NSAttributedString( string: "Your Full Name" )
+            self.nameField.attributedPlaceholder = NSAttributedString( string: "Your full name" )
             self.nameField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
             self.nameField => \.font => Theme.current.font.callout.transform { $0?.withSize( UIFont.labelFontSize * 2 ) }
             self.nameField => \.textColor => Theme.current.color.body
 
             self.idBadgeView.alignmentRectOutsets = .border()
             self.authBadgeView.alignmentRectOutsets = .border()
-            self.passwordField.alignmentRectOutsets = .horizontal()
+            self.secretField.alignmentRectOutsets = .horizontal()
 
             // - Hierarchy
             self.contentView.addSubview( self.idBadgeView )
@@ -294,7 +294,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             self.contentView.addSubview( self.avatarButton )
             self.contentView.addSubview( self.nameLabel )
             self.contentView.addSubview( self.nameField )
-            self.contentView.addSubview( self.passwordField )
+            self.contentView.addSubview( self.secretField )
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
@@ -315,18 +315,18 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             LayoutConfiguration( view: self.avatarButton )
                     .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .activate()
-            LayoutConfiguration( view: self.passwordField )
+            LayoutConfiguration( view: self.secretField )
                     .constrainTo { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
                     .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                     .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
-            self.authenticationConfiguration = LayoutConfiguration( view: self.passwordField ) { active, inactive in
+            self.authenticationConfiguration = LayoutConfiguration( view: self.secretField ) { active, inactive in
                 active.set( .on, keyPath: \.alpha )
                 inactive.set( .off, keyPath: \.alpha )
             }
-                    .apply( LayoutConfiguration( view: self.passwordField ) { active, inactive in
+                    .apply( LayoutConfiguration( view: self.secretField ) { active, inactive in
                         active.set( true, keyPath: \.isEnabled )
                         inactive.set( false, keyPath: \.isEnabled )
                         inactive.set( nil, keyPath: \.text )
@@ -372,12 +372,12 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             let idBadgeRect   = self.convert( self.idBadgeView.alignmentRect, from: self.contentView )
             let nameRect      = self.convert( self.nameLabel.alignmentRect, from: self.contentView )
             let authBadgeRect = self.convert( self.authBadgeView.alignmentRect, from: self.contentView )
-            let passwordRect  = self.convert( self.passwordField.alignmentRect, from: self.contentView )
+            let secretRect    = self.convert( self.secretField.alignmentRect, from: self.contentView )
 
             if self.isSelected {
                 path.addPath( CGPath.between( idBadgeRect, nameRect ) )
                 if self.authenticationConfiguration.isActive {
-                    path.addPath( CGPath.between( authBadgeRect, passwordRect ) )
+                    path.addPath( CGPath.between( authBadgeRect, secretRect ) )
                 }
             }
             self.path = path.isEmpty ? nil: path
@@ -413,7 +413,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             guard InAppFeature.premium.isEnabled, let userFile = self.userFile, userFile.biometricLock
             else { return }
 
-            let keychainKeyFactory = MPKeychainKeyFactory( fullName: userFile.fullName )
+            let keychainKeyFactory = MPKeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.hasKey( for: userFile.algorithm )
             else { return }
 
@@ -461,7 +461,7 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
 
                     self.avatarButton.isUserInteractionEnabled = self.isSelected
                     self.avatarButton.image = self.avatar.image
-                    self.nameLabel.text = self.userFile?.fullName ?? "Tap to create a new user"
+                    self.nameLabel.text = self.userFile?.userName ?? "Tap to create a new user"
 
                     self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||
                             !(self.userFile?.keychainKeyFactory.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
@@ -473,11 +473,11 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                             self.nameField.becomeFirstResponder()
                         }
                         else if self.authenticationConfiguration.isActive {
-                            self.passwordField.becomeFirstResponder()
+                            self.secretField.becomeFirstResponder()
                         }
                     }
                     else {
-                        self.passwordField.resignFirstResponder()
+                        self.secretField.resignFirstResponder()
                         self.nameField.resignFirstResponder()
                     }
                 }

@@ -11,7 +11,7 @@ class MPUserViewController: MPViewController, MPUserObserver {
             self.user?.observers.unregister( observer: self )
         }
         didSet {
-            if let user = self.user, user.masterKeyFactory != nil {
+            if let user = self.user, user.userKeyFactory != nil {
                 user.observers.register( observer: self )
             }
             else {
@@ -43,7 +43,7 @@ class MPUserViewController: MPViewController, MPUserObserver {
         super.viewWillAppear( animated )
 
         // TODO: is this still necessary?
-        if let user = self.user, user.masterKeyFactory == nil {
+        if let user = self.user, user.userKeyFactory == nil {
             mperror( title: "User logged out", message: "User is no longer authenticated", details: user )
             self.userDidLogout( user )
         }

@@ -39,7 +39,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class IdenticonItem: LabelItem<MPUser> {
         init() {
-            super.init( value: { $0.identicon.attributedText() }, caption: { $0.fullName } )
+            super.init( value: { $0.identicon.attributedText() }, caption: { $0.userName } )
         }
     }
 
@@ -68,7 +68,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                         subitems: [ LoginResultItem() ],
                         caption: { _ in
                             """
-                            The login name used for services that do not have a service‑specific login name. 
+                            The login name used for sites that do not have a site‑specific login name. 
                             """
                         } )
         }
@@ -125,7 +125,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                         value: { $0.defaultType }, update: { $0.defaultType = $1 },
                         caption: { _ in
                             """
-                            The password type used when adding new services.
+                            The password type used when adding new sites.
                             """
                         } )
         }
@@ -191,7 +191,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                 ToggleItem<MPUser>( track: .subject( "user", action: "autofill" ), title: "AutoFill Passwords 🅿︎", icon: { _ in .icon( "" ) },
                                     value: { $0.autofill }, update: { $0.autofill = $1 }, caption: { _ in
                     """
-                    Auto-fill your service passwords from other apps.
+                    Auto-fill your site passwords from other apps.
                     """
                 } )
                         .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) } ) {
@@ -206,7 +206,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                             value: { $0.biometricLock }, update: { $0.biometricLock = $1 }, caption: { _ in
                     """
                     Sign in using biometrics (eg. TouchID, FaceID).
-                    Saves your master key in the device's key chain.
+                    Saves your user key in the device's key chain.
                     """
                 } )
                         //            MPKeychainKeyFactory.factor != .biometricNone
@@ -249,7 +249,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     class UsesItem: LabelItem<MPUser> {
         init() {
-            super.init( title: "Services", value: { $0.services.count } )
+            super.init( title: "Sites", value: { $0.sites.count } )
         }
     }
 

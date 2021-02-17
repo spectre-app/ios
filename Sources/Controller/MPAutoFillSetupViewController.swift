@@ -61,7 +61,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
                     Item( subitems: [
                         Item( title: "Standard Login", caption: { _ in
                             """
-                            Set the login name you use for most services.
+                            Set the login name you use for most sites.
                             Select ⦗\(MPResultType.statefulPersonal.abbreviation)⦘ to save your e‑mail address.
                             """
                         } ),
@@ -89,7 +89,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
                     Item( subitems: [
                         Item( title: "AutoFill Passwords 🅿︎", caption: {
                             """
-                            Enable auto-filling \($0.fullName)'s services from other apps.
+                            Enable auto-filling \($0.userName)'s sites from other apps.
                             """
                         } ),
                         ToggleItem<MPUser>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "" ) },
@@ -134,7 +134,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
         if self.autoFillState?.isEnabled ?? false && self.model.autofill {
             self.hide {
                 MPAlert( title: "AutoFill Enabled",
-                         message: "\(self.model.fullName)'s services are now available from AutoFill." )
+                         message: "\(self.model.userName)'s sites are now available from AutoFill." )
                         .show()
             }
         }
