@@ -129,6 +129,7 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
         init() {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "DDD'-'HH':'mm':'ss"
+
             super.init( value: {
                 MPLogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
                     logs.append( NSAttributedString(
@@ -145,7 +146,15 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
                             ] ) )
                     return logs
                 }
-            } )
+            }, subitems: [
+                ButtonItem( track: .subject( "logbook", action: "copy" ), value: { _ in (label: "Copy Logs", image: nil) }, action: {
+                    UIPasteboard.general.setItems( [ [ UIPasteboard.typeAutomatic:
+                    MPLogSink.shared.enumerate( level: $0.model?.logbookLevel ?? .info ).reduce( "" ) { logs, record in
+                        logs + "[\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)] " +
+                                record.message + "\n"
+                    } ] ] )
+                } )
+            ] )
         }
     }
 
