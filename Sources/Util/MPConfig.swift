@@ -63,7 +63,7 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
     // MARK: --- Life ---
 
     init() {
-        #if APP_CONTAINER
+        #if TARGET_APP
         self.isApp = true
         #endif
         #if DEBUG

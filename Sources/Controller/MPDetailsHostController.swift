@@ -119,7 +119,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                 } )
     }
 
-    #if APP_CONTAINER
+    #if TARGET_APP
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         if motion == .motionShake {
             self.show( MPLogDetailsViewController(), sender: self )

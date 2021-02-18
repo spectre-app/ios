@@ -70,7 +70,7 @@ class MPAlert {
         DispatchQueue.main.perform {
             let view   = view()
             var window = view?.window ?? view as? UIWindow
-            #if APP_CONTAINER
+            #if TARGET_APP
             window = window ?? UIApplication.shared.keyWindow
             #endif
             if let window = window {

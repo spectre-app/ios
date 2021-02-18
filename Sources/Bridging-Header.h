@@ -3,7 +3,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#if APP_CONTAINER
+#if TARGET_APP
 #import <FreshchatSDK/FreshchatSDK.h>
 #endif
 

@@ -2095,7 +2095,7 @@
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"APP_CONTAINER=1",
+					"TARGET_APP=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2115,7 +2115,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_CONTAINER $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
 			name = Public;
 		};
@@ -2128,7 +2128,7 @@
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"APP_EXTENSION=1",
+					"TARGET_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2148,7 +2148,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_AUTOFILL $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
 			name = Debug;
 		};
@@ -2161,7 +2161,7 @@
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"APP_EXTENSION=1",
+					"TARGET_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2181,7 +2181,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_AUTOFILL $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
 			name = Release;
 		};
@@ -2194,7 +2194,7 @@
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"APP_EXTENSION=1",
+					"TARGET_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2214,7 +2214,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_AUTOFILL $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
 			name = Public;
 		};
@@ -2577,7 +2577,7 @@
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"APP_CONTAINER=1",
+					"TARGET_APP=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2597,7 +2597,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_CONTAINER $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
 			name = Debug;
 		};
@@ -2611,7 +2611,7 @@
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"APP_CONTAINER=1",
+					"TARGET_APP=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2631,7 +2631,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
 				SKIP_INSTALL = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_CONTAINER $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
 			name = Release;
 		};

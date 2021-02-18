@@ -9,34 +9,31 @@ project 'Spectre'
 
 target 'Spectre' do
   project 'Spectre'
-  platform :ios, '12.4'
+  platform :ios, '12.3'
 
   use_modular_headers!
   use_frameworks!
 
   pod 'Macaw'
+  pod 'SwiftLinkPreview'
+  pod 'TPInAppReceipt'
 
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
   pod 'Countly'
   pod 'FreshchatSDK'
-  pod 'SwiftLinkPreview'
-  pod 'TPInAppReceipt'
 
   pod 'Reveal-SDK', :configurations => ['Debug']
-
-  pod 'UpdraftSDK', :configurations => ['Release']
 end
 
 target 'Spectre-AutoFill' do
   project 'Spectre'
-  platform :ios, '12.4'
+  platform :ios, '12.3'
 
   use_modular_headers!
   use_frameworks!
 
   pod 'Macaw'
 
-  pod 'SwiftLinkPreview'
   pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git'
 
   pod 'Reveal-SDK', :configurations => ['Debug']

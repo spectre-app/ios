@@ -5,10 +5,7 @@
 
 import Foundation
 import Sentry
-#if APP_CONTAINER
-#if RELEASE && !PUBLIC
-import Updraft
-#endif
+#if TARGET_APP
 import Countly
 #endif
 
@@ -33,7 +30,7 @@ struct MPTracking {
 class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
 
-    #if APP_CONTAINER
+    #if TARGET_APP
     static func enabledNotifications() -> Bool {
         UIApplication.shared.isRegisteredForRemoteNotifications
     }
@@ -80,14 +77,7 @@ class MPTracker: MPConfigObserver {
         }
         SentrySDK.configureScope { $0.setTags( [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ] ) }
 
-        #if APP_CONTAINER
-        // Updraft
-        #if RELEASE && !PUBLIC
-        if let updraftSdk = updraftSdk.b64Decrypt(), let updraftKey = updraftKey.b64Decrypt() {
-            Updraft.shared.start( sdkKey: updraftSdk, appKey: updraftKey )
-        }
-        #endif
-
+        #if TARGET_APP
         // Countly
         if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
             let countlyConfig = CountlyConfig()
@@ -191,7 +181,7 @@ class MPTracker: MPConfigObserver {
             let user = User( userId: userId )
             user.data = userConfig
             SentrySDK.setUser( user )
-            #if APP_CONTAINER
+            #if TARGET_APP
             Countly.sharedInstance().userLogged( in: userId )
             Countly.user().custom = userConfig as NSDictionary
             #endif
@@ -204,7 +194,7 @@ class MPTracker: MPConfigObserver {
         self.event( track: .subject( "user", action: "signed_out" ) )
 
         SentrySDK.setUser( nil )
-        #if APP_CONTAINER
+        #if TARGET_APP
         Countly.sharedInstance().userLoggedOut()
         #endif
     }
@@ -228,9 +218,9 @@ class MPTracker: MPConfigObserver {
     private func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                        named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
         var eventParameters = parameters
-        #if APP_CONTAINER
+        #if TARGET_APP
         eventParameters["using"] = "app"
-        #elseif APP_AUTOFILL
+        #elseif TARGET_AUTOFILL
         eventParameters["using"] = "autofill"
         #endif
 
@@ -259,7 +249,7 @@ class MPTracker: MPConfigObserver {
         SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
         // Countly
-        #if APP_CONTAINER
+        #if TARGET_APP
         Countly.sharedInstance().recordEvent(
                 name, segmentation: stringParameters,
                 count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
@@ -271,13 +261,13 @@ class MPTracker: MPConfigObserver {
     public func didChangeConfig() {
         if appConfig.isApp && appConfig.diagnostics {
             SentrySDK.currentHub().getClient()?.options.enabled = true
-            #if APP_CONTAINER
+            #if TARGET_APP
             Countly.sharedInstance().giveConsentForAllFeatures()
             #endif
         }
         else {
             SentrySDK.currentHub().getClient()?.options.enabled = false
-            #if APP_CONTAINER
+            #if TARGET_APP
             Countly.sharedInstance().cancelConsentForAllFeatures()
             #endif
         }
@@ -314,7 +304,7 @@ class MPTracker: MPConfigObserver {
             SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
             // Countly
-            #if APP_CONTAINER
+            #if TARGET_APP
             Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )
             #endif
         }
