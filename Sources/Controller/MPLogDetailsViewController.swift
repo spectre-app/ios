@@ -22,7 +22,9 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
 
     override func loadItems() -> [Item<Model>] {
         [ FeedbackItem(), CrashItem(), SeparatorItem(),
-          LogLevelPicker(), LogsItem(), SeparatorItem() ]
+          LogLevelPicker(), LogsItem(), SeparatorItem(),
+          DeviceIdentifierItem(), OwnerIdentifierItem(),
+        ]
     }
 
     // MARK: --- ModelObserver ---
@@ -155,6 +157,30 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
                     } ] ] )
                 } )
             ] )
+        }
+    }
+
+    class DeviceIdentifierItem: Item<Model> {
+        init() {
+            super.init( title: "Device Identifier",
+                        caption: { _ in MPTracker.shared.deviceIdentifier } )
+
+            self.addBehaviour( BlockTapBehaviour() { _ in
+                UIPasteboard.general.setItems(
+                        [ [ UIPasteboard.typeAutomatic: MPTracker.shared.deviceIdentifier ] ] )
+            } )
+        }
+    }
+
+    class OwnerIdentifierItem: Item<Model> {
+        init() {
+            super.init( title: "Owner Identifier",
+                        caption: { _ in MPTracker.shared.ownerIdentifier } )
+
+            self.addBehaviour( BlockTapBehaviour() { _ in
+                UIPasteboard.general.setItems(
+                        [ [ UIPasteboard.typeAutomatic: MPTracker.shared.ownerIdentifier ] ] )
+            } )
         }
     }
 

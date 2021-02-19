@@ -319,6 +319,7 @@ class TapBehaviour<M>: Behaviour<M> {
     }
 
     func doTapped(item: Item<M>) {
+        MPTapEffectView().run( for: item.view )
     }
 }
 
@@ -341,6 +342,8 @@ class BlockTapBehaviour<M>: TapBehaviour<M> {
 
     override func doTapped(item: Item<M>) {
         self.tapped( item )
+
+        super.doTapped( item: item )
     }
 }
 

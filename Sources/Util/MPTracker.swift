@@ -70,6 +70,8 @@ class MPTracker: MPConfigObserver {
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                  extensionController: UIViewController? = nil) {
+        inf( "Startup [device=%@, owner=%@]", self.deviceIdentifier, self.ownerIdentifier )
+
         // Sentry
         SentrySDK.start {
             $0.dsn = appConfig.diagnostics ? sentryDSN.b64Decrypt(): nil
@@ -131,7 +133,6 @@ class MPTracker: MPConfigObserver {
             return true
         } )
 
-        self.logout()
         appConfig.observers.register( observer: self ).didChangeConfig()
 
         self.event( file: file, line: line, function: function, dso: dso,
@@ -184,8 +185,10 @@ class MPTracker: MPConfigObserver {
             #if TARGET_APP
             Countly.sharedInstance().userLogged( in: userId )
             Countly.user().custom = userConfig as NSDictionary
+            Countly.sharedInstance().recordPushNotificationToken()
             #endif
 
+            inf( "Login [user=%@]", userId )
             self.event( track: .subject( "user", action: "signed_in", userConfig ) )
         }
     }

@@ -15,7 +15,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
           LoginTypeItem(), DefaultTypeItem(), SeparatorItem(),
           AttackerItem(), SeparatorItem(),
           UsageFeaturesItem(), SystemFeaturesItem(), SeparatorItem(),
-          InfoItem(),
+          InfoItem(), IdentifierItem(),
         ]
     }
 
@@ -188,7 +188,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class SystemFeaturesItem: Item<MPUser> {
         init() {
             super.init( subitems: [
-                ToggleItem<MPUser>( track: .subject( "user", action: "autofill" ), title: "AutoFill Passwords 🅿︎", icon: { _ in .icon( "" ) },
+                ToggleItem<MPUser>( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "" ) },
                                     value: { $0.autofill }, update: { $0.autofill = $1 }, caption: { _ in
                     """
                     Auto-fill your site passwords from other apps.
@@ -262,6 +262,21 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class AlgorithmItem: LabelItem<MPUser> {
         init() {
             super.init( title: "Algorithm", value: { $0.algorithm } )
+        }
+    }
+
+    class IdentifierItem: Item<MPUser> {
+        init() {
+            super.init( title: "Private User Identifier",
+                        caption: { try? $0.userKeyFactory?.authenticatedIdentifier( for: $0.algorithm ).await() } )
+
+            self.addBehaviour( BlockTapBehaviour() {
+                _ = $0.model.flatMap {
+                    $0.userKeyFactory?.authenticatedIdentifier( for: $0.algorithm ).promise {
+                        UIPasteboard.general.setItems( [ [ UIPasteboard.typeAutomatic: $0 ?? "" ] ] )
+                    }
+                }
+            } )
         }
     }
 }
