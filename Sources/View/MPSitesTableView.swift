@@ -127,7 +127,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as? LiefsteCell)?.willDisplay()
+
+        #if TARGET_APP
         (cell as? SiteCell)?.site?.refresh()
+        #endif
     }
 
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
