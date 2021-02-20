@@ -168,64 +168,70 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     private let countryCode3to2
             = [ "AFG": "AF", "ALB": "AL", "DZA": "DZ", "AND": "AD", "AGO": "AO", "AIA": "AI", "ATG": "AG", "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "AZE": "AZ", "BHS": "BS", "BHR": "BH", "BGD": "BD", "BRB": "BB", "BLR": "BY", "BEL": "BE", "BLZ": "BZ", "BEN": "BJ", "BMU": "BM", "BTN": "BT", "BOL": "BO", "BIH": "BA", "BWA": "BW", "BRA": "BR", "BRN": "BN", "BGR": "BG", "BFA": "BF", "KHM": "KH", "CMR": "CM", "CAN": "CA", "CPV": "CV", "CYM": "KY", "CAF": "CF", "TCD": "TD", "CHL": "CL", "CHN": "CN", "COL": "CO", "COG": "CG", "COD": "CD", "CRI": "CR", "CIV": "CI", "HRV": "HR", "CYP": "CY", "CZE": "CZ", "DNK": "DK", "DMA": "DM", "DOM": "DO", "ECU": "EC", "EGY": "EG", "SLV": "SV", "EST": "EE", "ETH": "ET", "FJI": "FJ", "FIN": "FI", "FRA": "FR", "GAB": "GA", "GMB": "GM", "GEO": "GE", "DEU": "DE", "GHA": "GH", "GRC": "GR", "GRD": "GD", "GTM": "GT", "GIN": "GN", "GNB": "GW", "GUY": "GY", "HND": "HN", "HKG": "HK", "HUN": "HU", "ISL": "IS", "IND": "IN", "IDN": "ID", "IRQ": "IQ", "IRL": "IE", "ISR": "IL", "ITA": "IT", "JAM": "JM", "JPN": "JP", "JOR": "JO", "KAZ": "KZ", "KEN": "KE", "KOR": "KR", "KWT": "KW", "KGZ": "KG", "LAO": "LA", "LVA": "LV", "LBN": "LB", "LBR": "LR", "LBY": "LY", "LIE": "LI", "LTU": "LT", "LUX": "LU", "MAC": "MO", "MKD": "MK", "MDG": "MG", "MWI": "MW", "MYS": "MY", "MDV": "MV", "MLI": "ML", "MLT": "MT", "MRT": "MR", "MUS": "MU", "MEX": "MX", "FSM": "FM", "MDA": "MD", "MCO": "MC", "MNG": "MN", "MNE": "ME", "MSR": "MS", "MAR": "MA", "MOZ": "MZ", "MMR": "MM", "NAM": "NA", "NRU": "NR", "NPL": "NP", "NLD": "NL", "NZL": "NZ", "NIC": "NI", "NER": "NE", "NGA": "NG", "NOR": "NO", "OMN": "OM", "PAK": "PK", "PLW": "PW", "PSE": "PS", "PAN": "PA", "PNG": "PG", "PRY": "PY", "PER": "PE", "PHL": "PH", "POL": "PL", "PRT": "PT", "QAT": "QA", "ROU": "RO", "RUS": "RU", "RWA": "RW", "KNA": "KN", "LCA": "LC", "VCT": "VC", "WSM": "WS", "STP": "ST", "SAU": "SA", "SEN": "SN", "SRB": "RS", "SYC": "SC", "SLE": "SL", "SGP": "SG", "SVK": "SK", "SVN": "SI", "SLB": "SB", "ZAF": "ZA", "ESP": "ES", "LKA": "LK", "SUR": "SR", "SWZ": "SZ", "SWE": "SE", "CHE": "CH", "TWN": "TW", "TJK": "TJ", "TZA": "TZ", "THA": "TH", "TON": "TO", "TTO": "TT", "TUN": "TN", "TUR": "TR", "TKM": "TM", "TCA": "TC", "UGA": "UG", "UKR": "UA", "ARE": "AE", "GBR": "GB", "USA": "US", "URY": "UY", "UZB": "UZ", "VUT": "VU", "VEN": "VE", "VNM": "VN", "VGB": "VG", "YEM": "YE", "ZMB": "ZM", "ZWE": "ZW" ]
 
-    private func refreshReceipt() {
-        InAppReceipt.refresh { error in
-            if let error = error {
-                mperror( title: "App Store Receipt Issue", message:
-                "Ensure you are online and try logging out and back into your Apple ID from Settings.",
-                         error: error )
-            }
-            else {
-                self.updateReceipt( allowRefresh: false )
+    private func refreshReceipt() -> Promise<InAppReceipt?> {
+        using( Promise<InAppReceipt?>() ) { promise in
+            InAppReceipt.refresh { error in
+                if let error = error {
+                    promise.finish( .failure( error ) )
+                    return
+                }
+
+                self.updateReceipt( allowRefresh: false ).finishes( promise )
             }
         }
     }
 
-    private func updateReceipt(allowRefresh: Bool = true) {
-        // Decode and validate the application's App Store receipt.
-        do {
-            let receipt = try InAppReceipt.localReceipt()
-            try receipt.verify()
-            self.receipt = receipt
-        }
-        catch {
-            self.receipt = nil
+    @discardableResult
+    private func updateReceipt(allowRefresh: Bool = true) -> Promise<InAppReceipt?> {
+        using( Promise<InAppReceipt?>() ) { promise in
+            // Decode and validate the application's App Store receipt.
+            do {
+                let receipt = try InAppReceipt.localReceipt()
+                try receipt.verify()
+                self.receipt = receipt
+            }
+            catch {
+                self.receipt = nil
 
-            if case IARError.initializationFailed(let reason) = error, reason == .appStoreReceiptNotFound {}
-            else { mperror( title: "Couldn't determine subscription status.", error: error ) }
-        }
-
-        // If no (valid) App Store receipt is present, try requesting one from the store.
-        if self.receipt == nil {
-            if allowRefresh {
-                inf( "No receipt, requesting one." )
-                self.refreshReceipt()
-                return
+                if case IARError.initializationFailed(let reason) = error, reason == .appStoreReceiptNotFound {}
+                else { mperror( title: "Couldn't determine subscription status.", error: error ) }
             }
 
-            wrn( "Couldn't obtain a receipt." )
-        }
-
-        // Discover feature status based on which subscription products are currently active.
-        var missingFeatures    = Set<InAppFeature>( InAppFeature.allCases )
-        var subscribedFeatures = Set<InAppFeature>()
-        for product in InAppProduct.allCases {
-            if !product.isActive {
-                if allowRefresh && product.wasActiveButExpired {
-                    inf( "Subscription expired, checking for renewal." )
-                    self.refreshReceipt()
+            // If no (valid) App Store receipt is present, try requesting one from the store.
+            if self.receipt == nil {
+                if allowRefresh {
+                    inf( "No receipt, requesting one." )
+                    self.refreshReceipt().finishes( promise )
+                    return
                 }
-                continue
+
+                wrn( "Couldn't obtain a receipt." )
             }
 
-            inf( "Active purchase: %@", product )
-            missingFeatures.subtract( product.features )
-            subscribedFeatures.formUnion( product.features )
-        }
+            // Discover feature status based on which subscription products are currently active.
+            var missingFeatures    = Set<InAppFeature>( InAppFeature.allCases )
+            var subscribedFeatures = Set<InAppFeature>()
+            for product in InAppProduct.allCases {
+                if !product.isActive {
+                    if allowRefresh && product.wasActiveButExpired {
+                        inf( "Subscription expired, checking for renewal." )
+                        self.refreshReceipt().finishes( promise )
+                        return
+                    }
+                    continue
+                }
 
-        // Enable features with an active subscription and disable those missing one.
-        missingFeatures.forEach { $0.enable( false ) }
-        subscribedFeatures.forEach { $0.enable( true ) }
+                inf( "Active purchase: %@", product )
+                missingFeatures.subtract( product.features )
+                subscribedFeatures.formUnion( product.features )
+            }
+
+            // Enable features with an active subscription and disable those missing one.
+            missingFeatures.forEach { $0.enable( false ) }
+            subscribedFeatures.forEach { $0.enable( true ) }
+
+            promise.finish( .success( self.receipt ) )
+        }
     }
 
     // MARK: --- SKStoreProductViewControllerDelegate ---
@@ -242,32 +248,39 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
             switch transaction.transactionState {
                 case .purchasing, .deferred:
-                    break
+                    ()
 
                 case .purchased, .restored:
-                    self.updateReceipt()
+                    self.updateReceipt().then {
+                        do {
+                            guard let receipt = try $0.get()
+                            else { throw MPError.state( title: "Receipt missing." ) }
 
-                    guard self.receipt?.purchases.contains( where: {
-                        $0.transactionIdentifier == transaction.original?.transactionIdentifier ?? transaction.transactionIdentifier
-                    } ) ?? false
-                    else {
-                        mperror( title: "App Store Transaction Missing", message:
-                        "Ensure you are online and try logging out and back into your Apple ID from Settings.",
-                                 error: MPError.state( title: "Transaction is missing from receipt.", details: transaction.transactionIdentifier ) )
-                        break;
+                            if !receipt.purchases.contains( where: {
+                                $0.transactionIdentifier == transaction.original?.transactionIdentifier ?? transaction.transactionIdentifier
+                            } ) {
+                                mperror( title: "App Store Transaction Missing", message:
+                                "Ensure you are online and try logging out and back into your Apple ID from Settings.",
+                                         error: MPError.state( title: "Transaction is missing from receipt.", details: transaction.transactionIdentifier ) )
+                            }
+
+                            queue.finishTransaction( transaction )
+                        }
+                        catch {
+                            mperror( title: "App Store Receipt Unavailable", message:
+                            "Ensure you are online and try logging out and back into your Apple ID from Settings.",
+                                     error: error )
+                        }
                     }
-
-                    queue.finishTransaction( transaction )
 
                 case .failed:
                     mperror( title: "App Store Transaction Issue", message:
                     "Ensure you are online and try logging out and back into your Apple ID from Settings.",
                              error: transaction.error )
                     queue.finishTransaction( transaction )
-                    break
 
                 @unknown default:
-                    break
+                    ()
             }
         }
     }
