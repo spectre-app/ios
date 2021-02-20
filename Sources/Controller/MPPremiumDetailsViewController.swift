@@ -21,6 +21,8 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
 
     override func doTapped(item: Item<M>) {
         item.viewController?.show( MPPremiumDetailsViewController(), sender: item )
+
+        super.doTapped( item: item )
     }
 
     // MARK: --- InAppFeatureObserver ---

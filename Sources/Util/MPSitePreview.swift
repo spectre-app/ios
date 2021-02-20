@@ -4,9 +4,15 @@
 //
 
 import Foundation
+#if TARGET_APP
 import SwiftLinkPreview
+#endif
 
 class MPSitePreview: Equatable {
+
+    private static var previews  = NSCache<NSString, MPSitePreview>()
+    private static let semaphore = DispatchQueue( label: "MPSitePreview" )
+
     // MARK: --- Life ---
 
     var url:   String
@@ -17,8 +23,6 @@ class MPSitePreview: Equatable {
     var color: UIColor? {
         self.data.color?.uiColor
     }
-
-    private var updating: Promise<Bool>?
 
     static func `for`(_ siteName: String) -> MPSitePreview {
         let siteURL = self.url( for: siteName )
@@ -54,6 +58,26 @@ class MPSitePreview: Equatable {
             MPSitePreview.previews.setObject( self, forKey: url as NSString, cost: self.data.imageData?.count ?? 0 )
         }
     }
+
+    // MARK: --- Equatable ---
+
+    static func ==(lhs: MPSitePreview, rhs: MPSitePreview) -> Bool {
+        lhs.data == rhs.data
+    }
+
+    // MARK: --- Private ---
+
+    private static func url(for siteName: String) -> String {
+        siteName.replacingOccurrences( of: "/", with: "::" ).replacingOccurrences( of: ".*@", with: "", options: .regularExpression )
+    }
+
+    #if TARGET_APP
+    private static let linkPreview = SwiftLinkPreview( session: .optional,
+                                                       workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background, attributes: [ .concurrent ] ),
+                                                       responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background, attributes: [ .concurrent ] ),
+                                                       cache: InMemoryCache() )
+
+    private var updating: Promise<Bool>?
 
     func update() -> Promise<Bool> {
         // If an update is already promised, reuse it.
@@ -99,25 +123,6 @@ class MPSitePreview: Equatable {
         return promise
     }
 
-    // MARK: --- Equatable ---
-
-    static func ==(lhs: MPSitePreview, rhs: MPSitePreview) -> Bool {
-        lhs.data == rhs.data
-    }
-
-    // MARK: --- Private ---
-
-    private static let linkPreview = SwiftLinkPreview( session: .optional,
-                                                       workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background, attributes: [ .concurrent ] ),
-                                                       responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background, attributes: [ .concurrent ] ),
-                                                       cache: InMemoryCache() )
-    private static var previews    = NSCache<NSString, MPSitePreview>()
-    private static let semaphore   = DispatchQueue( label: "MPSitePreview" )
-
-    private static func url(for siteName: String) -> String {
-        siteName.replacingOccurrences( of: "/", with: "::" ).replacingOccurrences( of: ".*@", with: "", options: .regularExpression )
-    }
-
     private static func byImageSize<S: Sequence>(_ urls: S) -> [URL] where S.Element == String? {
         urls.compactMap { self.validURL( $0 ) }
             .compactMap { URLSession.optional.promise( with: URLRequest( method: .head, url: $0 ) ) }
@@ -142,7 +147,7 @@ class MPSitePreview: Equatable {
             guard let imageURL = [ response.image, response.icon ]
                     .compactMap( { MPSitePreview.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
                     ?? MPSitePreview.byImageSize( [ response.image, response.icon ] + (response.images ?? []) )
-                                       .reordered( last: { $0.pathExtension == "gif" } ).first
+                                    .reordered( last: { $0.pathExtension == "gif" } ).first
             else {
                 trc( "[preview missing] %@: %@", self.url, response )
                 promise.finish( .failure( MPError.issue(
@@ -160,6 +165,7 @@ class MPSitePreview: Equatable {
 
         return promise
     }
+    #endif
 }
 
 struct PreviewData: Codable, Equatable {

@@ -4,7 +4,6 @@
 //
 
 import UIKit
-import SwiftLinkPreview
 
 class MPSite: MPOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, MPSiteObserver, MPQuestionObserver {
     public let observers = Observers<MPSiteObserver>()
@@ -187,6 +186,7 @@ class MPSite: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
         self.user.use()
     }
 
+    #if TARGET_APP
     public func refresh() {
         self.preview.update().success { updated in
             if updated {
@@ -194,6 +194,7 @@ class MPSite: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
             }
         }
     }
+    #endif
 
     public func copy(to user: MPUser) -> MPSite {
         // TODO: do we need to re-encode state?

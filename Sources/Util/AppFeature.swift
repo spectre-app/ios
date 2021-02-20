@@ -12,18 +12,11 @@ enum InAppFeature: String, CaseIterable {
     case premium = "premium"
 
     var isEnabled: Bool {
-        switch self {
-            case .premium:
-                return UserDefaults.shared.bool( forKey: "premium" )
-        }
+        UserDefaults.shared.bool( forKey: self.rawValue )
     }
 
     func enable(_ enabled: Bool) {
-        switch self {
-            case .premium:
-                UserDefaults.shared.set( enabled, forKey: "premium" )
-        }
-
+        UserDefaults.shared.set( enabled, forKey: self.rawValue )
         InAppFeature.observers.notify { $0.featureDidChange( self ) }
     }
 }
@@ -36,13 +29,13 @@ enum InAppSubscription: String, CaseIterable {
     }
 }
 
-enum InAppProducts: String, CaseIterable {
+enum InAppProduct: String, CaseIterable {
     case premiumAnnual  = "app.spectre.premium.annual"
     case premiumMonthly = "app.spectre.premium.monthly"
 
-    public static let allCases = [ InAppProducts ]( [ .premiumAnnual, .premiumMonthly ] )
+    public static let allCases = [ InAppProduct ]( [ .premiumAnnual, .premiumMonthly ] )
 
-    static func find(_ productIdentifier: String) -> InAppProducts? {
+    static func find(_ productIdentifier: String) -> InAppProduct? {
         self.allCases.first( where: { $0.productIdentifier == productIdentifier } )
     }
 
@@ -51,12 +44,10 @@ enum InAppProducts: String, CaseIterable {
     }
 
     var features: [InAppFeature] {
-        switch self {
-            case .premiumAnnual:
-                return [ .premium ]
-            case .premiumMonthly:
-                return [ .premium ]
-        }
+        map( self, [
+            .premiumAnnual: [ .premium ],
+            .premiumMonthly: [ .premium ],
+        ] ) ?? []
     }
 }
 

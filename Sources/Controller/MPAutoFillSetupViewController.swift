@@ -21,7 +21,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
     // MARK: --- Life ---
 
     override func loadItems() -> [Item<MPUser>] {
-        [ ImageItem( title: "AutoFill Passwords", value: { _ in .icon( "", withSize: 64 ) },
+        [ ImageItem( title: "AutoFill 🅿︎", value: { _ in .icon( "", withSize: 64 ) },
                      caption: { _ in
                          """
                          Getting ready to use AutoFill on your \(UIDevice.current.model).
@@ -87,7 +87,7 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
 
                     // Step 4
                     Item( subitems: [
-                        Item( title: "AutoFill Passwords 🅿︎", caption: {
+                        Item( title: "AutoFill 🅿︎", caption: {
                             """
                             Enable auto-filling \($0.userName)'s sites from other apps.
                             """
