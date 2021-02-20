@@ -40,6 +40,25 @@ extension Array where Element: Equatable {
     }
 }
 
+extension Collection where Element == String {
+    func withCStrings<R>(_cStrings: [UnsafePointer<Int8>] = [], body: ([UnsafePointer<Int8>]) -> R) -> R {
+        if let string = self.first {
+            return string.withCString {
+                self.dropFirst().withCStrings( _cStrings: _cStrings + [ $0 ], body: body )
+            }
+        }
+        else {
+            return body( _cStrings )
+        }
+    }
+
+    func withCStringVaList<R>(terminate: Bool = true, body: (CVaListPointer) -> R) -> R {
+        self.withCStrings {
+            withVaList( terminate ? $0 + [ Int( bitPattern: nil ) ]: $0, body )
+        }
+    }
+}
+
 extension Dictionary {
     @inlinable public func merging(_ other: [Key: Value]) -> [Key: Value] {
         self.merging( other, uniquingKeysWith: { $1 } )
