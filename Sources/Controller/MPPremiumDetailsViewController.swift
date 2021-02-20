@@ -65,7 +65,8 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if !InAppSubscription.premium.isActive || !InAppFeature.premium.isEnabled {
+        // Automatically restore only if the purchase isn't part of our receipt yet.
+        if !InAppFeature.premium.isEnabled && !InAppSubscription.premium.isActive && !InAppSubscription.premium.wasActiveButExpired {
             AppStore.shared.restorePurchases()
         }
     }

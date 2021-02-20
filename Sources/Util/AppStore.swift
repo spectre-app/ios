@@ -8,10 +8,15 @@ import TPInAppReceipt
 
 extension InAppSubscription {
     var isActive: Bool {
-        !AppStore.shared.products( forSubscription: self ).filter {
-            AppStore.shared.receipt?.hasActiveAutoRenewableSubscription(
-                    ofProductIdentifier: $0.productIdentifier, forDate: Date() ) ?? false
-        }.isEmpty
+        AppStore.shared.products( forSubscription: self ).contains {
+            InAppProduct.find( $0.productIdentifier )?.isActive ?? false
+        }
+    }
+
+    var wasActiveButExpired: Bool {
+        AppStore.shared.products( forSubscription: self ).contains {
+            InAppProduct.find( $0.productIdentifier )?.wasActiveButExpired ?? false
+        }
     }
 
     var latest: InAppPurchase? {
@@ -244,7 +249,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
-            inf( "product: %@, state: %d", transaction.payment.productIdentifier, transaction.transactionState.rawValue )
+            inf( "Product: %@, is %@", transaction.payment.productIdentifier, transaction.transactionState )
 
             switch transaction.transactionState {
                 case .purchasing, .deferred:
@@ -256,12 +261,11 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                             guard let receipt = try $0.get()
                             else { throw MPError.state( title: "Receipt missing." ) }
 
-                            if !receipt.purchases.contains( where: {
-                                $0.transactionIdentifier == transaction.original?.transactionIdentifier ?? transaction.transactionIdentifier
-                            } ) {
+                            let originalIdentifier = transaction.original?.transactionIdentifier ?? transaction.transactionIdentifier
+                            if !receipt.purchases.contains( where: { $0.originalTransactionIdentifier == originalIdentifier } ) {
                                 mperror( title: "App Store Transaction Missing", message:
                                 "Ensure you are online and try logging out and back into your Apple ID from Settings.",
-                                         error: MPError.state( title: "Transaction is missing from receipt.", details: transaction.transactionIdentifier ) )
+                                         error: MPError.state( title: "Transaction is missing from receipt.", details: originalIdentifier ) )
                             }
 
                             queue.finishTransaction( transaction )

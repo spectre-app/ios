@@ -98,7 +98,6 @@ class MPTracker: MPConfigObserver {
             countlyConfig.customMetrics = identifiers
             countlyConfig.features = [ CLYFeature.pushNotifications ]
             #if !PUBLIC
-            countlyConfig.enableDebug = true
             countlyConfig.pushTestMode = appConfig.isDebug ? .development: .testFlightOrAdHoc
             #endif
             Countly.sharedInstance().start( with: countlyConfig )
