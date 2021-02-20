@@ -268,7 +268,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
     class IdentifierItem: Item<MPUser> {
         init() {
             super.init( title: "Private User Identifier",
-                        caption: { try? $0.userKeyFactory?.authenticatedIdentifier( for: $0.algorithm ).await() } )
+                        caption: { try? $0.authenticatedIdentifier.await() } )
 
             self.addBehaviour( BlockTapBehaviour() {
                 _ = $0.model.flatMap {

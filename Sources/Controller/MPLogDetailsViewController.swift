@@ -163,11 +163,11 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
     class DeviceIdentifierItem: Item<Model> {
         init() {
             super.init( title: "Device Identifier",
-                        caption: { _ in MPTracker.shared.deviceIdentifier } )
+                        caption: { _ in MPTracker.shared.identifierForDevice } )
 
             self.addBehaviour( BlockTapBehaviour() { _ in
                 UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: MPTracker.shared.deviceIdentifier ] ] )
+                        [ [ UIPasteboard.typeAutomatic: MPTracker.shared.identifierForDevice ] ] )
             } )
         }
     }
@@ -175,11 +175,11 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
     class OwnerIdentifierItem: Item<Model> {
         init() {
             super.init( title: "Owner Identifier",
-                        caption: { _ in MPTracker.shared.ownerIdentifier } )
+                        caption: { _ in MPTracker.shared.identifierForOwner } )
 
             self.addBehaviour( BlockTapBehaviour() { _ in
                 UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: MPTracker.shared.ownerIdentifier ] ] )
+                        [ [ UIPasteboard.typeAutomatic: MPTracker.shared.identifierForOwner ] ] )
             } )
         }
     }

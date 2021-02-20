@@ -56,13 +56,16 @@ class MPTracker: MPConfigObserver {
     }
     #endif
 
-    lazy var deviceIdentifier = self.identifier( for: "device", attributes: [
-        kSecAttrDescription: "Unique identifier for the device on this app.",
+    // identifierForVendor     | survives: restart                           -- doesn't survive: reinstall, other devices
+    // identifierForDevice     | survives: restart, reinstall                -- doesn't survive: other devices
+    // identifierForOwner      | survives: restart, reinstall, owned devices -- doesn't survive: unowned devices
+    // authenticatedIdentifier | survives: restart, reinstall, all devices   -- doesn't survive:
+    lazy var identifierForDevice = self.identifier( for: "device", attributes: [
+        kSecAttrDescription: "Unique identifier for the device running this app.",
         kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: false,
     ] ).uuidString
-
-    lazy var ownerIdentifier = self.identifier( for: "owner", attributes: [
+    lazy var identifierForOwner  = self.identifier( for: "owner", attributes: [
         kSecAttrDescription: "Unique identifier for the owner of this app.",
         kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: true,
@@ -70,32 +73,34 @@ class MPTracker: MPConfigObserver {
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                  extensionController: UIViewController? = nil) {
-        inf( "Startup [device=%@, owner=%@]", self.deviceIdentifier, self.ownerIdentifier )
+        let identifiers = [ "device": self.identifierForDevice, "owner": self.identifierForOwner,
+                            "vendor": UIDevice.current.identifierForVendor?.uuidString ?? "" ]
+        inf( "Startup [identifiers: %@]", identifiers )
 
         // Sentry
         SentrySDK.start {
             $0.dsn = appConfig.diagnostics ? sentryDSN.b64Decrypt(): nil
             $0.environment = appConfig.isDebug ? "Development": appConfig.isPublic ? "Public": "Private"
         }
-        SentrySDK.configureScope { $0.setTags( [ "device": self.deviceIdentifier, "owner": self.ownerIdentifier ] ) }
+        SentrySDK.configureScope { $0.setTags( identifiers ) }
 
         #if TARGET_APP
         // Countly
         if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
             let countlyConfig = CountlyConfig()
             countlyConfig.host = "https://countly.spectre.app"
-            countlyConfig.appKey = countlyKey
-            countlyConfig.features = [ CLYFeature.pushNotifications ]
-            countlyConfig.requiresConsent = true
-            #if PUBLIC
-            countlyConfig.pushTestMode = nil
-            #else
-            countlyConfig.pushTestMode = appConfig.isDebug ? .development: .testFlightOrAdHoc
-            #endif
+            countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
             countlyConfig.alwaysUsePOST = true
             countlyConfig.secretSalt = countlySalt
-            countlyConfig.deviceID = self.deviceIdentifier
-            countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
+            countlyConfig.appKey = countlyKey
+            countlyConfig.requiresConsent = true
+            countlyConfig.deviceID = self.identifierForOwner
+            countlyConfig.customMetrics = identifiers
+            countlyConfig.features = [ CLYFeature.pushNotifications ]
+            #if !PUBLIC
+            countlyConfig.enableDebug = true
+            countlyConfig.pushTestMode = appConfig.isDebug ? .development: .testFlightOrAdHoc
+            #endif
             Countly.sharedInstance().start( with: countlyConfig )
         }
         #endif
@@ -108,9 +113,9 @@ class MPTracker: MPConfigObserver {
             let level: SentryLevel = map( logEvent.level, [
                 .trace: .debug, .debug: .debug, .info: .info, .warning: .warning, .error: .error, .fatal: .fatal ] ) ?? .debug
             let tags               =
-                    [ "file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
-                      "line": "\(logEvent.line)",
-                      "function": String.valid( logEvent.function ) ?? "-" ]
+                    [ "srcFile": String.valid( logEvent.file )?.lastPathComponent ?? "-",
+                      "srcLine": "\(logEvent.line)",
+                      "srcFunc": String.valid( logEvent.function ) ?? "-" ]
 
             if logEvent.level <= .error {
                 let event = Event( level: level )
@@ -135,8 +140,13 @@ class MPTracker: MPConfigObserver {
 
         appConfig.observers.register( observer: self ).didChangeConfig()
 
+        #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( productName, action: "startup", [ "version": productVersion, "build": productBuild ] ) )
+                    track: .subject( "app", action: "startup", [ "version": productVersion, "build": productBuild ] ) )
+        #elseif TARGET_AUTOFILL
+        self.event( file: file, line: line, function: function, dso: dso,
+                    track: .subject( "autofill", action: "startup", [ "version": productVersion, "build": productBuild ] ) )
+        #endif
     }
 
     private func identifier(for named: String, attributes: [CFString: Any] = [:]) -> UUID {
@@ -165,7 +175,7 @@ class MPTracker: MPConfigObserver {
     }
 
     func login(user: MPUser) {
-        user.userKeyFactory?.authenticatedIdentifier( for: user.algorithm ).success { userId in
+        user.authenticatedIdentifier.success { userId in
             guard let userId = userId
             else { return }
 
@@ -188,7 +198,7 @@ class MPTracker: MPConfigObserver {
             Countly.sharedInstance().recordPushNotificationToken()
             #endif
 
-            inf( "Login [user=%@]", userId )
+            inf( "Login [user: %@]", userId )
             self.event( track: .subject( "user", action: "signed_in", userConfig ) )
         }
     }
@@ -198,7 +208,8 @@ class MPTracker: MPConfigObserver {
 
         SentrySDK.setUser( nil )
         #if TARGET_APP
-        Countly.sharedInstance().userLoggedOut()
+        //Countly.sharedInstance().userLoggedOut() // FIXME: Countly doesn't return to the configuration's deviceIdentifier on logout.
+        Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: false )
         #endif
     }
 

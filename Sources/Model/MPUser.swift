@@ -63,6 +63,9 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
             }
         }
     }
+    public var authenticatedIdentifier: Promise<String?> {
+        self.userKeyFactory?.authenticatedIdentifier( for: self.algorithm ) ?? Promise( .success( nil ) )
+    }
     public var defaultType: MPResultType {
         didSet {
             if oldValue != self.defaultType {
