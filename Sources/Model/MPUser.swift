@@ -308,6 +308,9 @@ class MPUser: MPOperand, Hashable, Comparable, CustomStringConvertible, Observab
     // MARK: --- Private ---
 
     private func tryKeyFactoryMigration() {
+        guard InAppFeature.premium.isEnabled
+        else { return }
+
         if self.biometricLock {
             // biometric lock is on; if key factory is secret, migrate it to keychain.
             (self.userKeyFactory as? MPSecretKeyFactory)?.toKeychain().then {

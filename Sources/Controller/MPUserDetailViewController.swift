@@ -209,7 +209,7 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
                     Saves your user key in the device's key chain.
                     """
                 } )
-                        //            MPKeychainKeyFactory.factor != .biometricNone
+                        // TODO: Enable toggle if premium is off but biometric key is set to allow clearing it?
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
             ] )

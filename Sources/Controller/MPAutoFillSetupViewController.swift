@@ -51,7 +51,6 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
                         ToggleItem( track: .subject( "autofill_setup", action: "biometricLock" ),
                                     icon: { _ in MPKeychainKeyFactory.factor.icon ?? MPKeychainKeyFactory.Factor.biometricTouch.icon },
                                     value: { $0.biometricLock }, update: { $0.biometricLock = $1 } )
-                                //            MPKeychainKeyFactory.factor != .biometricNone
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
                                 .addBehaviour( PremiumTapBehaviour() )
                                 .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
