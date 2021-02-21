@@ -273,14 +273,17 @@ extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
         }
     }
 
+    @discardableResult
     public func mpw_set(_ value: Bool, path: String...) -> Bool {
         path.withCStringVaList { mpw_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
     }
 
+    @discardableResult
     public func mpw_set(_ value: Double, path: String...) -> Bool {
         path.withCStringVaList { mpw_marshal_data_vset_num( value, self.pointee.data, $0 ) }
     }
 
+    @discardableResult
     public func mpw_set(_ value: String?, path: String...) -> Bool {
         path.withCStringVaList { mpw_marshal_data_vset_str( value, self.pointee.data, $0 ) }
     }

@@ -651,22 +651,10 @@ class MPMarshal: Observable, Updatable {
 
         public var resetKey = false
 
-        public var id:                       String {
+        public var id: String {
             self.userName
         }
-        public var isMasterPasswordCustomer: Bool {
-            for purchase in [ "com.lyndir.masterpassword.products.generatelogins",
-                              "com.lyndir.masterpassword.products.generateanswers",
-                              "com.lyndir.masterpassword.products.touchid" ] {
-                if let proof: String = self.file.mpw_get( path: "user", "_ext_mpw", purchase ),
-                   let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: mpwSalt.b64Decrypt() )?.hex().prefix( 16 ),
-                   proof == purchaseDigest {
-                    return true
-                }
-            }
-
-            return false
-        }
+        public var isMasterPasswordCustomer = false
 
         static func load(origin: URL) throws -> UnsafeMutablePointer<MPMarshalledFile>? {
             guard FileManager.default.fileExists( atPath: origin.path ),
@@ -719,6 +707,18 @@ class MPMarshal: Observable, Updatable {
 
             self.biometricLock = file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
             self.autofill = file.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
+
+            for purchase in [ "com.lyndir.masterpassword.products.generatelogins",
+                              "com.lyndir.masterpassword.products.generateanswers",
+                              "com.lyndir.masterpassword.products.touchid" ] {
+                if let proof: String = self.file.mpw_get( path: "user", "_ext_mpw", purchase ),
+                   let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: mpwSalt.b64Decrypt() )?.hex().prefix( 16 ),
+                   proof == purchaseDigest {
+                    self.isMasterPasswordCustomer = true
+                }
+
+                self.file.mpw_set( nil, path: "user", "_ext_mpw", purchase )
+            }
         }
 
         public func authenticate(using keyFactory: MPKeyFactory) -> Promise<MPUser> {
