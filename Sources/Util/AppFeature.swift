@@ -30,8 +30,9 @@ enum InAppSubscription: String, CaseIterable {
 }
 
 enum InAppProduct: String, CaseIterable {
-    case premiumAnnual  = "app.spectre.premium.annual"
-    case premiumMonthly = "app.spectre.premium.monthly"
+    case premiumAnnual         = "app.spectre.premium.annual"
+    case premiumMonthly        = "app.spectre.premium.monthly"
+    case premiumMasterPassword = "app.spectre.premium.masterpassword"
 
     public static let allCases = [ InAppProduct ]( [ .premiumAnnual, .premiumMonthly ] )
 
@@ -42,11 +43,15 @@ enum InAppProduct: String, CaseIterable {
     var productIdentifier: String {
         self.rawValue
     }
-
-    var features: [InAppFeature] {
+    var isPublic:          Bool {
+        [ InAppProduct.premiumAnnual,
+          InAppProduct.premiumMonthly ].contains( self )
+    }
+    var features:          [InAppFeature] {
         map( self, [
             .premiumAnnual: [ .premium ],
             .premiumMonthly: [ .premium ],
+            .premiumMasterPassword: [ .premium ],
         ] ) ?? []
     }
 }
@@ -79,13 +84,13 @@ extension SKProductDiscount {
     var localizedOffer: String {
         switch self.paymentMode {
             case .freeTrial:
-                return "Try freely"
+                return "Free"
             case .payAsYouGo:
                 return "\(self.localizedPrice) / \(self.subscriptionPeriod.localizedDescription( context: .frequency ))"
             case .payUpFront:
                 fallthrough
             @unknown default:
-                return "\(self.localizedPrice)"
+                return self.localizedPrice
         }
     }
 
@@ -142,7 +147,7 @@ extension SKProduct.PeriodUnit {
     }
 }
 
-extension SKPaymentTransactionState : CustomStringConvertible {
+extension SKPaymentTransactionState: CustomStringConvertible {
     public var description: String {
         switch self {
             case .purchasing:

@@ -8,6 +8,7 @@ import Foundation
 // printf <secret> | openssl enc -[ed] -aes-128-cbc -a -A -K <appSecret> -iv 0
 let appSecret    = ""
 let appSalt      = ""
+let mpwSalt      = ""
 let sentryDSN    = ""
 let countlyKey   = ""
 let countlySalt  = ""

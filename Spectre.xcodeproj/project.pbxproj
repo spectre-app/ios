@@ -88,6 +88,7 @@
 		93D39DA73327FB4E3D600A31 /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39813D4D15F649C54ADE0 /* Updatable.swift */; };
 		93D39DC523A8A2E162CEB420 /* UIKit+MP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+MP.swift */; };
 		93D39DE4534EF967532011C2 /* KeyboardLayoutGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */; };
+		93D39DE5CFF2446F5D8B85FF /* MPDialogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CCF90A49C099A05280B /* MPDialogViewController.swift */; };
 		93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39813D4D15F649C54ADE0 /* Updatable.swift */; };
 		93D39E0E73178FE39CF12B45 /* BasicSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BasicSitesViewController.swift */; };
 		93D39E13E65A877333C0B963 /* MPTintLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B3112D0D128E6369596 /* MPTintLabel.swift */; };
@@ -472,6 +473,7 @@
 		93D39C3FA9FA2CA5B234741E /* MPConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPConfig.swift; sourceTree = "<group>"; };
 		93D39C870A4BDC6A404826C2 /* MPResultTypeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPResultTypeCell.swift; sourceTree = "<group>"; };
 		93D39CB804B95B268383FCB2 /* Persisting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persisting.swift; sourceTree = "<group>"; };
+		93D39CCF90A49C099A05280B /* MPDialogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPDialogViewController.swift; sourceTree = "<group>"; };
 		93D39CDC84DDABE512D49739 /* MPSiteDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSiteDetailViewController.swift; sourceTree = "<group>"; };
 		93D39CF7DB942C69D1C5D6BE /* mpw-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-util.h"; sourceTree = "<group>"; };
 		93D39D2352657D352B2B13B6 /* MPSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSitesViewController.swift; sourceTree = "<group>"; };
@@ -849,6 +851,7 @@
 				93D393A49E8705F3E38EB779 /* MPViewController.swift */,
 				93D39DC918D45D864FA12ED1 /* BasicSitesViewController.swift */,
 				93D394C13D268B6594F0E358 /* MPAutoFillSetupViewController.swift */,
+				93D39CCF90A49C099A05280B /* MPDialogViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -1882,6 +1885,7 @@
 				93D39854B7171FE34024CEED /* MPPagerView.swift in Sources */,
 				93D399FB0C4228E18FDFAC9F /* MPPickerView.swift in Sources */,
 				93D394B61590BE7C5E928BA0 /* AppStore.swift in Sources */,
+				93D39DE5CFF2446F5D8B85FF /* MPDialogViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

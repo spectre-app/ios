@@ -140,6 +140,7 @@ class MPMarshal: Observable, Updatable {
         }
     }
 
+    #if TARGET_APP
     public func `import`(data: Data, viewController: UIViewController)
                     -> Promise<UserFile> {
         let importEvent = MPTracker.shared.begin( track: .subject( "import", action: "from-data" ) )
@@ -162,11 +163,15 @@ class MPMarshal: Observable, Updatable {
                     importEvent.end( [ "result": $0.name ] )
                 }
             }
-        }.success {
+        }.success( on: .main ) {
             // Master Password purchase migration
-            dbg( "user: %@, masterpasswordcustomer: %@", $0.userName, $0.isMasterPasswordCustomer )
+            dbg( "user: %@, masterpasswordcustomer: %d", $0.userName, $0.isMasterPasswordCustomer )
+            if $0.isMasterPasswordCustomer, !InAppFeature.premium.isEnabled {
+                viewController.present( MPDialogViewController(), animated: true )
+            }
         }
     }
+    #endif
 
     // MARK: --- Private ---
 
@@ -646,8 +651,21 @@ class MPMarshal: Observable, Updatable {
 
         public var resetKey = false
 
-        public var id: String {
+        public var id:                       String {
             self.userName
+        }
+        public var isMasterPasswordCustomer: Bool {
+            for purchase in [ "com.lyndir.masterpassword.products.generatelogins",
+                              "com.lyndir.masterpassword.products.generateanswers",
+                              "com.lyndir.masterpassword.products.touchid" ] {
+                if let proof: String = self.file.mpw_get( path: "user", "_ext_mpw", purchase ),
+                   let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: mpwSalt.b64Decrypt() )?.hex().prefix( 16 ),
+                   proof == purchaseDigest {
+                    return true
+                }
+            }
+
+            return false
         }
 
         static func load(origin: URL) throws -> UnsafeMutablePointer<MPMarshalledFile>? {

@@ -8,19 +8,19 @@ import TPInAppReceipt
 
 extension InAppSubscription {
     var isActive: Bool {
-        AppStore.shared.products( forSubscription: self ).contains {
+        AppStore.shared.products( forSubscription: self, onlyPublic: false ).contains {
             InAppProduct.find( $0.productIdentifier )?.isActive ?? false
         }
     }
 
     var wasActiveButExpired: Bool {
-        AppStore.shared.products( forSubscription: self ).contains {
+        AppStore.shared.products( forSubscription: self, onlyPublic: false ).contains {
             InAppProduct.find( $0.productIdentifier )?.wasActiveButExpired ?? false
         }
     }
 
     var latest: InAppPurchase? {
-        AppStore.shared.products( forSubscription: self )
+        AppStore.shared.products( forSubscription: self, onlyPublic: false )
                        .compactMap {
                            AppStore.shared.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
                        }
@@ -31,6 +31,10 @@ extension InAppSubscription {
 }
 
 extension InAppProduct {
+    var product: SKProduct? {
+        AppStore.shared.products.first { $0.productIdentifier == self.productIdentifier }
+    }
+
     var isActive: Bool {
         guard let receipt = AppStore.shared.receipt
         else { return false }
@@ -82,6 +86,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
     var receipt: InAppReceipt?
 
+    private var updatePromise: Promise<Bool>?
+
     override init() {
         super.init()
 
@@ -89,19 +95,29 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     @discardableResult
-    func update(active: Bool = false) -> Promise<InAppReceipt?> {
-        self.updateReceipt( allowRefresh: active ).then {
-            guard active || (try? $0.get()) != nil
-            else { return }
+    func update(active: Bool = false) -> Promise<Bool> {
+        self.updatePromise ?? using( Promise<Bool>() ) { updatePromise in
+            self.updatePromise = updatePromise
 
-            let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
-            productsRequest.delegate = self
-            productsRequest.start()
+            self.updateReceipt( allowRefresh: active ).then {
+                guard active || (try? $0.get()) != nil
+                else {
+                    // Passive mode and no receipt: give up for now to avoid undesirable store errors.
+                    self.updatePromise?.finish( .success( false ) )
+                    self.updatePromise = nil
+                    return
+                }
+
+                let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
+                productsRequest.delegate = self
+                productsRequest.start()
+            }
         }
     }
 
-    func purchase(product: SKProduct, quantity: Int = 1) {
+    func purchase(product: SKProduct, promotion: SKPaymentDiscount? = nil, quantity: Int = 1) {
         let payment = SKMutablePayment( product: product )
+        payment.paymentDiscount = promotion
         payment.quantity = quantity
 
         SKPaymentQueue.default().add( payment )
@@ -176,6 +192,11 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     private let countryCode3to2
             = [ "AFG": "AF", "ALB": "AL", "DZA": "DZ", "AND": "AD", "AGO": "AO", "AIA": "AI", "ATG": "AG", "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "AZE": "AZ", "BHS": "BS", "BHR": "BH", "BGD": "BD", "BRB": "BB", "BLR": "BY", "BEL": "BE", "BLZ": "BZ", "BEN": "BJ", "BMU": "BM", "BTN": "BT", "BOL": "BO", "BIH": "BA", "BWA": "BW", "BRA": "BR", "BRN": "BN", "BGR": "BG", "BFA": "BF", "KHM": "KH", "CMR": "CM", "CAN": "CA", "CPV": "CV", "CYM": "KY", "CAF": "CF", "TCD": "TD", "CHL": "CL", "CHN": "CN", "COL": "CO", "COG": "CG", "COD": "CD", "CRI": "CR", "CIV": "CI", "HRV": "HR", "CYP": "CY", "CZE": "CZ", "DNK": "DK", "DMA": "DM", "DOM": "DO", "ECU": "EC", "EGY": "EG", "SLV": "SV", "EST": "EE", "ETH": "ET", "FJI": "FJ", "FIN": "FI", "FRA": "FR", "GAB": "GA", "GMB": "GM", "GEO": "GE", "DEU": "DE", "GHA": "GH", "GRC": "GR", "GRD": "GD", "GTM": "GT", "GIN": "GN", "GNB": "GW", "GUY": "GY", "HND": "HN", "HKG": "HK", "HUN": "HU", "ISL": "IS", "IND": "IN", "IDN": "ID", "IRQ": "IQ", "IRL": "IE", "ISR": "IL", "ITA": "IT", "JAM": "JM", "JPN": "JP", "JOR": "JO", "KAZ": "KZ", "KEN": "KE", "KOR": "KR", "KWT": "KW", "KGZ": "KG", "LAO": "LA", "LVA": "LV", "LBN": "LB", "LBR": "LR", "LBY": "LY", "LIE": "LI", "LTU": "LT", "LUX": "LU", "MAC": "MO", "MKD": "MK", "MDG": "MG", "MWI": "MW", "MYS": "MY", "MDV": "MV", "MLI": "ML", "MLT": "MT", "MRT": "MR", "MUS": "MU", "MEX": "MX", "FSM": "FM", "MDA": "MD", "MCO": "MC", "MNG": "MN", "MNE": "ME", "MSR": "MS", "MAR": "MA", "MOZ": "MZ", "MMR": "MM", "NAM": "NA", "NRU": "NR", "NPL": "NP", "NLD": "NL", "NZL": "NZ", "NIC": "NI", "NER": "NE", "NGA": "NG", "NOR": "NO", "OMN": "OM", "PAK": "PK", "PLW": "PW", "PSE": "PS", "PAN": "PA", "PNG": "PG", "PRY": "PY", "PER": "PE", "PHL": "PH", "POL": "PL", "PRT": "PT", "QAT": "QA", "ROU": "RO", "RUS": "RU", "RWA": "RW", "KNA": "KN", "LCA": "LC", "VCT": "VC", "WSM": "WS", "STP": "ST", "SAU": "SA", "SEN": "SN", "SRB": "RS", "SYC": "SC", "SLE": "SL", "SGP": "SG", "SVK": "SK", "SVN": "SI", "SLB": "SB", "ZAF": "ZA", "ESP": "ES", "LKA": "LK", "SUR": "SR", "SWZ": "SZ", "SWE": "SE", "CHE": "CH", "TWN": "TW", "TJK": "TJ", "TZA": "TZ", "THA": "TH", "TON": "TO", "TTO": "TT", "TUN": "TN", "TUR": "TR", "TKM": "TM", "TCA": "TC", "UGA": "UG", "UKR": "UA", "ARE": "AE", "GBR": "GB", "USA": "US", "URY": "UY", "UZB": "UZ", "VUT": "VU", "VEN": "VE", "VNM": "VN", "VGB": "VG", "YEM": "YE", "ZMB": "ZM", "ZWE": "ZW" ]
+
+    func products(forSubscription subscription: InAppSubscription, onlyPublic: Bool = true) -> [SKProduct] {
+        self.products.filter { $0.subscriptionGroupIdentifier == subscription.subscriptionGroupIdentifier }
+                     .filter { !onlyPublic || InAppProduct.find( $0.productIdentifier )?.isPublic ?? false }
+    }
 
     private func refreshReceipt() -> Promise<InAppReceipt?> {
         using( Promise<InAppReceipt?>() ) { promise in
@@ -306,15 +327,15 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     // MARK: --- SKRequestDelegate ---
 
     func requestDidFinish(_ request: SKRequest) {
+        self.updatePromise?.finish( .success( true ) )
+        self.updatePromise = nil
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
         mperror( title: "App Store Request Issue", message:
         "Ensure you are online and try logging out and back into your Apple ID from Settings.",
                  error: error )
-    }
-
-    func products(forSubscription subscription: InAppSubscription) -> [SKProduct] {
-        self.products.filter { $0.subscriptionGroupIdentifier == subscription.subscriptionGroupIdentifier }
+        self.updatePromise?.finish( .success( false ) )
+        self.updatePromise = nil
     }
 }
