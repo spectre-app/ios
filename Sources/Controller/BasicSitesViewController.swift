@@ -52,12 +52,11 @@ class BasicSitesViewController: MPUserViewController, UITextFieldDelegate, MPDet
         self.view.addSubview( self.topContainer )
 
         // - Layout
-        LayoutConfiguration( view: self.sitesTableView )
-                .constrain()
-                .activate()
+        LayoutConfiguration( view: self.sitesTableView ).constrain( as: .box )
+                                                        .activate()
 
         LayoutConfiguration( view: self.topContainer )
-                .constrainToAll {
+                .constrainAll {
                     [
                         $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
                         $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )

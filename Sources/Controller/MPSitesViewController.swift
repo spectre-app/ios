@@ -56,13 +56,12 @@ class MPSitesViewController: BasicSitesViewController {
         self.detailsHost.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: self.detailsHost.view )
-                .constrain()
-                .constrainTo { _, _ in
+        LayoutConfiguration( view: self.detailsHost.view ).constrain( as: .box )
+                                                          .constrain { _, _ in
                     self.detailsHost.contentView.topAnchor.constraint( greaterThanOrEqualTo: self.topContainer.bottomAnchor, constant: -8 )
                                                           .with( priority: UILayoutPriority( 520 ) )
                 }
-                .activate()
+                                                          .activate()
     }
 
     override func viewDidLayoutSubviews() {

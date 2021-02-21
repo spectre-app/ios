@@ -25,8 +25,7 @@ class MPAvatarCell: MPItemCell {
 
         self.effectView.addContentView( self.avatarImage )
 
-        LayoutConfiguration( view: self.avatarImage )
-                .constrain( margins: true )
-                .activate()
+        LayoutConfiguration( view: self.avatarImage ).constrain( as: .box, margin: true )
+                                                     .activate()
     }
 }

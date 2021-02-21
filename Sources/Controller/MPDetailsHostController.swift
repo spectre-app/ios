@@ -84,28 +84,28 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
 
         // - Layout
         LayoutConfiguration( view: self.scrollView )
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrain { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
                 .activate()
 
         LayoutConfiguration( view: self.contentView )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+                .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
                 .activate()
 
         self.fixedContentConfiguration = LayoutConfiguration( view: self.contentView )
-                .constrainTo { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
+                .constrain { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
                 .apply( LayoutConfiguration( view: self.scrollView )
                                 .set( false, keyPath: \.isScrollEnabled, reverses: true ) )
 
         LayoutConfiguration( view: self.closeButton )
-                .constrainTo { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
-                .constrainTo { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).with( priority: .fittingSizeLevel ) }
-                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
+                .constrain { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).with( priority: .fittingSizeLevel ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
                 .activate()
 
         self.popupConfiguration = LayoutConfiguration( view: self.view )
@@ -114,8 +114,8 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     inactive.set( Theme.current.color.shade.get( alpha: .off ), keyPath: \.backgroundColor )
                 }
                 .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
-                    active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 } )
     }
 
@@ -152,7 +152,7 @@ class MPDetailsHostController: MPViewController, UIScrollViewDelegate, UIGesture
                     activeController.beginAppearanceTransition( true, animated: true )
                     self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
                     self.contentView.addSubview( activeController.view )
-                    LayoutConfiguration( view: activeController.view ).constrain( margins: true ).activate()
+                    LayoutConfiguration( view: activeController.view ).constrain( as: .box, margin: true ).activate()
                 }
                 UIView.animate( withDuration: .short, animations: {
                     self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on

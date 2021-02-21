@@ -139,15 +139,15 @@ class Item<M>: AnyItem {
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.subitemsStack )
-                    .constrainTo { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultHigh ) }
-                    .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
+                    .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ).with( priority: .defaultHigh ) }
+                    .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                     .activate()
         }
 
@@ -664,11 +664,11 @@ class DateItem<M>: ValueItem<M, Date> {
             self.valueView.addSubview( self.dateView )
 
             LayoutConfiguration( view: self.dateView )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
         }
 
@@ -886,20 +886,20 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
             self.valueView.addSubview( self.upButton )
 
             LayoutConfiguration( view: self.valueLabel )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                     .activate()
             LayoutConfiguration( view: self.downButton )
-                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: self.valueLabel.leadingAnchor, constant: -20 ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: self.valueLabel.leadingAnchor, constant: -20 ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                     .activate()
             LayoutConfiguration( view: self.upButton )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: self.valueLabel.trailingAnchor, constant: 20 ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: self.valueLabel.trailingAnchor, constant: 20 ) }
+                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                     .activate()
         }
 
@@ -1267,9 +1267,8 @@ class LinksItem<M>: ListItem<M, LinksItem.Link, LinksItem.Cell> {
             self.contentView.addSubview( self.button )
 
             // - Layout
-            LayoutConfiguration( view: self.button )
-                    .constrain()
-                    .activate()
+            LayoutConfiguration( view: self.button ).constrain( as: .box )
+                                                    .activate()
         }
     }
 }

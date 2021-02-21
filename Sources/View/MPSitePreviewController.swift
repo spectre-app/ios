@@ -32,12 +32,12 @@ class MPSitePreviewController: UIViewController, MPSiteObserver {
 
         // - Layout
         LayoutConfiguration( view: self.siteButton )
-                .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
-                .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ) }
                 .activate()
     }
 

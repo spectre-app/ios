@@ -41,16 +41,13 @@ class MPItemCell: UICollectionViewCell {
         self.contentView.addSubview( self.debugLabel )
 
         LayoutConfiguration( view: self.contentView )
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrainTo { $1.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ) }
-                .constrain()
+                .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+                .constrain { $1.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ) }.constrain( as: .box )
                 .activate()
-        LayoutConfiguration( view: self.debugLabel )
-                .constrain( anchors: .bottomBox )
-                .activate()
-        LayoutConfiguration( view: self.effectView )
-                .constrain()
-                .activate()
+        LayoutConfiguration( view: self.debugLabel ).constrain( as: .bottomBox )
+                                                    .activate()
+        LayoutConfiguration( view: self.effectView ).constrain( as: .box )
+                                                    .activate()
 
         defer {
             self.isSelected = false

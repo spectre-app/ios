@@ -47,7 +47,7 @@ class MPItemsViewController<M>: MPViewController {
         super.viewDidLoad()
 
         // - View
-        self.backgroundView.layoutMargins.bottom = 40
+        self.view.layoutMargins.bottom = 40
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = .on
@@ -66,11 +66,10 @@ class MPItemsViewController<M>: MPViewController {
         self.view.addSubview( self.itemsView )
 
         // - Layout
-        LayoutConfiguration( view: self.itemsView )
-                .constrain( margins: true, anchors: .vertical )
-                .constrain( anchors: .horizontal )
-                .constrainTo { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
-                .activate()
+        LayoutConfiguration( view: self.itemsView ).constrain( as: .vertical, margin: true )
+                                                   .constrain( as: .horizontal )
+                                                   .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
+                                                   .activate()
 
         self.items.forEach { $0.view.didLoad() }
     }
@@ -111,7 +110,7 @@ class MPItemsViewController<M>: MPViewController {
         }
         self.backgroundView.image = self.image
         self.backgroundView.imageColor = self.color
-        self.backgroundView.layoutMargins.top = self.image == nil ? 40: 108
+        self.view.layoutMargins.top = self.image == nil ? 40: 108
 
         self.items.forEach { $0.update() }
     }

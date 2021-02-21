@@ -81,13 +81,11 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         self.detailsHost.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: self.usersSpinner )
-                .constrain()
-                .activate()
+        LayoutConfiguration( view: self.usersSpinner ).constrain( as: .box )
+                                                      .activate()
 
-        LayoutConfiguration( view: self.detailsHost.view )
-                .constrain()
-                .activate()
+        LayoutConfiguration( view: self.detailsHost.view ).constrain( as: .box )
+                                                          .activate()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -297,29 +295,28 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             self.contentView.addSubview( self.secretField )
 
             // - Layout
-            LayoutConfiguration( view: self.contentView )
-                    .constrain( margins: true, anchors: .horizontalCenter )
-                    .activate()
+            LayoutConfiguration( view: self.contentView ).constrain( as: .horizontalCenter, margin: true )
+                                                         .activate()
             LayoutConfiguration( view: self.nameLabel )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
                     .activate()
             LayoutConfiguration( view: self.nameField )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.topAnchor, constant: -20 ) }
                     .activate()
             LayoutConfiguration( view: self.avatarButton )
-                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .activate()
             LayoutConfiguration( view: self.secretField )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
             self.authenticationConfiguration = LayoutConfiguration( view: self.secretField ) { active, inactive in
@@ -332,19 +329,19 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
                         inactive.set( nil, keyPath: \.text )
                     } )
                     .apply( LayoutConfiguration( view: self.idBadgeView ) { active, inactive in
-                        active.constrainTo { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
-                        active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
+                        active.constrain { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
+                        active.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         active.set( .on, keyPath: \.alpha )
-                        inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
-                        inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
+                        inactive.constrain { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
+                        inactive.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         inactive.set( .off, keyPath: \.alpha )
                     } )
                     .apply( LayoutConfiguration( view: self.authBadgeView ) { active, inactive in
-                        active.constrainTo { $1.leadingAnchor.constraint( equalTo: self.avatarButton.trailingAnchor ) }
-                        active.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
+                        active.constrain { $1.leadingAnchor.constraint( equalTo: self.avatarButton.trailingAnchor ) }
+                        active.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         active.set( .on, keyPath: \.alpha )
-                        inactive.constrainTo { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
-                        inactive.constrainTo { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
+                        inactive.constrain { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
+                        inactive.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         inactive.set( .off, keyPath: \.alpha )
                     } )
                     .needs( .layout( view: WeakBox( self ) ) )

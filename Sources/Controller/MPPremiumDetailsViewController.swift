@@ -196,13 +196,11 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
                 self.contentView.addSubview( self.captionLabel )
 
                 // - Layout
-                LayoutConfiguration( view: self.buyButton )
-                        .constrain( margins: true, anchors: .topBox )
-                        .activate()
-                LayoutConfiguration( view: self.captionLabel )
-                        .constrain( margins: true, anchors: .bottomBox )
-                        .constrainTo { $1.topAnchor.constraint( equalTo: self.buyButton.bottomAnchor, constant: 4 ) }
-                        .activate()
+                LayoutConfiguration( view: self.buyButton ).constrain( as: .topBox, margin: true )
+                                                           .activate()
+                LayoutConfiguration( view: self.captionLabel ).constrain( as: .bottomBox, margin: true )
+                                                              .constrain { $1.topAnchor.constraint( equalTo: self.buyButton.bottomAnchor, constant: 4 ) }
+                                                              .activate()
             }
         }
     }

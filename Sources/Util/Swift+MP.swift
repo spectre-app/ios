@@ -217,18 +217,20 @@ extension String {
                        length: secretLength, consume: true )
     }
 
-    func digest() -> Data? {
-        withCString( encodedAs: UTF8.self ) { UnsafeBufferPointer( start: $0, count: self.lengthOfBytes( using: .utf8 ) ).digest() }
+    func digest(salt: String? = nil) -> Data? {
+        withCString( encodedAs: UTF8.self ) {
+            UnsafeBufferPointer( start: $0, count: self.lengthOfBytes( using: .utf8 ) ).digest( salt: salt )
+        }
     }
 }
 
 extension UnsafeBufferPointer where Element == UInt8 {
-    func digest() -> Data? {
-        guard let appSalt = appSalt.b64Decrypt()
+    func digest(salt: String? = nil) -> Data? {
+        guard let salt = salt ?? appSalt.b64Decrypt()
         else { return nil }
 
         var digest = [ UInt8 ]( repeating: 0, count: 32 )
-        guard mpw_hash_hmac_sha256( &digest, appSalt, appSalt.lengthOfBytes( using: .utf8 ), self.baseAddress, self.count )
+        guard mpw_hash_hmac_sha256( &digest, salt, salt.lengthOfBytes( using: .utf8 ), self.baseAddress, self.count )
         else { return nil }
 
         return Data( digest )

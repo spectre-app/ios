@@ -35,11 +35,11 @@ class MPTapEffectView: UIView {
 
             effectContainer.insertSubview( self, aboveSubview: hostContainer )
             LayoutConfiguration( view: self )
-                    .constrainTo { $1.centerXAnchor.constraint( equalTo: host.centerXAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: host.centerYAnchor ) }
-                    .constrainTo { $1.widthAnchor.constraint( greaterThanOrEqualTo: $0.widthAnchor, multiplier: 1 / 2 ) }
-                    .constrainTo { $1.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor, multiplier: 1 / 2 ) }
-                    .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: host.centerXAnchor ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: host.centerYAnchor ) }
+                    .constrain { $1.widthAnchor.constraint( greaterThanOrEqualTo: $0.widthAnchor, multiplier: 1 / 2 ) }
+                    .constrain { $1.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor, multiplier: 1 / 2 ) }
+                    .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                     .activate()
 
             if let hostSnapshot = host.snapshotView( afterScreenUpdates: false ) {

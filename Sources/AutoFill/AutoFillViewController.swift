@@ -46,9 +46,8 @@ class AutoFillViewController: ASCredentialProviderViewController {
         usersViewController.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: usersViewController.view )
-                .constrain()
-                .activate()
+        LayoutConfiguration( view: usersViewController.view ).constrain( as: .box )
+                                                             .activate()
     }
 
     override func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
@@ -119,9 +118,8 @@ class AutoFillViewController: ASCredentialProviderViewController {
         usersViewController.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: usersViewController.view )
-                .constrain()
-                .activate()
+        LayoutConfiguration( view: usersViewController.view ).constrain( as: .box )
+                                                             .activate()
     }
 
     override func prepareInterfaceForExtensionConfiguration() {

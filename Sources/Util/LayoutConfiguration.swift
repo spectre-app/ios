@@ -194,23 +194,23 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 /** Activate this constraint when the configuration becomes active
  * @param constrainer \c $0 owningView \c $1 target
  */
-    @discardableResult func constrainTo(_ constraint: NSLayoutConstraint) -> Self {
-        self.constrainTo { _, _ in constraint }
+    @discardableResult func constrain(_ constraint: NSLayoutConstraint) -> Self {
+        self.constrain { _, _ in constraint }
     }
 
-    @discardableResult func constrainTo(_ constrainer: @escaping (UIView, LayoutTarget<T>) -> NSLayoutConstraint) -> Self {
-        self.constrainToAll { [ constrainer( $0, $1 ) ] }
+    @discardableResult func constrain(_ constrainer: @escaping (UIView, LayoutTarget<T>) -> NSLayoutConstraint) -> Self {
+        self.constrainAll { [ constrainer( $0, $1 ) ] }
     }
 
-    @discardableResult func constrainToAll(constrainers: @escaping (UIView, LayoutTarget<T>) -> [NSLayoutConstraint]) -> Self {
+    @discardableResult func constrainAll(_ constrainers: @escaping (UIView, LayoutTarget<T>) -> [NSLayoutConstraint]) -> Self {
         self.constrainers.append( constrainers )
         return self
     }
 
-    @discardableResult func constrain(to host: UIView? = nil, margins: Bool = false, anchors: Anchor = .box) -> Self {
+    @discardableResult func constrain(as anchors: Anchor, to host: UIView? = nil, margin: Bool = false) -> Self {
         if anchors.contains( .top ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor )
                 }
                 else {
@@ -219,8 +219,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .leading ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor )
                 }
                 else {
@@ -229,8 +229,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .trailing ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor )
                 }
                 else {
@@ -239,8 +239,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .bottom ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor )
                 }
                 else {
@@ -249,8 +249,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .left ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.leftAnchor.constraint( equalTo: $1.leftAnchor )
                 }
                 else {
@@ -259,8 +259,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .right ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.rightAnchor.constraint( equalTo: $1.rightAnchor )
                 }
                 else {
@@ -269,8 +269,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .width ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.widthAnchor.constraint( equalTo: $1.widthAnchor )
                 }
                 else {
@@ -279,8 +279,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .height ) {
-            self.constrainTo {
-                if margins {
+            self.constrain {
+                if margin {
                     return (host ?? $0).layoutMarginsGuide.heightAnchor.constraint( equalTo: $1.heightAnchor )
                 }
                 else {
@@ -289,8 +289,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .centerX ) {
-            self.constrainToAll {
-                if margins {
+            self.constrainAll {
+                if margin {
                     return [
                         (host ?? $0).layoutMarginsGuide.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ),
                         (host ?? $0).layoutMarginsGuide.centerXAnchor.constraint( equalTo: $1.centerXAnchor ),
@@ -307,8 +307,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
         }
         if anchors.contains( .centerY ) {
-            self.constrainToAll {
-                if margins {
+            self.constrainAll {
+                if margin {
                     return [
                         (host ?? $0).layoutMarginsGuide.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ),
                         (host ?? $0).layoutMarginsGuide.centerYAnchor.constraint( equalTo: $1.centerYAnchor ),
@@ -334,8 +334,12 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     @discardableResult func compressionResistance(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 )) -> Self {
-        self.activeProperties["compressionResistance.horizontal"] = horizontal
-        self.activeProperties["compressionResistance.vertical"] = vertical
+        if horizontal.rawValue >= 0 {
+            self.activeProperties["compressionResistance.horizontal"] = horizontal
+        }
+        if vertical.rawValue >= 0 {
+            self.activeProperties["compressionResistance.vertical"] = vertical
+        }
         return self
     }
 
@@ -344,8 +348,12 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     @discardableResult func hugging(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 )) -> Self {
-        self.activeProperties["hugging.horizontal"] = horizontal
-        self.activeProperties["hugging.vertical"] = vertical
+        if horizontal.rawValue >= 0 {
+            self.activeProperties["hugging.horizontal"] = horizontal
+        }
+        if vertical.rawValue >= 0 {
+            self.activeProperties["hugging.vertical"] = vertical
+        }
         return self
     }
 

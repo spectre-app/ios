@@ -378,7 +378,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
         private lazy var updateTask   = DispatchTask( named: self.site?.siteName, update: self )
         private lazy var selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
-            active.constrainTo {
+            active.constrain {
                 $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
                                .with( priority: .defaultHigh + 10 )
             }
@@ -450,31 +450,31 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
 
             // - Layout
             LayoutConfiguration( view: self.modeButton )
-                    .constrainTo { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrainTo { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                    .constrainTo { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                    .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.actionsStack )
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.newButton )
-                    .constrainTo { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.contentStack )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeButton.trailingAnchor ) }
-                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.actionsStack.leadingAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.newButton.leadingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeButton.trailingAnchor ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.actionsStack.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.newButton.leadingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
             LayoutConfiguration( view: self.selectionView )
@@ -641,15 +641,14 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
             self.contentView.addSubview( self.propLabel )
 
             // - Layout
-            LayoutConfiguration( view: self.emitterView )
-                    .constrain()
-                    .activate()
+            LayoutConfiguration( view: self.emitterView ).constrain( as: .box )
+                                                         .activate()
             LayoutConfiguration( view: self.propLabel )
-                    .constrainTo { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
         }
 

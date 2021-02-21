@@ -104,9 +104,8 @@ class MPExportViewController: MPUserViewController, UIPopoverPresentationControl
         self.view.addSubview( self.contentView )
 
         // - Layout
-        LayoutConfiguration( view: self.contentView )
-                .constrain( margins: true )
-                .activate()
+        LayoutConfiguration( view: self.contentView ).constrain( as: .box, margin: true )
+                                                     .activate()
     }
 
     // MARK: UIPopoverPresentationControllerDelegate

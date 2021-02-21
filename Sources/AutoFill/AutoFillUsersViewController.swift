@@ -34,9 +34,8 @@ class AutoFillUsersViewController: BasicUsersViewController {
         self.view.insertSubview( self.cancelButton, belowSubview: self.detailsHost.view )
 
         // - Layout
-        LayoutConfiguration( view: self.cancelButton )
-                .constrain( margins: true, anchors: .bottomCenter )
-                .activate()
+        LayoutConfiguration( view: self.cancelButton ).constrain( as: .bottomCenter, margin: true )
+                                                      .activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {

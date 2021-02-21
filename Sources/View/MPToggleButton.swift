@@ -97,14 +97,13 @@ class MPToggleButton: UIView {
         self.widthAnchor.constraint( equalTo: self.heightAnchor ).isActive = true
         self.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ).isActive = true
 
-        LayoutConfiguration( view: self.contentView )
-                .constrain( margins: true )
-                .activate()
+        LayoutConfiguration( view: self.contentView ).constrain( as: .box, margin: true )
+                                                     .activate()
         LayoutConfiguration( view: self.checkLabel )
-                .constrainTo { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                .constrainTo { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                .constrain { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .activate()
 
         defer {

@@ -100,18 +100,16 @@ class MPUsersViewController: BasicUsersViewController {
         self.view.insertSubview( self.userToolbar, belowSubview: self.detailsHost.view )
 
         // - Layout
-        LayoutConfiguration( view: self.appToolbar )
-                .constrain( margins: true, anchors: .bottomCenter )
-                .activate()
+        LayoutConfiguration( view: self.appToolbar ).constrain( as: .bottomCenter, margin: true )
+                                                    .activate()
 
-        LayoutConfiguration( view: self.userToolbar )
-                .constrain( anchors: .horizontal )
-                .activate()
+        LayoutConfiguration( view: self.userToolbar ).constrain( as: .horizontal )
+                                                     .activate()
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
-            active.constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
+            active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
             active.set( .on, keyPath: \.alpha )
-            inactive.constrainTo { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
+            inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
             inactive.set( .off, keyPath: \.alpha )
         }
     }

@@ -24,9 +24,8 @@ class MPNavigationController: UINavigationController, UINavigationControllerDele
         self.view.insertSubview( self.backgroundView, at: 0 )
 
         // - Layout
-        LayoutConfiguration( view: self.backgroundView )
-                .constrain()
-                .activate()
+        LayoutConfiguration( view: self.backgroundView ).constrain( as: .box )
+                                                        .activate()
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

@@ -86,11 +86,11 @@ class MPUserSecretField: UITextField, UITextFieldDelegate, Updatable {
         self.identiconAccessory.addSubview( self.identiconLabel )
 
         LayoutConfiguration( view: self.identiconLabel )
-                .constrainTo { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: 4 ) }
-                .constrainTo { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                .constrainTo { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor, constant: 4 ) }
-                .constrainTo { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor, constant: -4 ) }
-                .constrainTo { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -4 ) }
+                .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: 4 ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor, constant: 4 ) }
+                .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor, constant: -4 ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -4 ) }
                 .activate()
 
         defer {
