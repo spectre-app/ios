@@ -167,7 +167,7 @@ class MPMarshal: Observable, Updatable {
             // Master Password purchase migration
             dbg( "user: %@, masterpasswordcustomer: %d", $0.userName, $0.isMasterPasswordCustomer )
             if $0.isMasterPasswordCustomer, !InAppFeature.premium.isEnabled {
-                viewController.present( MPDialogViewController(), animated: true )
+                viewController.present( MPMasterPasswordViewController(), animated: true )
             }
         }
     }
