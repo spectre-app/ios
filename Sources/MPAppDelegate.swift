@@ -52,6 +52,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         self.tryDecisions()
 
+        // Automatic subscription renewal (only if user is logged in to App Store and capable).
         AppStore.shared.update()
 
         return true

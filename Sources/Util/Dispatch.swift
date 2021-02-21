@@ -189,9 +189,9 @@ public class Promise<V> {
         self.then( on: queue ) { if case .failure(let error) = $0 { consumer( error ) } }
     }
 
-    /** When this promise is finished, run the given block. */
+    /** When this promise is finished, regardless of the result, run the given block. */
     @discardableResult
-    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping () -> Void) -> Self {
+    public func finally(on queue: DispatchQueue? = nil, _ consumer: @escaping () -> Void) -> Self {
         self.then( on: queue ) { _ in consumer() }
     }
 

@@ -510,7 +510,7 @@ class MPMarshal: Observable, Updatable {
 
             self.setNeedsUpdate()
             return importingFile
-        }.then {
+        }.finally {
             spinner.dismiss()
         }
     }

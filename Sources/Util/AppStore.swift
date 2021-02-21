@@ -70,8 +70,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     public static let shared = AppStore()
 
     var observers = Observers<InAppStoreObserver>()
-    var canMakePayments: Bool {
-        SKPaymentQueue.canMakePayments()
+    var canBuyProducts: Bool {
+        SKPaymentQueue.canMakePayments() && !self.products.isEmpty
     }
     var products = [ SKProduct ]() {
         didSet {
@@ -88,12 +88,16 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         SKPaymentQueue.default().add( self )
     }
 
-    func update() {
-        self.updateReceipt()
+    @discardableResult
+    func update(active: Bool = false) -> Promise<InAppReceipt?> {
+        self.updateReceipt( allowRefresh: active ).then {
+            guard active || (try? $0.get()) != nil
+            else { return }
 
-        let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
-        productsRequest.delegate = self
-        productsRequest.start()
+            let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
+            productsRequest.delegate = self
+            productsRequest.start()
+        }
     }
 
     func purchase(product: SKProduct, quantity: Int = 1) {

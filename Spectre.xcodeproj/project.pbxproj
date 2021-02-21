@@ -229,15 +229,10 @@
 		DA762F9D24E04F2E00E61D3F /* PoppinsLatin-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5B24E04F2E00E61D3F /* PoppinsLatin-ExtraLight.otf */; };
 		DA762F9E24E04F2E00E61D3F /* PoppinsLatin-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5C24E04F2E00E61D3F /* PoppinsLatin-Medium.otf */; };
 		DA762F9F24E04F2E00E61D3F /* PoppinsLatin-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5D24E04F2E00E61D3F /* PoppinsLatin-BlackItalic.otf */; };
-		DA762FA024E04F2E00E61D3F /* Font Awesome 5 Duotone-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5E24E04F2E00E61D3F /* Font Awesome 5 Duotone-Solid-900.otf */; };
 		DA762FA124E04F2E00E61D3F /* PoppinsLatin-ExtraLightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5F24E04F2E00E61D3F /* PoppinsLatin-ExtraLightItalic.otf */; };
-		DA762FA224E04F2E00E61D3F /* Font Awesome 5 Pro-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6024E04F2E00E61D3F /* Font Awesome 5 Pro-Regular-400.otf */; };
 		DA762FA324E04F2E00E61D3F /* PoppinsLatin-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6124E04F2E00E61D3F /* PoppinsLatin-LightItalic.otf */; };
-		DA762FA424E04F2E00E61D3F /* Font Awesome 5 Pro-Light-300.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6224E04F2E00E61D3F /* Font Awesome 5 Pro-Light-300.otf */; };
 		DA762FA524E04F2E00E61D3F /* PoppinsLatin-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6324E04F2E00E61D3F /* PoppinsLatin-Thin.otf */; };
 		DA762FA624E04F2E00E61D3F /* PoppinsLatin-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6424E04F2E00E61D3F /* PoppinsLatin-Bold.otf */; };
-		DA762FA724E04F2E00E61D3F /* Font Awesome 5 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6524E04F2E00E61D3F /* Font Awesome 5 Brands-Regular-400.otf */; };
-		DA762FA824E04F2E00E61D3F /* Font Awesome 5 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6624E04F2E00E61D3F /* Font Awesome 5 Pro-Solid-900.otf */; };
 		DA762FA924E04F2E00E61D3F /* PoppinsLatin-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6724E04F2E00E61D3F /* PoppinsLatin-Regular.otf */; };
 		DA762FAA24E04F2E00E61D3F /* PoppinsLatin-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6824E04F2E00E61D3F /* PoppinsLatin-Black.otf */; };
 		DA762FAB24E04F2E00E61D3F /* PoppinsLatin-SemiBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6924E04F2E00E61D3F /* PoppinsLatin-SemiBoldItalic.otf */; };
@@ -254,6 +249,18 @@
 		DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
 		DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA70EC7F1811B13C00F65DB2 /* StoreKit.framework */; };
 		DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* mpw-algorithm.c */; };
+		DAAEDE1725E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1125E1DF5400E78F79 /* Font Awesome 6 Pro-Thin-100.otf */; };
+		DAAEDE1825E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1125E1DF5400E78F79 /* Font Awesome 6 Pro-Thin-100.otf */; };
+		DAAEDE1925E1DF5500E78F79 /* Font Awesome 6 Duotone-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1225E1DF5400E78F79 /* Font Awesome 6 Duotone-Solid-900.otf */; };
+		DAAEDE1A25E1DF5500E78F79 /* Font Awesome 6 Duotone-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1225E1DF5400E78F79 /* Font Awesome 6 Duotone-Solid-900.otf */; };
+		DAAEDE1B25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1325E1DF5400E78F79 /* Font Awesome 6 Brands-Regular-400.otf */; };
+		DAAEDE1C25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1325E1DF5400E78F79 /* Font Awesome 6 Brands-Regular-400.otf */; };
+		DAAEDE1D25E1DF5500E78F79 /* Font Awesome 6 Pro-Light-300.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1425E1DF5400E78F79 /* Font Awesome 6 Pro-Light-300.otf */; };
+		DAAEDE1E25E1DF5500E78F79 /* Font Awesome 6 Pro-Light-300.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1425E1DF5400E78F79 /* Font Awesome 6 Pro-Light-300.otf */; };
+		DAAEDE1F25E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1525E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf */; };
+		DAAEDE2025E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1525E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf */; };
+		DAAEDE2125E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */; };
+		DAAEDE2225E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */; };
 		DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
 		DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
 		DABC7BB8251C14160021ADD8 /* BasicSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BasicSitesViewController.swift */; };
@@ -306,16 +313,12 @@
 		DAF80F38251AFB27001C2963 /* avatar-14.png in Resources */ = {isa = PBXBuildFile; fileRef = DA762F3B24E04F2E00E61D3F /* avatar-14.png */; };
 		DAF80F3B251AFB31001C2963 /* SourceCodePro-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */; };
 		DAF80F3C251AFB31001C2963 /* PoppinsLatin-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5B24E04F2E00E61D3F /* PoppinsLatin-ExtraLight.otf */; };
-		DAF80F3D251AFB31001C2963 /* Font Awesome 5 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6524E04F2E00E61D3F /* Font Awesome 5 Brands-Regular-400.otf */; };
 		DAF80F3E251AFB31001C2963 /* PoppinsLatin-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6E24E04F2E00E61D3F /* PoppinsLatin-SemiBold.otf */; };
 		DAF80F3F251AFB31001C2963 /* PoppinsLatin-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6324E04F2E00E61D3F /* PoppinsLatin-Thin.otf */; };
-		DAF80F40251AFB31001C2963 /* Font Awesome 5 Duotone-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5E24E04F2E00E61D3F /* Font Awesome 5 Duotone-Solid-900.otf */; };
 		DAF80F41251AFB31001C2963 /* SourceCodePro-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6F24E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf */; };
 		DAF80F42251AFB31001C2963 /* PoppinsLatin-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6124E04F2E00E61D3F /* PoppinsLatin-LightItalic.otf */; };
-		DAF80F43251AFB31001C2963 /* Font Awesome 5 Pro-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6024E04F2E00E61D3F /* Font Awesome 5 Pro-Regular-400.otf */; };
 		DAF80F44251AFB31001C2963 /* PoppinsLatin-ExtraBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F7024E04F2E00E61D3F /* PoppinsLatin-ExtraBoldItalic.otf */; };
 		DAF80F45251AFB31001C2963 /* SourceCodePro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6B24E04F2E00E61D3F /* SourceCodePro-Regular.otf */; };
-		DAF80F46251AFB31001C2963 /* Font Awesome 5 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6624E04F2E00E61D3F /* Font Awesome 5 Pro-Solid-900.otf */; };
 		DAF80F47251AFB31001C2963 /* PoppinsLatin-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6424E04F2E00E61D3F /* PoppinsLatin-Bold.otf */; };
 		DAF80F48251AFB31001C2963 /* Poppins-VF.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB524E0C58700E61D3F /* Poppins-VF.otf */; };
 		DAF80F49251AFB31001C2963 /* PoppinsLatin-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5724E04F2E00E61D3F /* PoppinsLatin-Light.otf */; };
@@ -324,7 +327,6 @@
 		DAF80F4C251AFB31001C2963 /* PoppinsLatin-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6724E04F2E00E61D3F /* PoppinsLatin-Regular.otf */; };
 		DAF80F4D251AFB31001C2963 /* PoppinsLatin-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5D24E04F2E00E61D3F /* PoppinsLatin-BlackItalic.otf */; };
 		DAF80F4E251AFB31001C2963 /* PoppinsLatin-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6C24E04F2E00E61D3F /* PoppinsLatin-MediumItalic.otf */; };
-		DAF80F4F251AFB31001C2963 /* Font Awesome 5 Pro-Light-300.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6224E04F2E00E61D3F /* Font Awesome 5 Pro-Light-300.otf */; };
 		DAF80F50251AFB31001C2963 /* PoppinsLatin-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5824E04F2E00E61D3F /* PoppinsLatin-BoldItalic.otf */; };
 		DAF80F51251AFB31001C2963 /* PoppinsLatin-ThinItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F5A24E04F2E00E61D3F /* PoppinsLatin-ThinItalic.otf */; };
 		DAF80F52251AFB31001C2963 /* PoppinsLatin-SemiBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6924E04F2E00E61D3F /* PoppinsLatin-SemiBoldItalic.otf */; };
@@ -563,15 +565,10 @@
 		DA762F5B24E04F2E00E61D3F /* PoppinsLatin-ExtraLight.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-ExtraLight.otf"; sourceTree = "<group>"; };
 		DA762F5C24E04F2E00E61D3F /* PoppinsLatin-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-Medium.otf"; sourceTree = "<group>"; };
 		DA762F5D24E04F2E00E61D3F /* PoppinsLatin-BlackItalic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-BlackItalic.otf"; sourceTree = "<group>"; };
-		DA762F5E24E04F2E00E61D3F /* Font Awesome 5 Duotone-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Duotone-Solid-900.otf"; sourceTree = "<group>"; };
 		DA762F5F24E04F2E00E61D3F /* PoppinsLatin-ExtraLightItalic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-ExtraLightItalic.otf"; sourceTree = "<group>"; };
-		DA762F6024E04F2E00E61D3F /* Font Awesome 5 Pro-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Regular-400.otf"; sourceTree = "<group>"; };
 		DA762F6124E04F2E00E61D3F /* PoppinsLatin-LightItalic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-LightItalic.otf"; sourceTree = "<group>"; };
-		DA762F6224E04F2E00E61D3F /* Font Awesome 5 Pro-Light-300.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Light-300.otf"; sourceTree = "<group>"; };
 		DA762F6324E04F2E00E61D3F /* PoppinsLatin-Thin.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-Thin.otf"; sourceTree = "<group>"; };
 		DA762F6424E04F2E00E61D3F /* PoppinsLatin-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-Bold.otf"; sourceTree = "<group>"; };
-		DA762F6524E04F2E00E61D3F /* Font Awesome 5 Brands-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Brands-Regular-400.otf"; sourceTree = "<group>"; };
-		DA762F6624E04F2E00E61D3F /* Font Awesome 5 Pro-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 5 Pro-Solid-900.otf"; sourceTree = "<group>"; };
 		DA762F6724E04F2E00E61D3F /* PoppinsLatin-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-Regular.otf"; sourceTree = "<group>"; };
 		DA762F6824E04F2E00E61D3F /* PoppinsLatin-Black.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-Black.otf"; sourceTree = "<group>"; };
 		DA762F6924E04F2E00E61D3F /* PoppinsLatin-SemiBoldItalic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PoppinsLatin-SemiBoldItalic.otf"; sourceTree = "<group>"; };
@@ -594,6 +591,12 @@
 		DAA7BB8A20C4C10F00101DC7 /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsodium.a; sourceTree = "<group>"; };
 		DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		DAAC35DD156BD77D00C5FD93 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		DAAEDE1125E1DF5400E78F79 /* Font Awesome 6 Pro-Thin-100.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Pro-Thin-100.otf"; sourceTree = "<group>"; };
+		DAAEDE1225E1DF5400E78F79 /* Font Awesome 6 Duotone-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Duotone-Solid-900.otf"; sourceTree = "<group>"; };
+		DAAEDE1325E1DF5400E78F79 /* Font Awesome 6 Brands-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Brands-Regular-400.otf"; sourceTree = "<group>"; };
+		DAAEDE1425E1DF5400E78F79 /* Font Awesome 6 Pro-Light-300.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Pro-Light-300.otf"; sourceTree = "<group>"; };
+		DAAEDE1525E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Pro-Regular-400.otf"; sourceTree = "<group>"; };
+		DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Pro-Solid-900.otf"; sourceTree = "<group>"; };
 		DAB07C9B1F7725C500CC6D43 /* aes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes.c; sourceTree = "<group>"; };
 		DAB07C9C1F7725C500CC6D43 /* aes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aes.h; sourceTree = "<group>"; };
 		DAB7AE5C1F3D752900C856B1 /* libjson-c.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libjson-c.a"; path = "External/libjson-c/libjson-c-ios/lib/libjson-c.a"; sourceTree = "<group>"; };
@@ -981,12 +984,13 @@
 		DA762F5624E04F2E00E61D3F /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				DAAEDE1325E1DF5400E78F79 /* Font Awesome 6 Brands-Regular-400.otf */,
+				DAAEDE1225E1DF5400E78F79 /* Font Awesome 6 Duotone-Solid-900.otf */,
+				DAAEDE1425E1DF5400E78F79 /* Font Awesome 6 Pro-Light-300.otf */,
+				DAAEDE1525E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf */,
+				DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */,
+				DAAEDE1125E1DF5400E78F79 /* Font Awesome 6 Pro-Thin-100.otf */,
 				DA762FB524E0C58700E61D3F /* Poppins-VF.otf */,
-				DA762F6524E04F2E00E61D3F /* Font Awesome 5 Brands-Regular-400.otf */,
-				DA762F5E24E04F2E00E61D3F /* Font Awesome 5 Duotone-Solid-900.otf */,
-				DA762F6224E04F2E00E61D3F /* Font Awesome 5 Pro-Light-300.otf */,
-				DA762F6024E04F2E00E61D3F /* Font Awesome 5 Pro-Regular-400.otf */,
-				DA762F6624E04F2E00E61D3F /* Font Awesome 5 Pro-Solid-900.otf */,
 				DA762F6824E04F2E00E61D3F /* PoppinsLatin-Black.otf */,
 				DA762F5D24E04F2E00E61D3F /* PoppinsLatin-BlackItalic.otf */,
 				DA762F6424E04F2E00E61D3F /* PoppinsLatin-Bold.otf */,
@@ -1442,9 +1446,11 @@
 				DAF80F35251AFB27001C2963 /* avatar-3@2x.png in Resources */,
 				DAF80F25251AFB27001C2963 /* avatar-18@2x.png in Resources */,
 				DAF80F30251AFB27001C2963 /* avatar-7.png in Resources */,
+				DAAEDE2225E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */,
 				DAF80F23251AFB27001C2963 /* avatar-0.png in Resources */,
 				DAF80F22251AFB27001C2963 /* avatar-2@2x.png in Resources */,
 				DAF80F2D251AFB27001C2963 /* avatar-10.png in Resources */,
+				DAAEDE1825E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */,
 				DAF80F4C251AFB31001C2963 /* PoppinsLatin-Regular.otf in Resources */,
 				DAF80F54251AFB31001C2963 /* PoppinsLatin-ExtraLightItalic.otf in Resources */,
 				DAF80F3F251AFB31001C2963 /* PoppinsLatin-Thin.otf in Resources */,
@@ -1452,6 +1458,8 @@
 				DAF80F4E251AFB31001C2963 /* PoppinsLatin-MediumItalic.otf in Resources */,
 				DAF80F20251AFB27001C2963 /* avatar-13.png in Resources */,
 				DAF80F19251AFB27001C2963 /* avatar-add.png in Resources */,
+				DAAEDE1C25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
+				DAAEDE1E25E1DF5500E78F79 /* Font Awesome 6 Pro-Light-300.otf in Resources */,
 				DAF80F38251AFB27001C2963 /* avatar-14.png in Resources */,
 				DAF80F4B251AFB31001C2963 /* PoppinsLatin-Italic.otf in Resources */,
 				DAF80F34251AFB27001C2963 /* avatar-9.png in Resources */,
@@ -1465,14 +1473,13 @@
 				DAF80F2E251AFB27001C2963 /* avatar-14@2x.png in Resources */,
 				DAF80F1C251AFB27001C2963 /* avatar-15@2x.png in Resources */,
 				DAF80F45251AFB31001C2963 /* SourceCodePro-Regular.otf in Resources */,
+				DAAEDE2025E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf in Resources */,
 				DAF80F3E251AFB31001C2963 /* PoppinsLatin-SemiBold.otf in Resources */,
 				DAF80F11251AFB27001C2963 /* avatar-18.png in Resources */,
 				DAF80F50251AFB31001C2963 /* PoppinsLatin-BoldItalic.otf in Resources */,
-				DAF80F46251AFB31001C2963 /* Font Awesome 5 Pro-Solid-900.otf in Resources */,
 				DAF80F1D251AFB27001C2963 /* avatar-6.png in Resources */,
 				DAF80F2A251AFB27001C2963 /* avatar-5@2x.png in Resources */,
 				DAF80F51251AFB31001C2963 /* PoppinsLatin-ThinItalic.otf in Resources */,
-				DAF80F43251AFB31001C2963 /* Font Awesome 5 Pro-Regular-400.otf in Resources */,
 				DAF80F1B251AFB27001C2963 /* avatar-1.png in Resources */,
 				DAF80F37251AFB27001C2963 /* avatar-8.png in Resources */,
 				DAF80F31251AFB27001C2963 /* avatar-5.png in Resources */,
@@ -1484,16 +1491,15 @@
 				DAF80F44251AFB31001C2963 /* PoppinsLatin-ExtraBoldItalic.otf in Resources */,
 				DAF80F17251AFB27001C2963 /* avatar-17.png in Resources */,
 				DAF80F21251AFB27001C2963 /* avatar-9@2x.png in Resources */,
-				DAF80F40251AFB31001C2963 /* Font Awesome 5 Duotone-Solid-900.otf in Resources */,
 				DAF80F33251AFB27001C2963 /* avatar-17@2x.png in Resources */,
 				DAF80F4D251AFB31001C2963 /* PoppinsLatin-BlackItalic.otf in Resources */,
 				DAF80F2C251AFB27001C2963 /* avatar-15.png in Resources */,
 				DAF80F1F251AFB27001C2963 /* avatar-2.png in Resources */,
 				DAF80F55251AFB31001C2963 /* PoppinsLatin-Medium.otf in Resources */,
-				DAF80F3D251AFB31001C2963 /* Font Awesome 5 Brands-Regular-400.otf in Resources */,
 				DAF80F4A251AFB31001C2963 /* PoppinsLatin-ExtraBold.otf in Resources */,
 				DAF80F1E251AFB27001C2963 /* avatar-11.png in Resources */,
 				DAF80F53251AFB31001C2963 /* PoppinsLatin-Black.otf in Resources */,
+				DAAEDE1A25E1DF5500E78F79 /* Font Awesome 6 Duotone-Solid-900.otf in Resources */,
 				DAF80F14251AFB27001C2963 /* avatar-13@2x.png in Resources */,
 				DAF80F13251AFB27001C2963 /* avatar-add@2x.png in Resources */,
 				DAF80F2F251AFB27001C2963 /* avatar-16.png in Resources */,
@@ -1504,7 +1510,6 @@
 				DAF80F12251AFB27001C2963 /* avatar-1@2x.png in Resources */,
 				DAF80F28251AFB27001C2963 /* avatar-7@2x.png in Resources */,
 				DAF80F48251AFB31001C2963 /* Poppins-VF.otf in Resources */,
-				DAF80F4F251AFB31001C2963 /* Font Awesome 5 Pro-Light-300.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1516,7 +1521,6 @@
 				DA762FA924E04F2E00E61D3F /* PoppinsLatin-Regular.otf in Resources */,
 				DA762FB624E0C58700E61D3F /* Poppins-VF.otf in Resources */,
 				DA762F7F24E04F2E00E61D3F /* avatar-15.png in Resources */,
-				DA762FA824E04F2E00E61D3F /* Font Awesome 5 Pro-Solid-900.otf in Resources */,
 				DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */,
 				DA762F8124E04F2E00E61D3F /* avatar-14@2x.png in Resources */,
 				DA762FAB24E04F2E00E61D3F /* PoppinsLatin-SemiBoldItalic.otf in Resources */,
@@ -1532,15 +1536,14 @@
 				DA762F7324E04F2E00E61D3F /* avatar-12.png in Resources */,
 				DA762FAF24E04F2E00E61D3F /* PoppinsLatin-Italic.otf in Resources */,
 				DA762F9124E04F2E00E61D3F /* avatar-11@2x.png in Resources */,
+				DAAEDE1925E1DF5500E78F79 /* Font Awesome 6 Duotone-Solid-900.otf in Resources */,
 				DA762F9E24E04F2E00E61D3F /* PoppinsLatin-Medium.otf in Resources */,
 				DA762F7624E04F2E00E61D3F /* avatar-0.png in Resources */,
 				DA762F9D24E04F2E00E61D3F /* PoppinsLatin-ExtraLight.otf in Resources */,
 				DA762F8A24E04F2E00E61D3F /* avatar-1@2x.png in Resources */,
 				DA762F7724E04F2E00E61D3F /* avatar-5@2x.png in Resources */,
-				DA762FA224E04F2E00E61D3F /* Font Awesome 5 Pro-Regular-400.otf in Resources */,
 				DA762F9524E04F2E00E61D3F /* avatar-2@2x.png in Resources */,
 				DA762F9624E04F2E00E61D3F /* avatar-18.png in Resources */,
-				DA762FA724E04F2E00E61D3F /* Font Awesome 5 Brands-Regular-400.otf in Resources */,
 				DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */,
 				DA762FB124E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf in Resources */,
 				DA762F8D24E04F2E00E61D3F /* avatar-4@2x.png in Resources */,
@@ -1550,7 +1553,7 @@
 				DA762F8E24E04F2E00E61D3F /* avatar-17@2x.png in Resources */,
 				DA762F9324E04F2E00E61D3F /* avatar-8.png in Resources */,
 				DA762F9724E04F2E00E61D3F /* avatar-13@2x.png in Resources */,
-				DA762FA424E04F2E00E61D3F /* Font Awesome 5 Pro-Light-300.otf in Resources */,
+				DAAEDE1F25E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf in Resources */,
 				DA762F8C24E04F2E00E61D3F /* avatar-8@2x.png in Resources */,
 				DA762F9C24E04F2E00E61D3F /* PoppinsLatin-ThinItalic.otf in Resources */,
 				DA762FA524E04F2E00E61D3F /* PoppinsLatin-Thin.otf in Resources */,
@@ -1558,7 +1561,10 @@
 				DA762F9224E04F2E00E61D3F /* avatar-add.png in Resources */,
 				DA762F9F24E04F2E00E61D3F /* PoppinsLatin-BlackItalic.otf in Resources */,
 				DA762FAA24E04F2E00E61D3F /* PoppinsLatin-Black.otf in Resources */,
+				DAAEDE1D25E1DF5500E78F79 /* Font Awesome 6 Pro-Light-300.otf in Resources */,
 				DA762F7A24E04F2E00E61D3F /* avatar-11.png in Resources */,
+				DAAEDE1B25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
+				DAAEDE1725E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */,
 				DA762F8F24E04F2E00E61D3F /* avatar-6@2x.png in Resources */,
 				DA762F8924E04F2E00E61D3F /* avatar-10@2x.png in Resources */,
 				DA762F7824E04F2E00E61D3F /* avatar-add@2x.png in Resources */,
@@ -1570,6 +1576,7 @@
 				DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */,
 				DA762F8024E04F2E00E61D3F /* avatar-6.png in Resources */,
 				DA762F8224E04F2E00E61D3F /* avatar-18@2x.png in Resources */,
+				DAAEDE2125E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */,
 				DA762F9924E04F2E00E61D3F /* PoppinsLatin-Light.otf in Resources */,
 				DA762F7B24E04F2E00E61D3F /* avatar-10.png in Resources */,
 				DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */,
@@ -1577,7 +1584,6 @@
 				DA762F7124E04F2E00E61D3F /* avatar-1.png in Resources */,
 				DA762F9B24E04F2E00E61D3F /* PoppinsLatin-ExtraBold.otf in Resources */,
 				DA762F7E24E04F2E00E61D3F /* avatar-14.png in Resources */,
-				DA762FA024E04F2E00E61D3F /* Font Awesome 5 Duotone-Solid-900.otf in Resources */,
 				DA762FA624E04F2E00E61D3F /* PoppinsLatin-Bold.otf in Resources */,
 				DA762F7C24E04F2E00E61D3F /* avatar-3.png in Resources */,
 				DA762F8724E04F2E00E61D3F /* avatar-5.png in Resources */,

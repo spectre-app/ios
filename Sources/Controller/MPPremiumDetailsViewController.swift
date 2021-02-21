@@ -65,16 +65,22 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Automatically restore only if the purchase isn't part of our receipt yet.
+        // Automatic subscription restoration or renewal.
         if !InAppFeature.premium.isEnabled && !InAppSubscription.premium.isActive && !InAppSubscription.premium.wasActiveButExpired {
+            // Only restore premium if not yet in our receipt.
             AppStore.shared.restorePurchases()
+        }
+        else {
+            // Otherwise refresh receipt and products, triggering App Store log-in if necessary.
+            AppStore.shared.update( active: true )
         }
     }
 
     override func loadItems() -> [Item<Void>] {
         [ HeaderItem(), SeparatorItem(),
-          SubscribeItem(),
-          SubscribedItem(),
+          SubscriptionProductsItem(),
+          SubscriptionUnavailableItem(),
+          SubscriptionActiveItem(),
           Item<Void>( subitems: [
               FeatureItem( name: "Biometric Lock", icon: "",
                            caption: "A touch or smile and we can recognize you now. Skip your personal secret." ),
@@ -112,15 +118,16 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
         }
     }
 
-    class SubscribeItem: ListItem<Void, SKProduct, SubscribeItem.Cell>, InAppStoreObserver {
+    class SubscriptionProductsItem: ListItem<Void, SKProduct, SubscriptionProductsItem.Cell>, InAppStoreObserver {
         init() {
             super.init( title: "Enroll", values: { AppStore.shared.products( forSubscription: .premium ) } )
 
+            self.addBehaviour( ConditionalBehaviour( mode: .reveals ) { _ in AppStore.shared.canBuyProducts } )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
             AppStore.shared.observers.register( observer: self )
         }
 
-        override func populate(_ cell: SubscribeItem.Cell, indexPath: IndexPath, value: SKProduct) {
+        override func populate(_ cell: SubscriptionProductsItem.Cell, indexPath: IndexPath, value: SKProduct) {
             cell.product = value
         }
 
@@ -200,7 +207,20 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
         }
     }
 
-    class SubscribedItem: ImageItem<Void> {
+    class SubscriptionUnavailableItem: ImageItem<Void> {
+        init() {
+            super.init( title: "Cannot Enroll", value: { _ in .icon( "", withSize: 64 ) },
+                        caption: { _ in
+                            """
+                            Ensure you are online and try logging out and back into your Apple ID from Settings.
+                            """
+                        } )
+
+            self.addBehaviour( ConditionalBehaviour( mode: .hides ) { _ in AppStore.shared.canBuyProducts } )
+        }
+    }
+
+    class SubscriptionActiveItem: ImageItem<Void> {
         init() {
             super.init( title: "Enrolled", value: { _ in .icon( "", withSize: 64 ) },
                         caption: { _ in

@@ -11,15 +11,15 @@ public enum IconStyle {
     var fontName: String {
         switch self {
             case .brands:
-                return "FontAwesome5Brands-Regular"
+                return "FontAwesome6Brands-Regular"
             case .duotone:
-                return "FontAwesome5Duotone-Solid"
+                return "FontAwesome6Duotone-Solid"
             case .solid:
-                return "FontAwesome5Pro-Solid"
+                return "FontAwesome6Pro-Solid"
             case .light:
-                return "FontAwesome5Pro-Light"
+                return "FontAwesome6Pro-Light"
             case .regular:
-                return "FontAwesome5Pro-Regular"
+                return "FontAwesome6Pro-Regular"
         }
     }
 
