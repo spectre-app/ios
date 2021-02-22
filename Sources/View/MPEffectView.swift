@@ -156,10 +156,10 @@ class MPEffectView: UIView, ThemeObserver {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override func willMove(toSuperview newSuperview: UIView?) {
-        super.willMove( toSuperview: newSuperview )
+    override func willMove(toWindow newWindow: UIWindow?) {
+        super.willMove( toWindow: newWindow )
 
-        if newSuperview != nil {
+        if newWindow != nil {
             Theme.current.observers.register( observer: self )
         }
         else {

@@ -489,10 +489,10 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
                     .activate()
         }
 
-        override func willMove(toSuperview newSuperview: UIView?) {
-            super.willMove( toSuperview: newSuperview )
+        override func willMove(toWindow newWindow: UIWindow?) {
+            super.willMove( toWindow: newWindow )
 
-            if newSuperview != nil {
+            if newWindow != nil {
                 appConfig.observers.register( observer: self )
                 InAppFeature.observers.register( observer: self )
             }

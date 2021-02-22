@@ -341,10 +341,10 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             fatalError( "init(coder:) is not supported for this class" )
         }
 
-        override func willMove(toSuperview newSuperview: UIView?) {
-            super.willMove( toSuperview: newSuperview )
+        override func willMove(toWindow newWindow: UIWindow?) {
+            super.willMove( toWindow: newWindow )
 
-            if newSuperview != nil {
+            if newWindow != nil {
                 InAppFeature.observers.register( observer: self )
                 Theme.current.observers.register( observer: self )
             }
