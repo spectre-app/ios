@@ -137,16 +137,16 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
         let searchURLString = "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\(countryCode2)&limit=1"
         guard let searchURL = URL( string: searchURLString )
-        else { return Promise( .failure( MPError.internal( cause: "Couldn't resolve store URL", details: searchURLString ) ) ) }
+        else { return Promise( .failure( AppError.internal( cause: "Couldn't resolve store URL", details: searchURLString ) ) ) }
 
         return URLSession.required.promise( with: URLRequest( url: searchURL ) ).promise {
             if let error = (try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any])?["errorMessage"] as? String {
-                throw MPError.issue( title: "iTunes store lookup issue.", details: error )
+                throw AppError.issue( title: "iTunes store lookup issue.", details: error )
             }
             guard let metadata = (((try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any])?["results"] as? [Any])?.first as? [String: Any])
-            else { throw MPError.state( title: "Missing iTunes application metadata." ) }
+            else { throw AppError.state( title: "Missing iTunes application metadata." ) }
             guard let storeVersion = metadata["version"] as? String
-            else { throw MPError.state( title: "Missing version in iTunes metadata." ) }
+            else { throw AppError.state( title: "Missing version in iTunes metadata." ) }
 
             let buildVersion    = buildVersion ?? productVersion
             let buildComponents = buildVersion.components( separatedBy: "." )
@@ -284,13 +284,13 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                     self.updateReceipt().then {
                         do {
                             guard let receipt = try $0.get()
-                            else { throw MPError.state( title: "Receipt missing." ) }
+                            else { throw AppError.state( title: "Receipt missing." ) }
 
                             let originalIdentifier = transaction.original?.transactionIdentifier ?? transaction.transactionIdentifier
                             if !receipt.purchases.contains( where: { $0.originalTransactionIdentifier == originalIdentifier } ) {
                                 mperror( title: "App Store Transaction Missing", message:
                                 "Ensure you are online and try logging out and back into your Apple ID from Settings.",
-                                         error: MPError.state( title: "Transaction is missing from receipt.", details: originalIdentifier ) )
+                                         error: AppError.state( title: "Transaction is missing from receipt.", details: originalIdentifier ) )
                             }
 
                             queue.finishTransaction( transaction )

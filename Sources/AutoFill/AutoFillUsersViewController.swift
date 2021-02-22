@@ -1,5 +1,5 @@
 //
-//  MPUsersViewController.swift
+//  AutoFillUsersViewController.swift
 //  Spectre
 //
 //  Created by Maarten Billemont on 2018-01-21.
@@ -9,8 +9,8 @@
 import UIKit
 import AuthenticationServices
 
-class AutoFillUsersViewController: BasicUsersViewController {
-    private lazy var cancelButton = MPButton( track: .subject( "users", action: "cancel"),
+class AutoFillUsersViewController: BaseUsersViewController {
+    private lazy var cancelButton = EffectButton( track: .subject( "users", action: "cancel"),
                                               image: .icon( "" ), background: false ) { _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Cancel button pressed." ) )
     }
@@ -49,15 +49,15 @@ class AutoFillUsersViewController: BasicUsersViewController {
         }
     }
 
-    // MARK: --- MPMarshalObserver ---
+    // MARK: --- MarshalObserver ---
 
-    override func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
+    override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
         self.fileSource.update( [ userFiles.filter( { $0.autofill } ).sorted() ] )
     }
 
     // MARK: --- Types ---
 
-    override func login(user: MPUser) {
+    override func login(user: User) {
         super.login( user: user )
 
         self.detailsHost.show( AutoFillSitesViewController( user: user ), sender: self )

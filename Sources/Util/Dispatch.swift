@@ -6,14 +6,14 @@
 import Foundation
 
 extension DispatchQueue {
-    public static let mpw = DispatchQueue( label: "\(productName): mpw", qos: .utility, attributes: [ .concurrent ] )
+    public static let api = DispatchQueue( label: "\(productName): api", qos: .utility, attributes: [ .concurrent ] )
 
     public var isActive: Bool {
         (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
                 self.label == String.valid( __dispatch_queue_get_label( nil ) )
     }
 
-    private static let threadLabelsKey = "DispatchQueue+MP"
+    private static let threadLabelsKey = "DispatchQueue+Spectre"
     private var threadLabels: Set<String> {
         get {
             Thread.current.threadDictionary[DispatchQueue.threadLabelsKey] as? Set<String> ?? .init()
@@ -355,7 +355,7 @@ public class DispatchTask<V> {
             }
 
             if self.requestItem?.isCancelled ?? false {
-                return Promise( .failure( MPError.internal( cause: "Task is cancelled." ) ) )
+                return Promise( .failure( AppError.internal( cause: "Task is cancelled." ) ) )
             }
 
             var value: V?, workError: Error?
@@ -369,7 +369,7 @@ public class DispatchTask<V> {
             let _ = self.workQueue.promise( requestPromise, deadline: self.deadline(), group: self.group,
                                             qos: self.qos, flags: self.flags ) { () -> V in
                 if self.requestItem?.isCancelled ?? false {
-                    throw MPError.internal( cause: "Task was cancelled." )
+                    throw AppError.internal( cause: "Task was cancelled." )
                 }
 
                 self.requestItem?.perform()
@@ -381,7 +381,7 @@ public class DispatchTask<V> {
                     return value
                 }
 
-                throw MPError.internal( cause: "Task was skipped." )
+                throw AppError.internal( cause: "Task was skipped." )
             }.then( on: self.requestQueue ) { _ in
                 self.requestItem = nil
                 self.requestPromise = nil

@@ -433,7 +433,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.mood ?? self.parent?.description ?? self.path
     }
 
-    // MPTheme.base
+    // Theme.base
     private init() {
         self.name = ""
         self.mood = "Device native colour scheme."

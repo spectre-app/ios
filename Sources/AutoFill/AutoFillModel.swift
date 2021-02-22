@@ -6,23 +6,23 @@
 import Foundation
 import AuthenticationServices
 
-class AutoFillModel: MPMarshalObserver {
+class AutoFillModel: MarshalObserver {
     static let shared = AutoFillModel()
 
-    var users     = [ MPUser ]()
-    var userFiles = [ MPMarshal.UserFile ]()
+    var users     = [ User ]()
+    var userFiles = [ Marshal.UserFile ]()
     var context   = Context()
 
     init() {
-        do { self.userFiles = try MPMarshal.shared.setNeedsUpdate().await() }
+        do { self.userFiles = try Marshal.shared.setNeedsUpdate().await() }
         catch { err( "Cannot read user documents: %@", error ) }
 
-        MPMarshal.shared.observers.register( observer: self )
+        Marshal.shared.observers.register( observer: self )
     }
 
-    // MARK: --- MPMarshalObserver ---
+    // MARK: --- MarshalObserver ---
 
-    func userFilesDidChange(_ userFiles: [MPMarshal.UserFile]) {
+    func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
         self.userFiles = userFiles
 
         for userFile in self.userFiles {

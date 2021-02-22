@@ -11,7 +11,7 @@ import LocalAuthentication
 
 class AutoFillViewController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        MPLogSink.shared.register()
+        LogSink.shared.register()
 
         dbg( "init:nibName:bundle: %@", nibNameOrNil, nibBundleOrNil )
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
@@ -22,7 +22,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
     }
 
     override func loadView() {
-        self.view = MPBackgroundView( mode: .backdrop )
+        self.view = BackgroundView( mode: .backdrop )
         self.view => \.tintColor => Theme.current.color.tint
     }
 
@@ -30,7 +30,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
         super.viewDidLoad()
 
         dbg( "viewDidLoad" )
-        MPTracker.shared.startup( extensionController: self )
+        Tracker.shared.startup( extensionController: self )
         AutoFillModel.shared.context = AutoFillModel.Context()
     }
 
@@ -54,10 +54,10 @@ class AutoFillViewController: ASCredentialProviderViewController {
         dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
-        do { let _ = try MPMarshal.shared.setNeedsUpdate().await() }
+        do { let _ = try Marshal.shared.setNeedsUpdate().await() }
         catch { err( "Cannot read user documents: %@", error ) }
 
-        DispatchQueue.mpw.promising {
+        DispatchQueue.api.promising {
             if let user = AutoFillModel.shared.users.first( where: { $0.userName == credentialIdentity.recordIdentifier } ) {
                 return Promise( .success( user ) )
             }
@@ -65,13 +65,13 @@ class AutoFillViewController: ASCredentialProviderViewController {
             guard let userFile = AutoFillModel.shared.userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
-            let keychainKeyFactory = MPKeychainKeyFactory( userName: userFile.userName )
+            let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.hasKey( for: userFile.algorithm )
             else { throw ASExtensionError( .userInteractionRequired, "No key in keychain for: \(userFile.userName)" ) }
 
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
-        }.promising { (user: MPUser) in
+        }.promising { (user: User) in
             AutoFillModel.shared.users.append( user )
 
             guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
@@ -81,7 +81,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
                 ASPasswordCredential( user: $0.0, password: $0.1 )
             }
         }.failure { error in
-            MPFeedback.shared.play( .error )
+            Feedback.shared.play( .error )
 
             switch error {
                 case let extensionError as ASExtensionError:
@@ -100,7 +100,7 @@ class AutoFillViewController: ASCredentialProviderViewController {
                             .failed, "Credential unavailable.", error: error ) )
             }
         }.success { (credential: ASPasswordCredential) in
-            MPFeedback.shared.play( .activate )
+            Feedback.shared.play( .activate )
 
             self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
         }

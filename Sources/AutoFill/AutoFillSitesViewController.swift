@@ -1,5 +1,5 @@
 //
-//  MPUsersViewController.swift
+//  AutoFillSitesViewController.swift
 //  Spectre
 //
 //  Created by Maarten Billemont on 2018-01-21.
@@ -9,7 +9,7 @@
 import UIKit
 import AuthenticationServices
 
-class AutoFillSitesViewController: BasicSitesViewController {
+class AutoFillSitesViewController: BaseSitesViewController {
 
     // MARK: --- Life ---
 
@@ -56,8 +56,8 @@ class AutoFillSitesViewController: BasicSitesViewController {
 
     // MARK: --- Private ---
 
-    func completeRequest(site: MPSite, trackingFrom: String) {
-        let event = MPTracker.shared.begin( track: .subject( "site", action: "use" ) )
+    func completeRequest(site: Site, trackingFrom: String) {
+        let event = Tracker.shared.begin( track: .subject( "site", action: "use" ) )
         if let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext {
             site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).then {
                 do {
@@ -71,7 +71,7 @@ class AutoFillSitesViewController: BasicSitesViewController {
                               "purpose": "\(MPKeyPurpose.identification)",
                               "type": "\(site.resultType)",
                               "algorithm": "\(site.algorithm)",
-                              "entropy": MPAttacker.entropy( type: site.resultType ) ?? MPAttacker.entropy( string: password ) ?? 0,
+                              "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ) ?? 0,
                             ] )
 
                     extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password )

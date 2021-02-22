@@ -21,7 +21,7 @@ extension MPAlgorithmVersion: Strideable, CaseIterable, CustomStringConvertible 
     }
 }
 
-public enum MPError: LocalizedError {
+public enum AppError: LocalizedError {
     case cancelled
     case `issue`(_ error: Error? = nil, title: String, details: CustomStringConvertible? = nil)
     case `internal`(cause: String, details: CustomStringConvertible? = nil)
