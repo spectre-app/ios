@@ -33,19 +33,19 @@ class MPSitesViewController: BasicSitesViewController {
         self.searchField.rightView = self.userButton
         self.sitesTableView.siteActions = [
             .init( tracking: .subject( "sites.site", action: "settings" ),
-                   title: "Details", icon: "", appearance: [ .cell, .menu ] ) { site, mode, appearance in
+                   title: "Details", icon: "", appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
                 self.detailsHost.show( MPSiteDetailsViewController( model: site ), sender: self )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy", icon: "", appearance: [ .cell ] ) { site, mode, appearance in
+                   title: "Copy", icon: "", appearance: [ .cell ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: mode! ).copy( fromView: self.view, trackingFrom: "site>cell" )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy Login", icon: "", appearance: [ .menu ] ) { site, mode, appearance in
+                   title: "Copy Login", icon: "", appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy Password", icon: "", appearance: [ .menu ] ) { site, mode, appearance in
+                   title: "Copy Password", icon: "", appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: .authentication ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
         ]
@@ -56,12 +56,12 @@ class MPSitesViewController: BasicSitesViewController {
         self.detailsHost.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: self.detailsHost.view ).constrain( as: .box )
-                                                          .constrain { _, _ in
+        LayoutConfiguration( view: self.detailsHost.view )
+                .constrain { _, _ in
                     self.detailsHost.contentView.topAnchor.constraint( greaterThanOrEqualTo: self.topContainer.bottomAnchor, constant: -8 )
                                                           .with( priority: UILayoutPriority( 520 ) )
                 }
-                                                          .activate()
+                .constrain( as: .box ).activate()
     }
 
     override func viewDidLayoutSubviews() {

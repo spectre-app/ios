@@ -10,12 +10,12 @@ import UIKit
 // is not animated due to it triggering a full reloadData. The work-around is to leave the section empty (or remove it separately).
 // http://www.openradar.me/48941363
 open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
-    private let semaphore        = DispatchGroup()
-    private let queue            = DispatchQueue( label: "DataSource" )
-    private let tableView:         UITableView?
-    private let collectionView:    UICollectionView?
+    private let semaphore = DispatchGroup()
+    private let queue     = DispatchQueue( label: "DataSource" )
     private var elementsBySection: [[E]]
     private var elementsConsumed = false
+    private weak var tableView:      UITableView?
+    private weak var collectionView: UICollectionView?
 
     public var isEmpty: Bool {
         self.elementsBySection.reduce( true ) { $0 && $1.isEmpty }
@@ -130,7 +130,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         if !self.elementsConsumed || !animated {
             DispatchQueue.main.perform( group: self.semaphore ) {
                 self.elementsBySection = toElementsBySection
-                if (self.elementsConsumed) {
+                if self.elementsConsumed {
                     self.tableView?.reloadData()
                     self.collectionView?.reloadData()
                 }
@@ -155,21 +155,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             }
         }
 
-        self.performBatchUpdates( completion: { success in
-            if success {
-                // We reload after updates since it's illegal to move & reload an indexPath at the same time.
-                if !reloadPaths.isEmpty {
-                    trc( "reload items %@", reloadPaths )
-                    self.collectionView?.reloadItems( at: reloadPaths )
-                    self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
-                }
-
-                self.select( selectElements, paths: selectPaths )
-            }
-
-            self.semaphore.leave()
-            completion?( success )
-        }, updates: {
+        self.performBatchUpdates {
             // OPERATION | INDEXPATH
             // --------- | ---------
             // reload    | at:   before updates
@@ -232,7 +218,21 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             }
 
             self.elementsBySection = toElementsBySection
-        } )
+        } completion: { success in
+            if success {
+                // We reload after updates since it's illegal to move & reload an indexPath at the same time.
+                if !reloadPaths.isEmpty {
+                    trc( "reload items %@", reloadPaths )
+                    self.collectionView?.reloadItems( at: reloadPaths )
+                    self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
+                }
+
+                self.select( selectElements, paths: selectPaths )
+            }
+
+            self.semaphore.leave()
+            completion?( success )
+        }
     }
 
     open func select(_ elements: Set<E?>? = nil, paths: [IndexPath]? = nil, animated: Bool = true) {
@@ -273,11 +273,11 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
               indexPath.section < self.elementsBySection.count && indexPath.item < self.elementsBySection[indexPath.section].count
         else { return false }
 
-        self.performBatchUpdates( completion: completion, updates: {
+        self.performBatchUpdates {
             self.elementsBySection[indexPath.section].remove( at: indexPath.item )
             self.collectionView?.deleteItems( at: [ indexPath ] )
             self.tableView?.deleteRows( at: [ indexPath ], with: .automatic )
-        } )
+        } completion: { completion?( $0 ) }
         return true
     }
 
@@ -287,7 +287,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
               toIndexPath.section < self.elementsBySection.count && toIndexPath.item < self.elementsBySection[toIndexPath.section].count
         else { return false }
 
-        self.performBatchUpdates( completion: completion, updates: {
+        self.performBatchUpdates {
             let element = self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
 
             var toItem = toIndexPath.item
@@ -298,7 +298,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             self.elementsBySection[toIndexPath.section].insert( element, at: toItem )
             self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
             self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
-        } )
+        } completion: { completion?( $0 ) }
         return true
     }
 
@@ -362,7 +362,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
     // MARK: --- Private ---
 
-    private func performBatchUpdates(completion: ((Bool) -> Void)? = nil, updates: @escaping () -> Void) {
+    private func performBatchUpdates(_ updates: @escaping () -> (), completion: ((Bool) -> ())? = nil) {
         DispatchQueue.main.perform( group: self.semaphore ) {
             self.tableView?.performBatchUpdates( updates, completion: completion )
             self.collectionView?.performBatchUpdates( updates, completion: completion )

@@ -42,7 +42,8 @@ class AutoFillSitesViewController: BasicSitesViewController {
         self.sitesTableView.preferredSite = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
         self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
-            .init( tracking: .subject( "sites.site", action: "fill" ), title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { site, mode, appearance in
+            .init( tracking: .subject( "sites.site", action: "fill" ),
+                   title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
                 switch appearance {
                     case .cell:
                         self.completeRequest( site: site, trackingFrom: "site>cell" )

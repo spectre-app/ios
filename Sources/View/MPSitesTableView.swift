@@ -7,7 +7,7 @@ import UIKit
 import AVKit
 
 class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updatable {
-    public var user:             MPUser? {
+    public var user:            MPUser? {
         willSet {
             self.user?.observers.unregister( observer: self )
             self.query = nil
@@ -17,7 +17,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
             self.updateTask.request()
         }
     }
-    public var query:            String? {
+    public var query:           String? {
         didSet {
             if oldValue != self.query {
                 self.updateTask.request()
@@ -141,21 +141,22 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         (self.sitesDataSource.element( at: indexPath )?.site).flatMap { site in
             UIContextMenuConfiguration(
-                    indexPath: indexPath, previewProvider: { _ in MPSitePreviewController( site: site ) }, actionProvider: { _, configuration in
-                UIMenu( title: site.siteName, children: [
-                    UIAction( title: "Delete", image: .icon( "" ),
-                              identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
-                        configuration.action = action
-                        site.user.sites.removeAll { $0 === site }
-                    }
-                ] + self.siteActions.filter( { $0.appearance.contains( .menu ) } ).map { siteAction in
-                    UIAction( title: siteAction.title, image: .icon( siteAction.icon ),
-                              identifier: siteAction.tracking.flatMap { UIAction.Identifier( $0.action ) } ) { action in
-                        configuration.action = action
-                        siteAction.action( site, nil, .menu )
-                    }
-                } )
-            } )
+                    indexPath: indexPath, previewProvider: { _ in MPSitePreviewController( site: site ) },
+                    actionProvider: { [unowned self] _, configuration in
+                        UIMenu( title: site.siteName, children: [
+                            UIAction( title: "Delete", image: .icon( "" ),
+                                      identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
+                                configuration.action = action
+                                site.user.sites.removeAll { $0 === site }
+                            }
+                        ] + self.siteActions.filter( { $0.appearance.contains( .menu ) } ).map { siteAction in
+                            UIAction( title: siteAction.title, image: .icon( siteAction.icon ),
+                                      identifier: siteAction.tracking.flatMap { UIAction.Identifier( $0.action ) } ) { action in
+                                configuration.action = action
+                                siteAction.action( site, nil, .menu )
+                            }
+                        } )
+                    } )
         }
     }
 
@@ -214,7 +215,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
     class SiteItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
         class func filtered(_ sites: [MPSite], query: String, preferred: ((MPSite) -> Bool)?) -> [SiteItem] {
             var items = sites.map { SiteItem( site: $0, query: query, preferred: preferred?( $0 ) ?? false ) }
-                                .filter { $0.isMatched }.sorted()
+                             .filter { $0.isMatched }.sorted()
 
             if preferred != nil {
                 items = items.reordered( first: { $0.isPreferred } )
@@ -302,7 +303,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
     }
 
     class SitesSource: DataSource<SiteItem> {
-        let view:          MPSitesTableView
+        unowned let view: MPSitesTableView
         var newItem:       SiteItem?
         var preferredItem: SiteItem?
         var selectedItem:  SiteItem?
@@ -341,7 +342,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
 
     class SiteCell: UITableViewCell, Updatable, MPSiteObserver, MPUserObserver, MPConfigObserver, InAppFeatureObserver {
         public weak var sitesView: MPSitesTableView?
-        public var result:  SiteItem? {
+        public var result: SiteItem? {
             willSet {
                 self.site?.observers.unregister( observer: self )
                 self.site?.user.observers.unregister( observer: self )
@@ -355,7 +356,7 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
                 self.updateTask.request()
             }
         }
-        public var site: MPSite? {
+        public var site:   MPSite? {
             self.result?.site
         }
 
@@ -507,11 +508,12 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
 
             self.actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
             self.sitesView?.siteActions.filter( { $0.appearance.contains( .cell ) } ).forEach { siteAction in
-                self.actionsStack.addArrangedSubview( MPButton( track: siteAction.tracking, image: .icon( siteAction.icon ), background: false ) { [unowned self] _, _ in
-                    if let site = self.site {
-                        siteAction.action( site, self.mode, .cell )
-                    }
-                } )
+                self.actionsStack.addArrangedSubview(
+                        MPButton( track: siteAction.tracking, image: .icon( siteAction.icon ), background: false ) { [unowned self] _, _ in
+                            if let site = self.site {
+                                siteAction.action( site, self.mode, .cell )
+                            }
+                        } )
             }
         }
 

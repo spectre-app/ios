@@ -98,15 +98,16 @@ class MPBackgroundView: UIView, ThemeObserver {
             UIColor.black.with( alpha: .short ).cgColor,
             UIColor.black.with( alpha: .short * .short ).cgColor,
             UIColor.clear.cgColor ]
-        self.imageViewObservation = self.imageView.observe( \.bounds ) { _, _ in self.imageMask.frame = self.imageView.bounds }
+        self.imageViewObservation = self.imageView.observe( \.bounds ) { [unowned self] _, _ in
+            self.imageMask.frame = self.imageView.bounds
+        }
 
         // - Hierarchy
         self.addSubview( self.imageTint )
         self.imageTint.addSubview( self.imageView )
 
         // - Layout
-        LayoutConfiguration( view: self.imageView ).constrain( as: .box )
-                                                   .activate()
+        LayoutConfiguration( view: self.imageView ).constrain( as: .box ).activate()
         LayoutConfiguration( view: self.imageTint ).constrain( as: .topBox )
                                                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                                                    .constrain { $1.heightAnchor.constraint( equalToConstant: 200 ).with( priority: .defaultHigh ) }
