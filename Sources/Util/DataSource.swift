@@ -10,8 +10,8 @@ import UIKit
 // is not animated due to it triggering a full reloadData. The work-around is to leave the section empty (or remove it separately).
 // http://www.openradar.me/48941363
 open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
-    private let semaphore = DispatchGroup()
-    private let queue     = DispatchQueue( label: "DataSource" )
+    private let semaphore        = DispatchGroup()
+    private let queue            = DispatchQueue( label: "DataSource" )
     private var elementsBySection: [[E]]
     private var elementsConsumed = false
     private weak var tableView:      UITableView?

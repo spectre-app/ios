@@ -66,10 +66,11 @@ class ItemsViewController<M>: BaseViewController {
         self.view.addSubview( self.itemsView )
 
         // - Layout
-        LayoutConfiguration( view: self.itemsView ).constrain( as: .vertical, margin: true )
-                                                   .constrain( as: .horizontal )
-                                                   .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
-                                                   .activate()
+        LayoutConfiguration( view: self.itemsView )
+                .constrain( as: .vertical, margin: true )
+                .constrain( as: .horizontal )
+                .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
+                .activate()
 
         self.items.forEach { $0.view.didLoad() }
     }

@@ -10,8 +10,8 @@ import UIKit
 import AuthenticationServices
 
 class AutoFillUsersViewController: BaseUsersViewController {
-    private lazy var cancelButton = EffectButton( track: .subject( "users", action: "cancel"),
-                                              image: .icon( "" ), background: false ) { _, _ in
+    private lazy var cancelButton = EffectButton( track: .subject( "users", action: "cancel" ),
+                                                  image: .icon( "" ), background: false ) { _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Cancel button pressed." ) )
     }
 
@@ -34,8 +34,8 @@ class AutoFillUsersViewController: BaseUsersViewController {
         self.view.insertSubview( self.cancelButton, belowSubview: self.detailsHost.view )
 
         // - Layout
-        LayoutConfiguration( view: self.cancelButton ).constrain( as: .bottomCenter, margin: true )
-                                                      .activate()
+        LayoutConfiguration( view: self.cancelButton )
+                .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {

@@ -24,8 +24,8 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
         self.view.insertSubview( self.backgroundView, at: 0 )
 
         // - Layout
-        LayoutConfiguration( view: self.backgroundView ).constrain( as: .box )
-                                                        .activate()
+        LayoutConfiguration( view: self.backgroundView )
+                .constrain( as: .box ).activate()
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -64,14 +64,14 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
                 toView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
                 transitionContext.containerView.addSubview( toView )
 
-                UIView.animate( withDuration: .seconds(1), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
+                UIView.animate( withDuration: .seconds( 1 ), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
                                 options: .curveEaseOut, animations: {
                     fromView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
                     fromView.alpha = .off
                 }, completion: { finished in
                     fromView.transform = .identity
                 } )
-                UIView.animate( withDuration: .seconds(1.5), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
+                UIView.animate( withDuration: .seconds( 1.5 ), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
                                 options: .curveEaseOut, animations: {
                     toView.alpha = .on
                     toView.transform = .identity

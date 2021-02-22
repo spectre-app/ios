@@ -181,7 +181,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         let result = try $0.get()
                         if result.upToDate {
                             AlertController( title: "Your \(productName) app is up-to-date!", message: result.buildVersion,
-                                     details: "build[\(result.buildVersion)] > store[\(result.storeVersion)]" )
+                                             details: "build[\(result.buildVersion)] > store[\(result.storeVersion)]" )
                                     .show()
                         }
                         else {

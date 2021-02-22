@@ -369,9 +369,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
         private let backgroundImage = BackgroundView( mode: .clear )
         private let modeButton      = EffectButton( track: .subject( "sites.site", action: "mode" ),
-                                                image: .icon( "" ), background: false )
+                                                    image: .icon( "" ), background: false )
         private let newButton       = EffectButton( track: .subject( "sites.site", action: "add" ),
-                                                image: .icon( "" ), background: false )
+                                                    image: .icon( "" ), background: false )
         private let actionsStack    = UIStackView()
         private let selectionView   = UIView()
         private let resultLabel     = UITextField()
@@ -653,8 +653,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.contentView.addSubview( self.propLabel )
 
             // - Layout
-            LayoutConfiguration( view: self.emitterView ).constrain( as: .box )
-                                                         .activate()
+            LayoutConfiguration( view: self.emitterView )
+                    .constrain( as: .box ).activate()
             LayoutConfiguration( view: self.propLabel )
                     .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }

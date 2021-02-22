@@ -25,7 +25,7 @@ class AvatarCell: EffectCell {
 
         self.effectView.addContentView( self.avatarImage )
 
-        LayoutConfiguration( view: self.avatarImage ).constrain( as: .box, margin: true )
-                                                     .activate()
+        LayoutConfiguration( view: self.avatarImage )
+                .constrain( as: .box, margin: true ).activate()
     }
 }

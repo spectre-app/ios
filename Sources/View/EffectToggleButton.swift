@@ -12,7 +12,7 @@ class EffectToggleButton: UIView {
 
     var tapEffect = true
     var tracking: Tracking?
-    var action:     (Bool) -> Bool?
+    var action:   (Bool) -> Bool?
     var isSelected: Bool {
         get {
             self.button.isSelected
@@ -97,8 +97,8 @@ class EffectToggleButton: UIView {
         self.widthAnchor.constraint( equalTo: self.heightAnchor ).isActive = true
         self.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ).isActive = true
 
-        LayoutConfiguration( view: self.contentView ).constrain( as: .box, margin: true )
-                                                     .activate()
+        LayoutConfiguration( view: self.contentView )
+                .constrain( as: .box, margin: true ).activate()
         LayoutConfiguration( view: self.checkLabel )
                 .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                 .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }

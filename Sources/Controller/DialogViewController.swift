@@ -22,7 +22,7 @@ class DialogViewController: BaseViewController {
     private let titleLabel   = UILabel()
     private let messageLabel = UILabel()
     private lazy var cancelButton = EffectButton( track: .subject( "users", action: "cancel" ),
-                                              image: .icon( "" ), background: false ) { _, _ in
+                                                  image: .icon( "" ), background: false ) { _, _ in
         self.dismiss( animated: true )
     }
 
@@ -50,15 +50,18 @@ class DialogViewController: BaseViewController {
         // - Hierarchy
         self.view.addSubview( self.scrollView )
         self.scrollView.addSubview( self.stackView )
-        self.populate(stackView: self.stackView)
+        self.populate( stackView: self.stackView )
         self.view.addSubview( self.cancelButton )
 
         // - Layout
-        LayoutConfiguration( view: self.scrollView ).constrain( as: .box ).activate()
-        LayoutConfiguration( view: self.stackView ).constrain( as: .box )
-                                                   .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
-                                                   .activate()
-        LayoutConfiguration( view: self.cancelButton ).constrain( as: .bottomCenter, margin: true ).activate()
+        LayoutConfiguration( view: self.scrollView )
+                .constrain( as: .box ).activate()
+        LayoutConfiguration( view: self.stackView )
+                .constrain( as: .box )
+                .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+                .activate()
+        LayoutConfiguration( view: self.cancelButton )
+                .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     internal func populate(stackView: UIStackView) {

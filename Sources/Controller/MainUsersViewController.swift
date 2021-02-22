@@ -22,11 +22,11 @@ class MainUsersViewController: BaseUsersViewController {
         // - View
         self.appToolbar.axis = .horizontal
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ),
-                                                      image: .icon( "" ), background: false ) { [unowned self] _, _ in
+                                                          image: .icon( "" ), background: false ) { [unowned self] _, _ in
             self.detailsHost.show( DetailAppViewController(), sender: self )
         } )
         self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users.user", action: "auth" ),
-                                                           image: .icon( "" ), background: false ) { [unowned self] _, incognitoButton in
+                                                         image: .icon( "" ), background: false ) { [unowned self] _, incognitoButton in
             guard let incognitoButton = incognitoButton as? TimedButton
             else { return }
             let userEvent = Tracker.shared.begin( track: .subject( "users", action: "user" ) )
@@ -38,7 +38,7 @@ class MainUsersViewController: BaseUsersViewController {
 
             let secretField = UserSecretField()
             let spinner     = AlertController( title: "Unlocking", message: secretField.nameField?.text,
-                                         content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                               content: UIActivityIndicatorView( style: .whiteLarge ) )
             secretField.authenticater = { keyFactory in
                 spinner.show( dismissAutomatically: false )
                 return User( userName: keyFactory.userName, file: nil ).login( using: keyFactory )
@@ -100,11 +100,10 @@ class MainUsersViewController: BaseUsersViewController {
         self.view.insertSubview( self.userToolbar, belowSubview: self.detailsHost.view )
 
         // - Layout
-        LayoutConfiguration( view: self.appToolbar ).constrain( as: .bottomCenter, margin: true )
-                                                    .activate()
-
-        LayoutConfiguration( view: self.userToolbar ).constrain( as: .horizontal )
-                                                     .activate()
+        LayoutConfiguration( view: self.appToolbar )
+                .constrain( as: .bottomCenter, margin: true ).activate()
+        LayoutConfiguration( view: self.userToolbar )
+                .constrain( as: .horizontal ).activate()
 
         self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
             active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }

@@ -90,14 +90,14 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
                        resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
                     -> Operation {
         self.site.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                             resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, operand: operand ?? self )
+                          resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, operand: operand ?? self )
     }
 
     public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
                       resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
                     -> Operation {
         self.site.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                            resultType: resultType, resultParam: resultParam, algorithm: algorithm, operand: operand ?? self )
+                         resultType: resultType, resultParam: resultParam, algorithm: algorithm, operand: operand ?? self )
     }
 }
 

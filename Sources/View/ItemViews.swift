@@ -1267,8 +1267,8 @@ class LinksItem<M>: ListItem<M, LinksItem.Link, LinksItem.Cell> {
             self.contentView.addSubview( self.button )
 
             // - Layout
-            LayoutConfiguration( view: self.button ).constrain( as: .box )
-                                                    .activate()
+            LayoutConfiguration( view: self.button )
+                    .constrain( as: .box ).activate()
         }
     }
 }

@@ -382,8 +382,8 @@ class Tracker: AppConfigObserver {
             else { return }
 
             Tracker.shared.event( file: file, line: line, function: function, dso: dso,
-                                    named: "\(self.tracking.subject) #\(self.tracking.action)",
-                                    self.tracking.parameters().merging( parameters ), timing: self )
+                                  named: "\(self.tracking.subject) #\(self.tracking.action)",
+                                  self.tracking.parameters().merging( parameters ), timing: self )
             self.ended = true
         }
 

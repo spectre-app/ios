@@ -44,10 +44,10 @@ class EffectCell: UICollectionViewCell {
                 .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                 .constrain { $1.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ) }.constrain( as: .box )
                 .activate()
-        LayoutConfiguration( view: self.debugLabel ).constrain( as: .bottomBox )
-                                                    .activate()
-        LayoutConfiguration( view: self.effectView ).constrain( as: .box )
-                                                    .activate()
+        LayoutConfiguration( view: self.debugLabel )
+                .constrain( as: .bottomBox ).activate()
+        LayoutConfiguration( view: self.effectView )
+                .constrain( as: .box ).activate()
 
         defer {
             self.isSelected = false

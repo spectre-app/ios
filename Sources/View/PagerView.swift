@@ -59,10 +59,12 @@ class PagerView: UIView, UICollectionViewDelegate {
         self.addSubview( self.indicatorView )
 
         // - Layout
-        LayoutConfiguration( view: self.indicatorView ).constrain( as: .bottomCenter, margin: true ).activate()
-        LayoutConfiguration( view: self.collectionView ).constrain( as: .topBox )
-                                                        .constrain { $1.bottomAnchor.constraint( equalTo: self.indicatorView.topAnchor ) }
-                                                        .activate()
+        LayoutConfiguration( view: self.indicatorView )
+                .constrain( as: .bottomCenter, margin: true ).activate()
+        LayoutConfiguration( view: self.collectionView )
+                .constrain( as: .topBox )
+                .constrain { $1.bottomAnchor.constraint( equalTo: self.indicatorView.topAnchor ) }
+                .activate()
     }
 
     // MARK: --- UICollectionViewDelegate ---
@@ -215,7 +217,8 @@ class PagerView: UIView, UICollectionViewDelegate {
                 }
                 if let pageView = self.pageView, pageView.superview != self.contentView {
                     self.contentView.addSubview( pageView )
-                    LayoutConfiguration( view: pageView ).constrain( as: .box, margin: true ).activate()
+                    LayoutConfiguration( view: pageView )
+                            .constrain( as: .box, margin: true ).activate()
                 }
             }
         }
@@ -231,7 +234,8 @@ class PagerView: UIView, UICollectionViewDelegate {
             self.preservesSuperviewLayoutMargins = true
             self.contentView.insetsLayoutMarginsFromSafeArea = false
             self.contentView.preservesSuperviewLayoutMargins = true
-            LayoutConfiguration( view: self.contentView ).constrain( as: .box ).activate()
+            LayoutConfiguration( view: self.contentView )
+                    .constrain( as: .box ).activate()
         }
 
         override func layoutSubviews() {
@@ -278,7 +282,8 @@ class PagerView: UIView, UICollectionViewDelegate {
             self.addSubview( self.stackView )
 
             // - Layout
-            LayoutConfiguration( view: self.stackView ).constrain( as: .box, margin: true ).activate()
+            LayoutConfiguration( view: self.stackView )
+                    .constrain( as: .box, margin: true ).activate()
         }
 
         override func layoutSubviews() {

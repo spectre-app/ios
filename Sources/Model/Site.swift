@@ -199,9 +199,9 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public func copy(to user: User) -> Site {
         // TODO: do we need to re-encode state?
         let site = Site( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
-                           resultType: self.resultType, resultState: self.resultState,
-                           loginType: self.loginType, loginState: self.loginState,
-                           url: self.url, uses: self.uses, lastUsed: self.lastUsed )
+                         resultType: self.resultType, resultState: self.resultState,
+                         loginType: self.loginType, loginState: self.loginState,
+                         url: self.url, uses: self.uses, lastUsed: self.lastUsed )
         site.questions = self.questions.map { $0.copy( to: site ) }
         return site
     }
@@ -239,8 +239,8 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
             @unknown default:
                 return Operation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                    Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
@@ -265,8 +265,8 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
             @unknown default:
                 return Operation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                    Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 }

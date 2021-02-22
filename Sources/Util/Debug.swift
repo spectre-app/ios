@@ -5,7 +5,7 @@
 
 import UIKit
 
-class WTFLabel : UILabel {
+class WTFLabel: UILabel {
     override var isHidden: Bool {
         get {
             super.isHidden

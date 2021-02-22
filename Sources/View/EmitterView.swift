@@ -36,7 +36,7 @@ class EmitterView: UIView, CAAnimationDelegate {
             let transition = CATransition()
             transition.delegate = self
             transition.type = .fade
-            transition.duration = .seconds(1)
+            transition.duration = .seconds( 1 )
             transition.timingFunction = CAMediaTimingFunction( name: .easeOut )
             transition.setValue( layer, forKey: kAnimationLayerKey )
             transition.isRemovedOnCompletion = false
@@ -114,7 +114,7 @@ class EmitterView: UIView, CAAnimationDelegate {
                 case let .shape(shape, color):
                     return shape.image( with: color ?? .white )
                 case let .emoji(character):
-                    return self.image(of: "\(character)")
+                    return self.image( of: "\(character)" )
             }
         }
 

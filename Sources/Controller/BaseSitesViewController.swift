@@ -52,8 +52,8 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
         self.view.addSubview( self.topContainer )
 
         // - Layout
-        LayoutConfiguration( view: self.sitesTableView ).constrain( as: .box ).activate()
-
+        LayoutConfiguration( view: self.sitesTableView )
+                .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.topContainer )
                 .constrainAll {
                     [

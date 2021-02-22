@@ -129,10 +129,10 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
             targetDescription = "\(type( of: E.self )): gone)"
         }
         if let keyPath = self.nullableKeyPath {
-            return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String(describing: keyPath))"
+            return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String( describing: keyPath ))"
         }
         else if let keyPath = self.nonnullKeyPath {
-            return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String(describing: keyPath))"
+            return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String( describing: keyPath ))"
         }
         else {
             return "\(self.target == nil ? String( reflecting: E.self ): String( reflecting: self.target! ))"
@@ -202,7 +202,7 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
 }
 
 public struct ThemePattern {
-    static let spectre   = ThemePattern(
+    static let spectre = ThemePattern(
             dark: .hex( "0E3345" ),
             dusk: .hex( "173D50" ),
             flat: .hex( "57CBCC" ),

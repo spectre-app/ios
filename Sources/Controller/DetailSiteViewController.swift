@@ -275,8 +275,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             private let keywordLabel = UILabel()
             private let resultLabel  = UILabel()
             private lazy var copyButton = EffectButton( track: .subject( "site.question", action: "copy",
-                                                                     [ "words": self.question?.keyword.split( separator: " " ).count ?? 0 ] ),
-                                                    title: "copy" )
+                                                                         [ "words": self.question?.keyword.split( separator: " " ).count ?? 0 ] ),
+                                                        title: "copy" )
 
             weak var question: Question? {
                 didSet {

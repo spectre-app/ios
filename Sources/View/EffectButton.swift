@@ -79,8 +79,8 @@ class EffectButton: EffectView {
         self.addContentView( self.button )
 
         // - Layout
-        LayoutConfiguration( view: self.button ).constrain( as: .box, margin: true )
-                                                .activate()
+        LayoutConfiguration( view: self.button )
+                .constrain( as: .box, margin: true ).activate()
     }
 
     override func sizeThatFits(_ size: CGSize) -> CGSize {

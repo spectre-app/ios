@@ -104,8 +104,8 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
         self.view.addSubview( self.contentView )
 
         // - Layout
-        LayoutConfiguration( view: self.contentView ).constrain( as: .box, margin: true )
-                                                     .activate()
+        LayoutConfiguration( view: self.contentView )
+                .constrain( as: .box, margin: true ).activate()
     }
 
     // MARK: UIPopoverPresentationControllerDelegate

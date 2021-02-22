@@ -292,7 +292,7 @@ extension UICollectionViewCell {
     }
 }
 
-@available(iOS 13, *)
+@available( iOS 13, * )
 extension UIContextMenuConfiguration {
     var indexPath: IndexPath? {
         self.identifier as? IndexPath
@@ -335,7 +335,7 @@ extension UIContextMenuConfiguration {
     }
 }
 
-@available(iOS 13, *)
+@available( iOS 13, * )
 fileprivate struct PreviewProvider {
     let provider:      ((UIContextMenuConfiguration) -> UIViewController?)?
     var configuration: UIContextMenuConfiguration?
@@ -345,7 +345,7 @@ fileprivate struct PreviewProvider {
     }
 }
 
-@available(iOS 13, *)
+@available( iOS 13, * )
 fileprivate struct ActionProvider {
     let provider:      (([UIMenuElement], UIContextMenuConfiguration) -> UIMenu?)?
     var configuration: UIContextMenuConfiguration?
@@ -574,7 +574,7 @@ extension UITableViewCell {
 }
 
 extension UITraitCollection {
-    @available(iOS 13.0, *)
+    @available( iOS 13.0, * )
     func resolveAsCurrent<R>(_ perform: () -> R) -> R {
         var result: R!
         self.performAsCurrent { result = perform() }

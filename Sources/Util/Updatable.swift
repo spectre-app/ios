@@ -5,7 +5,6 @@
 
 import Foundation
 
-
 public protocol Updatable: class {
     var updatesPostponed: Bool { get }
     var updatesRejected:  Bool { get }

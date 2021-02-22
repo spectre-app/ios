@@ -107,12 +107,14 @@ class BackgroundView: UIView, ThemeObserver {
         self.imageTint.addSubview( self.imageView )
 
         // - Layout
-        LayoutConfiguration( view: self.imageView ).constrain( as: .box ).activate()
-        LayoutConfiguration( view: self.imageTint ).constrain( as: .topBox )
-                                                   .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                                                   .constrain { $1.heightAnchor.constraint( equalToConstant: 200 ).with( priority: .defaultHigh ) }
-                                                   .compressionResistance( horizontal: .fittingSizeLevel, vertical: .fittingSizeLevel )
-                                                   .activate()
+        LayoutConfiguration( view: self.imageView )
+                .constrain( as: .box ).activate()
+        LayoutConfiguration( view: self.imageTint )
+                .constrain( as: .topBox )
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+                .constrain { $1.heightAnchor.constraint( equalToConstant: 200 ).with( priority: .defaultHigh ) }
+                .compressionResistance( horizontal: .fittingSizeLevel, vertical: .fittingSizeLevel )
+                .activate()
 
         defer {
             self.mode = mode

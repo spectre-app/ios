@@ -147,7 +147,7 @@ class SitePreview: Equatable {
             guard let imageURL = [ response.image, response.icon ]
                     .compactMap( { SitePreview.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
                     ?? SitePreview.byImageSize( [ response.image, response.icon ] + (response.images ?? []) )
-                                    .reordered( last: { $0.pathExtension == "gif" } ).first
+                                  .reordered( last: { $0.pathExtension == "gif" } ).first
             else {
                 trc( "[preview missing] %@: %@", self.url, response )
                 promise.finish( .failure( AppError.issue(

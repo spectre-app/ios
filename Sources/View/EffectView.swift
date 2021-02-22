@@ -137,8 +137,10 @@ class EffectView: UIView, ThemeObserver {
         self.addSubview( self.blurEffectView )
 
         // - Layout
-        LayoutConfiguration( view: self.vibrancyEffectView ).constrain( as: .box ).activate()
-        LayoutConfiguration( view: self.blurEffectView ).constrain( as: .box ).activate()
+        LayoutConfiguration( view: self.vibrancyEffectView )
+                .constrain( as: .box ).activate()
+        LayoutConfiguration( view: self.blurEffectView )
+                .constrain( as: .box ).activate()
     }
 
     convenience init(content: UIView, border: CGFloat = 1.5, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
@@ -148,8 +150,8 @@ class EffectView: UIView, ThemeObserver {
         self.addContentView( content )
 
         // - Layout
-        LayoutConfiguration( view: content ).constrain( as: .box, margin: true )
-                                            .activate()
+        LayoutConfiguration( view: content )
+                .constrain( as: .box, margin: true ).activate()
     }
 
     required init?(coder aDecoder: NSCoder) {

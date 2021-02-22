@@ -23,7 +23,7 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
             }
         }
     }
-    public var diagnosticsDecided   = false {
+    public var diagnosticsDecided = false {
         didSet {
             if self.diagnosticsDecided != UserDefaults.shared.bool( forKey: "diagnosticsDecided" ) {
                 UserDefaults.shared.set( self.diagnosticsDecided, forKey: "diagnosticsDecided" )

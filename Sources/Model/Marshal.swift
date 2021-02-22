@@ -136,7 +136,7 @@ class Marshal: Observable, Updatable {
 
             exportEvent.end( [ "result": "!marshal_write" ] )
             throw AppError.marshal( user.file?.pointee.error ?? MPMarshalError( type: .errorInternal, message: nil ),
-                                   title: "Issue Writing User", details: user )
+                                    title: "Issue Writing User", details: user )
         }
     }
 
@@ -183,7 +183,7 @@ class Marshal: Observable, Updatable {
             let promise = Promise<UserFile>()
 
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
-                                           content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                                   content: UIActivityIndicatorView( style: .whiteLarge ) )
             let secretField     = UserSecretField( userFile: existingFile )
             let alertController = UIAlertController( title: "Merge Users", message:
             """
@@ -406,7 +406,7 @@ class Marshal: Observable, Updatable {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-user" ) )
 
         let spinner = AlertController( title: "Merging", message: existedUser.description,
-                               content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                       content: UIActivityIndicatorView( style: .whiteLarge ) )
 
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
@@ -481,7 +481,7 @@ class Marshal: Observable, Updatable {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-url" ) )
 
         let spinner = AlertController( title: "Replacing", message: documentURL.lastPathComponent,
-                               content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                       content: UIActivityIndicatorView( style: .whiteLarge ) )
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
         return DispatchQueue.api.promise {
@@ -600,7 +600,7 @@ class Marshal: Observable, Updatable {
             do {
                 // FIXME: possible deadlock if await needs main thread?
                 let exportFile = try Marshal.shared.save( user: self.user, format: self.format, redacted: self.redacted,
-                                                            in: URL( fileURLWithPath: NSTemporaryDirectory() ) ).await()
+                                                          in: URL( fileURLWithPath: NSTemporaryDirectory() ) ).await()
                 self.cleanup.append( exportFile )
                 return exportFile
             }

@@ -207,7 +207,7 @@ public class LogSink: AppConfigObserver {
         self.queue.sync {
             self.records.append(
                     LogRecord( occurrence: Date( timeIntervalSince1970: TimeInterval( event.occurrence ) ),
-                                 level: event.level, file: file, line: event.line, function: function, message: message )
+                               level: event.level, file: file, line: event.line, function: function, message: message )
             )
         }
         return true

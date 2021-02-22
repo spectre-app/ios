@@ -28,8 +28,8 @@ class MarginView: UIView {
         }
 
         self.addSubview( view )
-        LayoutConfiguration( view: view ).constrain( as: .box, margin: true )
-                                         .activate()
+        LayoutConfiguration( view: view )
+                .constrain( as: .box, margin: true ).activate()
     }
 
     required init?(coder aDecoder: NSCoder) {

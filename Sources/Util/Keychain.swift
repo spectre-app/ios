@@ -73,8 +73,9 @@ public class Keychain {
 
     public static func loadKey(for userName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
                     -> Promise<UnsafePointer<MPUserKey>> {
-        let spinner = AlertController( title: "Biometrics Authentication", message: "Please authenticate to access user key for:\n\(userName)",
-                               content: UIActivityIndicatorView( style: .white ) )
+        let spinner = AlertController( title: "Biometrics Authentication",
+                                       message: "Please authenticate to access user key for:\n\(userName)",
+                                       content: UIActivityIndicatorView( style: .white ) )
         spinner.show( dismissAutomatically: false )
 
         return DispatchQueue.api.promise {

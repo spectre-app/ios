@@ -6,7 +6,7 @@
 import Foundation
 
 protocol Persisting {
-    var dirty : Bool { get set }
+    var dirty: Bool { get set }
 }
 
 extension Persisting {

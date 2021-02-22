@@ -383,8 +383,8 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
             @unknown default:
                 return Operation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
-                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                    Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
@@ -409,8 +409,8 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
             @unknown default:
                 return Operation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
-                                    type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                    Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 

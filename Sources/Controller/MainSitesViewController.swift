@@ -61,7 +61,8 @@ class MainSitesViewController: BaseSitesViewController {
                     self.detailsHost.contentView.topAnchor.constraint( greaterThanOrEqualTo: self.topContainer.bottomAnchor, constant: -8 )
                                                           .with( priority: UILayoutPriority( 520 ) )
                 }
-                .constrain( as: .box ).activate()
+                .constrain( as: .box )
+                .activate()
     }
 
     override func viewDidLayoutSubviews() {

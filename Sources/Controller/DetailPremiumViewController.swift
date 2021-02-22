@@ -151,8 +151,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
 
         class Cell: UITableViewCell {
             private lazy var buyButton = EffectButton( track: .subject( "premium.subscription", action: "subscribe",
-                                                                    [ "product": self.product?.productIdentifier ?? "n/a" ] ),
-                                                   title: "Subscribe" )
+                                                                        [ "product": self.product?.productIdentifier ?? "n/a" ] ),
+                                                       title: "Subscribe" )
             private let captionLabel = UILabel()
 
             var product: SKProduct? {
@@ -206,11 +206,12 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
                 self.contentView.addSubview( self.captionLabel )
 
                 // - Layout
-                LayoutConfiguration( view: self.buyButton ).constrain( as: .topBox, margin: true )
-                                                           .activate()
-                LayoutConfiguration( view: self.captionLabel ).constrain( as: .bottomBox, margin: true )
-                                                              .constrain { $1.topAnchor.constraint( equalTo: self.buyButton.bottomAnchor, constant: 4 ) }
-                                                              .activate()
+                LayoutConfiguration( view: self.buyButton )
+                        .constrain( as: .topBox, margin: true ).activate()
+                LayoutConfiguration( view: self.captionLabel )
+                        .constrain( as: .bottomBox, margin: true )
+                        .constrain { $1.topAnchor.constraint( equalTo: self.buyButton.bottomAnchor, constant: 4 ) }
+                        .activate()
             }
         }
     }

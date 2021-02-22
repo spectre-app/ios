@@ -24,7 +24,7 @@ public class Feedback {
     }
 }
 
-@available(iOS 13, *)
+@available( iOS 13, * )
 public class HapticFeedback: Feedback {
     private var hapticEngine: CHHapticEngine?
     private var players = [ Effect: CHHapticPatternPlayer ]()

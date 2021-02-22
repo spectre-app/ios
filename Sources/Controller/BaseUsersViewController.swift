@@ -71,11 +71,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         self.detailsHost.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: self.usersSpinner ).constrain( as: .box )
-                                                      .activate()
-
-        LayoutConfiguration( view: self.detailsHost.view ).constrain( as: .box )
-                                                          .activate()
+        LayoutConfiguration( view: self.usersSpinner )
+                .constrain( as: .box ).activate()
+        LayoutConfiguration( view: self.detailsHost.view )
+                .constrain( as: .box ).activate()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -189,9 +188,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let nameLabel = UILabel()
         private let nameField = UITextField()
         private lazy var avatarButton = EffectButton( track: .subject( "users.user", action: "avatar" ),
-                                                  background: false ) { _, _ in self.avatar.next() }
+                                                      background: false ) { _, _ in self.avatar.next() }
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
-                                                          image: .icon( "" ), background: false ) { _, _ in self.attemptBiometrics() }
+                                                        image: .icon( "" ), background: false ) { _, _ in self.attemptBiometrics() }
         private var secretEvent:                 Tracker.TimedEvent?
         private let secretField   = UserSecretField()
         private let idBadgeView   = UIImageView( image: .icon( "" ) )
@@ -285,8 +284,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.contentView.addSubview( self.secretField )
 
             // - Layout
-            LayoutConfiguration( view: self.contentView ).constrain( as: .horizontalCenter, margin: true )
-                                                         .activate()
+            LayoutConfiguration( view: self.contentView )
+                    .constrain( as: .horizontalCenter, margin: true ).activate()
             LayoutConfiguration( view: self.nameLabel )
                     .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }

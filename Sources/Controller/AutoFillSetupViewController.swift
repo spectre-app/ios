@@ -92,7 +92,7 @@ class AutoFillSetupViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "" ) },
-                                            value: { $0.autofill }, update: { $0.autofill = $1 } )
+                                          value: { $0.autofill }, update: { $0.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                                 .addBehaviour( PremiumTapBehaviour() )
                                 .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
@@ -144,7 +144,7 @@ class AutoFillSetupViewController: ItemsViewController<User>, DetailViewControll
         if self.autoFillState?.isEnabled ?? false && self.model.autofill {
             self.hide {
                 AlertController( title: "AutoFill Enabled",
-                         message: "\(self.model.userName)'s sites are now available from AutoFill." )
+                                 message: "\(self.model.userName)'s sites are now available from AutoFill." )
                         .show()
             }
         }
