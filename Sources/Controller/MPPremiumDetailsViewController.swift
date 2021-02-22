@@ -64,13 +64,14 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void>, InAppStoreObs
         super.viewDidLoad()
 
         // Automatic subscription restoration or renewal.
-        if !InAppFeature.premium.isEnabled && !InAppSubscription.premium.isActive && !InAppSubscription.premium.wasActiveButExpired {
-            // Only restore premium if not yet in our receipt.
-            AppStore.shared.restorePurchases()
-        }
-        else {
-            // Otherwise refresh receipt and products, triggering App Store log-in if necessary.
-            AppStore.shared.update( active: true )
+        if !InAppFeature.premium.isEnabled {
+            // Start by refreshing the products, receipt and renewals; triggering App Store log-in if necessary.
+            AppStore.shared.update( active: true ).finally {
+                // Only try to restore premium purchases if not yet present in our receipt.
+                if !InAppSubscription.premium.isActive && !InAppSubscription.premium.wasActiveButExpired {
+                    AppStore.shared.restorePurchases()
+                }
+            }
         }
     }
 
