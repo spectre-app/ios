@@ -35,6 +35,7 @@ public class MPConfig: Observable, Updatable, InAppFeatureObserver {
             if self.notificationsDecided != UserDefaults.shared.bool( forKey: "notificationsDecided" ) {
                 UserDefaults.shared.set( self.notificationsDecided, forKey: "notificationsDecided" )
             }
+            self.observers.notify { $0.didChangeConfig() }
         }
     }
     public private(set) var hasLegacy = false {

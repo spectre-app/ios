@@ -50,7 +50,7 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        self.tryDecisions()
+        self.launchDecisions()
 
         // Automatic subscription renewal (only if user is logged in to App Store and capable).
         AppStore.shared.update()
@@ -58,25 +58,25 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    func tryDecisions() {
+    func launchDecisions(completion: @escaping () -> () = {}) {
 
         // Diagnostics decision
         if !appConfig.diagnosticsDecided {
             let controller = UIAlertController( title: "Diagnostics", message:
             """
-            We look for bugs, sudden crashes, runtime issues & statistics.
+            If a bug, crash or issue should happen, Diagnostics will let us know and fix it.
 
-            Diagnostics are scrubbed and personal details will never leave your device.
+            It's just code and statistics, personal information is sacred and cannot leave your device.
             """, preferredStyle: .actionSheet )
             controller.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
                 appConfig.diagnostics = false
                 appConfig.diagnosticsDecided = true
-                self.tryDecisions()
+                self.launchDecisions( completion: completion )
             } )
             controller.addAction( UIAlertAction( title: "Engage", style: .default ) { _ in
                 appConfig.diagnostics = true
                 appConfig.diagnosticsDecided = true
-                self.tryDecisions()
+                self.launchDecisions( completion: completion )
             } )
             controller.popoverPresentationController?.sourceView = self.window
             self.window?.rootViewController?.present( controller, animated: true )
@@ -93,8 +93,9 @@ class MPAppDelegate: UIResponder, UIApplicationDelegate {
             """, preferredStyle: .actionSheet )
             controller.popoverPresentationController?.sourceView = self.window
             controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
-                MPTracker.enableNotifications()
-                self.tryDecisions()
+                MPTracker.shared.enableNotifications( consented: false ) { _ in
+                    self.launchDecisions( completion: completion )
+                }
             } )
             self.window?.rootViewController?.present( controller, animated: true )
         }

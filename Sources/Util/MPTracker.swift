@@ -30,29 +30,52 @@ struct MPTracking {
 class MPTracker: MPConfigObserver {
     static let shared = MPTracker()
 
+    public let observers = Observers<MPTrackerObserver>()
+
     #if TARGET_APP
-    static func enabledNotifications() -> Bool {
+    func enabledNotifications() -> Bool {
         UIApplication.shared.isRegisteredForRemoteNotifications
     }
 
-    static func enableNotifications() {
-        appConfig.notificationsDecided = true
-        UIApplication.shared.registerForRemoteNotifications()
+    func enableNotifications(consented: Bool = true, completion: @escaping (Bool) -> () = { _ in }) {
+        UNUserNotificationCenter.current().getNotificationSettings {
+            if $0.authorizationStatus == .authorized {
+                appConfig.notificationsDecided = true
+                Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                self.observers.notify { $0.didChangeTracker() }
+                completion( true )
+                return
+            }
 
-        Countly.sharedInstance().askForNotificationPermission { _, _ in
-            UNUserNotificationCenter.current().getNotificationSettings {
-                if $0.authorizationStatus != .authorized {
-                    if let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
-                        UIApplication.shared.open( settingsURL )
-                    }
+            UNUserNotificationCenter.current().requestAuthorization( options: [ .alert, .badge, .sound ] ) { granted, error in
+                appConfig.notificationsDecided = true
+
+                if let error = error {
+                    wrn( "Notification authorization error: %@", error )
                 }
+                if granted {
+                    Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                    self.observers.notify { $0.didChangeTracker() }
+                    completion( true )
+                    return
+                }
+
+                if consented, let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+                    Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                    self.observers.notify { $0.didChangeTracker() }
+                    UIApplication.shared.open( settingsURL )
+                    completion( true )
+                    return
+                }
+
+                completion( false )
             }
         }
     }
 
-    static func disableNotifications() {
+    func disableNotifications() {
         appConfig.notificationsDecided = true
-        UIApplication.shared.unregisterForRemoteNotifications()
+        Countly.sharedInstance().cancelConsent( forFeature: .pushNotifications )
     }
     #endif
 
@@ -275,13 +298,15 @@ class MPTracker: MPConfigObserver {
         if appConfig.isApp && appConfig.diagnostics {
             SentrySDK.currentHub().getClient()?.options.enabled = true
             #if TARGET_APP
-            Countly.sharedInstance().giveConsentForAllFeatures()
+            Countly.sharedInstance().giveConsent( forFeatures: [
+                .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
             #endif
         }
         else {
             SentrySDK.currentHub().getClient()?.options.enabled = false
             #if TARGET_APP
-            Countly.sharedInstance().cancelConsentForAllFeatures()
+            Countly.sharedInstance().cancelConsent( forFeatures: [
+                .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
             #endif
         }
     }
@@ -370,4 +395,8 @@ class MPTracker: MPConfigObserver {
             self.ended = true
         }
     }
+}
+
+public protocol MPTrackerObserver {
+    func didChangeTracker()
 }

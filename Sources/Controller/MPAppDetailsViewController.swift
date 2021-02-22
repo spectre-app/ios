@@ -6,7 +6,7 @@
 import UIKit
 import Countly
 
-class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObserver {
+class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObserver, MPTrackerObserver {
 
     private var didBecomeActiveObserver: NSObjectProtocol?
 
@@ -20,6 +20,7 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
         super.init( model: appConfig, focus: focus )
 
         self.model.observers.register( observer: self )
+        MPTracker.shared.observers.register( observer: self )
     }
 
     override func loadItems() -> [Item<MPConfig>] {
@@ -54,6 +55,12 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
         self.setNeedsUpdate()
     }
 
+    // MARK: --- MPTrackerObserver ---
+
+    func didChangeTracker() {
+        self.setNeedsUpdate()
+    }
+
     // MARK: --- Types ---
 
     class VersionItem: LabelItem<MPConfig> {
@@ -80,12 +87,12 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
         init() {
             super.init( track: .subject( "app", action: "notifications" ),
                         title: "Notifications", icon: { _ in .icon( "" ) },
-                        value: { _ in MPTracker.enabledNotifications() }, update: {
+                        value: { _ in MPTracker.shared.enabledNotifications() }, update: {
                 if $1 {
-                    MPTracker.enableNotifications()
+                    MPTracker.shared.enableNotifications()
                 }
                 else {
-                    MPTracker.disableNotifications()
+                    MPTracker.shared.disableNotifications()
                 }
             }, caption: { _ in
                 """
