@@ -52,16 +52,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
         self.detailsHost
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    override init() {
-        super.init()
-
-        MPMarshal.shared.observers.register( observer: self )
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -91,11 +81,13 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
+        MPMarshal.shared.observers.register( observer: self )
         do { let _ = try MPMarshal.shared.setNeedsUpdate().await() }
         catch { err( "Cannot read user documents: %@", error ) }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
+        MPMarshal.shared.observers.unregister( observer: self )
         self.usersSpinner.requestSelection( item: nil )
 
         super.viewWillDisappear( animated )
@@ -217,8 +209,6 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
 
         override init(frame: CGRect) {
             super.init( frame: CGRect() )
-
-            InAppFeature.observers.register( observer: self )
 
             // - View
             self.isOpaque = false
@@ -355,9 +345,11 @@ class BasicUsersViewController: MPViewController, UICollectionViewDelegate, MPMa
             super.willMove( toSuperview: newSuperview )
 
             if newSuperview != nil {
+                InAppFeature.observers.register( observer: self )
                 Theme.current.observers.register( observer: self )
             }
             else {
+                InAppFeature.observers.unregister( observer: self )
                 Theme.current.observers.unregister( observer: self )
             }
         }

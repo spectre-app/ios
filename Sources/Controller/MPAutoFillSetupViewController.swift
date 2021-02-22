@@ -109,8 +109,19 @@ class MPAutoFillSetupViewController: MPItemsViewController<MPUser>, MPDetailView
     override init(model: MPUser, focus: Item<MPUser>.Type? = nil) {
         super.init( model: model, focus: focus )
 
-        self.model.observers.register( observer: self ).userDidChange( self.model )
         ASCredentialIdentityStore.shared.getState { self.autoFillState = $0 }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.model.observers.register( observer: self )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        self.model.observers.unregister( observer: self )
     }
 
     override func willEnterForeground() {

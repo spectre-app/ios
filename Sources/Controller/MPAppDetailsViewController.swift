@@ -18,9 +18,6 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
 
     init(focus: Item<MPConfig>.Type? = nil) {
         super.init( model: appConfig, focus: focus )
-
-        self.model.observers.register( observer: self )
-        MPTracker.shared.observers.register( observer: self )
     }
 
     override func loadItems() -> [Item<MPConfig>] {
@@ -37,6 +34,8 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
+        self.model.observers.register( observer: self )
+        MPTracker.shared.observers.register( observer: self )
         self.didBecomeActiveObserver = NotificationCenter.default.addObserver(
                 forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil ) { [unowned self] _ in
             self.setNeedsUpdate()
@@ -46,6 +45,8 @@ class MPAppDetailsViewController: MPItemsViewController<MPConfig>, MPConfigObser
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear( animated )
 
+        self.model.observers.unregister( observer: self )
+        MPTracker.shared.observers.unregister( observer: self )
         self.didBecomeActiveObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 

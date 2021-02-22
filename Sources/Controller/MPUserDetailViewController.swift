@@ -25,8 +25,18 @@ class MPUserDetailsViewController: MPItemsViewController<MPUser>, /*MPUserViewCo
 
     override init(model: MPUser, focus: Item<MPUser>.Type? = nil) {
         super.init( model: model, focus: focus )
+    }
 
-        self.model.observers.register( observer: self ).userDidChange( self.model )
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.model.observers.register( observer: self )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        self.model.observers.unregister( observer: self )
     }
 
     // MARK: --- MPUserObserver ---

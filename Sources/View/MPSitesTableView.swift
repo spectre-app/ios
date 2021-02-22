@@ -393,9 +393,6 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
             super.init( style: style, reuseIdentifier: reuseIdentifier )
 
-            appConfig.observers.register( observer: self )
-            InAppFeature.observers.register( observer: self )
-
             // - View
             self.isOpaque = false
             self.clipsToBounds = true
@@ -490,6 +487,19 @@ class MPSitesTableView: UITableView, UITableViewDelegate, MPUserObserver, Updata
                     .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
                     .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 2 )
                     .activate()
+        }
+
+        override func willMove(toSuperview newSuperview: UIView?) {
+            super.willMove( toSuperview: newSuperview )
+
+            if newSuperview != nil {
+                appConfig.observers.register( observer: self )
+                InAppFeature.observers.register( observer: self )
+            }
+            else {
+                appConfig.observers.unregister( observer: self )
+                InAppFeature.observers.unregister( observer: self )
+            }
         }
 
         override func didMoveToSuperview() {

@@ -25,18 +25,30 @@ class MPSiteDetailsViewController: MPItemsViewController<MPSite>, MPSiteObserver
 
     override init(model: MPSite, focus: Item<MPSite>.Type? = nil) {
         super.init( model: model, focus: focus )
+    }
 
-        self.model.observers.register( observer: self ).siteDidChange( self.model )
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        self.model.observers.register( observer: self )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        self.model.observers.unregister( observer: self )
+    }
+
+    override func update() {
+        self.color = self.model.preview.color
+        self.image = self.model.preview.image
+
+        super.update()
     }
 
     // MARK: --- MPSiteObserver ---
 
     func siteDidChange(_ site: MPSite) {
-        DispatchQueue.main.perform {
-            self.color = self.model.preview.color
-            self.image = self.model.preview.image
-        }
-
         self.setNeedsUpdate()
     }
 

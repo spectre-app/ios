@@ -7,16 +7,10 @@ import UIKit
 import StoreKit
 
 class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
-    init() {
-        super.init()
-
-        InAppFeature.observers.register( observer: self )
-    }
-
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
-        self.featureDidChange( .premium )
+        InAppFeature.observers.register( observer: self ).featureDidChange( .premium )
     }
 
     override func doTapped(item: Item<M>) {
@@ -39,6 +33,10 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObser
 
     init(mode: Effect) {
         super.init( mode: mode, condition: { _ in InAppFeature.premium.isEnabled } )
+    }
+
+    override func didInstall(into item: Item<M>) {
+        super.didInstall( into: item )
 
         InAppFeature.observers.register( observer: self )
     }
@@ -50,7 +48,7 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObser
     }
 }
 
-class MPPremiumDetailsViewController: MPItemsViewController<Void> {
+class MPPremiumDetailsViewController: MPItemsViewController<Void>, InAppStoreObserver {
 
     // MARK: --- Life ---
 
@@ -74,6 +72,18 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
             // Otherwise refresh receipt and products, triggering App Store log-in if necessary.
             AppStore.shared.update( active: true )
         }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        AppStore.shared.observers.register( observer: self )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        AppStore.shared.observers.unregister( observer: self )
     }
 
     override func loadItems() -> [Item<Void>] {
@@ -105,6 +115,12 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
         ]
     }
 
+    // MARK: --- InAppStoreObserver ---
+
+    func productsDidChange(_ products: [SKProduct]) {
+        self.setNeedsUpdate()
+    }
+
     // MARK: --- Types ---
 
     class HeaderItem: ImageItem<Void> {
@@ -118,23 +134,16 @@ class MPPremiumDetailsViewController: MPItemsViewController<Void> {
         }
     }
 
-    class SubscriptionProductsItem: ListItem<Void, SKProduct, SubscriptionProductsItem.Cell>, InAppStoreObserver {
+    class SubscriptionProductsItem: ListItem<Void, SKProduct, SubscriptionProductsItem.Cell> {
         init() {
             super.init( title: "Enroll", values: { AppStore.shared.products( forSubscription: .premium ) } )
 
             self.addBehaviour( ConditionalBehaviour( mode: .reveals ) { _ in AppStore.shared.canBuyProducts } )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
-            AppStore.shared.observers.register( observer: self )
         }
 
         override func populate(_ cell: SubscriptionProductsItem.Cell, indexPath: IndexPath, value: SKProduct) {
             cell.product = value
-        }
-
-        // MARK: --- InAppStoreObserver ---
-
-        func productsDidChange(_ products: [SKProduct]) {
-            self.setNeedsUpdate()
         }
 
         // MARK: --- Types ---

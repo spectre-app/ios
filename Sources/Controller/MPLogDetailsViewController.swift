@@ -16,8 +16,18 @@ class MPLogDetailsViewController: MPItemsViewController<MPLogDetailsViewControll
 
     init(focus: Item<Model>.Type? = nil) {
         super.init( model: Model(), focus: focus )
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
 
         self.model.observers.register( observer: self )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        self.model.observers.unregister( observer: self )
     }
 
     override func loadItems() -> [Item<Model>] {
