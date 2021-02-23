@@ -7,10 +7,10 @@
 #import <FreshchatSDK/FreshchatSDK.h>
 #endif
 
-#import "mpw-algorithm.h"
-#import "mpw-util.h"
-#import "mpw-marshal.h"
-#import "mpw-marshal-util.h"
+#import "spectre-algorithm.h"
+#import "spectre-util.h"
+#import "spectre-marshal.h"
+#import "spectre-marshal-util.h"
 #import "base64.h"
 
 #import "UIView+Spectre.h"

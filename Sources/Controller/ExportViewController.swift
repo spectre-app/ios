@@ -9,7 +9,7 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
     let titleLabel    = UILabel()
     let subtitleLabel = UILabel()
     let messageLabel  = UILabel()
-    let formatControl = UISegmentedControl( items: MPMarshalFormat.allCases.compactMap { $0.description } )
+    let formatControl = UISegmentedControl( items: SpectreFormat.allCases.compactMap { $0.description } )
     let revealControl = UISegmentedControl( items: [ "Readable", "Secure" ] )
     let exportButton  = EffectButton( track: .subject( "export", action: "export" ), title: "Export User" )
     lazy var contentView = UIStackView( arrangedSubviews: [
@@ -28,8 +28,8 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
             }
         }
     }
-    var format:   MPMarshalFormat {
-        MPMarshalFormat.allCases[self.formatControl.selectedSegmentIndex]
+    var format:   SpectreFormat {
+        SpectreFormat.allCases[self.formatControl.selectedSegmentIndex]
     }
     var redacted: Bool {
         self.revealControl.selectedSegmentIndex == 1
@@ -76,7 +76,7 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
 
                 "Reveal Passwords" is useful for creating a backup file that you can print or use independently of the app.
                 """
-        self.formatControl.selectedSegmentIndex = MPMarshalFormat.allCases.firstIndex( of: MPMarshalFormat.default ) ?? -1
+        self.formatControl.selectedSegmentIndex = SpectreFormat.allCases.firstIndex( of: SpectreFormat.default ) ?? -1
         self.revealControl.selectedSegmentIndex = 1
 
         self.exportButton.action( for: .primaryActionTriggered ) { [unowned self] in

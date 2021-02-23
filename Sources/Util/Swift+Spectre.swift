@@ -138,7 +138,7 @@ extension String {
         guard let pointer = pointer
         else { return nil }
         defer { if consume { pointer.deallocate() } }
-        return self.valid( mpw_strndup( pointer.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
+        return self.valid( spectre_strndup( pointer.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
     }
 
     /** Create a String from a raw buffer of length valid UTF8 bytes. */
@@ -146,7 +146,7 @@ extension String {
         guard let pointer = pointer
         else { return nil }
         defer { if consume { pointer.deallocate() } }
-        return self.valid( mpw_strndup( pointer.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
+        return self.valid( spectre_strndup( pointer.bindMemory( to: CChar.self, capacity: length ), length ), consume: true )
     }
 
     /** Create a String from a raw buffer of length valid UTF8 bytes. */
@@ -202,18 +202,18 @@ extension String {
     }
 
     func b64Decrypt() -> String? {
-        var secretLength = mpw_base64_decode_max( self ), keyLength = 0
+        var secretLength = spectre_base64_decode_max( self ), keyLength = 0
         guard secretLength > 0
         else { return nil }
 
-        guard let key = mpw_unhex( appSecret, &keyLength )
+        guard let key = spectre_unhex( appSecret, &keyLength )
         else { return nil }
         defer { key.deallocate() }
 
         var secretData = [ UInt8 ]( repeating: 0, count: secretLength )
-        secretLength = mpw_base64_decode( self, &secretData )
+        secretLength = spectre_base64_decode( self, &secretData )
 
-        return .valid( mpw_aes_decrypt( key, keyLength, &secretData, &secretLength ),
+        return .valid( spectre_aes_decrypt( key, keyLength, &secretData, &secretLength ),
                        length: secretLength, consume: true )
     }
 
@@ -230,7 +230,7 @@ extension UnsafeBufferPointer where Element == UInt8 {
         else { return nil }
 
         var digest = [ UInt8 ]( repeating: 0, count: 32 )
-        guard mpw_hash_hmac_sha256( &digest, salt, salt.lengthOfBytes( using: .utf8 ), self.baseAddress, self.count )
+        guard spectre_hash_hmac_sha256( &digest, salt, salt.lengthOfBytes( using: .utf8 ), self.baseAddress, self.count )
         else { return nil }
 
         return Data( digest )

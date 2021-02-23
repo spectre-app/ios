@@ -59,9 +59,9 @@ public func ftl(file: String = #file, line: Int32 = #line, function: String = #f
 
 @discardableResult
 public func log(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                level: MPLogLevel, _ format: StaticString, _ args: [Any?]) -> Bool {
+                level: SpectreLogLevel, _ format: StaticString, _ args: [Any?]) -> Bool {
 
-    if mpw_verbosity < level {
+    if spectre_verbosity < level {
         return false
     }
 
@@ -82,11 +82,11 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
                     // The va_list C type is incompatible with CVaListPointer on x86_64.
                     // FIXME: https://bugs.swift.org/browse/SR-13779
                     withUnsafeBytes( of: $0 ) { args in
-                        var event = MPLogEvent(
+                        var event = SpectreLogEvent(
                                 occurrence: time( nil ), level: level, file: file, line: line, function: function, formatter: { event in
                             // Define how our arguments should be interpolated into the format.
                             if event?.pointee.formatted == nil, let args = event?.pointee.args {
-                                event?.pointee.formatted = mpw_strdup( CFStringCreateWithFormatAndArguments(
+                                event?.pointee.formatted = spectre_strdup( CFStringCreateWithFormatAndArguments(
                                         nil, nil, String.valid( event?.pointee.format ) as CFString?,
                                         UnsafeRawPointer( args ).load( as: CVaListPointer.self ) ) as String )
                             }
@@ -95,7 +95,7 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
                         }, formatted: nil, format: format, args: args.baseAddress?.assumingMemoryBound( to: va_list_c.self ) )
 
                         // Sink the log event.
-                        return mpw_log_esink( &event )
+                        return spectre_elog( &event )
                     }
                 }
             }
@@ -103,15 +103,15 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
     }
 }
 
-extension MPLogLevel: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ MPLogLevel ]( (.fatal)...(.trace) )
+extension SpectreLogLevel: Strideable, CaseIterable, CustomStringConvertible {
+    public static let allCases = [ SpectreLogLevel ]( (.fatal)...(.trace) )
 
-    public func distance(to other: MPLogLevel) -> Int32 {
+    public func distance(to other: SpectreLogLevel) -> Int32 {
         other.rawValue - self.rawValue
     }
 
-    public func advanced(by n: Int32) -> MPLogLevel {
-        MPLogLevel( rawValue: self.rawValue + n )!
+    public func advanced(by n: Int32) -> SpectreLogLevel {
+        SpectreLogLevel( rawValue: self.rawValue + n )!
     }
 
     public var description: String {
@@ -137,12 +137,12 @@ extension MPLogLevel: Strideable, CaseIterable, CustomStringConvertible {
 public class LogSink: AppConfigObserver {
     public static let shared = LogSink()
 
-    public var level: MPLogLevel {
+    public var level: SpectreLogLevel {
         get {
-            mpw_verbosity
+            spectre_verbosity
         }
         set {
-            mpw_verbosity = newValue
+            spectre_verbosity = newValue
         }
     }
 
@@ -155,12 +155,12 @@ public class LogSink: AppConfigObserver {
             guard !registered
             else { return }
 
-            mpw_verbosity = .debug
-            mpw_log_sink_register( { eventPointer in
+            spectre_verbosity = .debug
+            spectre_log_sink_register( { eventPointer in
                 guard let event = eventPointer?.pointee
                 else { return false }
 
-                let file  = String.valid( event.file ) ?? "mpw"
+                let file  = String.valid( event.file ) ?? "spectre"
                 let log   = OSLog( subsystem: productIdentifier, category: "\(file.lastPathComponent):\(event.line)" )
                 var level = OSLogType.default
                 switch event.level {
@@ -181,7 +181,7 @@ public class LogSink: AppConfigObserver {
                         String.valid( event.formatter( eventPointer ) ) ?? "-" )
                 return true
             } )
-            mpw_log_sink_register( {
+            spectre_log_sink_register( {
                 guard let event = $0?.pointee
                 else { return false }
 
@@ -194,11 +194,11 @@ public class LogSink: AppConfigObserver {
         }
     }
 
-    func enumerate(level: MPLogLevel) -> [LogRecord] {
+    func enumerate(level: SpectreLogLevel) -> [LogRecord] {
         self.queue.sync { self.records.filter( { $0.level <= level } ).sorted() }
     }
 
-    fileprivate func record(_ event: MPLogEvent) -> Bool {
+    fileprivate func record(_ event: SpectreLogEvent) -> Bool {
         guard let file = String.valid( event.file ),
               let function = String.valid( event.function ),
               let message = String.valid( event.formatted )
@@ -222,7 +222,7 @@ public class LogSink: AppConfigObserver {
 
 struct LogRecord: Comparable {
     public let occurrence: Date
-    public let level:      MPLogLevel
+    public let level:      SpectreLogLevel
     public let file:       String
     public let line:       Int32
     public let function:   String

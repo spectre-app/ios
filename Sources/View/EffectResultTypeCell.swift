@@ -77,7 +77,7 @@ class EffectClassifiedCell: EffectCell, Updatable {
 }
 
 class EffectResultTypeCell: EffectClassifiedCell {
-    var resultType: MPResultType? {
+    var resultType: SpectreResultType? {
         didSet {
             if let resultType = self.resultType {
                 self.name = resultType.abbreviation

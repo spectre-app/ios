@@ -5,15 +5,15 @@
 
 import Foundation
 
-extension MPAlgorithmVersion: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ MPAlgorithmVersion ]( (.first)...(.last) )
+extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
+    public static let allCases = [ SpectreAlgorithm ]( (.first)...(.last) )
 
-    public func distance(to other: MPAlgorithmVersion) -> Int32 {
+    public func distance(to other: SpectreAlgorithm) -> Int32 {
         Int32( other.rawValue ) - Int32( self.rawValue )
     }
 
-    public func advanced(by n: Int32) -> MPAlgorithmVersion {
-        MPAlgorithmVersion( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
+    public func advanced(by n: Int32) -> SpectreAlgorithm {
+        SpectreAlgorithm( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
     }
 
     public var description: String {
@@ -26,7 +26,7 @@ public enum AppError: LocalizedError {
     case `issue`(_ error: Error? = nil, title: String, details: CustomStringConvertible? = nil)
     case `internal`(cause: String, details: CustomStringConvertible? = nil)
     case `state`(title: String, details: CustomStringConvertible? = nil)
-    case `marshal`(MPMarshalError, title: String, details: CustomStringConvertible? = nil)
+    case `marshal`(SpectreMarshalError, title: String, details: CustomStringConvertible? = nil)
 
     public var errorDescription: String? {
         switch self {
@@ -71,14 +71,14 @@ public enum AppError: LocalizedError {
     }
 }
 
-extension MPIdenticon: Equatable {
-    public static func ==(lhs: MPIdenticon, rhs: MPIdenticon) -> Bool {
+extension SpectreIdenticon: Equatable {
+    public static func ==(lhs: SpectreIdenticon, rhs: SpectreIdenticon) -> Bool {
         lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
                 lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
 
     public func encoded() -> String? {
-        self.color == .unset ? nil: .valid( mpw_identicon_encode( self ), consume: true )
+        self.color == .unset ? nil: .valid( spectre_identicon_encode( self ), consume: true )
     }
 
     public func text() -> String? {
@@ -109,7 +109,7 @@ extension MPIdenticon: Equatable {
     }
 }
 
-extension MPKeyID: Hashable, CustomStringConvertible {
+extension SpectreKeyID: Hashable, CustomStringConvertible {
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, { rhs in lhs.elementsEqual( rhs ) } ) } )
     }
@@ -123,7 +123,7 @@ extension MPKeyID: Hashable, CustomStringConvertible {
     }
 }
 
-extension MPIdenticonColor {
+extension SpectreIdenticonColor {
     public func ui() -> UIColor {
         switch self {
             case .unset:
@@ -153,7 +153,7 @@ extension MPIdenticonColor {
     }
 }
 
-extension MPKeyPurpose: CustomStringConvertible {
+extension SpectreKeyPurpose: CustomStringConvertible {
     public var description: String {
         switch self {
             case .authentication:
@@ -168,23 +168,23 @@ extension MPKeyPurpose: CustomStringConvertible {
     }
 
     public var scope: String? {
-        .valid( mpw_purpose_scope( .authentication ) )
+        .valid( spectre_purpose_scope( .authentication ) )
     }
 }
 
-extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ MPMarshalFormat ]( (.first)...(.last) )
+extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
+    public static let allCases = [ SpectreFormat ]( (.first)...(.last) )
 
-    public func distance(to other: MPMarshalFormat) -> Int32 {
+    public func distance(to other: SpectreFormat) -> Int32 {
         Int32( other.rawValue ) - Int32( self.rawValue )
     }
 
-    public func advanced(by n: Int32) -> MPMarshalFormat {
-        MPMarshalFormat( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
+    public func advanced(by n: Int32) -> SpectreFormat {
+        SpectreFormat( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
     }
 
     public var name: String? {
-        .valid( mpw_format_name( self ) )
+        .valid( spectre_format_name( self ) )
     }
 
     public var uti:         String? {
@@ -213,58 +213,58 @@ extension MPMarshalFormat: Strideable, CaseIterable, CustomStringConvertible {
     }
 }
 
-extension MPResultType: CustomStringConvertible, CaseIterable {
-    public static let allCases: [MPResultType] = [
+extension SpectreResultType: CustomStringConvertible, CaseIterable {
+    public static let allCases: [SpectreResultType] = [
         .templateMaximum, .templateLong, .templateMedium, .templateShort,
         .templateBasic, .templatePIN, .templateName, .templatePhrase,
-        .statefulPersonal, .statefulDevice, .deriveKey,
+        .statePersonal, .stateDevice, .deriveKey,
     ]
-    static let recommendedTypes: [MPKeyPurpose: [MPResultType]] = [
+    static let recommendedTypes: [SpectreKeyPurpose: [SpectreResultType]] = [
         .authentication: [ .templateMaximum, .templatePhrase, .templateLong, .templateBasic, .templatePIN ],
         .identification: [ .templateName, .templateBasic, .templateShort ],
         .recovery: [ .templatePhrase ],
     ]
 
     public var abbreviation:         String {
-        String.valid( mpw_type_abbreviation( self ) ) ?? "?"
+        String.valid( spectre_type_abbreviation( self ) ) ?? "?"
     }
     public var description:          String {
-        String.valid( mpw_type_short_name( self ) ) ?? "?"
+        String.valid( spectre_type_short_name( self ) ) ?? "?"
     }
     public var localizedDescription: String {
-        String.valid( mpw_type_long_name( self ) ) ?? "?"
+        String.valid( spectre_type_long_name( self ) ) ?? "?"
     }
 
     public var nonEmpty: Self? {
         self == .none ? nil: self
     }
 
-    func `in`(class c: MPResultTypeClass) -> Bool {
+    func `in`(class c: SpectreResultClass) -> Bool {
         self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
     }
 
-    func has(feature f: MPSiteFeature) -> Bool {
+    func has(feature f: SpectreResultFeature) -> Bool {
         self.rawValue & UInt32( f.rawValue ) == UInt32( f.rawValue )
     }
 }
 
-extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
+extension UnsafeMutablePointer where Pointee == SpectreMarshalledFile {
 
-    public func mpw_get(path: String...) -> Bool? {
-        path.withCStringVaList { mpw_marshal_data_vget_bool( self.pointee.data, $0 ) }
+    public func spectre_get(path: String...) -> Bool? {
+        path.withCStringVaList { spectre_marshal_data_vget_bool( self.pointee.data, $0 ) }
     }
 
-    public func mpw_get(path: String...) -> Double? {
-        path.withCStringVaList { mpw_marshal_data_vget_num( self.pointee.data, $0 ) }
+    public func spectre_get(path: String...) -> Double? {
+        path.withCStringVaList { spectre_marshal_data_vget_num( self.pointee.data, $0 ) }
     }
 
-    public func mpw_get(path: String...) -> String? {
-        path.withCStringVaList { .valid( mpw_marshal_data_vget_str( self.pointee.data, $0 ) ) }
+    public func spectre_get(path: String...) -> String? {
+        path.withCStringVaList { .valid( spectre_marshal_data_vget_str( self.pointee.data, $0 ) ) }
     }
 
-    public func mpw_get(path: String...) -> Date? {
+    public func spectre_get(path: String...) -> Date? {
         path.withCStringVaList {
-            let time = mpw_get_timegm( mpw_marshal_data_vget_str( self.pointee.data, $0 ) )
+            let time = spectre_get_timegm( spectre_marshal_data_vget_str( self.pointee.data, $0 ) )
             if time == ERR {
                 return nil
             }
@@ -274,22 +274,22 @@ extension UnsafeMutablePointer where Pointee == MPMarshalledFile {
     }
 
     @discardableResult
-    public func mpw_set(_ value: Bool, path: String...) -> Bool {
-        path.withCStringVaList { mpw_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
+    public func spectre_set(_ value: Bool, path: String...) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
     }
 
     @discardableResult
-    public func mpw_set(_ value: Double, path: String...) -> Bool {
-        path.withCStringVaList { mpw_marshal_data_vset_num( value, self.pointee.data, $0 ) }
+    public func spectre_set(_ value: Double, path: String...) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_num( value, self.pointee.data, $0 ) }
     }
 
     @discardableResult
-    public func mpw_set(_ value: String?, path: String...) -> Bool {
-        path.withCStringVaList { mpw_marshal_data_vset_str( value, self.pointee.data, $0 ) }
+    public func spectre_set(_ value: String?, path: String...) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_str( value, self.pointee.data, $0 ) }
     }
 
-    public func mpw_find(path: String...) -> UnsafeBufferPointer<MPMarshalledData>? {
-        guard let found = path.withCStringVaList( body: { mpw_marshal_data_vfind( self.pointee.data, $0 ) } )
+    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        guard let found = path.withCStringVaList( body: { spectre_marshal_data_vfind( self.pointee.data, $0 ) } )
         else { return nil }
 
         return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )

@@ -61,7 +61,7 @@ class AutoFillSetupViewController: ItemsViewController<User>, DetailViewControll
                         Item( title: "Standard Login", caption: { _ in
                             """
                             Set the login name you use for most sites.
-                            Select ⦗\(MPResultType.statefulPersonal.abbreviation)⦘ to save your e‑mail address.
+                            Select ⦗\(SpectreResultType.statePersonal.abbreviation)⦘ to save your e‑mail address.
                             """
                         } ),
                         LoginTypeItem(), LoginResultItem()
@@ -152,20 +152,20 @@ class AutoFillSetupViewController: ItemsViewController<User>, DetailViewControll
 
     // MARK: --- Types ---
 
-    class LoginTypeItem: PickerItem<User, MPResultType, EffectResultTypeCell> {
+    class LoginTypeItem: PickerItem<User, SpectreResultType, EffectResultTypeCell> {
         init() {
             super.init( track: .subject( "autofill_setup", action: "loginType" ),
                         values: { _ in
-                            [ MPResultType? ].joined(
+                            [ SpectreResultType? ].joined(
                                     separator: [ nil ],
-                                    MPResultType.recommendedTypes[.identification],
-                                    [ MPResultType.statefulPersonal ],
-                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                                    SpectreResultType.recommendedTypes[.identification],
+                                    [ .statePersonal ],
+                                    SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
                         value: { $0.loginType }, update: { $0.loginType = $1 } )
         }
 
-        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
             cell.resultType = value
         }
     }

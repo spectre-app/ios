@@ -7,7 +7,7 @@ import UIKit
 import LocalAuthentication
 
 public class Keychain {
-    private static func keyQuery(for userName: String, algorithm: MPAlgorithmVersion, context: LAContext?) throws
+    private static func keyQuery(for userName: String, algorithm: SpectreAlgorithm, context: LAContext?) throws
                     -> [CFString: Any] {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
@@ -16,7 +16,7 @@ public class Keychain {
 
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
-            kSecAttrService: [ MPKeyPurpose.authentication.scope, algorithm.description ]
+            kSecAttrService: [ SpectreKeyPurpose.authentication.scope, algorithm.description ]
                     .compactMap { $0 }.joined( separator: "." ),
             kSecAttrAccount: userName,
             kSecAttrAccessGroup: productGroup,
@@ -40,7 +40,7 @@ public class Keychain {
         return query
     }
 
-    public static func hasKey(for userName: String, algorithm: MPAlgorithmVersion)
+    public static func hasKey(for userName: String, algorithm: SpectreAlgorithm)
                     -> Bool {
         do {
             var query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
@@ -60,7 +60,7 @@ public class Keychain {
     }
 
     @discardableResult
-    public static func deleteKey(for userName: String, algorithm: MPAlgorithmVersion)
+    public static func deleteKey(for userName: String, algorithm: SpectreAlgorithm)
                     -> Promise<Void> {
         DispatchQueue.api.promise {
             let query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
@@ -71,8 +71,8 @@ public class Keychain {
         }
     }
 
-    public static func loadKey(for userName: String, algorithm: MPAlgorithmVersion, context: LAContext) throws
-                    -> Promise<UnsafePointer<MPUserKey>> {
+    public static func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) throws
+                    -> Promise<UnsafePointer<SpectreUserKey>> {
         let spinner = AlertController( title: "Biometrics Authentication",
                                        message: "Please authenticate to access user key for:\n\(userName)",
                                        content: UIActivityIndicatorView( style: .white ) )
@@ -87,11 +87,11 @@ public class Keychain {
             guard status == errSecSuccess
             else { throw AppError.issue( status, title: "Biometrics Key Denied", details: userName ) }
 
-            guard let data = result as? Data, data.count == MemoryLayout<MPUserKey>.size
+            guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
             else { throw AppError.internal( cause: "Biometrics Key Not Valid", details: userName ) }
 
-            let userKeyBytes = UnsafeMutablePointer<MPUserKey>.allocate( capacity: 1 )
-            data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: MPUserKey.self ) ) }
+            let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
+            data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: SpectreUserKey.self ) ) }
             return UnsafePointer( userKeyBytes )
         }.finally {
             spinner.dismiss()
@@ -99,7 +99,7 @@ public class Keychain {
     }
 
     @discardableResult
-    public static func saveKey(for userName: String, algorithm: MPAlgorithmVersion, keyFactory: KeyFactory, context: LAContext)
+    public static func saveKey(for userName: String, algorithm: SpectreAlgorithm, keyFactory: KeyFactory, context: LAContext)
                     -> Promise<Void> {
         DispatchQueue.api.promise {
             let query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )

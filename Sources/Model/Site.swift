@@ -18,7 +18,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             }
         }
     }
-    public var algorithm: MPAlgorithmVersion {
+    public var algorithm: SpectreAlgorithm {
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
@@ -26,7 +26,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             }
         }
     }
-    public var counter: MPCounterValue = .default {
+    public var counter: SpectreCounter = .default {
         didSet {
             if oldValue != self.counter {
                 self.dirty = true
@@ -34,7 +34,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             }
         }
     }
-    public var resultType: MPResultType {
+    public var resultType: SpectreResultType {
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
@@ -42,7 +42,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             }
         }
     }
-    public var loginType: MPResultType {
+    public var loginType: SpectreResultType {
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
@@ -134,15 +134,15 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
     // MARK: --- Life ---
 
-    init(user: User, siteName: String, algorithm: MPAlgorithmVersion? = nil, counter: MPCounterValue? = nil,
-         resultType: MPResultType? = nil, resultState: String? = nil,
-         loginType: MPResultType? = nil, loginState: String? = nil,
+    init(user: User, siteName: String, algorithm: SpectreAlgorithm? = nil, counter: SpectreCounter? = nil,
+         resultType: SpectreResultType? = nil, resultState: String? = nil,
+         loginType: SpectreResultType? = nil, loginState: String? = nil,
          url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil, questions: [Question] = [],
          initialize: (Site) -> Void = { _ in }) {
         self.user = user
         self.siteName = siteName
         self.algorithm = algorithm ?? user.algorithm
-        self.counter = counter ?? MPCounterValue.default
+        self.counter = counter ?? SpectreCounter.default
         self.resultType = resultType ?? user.defaultType
         self.resultState = resultState
         self.loginType = loginType ?? .none
@@ -218,8 +218,8 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
     // MARK: --- Operand ---
 
-    public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
+    public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
                     -> Operation {
         switch keyPurpose {
             case .authentication:
@@ -234,7 +234,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
             case .recovery:
                 return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                         resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                         resultType: resultType ?? .templatePhrase, resultParam: resultParam,
                                          algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
@@ -244,8 +244,8 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
     }
 
-    public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
+    public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
                     -> Operation {
         switch keyPurpose {
             case .authentication:
@@ -260,7 +260,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
             case .recovery:
                 return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                                        resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
+                                        resultType: resultType ?? .templatePhrase, resultParam: resultParam,
                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:

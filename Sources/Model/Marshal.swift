@@ -35,7 +35,7 @@ class Marshal: Observable, Updatable {
         }
     }
 
-    public func save(user: User, format: MPMarshalFormat = .default, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
+    public func save(user: User, format: SpectreFormat = .default, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
         let saveEvent = Tracker.shared.begin( track: .subject( "user", action: "save" ) )
 
         return self.marshalQueue.promising {
@@ -75,7 +75,7 @@ class Marshal: Observable, Updatable {
         }
     }
 
-    public func export(user: User, format: MPMarshalFormat, redacted: Bool) -> Promise<Data> {
+    public func export(user: User, format: SpectreFormat, redacted: Bool) -> Promise<Data> {
         let exportEvent = Tracker.shared.begin( track: .subject( "user", action: "export" ) )
 
         return DispatchQueue.api.promising {
@@ -86,8 +86,8 @@ class Marshal: Observable, Updatable {
             }
 
             return keyFactory.provide()
-        }.promise( on: .api ) { (keyProvider: @escaping MPUserKeyProvider) in
-            guard let marshalledUser = mpw_marshal_user( user.userName, keyProvider, user.algorithm )
+        }.promise( on: .api ) { (keyProvider: @escaping SpectreKeyProvider) in
+            guard let marshalledUser = spectre_marshal_user( user.userName, keyProvider, user.algorithm )
             else {
                 exportEvent.end( [ "result": "!marshal_user" ] )
                 throw AppError.internal( cause: "Couldn't marshal user.", details: user )
@@ -99,43 +99,43 @@ class Marshal: Observable, Updatable {
             marshalledUser.pointee.keyID = user.userKeyID
             marshalledUser.pointee.defaultType = user.defaultType
             marshalledUser.pointee.loginType = user.loginType
-            marshalledUser.pointee.loginState = mpw_strdup( user.loginState )
+            marshalledUser.pointee.loginState = spectre_strdup( user.loginState )
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
             for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
-                guard let marshalledSite = mpw_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+                guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                 else {
                     exportEvent.end( [ "result": "!marshal_site" ] )
                     throw AppError.internal( cause: "Couldn't marshal site.", details: [ user, site ] )
                 }
 
-                marshalledSite.pointee.resultState = mpw_strdup( site.resultState )
+                marshalledSite.pointee.resultState = spectre_strdup( site.resultState )
                 marshalledSite.pointee.loginType = site.loginType
-                marshalledSite.pointee.loginState = mpw_strdup( site.loginState )
-                marshalledSite.pointee.url = mpw_strdup( site.url )
+                marshalledSite.pointee.loginState = spectre_strdup( site.loginState )
+                marshalledSite.pointee.url = spectre_strdup( site.url )
                 marshalledSite.pointee.uses = site.uses
                 marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
 
                 for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
-                    guard let marshalledQuestion = mpw_marshal_question( marshalledSite, question.keyword )
+                    guard let marshalledQuestion = spectre_marshal_question( marshalledSite, question.keyword )
                     else {
                         exportEvent.end( [ "result": "!marshal_question" ] )
                         throw AppError.internal( cause: "Couldn't marshal question.", details: [ user, site, question ] )
                     }
 
                     marshalledQuestion.pointee.type = question.resultType
-                    marshalledQuestion.pointee.state = mpw_strdup( question.resultState )
+                    marshalledQuestion.pointee.state = spectre_strdup( question.resultState )
                 }
             }
 
-            if let data = String.valid( mpw_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
+            if let data = String.valid( spectre_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
                user.file?.pointee.error.type == .success {
                 exportEvent.end( [ "result": "success: data" ] )
                 return data
             }
 
             exportEvent.end( [ "result": "!marshal_write" ] )
-            throw AppError.marshal( user.file?.pointee.error ?? MPMarshalError( type: .errorInternal, message: nil ),
+            throw AppError.marshal( user.file?.pointee.error ?? SpectreMarshalError( type: .errorInternal, message: nil ),
                                     title: "Issue Writing User", details: user )
         }
     }
@@ -530,12 +530,12 @@ class Marshal: Observable, Updatable {
         return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil, options: .skipsHiddenFiles )
     }
 
-    private func url(for user: User, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
+    private func url(for user: User, in directory: URL? = nil, format: SpectreFormat) -> URL? {
         self.url( for: user.userName, in: directory, format: format )
     }
 
-    private func url(for name: String, in directory: URL? = nil, format: MPMarshalFormat) -> URL? {
-        guard let formatExtension = String.valid( mpw_format_extension( format ) ),
+    private func url(for name: String, in directory: URL? = nil, format: SpectreFormat) -> URL? {
+        guard let formatExtension = String.valid( spectre_format_extension( format ) ),
               let directory = directory ?? FileManager.documents
         else { return nil }
 
@@ -563,11 +563,11 @@ class Marshal: Observable, Updatable {
 
     class ActivityItem: NSObject, UIActivityItemSource {
         let user:     User
-        let format:   MPMarshalFormat
+        let format:   SpectreFormat
         let redacted: Bool
         var cleanup = [ URL ]()
 
-        init(user: User, format: MPMarshalFormat, redacted: Bool) {
+        init(user: User, format: SpectreFormat, redacted: Bool) {
             self.user = user
             self.format = format
             self.redacted = redacted
@@ -633,17 +633,17 @@ class Marshal: Observable, Updatable {
         public lazy var keychainKeyFactory = KeychainKeyFactory( userName: self.userName )
 
         public var origin: URL?
-        public var file:   UnsafeMutablePointer<MPMarshalledFile>
+        public var file:   UnsafeMutablePointer<SpectreMarshalledFile>
 
-        public let format:     MPMarshalFormat
+        public let format:     SpectreFormat
         public let exportDate: Date
         public let redacted:   Bool
 
-        public let algorithm: MPAlgorithmVersion
+        public let algorithm: SpectreAlgorithm
         public let avatar:    User.Avatar
         public let userName:  String
-        public let identicon: MPIdenticon
-        public let userKeyID: MPKeyID
+        public let identicon: SpectreIdenticon
+        public let userKeyID: SpectreKeyID
         public let lastUsed:  Date
 
         public let biometricLock: Bool
@@ -656,7 +656,7 @@ class Marshal: Observable, Updatable {
         }
         public var isMasterPasswordCustomer = false
 
-        static func load(origin: URL) throws -> UnsafeMutablePointer<MPMarshalledFile>? {
+        static func load(origin: URL) throws -> UnsafeMutablePointer<SpectreMarshalledFile>? {
             guard FileManager.default.fileExists( atPath: origin.path ),
                   let data = FileManager.default.contents( atPath: origin.path )
             else { return nil }
@@ -664,7 +664,7 @@ class Marshal: Observable, Updatable {
             guard let document = String( data: data, encoding: .utf8 )
             else { throw AppError.issue( title: "Cannot Read User Document", details: origin ) }
 
-            guard let file = mpw_marshal_read( nil, document )
+            guard let file = spectre_marshal_read( nil, document )
             else { throw AppError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
 
             return file
@@ -681,13 +681,13 @@ class Marshal: Observable, Updatable {
             guard let document = String( data: data, encoding: .utf8 )
             else { throw AppError.issue( title: "Cannot Read User Document", details: origin ) }
 
-            guard let file = mpw_marshal_read( nil, document )
+            guard let file = spectre_marshal_read( nil, document )
             else { throw AppError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
 
             try self.init( file: file, origin: origin )
         }
 
-        init(file: UnsafeMutablePointer<MPMarshalledFile>, origin: URL? = nil) throws {
+        init(file: UnsafeMutablePointer<SpectreMarshalledFile>, origin: URL? = nil) throws {
             guard file.pointee.error.type == .success
             else { throw AppError.marshal( file.pointee.error, title: "Cannot Load User", details: origin ) }
             guard let info = file.pointee.info?.pointee, info.format != .none, let userName = String.valid( info.userName )
@@ -705,19 +705,19 @@ class Marshal: Observable, Updatable {
             self.userKeyID = info.keyID
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
-            self.biometricLock = file.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
-            self.autofill = file.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
+            self.biometricLock = file.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
+            self.autofill = file.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
 
             for purchase in [ "com.lyndir.masterpassword.products.generatelogins",
                               "com.lyndir.masterpassword.products.generateanswers",
                               "com.lyndir.masterpassword.products.touchid" ] {
-                if let proof: String = self.file.mpw_get( path: "user", "_ext_mpw", purchase ),
+                if let proof: String = self.file.spectre_get( path: "user", "_ext_mpw", purchase ),
                    let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: mpwSalt.b64Decrypt() )?.hex().prefix( 16 ),
                    proof == purchaseDigest {
                     self.isMasterPasswordCustomer = true
                 }
 
-                self.file.mpw_set( nil, path: "user", "_ext_mpw", purchase )
+                self.file.spectre_set( nil, path: "user", "_ext_mpw", purchase )
             }
         }
 
@@ -729,7 +729,7 @@ class Marshal: Observable, Updatable {
                 }
 
                 // Authenticate against the file with the given keyFactory.
-                guard let marshalledUser = mpw_marshal_auth( self.file, $0 )?.pointee, self.file.pointee.error.type == .success
+                guard let marshalledUser = spectre_marshal_auth( self.file, $0 )?.pointee, self.file.pointee.error.type == .success
                 else { throw AppError.marshal( self.file.pointee.error, title: "Issue Authenticating User", details: self.userName ) }
 
                 // Yield a fully authenticated user.
@@ -738,7 +738,7 @@ class Marshal: Observable, Updatable {
                         avatar: User.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
                         userName: String.valid( marshalledUser.userName ) ?? self.userName,
                         identicon: marshalledUser.identicon,
-                        userKeyID: self.resetKey ? MPNoKeyID: self.userKeyID,
+                        userKeyID: self.resetKey ? SpectreKeyIDUnset: self.userKeyID,
                         defaultType: marshalledUser.defaultType,
                         loginType: marshalledUser.loginType,
                         loginState: .valid( marshalledUser.loginState ),
@@ -843,14 +843,14 @@ class Marshal: Observable, Updatable {
             guard self.autofill
             else { return nil }
 
-            return self.file.mpw_find( path: "sites" )?.compactMap {
+            return self.file.spectre_find( path: "sites" )?.compactMap {
                 String.valid( $0.obj_key ).flatMap { AutoFill.Credential( supplier: self, name: $0 ) }
             }
         }
     }
 }
 
-extension MPMarshalError: LocalizedError {
+extension SpectreMarshalError: LocalizedError {
     public var errorDescription: String? {
         .valid( self.message )
     }
@@ -872,7 +872,7 @@ extension MPMarshalError: LocalizedError {
             case .errorInternal:
                 return "An internal system error interrupted marshalling. (\(self.type))"
             @unknown default:
-                return "MPMarshalError (\(self.type))"
+                return "SpectreMarshalError (\(self.type))"
         }
     }
 }

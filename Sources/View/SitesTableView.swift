@@ -360,7 +360,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.result?.site
         }
 
-        private var mode            = MPKeyPurpose.authentication {
+        private var mode            = SpectreKeyPurpose.authentication {
             didSet {
                 if oldValue != self.mode {
                     self.updateTask.request()
@@ -691,7 +691,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let title:      String
         let icon:       String
         let appearance: [Appearance]
-        let action:     (Site, MPKeyPurpose?, Appearance) -> Void
+        let action:     (Site, SpectreKeyPurpose?, Appearance) -> Void
 
         enum Appearance {
             case cell, menu

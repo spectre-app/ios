@@ -57,8 +57,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
     class PasswordCounterItem: StepperItem<Site, UInt32> {
         init() {
             super.init( title: "Password Counter",
-                        value: { $0.counter.rawValue }, update: { $0.counter = MPCounterValue( rawValue: $1 ) ?? .default },
-                        step: 1, min: MPCounterValue.initial.rawValue, max: MPCounterValue.last.rawValue,
+                        value: { $0.counter.rawValue }, update: { $0.counter = SpectreCounter( rawValue: $1 ) ?? .default },
+                        step: 1, min: SpectreCounter.initial.rawValue, max: SpectreCounter.last.rawValue,
                         caption: { _ in
                             """
                             Increment the counter if you need to change the site's current password.
@@ -67,15 +67,15 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
         }
     }
 
-    class PasswordTypeItem: PickerItem<Site, MPResultType, EffectResultTypeCell> {
+    class PasswordTypeItem: PickerItem<Site, SpectreResultType, EffectResultTypeCell> {
         init() {
             super.init( track: .subject( "site", action: "resultType" ), title: "Password Type",
                         values: { _ in
-                            [ MPResultType? ].joined(
+                            [ SpectreResultType? ].joined(
                                     separator: [ nil ],
-                                    MPResultType.recommendedTypes[.authentication],
-                                    [ MPResultType.statefulPersonal ],
-                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                                    SpectreResultType.recommendedTypes[.authentication],
+                                    [ SpectreResultType.statePersonal ],
+                                    SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
                         value: { $0.resultType }, update: { $0.resultType = $1 },
                         subitems: [ PasswordResultItem() ],
@@ -92,7 +92,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                         } )
         }
 
-        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
             cell.resultType = value
         }
     }
@@ -129,16 +129,16 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
         }
     }
 
-    class LoginTypeItem: PickerItem<Site, MPResultType, EffectResultTypeCell> {
+    class LoginTypeItem: PickerItem<Site, SpectreResultType, EffectResultTypeCell> {
         init() {
             super.init( track: .subject( "site", action: "loginType" ), title: "Login Name Type 🅿︎",
                         values: { _ in
-                            [ MPResultType? ].joined(
+                            [ SpectreResultType? ].joined(
                                     separator: [ nil ],
-                                    [ MPResultType.none ],
-                                    MPResultType.recommendedTypes[.identification],
-                                    [ MPResultType.statefulPersonal ],
-                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                                    [ SpectreResultType.none ],
+                                    SpectreResultType.recommendedTypes[.identification],
+                                    [ .statePersonal ],
+                                    SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
                         value: { $0.loginType }, update: { $0.loginType = $1 },
                         subitems: [ LoginResultItem() ],
@@ -152,7 +152,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
 
-        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
             cell.resultType = value.nonEmpty
 
             if value == .none {
@@ -193,7 +193,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
             self.userButton.isRound = true
             self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                if let user = self.model?.user, self.model?.loginType == MPResultType.none {
+                if let user = self.model?.user, self.model?.loginType == SpectreResultType.none {
                     self.viewController?.show(
                             DetailUserViewController( model: user, focus: DetailUserViewController.LoginTypeItem.self ), sender: self )
                 }
@@ -212,7 +212,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             self.userButton.title = self.model?.user.userName.name( style: .abbreviated )
             self.userButton.sizeToFit()
 
-            (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == MPResultType.none ? .always: .never
+            (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == SpectreResultType.none ? .always: .never
         }
     }
 

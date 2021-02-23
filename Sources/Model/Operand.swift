@@ -9,21 +9,21 @@ public protocol Operand {
 
     func use()
 
-    func result(for name: String?, counter: MPCounterValue?, keyPurpose: MPKeyPurpose, keyContext: String?,
-                resultType: MPResultType?, resultParam: String?, algorithm: MPAlgorithmVersion?, operand: Operand?)
+    func result(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+                resultType: SpectreResultType?, resultParam: String?, algorithm: SpectreAlgorithm?, operand: Operand?)
                     -> Operation
 
-    func state(for name: String?, counter: MPCounterValue?, keyPurpose: MPKeyPurpose, keyContext: String?,
-               resultType: MPResultType?, resultParam: String, algorithm: MPAlgorithmVersion?, operand: Operand?)
+    func state(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+               resultType: SpectreResultType?, resultParam: String, algorithm: SpectreAlgorithm?, operand: Operand?)
                     -> Operation
 }
 
 public struct Operation {
     let siteName:  String
-    let counter:   MPCounterValue
-    let purpose:   MPKeyPurpose
-    let type:      MPResultType
-    let algorithm: MPAlgorithmVersion
+    let counter:   SpectreCounter
+    let purpose:   SpectreKeyPurpose
+    let type:      SpectreResultType
+    let algorithm: SpectreAlgorithm
     let operand:   Operand
     let token:     Promise<String>
 

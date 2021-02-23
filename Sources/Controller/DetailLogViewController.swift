@@ -82,10 +82,10 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
         }
     }
 
-    class LogLevelPicker: PickerItem<Model, MPLogLevel, LogLevelPicker.Cell> {
+    class LogLevelPicker: PickerItem<Model, SpectreLogLevel, LogLevelPicker.Cell> {
         init() {
             super.init( track: .subject( "logbook", action: "level" ), title: "Logbook",
-                        values: { _ in MPLogLevel.allCases.reversed() },
+                        values: { _ in SpectreLogLevel.allCases.reversed() },
                         value: { $0.logbookLevel }, update: { $0.logbookLevel = $1 },
                         caption: { _ in
                             """
@@ -95,12 +95,12 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         } )
         }
 
-        override func populate(_ cell: Cell, indexPath: IndexPath, value: MPLogLevel) {
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: SpectreLogLevel) {
             cell.level = value
         }
 
         class Cell: EffectCell {
-            var level = MPLogLevel.trace {
+            var level = SpectreLogLevel.trace {
                 didSet {
                     DispatchQueue.main.perform {
                         self.titleLabel.text = self.level.description

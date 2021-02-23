@@ -68,12 +68,12 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         return .private
     }
 
-    static func permutations(type: MPResultType) -> Decimal? {
+    static func permutations(type: SpectreResultType) -> Decimal? {
         guard type.in( class: .template )
         else { return nil }
 
         var count = 0
-        guard let templates = mpw_type_templates( type, &count )
+        guard let templates = spectre_type_templates( type, &count )
         else { return nil }
         defer { templates.deallocate() }
 
@@ -84,7 +84,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
 
             var templatePermutations = Decimal( 1 )
             for c in 0..<strlen( template ) {
-                templatePermutations *= Decimal( strlen( mpw_class_characters( template[c] ) ) )
+                templatePermutations *= Decimal( strlen( spectre_class_characters( template[c] ) ) )
             }
 
             typePermutations += templatePermutations
@@ -93,11 +93,11 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         return typePermutations
     }
 
-    static func entropy(type: MPResultType) -> Int? {
+    static func entropy(type: SpectreResultType) -> Int? {
         self.permutations( type: type ).flatMap { self.entropy( permutations: $0 ) }
     }
 
-    func timeToCrack(type: MPResultType) -> TimeToCrack? {
+    func timeToCrack(type: SpectreResultType) -> TimeToCrack? {
         Attacker.permutations( type: type ).flatMap { self.timeToCrack( permutations: $0 ) }
     }
 
@@ -111,7 +111,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
             var characterEntropy = Decimal( 256 ) /* a byte */
 
             for characterClass in [ "v", "c", "a", "x" ] {
-                guard let charactersForClass = mpw_class_characters( characterClass.utf8CString[0] )
+                guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
                 else { continue }
 
                 if (strchr( charactersForClass, Int32( passwordCharacter ) )) != nil {

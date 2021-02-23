@@ -9,14 +9,14 @@ import LocalAuthentication
 private let keyQueue     = DispatchQueue( label: "\(productName): Key Factory", qos: .utility )
 private var keyFactories = [ String: KeyFactory ]()
 
-private func keyFactoryProvider(_ algorithm: MPAlgorithmVersion, _ userName: UnsafePointer<CChar>?) -> UnsafePointer<MPUserKey>? {
+private func keyFactoryProvider(_ algorithm: SpectreAlgorithm, _ userName: UnsafePointer<CChar>?) -> UnsafePointer<SpectreUserKey>? {
     keyQueue.await {
         String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
     }
 }
 
 public class KeyFactory {
-    private var userKeysCache = [ MPAlgorithmVersion: UnsafePointer<MPUserKey> ]()
+    private var userKeysCache = [ SpectreAlgorithm: UnsafePointer<SpectreUserKey> ]()
     public let  userName: String
 
     // MARK: --- Life ---
@@ -31,7 +31,7 @@ public class KeyFactory {
 
     // MARK: --- Interface ---
 
-    public func provide() -> Promise<MPUserKeyProvider> {
+    public func provide() -> Promise<SpectreKeyProvider> {
         keyQueue.promise {
             keyFactories[self.userName] = self
             return keyFactoryProvider
@@ -45,7 +45,7 @@ public class KeyFactory {
         }
     }
 
-    public func authenticatedIdentifier(for algorithm: MPAlgorithmVersion) -> Promise<String?> {
+    public func authenticatedIdentifier(for algorithm: SpectreAlgorithm) -> Promise<String?> {
         keyQueue.promise {
             withUnsafeBytes( of: self.getKey( for: algorithm )?.pointee.bytes ) {
                 $0.bindMemory( to: UInt8.self ).digest()?.hex()
@@ -53,19 +53,19 @@ public class KeyFactory {
         }
     }
 
-    public func newKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
+    public func newKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
         guard let userKey = self.getKey( for: algorithm )
         else { return nil }
 
         // Create a copy of the user key to be consumed by the caller.
-        let providedUserKey = UnsafeMutablePointer<MPUserKey>.allocate( capacity: 1 )
+        let providedUserKey = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
         providedUserKey.initialize( from: userKey, count: 1 )
-        return UnsafePointer<MPUserKey>( providedUserKey )
+        return UnsafePointer<SpectreUserKey>( providedUserKey )
     }
 
     // MARK: --- Private ---
 
-    private func getKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
+    private func getKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
         keyQueue.await {
             // Try to resolve the user key from the cache.
             if let userKey = self.userKeysCache[algorithm] {
@@ -82,13 +82,13 @@ public class KeyFactory {
         }
     }
 
-    fileprivate func setKey(_ key: UnsafePointer<MPUserKey>, algorithm: MPAlgorithmVersion) {
+    fileprivate func setKey(_ key: UnsafePointer<SpectreUserKey>, algorithm: SpectreAlgorithm) {
         keyQueue.await {
             self.userKeysCache[algorithm] = key
         }
     }
 
-    fileprivate func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
+    fileprivate func createKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
         nil
     }
 }
@@ -105,21 +105,21 @@ public class SecretKeyFactory: KeyFactory {
 
     // MARK: --- Interface ---
 
-    public var identicon: MPIdenticon {
-        mpw_identicon( self.userName, self.userSecret )
+    public var identicon: SpectreIdenticon {
+        spectre_identicon( self.userName, self.userSecret )
     }
 
     public func toKeychain() -> Promise<KeychainKeyFactory> {
         KeychainKeyFactory( userName: self.userName ).unlock().promising {
-            $0.saveKeys( MPAlgorithmVersion.allCases.map( { ($0, self.newKey( for: $0 )) } ) )
+            $0.saveKeys( SpectreAlgorithm.allCases.map( { ($0, self.newKey( for: $0 )) } ) )
         }
     }
 
     // MARK: --- Private ---
 
-    fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
+    fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
         DispatchQueue.api.await {
-            mpw_user_key( self.userName, self.userSecret, algorithm )
+            spectre_user_key( self.userName, self.userSecret, algorithm )
         }
     }
 }
@@ -199,12 +199,12 @@ public class KeychainKeyFactory: KeyFactory {
 
     // MARK: --- Interface ---
 
-    public func hasKey(for algorithm: MPAlgorithmVersion) -> Bool {
+    public func hasKey(for algorithm: SpectreAlgorithm) -> Bool {
         Keychain.hasKey( for: self.userName, algorithm: algorithm )
     }
 
     public func purgeKeys() {
-        for algorithm in MPAlgorithmVersion.allCases {
+        for algorithm in SpectreAlgorithm.allCases {
             Keychain.deleteKey( for: self.userName, algorithm: algorithm )
         }
 
@@ -239,7 +239,7 @@ public class KeychainKeyFactory: KeyFactory {
 
     // MARK: --- Private ---
 
-    fileprivate override func createKey(for algorithm: MPAlgorithmVersion) -> UnsafePointer<MPUserKey>? {
+    fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
         do {
             return try Keychain.loadKey( for: self.userName, algorithm: algorithm, context: self.context ).await()
         }
@@ -249,7 +249,7 @@ public class KeychainKeyFactory: KeyFactory {
         }
     }
 
-    fileprivate func saveKeys(_ items: [(MPAlgorithmVersion, UnsafePointer<MPUserKey>?)]) -> Promise<KeychainKeyFactory> {
+    fileprivate func saveKeys(_ items: [(SpectreAlgorithm, UnsafePointer<SpectreUserKey>?)]) -> Promise<KeychainKeyFactory> {
         keyQueue.promising {
             var promise = Promise( .success( () ) )
 

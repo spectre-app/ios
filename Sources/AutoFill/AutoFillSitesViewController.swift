@@ -68,7 +68,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
                               "from": trackingFrom,
                               "action": "fill",
                               "counter": "\(site.counter)",
-                              "purpose": "\(MPKeyPurpose.identification)",
+                              "purpose": "\(SpectreKeyPurpose.identification)",
                               "type": "\(site.resultType)",
                               "algorithm": "\(site.algorithm)",
                               "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ) ?? 0,

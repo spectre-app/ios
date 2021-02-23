@@ -64,15 +64,15 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         }
     }
 
-    class LoginTypeItem: PickerItem<User, MPResultType, EffectResultTypeCell> {
+    class LoginTypeItem: PickerItem<User, SpectreResultType, EffectResultTypeCell> {
         init() {
             super.init( track: .subject( "user", action: "loginType" ), title: "Standard Login",
                         values: { _ in
-                            [ MPResultType? ].joined(
+                            [ SpectreResultType? ].joined(
                                     separator: [ nil ],
-                                    MPResultType.recommendedTypes[.identification],
-                                    [ MPResultType.statefulPersonal ],
-                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                                    SpectreResultType.recommendedTypes[.identification],
+                                    [ .statePersonal ],
+                                    SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
                         value: { $0.loginType }, update: { $0.loginType = $1 },
                         subitems: [ LoginResultItem() ],
@@ -83,7 +83,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         } )
         }
 
-        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
             cell.resultType = value
         }
     }
@@ -123,14 +123,14 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         }
     }
 
-    class DefaultTypeItem: PickerItem<User, MPResultType, EffectResultTypeCell> {
+    class DefaultTypeItem: PickerItem<User, SpectreResultType, EffectResultTypeCell> {
         init() {
             super.init( track: .subject( "user", action: "defaultType" ), title: "Default Password Type",
                         values: { _ in
-                            [ MPResultType? ].joined(
+                            [ SpectreResultType? ].joined(
                                     separator: [ nil ],
-                                    MPResultType.recommendedTypes[.authentication],
-                                    MPResultType.allCases.filter { !$0.has( feature: .alternative ) } ).unique()
+                                    SpectreResultType.recommendedTypes[.authentication],
+                                    SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
                         value: { $0.defaultType }, update: { $0.defaultType = $1 },
                         caption: { _ in
@@ -140,7 +140,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         } )
         }
 
-        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: MPResultType) {
+        override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
             cell.resultType = value
         }
     }

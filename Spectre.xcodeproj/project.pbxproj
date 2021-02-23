@@ -42,7 +42,7 @@
 		93D39557916D91E959F0133A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398E83036023785BE6806 /* Theme.swift */; };
 		93D3958E8F03ACE57445E833 /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BAACC08C85F91D1C5C2 /* Graph.swift */; };
 		93D395ABA8A82780C5192EDE /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39477D638F3147366C029 /* Animations.swift */; };
-		93D395B715D15F2B56F2A2EE /* mpw-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* mpw-types.c */; };
+		93D395B715D15F2B56F2A2EE /* spectre-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* spectre-types.c */; };
 		93D395F689CD91219767B35C /* SpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39424D508440582DC7FD0 /* SpinnerView.swift */; };
 		93D395FF978C5B91FA5268DC /* ItemViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39949A9E5C95F193F4315 /* ItemViews.swift */; };
 		93D3960D18CFE6BBCD31C84E /* MainSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D2352657D352B2B13B6 /* MainSitesViewController.swift */; };
@@ -66,7 +66,7 @@
 		93D39854B7171FE34024CEED /* PagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* PagerView.swift */; };
 		93D398C964D8B1FC0F320085 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* User.swift */; };
 		93D398FB645DCA89A4BCC5A2 /* MarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MarginView.swift */; };
-		93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
+		93D39943D01E70DAC3B0DF76 /* spectre-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* spectre-util.c */; };
 		93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985695447159F2D4BE76 /* AutoFillModel.swift */; };
 		93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		93D399FB0C4228E18FDFAC9F /* PickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391A0FB6EB085237A8BF3 /* PickerView.swift */; };
@@ -104,15 +104,15 @@
 		93D39FD2F39B2AFE27A88A97 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* Secrets.swift */; };
 		DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
 		DA0E5565251022EB002B3AB1 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = DA5B0B3E1F36469400B663F0 /* base64.c */; };
-		DA0E5566251022EB002B3AB1 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
-		DA0E5567251022EB002B3AB1 /* mpw-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* mpw-types.c */; };
-		DA0E5568251022EB002B3AB1 /* mpw-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* mpw-util.c */; };
-		DA0E5569251022EB002B3AB1 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
-		DA0E556A251022EB002B3AB1 /* mpw-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* mpw-marshal.c */; };
-		DA0E556B251022EB002B3AB1 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
-		DA0E556C251022EB002B3AB1 /* mpw-algorithm_v3.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */; };
-		DA0E556D251022EB002B3AB1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
-		DA0E556E251022EB002B3AB1 /* mpw-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* mpw-algorithm.c */; };
+		DA0E5566251022EB002B3AB1 /* spectre-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */; };
+		DA0E5567251022EB002B3AB1 /* spectre-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* spectre-types.c */; };
+		DA0E5568251022EB002B3AB1 /* spectre-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* spectre-util.c */; };
+		DA0E5569251022EB002B3AB1 /* spectre-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* spectre-algorithm_v2.c */; };
+		DA0E556A251022EB002B3AB1 /* spectre-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* spectre-marshal.c */; };
+		DA0E556B251022EB002B3AB1 /* spectre-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* spectre-algorithm_v0.c */; };
+		DA0E556C251022EB002B3AB1 /* spectre-algorithm_v3.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D4E713564B7654341B0 /* spectre-algorithm_v3.c */; };
+		DA0E556D251022EB002B3AB1 /* spectre-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* spectre-marshal-util.c */; };
+		DA0E556E251022EB002B3AB1 /* spectre-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* spectre-algorithm.c */; };
 		DA0E556F251022EB002B3AB1 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
 		DA0E557025102B3A002B3AB1 /* Spectre AutoFill.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
@@ -177,10 +177,10 @@
 		DA0E55BF251112C1002B3AB1 /* ItemsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* ItemsViewController.swift */; };
 		DA0E55C0251112D0002B3AB1 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* BaseViewController.swift */; };
 		DA2FBD4325D89FB3000F3D8C /* AppProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397930CDEF625FC438ECE /* AppProduct.swift */; };
-		DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */; };
-		DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */; };
-		DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */; };
-		DA35148D233EF93400BCF504 /* mpw-algorithm_v3.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */; };
+		DA35148A233EF93400BCF504 /* spectre-algorithm_v0.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A99850139D0FF0211E /* spectre-algorithm_v0.c */; };
+		DA35148B233EF93400BCF504 /* spectre-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */; };
+		DA35148C233EF93400BCF504 /* spectre-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* spectre-algorithm_v2.c */; };
+		DA35148D233EF93400BCF504 /* spectre-algorithm_v3.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D4E713564B7654341B0 /* spectre-algorithm_v3.c */; };
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
 		DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4A0C20201531BA004E2CE5 /* AppDelegate.swift */; };
 		DA5B0B401F36469400B663F0 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = DA5B0B3E1F36469400B663F0 /* base64.c */; };
@@ -247,10 +247,10 @@
 		DA762FB224E04F2E00E61D3F /* PoppinsLatin-ExtraBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F7024E04F2E00E61D3F /* PoppinsLatin-ExtraBoldItalic.otf */; };
 		DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
 		DA762FB624E0C58700E61D3F /* Poppins-VF.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB524E0C58700E61D3F /* Poppins-VF.otf */; };
-		DAA449D21EEC4B5800E7BDD5 /* mpw-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* mpw-marshal.c */; };
+		DAA449D21EEC4B5800E7BDD5 /* spectre-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* spectre-marshal.c */; };
 		DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
 		DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA70EC7F1811B13C00F65DB2 /* StoreKit.framework */; };
-		DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* mpw-algorithm.c */; };
+		DAADBFE01A68763B00F7A756 /* spectre-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* spectre-algorithm.c */; };
 		DAAEDE1725E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1125E1DF5400E78F79 /* Font Awesome 6 Pro-Thin-100.otf */; };
 		DAAEDE1825E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1125E1DF5400E78F79 /* Font Awesome 6 Pro-Thin-100.otf */; };
 		DAAEDE1925E1DF5500E78F79 /* Font Awesome 6 Duotone-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1225E1DF5400E78F79 /* Font Awesome 6 Duotone-Solid-900.otf */; };
@@ -264,7 +264,7 @@
 		DAAEDE2125E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */; };
 		DAAEDE2225E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */; };
 		DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
-		DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */; };
+		DAB7AE991F3DDEE000C856B1 /* spectre-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* spectre-marshal-util.c */; };
 		DABC7BB8251C14160021ADD8 /* BaseSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */; };
 		DABC7BBB251C1B410021ADD8 /* BaseUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
@@ -398,8 +398,8 @@
 		93D3903B1B32B494FBD792EC /* SitesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesTableView.swift; sourceTree = "<group>"; };
 		93D3909744CE918AB4432318 /* ConstraintResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintResolver.swift; sourceTree = "<group>"; };
 		93D3909E003FF5E936687AA6 /* Feedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
-		93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v2.c"; sourceTree = "<group>"; };
-		93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v0.c"; sourceTree = "<group>"; };
+		93D390A3B351FEF1B9EDAB56 /* spectre-algorithm_v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm_v2.c"; sourceTree = "<group>"; };
+		93D390A99850139D0FF0211E /* spectre-algorithm_v0.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm_v0.c"; sourceTree = "<group>"; };
 		93D390CB091CCF46AF6EAB4C /* AutoFill.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFill.swift; sourceTree = "<group>"; };
 		93D391193A2AED1BCDD3B83D /* EffectToggleButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectToggleButton.swift; sourceTree = "<group>"; };
 		93D3911FED606FAE34608C50 /* BackgroundView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundView.swift; sourceTree = "<group>"; };
@@ -412,7 +412,7 @@
 		93D39267543CBFB6B0D7F54C /* Operand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Operand.swift; sourceTree = "<group>"; };
 		93D3926A5BF83C0816D6D00E /* EmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmitterView.swift; sourceTree = "<group>"; };
 		93D392986FB7C71256EABBB0 /* AutoFillSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillSitesViewController.swift; sourceTree = "<group>"; };
-		93D392C5A6572DB0EB5B82C8 /* mpw-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-types.c"; sourceTree = "<group>"; };
+		93D392C5A6572DB0EB5B82C8 /* spectre-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-types.c"; sourceTree = "<group>"; };
 		93D3931E2B7B432862570208 /* UserSecretField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserSecretField.swift; sourceTree = "<group>"; };
 		93D39326375ED0DDA441ADC2 /* Foundation+Spectre.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Foundation+Spectre.swift"; sourceTree = "<group>"; };
 		93D3936B3B1AE0B330FF49A5 /* Attacker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Attacker.swift; sourceTree = "<group>"; };
@@ -435,12 +435,12 @@
 		93D39613B68BCF56DD931C91 /* MarginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MarginView.swift; sourceTree = "<group>"; };
 		93D39647B07609C89AA66767 /* UIKit+Spectre.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIKit+Spectre.swift"; sourceTree = "<group>"; };
 		93D39651387222CBD2F9CCE0 /* Period.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Period.swift; sourceTree = "<group>"; };
-		93D3969393A3A46BD27D7078 /* mpw-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm.c"; sourceTree = "<group>"; };
-		93D396C311C3725870343EE0 /* mpw-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-util.c"; sourceTree = "<group>"; };
+		93D3969393A3A46BD27D7078 /* spectre-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm.c"; sourceTree = "<group>"; };
+		93D396C311C3725870343EE0 /* spectre-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-util.c"; sourceTree = "<group>"; };
 		93D396E496C23EC3C008D6F7 /* UIView+Spectre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Spectre.h"; sourceTree = "<group>"; };
 		93D396EF81F724F74A21AFA9 /* ImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageView.swift; sourceTree = "<group>"; };
 		93D396F647CD1C68F9BA9AD5 /* ItemsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItemsViewController.swift; sourceTree = "<group>"; };
-		93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v1.c"; sourceTree = "<group>"; };
+		93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm_v1.c"; sourceTree = "<group>"; };
 		93D396FE084F709867C7C6CC /* Describe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Describe.swift; sourceTree = "<group>"; };
 		93D3971B848750CA84382132 /* DetailPremiumViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailPremiumViewController.swift; sourceTree = "<group>"; };
 		93D397326B833076646FF697 /* DataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataSource.swift; sourceTree = "<group>"; };
@@ -459,14 +459,14 @@
 		93D398E83036023785BE6806 /* Theme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		93D398F2CFC7C9A494146E83 /* DetailLogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailLogViewController.swift; sourceTree = "<group>"; };
 		93D3990ACF0E11CD40EA6319 /* BaseUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseUsersViewController.swift; sourceTree = "<group>"; };
-		93D3990D850D76A94C6B7A4D /* mpw-algorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm.h"; sourceTree = "<group>"; };
+		93D3990D850D76A94C6B7A4D /* spectre-algorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm.h"; sourceTree = "<group>"; };
 		93D39941059143124D09AE05 /* LogSink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogSink.swift; sourceTree = "<group>"; };
 		93D39949A9E5C95F193F4315 /* ItemViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItemViews.swift; sourceTree = "<group>"; };
 		93D399B27F5C5F2D42EA7C0B /* UntouchableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UntouchableView.swift; sourceTree = "<group>"; };
 		93D399D065D5339AC9DDF60E /* TapEffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TapEffectView.swift; sourceTree = "<group>"; };
 		93D399D8E0D5A547143642A7 /* Marshal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Marshal.swift; sourceTree = "<group>"; };
 		93D39A6EC596E8AE5D8F8714 /* Debug.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Debug.swift; sourceTree = "<group>"; };
-		93D39AFD17CBE324D745DAB0 /* mpw-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-types.h"; sourceTree = "<group>"; };
+		93D39AFD17CBE324D745DAB0 /* spectre-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-types.h"; sourceTree = "<group>"; };
 		93D39B3112D0D128E6369596 /* TintedLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TintedLabel.swift; sourceTree = "<group>"; };
 		93D39B35F97CEFC707FD6D48 /* Secrets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		93D39B6403FE258E526E5E85 /* UIView+Spectre.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Spectre.m"; sourceTree = "<group>"; };
@@ -478,11 +478,11 @@
 		93D39CB804B95B268383FCB2 /* Persisting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persisting.swift; sourceTree = "<group>"; };
 		93D39CCF90A49C099A05280B /* DialogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DialogViewController.swift; sourceTree = "<group>"; };
 		93D39CDC84DDABE512D49739 /* DetailSiteViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailSiteViewController.swift; sourceTree = "<group>"; };
-		93D39CF7DB942C69D1C5D6BE /* mpw-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-util.h"; sourceTree = "<group>"; };
+		93D39CF7DB942C69D1C5D6BE /* spectre-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-util.h"; sourceTree = "<group>"; };
 		93D39D2352657D352B2B13B6 /* MainSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainSitesViewController.swift; sourceTree = "<group>"; };
 		93D39D251169E42F0AAC451F /* SitePreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitePreview.swift; sourceTree = "<group>"; };
 		93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LayoutConfiguration.swift; sourceTree = "<group>"; };
-		93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-algorithm_v3.c"; sourceTree = "<group>"; };
+		93D39D4E713564B7654341B0 /* spectre-algorithm_v3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm_v3.c"; sourceTree = "<group>"; };
 		93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseSitesViewController.swift; sourceTree = "<group>"; };
 		93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillUsersViewController.swift; sourceTree = "<group>"; };
 		93D39E1D19BCA02E43657384 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -500,10 +500,10 @@
 		DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AutoFill.entitlements; sourceTree = "<group>"; };
 		DA2C3D621BD96126001137B3 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		DA2C3D641BD9612F001137B3 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		DA351486233EF8FE00BCF504 /* mpw-algorithm_v2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v2.h"; sourceTree = "<group>"; };
-		DA351487233EF8FE00BCF504 /* mpw-algorithm_v1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v1.h"; sourceTree = "<group>"; };
-		DA351488233EF8FE00BCF504 /* mpw-algorithm_v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v3.h"; sourceTree = "<group>"; };
-		DA351489233EF8FE00BCF504 /* mpw-algorithm_v0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-algorithm_v0.h"; sourceTree = "<group>"; };
+		DA351486233EF8FE00BCF504 /* spectre-algorithm_v2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v2.h"; sourceTree = "<group>"; };
+		DA351487233EF8FE00BCF504 /* spectre-algorithm_v1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v1.h"; sourceTree = "<group>"; };
+		DA351488233EF8FE00BCF504 /* spectre-algorithm_v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v3.h"; sourceTree = "<group>"; };
+		DA351489233EF8FE00BCF504 /* spectre-algorithm_v0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v0.h"; sourceTree = "<group>"; };
 		DA3954B32066D2B5004621DB /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
 		DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
@@ -589,8 +589,8 @@
 		DA95D5F014DF0B1E008D1B94 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		DA9986F5237C56FF001FD155 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		DA9986F7237C5710001FD155 /* libicucore.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libicucore.tbd; path = usr/lib/libicucore.tbd; sourceTree = SDKROOT; };
-		DAA449D01EEC4B5800E7BDD5 /* mpw-marshal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-marshal.c"; sourceTree = "<group>"; };
-		DAA449D11EEC4B5800E7BDD5 /* mpw-marshal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-marshal.h"; sourceTree = "<group>"; };
+		DAA449D01EEC4B5800E7BDD5 /* spectre-marshal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-marshal.c"; sourceTree = "<group>"; };
+		DAA449D11EEC4B5800E7BDD5 /* spectre-marshal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-marshal.h"; sourceTree = "<group>"; };
 		DAA7BB8620C4C0C400101DC7 /* libjson-c.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libjson-c.a"; sourceTree = "<group>"; };
 		DAA7BB8A20C4C10F00101DC7 /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsodium.a; sourceTree = "<group>"; };
 		DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
@@ -604,8 +604,8 @@
 		DAB07C9B1F7725C500CC6D43 /* aes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes.c; sourceTree = "<group>"; };
 		DAB07C9C1F7725C500CC6D43 /* aes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aes.h; sourceTree = "<group>"; };
 		DAB7AE5C1F3D752900C856B1 /* libjson-c.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libjson-c.a"; path = "External/libjson-c/libjson-c-ios/lib/libjson-c.a"; sourceTree = "<group>"; };
-		DAB7AE971F3DDEE000C856B1 /* mpw-marshal-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mpw-marshal-util.h"; sourceTree = "<group>"; };
-		DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "mpw-marshal-util.c"; sourceTree = "<group>"; };
+		DAB7AE971F3DDEE000C856B1 /* spectre-marshal-util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-marshal-util.h"; sourceTree = "<group>"; };
+		DAB7AE981F3DDEE000C856B1 /* spectre-marshal-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-marshal-util.c"; sourceTree = "<group>"; };
 		DABB981515100B4000B05417 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		DAC51052247C672C006CC5D6 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		DAC5106B247C7258006CC5D6 /* crypto_stream_salsa2012.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_stream_salsa2012.h; sourceTree = "<group>"; };
@@ -809,24 +809,24 @@
 				DAB07C9C1F7725C500CC6D43 /* aes.h */,
 				DA5B0B3E1F36469400B663F0 /* base64.c */,
 				DA5B0B3F1F36469400B663F0 /* base64.h */,
-				93D390A99850139D0FF0211E /* mpw-algorithm_v0.c */,
-				DA351489233EF8FE00BCF504 /* mpw-algorithm_v0.h */,
-				93D396F918E6470DB846C17F /* mpw-algorithm_v1.c */,
-				DA351487233EF8FE00BCF504 /* mpw-algorithm_v1.h */,
-				93D390A3B351FEF1B9EDAB56 /* mpw-algorithm_v2.c */,
-				DA351486233EF8FE00BCF504 /* mpw-algorithm_v2.h */,
-				93D39D4E713564B7654341B0 /* mpw-algorithm_v3.c */,
-				DA351488233EF8FE00BCF504 /* mpw-algorithm_v3.h */,
-				93D3969393A3A46BD27D7078 /* mpw-algorithm.c */,
-				93D3990D850D76A94C6B7A4D /* mpw-algorithm.h */,
-				DAB7AE981F3DDEE000C856B1 /* mpw-marshal-util.c */,
-				DAB7AE971F3DDEE000C856B1 /* mpw-marshal-util.h */,
-				DAA449D01EEC4B5800E7BDD5 /* mpw-marshal.c */,
-				DAA449D11EEC4B5800E7BDD5 /* mpw-marshal.h */,
-				93D392C5A6572DB0EB5B82C8 /* mpw-types.c */,
-				93D39AFD17CBE324D745DAB0 /* mpw-types.h */,
-				93D396C311C3725870343EE0 /* mpw-util.c */,
-				93D39CF7DB942C69D1C5D6BE /* mpw-util.h */,
+				93D390A99850139D0FF0211E /* spectre-algorithm_v0.c */,
+				DA351489233EF8FE00BCF504 /* spectre-algorithm_v0.h */,
+				93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */,
+				DA351487233EF8FE00BCF504 /* spectre-algorithm_v1.h */,
+				93D390A3B351FEF1B9EDAB56 /* spectre-algorithm_v2.c */,
+				DA351486233EF8FE00BCF504 /* spectre-algorithm_v2.h */,
+				93D39D4E713564B7654341B0 /* spectre-algorithm_v3.c */,
+				DA351488233EF8FE00BCF504 /* spectre-algorithm_v3.h */,
+				93D3969393A3A46BD27D7078 /* spectre-algorithm.c */,
+				93D3990D850D76A94C6B7A4D /* spectre-algorithm.h */,
+				DAB7AE981F3DDEE000C856B1 /* spectre-marshal-util.c */,
+				DAB7AE971F3DDEE000C856B1 /* spectre-marshal-util.h */,
+				DAA449D01EEC4B5800E7BDD5 /* spectre-marshal.c */,
+				DAA449D11EEC4B5800E7BDD5 /* spectre-marshal.h */,
+				93D392C5A6572DB0EB5B82C8 /* spectre-types.c */,
+				93D39AFD17CBE324D745DAB0 /* spectre-types.h */,
+				93D396C311C3725870343EE0 /* spectre-util.c */,
+				93D39CF7DB942C69D1C5D6BE /* spectre-util.h */,
 			);
 			name = api;
 			path = api/c;
@@ -1296,7 +1296,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				CLASSPREFIX = MP;
+				CLASSPREFIX = "";
 				LastSwiftUpdateCheck = 1200;
 				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Lyndir;
@@ -1725,20 +1725,20 @@
 				DA0E55982510E985002B3AB1 /* AppConfig.swift in Sources */,
 				DA0E559D2510E985002B3AB1 /* Feedback.swift in Sources */,
 				DA0E55922510E985002B3AB1 /* Types.swift in Sources */,
-				DA0E5566251022EB002B3AB1 /* mpw-algorithm_v1.c in Sources */,
+				DA0E5566251022EB002B3AB1 /* spectre-algorithm_v1.c in Sources */,
 				DA0E55B02510E9BB002B3AB1 /* DateView.swift in Sources */,
 				DA0E55BF251112C1002B3AB1 /* ItemsViewController.swift in Sources */,
 				DA0E55C0251112D0002B3AB1 /* BaseViewController.swift in Sources */,
 				DA0E556F251022EB002B3AB1 /* aes.c in Sources */,
 				DA0E558E2510E985002B3AB1 /* ConstraintResolver.swift in Sources */,
-				DA0E556A251022EB002B3AB1 /* mpw-marshal.c in Sources */,
+				DA0E556A251022EB002B3AB1 /* spectre-marshal.c in Sources */,
 				DA0E55962510E985002B3AB1 /* SitePreview.swift in Sources */,
 				DA0E55A42510E992002B3AB1 /* Marshal.swift in Sources */,
-				DA0E556C251022EB002B3AB1 /* mpw-algorithm_v3.c in Sources */,
+				DA0E556C251022EB002B3AB1 /* spectre-algorithm_v3.c in Sources */,
 				DA0E55932510E985002B3AB1 /* UIKit+Spectre.swift in Sources */,
 				DA0E558725106518002B3AB1 /* Observers.swift in Sources */,
 				DA0E55A72510E992002B3AB1 /* Site.swift in Sources */,
-				DA0E556B251022EB002B3AB1 /* mpw-algorithm_v0.c in Sources */,
+				DA0E556B251022EB002B3AB1 /* spectre-algorithm_v0.c in Sources */,
 				DA0E55B72510E9BB002B3AB1 /* MarginView.swift in Sources */,
 				DA0E55BB2510E9BB002B3AB1 /* SpinnerView.swift in Sources */,
 				DA0E55AC2510E9BB002B3AB1 /* Animations.swift in Sources */,
@@ -1746,11 +1746,11 @@
 				DA0E55A92510E9BB002B3AB1 /* TapEffectView.swift in Sources */,
 				DA0E55B12510E9BB002B3AB1 /* EffectView.swift in Sources */,
 				DA0E559A2510E985002B3AB1 /* Persisting.swift in Sources */,
-				DA0E556E251022EB002B3AB1 /* mpw-algorithm.c in Sources */,
+				DA0E556E251022EB002B3AB1 /* spectre-algorithm.c in Sources */,
 				DA0E559F2510E985002B3AB1 /* Graph.swift in Sources */,
 				DA0E558C2510E985002B3AB1 /* Theme.swift in Sources */,
 				DA0E558625106500002B3AB1 /* TransientState.swift in Sources */,
-				DA0E5569251022EB002B3AB1 /* mpw-algorithm_v2.c in Sources */,
+				DA0E5569251022EB002B3AB1 /* spectre-algorithm_v2.c in Sources */,
 				DA0E55A82510E992002B3AB1 /* User.swift in Sources */,
 				DA0E55912510E985002B3AB1 /* Debug.swift in Sources */,
 				DA0E55AA2510E9BB002B3AB1 /* ItemViews.swift in Sources */,
@@ -1758,16 +1758,16 @@
 				DA0E558D2510E985002B3AB1 /* Foundation+Spectre.swift in Sources */,
 				DA0E5565251022EB002B3AB1 /* base64.c in Sources */,
 				DA0E55992510E985002B3AB1 /* Keychain.swift in Sources */,
-				DA0E556D251022EB002B3AB1 /* mpw-marshal-util.c in Sources */,
+				DA0E556D251022EB002B3AB1 /* spectre-marshal-util.c in Sources */,
 				DA0E55902510E985002B3AB1 /* Tracker.swift in Sources */,
 				DA0E55BA2510E9BB002B3AB1 /* ImageView.swift in Sources */,
 				DA0E55BD2510E9BB002B3AB1 /* UntouchableView.swift in Sources */,
 				DA0E55832510649E002B3AB1 /* Plumbing.swift in Sources */,
 				DA0E55A02510E985002B3AB1 /* KeyboardLayoutGuide.swift in Sources */,
 				DA0E557F251063BF002B3AB1 /* Utilities.swift in Sources */,
-				DA0E5568251022EB002B3AB1 /* mpw-util.c in Sources */,
+				DA0E5568251022EB002B3AB1 /* spectre-util.c in Sources */,
 				DA0E55A52510E992002B3AB1 /* Question.swift in Sources */,
-				DA0E5567251022EB002B3AB1 /* mpw-types.c in Sources */,
+				DA0E5567251022EB002B3AB1 /* spectre-types.c in Sources */,
 				DA0E559B2510E985002B3AB1 /* Attacker.swift in Sources */,
 				DA0E558B2510E985002B3AB1 /* LogSink.swift in Sources */,
 				93D39DA73327FB4E3D600A31 /* Updatable.swift in Sources */,
@@ -1796,29 +1796,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DAA449D21EEC4B5800E7BDD5 /* mpw-marshal.c in Sources */,
-				DAB7AE991F3DDEE000C856B1 /* mpw-marshal-util.c in Sources */,
-				DAADBFE01A68763B00F7A756 /* mpw-algorithm.c in Sources */,
-				DA35148D233EF93400BCF504 /* mpw-algorithm_v3.c in Sources */,
+				DAA449D21EEC4B5800E7BDD5 /* spectre-marshal.c in Sources */,
+				DAB7AE991F3DDEE000C856B1 /* spectre-marshal-util.c in Sources */,
+				DAADBFE01A68763B00F7A756 /* spectre-algorithm.c in Sources */,
+				DA35148D233EF93400BCF504 /* spectre-algorithm_v3.c in Sources */,
 				DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */,
-				93D395B715D15F2B56F2A2EE /* mpw-types.c in Sources */,
-				93D39943D01E70DAC3B0DF76 /* mpw-util.c in Sources */,
+				93D395B715D15F2B56F2A2EE /* spectre-types.c in Sources */,
+				93D39943D01E70DAC3B0DF76 /* spectre-util.c in Sources */,
 				DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */,
 				DA5B0B401F36469400B663F0 /* base64.c in Sources */,
-				DA35148C233EF93400BCF504 /* mpw-algorithm_v2.c in Sources */,
+				DA35148C233EF93400BCF504 /* spectre-algorithm_v2.c in Sources */,
 				93D398C964D8B1FC0F320085 /* User.swift in Sources */,
 				93D39BED3DFB61513B0D015D /* MainUsersViewController.swift in Sources */,
 				93D395F689CD91219767B35C /* SpinnerView.swift in Sources */,
 				93D3960D18CFE6BBCD31C84E /* MainSitesViewController.swift in Sources */,
 				93D396EB0D88ED2F30F76123 /* MainNavigationController.swift in Sources */,
-				DA35148A233EF93400BCF504 /* mpw-algorithm_v0.c in Sources */,
+				DA35148A233EF93400BCF504 /* spectre-algorithm_v0.c in Sources */,
 				93D39A2954B245FC0D925312 /* Site.swift in Sources */,
 				93D393C161EB8FA55FA5174F /* SitesTableView.swift in Sources */,
 				93D39C999EF9BD048E3892AA /* Utilities.swift in Sources */,
 				93D39139805FC516B6C2C181 /* EffectButton.swift in Sources */,
 				93D393B953CB94FC9E964625 /* SitePreview.swift in Sources */,
 				93D39470EC1F954780E354CB /* ImageView.swift in Sources */,
-				DA35148B233EF93400BCF504 /* mpw-algorithm_v1.c in Sources */,
+				DA35148B233EF93400BCF504 /* spectre-algorithm_v1.c in Sources */,
 				93D3929442591D379DD3B240 /* DetailSiteViewController.swift in Sources */,
 				93D39F3343B552CB459F73EF /* EffectResultTypeCell.swift in Sources */,
 				93D397750EE34A4995A884BA /* TapEffectView.swift in Sources */,
@@ -2032,10 +2032,10 @@
 					"RELEASE=1",
 					"NS_BLOCK_ASSERTIONS=1",
 					"PUBLIC=1",
-					"MPW_JSON=1",
-					"MPW_SODIUM=1",
-					"MPW_CPERCIVA=0",
-					"MPW_COLOR=0",
+					"SPECTRE_JSON=1",
+					"SPECTRE_SODIUM=1",
+					"SPECTRE_CPERCIVA=0",
+					"SPECTRE_COLOR=0",
 					"$(inherited)",
 				);
 				GCC_STRICT_ALIASING = YES;
@@ -2338,10 +2338,10 @@
 				GCC_PREFIX_HEADER = Sources/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
-					"MPW_JSON=1",
-					"MPW_SODIUM=1",
-					"MPW_CPERCIVA=0",
-					"MPW_COLOR=0",
+					"SPECTRE_JSON=1",
+					"SPECTRE_SODIUM=1",
+					"SPECTRE_CPERCIVA=0",
+					"SPECTRE_COLOR=0",
 					"$(inherited)",
 				);
 				GCC_STRICT_ALIASING = YES;
@@ -2514,10 +2514,10 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"RELEASE=1",
 					"NS_BLOCK_ASSERTIONS=1",
-					"MPW_JSON=1",
-					"MPW_SODIUM=1",
-					"MPW_CPERCIVA=0",
-					"MPW_COLOR=0",
+					"SPECTRE_JSON=1",
+					"SPECTRE_SODIUM=1",
+					"SPECTRE_CPERCIVA=0",
+					"SPECTRE_COLOR=0",
 					"$(inherited)",
 				);
 				GCC_STRICT_ALIASING = YES;

@@ -128,7 +128,7 @@ class Tracker: AppConfigObserver {
         #endif
 
         // Breadcrumbs & errors
-        mpw_log_sink_register( { logPointer in
+        spectre_log_sink_register( { logPointer in
             guard let logEvent = logPointer?.pointee, logEvent.level <= .info
             else { return false }
 

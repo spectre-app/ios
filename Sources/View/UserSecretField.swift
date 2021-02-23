@@ -167,7 +167,7 @@ class UserSecretField: UITextField, UITextFieldDelegate, Updatable {
             let userSecret = self.passwordField?.text
 
             DispatchQueue.api.perform {
-                let identicon = mpw_identicon( userName, userSecret )
+                let identicon = spectre_identicon( userName, userSecret )
 
                 DispatchQueue.main.perform {
                     self.identiconLabel.attributedText = identicon.attributedText()

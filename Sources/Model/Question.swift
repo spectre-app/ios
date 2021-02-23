@@ -17,7 +17,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
             }
         }
     }
-    public var resultType: MPResultType {
+    public var resultType: SpectreResultType {
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
@@ -46,7 +46,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
 
     // MARK: --- Life ---
 
-    init(site: Site, keyword: String, resultType: MPResultType? = nil, resultState: String? = nil) {
+    init(site: Site, keyword: String, resultType: SpectreResultType? = nil, resultState: String? = nil) {
         self.site = site
         self.keyword = keyword
         self.resultType = resultType ?? .templatePhrase
@@ -86,15 +86,15 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
         self.site.use()
     }
 
-    public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
+    public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
                     -> Operation {
         self.site.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                           resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, operand: operand ?? self )
     }
 
-    public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .recovery, keyContext: String? = nil,
-                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
+    public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
+                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
                     -> Operation {
         self.site.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam, algorithm: algorithm, operand: operand ?? self )

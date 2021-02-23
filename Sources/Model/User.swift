@@ -8,7 +8,7 @@ import UIKit
 class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, UserObserver, SiteObserver, CredentialSupplier {
     public let observers = Observers<UserObserver>()
 
-    public var algorithm: MPAlgorithmVersion {
+    public var algorithm: SpectreAlgorithm {
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
@@ -25,7 +25,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
     }
     public let userName: String
-    public var identicon: MPIdenticon {
+    public var identicon: SpectreIdenticon {
         didSet {
             if oldValue != self.identicon {
                 self.dirty = true
@@ -33,9 +33,9 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             }
         }
     }
-    public var userKeyID: MPKeyID {
+    public var userKeyID: SpectreKeyID {
         didSet {
-            if !mpw_id_equals( [ oldValue ], &self.userKeyID ) {
+            if !spectre_id_equals( [ oldValue ], &self.userKeyID ) {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -66,7 +66,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public var authenticatedIdentifier: Promise<String?> {
         self.userKeyFactory?.authenticatedIdentifier( for: self.algorithm ) ?? Promise( .success( nil ) )
     }
-    public var defaultType: MPResultType {
+    public var defaultType: SpectreResultType {
         didSet {
             if oldValue != self.defaultType {
                 self.dirty = true
@@ -74,7 +74,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             }
         }
     }
-    public var loginType: MPResultType {
+    public var loginType: SpectreResultType {
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
@@ -99,13 +99,13 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
     }
     public var exportDate: Date? {
-        self.file?.mpw_get( path: "export", "date" )
+        self.file?.spectre_get( path: "export", "date" )
     }
 
     public var maskPasswords = false {
         didSet {
             if oldValue != self.maskPasswords, !self.initializing,
-               self.file?.mpw_set( self.maskPasswords, path: "user", "_ext_mpw", "maskPasswords" ) ?? true {
+               self.file?.spectre_set( self.maskPasswords, path: "user", "_ext_spectre", "maskPasswords" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -114,7 +114,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public var biometricLock = false {
         didSet {
             if oldValue != self.biometricLock, !self.initializing,
-               self.file?.mpw_set( self.biometricLock, path: "user", "_ext_mpw", "biometricLock" ) ?? true {
+               self.file?.spectre_set( self.biometricLock, path: "user", "_ext_spectre", "biometricLock" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
@@ -125,7 +125,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public var autofill = false {
         didSet {
             if oldValue != self.autofill, !self.initializing,
-               self.file?.mpw_set( self.autofill, path: "user", "_ext_mpw", "autofill" ) ?? true {
+               self.file?.spectre_set( self.autofill, path: "user", "_ext_spectre", "autofill" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
 
@@ -134,19 +134,19 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
     }
     public var autofillDecided: Bool {
-        self.file?.mpw_find( path: "user", "_ext_mpw", "autofill" ) != nil
+        self.file?.spectre_find( path: "user", "_ext_spectre", "autofill" ) != nil
     }
     public var attacker: Attacker? {
         didSet {
             if oldValue != self.attacker, !self.initializing,
-               self.file?.mpw_set( self.attacker?.description, path: "user", "_ext_mpw", "attacker" ) ?? true {
+               self.file?.spectre_set( self.attacker?.description, path: "user", "_ext_spectre", "attacker" ) ?? true {
                 self.dirty = true
                 self.observers.notify { $0.userDidChange( self ) }
             }
         }
     }
 
-    public var file:   UnsafeMutablePointer<MPMarshalledFile>?
+    public var file:   UnsafeMutablePointer<SpectreMarshalledFile>?
     public var origin: URL?
 
     public var sites = [ Site ]() {
@@ -214,11 +214,11 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
     // MARK: --- Life ---
 
-    init(algorithm: MPAlgorithmVersion? = nil, avatar: Avatar = .avatar_0, userName: String,
-         identicon: MPIdenticon = MPIdenticonUnset, userKeyID: MPKeyID = MPNoKeyID,
-         defaultType: MPResultType? = nil, loginType: MPResultType? = nil, loginState: String? = nil,
+    init(algorithm: SpectreAlgorithm? = nil, avatar: Avatar = .avatar_0, userName: String,
+         identicon: SpectreIdenticon = SpectreIdenticonUnset, userKeyID: SpectreKeyID = SpectreKeyIDUnset,
+         defaultType: SpectreResultType? = nil, loginType: SpectreResultType? = nil, loginState: String? = nil,
          lastUsed: Date = Date(), origin: URL? = nil,
-         file: UnsafeMutablePointer<MPMarshalledFile>? = mpw_marshal_file( nil, nil, nil ),
+         file: UnsafeMutablePointer<SpectreMarshalledFile>? = spectre_marshal_file( nil, nil, nil ),
          initialize: (User) -> Void = { _ in }) {
         self.algorithm = algorithm ?? .current
         self.avatar = avatar
@@ -233,10 +233,10 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         self.file = file
 
         defer {
-            self.maskPasswords = self.file?.mpw_get( path: "user", "_ext_mpw", "maskPasswords" ) ?? false
-            self.biometricLock = self.file?.mpw_get( path: "user", "_ext_mpw", "biometricLock" ) ?? false
-            self.autofill = self.file?.mpw_get( path: "user", "_ext_mpw", "autofill" ) ?? false
-            self.attacker = self.file?.mpw_get( path: "user", "_ext_mpw", "attacker" ).flatMap { Attacker.named( $0 ) }
+            self.maskPasswords = self.file?.spectre_get( path: "user", "_ext_spectre", "maskPasswords" ) ?? false
+            self.biometricLock = self.file?.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
+            self.autofill = self.file?.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
+            self.attacker = self.file?.spectre_get( path: "user", "_ext_spectre", "attacker" ).flatMap { Attacker.named( $0 ) }
 
             initialize( self )
             self.initializing = false
@@ -251,13 +251,13 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             else { throw AppError.internal( cause: "Cannot authenticate user since user key is missing.", details: self ) }
             defer { authKey.deallocate() }
 
-            guard mpw_id_valid( [ authKey.pointee.keyID ] )
+            guard spectre_id_valid( [ authKey.pointee.keyID ] )
             else { throw AppError.internal( cause: "Could not determine key ID for authentication key.", details: self ) }
 
-            if !mpw_id_valid( &self.userKeyID ) {
+            if !spectre_id_valid( &self.userKeyID ) {
                 self.userKeyID = authKey.pointee.keyID
             }
-            else if !mpw_id_equals( &self.userKeyID, [ authKey.pointee.keyID ] ) {
+            else if !spectre_id_equals( &self.userKeyID, [ authKey.pointee.keyID ] ) {
                 throw AppError.state( title: "Incorrect User Key", details: self )
             }
 
@@ -362,24 +362,24 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         self.lastUsed = Date()
     }
 
-    public func result(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: MPResultType? = nil, resultParam: String? = nil, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
+    public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
                     -> Operation {
         switch keyPurpose {
             case .authentication:
-                return self.mpw_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                        resultType: resultType ?? self.defaultType, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType ?? self.defaultType, resultParam: resultParam,
+                                            algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
-                return self.mpw_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                        resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
+                                            algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
-                return self.mpw_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                        resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                            resultType: resultType ?? .templatePhrase, resultParam: resultParam,
+                                            algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
                 return Operation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
@@ -388,24 +388,24 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
     }
 
-    public func state(for name: String? = nil, counter: MPCounterValue? = nil, keyPurpose: MPKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: MPResultType? = nil, resultParam: String, algorithm: MPAlgorithmVersion? = nil, operand: Operand? = nil)
+    public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
                     -> Operation {
         switch keyPurpose {
             case .authentication:
-                return self.mpw_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                       resultType: resultType ?? self.defaultType, resultParam: resultParam,
-                                       algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                           resultType: resultType ?? self.defaultType, resultParam: resultParam,
+                                           algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
-                return self.mpw_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                       resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
-                                       algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                           resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
+                                           algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
-                return self.mpw_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
-                                       resultType: resultType ?? MPResultType.templatePhrase, resultParam: resultParam,
-                                       algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                                           resultType: resultType ?? .templatePhrase, resultParam: resultParam,
+                                           algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
                 return Operation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
@@ -414,8 +414,8 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
     }
 
-    private func mpw_result(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
-                            resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion, operand: Operand)
+    private func spectre_result(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+                                resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: Operand)
                     -> Operation {
         Operation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
         DispatchQueue.api.promise {
@@ -424,15 +424,15 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             defer { userKey.deallocate() }
 
             guard let result = String.valid(
-                    mpw_site_result( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
+                    spectre_site_result( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
             else { throw AppError.internal( cause: "Cannot calculate result.", details: self ) }
 
             return result
         } )
     }
 
-    private func mpw_state(for name: String, counter: MPCounterValue, keyPurpose: MPKeyPurpose, keyContext: String?,
-                           resultType: MPResultType, resultParam: String?, algorithm: MPAlgorithmVersion, operand: Operand)
+    private func spectre_state(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+                               resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: Operand)
                     -> Operation {
         Operation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
         DispatchQueue.api.promise {
@@ -441,7 +441,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             defer { userKey.deallocate() }
 
             guard let result = String.valid(
-                    mpw_site_state( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
+                    spectre_site_state( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
             else { throw AppError.internal( cause: "Cannot calculate result.", details: self ) }
 
             return result
