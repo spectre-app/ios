@@ -66,7 +66,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.dataSource = self.sitesDataSource
         self.backgroundColor = .clear
         self.isOpaque = false
-        self.separatorStyle = .singleLine
+        self.separatorStyle = .none
         self => \.separatorColor => Theme.current.color.mute
     }
 
