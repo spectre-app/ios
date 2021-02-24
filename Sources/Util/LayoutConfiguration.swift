@@ -207,125 +207,121 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         return self
     }
 
-    @discardableResult func constrain(as anchors: Anchor, to host: UIView? = nil, margin: Bool = false) -> Self {
-        if anchors.contains( .top ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.topAnchor.constraint( equalTo: $1.topAnchor )
-                }
-                else {
-                    return (host ?? $0).topAnchor.constraint( equalTo: $1.topAnchor )
-                }
-            }
-        }
-        if anchors.contains( .leading ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.leadingAnchor.constraint( equalTo: $1.leadingAnchor )
-                }
-                else {
-                    return (host ?? $0).leadingAnchor.constraint( equalTo: $1.leadingAnchor )
-                }
-            }
-        }
-        if anchors.contains( .trailing ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.trailingAnchor.constraint( equalTo: $1.trailingAnchor )
-                }
-                else {
-                    return (host ?? $0).trailingAnchor.constraint( equalTo: $1.trailingAnchor )
-                }
-            }
-        }
-        if anchors.contains( .bottom ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.bottomAnchor.constraint( equalTo: $1.bottomAnchor )
-                }
-                else {
-                    return (host ?? $0).bottomAnchor.constraint( equalTo: $1.bottomAnchor )
-                }
-            }
-        }
-        if anchors.contains( .left ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.leftAnchor.constraint( equalTo: $1.leftAnchor )
-                }
-                else {
-                    return (host ?? $0).leftAnchor.constraint( equalTo: $1.leftAnchor )
-                }
-            }
-        }
-        if anchors.contains( .right ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.rightAnchor.constraint( equalTo: $1.rightAnchor )
-                }
-                else {
-                    return (host ?? $0).rightAnchor.constraint( equalTo: $1.rightAnchor )
-                }
-            }
-        }
-        if anchors.contains( .width ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.widthAnchor.constraint( equalTo: $1.widthAnchor )
-                }
-                else {
-                    return (host ?? $0).widthAnchor.constraint( equalTo: $1.widthAnchor )
-                }
-            }
-        }
-        if anchors.contains( .height ) {
-            self.constrain {
-                if margin {
-                    return (host ?? $0).layoutMarginsGuide.heightAnchor.constraint( equalTo: $1.heightAnchor )
-                }
-                else {
-                    return (host ?? $0).heightAnchor.constraint( equalTo: $1.heightAnchor )
-                }
-            }
-        }
-        if anchors.contains( .centerX ) {
-            self.constrainAll {
-                if margin {
-                    return [
-                        (host ?? $0).layoutMarginsGuide.leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ),
-                        (host ?? $0).layoutMarginsGuide.centerXAnchor.constraint( equalTo: $1.centerXAnchor ),
-                        (host ?? $0).layoutMarginsGuide.trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ),
-                    ]
-                }
-                else {
-                    return [
-                        (host ?? $0).leadingAnchor.constraint( lessThanOrEqualTo: $1.leadingAnchor ),
-                        (host ?? $0).centerXAnchor.constraint( equalTo: $1.centerXAnchor ),
-                        (host ?? $0).trailingAnchor.constraint( greaterThanOrEqualTo: $1.trailingAnchor ),
-                    ]
-                }
-            }
-        }
-        if anchors.contains( .centerY ) {
-            self.constrainAll {
-                if margin {
-                    return [
-                        (host ?? $0).layoutMarginsGuide.topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ),
-                        (host ?? $0).layoutMarginsGuide.centerYAnchor.constraint( equalTo: $1.centerYAnchor ),
-                        (host ?? $0).layoutMarginsGuide.bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ),
-                    ]
-                }
-                else {
-                    return [
-                        (host ?? $0).topAnchor.constraint( lessThanOrEqualTo: $1.topAnchor ),
-                        (host ?? $0).centerYAnchor.constraint( equalTo: $1.centerYAnchor ),
-                        (host ?? $0).bottomAnchor.constraint( greaterThanOrEqualTo: $1.bottomAnchor ),
-                    ]
-                }
-            }
-        }
+    @discardableResult func constrain(as anchors: Anchor, to guide: UILayoutGuide) -> Self {
+        self.constrain( as: anchors, toGuide: guide, toView: nil, margin: false )
+    }
 
-        return self
+    @discardableResult func constrain(as anchors: Anchor, to view: UIView? = nil, margin: Bool = false) -> Self {
+        self.constrain( as: anchors, toGuide: nil, toView: view, margin: margin )
+    }
+
+    @discardableResult private func constrain(as toAnchors: Anchor, toGuide guide: UILayoutGuide?, toView view: UIView?, margin: Bool) -> Self {
+        let allAnchors: [Anchor] = [ .top, .leading, .trailing, .bottom, .left, .right, .width, .height, .centerX, .centerY ]
+        return self.constrainAll { superview, target in
+            allAnchors.filter { toAnchors.contains( $0 ) }.flatMap { anchor -> [NSLayoutConstraint] in
+                switch anchor {
+                    case .top:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.topAnchor.constraint( equalTo: target.topAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).topAnchor.constraint( equalTo: target.topAnchor ) ]
+                        }
+
+                    case .leading:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.leadingAnchor.constraint( equalTo: target.leadingAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).leadingAnchor.constraint( equalTo: target.leadingAnchor ) ]
+                        }
+
+                    case .trailing:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.trailingAnchor.constraint( equalTo: target.trailingAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).trailingAnchor.constraint( equalTo: target.trailingAnchor ) ]
+                        }
+
+                    case .bottom:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.bottomAnchor.constraint( equalTo: target.bottomAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).bottomAnchor.constraint( equalTo: target.bottomAnchor ) ]
+                        }
+
+                    case .left:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.leftAnchor.constraint( equalTo: target.leftAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).leftAnchor.constraint( equalTo: target.leftAnchor ) ]
+                        }
+
+                    case .right:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.rightAnchor.constraint( equalTo: target.rightAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).rightAnchor.constraint( equalTo: target.rightAnchor ) ]
+                        }
+
+                    case .width:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.widthAnchor.constraint( equalTo: target.widthAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).widthAnchor.constraint( equalTo: target.widthAnchor ) ]
+                        }
+
+                    case .height:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [ guide.heightAnchor.constraint( equalTo: target.heightAnchor ) ]
+                        }
+                        else {
+                            return [ (view ?? superview).heightAnchor.constraint( equalTo: target.heightAnchor ) ]
+                        }
+
+                    case .centerX:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [
+                                guide.leadingAnchor.constraint( lessThanOrEqualTo: target.leadingAnchor ),
+                                guide.centerXAnchor.constraint( equalTo: target.centerXAnchor ),
+                                guide.trailingAnchor.constraint( greaterThanOrEqualTo: target.trailingAnchor ),
+                            ]
+                        }
+                        else {
+                            return [
+                                (view ?? superview).leadingAnchor.constraint( lessThanOrEqualTo: target.leadingAnchor ),
+                                (view ?? superview).centerXAnchor.constraint( equalTo: target.centerXAnchor ),
+                                (view ?? superview).trailingAnchor.constraint( greaterThanOrEqualTo: target.trailingAnchor ),
+                            ]
+                        }
+
+                    case .centerY:
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                            return [
+                                guide.topAnchor.constraint( lessThanOrEqualTo: target.topAnchor ),
+                                guide.centerYAnchor.constraint( equalTo: target.centerYAnchor ),
+                                guide.bottomAnchor.constraint( greaterThanOrEqualTo: target.bottomAnchor ),
+                            ]
+                        }
+                        else {
+                            return [
+                                (view ?? superview).topAnchor.constraint( lessThanOrEqualTo: target.topAnchor ),
+                                (view ?? superview).centerYAnchor.constraint( equalTo: target.centerYAnchor ),
+                                (view ?? superview).bottomAnchor.constraint( greaterThanOrEqualTo: target.bottomAnchor ),
+                            ]
+                        }
+
+                    default:
+                        wrn( "Unsupported anchor: %@", anchor )
+                        return []
+                }
+            }
+        }
     }
 
     //! Activate this constraint when the configuration becomes active.
@@ -400,86 +396,89 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     public func activate(animationDuration duration: TimeInterval = -1, parent: AnyLayoutConfiguration? = nil) -> Self {
         guard !self.activated
         else { return self }
+
         if duration > 0 {
-            UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
+            DispatchQueue.main.perform {
+                UIView.animate( withDuration: duration ) { self.activate( parent: parent ) }
+            }
             return self
         }
         else if duration == 0 {
-            UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
+            DispatchQueue.main.perform {
+                UIView.performWithoutAnimation { self.activate( parent: parent ) }
+            }
             return self
         }
         trc( "%@: activate: %@", parent, self )
 
         DispatchQueue.main.perform {
-            UIView.animate( withDuration: duration ) {
-                let owningView = self.target.owningView
-                let targetView = self.target.view
+            let owningView = self.target.owningView
+            let targetView = self.target.view
 
-                self.inactiveConfigurations.forEach {
-                    trc( "%@:%@: -> deactivate inactive child: %@", parent, self.target, $0 )
-                    $0.deactivate( animationDuration: duration, parent: self )
-                }
+            self.inactiveConfigurations.forEach {
+                trc( "%@:%@: -> deactivate inactive child: %@", parent, self.target, $0 )
+                $0.deactivate( animationDuration: duration, parent: self )
+            }
 
-                if let newPriority = self.activeProperties["compressionResistance.horizontal"] as? UILayoutPriority,
-                   let oldPriority = targetView?.contentCompressionResistancePriority( for: .horizontal ),
-                   newPriority != oldPriority {
-                    self.inactiveProperties["compressionResistance.horizontal"] = oldPriority
-                    targetView?.setContentCompressionResistancePriority( newPriority, for: .horizontal )
-                }
-                if let newPriority = self.activeProperties["compressionResistance.vertical"] as? UILayoutPriority,
-                   let oldPriority = targetView?.contentCompressionResistancePriority( for: .vertical ),
-                   newPriority != oldPriority {
-                    self.inactiveProperties["compressionResistance.vertical"] = oldPriority
-                    targetView?.setContentCompressionResistancePriority( newPriority, for: .vertical )
-                }
-                if let newPriority = self.activeProperties["hugging.horizontal"] as? UILayoutPriority,
-                   let oldPriority = targetView?.contentHuggingPriority( for: .horizontal ),
-                   newPriority != oldPriority {
-                    self.inactiveProperties["hugging.horizontal"] = oldPriority
-                    targetView?.setContentHuggingPriority( newPriority, for: .horizontal )
-                }
-                if let newPriority = self.activeProperties["hugging.vertical"] as? UILayoutPriority,
-                   let oldPriority = targetView?.contentHuggingPriority( for: .vertical ),
-                   newPriority != oldPriority {
-                    self.inactiveProperties["hugging.vertical"] = oldPriority
-                    targetView?.setContentHuggingPriority( newPriority, for: .vertical )
-                }
+            if let newPriority = self.activeProperties["compressionResistance.horizontal"] as? UILayoutPriority,
+               let oldPriority = targetView?.contentCompressionResistancePriority( for: .horizontal ),
+               newPriority != oldPriority {
+                self.inactiveProperties["compressionResistance.horizontal"] = oldPriority
+                targetView?.setContentCompressionResistancePriority( newPriority, for: .horizontal )
+            }
+            if let newPriority = self.activeProperties["compressionResistance.vertical"] as? UILayoutPriority,
+               let oldPriority = targetView?.contentCompressionResistancePriority( for: .vertical ),
+               newPriority != oldPriority {
+                self.inactiveProperties["compressionResistance.vertical"] = oldPriority
+                targetView?.setContentCompressionResistancePriority( newPriority, for: .vertical )
+            }
+            if let newPriority = self.activeProperties["hugging.horizontal"] as? UILayoutPriority,
+               let oldPriority = targetView?.contentHuggingPriority( for: .horizontal ),
+               newPriority != oldPriority {
+                self.inactiveProperties["hugging.horizontal"] = oldPriority
+                targetView?.setContentHuggingPriority( newPriority, for: .horizontal )
+            }
+            if let newPriority = self.activeProperties["hugging.vertical"] as? UILayoutPriority,
+               let oldPriority = targetView?.contentHuggingPriority( for: .vertical ),
+               newPriority != oldPriority {
+                self.inactiveProperties["hugging.vertical"] = oldPriority
+                targetView?.setContentHuggingPriority( newPriority, for: .vertical )
+            }
 
-                if !self.constrainers.isEmpty {
-                    targetView?.translatesAutoresizingMaskIntoConstraints = false
-                    for constrainer in self.constrainers {
-                        for constraint in constrainer( owningView ?? dummyView, self.target ) {
-                            trc( "%@:%@: activating %@", parent, self.target, constraint )
-                            if constraint.firstItem !== dummyView && constraint.secondItem !== dummyView {
-                                constraint.isActive = true
-                                self.activeConstraints.insert( constraint )
-                            }
-                            else {
-                                assertionFailure( "Cannot constrain against owning view since view is not yet attached to the hierarchy." )
-                            }
+            if !self.constrainers.isEmpty {
+                targetView?.translatesAutoresizingMaskIntoConstraints = false
+                for constrainer in self.constrainers {
+                    for constraint in constrainer( owningView ?? dummyView, self.target ) {
+                        trc( "%@:%@: activating %@", parent, self.target, constraint )
+                        if constraint.firstItem !== dummyView && constraint.secondItem !== dummyView {
+                            constraint.isActive = true
+                            self.activeConstraints.insert( constraint )
+                        }
+                        else {
+                            assertionFailure( "Cannot constrain against owning view since view is not yet attached to the hierarchy." )
                         }
                     }
                 }
+            }
 
-                self.properties.forEach { $0.activate( self.target.view ) }
-                Theme.current.observers.register( observer: self )
+            self.properties.forEach { $0.activate( self.target.view ) }
+            Theme.current.observers.register( observer: self )
 
-                targetView.flatMap { targetView in self.actions.forEach { $0( targetView, true ) } }
+            targetView.flatMap { targetView in self.actions.forEach { $0( targetView, true ) } }
 
-                self.activeConfigurations.forEach {
-                    trc( "%@:%@: -> activate active child: %@", parent, self.target, $0 )
-                    $0.activate( animationDuration: duration, parent: self )
-                }
+            self.activeConfigurations.forEach {
+                trc( "%@:%@: -> activate active child: %@", parent, self.target, $0 )
+                $0.activate( animationDuration: duration, parent: self )
+            }
 
-                self.activated = true
+            self.activated = true
 
-                self.refreshViews.forEach { refresh in
-                    refresh.perform( in: targetView )
-                }
+            self.refreshViews.forEach { refresh in
+                refresh.perform( in: targetView )
+            }
 
-                if parent == nil {
-                    self.layoutIfNeeded()
-                }
+            if parent == nil {
+                self.layoutIfNeeded()
             }
         }
 
@@ -492,11 +491,15 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         guard self.activated
         else { return self }
         if duration > 0 {
-            UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
+            DispatchQueue.main.perform {
+                UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
+            }
             return self
         }
         else if duration == 0 {
-            UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
+            DispatchQueue.main.perform {
+                UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
+            }
             return self
         }
         trc( "%@: deactivate: %@", parent, self )
