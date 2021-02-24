@@ -22,11 +22,11 @@ class MainUsersViewController: BaseUsersViewController {
         // - View
         self.appToolbar.axis = .horizontal
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ),
-                                                          image: .icon( "" ), background: false ) { [unowned self] _, _ in
+                                                          image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
             self.detailsHost.show( DetailAppViewController(), sender: self )
         } )
         self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users.user", action: "auth" ),
-                                                         image: .icon( "" ), background: false ) { [unowned self] _, incognitoButton in
+                                                         image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, incognitoButton in
             guard let incognitoButton = incognitoButton as? TimedButton
             else { return }
             let userEvent = Tracker.shared.begin( track: .subject( "users", action: "user" ) )

@@ -13,21 +13,21 @@ class EffectView: UIView, ThemeObserver {
             }
         }
     }
-    public var   isBackground:        Bool {
+    public var isBackground: Bool {
         didSet {
             if self.isBackground != oldValue {
                 self.update()
             }
         }
     }
-    public var   isRound:             Bool {
+    public var isCircular:   Bool {
         didSet {
-            if self.isRound != oldValue {
+            if self.isCircular != oldValue {
                 self.update()
             }
         }
     }
-    public var   rounding:            CGFloat {
+    public var rounding:     CGFloat {
         didSet {
             if self.rounding != oldValue {
                 self.update()
@@ -53,14 +53,14 @@ class EffectView: UIView, ThemeObserver {
     }
     override var frame:               CGRect {
         didSet {
-            if self.isRound && self.frame != oldValue {
+            if self.isCircular && self.frame != oldValue {
                 self.update()
             }
         }
     }
     override var bounds:              CGRect {
         didSet {
-            if self.isRound && self.bounds != oldValue {
+            if self.isCircular && self.bounds != oldValue {
                 self.update()
             }
         }
@@ -113,10 +113,10 @@ class EffectView: UIView, ThemeObserver {
     private lazy var blurEffectView     = UIVisualEffectView( effect: self.blurEffect )
     private lazy var vibrancyEffectView = UIVisualEffectView( effect: self.vibrancyEffect )
 
-    init(border: CGFloat = 1.5, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+    init(border: CGFloat = 1.5, background: Bool = true, circular: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
         self.borderWidth = border
         self.isBackground = background
-        self.isRound = round
+        self.isCircular = circular
         self.rounding = rounding
         self.isDimmedBySelection = dims
 
@@ -144,7 +144,7 @@ class EffectView: UIView, ThemeObserver {
     }
 
     convenience init(content: UIView, border: CGFloat = 1.5, background: Bool = true, round: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
-        self.init( border: border, background: background, round: round, rounding: rounding, dims: false )
+        self.init( border: border, background: background, circular: round, rounding: rounding, dims: false )
 
         // - View
         self.addContentView( content )
@@ -184,7 +184,6 @@ class EffectView: UIView, ThemeObserver {
     private func update() {
         DispatchQueue.main.perform {
             if self.isBackground {
-                self.blurEffectView.layer.borderWidth = self.borderWidth
                 self.blurEffect = UIBlurEffect( style: {
                     if #available( iOS 13, * ) {
                         return self.isDimmed ? .systemUltraThinMaterial: .systemThinMaterial
@@ -195,11 +194,14 @@ class EffectView: UIView, ThemeObserver {
                 }() )
             }
             else {
-                self.blurEffectView.layer.borderWidth = .off
                 self.blurEffect = nil
             }
 
-            self.blurEffectView.layer.cornerRadius = self.isRound ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
+            if #available( iOS 13.0, * ) {
+                self.blurEffectView.layer.cornerCurve = .continuous
+            }
+            self.blurEffectView.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
+            self.blurEffectView.layer.borderWidth = self.borderWidth
             self.blurEffectView.layer.borderColor = (self.borderColor ?? Theme.current.color.secondary.get())?.cgColor
             self.blurEffectView.alpha = self.isDimmed ? .short: .on
         }

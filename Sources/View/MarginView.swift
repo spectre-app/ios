@@ -20,6 +20,16 @@ class MarginView: UIView {
         }
     }
 
+    convenience init(space: CGSize = CGSize( width: 8, height: 8 )) {
+        let spacer = UIView()
+        LayoutConfiguration( view: spacer )
+                .constrain { $1.widthAnchor.constraint( equalToConstant: space.width ) }
+                .constrain { $1.heightAnchor.constraint( equalToConstant: space.height ) }
+                .activate()
+
+        self.init( for: spacer, margins: .zero )
+    }
+
     init(for view: UIView, margins: UIEdgeInsets? = nil) {
         super.init( frame: .zero )
 

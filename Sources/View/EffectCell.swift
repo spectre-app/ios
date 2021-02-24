@@ -23,7 +23,7 @@ class EffectCell: UICollectionViewCell {
         }
     }
 
-    let effectView = EffectView( round: true, dims: true )
+    let effectView = EffectView( circular: true, dims: true )
     let debugLabel = UILabel()
 
     // MARK: --- Life ---

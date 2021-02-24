@@ -25,7 +25,7 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.authentication-services-credential-provider-ui</string>
 		<key>NSExtensionPrincipalClass</key>
-		<string>$(PRODUCT_MODULE_NAME).AutoFillViewController</string>
+		<string>$(PRODUCT_MODULE_NAME).AutoFillProviderController</string>
 	</dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authenticate to unlock your biometrics-enabled user.</string>

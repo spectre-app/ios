@@ -369,9 +369,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
         private let backgroundImage = BackgroundView( mode: .clear )
         private let modeButton      = EffectButton( track: .subject( "sites.site", action: "mode" ),
-                                                    image: .icon( "" ), background: false )
+                                                    image: .icon( "" ), border: 0, background: false )
         private let newButton       = EffectButton( track: .subject( "sites.site", action: "add" ),
-                                                    image: .icon( "" ), background: false )
+                                                    image: .icon( "" ), border: 0, background: false )
         private let actionsStack    = UIStackView()
         private let selectionView   = UIView()
         private let resultLabel     = UITextField()
@@ -507,11 +507,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             super.didMoveToSuperview()
 
             self.actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-            self.sitesView?.siteActions.filter( { $0.appearance.contains( .cell ) } ).forEach { siteAction in
+            self.sitesView?.siteActions.filter( { $0.appearance.contains( .cell ) } ).forEach { action in
                 self.actionsStack.addArrangedSubview(
-                        EffectButton( track: siteAction.tracking, image: .icon( siteAction.icon ), background: false ) { [unowned self] _, _ in
+                        EffectButton( track: action.tracking, image: .icon( action.icon ), border: 0, background: false ) {
+                            [unowned self] _, _ in
                             if let site = self.site {
-                                siteAction.action( site, self.mode, .cell )
+                                action.action( site, self.mode, .cell )
                             }
                         } )
             }

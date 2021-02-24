@@ -191,7 +191,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             view.valueField.keyboardType = .emailAddress
             view.valueField.leftView = MarginView( for: self.userButton, margins: .border( 4 ) )
 
-            self.userButton.isRound = true
+            self.userButton.isCircular = true
             self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let user = self.model?.user, self.model?.loginType == SpectreResultType.none {
                     self.viewController?.show(

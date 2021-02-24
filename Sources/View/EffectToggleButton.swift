@@ -75,7 +75,7 @@ class EffectToggleButton: UIView {
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
 
-        self.contentView.isRound = true
+        self.contentView.isCircular = true
 
         self.button.contentEdgeInsets = .border( 12 )
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in

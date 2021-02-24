@@ -28,7 +28,7 @@
 		93D3929C87281367272F69F1 /* TransientState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3975A310BEA6C16903C25 /* TransientState.swift */; };
 		93D392B6273BF2B4BFEF39D9 /* FontAwesome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */; };
 		93D3930DDA8EE099DDBC2D78 /* Observers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3900653D9D95598C41DFA /* Observers.swift */; };
-		93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */; };
+		93D3938C624559142E7738DD /* AutoFillProviderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3901C556A5B4D1C04E2D4 /* AutoFillProviderController.swift */; };
 		93D393B953CB94FC9E964625 /* SitePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D251169E42F0AAC451F /* SitePreview.swift */; };
 		93D393C161EB8FA55FA5174F /* SitesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3903B1B32B494FBD792EC /* SitesTableView.swift */; };
 		93D3944AEF7412E7B189450F /* DialogMasterPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B651DB0789891C67639 /* DialogMasterPasswordViewController.swift */; };
@@ -247,6 +247,7 @@
 		DA762FB224E04F2E00E61D3F /* PoppinsLatin-ExtraBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F7024E04F2E00E61D3F /* PoppinsLatin-ExtraBoldItalic.otf */; };
 		DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
 		DA762FB624E0C58700E61D3F /* Poppins-VF.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB524E0C58700E61D3F /* Poppins-VF.otf */; };
+		DAA0EDFF25E5861B00533479 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
 		DAA449D21EEC4B5800E7BDD5 /* spectre-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* spectre-marshal.c */; };
 		DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
 		DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA70EC7F1811B13C00F65DB2 /* StoreKit.framework */; };
@@ -394,7 +395,7 @@
 		27FFC4753DD6FA4FE2F9176A /* Pods-Spectre-AutoFill.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.debug.xcconfig"; sourceTree = "<group>"; };
 		475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_AutoFill.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
-		93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillViewController.swift; sourceTree = "<group>"; };
+		93D3901C556A5B4D1C04E2D4 /* AutoFillProviderController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillProviderController.swift; sourceTree = "<group>"; };
 		93D3903B1B32B494FBD792EC /* SitesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesTableView.swift; sourceTree = "<group>"; };
 		93D3909744CE918AB4432318 /* ConstraintResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintResolver.swift; sourceTree = "<group>"; };
 		93D3909E003FF5E936687AA6 /* Feedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
@@ -879,7 +880,7 @@
 				DA0E5532250D6F7F002B3AB1 /* Info.plist */,
 				93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */,
 				93D392986FB7C71256EABBB0 /* AutoFillSitesViewController.swift */,
-				93D3901C556A5B4D1C04E2D4 /* AutoFillViewController.swift */,
+				93D3901C556A5B4D1C04E2D4 /* AutoFillProviderController.swift */,
 				93D3985695447159F2D4BE76 /* AutoFillModel.swift */,
 			);
 			path = AutoFill;
@@ -1452,6 +1453,7 @@
 				DAF80F35251AFB27001C2963 /* avatar-3@2x.png in Resources */,
 				DAF80F25251AFB27001C2963 /* avatar-18@2x.png in Resources */,
 				DAF80F30251AFB27001C2963 /* avatar-7.png in Resources */,
+				DAA0EDFF25E5861B00533479 /* Assets.xcassets in Resources */,
 				DAAEDE2225E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */,
 				DAF80F23251AFB27001C2963 /* avatar-0.png in Resources */,
 				DAF80F22251AFB27001C2963 /* avatar-2@2x.png in Resources */,
@@ -1783,7 +1785,7 @@
 				93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */,
 				93D39122A70525461AEE4D62 /* BaseUsersViewController.swift in Sources */,
 				93D394F428331F661FF95123 /* AutoFillSitesViewController.swift in Sources */,
-				93D3938C624559142E7738DD /* AutoFillViewController.swift in Sources */,
+				93D3938C624559142E7738DD /* AutoFillProviderController.swift in Sources */,
 				93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */,
 				93D390276912B43B33158168 /* PagerView.swift in Sources */,
 				93D39C76D6160B82127FBBB2 /* PickerView.swift in Sources */,

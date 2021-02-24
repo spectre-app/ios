@@ -8,7 +8,6 @@ import UIKit
 class EffectButton: EffectView {
     var tracking:        Tracking?
     var action:          ((UIEvent, EffectButton) -> Void)?
-    var tapEffect = true
     var image:           UIImage? {
         didSet {
             if self.image != oldValue {
@@ -31,10 +30,20 @@ class EffectButton: EffectView {
         }
     }
 
+    var padded    = true {
+        didSet {
+            if self.padded != oldValue {
+                self.update()
+            }
+        }
+    }
+    var tapEffect = true
+
+    let button = UIButton( type: .custom )
+
     private var stateObserver: Any?
-    private let button = UIButton( type: .custom )
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
-                                                                     .with( priority: UILayoutPriority( 900 ) )
+                                                                     .with( priority: UILayoutPriority( 752 ) )
 
     // MARK: --- Life ---
 
@@ -43,15 +52,16 @@ class EffectButton: EffectView {
     }
 
     init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
-         border: CGFloat = 1, background: Bool = true, round: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
+         border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
          action: ((UIEvent, EffectButton) -> Void)? = nil) {
         self.tracking = track
         self.action = action
-        super.init( border: border, background: background, round: round, rounding: rounding, dims: false )
+        super.init( border: border, background: background, circular: circular, rounding: rounding, dims: false )
 
         self.image = image
         self.title = title
         self.attributedTitle = attributedTitle
+        self.squareButtonConstraint.isActive = square
 
         // - View
         self.layoutMargins = .zero
@@ -103,14 +113,14 @@ class EffectButton: EffectView {
 
     private func update() {
         DispatchQueue.main.perform {
-            if self.title?.count ?? 0 == 1 || self.attributedTitle?.length ?? 0 == 1 ||
-                       (self.attributedTitle?.length ?? 0 == 3 && self.attributedTitle == NSAttributedString.icon( self.attributedTitle?.string.first?.description ?? "" )) {
+            if !self.padded {
+                self.button.contentEdgeInsets = .zero
+            }
+            else if self.squareButtonConstraint.isActive {
                 self.button.contentEdgeInsets = .border( 12 )
-                self.squareButtonConstraint.isActive = true
             }
             else {
                 self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
-                self.squareButtonConstraint.isActive = false
             }
 
             self.button.setImage( self.image, for: .normal )

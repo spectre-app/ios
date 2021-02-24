@@ -90,11 +90,8 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                 .activate()
 
         LayoutConfiguration( view: self.contentView )
-                .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
                 .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+                .constrain( as: .box )
                 .activate()
 
         self.fixedContentConfiguration = LayoutConfiguration( view: self.contentView )

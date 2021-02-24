@@ -188,9 +188,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let nameLabel = UILabel()
         private let nameField = UITextField()
         private lazy var avatarButton = EffectButton( track: .subject( "users.user", action: "avatar" ),
-                                                      background: false ) { _, _ in self.avatar.next() }
+                                                      border: 0, background: false ) { _, _ in self.avatar.next() }
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
-                                                        image: .icon( "" ), background: false ) { _, _ in self.attemptBiometrics() }
+                                                        image: .icon( "" ), border: 0, background: false, square: true )
         private var secretEvent:                 Tracker.TimedEvent?
         private let secretField   = UserSecretField()
         private let idBadgeView   = UIImageView( image: .icon( "" ) )
@@ -222,6 +222,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameLabel.alignmentRectOutsets = .horizontal()
 
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
+
+            self.biometricButton.action(for: .primaryActionTriggered ) {
+                self.attemptBiometrics()
+            }
 
             self.secretField.borderStyle = .roundedRect
             self.secretField => \.font => Theme.current.font.callout

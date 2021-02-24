@@ -9,11 +9,10 @@
 import AuthenticationServices
 import LocalAuthentication
 
-class AutoFillViewController: ASCredentialProviderViewController {
+class AutoFillProviderController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         LogSink.shared.register()
 
-        dbg( "init:nibName:bundle: %@", nibNameOrNil, nibBundleOrNil )
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
     }
 
