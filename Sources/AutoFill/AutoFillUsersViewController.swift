@@ -47,7 +47,7 @@ class AutoFillUsersViewController: BaseUsersViewController {
         step1Title.numberOfLines = 0
         step1Title.textAlignment = .center
         step1Title.text = "1. Open Spectre"
-        let step1Image = EffectButton( image: UIImage( named: "icon" ), background: false, circular: false, rounding: 22 )
+        let step1Image = EffectButton( image: UIImage( named: "icon" ), background: false, square: true, circular: false, rounding: 22 )
         step1Image.padded = false
         LayoutConfiguration( view: step1Image )
                 .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
@@ -58,7 +58,7 @@ class AutoFillUsersViewController: BaseUsersViewController {
         step2Title.numberOfLines = 0
         step2Title.textAlignment = .center
         step2Title.text = "2. Sign into your user"
-        let step2Image = EffectButton( image: UIImage( named: "avatar-0" ), border: 0, background: false, circular: false )
+        let step2Image = EffectButton( image: UIImage( named: "avatar-0" ), border: 0, background: false, square: true, circular: false )
         step2Image.padded = false
         LayoutConfiguration( view: step2Image )
                 .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
