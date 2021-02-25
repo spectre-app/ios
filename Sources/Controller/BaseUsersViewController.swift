@@ -437,7 +437,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                         case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
                             wrn( "Biometrics cancelled: %@", error )
                         default:
-                            mperror( title: "Biometrics Rejected", error: error )
+                            mperror( title: "Couldn't unlock user", error: error )
                     }
                 }
             }

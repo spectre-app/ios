@@ -51,7 +51,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         value: { _ in (label: "Let's Talk 🅿︎", image: nil) },
                         caption: { _ in
                             """
-                            We're here to help.  You can also reach us at:\nsupport@volto.app
+                            We're here to help.  You can also reach us at:\nsupport@spectre.app
                             """
                         } ) {
                 if let viewController = $0.viewController {

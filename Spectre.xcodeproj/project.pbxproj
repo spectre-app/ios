@@ -61,7 +61,7 @@
 		93D397BBE3BC5FC8EDBDB2DB /* UIView+Spectre.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B6403FE258E526E5E85 /* UIView+Spectre.m */; };
 		93D397CE8C3D324B39A60501 /* ItemsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F647CD1C68F9BA9AD5 /* ItemsViewController.swift */; };
 		93D397E201A63B9E1F22CC6A /* DetailHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395A198BEFB1685A781C2 /* DetailHostController.swift */; };
-		93D39830BD42CE3468F6AFCB /* AutoFillSetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394C13D268B6594F0E358 /* AutoFillSetupViewController.swift */; };
+		93D39830BD42CE3468F6AFCB /* IntroAutoFillViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394C13D268B6594F0E358 /* IntroAutoFillViewController.swift */; };
 		93D3983CA421991D12ADDDBA /* LogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* LogSink.swift */; };
 		93D39854B7171FE34024CEED /* PagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* PagerView.swift */; };
 		93D398C964D8B1FC0F320085 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* User.swift */; };
@@ -426,7 +426,7 @@
 		93D39424D508440582DC7FD0 /* SpinnerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpinnerView.swift; sourceTree = "<group>"; };
 		93D39477D638F3147366C029 /* Animations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
 		93D394B019A4203EF763DBEA /* DetailUserViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailUserViewController.swift; sourceTree = "<group>"; };
-		93D394C13D268B6594F0E358 /* AutoFillSetupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillSetupViewController.swift; sourceTree = "<group>"; };
+		93D394C13D268B6594F0E358 /* IntroAutoFillViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroAutoFillViewController.swift; sourceTree = "<group>"; };
 		93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FontAwesome.swift; sourceTree = "<group>"; };
 		93D3952343848B72D4CC0D4A /* AlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlertController.swift; sourceTree = "<group>"; };
 		93D39564D6408073D59CDB6A /* EffectButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectButton.swift; sourceTree = "<group>"; };
@@ -851,7 +851,7 @@
 				93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */,
 				93D393A49E8705F3E38EB779 /* BaseViewController.swift */,
 				93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */,
-				93D394C13D268B6594F0E358 /* AutoFillSetupViewController.swift */,
+				93D394C13D268B6594F0E358 /* IntroAutoFillViewController.swift */,
 				93D39CCF90A49C099A05280B /* DialogViewController.swift */,
 				93D39B651DB0789891C67639 /* DialogMasterPasswordViewController.swift */,
 				93D3952343848B72D4CC0D4A /* AlertController.swift */,
@@ -1680,7 +1680,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = "/bin/sh -e";
-			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nSENTRY_ORG=lyndir SENTRY_PROJECT=volto sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
+			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nSENTRY_ORG=lyndir SENTRY_PROJECT=spectre sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FA35C1C35E346A6267315897 /* [CP] Embed Pods Frameworks */ = {
@@ -1884,7 +1884,7 @@
 				93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */,
 				93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */,
 				93D39E0E73178FE39CF12B45 /* BaseSitesViewController.swift in Sources */,
-				93D39830BD42CE3468F6AFCB /* AutoFillSetupViewController.swift in Sources */,
+				93D39830BD42CE3468F6AFCB /* IntroAutoFillViewController.swift in Sources */,
 				93D39854B7171FE34024CEED /* PagerView.swift in Sources */,
 				93D399FB0C4228E18FDFAC9F /* PickerView.swift in Sources */,
 				93D394B61590BE7C5E928BA0 /* AppStore.swift in Sources */,

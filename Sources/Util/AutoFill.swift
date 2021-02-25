@@ -14,7 +14,6 @@ final class AutoFill {
             guard oldValue != self.credentials
             else { return }
 
-            dbg( "didSet credentials:\n%@ =>\n%@", oldValue, self.credentials )
             ASCredentialIdentityStore.shared.getState { state in
                 // If extension is disabled, API is unavailable.
                 guard state.isEnabled
@@ -23,26 +22,18 @@ final class AutoFill {
                 self.queue.sync { [unowned self] in
                     let expiredCredentials = oldValue.subtracting( self.credentials ).map { $0.identity() }
                     if !expiredCredentials.isEmpty {
-                        dbg( "expire credentials:\n%@", expiredCredentials )
                         ASCredentialIdentityStore.shared.removeCredentialIdentities( expiredCredentials ) { success, error in
                             if !success || error != nil {
                                 mperror( title: "Cannot purge autofill credentials.", details: expiredCredentials, error: error )
-                            }
-                            else {
-                                dbg( "expired credentials:\n%@", expiredCredentials )
                             }
                         }
                     }
 
                     let insertedCredentials = self.credentials.subtracting( oldValue ).map { $0.identity() }
                     if !insertedCredentials.isEmpty {
-                        dbg( "insert credentials:\n%@", insertedCredentials )
                         ASCredentialIdentityStore.shared.saveCredentialIdentities( insertedCredentials ) { success, error in
                             if !success || error != nil {
                                 mperror( title: "Cannot save autofill credentials.", details: insertedCredentials, error: error )
-                            }
-                            else {
-                                dbg( "inserted credentials:\n%@", insertedCredentials )
                             }
                         }
                     }

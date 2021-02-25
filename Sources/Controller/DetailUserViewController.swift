@@ -206,7 +206,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 } )
                         .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) } ) {
                             if let user = $0.model {
-                                $0.viewController?.show( AutoFillSetupViewController( model: user ), sender: $0.view )
+                                $0.viewController?.show( IntroAutoFillViewController( model: user ), sender: $0.view )
                             }
                         } )
                         .addBehaviour( PremiumTapBehaviour() )

@@ -28,7 +28,6 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        dbg( "viewDidLoad" )
         Tracker.shared.startup( extensionController: self )
         AutoFillModel.shared.context = AutoFillModel.Context()
     }

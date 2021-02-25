@@ -176,7 +176,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
                             site.state( keyPurpose: .identification, resultParam: login ).token.then {
                                 do { site.loginState = try $0.get() }
-                                catch { mperror( title: "Couldn't update site name", error: error ) }
+                                catch { mperror( title: "Couldn't update login name", error: error ) }
                             }
                         } )
 

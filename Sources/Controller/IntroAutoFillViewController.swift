@@ -7,7 +7,7 @@ import Foundation
 import UIKit
 import AuthenticationServices
 
-class AutoFillSetupViewController: ItemsViewController<User>, DetailViewController, UserObserver {
+class IntroAutoFillViewController: ItemsViewController<User>, DetailViewController, UserObserver {
     var isCloseHidden: Bool = true
 
     var autoFillState: ASCredentialIdentityStoreState? {
