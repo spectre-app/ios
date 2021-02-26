@@ -51,6 +51,14 @@ class EffectButton: EffectView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    convenience init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
+                     border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = true, rounding: CGFloat = 4,
+                     dims: Bool = false, action: @escaping () -> Void) {
+        self.init( track: track, image: image, title: title, attributedTitle: attributedTitle,
+                   border: border, background: background, square: square, circular: circular, rounding: rounding,
+                   dims: dims ) { _, _ in action() }
+    }
+
     init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
          border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
          action: ((UIEvent, EffectButton) -> Void)? = nil) {

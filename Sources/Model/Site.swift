@@ -196,9 +196,9 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     }
     #endif
 
-    public func copy(to user: User) -> Site {
+    public func copy(to user: User? = nil) -> Site {
         // TODO: do we need to re-encode state?
-        let site = Site( user: user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
+        let site = Site( user: user ?? self.user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
                          resultType: self.resultType, resultState: self.resultState,
                          loginType: self.loginType, loginState: self.loginState,
                          url: self.url, uses: self.uses, lastUsed: self.lastUsed )

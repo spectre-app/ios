@@ -387,6 +387,60 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
     class AlgorithmItem: LabelItem<Site> {
         init() {
             super.init( title: "Algorithm", value: { $0.algorithm } )
+
+            addBehaviour( BlockTapBehaviour { item in
+                guard let site = item.model
+                else { return }
+
+                let controller = UIAlertController( title: "Site Algorithm", message:
+                """
+                New protections roll out in new algorithm versions. Always use the latest algorithm to protect your sites.
+                Upgrading or downgrading may change your site password. Don't forget to update your site.
+
+                \(site.algorithm == .current ?
+                        "\(site.siteName) is using the latest algorithm.":
+                        "!! \(site.siteName) is NOT using the latest algorithm. !!")
+                """, preferredStyle: .actionSheet )
+                controller.popoverPresentationController?.sourceView = item.view
+                if site.algorithm < .last {
+                    let upgrade = site.algorithm.advanced( by: 1 )
+                    controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
+                        let oldSite = site.copy()
+                        site.algorithm = upgrade
+
+                        AlertController( title: "Site Changed", content: EffectButton( title: "Help Me Update" ) { _, _ in
+                            item.viewController?.present( DialogSiteChangedViewController( old: oldSite, new: site ), animated: true )
+                        } ).show( dismissAutomatically: false )
+                    } )
+                }
+                if site.algorithm > .first {
+                    let downgrade = site.algorithm.advanced( by: -1 )
+                    controller.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
+                        let oldSite = site.copy()
+                        site.algorithm = downgrade
+
+                        AlertController( title: "Site Changed", content: EffectButton( title: "Help Me Update" ) { _, _ in
+                            item.viewController?.present( DialogSiteChangedViewController( old: oldSite, new: site ), animated: true )
+                        } ).show( dismissAutomatically: false )
+                    } )
+                }
+                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                item.viewController?.present( controller, animated: true )
+            } )
+        }
+
+        override func update() {
+            super.update()
+
+            if let itemView = self.view as? LabelItemView {
+                if self.model?.algorithm == .current {
+                    itemView.valueLabel => \.textColor => Theme.current.color.body
+                }
+                else {
+                    (itemView.valueLabel => \.textColor).unbind()
+                    itemView.valueLabel.textColor = .systemRed
+                }
+            }
         }
     }
 }

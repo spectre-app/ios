@@ -16,8 +16,11 @@ extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
         SpectreAlgorithm( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
     }
 
-    public var description: String {
-        "v\(self.rawValue)"
+    public var description:          String {
+        String.valid( spectre_algorithm_short_name( self ) ) ?? "?"
+    }
+    public var localizedDescription: String {
+        String.valid( spectre_algorithm_long_name( self ) ) ?? "?"
     }
 }
 

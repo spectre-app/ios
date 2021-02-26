@@ -13,6 +13,7 @@
 		93D39034C6EAEAE0C47ED2F4 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* BaseViewController.swift */; };
 		93D390D13B1FAA3CF0CAF377 /* UserSecretField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* UserSecretField.swift */; };
 		93D390D2B19CB69F721DD7A6 /* TintedField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* TintedField.swift */; };
+		93D390E5179B5CEB830DAAB0 /* DialogSiteChangedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */; };
 		93D39122A70525461AEE4D62 /* BaseUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3990ACF0E11CD40EA6319 /* BaseUsersViewController.swift */; };
 		93D391377514DB16467A3CDC /* BaseUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */; };
 		93D39139805FC516B6C2C181 /* EffectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39564D6408073D59CDB6A /* EffectButton.swift */; };
@@ -489,6 +490,7 @@
 		93D39E1D19BCA02E43657384 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		93D39E4EBBF1CB8FC90528B7 /* MainNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainNavigationController.swift; sourceTree = "<group>"; };
 		93D39E70A7274BA100D5735C /* AppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DialogSiteChangedViewController.swift; sourceTree = "<group>"; };
 		93D39F096A8C3E51C4DC2CDC /* PagerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PagerView.swift; sourceTree = "<group>"; };
 		93D39F718C1C38C46D9D5078 /* Site.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* AvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarCell.swift; sourceTree = "<group>"; };
@@ -856,6 +858,7 @@
 				93D39B651DB0789891C67639 /* DialogMasterPasswordViewController.swift */,
 				93D3952343848B72D4CC0D4A /* AlertController.swift */,
 				93D398124AA304872DCE8C26 /* SitePreviewController.swift */,
+				93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -1892,6 +1895,7 @@
 				93D3944AEF7412E7B189450F /* DialogMasterPasswordViewController.swift in Sources */,
 				93D3926DF01B6A4F1AB57DF8 /* AlertController.swift in Sources */,
 				93D3949CAEAF1A0303B0AC55 /* SitePreviewController.swift in Sources */,
+				93D390E5179B5CEB830DAAB0 /* DialogSiteChangedViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

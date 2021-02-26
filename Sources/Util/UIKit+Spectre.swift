@@ -550,6 +550,17 @@ extension UIImage {
     }
 }
 
+extension UIStackView {
+    convenience init(arrangedSubviews views: [UIView], axis: NSLayoutConstraint.Axis = .horizontal,
+                     alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0) {
+        self.init( arrangedSubviews: views )
+        self.axis = axis
+        self.alignment = alignment
+        self.distribution = distribution
+        self.spacing = spacing
+    }
+}
+
 extension UITableView {
     func register(_ type: UITableViewCell.Type, nib: UINib? = nil) {
         if let nib = nib {
