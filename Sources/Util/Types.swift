@@ -5,25 +5,6 @@
 
 import Foundation
 
-extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ SpectreAlgorithm ]( (.first)...(.last) )
-
-    public func distance(to other: SpectreAlgorithm) -> Int32 {
-        Int32( other.rawValue ) - Int32( self.rawValue )
-    }
-
-    public func advanced(by n: Int32) -> SpectreAlgorithm {
-        SpectreAlgorithm( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
-    }
-
-    public var description:          String {
-        String.valid( spectre_algorithm_short_name( self ) ) ?? "?"
-    }
-    public var localizedDescription: String {
-        String.valid( spectre_algorithm_long_name( self ) ) ?? "?"
-    }
-}
-
 public enum AppError: LocalizedError {
     case cancelled
     case `issue`(_ error: Error? = nil, title: String, details: CustomStringConvertible? = nil)
@@ -71,6 +52,23 @@ public enum AppError: LocalizedError {
             default:
                 return nil
         }
+    }
+}
+
+extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
+    public static let allCases = [ SpectreAlgorithm ]( (.first)...(.last) )
+
+    public var description:          String {
+        String.valid( spectre_algorithm_short_name( self ) ) ?? "?"
+    }
+    public var localizedDescription: String {
+        String.valid( spectre_algorithm_long_name( self ) ) ?? "?"
+    }
+}
+
+extension SpectreCounter: Strideable, CustomStringConvertible {
+    public var description:          String {
+        "\(self.rawValue)"
     }
 }
 
@@ -177,14 +175,6 @@ extension SpectreKeyPurpose: CustomStringConvertible {
 
 extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
     public static let allCases = [ SpectreFormat ]( (.first)...(.last) )
-
-    public func distance(to other: SpectreFormat) -> Int32 {
-        Int32( other.rawValue ) - Int32( self.rawValue )
-    }
-
-    public func advanced(by n: Int32) -> SpectreFormat {
-        SpectreFormat( rawValue: UInt32( Int32( self.rawValue ) + n ) )!
-    }
 
     public var name: String? {
         .valid( spectre_format_name( self ) )

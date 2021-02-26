@@ -425,11 +425,11 @@ class ValueItem<M, V>: Item<M> {
     var value: V? {
         self.model.flatMap { self.valueProvider( $0 ) }
     }
-    let update: ((M, V) -> Void)?
+    let update: ((Item<M>, V) -> Void)?
 
     init(title: String? = nil,
          value valueProvider: @escaping (M) -> V? = { _ in nil },
-         update: ((M, V) -> Void)? = nil,
+         update: ((Item<M>, V) -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.valueProvider = valueProvider
@@ -537,7 +537,7 @@ class ToggleItem<M>: ValueItem<M, Bool> {
     init(track: Tracking, title: String? = nil,
          icon: @escaping (M) -> UIImage?,
          value: @escaping (M) -> Bool,
-         update: ((M, Bool) -> ())? = nil,
+         update: ((Item<M>, Bool) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.tracking = track
@@ -553,9 +553,7 @@ class ToggleItem<M>: ValueItem<M, Bool> {
     class ToggleItemView: ItemView {
         let item: ToggleItem
         lazy var button = EffectToggleButton( track: self.item.tracking ) { [unowned self] isSelected in
-            if let model = self.item.model {
-                self.item.update?( model, isSelected )
-            }
+            self.item.update?( self.item, isSelected )
 
             return self.item.value ?? false
         }
@@ -685,7 +683,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
 
     init(title: String? = nil, placeholder: String?,
          value: @escaping (M) -> String? = { _ in nil },
-         update: ((M, String) -> ())? = nil,
+         update: ((Item<M>, String) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.placeholder = placeholder
@@ -732,9 +730,8 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.textAlignment = .center
             self.valueField.setContentHuggingPriority( .defaultLow + 100, for: .horizontal )
             self.valueField.action( for: .editingChanged ) { [unowned self] in
-                if let model = self.item.model,
-                   let text = self.valueField.text {
-                    self.item.update?( model, text )
+                if let text = self.valueField.text {
+                    self.item.update?( self.item, text )
                 }
             }
         }
@@ -757,12 +754,12 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
     // MARK: UITextViewDelegate
 
     func textViewDidChange(_ textView: UITextView) {
-        if let model = self.model, let update = update {
+        if let update = update {
             if let value = textView.text as? V {
-                update( model, value )
+                update( self, value )
             }
             else if let value = textView.attributedText as? V {
-                update( model, value )
+                update( self, value )
             }
         }
     }
@@ -825,13 +822,13 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
     }
 }
 
-class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertible>: ValueItem<M, V> {
-    let step: V, min: V, max: V
+class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: ValueItem<M, V> {
+    let step: V.Stride, min: V, max: V
 
     init(title: String? = nil,
          value: @escaping (M) -> V? = { _ in nil },
-         update: ((M, V) -> ())? = nil,
-         step: V, min: V, max: V,
+         update: ((Item<M>, V) -> ())? = nil,
+         step: V.Stride, min: V, max: V,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.step = step
@@ -849,13 +846,13 @@ class StepperItem<M, V: AdditiveArithmetic & Comparable & CustomStringConvertibl
         let valueView  = UIView()
         let valueLabel = UILabel()
         lazy var downButton = EffectButton( attributedTitle: .icon( "" ), border: 0, background: false ) { [unowned self]  _, _ in
-            if let model = self.item.model, let value = self.item.value, value > self.item.min {
-                self.item.update?( model, value - self.item.step )
+            if let value = self.item.value, value > self.item.min {
+                self.item.update?( self.item, value.advanced( by: -self.item.step ) )
             }
         }
         lazy var upButton = EffectButton( attributedTitle: .icon( "" ), border: 0, background: false ) { [unowned self] _, _ in
-            if let model = self.item.model, let value = self.item.value, value < self.item.max {
-                self.item.update?( model, value + self.item.step )
+            if let value = self.item.value, value < self.item.max {
+                self.item.update?( self.item, value.advanced( by: self.item.step ) )
             }
         }
 
@@ -918,7 +915,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     init(track: Tracking? = nil, title: String? = nil,
          values: @escaping (M) -> [V?],
          value: @escaping (M) -> V,
-         update: ((M, V) -> ())? = nil,
+         update: ((Item<M>, V) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
         self.tracking = track
@@ -1002,12 +999,12 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         // MARK: --- UICollectionViewDelegate ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            if let model = self.item.model, let value = self.dataSource.element( at: indexPath ) {
+            if let value = self.dataSource.element( at: indexPath ) {
                 if let tracking = self.item.tracking( indexPath: indexPath, value: value ) {
                     Tracker.shared.event( track: tracking )
                 }
 
-                self.item.update?( model, value )
+                self.item.update?( self.item, value )
             }
         }
 

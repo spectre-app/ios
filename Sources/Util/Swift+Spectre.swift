@@ -105,6 +105,18 @@ extension CGFloat {
     public static let on    = CGFloat( 1.0 )
 }
 
+// Automatic synthesis of Strideable implementation; concrete types still need to explicitly inherit Strideable
+// FIXME: https://bugs.swift.org/browse/SR-14277 - is necessitating the Stride == Int restriction
+extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {
+    public func distance(to other: Self) -> Int {
+        self.rawValue.distance( to: other.rawValue )
+    }
+
+    public func advanced(by n: RawValue.Stride) -> Self {
+        Self( rawValue: self.rawValue.advanced( by: n ) )!
+    }
+}
+
 extension Result {
     var name: String {
         switch self {

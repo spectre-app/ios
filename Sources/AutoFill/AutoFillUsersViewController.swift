@@ -12,7 +12,7 @@ import AuthenticationServices
 class AutoFillUsersViewController: BaseUsersViewController {
     private let emptyView = UIScrollView()
     private lazy var cancelButton = EffectButton( track: .subject( "users", action: "cancel" ),
-                                                  image: .icon( "" ), border: 0, background: false, square: true ) { _, _ in
+                                                  image: .icon( "" ), border: 0, background: false, square: true ) { _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Cancel button pressed." ) )
     }
 

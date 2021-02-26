@@ -56,7 +56,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class AvatarItem: PickerItem<User, User.Avatar, AvatarCell> {
         init() {
             super.init( track: .subject( "user", action: "avatar" ), title: "Avatar", values: { _ in User.Avatar.allCases },
-                        value: { $0.avatar }, update: { $0.avatar = $1 } )
+                        value: { $0.avatar }, update: { $0.model?.avatar = $1 } )
         }
 
         override func populate(_ cell: AvatarCell, indexPath: IndexPath, value: User.Avatar) {
@@ -74,7 +74,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                                     [ .statePersonal ],
                                     SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
-                        value: { $0.loginType }, update: { $0.loginType = $1 },
+                        value: { $0.loginType }, update: { $0.model?.loginType = $1 },
                         subitems: [ LoginResultItem() ],
                         caption: { _ in
                             """
@@ -92,7 +92,10 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
-                        update: { user, login in
+                        update: { item, login in
+                            guard let user = item.model
+                            else { return }
+
                             Tracker.shared.event( track: .subject( "user", action: "login", [
                                 "type": "\(user.loginType)",
                                 "entropy": Attacker.entropy( string: login ) ?? 0,
@@ -132,7 +135,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                                     SpectreResultType.recommendedTypes[.authentication],
                                     SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
-                        value: { $0.defaultType }, update: { $0.defaultType = $1 },
+                        value: { $0.defaultType }, update: { $0.model?.defaultType = $1 },
                         caption: { _ in
                             """
                             The password type used when adding new sites.
@@ -148,7 +151,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class AttackerItem: PickerItem<User, Attacker?, AttackerItem.Cell> {
         init() {
             super.init( track: .subject( "user", action: "attacker" ), title: "Defense Strategy 🅿︎", values: { _ in Attacker.allCases },
-                        value: { $0.attacker ?? .default }, update: { $0.attacker = $1 },
+                        value: { $0.attacker ?? .default }, update: { $0.model?.attacker = $1 },
                         caption: { _ in
                             """
                             Yearly budget of the primary attacker persona you're seeking to repel (@ \(cost_per_kwh)$/kWh).
@@ -185,7 +188,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( subitems: [
                 ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords", icon: { _ in .icon( "" ) },
-                                  value: { $0.maskPasswords }, update: { $0.maskPasswords = $1 }, caption: { _ in
+                                  value: { $0.maskPasswords }, update: { $0.model?.maskPasswords = $1 }, caption: { _ in
                     """
                     Do not reveal passwords on screen.
                     Useful to deter screen snooping.
@@ -199,7 +202,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( subitems: [
                 ToggleItem<User>( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "" ) },
-                                  value: { $0.autofill }, update: { $0.autofill = $1 }, caption: { _ in
+                                  value: { $0.autofill }, update: { $0.model?.autofill = $1 }, caption: { _ in
                     """
                     Auto-fill your site passwords from other apps.
                     """
@@ -213,7 +216,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
                 ToggleItem( track: .subject( "user", action: "biometricLock" ), title: "Biometric Lock 🅿︎",
                             icon: { _ in KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon },
-                            value: { $0.biometricLock }, update: { $0.biometricLock = $1 }, caption: { _ in
+                            value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 }, caption: { _ in
                     """
                     Sign in using biometrics (eg. TouchID, FaceID).
                     Saves your user key in the device's key chain.

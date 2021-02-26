@@ -5,6 +5,44 @@
 
 import UIKit
 
+extension AlertController {
+    static func showChange(to site: Site, in viewController: UIViewController, by operation: () throws -> ()) rethrows {
+        let oldSite = site.copy()
+        try operation()
+
+        oldSite.result( keyPurpose: .authentication ).token.and( site.result( keyPurpose: .authentication ).token ).success {
+            if $0.0 != $0.1 {
+                self.forSite( site, in: viewController, changedFrom: oldSite )
+            }
+            else {
+                oldSite.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .identification ).token ).success {
+                    if $0.0 != $0.1 {
+                        self.forSite( site, in: viewController, changedFrom: oldSite )
+                    }
+                    else {
+                        oldSite.result( keyPurpose: .recovery ).token.and( site.result( keyPurpose: .recovery ).token ).success {
+                            if $0.0 != $0.1 {
+                                self.forSite( site, in: viewController, changedFrom: oldSite )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static func forSite(_ site: Site, in viewController: UIViewController, changedFrom oldSite: Site) {
+        AlertController( title: "Site Changed", message: site.siteName, details:
+        """
+        You've made changes to \(site.siteName).
+
+        You should update the site's account to reflect these changes. We can help!
+        """, content: EffectButton( title: "Help Me Update" ) { _, _ in
+            viewController.present( DialogSiteChangedViewController( old: oldSite, new: site ), animated: true )
+        } ).show( in: viewController.view )
+    }
+}
+
 class AlertController {
     private lazy var view          = self.loadView()
     private lazy var titleLabel    = UILabel()
@@ -30,7 +68,7 @@ class AlertController {
                 $0.isHidden = !$1
             } )
     private lazy var dismissTask = DispatchTask( named: "Dismiss Alert: \(self.title ?? "-")", queue: .main,
-                                                 deadline: .now() + .seconds( 3 ), execute: { self.dismiss() } )
+                                                 deadline: .now() + .seconds( 5 ), execute: { self.dismiss() } )
 
     // MARK: --- Life ---
 

@@ -17,12 +17,13 @@ class DialogViewController: BaseViewController {
         }
     }
 
+    var closeButton = EffectButton( track: .subject( "users", action: "cancel" ),
+                                    image: .icon( "" ), border: 0, background: false, square: true )
+
     private let scrollView   = UIScrollView()
     private let stackView    = UIStackView()
     private let titleLabel   = UILabel()
     private let messageLabel = UILabel()
-    private lazy var cancelButton = EffectButton( track: .subject( "users", action: "cancel" ),
-                                                  image: .icon( "" ), border: 0, background: false, square: true )
 
     // MARK: --- Life ---
 
@@ -45,7 +46,7 @@ class DialogViewController: BaseViewController {
         self.stackView.isLayoutMarginsRelativeArrangement = true
         self.stackView.layoutMargins = UIEdgeInsets( top: 108, left: 8, bottom: 40, right: 8 )
 
-        self.cancelButton.action( for: .primaryActionTriggered ) {
+        self.closeButton.action( for: .primaryActionTriggered ) {
             self.dismiss( animated: true )
         }
 
@@ -53,7 +54,7 @@ class DialogViewController: BaseViewController {
         self.view.addSubview( self.scrollView )
         self.scrollView.addSubview( self.stackView )
         self.populate( stackView: self.stackView )
-        self.view.addSubview( self.cancelButton )
+        self.view.addSubview( self.closeButton )
 
         // - Layout
         LayoutConfiguration( view: self.scrollView )
@@ -62,7 +63,7 @@ class DialogViewController: BaseViewController {
                 .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
                 .constrain( as: .box )
                 .activate()
-        LayoutConfiguration( view: self.cancelButton )
+        LayoutConfiguration( view: self.closeButton )
                 .constrain( as: .bottomCenter, margin: true ).activate()
     }
 

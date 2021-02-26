@@ -26,6 +26,7 @@ class DialogSiteChangedViewController: DialogViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.closeButton.image = .icon( "" )
         self.backgroundView.image = self.newSite.preview.image
         self.backgroundView.imageColor = self.newSite.preview.color
 
@@ -34,7 +35,8 @@ class DialogSiteChangedViewController: DialogViewController {
                 """
                 Let's get \(self.oldSite.siteName) updated!
 
-                Highlighted items have changed.  Log into your site and update your account with the new values.
+                Highlighted items have changed.
+                Log into your site and update your account with the new values.
                 """
     }
 
@@ -54,19 +56,6 @@ class DialogSiteChangedViewController: DialogViewController {
         newSiteTitle.textAlignment = .center
         newSiteTitle.text = "After"
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldSiteTitle, newSiteTitle ], distribution: .fillEqually ) )
-
-        let oldSiteName = UILabel()
-        oldSiteName => \.font => Theme.current.font.callout
-        oldSiteName => \.textColor => Theme.current.color.body
-        oldSiteName.textAlignment = .center
-        oldSiteName.text = self.oldSite.siteName
-        let newSiteName = UILabel()
-        newSiteName => \.font => Theme.current.font.callout
-        newSiteName => \.textColor => Theme.current.color.body
-        newSiteName.textAlignment = .center
-        newSiteName.text = self.newSite.siteName
-        stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldSiteName, newSiteName ],
-                                                   distribution: .fillEqually, spacing: 8 ) )
 
         let passwordTitle = UILabel()
         passwordTitle => \.font => Theme.current.font.subheadline

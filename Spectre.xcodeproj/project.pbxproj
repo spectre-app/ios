@@ -249,6 +249,8 @@
 		DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
 		DA762FB624E0C58700E61D3F /* Poppins-VF.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB524E0C58700E61D3F /* Poppins-VF.otf */; };
 		DAA0EDFF25E5861B00533479 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
+		DAA0EE1825E93A2F00533479 /* DialogSiteChangedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */; };
+		DAA0EE1B25E93A6100533479 /* DialogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CCF90A49C099A05280B /* DialogViewController.swift */; };
 		DAA449D21EEC4B5800E7BDD5 /* spectre-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* spectre-marshal.c */; };
 		DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
 		DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA70EC7F1811B13C00F65DB2 /* StoreKit.framework */; };
@@ -838,27 +840,27 @@
 		93D39E0C533C1943D2425F07 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				93D3952343848B72D4CC0D4A /* AlertController.swift */,
+				93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */,
 				93D3990ACF0E11CD40EA6319 /* BaseUsersViewController.swift */,
-				93D3982288CE686F671A3201 /* DetailAppViewController.swift */,
-				93D395A198BEFB1685A781C2 /* DetailHostController.swift */,
-				93D396F647CD1C68F9BA9AD5 /* ItemsViewController.swift */,
-				93D3957AAB49A40DB9943A4D /* ExportViewController.swift */,
-				93D398F2CFC7C9A494146E83 /* DetailLogViewController.swift */,
-				93D39E4EBBF1CB8FC90528B7 /* MainNavigationController.swift */,
-				93D3971B848750CA84382132 /* DetailPremiumViewController.swift */,
-				93D39CDC84DDABE512D49739 /* DetailSiteViewController.swift */,
-				93D39D2352657D352B2B13B6 /* MainSitesViewController.swift */,
-				93D394B019A4203EF763DBEA /* DetailUserViewController.swift */,
-				93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */,
 				93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */,
 				93D393A49E8705F3E38EB779 /* BaseViewController.swift */,
-				93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */,
-				93D394C13D268B6594F0E358 /* IntroAutoFillViewController.swift */,
-				93D39CCF90A49C099A05280B /* DialogViewController.swift */,
+				93D3982288CE686F671A3201 /* DetailAppViewController.swift */,
+				93D395A198BEFB1685A781C2 /* DetailHostController.swift */,
+				93D398F2CFC7C9A494146E83 /* DetailLogViewController.swift */,
+				93D3971B848750CA84382132 /* DetailPremiumViewController.swift */,
+				93D39CDC84DDABE512D49739 /* DetailSiteViewController.swift */,
+				93D394B019A4203EF763DBEA /* DetailUserViewController.swift */,
 				93D39B651DB0789891C67639 /* DialogMasterPasswordViewController.swift */,
-				93D3952343848B72D4CC0D4A /* AlertController.swift */,
-				93D398124AA304872DCE8C26 /* SitePreviewController.swift */,
 				93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */,
+				93D39CCF90A49C099A05280B /* DialogViewController.swift */,
+				93D3957AAB49A40DB9943A4D /* ExportViewController.swift */,
+				93D394C13D268B6594F0E358 /* IntroAutoFillViewController.swift */,
+				93D396F647CD1C68F9BA9AD5 /* ItemsViewController.swift */,
+				93D39E4EBBF1CB8FC90528B7 /* MainNavigationController.swift */,
+				93D39D2352657D352B2B13B6 /* MainSitesViewController.swift */,
+				93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */,
+				93D398124AA304872DCE8C26 /* SitePreviewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -1712,6 +1714,7 @@
 			files = (
 				DA0E55B22510E9BB002B3AB1 /* EmitterView.swift in Sources */,
 				DA0E55AE2510E9BB002B3AB1 /* UserSecretField.swift in Sources */,
+				DAA0EE1B25E93A6100533479 /* DialogViewController.swift in Sources */,
 				DABC7BBB251C1B410021ADD8 /* BaseUserViewController.swift in Sources */,
 				DA0E55B62510E9BB002B3AB1 /* TintedLabel.swift in Sources */,
 				DAF80F05251AE651001C2963 /* AutoFillUsersViewController.swift in Sources */,
@@ -1762,6 +1765,7 @@
 				DA0E55BC2510E9BB002B3AB1 /* EffectResultTypeCell.swift in Sources */,
 				DA0E558D2510E985002B3AB1 /* Foundation+Spectre.swift in Sources */,
 				DA0E5565251022EB002B3AB1 /* base64.c in Sources */,
+				DAA0EE1825E93A2F00533479 /* DialogSiteChangedViewController.swift in Sources */,
 				DA0E55992510E985002B3AB1 /* Keychain.swift in Sources */,
 				DA0E556D251022EB002B3AB1 /* spectre-marshal-util.c in Sources */,
 				DA0E55902510E985002B3AB1 /* Tracker.swift in Sources */,

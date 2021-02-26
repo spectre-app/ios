@@ -86,7 +86,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
         init() {
             super.init( track: .subject( "logbook", action: "level" ), title: "Logbook",
                         values: { _ in SpectreLogLevel.allCases.reversed() },
-                        value: { $0.logbookLevel }, update: { $0.logbookLevel = $1 },
+                        value: { $0.logbookLevel }, update: { $0.model?.logbookLevel = $1 },
                         caption: { _ in
                             """
                             Show only messages at the selected level or higher.

@@ -50,7 +50,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                         } ),
                         ToggleItem( track: .subject( "autofill_setup", action: "biometricLock" ),
                                     icon: { _ in KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon },
-                                    value: { $0.biometricLock }, update: { $0.biometricLock = $1 } )
+                                    value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
                                 .addBehaviour( PremiumTapBehaviour() )
                                 .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
@@ -92,7 +92,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "" ) },
-                                          value: { $0.autofill }, update: { $0.autofill = $1 } )
+                                          value: { $0.autofill }, update: { $0.model?.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                                 .addBehaviour( PremiumTapBehaviour() )
                                 .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
@@ -162,7 +162,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                     [ .statePersonal ],
                                     SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
-                        value: { $0.loginType }, update: { $0.loginType = $1 } )
+                        value: { $0.loginType }, update: { $0.model?.loginType = $1 } )
         }
 
         override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
@@ -174,7 +174,10 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
         init() {
             super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
-                        update: { user, login in
+                        update: { item, login in
+                            guard let user = item.model
+                            else { return }
+
                             Tracker.shared.event( track: .subject( "autofill_setup", action: "login", [
                                 "type": "\(user.loginType)",
                                 "entropy": Attacker.entropy( string: login ) ?? 0,

@@ -54,11 +54,16 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
     // MARK: --- Types ---
 
-    class PasswordCounterItem: StepperItem<Site, UInt32> {
+    class PasswordCounterItem: StepperItem<Site, SpectreCounter> {
         init() {
             super.init( title: "Password Counter",
-                        value: { $0.counter.rawValue }, update: { $0.counter = SpectreCounter( rawValue: $1 ) ?? .default },
-                        step: 1, min: SpectreCounter.initial.rawValue, max: SpectreCounter.last.rawValue,
+                        value: { $0.counter },
+                        update: { item, counter in
+                            if let site = item.model, let viewController = item.viewController {
+                                AlertController.showChange( to: site, in: viewController ) { site.counter = counter }
+                            }
+                        },
+                        step: 1, min: .initial, max: .last,
                         caption: { _ in
                             """
                             Increment the counter if you need to change the site's current password.
@@ -77,7 +82,12 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                                     [ SpectreResultType.statePersonal ],
                                     SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
-                        value: { $0.resultType }, update: { $0.resultType = $1 },
+                        value: { $0.resultType },
+                        update: { item, resultType in
+                            if let site = item.model, let viewController = item.viewController {
+                                AlertController.showChange( to: site, in: viewController ) { site.resultType = resultType }
+                            }
+                        },
                         subitems: [ PasswordResultItem() ],
                         caption: {
                             let attacker = $0.user.attacker ?? .default
@@ -100,17 +110,23 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
     class PasswordResultItem: FieldItem<Site> {
         init() {
             super.init( title: nil, placeholder: "enter a password",
-                        value: { try? $0.result().token.await() }, update: { site, password in
-                Tracker.shared.event( track: .subject( "site", action: "result", [
-                    "type": "\(site.resultType)",
-                    "entropy": Attacker.entropy( string: password ) ?? 0,
-                ] ) )
+                        value: { try? $0.result().token.await() },
+                        update: { item, password in
+                            guard let site = item.model, let viewController = item.viewController
+                            else { return }
 
-                site.state( resultParam: password ).token.then {
-                    do { site.resultState = try $0.get() }
-                    catch { mperror( title: "Couldn't update site password", error: error ) }
-                }
-            } )
+                            Tracker.shared.event( track: .subject( "site", action: "result", [
+                                "type": "\(site.resultType)",
+                                "entropy": Attacker.entropy( string: password ) ?? 0,
+                            ] ) )
+
+                            site.state( resultParam: password ).token.then { result in
+                                do {
+                                    try AlertController.showChange( to: site, in: viewController ) { site.resultState = try result.get() }
+                                }
+                                catch { mperror( title: "Couldn't update site password", error: error ) }
+                            }
+                        } )
         }
 
         override func createItemView() -> FieldItemView {
@@ -140,7 +156,12 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                                     [ .statePersonal ],
                                     SpectreResultType.allCases.filter { !$0.has( feature: .alternate ) } ).unique()
                         },
-                        value: { $0.loginType }, update: { $0.loginType = $1 },
+                        value: { $0.loginType },
+                        update: { item, loginType in
+                            if let site = item.model, let viewController = item.viewController {
+                                AlertController.showChange( to: site, in: viewController ) { site.loginType = loginType }
+                            }
+                        },
                         subitems: [ LoginResultItem() ],
                         caption: {
                             $0.loginType == .none ?
@@ -168,14 +189,19 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
         init() {
             super.init( title: nil, placeholder: "enter a login name",
                         value: { try? $0.result( keyPurpose: .identification ).token.await() },
-                        update: { site, login in
+                        update: { item, login in
+                            guard let site = item.model, let viewController = item.viewController
+                            else { return }
+
                             Tracker.shared.event( track: .subject( "site", action: "login", [
                                 "type": "\(site.loginType)",
                                 "entropy": Attacker.entropy( string: login ) ?? 0,
                             ] ) )
 
-                            site.state( keyPurpose: .identification, resultParam: login ).token.then {
-                                do { site.loginState = try $0.get() }
+                            site.state( keyPurpose: .identification, resultParam: login ).token.then { result in
+                                do {
+                                    try AlertController.showChange( to: site, in: viewController ) { site.loginState = try result.get() }
+                                }
                                 catch { mperror( title: "Couldn't update login name", error: error ) }
                             }
                         } )
@@ -350,7 +376,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
     class URLItem: FieldItem<Site> {
         init() {
             super.init( title: "URL", placeholder: "eg. https://www.apple.com",
-                        value: { $0.url }, update: { $0.url = $1 } )
+                        value: { $0.url }, update: { $0.model?.url = $1 } )
         }
 
         override func createItemView() -> FieldItemView {
@@ -389,7 +415,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             super.init( title: "Algorithm", value: { $0.algorithm } )
 
             addBehaviour( BlockTapBehaviour { item in
-                guard let site = item.model
+                guard let site = item.model, let viewController = item.viewController
                 else { return }
 
                 let controller = UIAlertController( title: "Site Algorithm", message:
@@ -405,27 +431,17 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                 if site.algorithm < .last {
                     let upgrade = site.algorithm.advanced( by: 1 )
                     controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
-                        let oldSite = site.copy()
-                        site.algorithm = upgrade
-
-                        AlertController( title: "Site Changed", content: EffectButton( title: "Help Me Update" ) { _, _ in
-                            item.viewController?.present( DialogSiteChangedViewController( old: oldSite, new: site ), animated: true )
-                        } ).show( dismissAutomatically: false )
+                        AlertController.showChange( to: site, in: viewController ) { site.algorithm = upgrade }
                     } )
                 }
                 if site.algorithm > .first {
                     let downgrade = site.algorithm.advanced( by: -1 )
                     controller.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
-                        let oldSite = site.copy()
-                        site.algorithm = downgrade
-
-                        AlertController( title: "Site Changed", content: EffectButton( title: "Help Me Update" ) { _, _ in
-                            item.viewController?.present( DialogSiteChangedViewController( old: oldSite, new: site ), animated: true )
-                        } ).show( dismissAutomatically: false )
+                        AlertController.showChange( to: site, in: viewController ) { site.algorithm = downgrade }
                     } )
                 }
                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                item.viewController?.present( controller, animated: true )
+                viewController.present( controller, animated: true )
             } )
         }
 

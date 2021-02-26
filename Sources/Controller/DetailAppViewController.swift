@@ -76,7 +76,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
         init() {
             super.init( track: .subject( "app", action: "diagnostics" ),
                         title: "Diagnostics", icon: { _ in .icon( "" ) },
-                        value: { $0.diagnostics }, update: { $0.diagnostics = $1 }, caption: { _ in
+                        value: { $0.diagnostics }, update: { $0.model?.diagnostics = $1 }, caption: { _ in
                 """
                 Share anonymized issue information to enable quick resolution.
                 """
@@ -113,7 +113,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                                     [ .default ],
                                     Theme.allCases ).unique()
                         },
-                        value: { Theme.with( path: $0.theme ) ?? .default }, update: { $0.theme = $1.path },
+                        value: { Theme.with( path: $0.theme ) ?? .default }, update: { $0.model?.theme = $1.path },
                         caption: { _ in Theme.current } )
 
             self.addBehaviour( PremiumTapBehaviour() )
