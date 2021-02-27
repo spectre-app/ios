@@ -63,7 +63,7 @@ class Marshal: Observable, Updatable {
             }
 
             return self.export( user: user, format: format, redacted: redacted ).thenPromise { result in
-                saveEvent.end( [ "result": result.name ] )
+                saveEvent.end( [ "result": result.name, "error": result.error ?? "-" ] )
 
                 if !FileManager.default.createFile( atPath: documentURL.path, contents: try result.get() ) {
                     throw AppError.internal( cause: "Couldn't create file.", details: documentURL )
@@ -130,7 +130,7 @@ class Marshal: Observable, Updatable {
 
             if let data = String.valid( spectre_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
                user.file?.pointee.error.type == .success {
-                exportEvent.end( [ "result": "success: data" ] )
+                exportEvent.end( [ "result": "success" ] )
                 return data
             }
 
@@ -165,7 +165,6 @@ class Marshal: Observable, Updatable {
             }
         }.success( on: .main ) {
             // Master Password purchase migration
-            dbg( "user: %@, masterpasswordcustomer: %d", $0.userName, $0.isMasterPasswordCustomer )
             if $0.isMasterPasswordCustomer, !InAppFeature.premium.isEnabled {
                 viewController.present( DialogMasterPasswordViewController(), animated: true )
             }
@@ -181,10 +180,11 @@ class Marshal: Observable, Updatable {
 
         return DispatchQueue.main.promising {
             let promise = Promise<UserFile>()
+            promise.then { importEvent.end( [ "result": $0.name, "error": $0.error ?? "-" ] ) }
 
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
                                                    content: UIActivityIndicatorView( style: .whiteLarge ) )
-            let secretField     = UserSecretField( userFile: existingFile )
+            let secretField     = UserSecretField<User>( userName: existingFile.userName )
             let alertController = UIAlertController( title: "Merge Users", message:
             """
             \(existingFile.userName) already exists.
@@ -195,12 +195,11 @@ class Marshal: Observable, Updatable {
             """, preferredStyle: .alert )
             alertController.addTextField { secretField.passwordField = $0 }
             alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                importEvent.end( [ "result": "cancel" ] )
-
                 promise.finish( .failure( AppError.cancelled ) )
             } )
             alertController.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                 let replaceEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "replace" ) )
+                promise.then { replaceEvent.end( [ "result": $0.name, "error": $0.error ?? "-" ] ) }
 
                 guard let authentication = secretField.authenticate( { keyFactory in
                     importingFile.authenticate( using: keyFactory )
@@ -229,14 +228,9 @@ class Marshal: Observable, Updatable {
                             }
 
                             self.import( data: data, from: importingFile, into: existingURL, viewController: viewController )
-                                .finishes( promise ).then {
-                                    replaceEvent.end( [ "result": $0.name ] )
-                                    importEvent.end( [ "result": $0.name ] )
-                                }
+                                .finishes( promise )
                         }
                         else {
-                            replaceEvent.end( [ "result": "!url" ] )
-                            importEvent.end( [ "result": "failed" ] )
                             promise.finish( .failure( AppError.internal( cause: "Destination user has no document", details: existingFile ) ) )
                         }
                     }
@@ -249,6 +243,7 @@ class Marshal: Observable, Updatable {
             } )
             alertController.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                 let mergeEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "merge" ) )
+                promise.then { mergeEvent.end( [ "result": $0.name, "error": $0.error ?? "-" ] ) }
 
                 guard let authentication = secretField.authenticate( { keyFactory in
                     Promise( .success(
@@ -272,116 +267,35 @@ class Marshal: Observable, Updatable {
 
                         if let importedUser = importedUser, let existedUser = existedUser {
                             self.import( from: importedUser, into: existedUser, viewController: viewController )
-                                .promise { _ in existingFile }.finishes( promise ).then {
-                                    mergeEvent.end( [ "result": $0.name ] )
-                                    importEvent.end( [ "result": $0.name ] )
-                                }
+                                .promise { _ in existingFile }.finishes( promise )
                         }
                         else if let importedUser = importedUser {
-                            let unlockEvent = Tracker.shared.begin( track: .subject( "import.to-file.merge", action: "unlockUser" ) )
+                            UIAlertController.authenticate( userName: existingFile.userName, title: "Unlock Existing User", message:
+                                             """
+                                             The existing user is locked with a different personal secret.
 
-                            let alertController = UIAlertController( title: "Unlock Existing User", message:
-                            """
-                            The existing user is locked with a different personal secret.
+                                             To continue merging, also provide the existing user's personal secret.
 
-                            To continue merging, also provide the existing user's personal secret.
-
-                            Replacing will delete the existing user and replace it with the imported user.
-                            """, preferredStyle: .alert )
-
-                            let secretField = UserSecretField( userFile: existingFile )
-                            secretField.authenticater = { keyFactory in
-                                spinner.show( in: viewController.view, dismissAutomatically: false )
-                                return existingFile.authenticate( using: keyFactory )
-                            }
-                            secretField.authenticated = { result in
-                                trc( "Existing user authentication: %@", result )
-
-                                spinner.dismiss()
-                                alertController.dismiss( animated: true ) {
-                                    do {
-                                        self.import( from: importedUser, into: try result.get(), viewController: viewController )
-                                            .promise { _ in existingFile }.finishes( promise ).then {
-                                                unlockEvent.end( [ "result": $0.name ] )
-                                                mergeEvent.end( [ "result": $0.name ] )
-                                                importEvent.end( [ "result": $0.name ] )
-                                            }
-                                    }
-                                    catch {
-                                        mperror( title: "Couldn't import user", message: "User authentication failed",
-                                                 details: existingFile, error: error, in: viewController.view )
-                                        unlockEvent.end( [ "result": "!userKey" ] )
-                                        viewController.present( alertController, animated: true )
-                                    }
-                                }
-                            }
-                            alertController.addTextField { secretField.passwordField = $0 }
-                            alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                unlockEvent.end( [ "result": "cancel" ] )
-                                mergeEvent.end( [ "result": "failed: cancel" ] )
-                                importEvent.end( [ "result": "failed: cancel" ] )
-                                promise.finish( .failure( AppError.cancelled ) )
-                            } )
-                            alertController.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
-                                if !secretField.try() {
-                                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
-                                    unlockEvent.end( [ "result": "!userSecret" ] )
-                                    viewController.present( alertController, animated: true )
-                                }
-                            } )
-                            viewController.present( alertController, animated: true )
+                                             Replacing will delete the existing user and replace it with the imported user.
+                                             """, in: viewController, track: .subject( "import.to-file.merge", action: "unlockUser" ),
+                                                            action: "Unlock", authenticator: { existingFile.authenticate( using: $0 ) } )
+                                             .promising { existingUser in
+                                                 self.import( from: importedUser, into: existingUser, viewController: viewController )
+                                             }
+                                             .promise { _ in existingFile }.finishes( promise )
                         }
                         else if let existedUser = existedUser {
-                            let unlockEvent = Tracker.shared.begin( track: .subject( "import.to-file.merge", action: "unlockImport" ) )
+                            UIAlertController.authenticate( userName: importingFile.userName, title: "Unlock Import", message:
+                                             """
+                                             The import user is locked with a different personal secret.
 
-                            let alertController = UIAlertController( title: "Unlock Import", message:
-                            """
-                            The import user is locked with a different personal secret.
-
-                            The continue merging, also provide the imported user's personal secret.
-                            """, preferredStyle: .alert )
-
-                            let secretField = UserSecretField( userFile: importingFile )
-                            secretField.authenticater = { keyFactory in
-                                spinner.show( in: viewController.view, dismissAutomatically: false )
-                                return importingFile.authenticate( using: keyFactory )
-                            }
-                            secretField.authenticated = { result in
-                                trc( "Import user authentication: %@", result )
-
-                                spinner.dismiss()
-                                alertController.dismiss( animated: true ) {
-                                    do {
-                                        self.import( from: try result.get(), into: existedUser, viewController: viewController )
-                                            .promise { _ in existingFile }.finishes( promise ).then {
-                                                unlockEvent.end( [ "result": $0.name ] )
-                                                mergeEvent.end( [ "result": $0.name ] )
-                                                importEvent.end( [ "result": $0.name ] )
-                                            }
-                                    }
-                                    catch {
-                                        mperror( title: "Couldn't import user", message: "User authentication failed",
-                                                 details: importingFile, error: error, in: viewController.view )
-                                        unlockEvent.end( [ "result": "!userKey" ] )
-                                        viewController.present( alertController, animated: true )
-                                    }
-                                }
-                            }
-                            alertController.addTextField { secretField.passwordField = $0 }
-                            alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                unlockEvent.end( [ "result": "cancel" ] )
-                                mergeEvent.end( [ "result": "failed: cancel" ] )
-                                importEvent.end( [ "result": "failed: cancel" ] )
-                                promise.finish( .failure( AppError.cancelled ) )
-                            } )
-                            alertController.addAction( UIAlertAction( title: "Unlock", style: .default ) { _ in
-                                if !secretField.try() {
-                                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
-                                    unlockEvent.end( [ "result": "!userSecret" ] )
-                                    viewController.present( alertController, animated: true )
-                                }
-                            } )
-                            viewController.present( alertController, animated: true )
+                                             The continue merging, also provide the imported user's personal secret.
+                                             """, in: viewController, track: .subject( "import.to-file.merge", action: "unlockImport" ),
+                                                            action: "Unlock", authenticator: { importingFile.authenticate( using: $0 ) } )
+                                             .promising { importingUser in
+                                                 self.import( from: importingUser, into: existedUser, viewController: viewController )
+                                             }
+                                             .promise { _ in existingFile }.finishes( promise )
                         }
                         else {
                             mperror( title: "Couldn't import user", message: "User authentication failed", in: viewController.view )
@@ -390,7 +304,6 @@ class Marshal: Observable, Updatable {
                         }
                     }
                     catch {
-                        mergeEvent.end( [ "result": "unexpected" ] )
                         promise.finish( .failure( AppError.internal( cause: "No known path for promise to fail." ) ) )
                     }
                 }
@@ -449,7 +362,7 @@ class Marshal: Observable, Updatable {
                 spinner.dismiss()
 
                 if !updatedUser && replacedSites + newSites == 0 {
-                    importEvent.end( [ "result": "success: skipped" ] )
+                    importEvent.end( [ "result": "success", "type": "skipped" ] )
                     AlertController( title: "Import Skipped", message: existedUser.description, details:
                     """
                     The import into \(existedUser) was skipped.
@@ -458,7 +371,7 @@ class Marshal: Observable, Updatable {
                     """ ).show( in: viewController.view )
                 }
                 else {
-                    importEvent.end( [ "result": "success: complete" ] )
+                    importEvent.end( [ "result": "success", "type": "merged" ] )
                     AlertController( title: "Import Complete", message: existedUser.description, details:
                     """
                     Completed the import of sites into \(existedUser).
@@ -504,7 +417,7 @@ class Marshal: Observable, Updatable {
             }
             importingFile.origin = documentURL
 
-            importEvent.end( [ "result": "success: complete" ] )
+            importEvent.end( [ "result": "success", "type": "created" ] )
             AlertController( title: "Import Complete", message: documentURL.lastPathComponent, details:
             """
             Completed the import of \(importingFile) (\(importingFile.format)).

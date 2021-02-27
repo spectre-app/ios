@@ -118,7 +118,27 @@ extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {
 }
 
 extension Result {
-    var name: String {
+    var error: Failure? {
+        guard case .failure(let error) = self
+        else { return nil }
+
+        return error
+    }
+    var isCancelled: Bool {
+        guard let error = self.error
+        else { return false }
+
+        if let error = error as? AppError, case AppError.cancelled = error {
+            return true
+        }
+
+        return false
+    }
+    var name:        String {
+        if self.isCancelled {
+            return "cancelled"
+        }
+
         switch self {
             case .success:
                 return "success"

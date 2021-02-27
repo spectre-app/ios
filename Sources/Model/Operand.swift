@@ -73,7 +73,12 @@ public struct Operation {
                         ] )
             }
             catch {
-                event.end( [ "result": $0.name, "from": trackingFrom, "error": error.localizedDescription ] )
+                event.end(
+                        [ "result": $0.name,
+                          "from": trackingFrom,
+                          "action": "copy",
+                          "error": error.localizedDescription
+                        ] )
             }
         }
     }

@@ -11,7 +11,7 @@ private var keyFactories = [ String: KeyFactory ]()
 
 private func keyFactoryProvider(_ algorithm: SpectreAlgorithm, _ userName: UnsafePointer<CChar>?) -> UnsafePointer<SpectreUserKey>? {
     keyQueue.await {
-        String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm )
+        try? String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm ).await()
     }
 }
 
@@ -46,50 +46,46 @@ public class KeyFactory {
     }
 
     public func authenticatedIdentifier(for algorithm: SpectreAlgorithm) -> Promise<String?> {
-        keyQueue.promise {
-            withUnsafeBytes( of: self.getKey( for: algorithm )?.pointee.bytes ) {
+        self.getKey( for: algorithm ).promise( on: keyQueue ) {
+            withUnsafeBytes( of: $0.pointee.bytes ) {
                 $0.bindMemory( to: UInt8.self ).digest()?.hex()
             }
         }
     }
 
-    public func newKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
-        guard let userKey = self.getKey( for: algorithm )
-        else { return nil }
-
-        // Create a copy of the user key to be consumed by the caller.
-        let providedUserKey = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
-        providedUserKey.initialize( from: userKey, count: 1 )
-        return UnsafePointer<SpectreUserKey>( providedUserKey )
+    public func newKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
+        self.getKey( for: algorithm ).promise( on: keyQueue ) { userKey in
+            // Create a copy of the user key to be consumed by the caller.
+            let providedUserKey = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
+            providedUserKey.initialize( from: userKey, count: 1 )
+            return UnsafePointer<SpectreUserKey>( providedUserKey )
+        }
     }
 
     // MARK: --- Private ---
 
-    private func getKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
-        keyQueue.await {
+    private func getKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
+        keyQueue.promising {
             // Try to resolve the user key from the cache.
-            if let userKey = self.userKeysCache[algorithm] {
-                return userKey
+            if let cachedKey = self.userKeysCache[algorithm] {
+                return Promise( .success( cachedKey ) )
             }
 
             // Try to produce the user key in the factory.
-            if let userKey = self.createKey( for: algorithm ) {
-                self.setKey( userKey, algorithm: algorithm )
-                return userKey
-            }
-
-            return nil
+            return self.createKey( for: algorithm )
+        }.success( on: keyQueue ) { createdKey in
+            self.cacheKey( createdKey )
         }
     }
 
-    fileprivate func setKey(_ key: UnsafePointer<SpectreUserKey>, algorithm: SpectreAlgorithm) {
+    fileprivate func cacheKey(_ key: UnsafePointer<SpectreUserKey>) {
         keyQueue.await {
-            self.userKeysCache[algorithm] = key
+            self.userKeysCache[key.pointee.algorithm] = key
         }
     }
 
-    fileprivate func createKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
-        nil
+    fileprivate func createKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
+        Promise( .failure( AppError.internal( cause: "This key factory does not support key creation." ) ) )
     }
 }
 
@@ -111,15 +107,18 @@ public class SecretKeyFactory: KeyFactory {
 
     public func toKeychain() -> Promise<KeychainKeyFactory> {
         KeychainKeyFactory( userName: self.userName ).unlock().promising {
-            $0.saveKeys( SpectreAlgorithm.allCases.map( { ($0, self.newKey( for: $0 )) } ) )
+            $0.saveKeys( SpectreAlgorithm.allCases.map { self.newKey( for: $0 ) } )
         }
     }
 
     // MARK: --- Private ---
 
-    fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
-        DispatchQueue.api.await {
-            spectre_user_key( self.userName, self.userSecret, algorithm )
+    fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
+        DispatchQueue.api.promise {
+            guard let userKey = spectre_user_key( self.userName, self.userSecret, algorithm )
+            else { throw AppError.internal( cause: "Couldn't allocate a user key." ) }
+
+            return userKey
         }
     }
 }
@@ -239,29 +238,21 @@ public class KeychainKeyFactory: KeyFactory {
 
     // MARK: --- Private ---
 
-    fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
-        do {
-            return try Keychain.loadKey( for: self.userName, algorithm: algorithm, context: self.context ).await()
-        }
-        catch {
-            mperror( title: "Biometric Authentication Failed", error: error )
-            return nil
-        }
+    fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
+        Keychain.loadKey( for: self.userName, algorithm: algorithm, context: self.context )
     }
 
-    fileprivate func saveKeys(_ items: [(SpectreAlgorithm, UnsafePointer<SpectreUserKey>?)]) -> Promise<KeychainKeyFactory> {
+    fileprivate func saveKeys(_ keys: [Promise<UnsafePointer<SpectreUserKey>>]) -> Promise<KeychainKeyFactory> {
         keyQueue.promising {
-            var promise = Promise( .success( () ) )
-
-            for item in items {
-                if let key = item.1 {
-                    self.setKey( key, algorithm: item.0 )
-                    promise = promise.and(
-                            Keychain.saveKey( for: self.userName, algorithm: item.0, keyFactory: self, context: self.context ) )
-                }
-            }
-
-            return promise.promise { self }
+            keys.reduce( Promise( .success( () ) ) ) {
+                $0.and(
+                        $1.success {
+                            self.cacheKey( $0 )
+                        }.promising {
+                            Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
+                        }
+                )
+            }.promise { self }
         }
     }
 

@@ -11,9 +11,9 @@ import AuthenticationServices
 
 class AutoFillUsersViewController: BaseUsersViewController {
     private let emptyView = UIScrollView()
-    private lazy var cancelButton = EffectButton( track: .subject( "users", action: "cancel" ),
-                                                  image: .icon( "" ), border: 0, background: false, square: true ) { _, _ in
-        self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Cancel button pressed." ) )
+    private lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ),
+                                                 image: .icon( "" ), border: 0, background: false, square: true ) { _, _ in
+        self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
     }
 
     // MARK: --- Life ---
@@ -103,7 +103,7 @@ class AutoFillUsersViewController: BaseUsersViewController {
         // - Hierarchy
         self.emptyView.addSubview( emptyStack )
         self.view.insertSubview( self.emptyView, belowSubview: self.detailsHost.view )
-        self.view.insertSubview( self.cancelButton, belowSubview: self.detailsHost.view )
+        self.view.insertSubview( self.closeButton, belowSubview: self.detailsHost.view )
 
         // - Layout
         LayoutConfiguration( view: emptyStack )
@@ -113,7 +113,7 @@ class AutoFillUsersViewController: BaseUsersViewController {
         LayoutConfiguration( view: self.emptyView )
                 .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
                 .constrain( as: .box ).activate()
-        LayoutConfiguration( view: self.cancelButton )
+        LayoutConfiguration( view: self.closeButton )
                 .constrain( as: .bottomCenter, margin: true ).activate()
     }
 

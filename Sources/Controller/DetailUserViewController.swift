@@ -275,6 +275,65 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class AlgorithmItem: LabelItem<User> {
         init() {
             super.init( title: "Algorithm", value: { $0.algorithm } )
+
+            addBehaviour( BlockTapBehaviour { item in
+                guard let user = item.model, let viewController = item.viewController
+                else { return }
+
+                let controller = UIAlertController( title: "User Algorithm", message:
+                """
+                New protections roll out in new algorithm versions. Always use the latest algorithm to protect your sites.
+
+                \(user.algorithm == .current ?
+                        "\(user.userName) is using the latest algorithm.":
+                        "!! \(user.userName) is NOT using the latest algorithm. !!")
+                """, preferredStyle: .actionSheet )
+                controller.popoverPresentationController?.sourceView = item.view
+                if user.algorithm < .last {
+                    let upgrade = user.algorithm.advanced( by: 1 )
+                    controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
+                        user.userKeyFactory?.newKey( for: upgrade ).or(
+                                    UIAlertController.authenticate(
+                                            title: "Upgrade", message: "Your personal secret is required to perform the upgrade.",
+                                            in: viewController, action: "Authenticate", authenticator: { $0.newKey( for: upgrade ) } ) )
+                            .success { upgradedKey in
+                                defer { upgradedKey.deallocate() }
+                                user.algorithm = upgradedKey.pointee.algorithm
+                                user.userKeyID = upgradedKey.pointee.keyID
+                            }
+                    } )
+                }
+                if user.algorithm > .first {
+                    let downgrade = user.algorithm.advanced( by: -1 )
+                    controller.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
+                        user.userKeyFactory?.newKey( for: downgrade ).or(
+                                    UIAlertController.authenticate(
+                                            title: "Downgrade", message: "Your personal secret is required to perform the downgrade.",
+                                            in: viewController, action: "Authenticate", authenticator: { $0.newKey( for: downgrade ) } ) )
+                            .success { downgradedKey in
+                                defer { downgradedKey.deallocate() }
+                                user.algorithm = downgradedKey.pointee.algorithm
+                                user.userKeyID = downgradedKey.pointee.keyID
+                            }
+                    } )
+                }
+                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                viewController.present( controller, animated: true )
+            } )
+        }
+
+        override func update() {
+            super.update()
+
+            if let itemView = self.view as? LabelItemView {
+                if self.model?.algorithm == .current {
+                    itemView.valueLabel => \.textColor => Theme.current.color.body
+                }
+                else {
+                    (itemView.valueLabel => \.textColor).unbind()
+                    itemView.valueLabel.textColor = .systemRed
+                }
+            }
         }
     }
 

@@ -246,9 +246,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     }
 
     func login(using keyFactory: KeyFactory) -> Promise<User> {
-        DispatchQueue.api.promise {
-            guard let authKey = keyFactory.newKey( for: self.algorithm )
-            else { throw AppError.internal( cause: "Cannot authenticate user since user key is missing.", details: self ) }
+        keyFactory.newKey( for: self.algorithm ).promise( on: .api ) { authKey in
             defer { authKey.deallocate() }
 
             guard spectre_id_valid( [ authKey.pointee.keyID ] )
@@ -418,9 +416,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
                                 resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: Operand)
                     -> Operation {
         Operation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
-        DispatchQueue.api.promise {
-            guard let userKey = self.userKeyFactory?.newKey( for: algorithm )
-            else { throw AppError.internal( cause: "Cannot calculate result since user key is missing.", details: self ) }
+        self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
             defer { userKey.deallocate() }
 
             guard let result = String.valid(
@@ -428,16 +424,14 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             else { throw AppError.internal( cause: "Cannot calculate result.", details: self ) }
 
             return result
-        } )
+        } ?? Promise( .failure( AppError.state( title: "User is not authenticated." ) ) ) )
     }
 
     private func spectre_state(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
                                resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: Operand)
                     -> Operation {
         Operation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
-        DispatchQueue.api.promise {
-            guard let userKey = self.userKeyFactory?.newKey( for: algorithm )
-            else { throw AppError.internal( cause: "Cannot calculate result since user key is missing.", details: self ) }
+        self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
             defer { userKey.deallocate() }
 
             guard let result = String.valid(
@@ -445,7 +439,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             else { throw AppError.internal( cause: "Cannot calculate result.", details: self ) }
 
             return result
-        } )
+        } ?? Promise( .failure( AppError.state( title: "User is not authenticated." ) ) ) )
     }
 
     // MARK: --- Types ---

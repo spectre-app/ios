@@ -25,69 +25,30 @@ class MainUsersViewController: BaseUsersViewController {
                                                           image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
             self.detailsHost.show( DetailAppViewController(), sender: self )
         } )
-        self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users.user", action: "auth" ),
+        self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users", action: "user" ),
                                                          image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, incognitoButton in
             guard let incognitoButton = incognitoButton as? TimedButton
             else { return }
-            let userEvent = Tracker.shared.begin( track: .subject( "users", action: "user" ) )
 
-            let controller = UIAlertController( title: "Incognito Login", message:
-            """
-            While in incognito mode, no user information is kept on the device.
-            """, preferredStyle: .alert )
+            UIAlertController.authenticate(
+                                     title: "Incognito Login", message: "While in incognito mode, no user information is kept on the device",
+                                     in: self, track: .subject( "users.user", action: "auth" ),
+                                     action: "Log In", authenticator: { User( userName: $0.userName, file: nil ).login( using: $0 ) } )
+                             .then {
+                                 incognitoButton.timing?.end(
+                                         [ "result": $0.name,
+                                           "type": "incognito",
+                                           "error": $0.error ?? "-",
+                                         ] )
 
-            let secretField = UserSecretField()
-            let spinner     = AlertController( title: "Unlocking", message: secretField.nameField?.text,
-                                               content: UIActivityIndicatorView( style: .whiteLarge ) )
-            secretField.authenticater = { keyFactory in
-                spinner.show( dismissAutomatically: false )
-                return User( userName: keyFactory.userName, file: nil ).login( using: keyFactory )
-            }
-            secretField.authenticated = { result in
-                trc( "Incognito authentication: %@", result )
-                spinner.dismiss()
-                controller.dismiss( animated: true ) {
-                    do {
-                        let user = try result.get()
-                        Feedback.shared.play( .trigger )
-                        incognitoButton.timing?.end(
-                                [ "result": "failure",
-                                  "type": "incognito",
-                                  "length": secretField.text?.count ?? 0,
-                                  "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
-                                ] )
-                        userEvent.end( [ "result": "incognito" ] )
-                        self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
-                    }
-                    catch {
-                        incognitoButton.timing?.end(
-                                [ "result": "failure",
-                                  "type": "incognito",
-                                  "length": secretField.text?.count ?? 0,
-                                  "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
-                                  "error": error,
-                                ] )
-                        userEvent.end( [ "result": "deselected" ] )
-                        mperror( title: "Couldn't unlock user", error: error )
-                    }
-                }
-            }
-
-            controller.addTextField { secretField.nameField = $0 }
-            controller.addTextField { secretField.passwordField = $0 }
-            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                incognitoButton.timing?.end( [ "result": "cancel" ] )
-            } )
-            controller.addAction( UIAlertAction( title: "Log In", style: .default ) { [weak self] _ in
-                guard let self = self
-                else { return }
-
-                if !secretField.try() {
-                    mperror( title: "Couldn't unlock user", message: "Missing credentials" )
-                    self.present( controller, animated: true )
-                }
-            } )
-            self.present( controller, animated: true )
+                                 do {
+                                     let user = try $0.get()
+                                     self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
+                                 }
+                                 catch {
+                                     mperror( title: "Couldn't unlock user", error: error )
+                                 }
+                             }
         } )
 
         self.userToolbar.items = [

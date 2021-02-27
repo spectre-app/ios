@@ -71,7 +71,7 @@ public class Keychain {
         }
     }
 
-    public static func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) throws
+    public static func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext)
                     -> Promise<UnsafePointer<SpectreUserKey>> {
         let spinner = AlertController( title: "Biometrics Authentication",
                                        message: "Please authenticate to access user key for:\n\(userName)",
@@ -101,13 +101,10 @@ public class Keychain {
     @discardableResult
     public static func saveKey(for userName: String, algorithm: SpectreAlgorithm, keyFactory: KeyFactory, context: LAContext)
                     -> Promise<Void> {
-        DispatchQueue.api.promise {
-            let query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
-
-            guard let userKey = keyFactory.newKey( for: algorithm )
-            else { throw AppError.internal( cause: "Cannot save user key since key provider cannot provide one.", details: userName ) }
+        keyFactory.newKey( for: algorithm ).promise( on: .api ) { userKey in
             defer { userKey.deallocate() }
 
+            let query  = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
             let attributes: [CFString: Any] = [
                 kSecValueData: Data( buffer: UnsafeBufferPointer( start: userKey, count: 1 ) ),
                 kSecAttrSynchronizable: false,

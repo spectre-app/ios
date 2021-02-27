@@ -173,7 +173,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         internal weak var userEvent:      Tracker.TimedEvent?
         internal weak var userFile:       Marshal.UserFile? {
             didSet {
-                self.secretField.userFile = self.userFile
+                self.secretField.userName = self.userFile?.userName
                 self.avatar = self.userFile?.avatar ?? .avatar_add
                 self.update()
             }
@@ -192,10 +192,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
                                                         image: .icon( "" ), border: 0, background: false, square: true )
         private var secretEvent:                 Tracker.TimedEvent?
-        private let secretField   = UserSecretField()
+        private let secretField   = UserSecretField<User>()
         private let idBadgeView   = UIImageView( image: .icon( "" ) )
         private let authBadgeView = UIImageView( image: .icon( "" ) )
-        private var authenticationConfiguration: LayoutConfiguration<UserSecretField>!
+        private var authenticationConfiguration: LayoutConfiguration<UserSecretField<User>>!
         private var path:                        CGPath? {
             didSet {
                 if oldValue != self.path {
@@ -223,7 +223,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
 
-            self.biometricButton.action(for: .primaryActionTriggered ) {
+            self.biometricButton.action( for: .primaryActionTriggered ) {
                 self.attemptBiometrics()
             }
 
@@ -246,17 +246,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     let user = try result.get()
                     Feedback.shared.play( .trigger )
                     self.secretEvent?.end(
-                            [ "result": "success",
+                            [ "result": result.name,
                               "type": "secret",
                               "length": self.secretField.text?.count ?? 0,
                               "entropy": Attacker.entropy( string: self.secretField.text ) ?? 0,
                             ] )
-                    self.userEvent?.end( [ "result": "secret" ] )
+                    self.userEvent?.end( [ "result": result.name, "type": "secret" ] )
                     self.viewController?.login( user: user )
                 }
                 catch {
                     self.secretEvent?.end(
-                            [ "result": "failure",
+                            [ "result": result.name,
                               "type": "secret",
                               "length": self.secretField.text?.count ?? 0,
                               "entropy": Attacker.entropy( string: self.secretField.text ) ?? 0,
@@ -418,16 +418,16 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     let user = try result.get()
                     Feedback.shared.play( .trigger )
                     self.biometricButton.timing?.end(
-                            [ "result": "success",
+                            [ "result": result.name,
                               "type": "biometric",
                               "factor": KeychainKeyFactory.factor.description,
                             ] )
-                    self.userEvent?.end( [ "result": "biometric" ] )
+                    self.userEvent?.end( [ "result": result.name, "type": "biometric" ] )
                     self.viewController?.login( user: user )
                 }
                 catch {
                     self.biometricButton.timing?.end(
-                            [ "result": "failure",
+                            [ "result": result.name,
                               "type": "biometric",
                               "factor": KeychainKeyFactory.factor.description,
                               "error": error,
@@ -450,6 +450,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
                     self.nameLabel.alpha = self.isSelected && self.userFile == nil ? .off: .on
                     self.nameField.alpha = .on - self.nameLabel.alpha
+                    self.secretField.nameField = self.nameField.alpha == .on ? self.nameField : nil
 
                     self.avatarButton.isUserInteractionEnabled = self.isSelected
                     self.avatarButton.image = self.avatar.image

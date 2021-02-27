@@ -5,8 +5,87 @@
 
 import UIKit
 
-class UserSecretField: UITextField, UITextFieldDelegate, Updatable {
-    var userFile:  Marshal.UserFile?
+extension UIAlertController {
+    static func authenticate<U>(userName: String? = nil, title: String, message: String, in viewController: UIViewController,
+                                track: Tracking? = nil, action: String, authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>,
+                                failOnError: Bool = false) -> Promise<U> {
+        let promise         = Promise<U>()
+        let spinner         = AlertController( title: "Unlocking", message: userName, content: UIActivityIndicatorView( style: .whiteLarge ) )
+        let alertController = UIAlertController( title: title, message: message, preferredStyle: .alert )
+        var event = track.flatMap { Tracker.shared.begin( track: $0 ) }
+
+        var nameField: UITextField?
+        if userName == nil {
+            alertController.addTextField { nameField = $0 }
+        }
+
+        let secretField = UserSecretField<U>( userName: userName, nameField: nameField )
+        secretField.authenticater = { factory in
+            spinner.show( in: viewController.view, dismissAutomatically: false )
+            return try authenticator( factory )
+        }
+        secretField.authenticated = { result in
+            spinner.dismiss()
+            alertController.dismiss( animated: true ) {
+                if failOnError {
+                    promise.finish( result )
+                    return
+                }
+
+                do {
+                    promise.finish( .success( try result.get() ) )
+                    Feedback.shared.play( .trigger )
+                }
+                catch {
+                    mperror( title: "Couldn't authenticate user", error: error, in: viewController.view )
+
+                    event?.end(
+                            [ "result": result.name,
+                              "type": "secret",
+                              "length": secretField.text?.count ?? 0,
+                              "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
+                              "error": error,
+                            ] )
+                    event = track.flatMap { Tracker.shared.begin( track: $0 ) }
+                    viewController.present( alertController, animated: true )
+                }
+            }
+        }
+
+        alertController.addTextField { secretField.passwordField = $0 }
+        alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+            promise.finish( .failure( AppError.cancelled ) )
+        } )
+        alertController.addAction( UIAlertAction( title: action, style: .default ) { _ in
+            if !secretField.try() {
+                mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+
+                event?.end(
+                        [ "result": "!userSecret",
+                          "type": "secret",
+                          "length": secretField.text?.count ?? 0,
+                          "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
+                        ] )
+                event = track.flatMap { Tracker.shared.begin( track: $0 ) }
+                viewController.present( alertController, animated: true )
+            }
+        } )
+        viewController.present( alertController, animated: true )
+
+        return promise.then {
+            event?.end(
+                    [ "result": $0.name,
+                      "type": "secret",
+                      "length": secretField.text?.count ?? 0,
+                      "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
+                      "error": $0.error ?? "-",
+                    ] )
+        }
+    }
+}
+
+class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
+    var userName:  String?
     var nameField: UITextField? {
         willSet {
             self.nameField?.delegate = nil
@@ -55,8 +134,8 @@ class UserSecretField: UITextField, UITextFieldDelegate, Updatable {
             self.setNeedsIdenticon()
         }
     }
-    var authenticater: ((SecretKeyFactory) throws -> Promise<User>)?
-    var authenticated: ((Result<User, Error>) -> Void)?
+    var authenticater: ((SecretKeyFactory) throws -> Promise<U>)?
+    var authenticated: ((Result<U, Error>) -> Void)?
 
     private let activityIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
@@ -69,8 +148,8 @@ class UserSecretField: UITextField, UITextFieldDelegate, Updatable {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(userFile: Marshal.UserFile? = nil, nameField: UITextField? = nil) {
-        self.userFile = userFile
+    init(userName: String? = nil, nameField: UITextField? = nil) {
+        self.userName = userName
         self.nameField = nameField
         super.init( frame: .zero )
 
@@ -113,7 +192,7 @@ class UserSecretField: UITextField, UITextFieldDelegate, Updatable {
 
     public func setNeedsIdenticon() {
         DispatchQueue.main.perform {
-            if (self.userFile?.userName ?? self.nameField?.text) == nil || self.passwordField?.text == nil {
+            if (self.nameField?.text ?? self.userName) == nil || self.passwordField?.text == nil {
                 self.updateTask.cancel()
                 self.identiconLabel.attributedText = nil
             }
@@ -134,7 +213,7 @@ class UserSecretField: UITextField, UITextFieldDelegate, Updatable {
     public func authenticate<U>(_ handler: ((SecretKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
         DispatchQueue.main.await {
             guard let handler = handler,
-                  let userName = self.userFile?.userName ?? self.nameField?.text, userName.count > 0,
+                  let userName = self.nameField?.text ?? self.userName, userName.count > 0,
                   let userSecret = self.passwordField?.text, userSecret.count > 0
             else { return nil }
 
@@ -163,7 +242,7 @@ class UserSecretField: UITextField, UITextFieldDelegate, Updatable {
 
     func update() {
         DispatchQueue.main.perform {
-            let userName   = self.userFile?.userName ?? self.nameField?.text
+            let userName   = self.nameField?.text ?? self.userName
             let userSecret = self.passwordField?.text
 
             DispatchQueue.api.perform {
