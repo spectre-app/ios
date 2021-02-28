@@ -379,13 +379,13 @@ class ConditionalBehaviour<M>: Behaviour<M> {
 
 class RequiresDebug<M>: ConditionalBehaviour<M> {
     init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in appConfig.isDebug } )
+        super.init( mode: mode, condition: { _ in AppConfig.shared.isDebug } )
     }
 }
 
 class RequiresPrivate<M>: ConditionalBehaviour<M> {
     init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in !appConfig.isPublic } )
+        super.init( mode: mode, condition: { _ in !AppConfig.shared.isPublic } )
     }
 }
 
@@ -1075,6 +1075,7 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
 class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
     let values: (M) -> [V]
     var deletable = false
+    var animated  = true
 
     init(title: String? = nil,
          values: @escaping (M) -> [V],
@@ -1131,12 +1132,12 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             self.tableView.tableHeaderView = self.activityIndicator
 
             DispatchQueue.api.perform {
-                self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ], completion: { finished in
+                self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ], animated: self.item.animated ) { finished in
                     if finished {
                         self.tableView.isHidden = self.dataSource.isEmpty
                         self.tableView.tableHeaderView = nil
                     }
-                } )
+                }
             }
         }
 

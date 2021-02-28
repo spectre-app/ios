@@ -40,7 +40,7 @@ class Tracker: AppConfigObserver {
     func enableNotifications(consented: Bool = true, completion: @escaping (Bool) -> () = { _ in }) {
         UNUserNotificationCenter.current().getNotificationSettings {
             if $0.authorizationStatus == .authorized {
-                appConfig.notificationsDecided = true
+                AppConfig.shared.notificationsDecided = true
                 Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
                 self.observers.notify { $0.didChangeTracker() }
                 completion( true )
@@ -48,7 +48,7 @@ class Tracker: AppConfigObserver {
             }
 
             UNUserNotificationCenter.current().requestAuthorization( options: [ .alert, .badge, .sound ] ) { granted, error in
-                appConfig.notificationsDecided = true
+                AppConfig.shared.notificationsDecided = true
 
                 if let error = error {
                     wrn( "Notification authorization error: %@", error )
@@ -74,7 +74,7 @@ class Tracker: AppConfigObserver {
     }
 
     func disableNotifications() {
-        appConfig.notificationsDecided = true
+        AppConfig.shared.notificationsDecided = true
         Countly.sharedInstance().cancelConsent( forFeature: .pushNotifications )
     }
     #endif
@@ -102,8 +102,8 @@ class Tracker: AppConfigObserver {
 
         // Sentry
         SentrySDK.start {
-            $0.dsn = appConfig.diagnostics ? sentryDSN.b64Decrypt(): nil
-            $0.environment = appConfig.isDebug ? "Development": appConfig.isPublic ? "Public": "Private"
+            $0.dsn = AppConfig.shared.diagnostics ? sentryDSN.b64Decrypt(): nil
+            $0.environment = AppConfig.shared.isDebug ? "Development": AppConfig.shared.isPublic ? "Public": "Private"
         }
         SentrySDK.configureScope { $0.setTags( identifiers ) }
 
@@ -121,7 +121,7 @@ class Tracker: AppConfigObserver {
             countlyConfig.customMetrics = identifiers
             countlyConfig.features = [ CLYFeature.pushNotifications ]
             #if !PUBLIC
-            countlyConfig.pushTestMode = appConfig.isDebug ? .development: .testFlightOrAdHoc
+            countlyConfig.pushTestMode = AppConfig.shared.isDebug ? .development: .testFlightOrAdHoc
             #endif
             Countly.sharedInstance().start( with: countlyConfig )
         }
@@ -160,7 +160,7 @@ class Tracker: AppConfigObserver {
             return true
         } )
 
-        appConfig.observers.register( observer: self ).didChangeConfig()
+        AppConfig.shared.observers.register( observer: self ).didChangeConfig()
 
         #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
@@ -295,7 +295,7 @@ class Tracker: AppConfigObserver {
     // MARK: --- AppConfigObserver ---
 
     public func didChangeConfig() {
-        if appConfig.isApp && appConfig.diagnostics {
+        if AppConfig.shared.isApp && AppConfig.shared.diagnostics {
             SentrySDK.currentHub().getClient()?.options.enabled = true
             #if TARGET_APP
             Countly.sharedInstance().giveConsent( forFeatures: [

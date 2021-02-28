@@ -5,9 +5,9 @@
 
 import Foundation
 
-public let appConfig = AppConfig()
-
 public class AppConfig: Observable, Updatable, InAppFeatureObserver {
+    public static let shared = AppConfig()
+
     public let observers = Observers<AppConfigObserver>()
 
     public var isApp    = false
@@ -34,6 +34,14 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
         didSet {
             if self.notificationsDecided != UserDefaults.shared.bool( forKey: "notificationsDecided" ) {
                 UserDefaults.shared.set( self.notificationsDecided, forKey: "notificationsDecided" )
+            }
+            self.observers.notify { $0.didChangeConfig() }
+        }
+    }
+    public var sandboxStore = false {
+        didSet {
+            if self.sandboxStore != UserDefaults.shared.bool( forKey: "sandboxStore" ) {
+                UserDefaults.shared.set( self.sandboxStore, forKey: "sandboxStore" )
             }
             self.observers.notify { $0.didChangeConfig() }
         }
@@ -99,6 +107,7 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
         self.diagnostics = UserDefaults.shared.bool( forKey: "diagnostics" )
         self.diagnosticsDecided = UserDefaults.shared.bool( forKey: "diagnosticsDecided" )
         self.notificationsDecided = UserDefaults.shared.bool( forKey: "notificationsDecided" )
+        self.sandboxStore = UserDefaults.shared.bool( forKey: "sandboxStore" )
         self.theme = (InAppFeature.premium.isEnabled ? UserDefaults.shared.string( forKey: "theme" ): nil) ?? Theme.default.path
     }
 }

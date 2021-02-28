@@ -48,7 +48,7 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObser
     }
 }
 
-class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver {
+class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver, InAppStoreObserver, InAppFeatureObserver {
 
     // MARK: --- Life ---
 
@@ -60,8 +60,24 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
         super.init( model: (), focus: focus )
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        AppStore.shared.observers.register( observer: self )
+        AppConfig.shared.observers.register( observer: self )
+        InAppFeature.observers.register( observer: self )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        AppStore.shared.observers.unregister( observer: self )
+        AppConfig.shared.observers.unregister( observer: self )
+        InAppFeature.observers.unregister( observer: self )
+    }
+
+    override func update() {
+        super.update()
 
         // Automatic subscription restoration or renewal.
         if !InAppFeature.premium.isEnabled {
@@ -73,18 +89,6 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
                 }
             }
         }
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear( animated )
-
-        AppStore.shared.observers.register( observer: self )
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear( animated )
-
-        AppStore.shared.observers.unregister( observer: self )
     }
 
     override func loadItems() -> [Item<Void>] {
@@ -111,14 +115,27 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
                            caption: "Make it yours and dye \(productName) with a dash of personality." ),
           ] ),
           SeparatorItem( subitems: [
-              OverrideItem(),
+              EnablePremiumItem(),
+              EnableStoreItem(),
           ] ).addBehaviour( RequiresPrivate( mode: .reveals ) ),
         ]
+    }
+
+    // MARK: --- AppConfigObserver ---
+
+    func didChangeConfig() {
+        self.setNeedsUpdate()
     }
 
     // MARK: --- InAppStoreObserver ---
 
     func productsDidChange(_ products: [SKProduct]) {
+        self.setNeedsUpdate()
+    }
+
+    // MARK: --- InAppFeatureObserver ---
+
+    func featureDidChange(_ feature: InAppFeature) {
         self.setNeedsUpdate()
     }
 
@@ -141,6 +158,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
 
             self.addBehaviour( ConditionalBehaviour( mode: .reveals ) { _ in AppStore.shared.canBuyProducts } )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
+
+            self.animated = false
         }
 
         override func populate(_ cell: SubscriptionProductsItem.Cell, indexPath: IndexPath, value: SKProduct) {
@@ -226,6 +245,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
                         } )
 
             self.addBehaviour( ConditionalBehaviour( mode: .hides ) { _ in AppStore.shared.canBuyProducts } )
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
         }
     }
 
@@ -248,7 +268,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
         }
     }
 
-    class OverrideItem: ToggleItem<Void>, InAppFeatureObserver {
+    class EnablePremiumItem: ToggleItem<Void> {
         init() {
             super.init( track: .subject( "premium", action: "override" ),
                         title: "Subscribed 🅳", icon: { _ in .icon( "" ) },
@@ -258,14 +278,19 @@ class DetailPremiumViewController: ItemsViewController<Void>, InAppStoreObserver
                             Developer override for premium features.
                             """
                         } )
-
-            InAppFeature.observers.register( observer: self )
         }
+    }
 
-        // MARK: --- InAppFeatureObserver ---
-
-        func featureDidChange(_ feature: InAppFeature) {
-            self.setNeedsUpdate()
+    class EnableStoreItem: ToggleItem<Void> {
+        init() {
+            super.init( track: .subject( "premium", action: "sandbox" ),
+                        title: "App Store 🅳", icon: { _ in .icon( "" ) },
+                        value: { _ in AppConfig.shared.sandboxStore }, update: { AppConfig.shared.sandboxStore = $1 },
+                        caption: { _ in
+                            """
+                            App Store sandbox subscriptions.
+                            """
+                        } )
         }
     }
 }

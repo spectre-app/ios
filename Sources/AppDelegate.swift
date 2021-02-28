@@ -61,7 +61,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func launchDecisions(completion: @escaping () -> () = {}) {
 
         // Diagnostics decision
-        if !appConfig.diagnosticsDecided {
+        if !AppConfig.shared.diagnosticsDecided {
             let controller = UIAlertController( title: "Diagnostics", message:
             """
             If a bug, crash or issue should happen, Diagnostics will let us know and fix it.
@@ -69,13 +69,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             It's just code and statistics, personal information is sacred and cannot leave your device.
             """, preferredStyle: .actionSheet )
             controller.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
-                appConfig.diagnostics = false
-                appConfig.diagnosticsDecided = true
+                AppConfig.shared.diagnostics = false
+                AppConfig.shared.diagnosticsDecided = true
                 self.launchDecisions( completion: completion )
             } )
             controller.addAction( UIAlertAction( title: "Engage", style: .default ) { _ in
-                appConfig.diagnostics = true
-                appConfig.diagnosticsDecided = true
+                AppConfig.shared.diagnostics = true
+                AppConfig.shared.diagnosticsDecided = true
                 self.launchDecisions( completion: completion )
             } )
             controller.popoverPresentationController?.sourceView = self.window
@@ -84,7 +84,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // Notifications decision
-        if !appConfig.notificationsDecided {
+        if !AppConfig.shared.notificationsDecided {
             let controller = UIAlertController( title: "Keeping Safe", message:
             """
             Things move fast in the online world.

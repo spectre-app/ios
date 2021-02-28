@@ -494,11 +494,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             super.willMove( toWindow: newWindow )
 
             if newWindow != nil {
-                appConfig.observers.register( observer: self )
+                AppConfig.shared.observers.register( observer: self )
                 InAppFeature.observers.register( observer: self )
             }
             else {
-                appConfig.observers.unregister( observer: self )
+                AppConfig.shared.observers.unregister( observer: self )
                 InAppFeature.observers.unregister( observer: self )
             }
         }

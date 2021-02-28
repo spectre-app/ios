@@ -75,7 +75,11 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     var observers = Observers<InAppStoreObserver>()
     var canBuyProducts: Bool {
-        SKPaymentQueue.canMakePayments() && !self.products.isEmpty
+        #if PUBLIC
+        return SKPaymentQueue.canMakePayments() && !self.products.isEmpty
+        #else
+        return AppConfig.shared.sandboxStore && SKPaymentQueue.canMakePayments() && !self.products.isEmpty
+        #endif
     }
     var products = [ SKProduct ]() {
         didSet {
@@ -116,6 +120,11 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     func purchase(product: SKProduct, promotion: SKPaymentDiscount? = nil, quantity: Int = 1) {
+        #if !PUBLIC
+        guard AppConfig.shared.sandboxStore
+        else { return }
+        #endif
+
         let payment = SKMutablePayment( product: product )
         payment.paymentDiscount = promotion
         payment.quantity = quantity
@@ -124,6 +133,11 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     func restorePurchases() {
+        #if !PUBLIC
+        guard AppConfig.shared.sandboxStore
+        else { return }
+        #endif
+
         SKPaymentQueue.default().restoreCompletedTransactions()
     }
 
@@ -226,6 +240,13 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                 if case IARError.initializationFailed(let reason) = error, reason == .appStoreReceiptNotFound {}
                 else { mperror( title: "Couldn't determine subscription status.", error: error ) }
             }
+
+            #if !PUBLIC
+            if !AppConfig.shared.sandboxStore {
+                promise.finish( .success( self.receipt ) )
+                return
+            }
+            #endif
 
             // If no (valid) App Store receipt is present, try requesting one from the store.
             if self.receipt == nil {

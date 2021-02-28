@@ -9,7 +9,7 @@ import os
 @discardableResult
 public func pii(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) -> Bool {
-    log( file: file, line: line, function: function, dso: dso, level: appConfig.isDebug ? .debug: .trace, format, args )
+    log( file: file, line: line, function: function, dso: dso, level: AppConfig.shared.isDebug ? .debug: .trace, format, args )
 }
 
 @discardableResult
@@ -188,7 +188,7 @@ public class LogSink: AppConfigObserver {
                 return LogSink.shared.record( event )
             } )
 
-            appConfig.observers.register( observer: self ).didChangeConfig()
+            AppConfig.shared.observers.register( observer: self ).didChangeConfig()
 
             self.registered = true
         }
@@ -216,7 +216,7 @@ public class LogSink: AppConfigObserver {
     // MARK: --- AppConfigObserver ---
 
     public func didChangeConfig() {
-        self.level = appConfig.isDebug ? .debug: appConfig.diagnostics ? .info: .warning
+        self.level = AppConfig.shared.isDebug ? .debug: AppConfig.shared.diagnostics ? .info: .warning
     }
 }
 

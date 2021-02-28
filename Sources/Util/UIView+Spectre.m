@@ -14,6 +14,26 @@
 
 @implementation UIView(Spectre)
 
++ (void)load {
+
+    [super load];
+
+    // FIXME: https://feedbackassistant.apple.com/feedback/9022967
+    // Setting isHidden from an animation block for children of a UIStackView
+    // causes the UIStackView to break layout and the view's hidden property to not update reliably.
+    Method originalMethod = class_getInstanceMethod( [UIView class], @selector(setHidden:) );
+    Method swizzledMethod = class_getInstanceMethod( [UIView class], @selector(_setHidden:) );
+    method_exchangeImplementations( originalMethod, swizzledMethod );
+}
+
+- (void)_setHidden:(BOOL)hidden {
+    if (self.isHidden != hidden) {
+        [UIView performWithoutAnimation:^{
+            [self _setHidden:hidden];
+        }];
+    }
+}
+
 - (UIEdgeInsets)alignmentRectInsets {
 
     return UIEdgeInsetsMake(

@@ -17,7 +17,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     }
 
     init(focus: Item<AppConfig>.Type? = nil) {
-        super.init( model: appConfig, focus: focus )
+        super.init( model: AppConfig.shared, focus: focus )
     }
 
     override func loadItems() -> [Item<AppConfig>] {
