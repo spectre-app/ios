@@ -171,7 +171,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         }
 
         internal weak var userEvent:      Tracker.TimedEvent?
-        internal weak var userFile:       Marshal.UserFile? {
+        internal var userFile:       Marshal.UserFile? {
             didSet {
                 self.secretField.userName = self.userFile?.userName
                 self.avatar = self.userFile?.avatar ?? .avatar_add

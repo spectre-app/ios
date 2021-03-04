@@ -5,10 +5,23 @@
 
 import UIKit
 
-// NOTE:
-// Due to a bug in performBatchUpdates, moving elements from one section to another while deleting the source section
-// is not animated due to it triggering a full reloadData. The work-around is to leave the section empty (or remove it separately).
-// http://www.openradar.me/48941363
+/**
+ A container for data that will be consumed by a UITableView or a UICollectionView.
+
+ You can use this object as your table or collection view's `dataSource`.
+
+ Updating the data in this container will automatically trigger calls in the table or collection view to update their cells to match.
+
+ Moves, inserts and deletes are determined based on the data item's `id` if it is `Identifiable` or its equality otherwise.
+
+ Automatic reloads are triggered for unmoved items that are not equal to their older item.
+ This implies the new item's `id` is equal to the old item, but the items themselves are not equal.
+
+ NOTE:
+ Due to a bug in performBatchUpdates, moving elements from one section to another while deleting the source section
+ is not animated due to it triggering a full reloadData. The work-around is to leave the section empty (or remove it separately).
+ http://www.openradar.me/48941363
+ */
 open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
     private let semaphore        = DispatchGroup()
     private let queue            = DispatchQueue( label: "DataSource" )
