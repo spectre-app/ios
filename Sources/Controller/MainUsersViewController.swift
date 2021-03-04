@@ -8,6 +8,7 @@
 
 import UIKit
 import LocalAuthentication
+import SafariServices
 
 class MainUsersViewController: BaseUsersViewController {
     private let appToolbar  = UIStackView()
@@ -49,6 +50,10 @@ class MainUsersViewController: BaseUsersViewController {
                                      mperror( title: "Couldn't unlock user", error: error )
                                  }
                              }
+        } )
+        self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ),
+                                                          image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
+            self.present( SFSafariViewController( url: URL( string: "https://chat.spectre.app" )! ), animated: true )
         } )
 
         self.userToolbar.items = [
