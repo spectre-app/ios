@@ -235,10 +235,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                 self.receipt = receipt
             }
             catch {
+                wrn( "App Store receipt unavailable: %@", error )
                 self.receipt = nil
-
-                if case IARError.initializationFailed(let reason) = error, reason == .appStoreReceiptNotFound {}
-                else { mperror( title: "Couldn't determine subscription status.", error: error ) }
             }
 
             #if !PUBLIC

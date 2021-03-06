@@ -211,7 +211,12 @@ class AlertController {
 
     @objc
     private func didTap(_ recognizer: UITapGestureRecognizer) {
-        self.activate()
+        if !self.activationConfiguration.isActive && self.details?.nonEmpty != nil {
+            self.activate()
+        }
+        else {
+            self.dismiss()
+        }
     }
 
     @objc
