@@ -1685,7 +1685,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = "/bin/sh -e";
-			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nSENTRY_ORG=lyndir SENTRY_PROJECT=spectre sentry-cli upload-dif --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
+			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nSENTRY_ORG=lyndir SENTRY_PROJECT=spectre sentry-cli upload-dif --include-sources --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FA35C1C35E346A6267315897 /* [CP] Embed Pods Frameworks */ = {
