@@ -61,7 +61,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
         else { return }
 
         let event = Tracker.shared.begin( track: .subject( "site", action: "use" ) )
-        site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).then {
+        site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).then( on: .main ) {
             do {
                 let (login, password) = try $0.get()
                 site.use()

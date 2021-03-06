@@ -212,12 +212,12 @@ class Marshal: Observable, Updatable {
                 }
 
                 spinner.show( in: viewController.view, dismissAutomatically: false )
-                authentication.then( {
-                    trc( "Import replace authentication: %@", $0 )
+                authentication.then( on: .main ) { result in
+                    trc( "Import replace authentication: %@", result )
                     spinner.dismiss()
 
                     do {
-                        let _ = try $0.get()
+                        let _ = try result.get()
 
                         if let existingURL = existingFile.origin {
                             if FileManager.default.fileExists( atPath: existingURL.path ) {
@@ -239,7 +239,7 @@ class Marshal: Observable, Updatable {
                         replaceEvent.end( [ "result": "!userKey" ] )
                         viewController.present( alertController, animated: true )
                     }
-                } )
+                }
             } )
             alertController.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                 let mergeEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "merge" ) )

@@ -35,7 +35,7 @@ class MainUsersViewController: BaseUsersViewController {
                                      title: "Incognito Login", message: "While in incognito mode, no user information is kept on the device",
                                      in: self, track: .subject( "users.user", action: "auth" ),
                                      action: "Log In", authenticator: { User( userName: $0.userName, file: nil ).login( using: $0 ) } )
-                             .then {
+                             .then( on: .main ) {
                                  incognitoButton.timing?.end(
                                          [ "result": $0.name,
                                            "type": "incognito",

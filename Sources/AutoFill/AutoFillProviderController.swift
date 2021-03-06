@@ -78,7 +78,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             return site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).promise {
                 ASPasswordCredential( user: $0.0, password: $0.1 )
             }
-        }.failure { error in
+        }.failure( on: .main ) { error in
             Feedback.shared.play( .error )
 
             switch error {
@@ -97,7 +97,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                     self.extensionContext.cancelRequest( withError: ASExtensionError(
                             .failed, "Credential unavailable.", error: error ) )
             }
-        }.success { (credential: ASPasswordCredential) in
+        }.success( on: .main ) { (credential: ASPasswordCredential) in
             Feedback.shared.play( .activate )
 
             self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )

@@ -70,7 +70,7 @@ class DialogSiteChangedViewController: DialogViewController {
         let newPasswordButton = EffectButton { newPassword.copy( fromView: self.view, trackingFrom: "site>changed" ) }
         oldPassword.token.then( on: .main ) { oldPasswordButton.title = try? $0.get() }
         newPassword.token.then( on: .main ) { newPasswordButton.title = try? $0.get() }
-        oldPassword.token.and( newPassword.token ).success {
+        oldPassword.token.and( newPassword.token ).success( on: .main ) {
             newPasswordButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldPasswordButton, newPasswordButton ],
@@ -89,7 +89,7 @@ class DialogSiteChangedViewController: DialogViewController {
         let newLoginButton = EffectButton { newLogin.copy( fromView: self.view, trackingFrom: "site>changed" ) }
         oldLogin.token.then( on: .main ) { oldLoginButton.title = try? $0.get() }
         newLogin.token.then( on: .main ) { newLoginButton.title = try? $0.get() }
-        oldLogin.token.and( newLogin.token ).success {
+        oldLogin.token.and( newLogin.token ).success( on: .main ) {
             newLoginButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldLoginButton, newLoginButton ],
@@ -110,7 +110,7 @@ class DialogSiteChangedViewController: DialogViewController {
         let newAnswerButton = EffectButton( title: "(generic)" ) {
             newAnswer.copy( fromView: self.view, trackingFrom: "site>changed" )
         }
-        oldAnswer.token.and( newAnswer.token ).success {
+        oldAnswer.token.and( newAnswer.token ).success( on: .main ) {
             newAnswerButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldAnswerButton, newAnswerButton ],
