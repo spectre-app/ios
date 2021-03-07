@@ -152,7 +152,6 @@ class MainUsersViewController: BaseUsersViewController {
 
                 do {
                     try Marshal.shared.delete( userFile: userFile )
-                    // TODO: Check that fileSource is getting updated.
                 }
                 catch {
                     mperror( title: "Couldn't delete user", error: error )

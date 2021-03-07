@@ -96,7 +96,7 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
     var property:        AnyProperty? {
         willSet {
             if self.target == nil {
-                trc( "<bp>" )
+                dbg( "<bp>" )
             }
             if let property = self.property {
                 property.unbind( propertyPath: self )

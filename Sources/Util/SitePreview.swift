@@ -87,7 +87,7 @@ class SitePreview: Equatable {
 
         // If a preview exists with a known image < 30 days old, don't refresh it yet.
         if let date = self.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
-            trc( "[preview cached] %@: %d", self.url, self.data.imageData?.count ?? 0 )
+            //dbg( "[preview cached] %@: %d", self.url, self.data.imageData?.count ?? 0 )
             return Promise( .success( false ) )
         }
 
@@ -103,7 +103,7 @@ class SitePreview: Equatable {
 
         // Successful image resolution updates the preview, cache cost and persists the change to disk.
         resolution.promise { imageData in
-            trc( "[preview fetched] %@: %d", self.url, imageData.count )
+            //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
 
             self.data.imageDate = Date()
             self.data.imageData = imageData
