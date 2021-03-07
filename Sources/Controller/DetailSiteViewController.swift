@@ -256,7 +256,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                                         action: { item in
                                             let controller = UIAlertController( title: "Security Question", message:
                                             """
-                                            Enter the most significant noun for the site's security question.
+                                            Enter the question's word that best describes the answer.
                                             """, preferredStyle: .alert )
                                             controller.addTextField {
                                                 $0.placeholder = "eg. teacher"
@@ -265,6 +265,30 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                                                 $0.returnKeyType = .done
                                             }
                                             controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                                            controller.addAction( UIAlertAction( title: "Help", style: .default ) { _ in
+                                                let helpController = UIAlertController( title: "Adding Security Questions", message:
+                                                """
+                                                Find the single word from the question that best describes the answer.
+                                                Consider answering the question and wondering:
+                                                "What is this answer? It is a ____."
+
+                                                In what city did you meet your spouse/significant other?
+                                                It is a "city".
+
+                                                What is the middle name of your youngest child?
+                                                It is a "name".
+
+                                                What is your youngest brother’s birthday month and year?
+                                                It is a "birthday".
+
+                                                Where were you when you had your first kiss?
+                                                It is a "where".
+                                                """, preferredStyle: .alert )
+                                                helpController.addAction( UIAlertAction( title: "Thanks!", style: .cancel ) { _ in
+                                                    item.viewController?.present( controller, animated: true )
+                                                } )
+                                                item.viewController?.present( helpController, animated: true )
+                                            } )
                                             controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
                                                 guard let site = item?.model, let keyword = controller?.textFields?.first?.text?.nonEmpty
                                                 else { return }
