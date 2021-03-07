@@ -215,7 +215,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
                 ToggleItem( track: .subject( "user", action: "biometricLock" ), title: "Biometric Lock 🅿︎",
-                            icon: { _ in KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon },
+                            icon: { _ in .icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon ) },
                             value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 }, caption: { _ in
                     """
                     Sign in using biometrics (eg. TouchID, FaceID).

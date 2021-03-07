@@ -287,13 +287,13 @@ public class KeychainKeyFactory: KeyFactory {
             }
         }
 
-        var icon: UIImage? {
+        var icon: String? {
             switch self {
                 case .biometricTouch:
-                    return .icon( "" )
+                    return ""
 
                 case .biometricFace:
-                    return .icon( "" )
+                    return ""
 
                 case .biometricNone:
                     return nil

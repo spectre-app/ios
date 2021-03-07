@@ -49,7 +49,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem( track: .subject( "autofill_setup", action: "biometricLock" ),
-                                    icon: { _ in KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon },
+                                    icon: { _ in .icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon ) },
                                     value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
                                 .addBehaviour( PremiumTapBehaviour() )

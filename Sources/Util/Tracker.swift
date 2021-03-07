@@ -164,10 +164,12 @@ class Tracker: AppConfigObserver {
 
         #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "app", action: "startup", [ "version": productVersion, "build": productBuild ] ) )
+                    track: .subject( "app", action: "startup", [ "version": productVersion, "build": productBuild,
+                                                                 "run": AppConfig.shared.runCount ] ) )
         #elseif TARGET_AUTOFILL
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "autofill", action: "startup", [ "version": productVersion, "build": productBuild ] ) )
+                    track: .subject( "autofill", action: "startup", [ "version": productVersion, "build": productBuild,
+                                                                      "run": AppConfig.shared.runCount ] ) )
         #endif
     }
 

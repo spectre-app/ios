@@ -289,7 +289,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
-                    .constrain( as: .horizontalCenter, margin: true ).activate()
+                    .constrain( as: .horizontalCenterV, margin: true ).activate()
             LayoutConfiguration( view: self.nameLabel )
                     .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
@@ -458,7 +458,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
                     self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||
                             !(self.userFile?.keychainKeyFactory.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
-                    self.biometricButton.image = KeychainKeyFactory.factor.icon
+                    self.biometricButton.image = .icon( KeychainKeyFactory.factor.icon )
                     self.biometricButton.sizeToFit()
 
                     if self.isSelected {

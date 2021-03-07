@@ -8,30 +8,30 @@ import UIKit
 struct Anchor: OptionSet {
     let rawValue: UInt
 
-    static let leading          = Anchor( rawValue: 1 << 0 )
-    static let trailing         = Anchor( rawValue: 1 << 1 )
-    static let left             = Anchor( rawValue: 1 << 2 )
-    static let right            = Anchor( rawValue: 1 << 3 )
-    static let top              = Anchor( rawValue: 1 << 4 )
-    static let bottom           = Anchor( rawValue: 1 << 5 )
-    static let width            = Anchor( rawValue: 1 << 6 )
-    static let height           = Anchor( rawValue: 1 << 7 )
-    static let centerX          = Anchor( rawValue: 1 << 8 )
-    static let centerY          = Anchor( rawValue: 1 << 9 )
-    static let center           = Anchor( arrayLiteral: Anchor.centerX, Anchor.centerY )
-    static let leadingCenter    = Anchor( arrayLiteral: Anchor.leading, Anchor.centerY )
-    static let trailingCenter   = Anchor( arrayLiteral: Anchor.trailing, Anchor.centerY )
-    static let horizontal       = Anchor( arrayLiteral: Anchor.leading, Anchor.trailing )
-    static let vertical         = Anchor( arrayLiteral: Anchor.top, Anchor.bottom )
-    static let horizontalCenter = Anchor( arrayLiteral: Anchor.horizontal, Anchor.centerY )
-    static let verticalCenter   = Anchor( arrayLiteral: Anchor.vertical, Anchor.centerX )
-    static let box              = Anchor( arrayLiteral: Anchor.horizontal, Anchor.vertical )
-    static let leadingBox       = Anchor( arrayLiteral: Anchor.leading, Anchor.vertical )
-    static let trailingBox      = Anchor( arrayLiteral: Anchor.trailing, Anchor.vertical )
-    static let topBox           = Anchor( arrayLiteral: Anchor.top, Anchor.horizontal )
-    static let topCenter        = Anchor( arrayLiteral: Anchor.top, Anchor.centerX )
-    static let bottomBox        = Anchor( arrayLiteral: Anchor.bottom, Anchor.horizontal )
-    static let bottomCenter     = Anchor( arrayLiteral: Anchor.bottom, Anchor.centerX )
+    static let leading           = Anchor( rawValue: 1 << 0 )
+    static let trailing          = Anchor( rawValue: 1 << 1 )
+    static let left              = Anchor( rawValue: 1 << 2 )
+    static let right             = Anchor( rawValue: 1 << 3 )
+    static let top               = Anchor( rawValue: 1 << 4 )
+    static let bottom            = Anchor( rawValue: 1 << 5 )
+    static let width             = Anchor( rawValue: 1 << 6 )
+    static let height            = Anchor( rawValue: 1 << 7 )
+    static let centerH           = Anchor( rawValue: 1 << 8 )
+    static let centerV           = Anchor( rawValue: 1 << 9 )
+    static let center            = Anchor( arrayLiteral: Anchor.centerH, Anchor.centerV )
+    static let leadingCenter     = Anchor( arrayLiteral: Anchor.leading, Anchor.centerV )
+    static let trailingCenter    = Anchor( arrayLiteral: Anchor.trailing, Anchor.centerV )
+    static let horizontal        = Anchor( arrayLiteral: Anchor.leading, Anchor.trailing )
+    static let vertical          = Anchor( arrayLiteral: Anchor.top, Anchor.bottom )
+    static let horizontalCenterV = Anchor( arrayLiteral: Anchor.horizontal, Anchor.centerV )
+    static let verticalCenterH   = Anchor( arrayLiteral: Anchor.vertical, Anchor.centerH )
+    static let box               = Anchor( arrayLiteral: Anchor.horizontal, Anchor.vertical )
+    static let leadingBox        = Anchor( arrayLiteral: Anchor.leading, Anchor.vertical )
+    static let trailingBox       = Anchor( arrayLiteral: Anchor.trailing, Anchor.vertical )
+    static let topBox            = Anchor( arrayLiteral: Anchor.top, Anchor.horizontal )
+    static let topCenter         = Anchor( arrayLiteral: Anchor.top, Anchor.centerH )
+    static let bottomBox         = Anchor( arrayLiteral: Anchor.bottom, Anchor.horizontal )
+    static let bottomCenter      = Anchor( arrayLiteral: Anchor.bottom, Anchor.centerH )
 }
 
 public struct LayoutTarget<T: UIView>: CustomStringConvertible {
@@ -163,6 +163,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         if let configurations = configurations {
             self.apply( configurations )
         }
+        self.activated = true
         self.deactivate()
     }
 
@@ -216,7 +217,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     @discardableResult private func constrain(as toAnchors: Anchor, toGuide guide: UILayoutGuide?, toView view: UIView?, margin: Bool) -> Self {
-        let allAnchors: [Anchor] = [ .top, .leading, .trailing, .bottom, .left, .right, .width, .height, .centerX, .centerY ]
+        let allAnchors: [Anchor] = [ .top, .leading, .trailing, .bottom, .left, .right, .width, .height, .centerH, .centerV ]
         return self.constrainAll { superview, target in
             allAnchors.filter { toAnchors.contains( $0 ) }.flatMap { anchor -> [NSLayoutConstraint] in
                 switch anchor {
@@ -284,7 +285,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                             return [ (view ?? superview).heightAnchor.constraint( equalTo: target.heightAnchor ) ]
                         }
 
-                    case .centerX:
+                    case .centerH:
                         if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
                             return [
                                 guide.leadingAnchor.constraint( lessThanOrEqualTo: target.leadingAnchor ),
@@ -300,7 +301,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                             ]
                         }
 
-                    case .centerY:
+                    case .centerV:
                         if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
                             return [
                                 guide.topAnchor.constraint( lessThanOrEqualTo: target.topAnchor ),

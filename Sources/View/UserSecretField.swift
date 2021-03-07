@@ -180,11 +180,11 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     override func willMove(toWindow newWindow: UIWindow?) {
         super.willMove( toWindow: newWindow )
 
-        if newWindow == nil {
-            self.updateTask.cancel()
+        if newWindow != nil {
+            self.updateTask.request()
         }
         else {
-            self.updateTask.request()
+            self.updateTask.cancel()
         }
     }
 

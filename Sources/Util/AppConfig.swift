@@ -13,6 +13,13 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
     public var isApp    = false
     public var isDebug  = false
     public var isPublic = false
+    public var runCount = 0 {
+        didSet {
+            if self.runCount != UserDefaults.shared.integer( forKey: "runCount" ) {
+                UserDefaults.shared.set( self.runCount, forKey: "runCount" )
+            }
+        }
+    }
     public var diagnostics = false {
         didSet {
             if self.diagnostics != UserDefaults.shared.bool( forKey: "diagnostics" ) {
@@ -89,6 +96,10 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
             self.update()
         }
         InAppFeature.observers.register( observer: self )
+
+        defer {
+            self.runCount += 1
+        }
     }
 
     deinit {
@@ -104,6 +115,7 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
     // MARK: --- Private ---
 
     public func update() {
+        self.runCount = UserDefaults.shared.integer( forKey: "runCount" )
         self.diagnostics = UserDefaults.shared.bool( forKey: "diagnostics" )
         self.diagnosticsDecided = UserDefaults.shared.bool( forKey: "diagnosticsDecided" )
         self.notificationsDecided = UserDefaults.shared.bool( forKey: "notificationsDecided" )

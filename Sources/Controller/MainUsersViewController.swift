@@ -11,6 +11,33 @@ import LocalAuthentication
 import SafariServices
 
 class MainUsersViewController: BaseUsersViewController {
+    private let tipsView = TipsView( tips: [
+        // App
+        "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
+        "Spectre is 100% open source \(.icon( "" )) and Free Software.",
+        "Leave no traces by using incognito \(.icon( "" )) mode.",
+        "With Diagnostics \(.icon( "" )) on, we can build you the best app.",
+        "Be reachable for emergency security alerts \(.icon( "" )).",
+        "Personalize your app with our \(Theme.allCases.count) custom-made themes.",
+        "Premium  subscribers make this app possible.",
+        "Shake \(.icon( "" )) for logs and advanced settings.",
+        "Join the discussion \(.icon( "" )) in the Spectre Community.",
+        // User
+        "Your identicon ╚☻╯⛄ helps you spot typos.",
+        "Set your user's Standard Login, usually your e-mail.",
+        "For extra security, set your user's Default Password to max.",
+        "Worried about an attack? Set a Defense Strategy.",
+        "Mask ••• site passwords from your user's settings.",
+        "Enable AutoFill \(.icon( "" )) to use Spectre from other apps.",
+        "Biometric \(.icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon )) login is the quickest way to sign in.",
+        // Site
+        "Increment your site's counter if its password is compromised.",
+        "Site doesn't accept your password? Try a different Type.",
+        "Defense Strategy shows password time-to-crack if attacked.",
+        "Security Answers help you avoid divulging private information.",
+        "Sites are automatically styled from the site's home page.",
+    ], first: 0 )
+
     private let appToolbar  = UIStackView()
     private let userToolbar = UIToolbar( frame: .infinite )
     private var userToolbarConfiguration: LayoutConfiguration<UIToolbar>!
@@ -53,7 +80,12 @@ class MainUsersViewController: BaseUsersViewController {
         } )
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ),
                                                           image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
-            self.present( SFSafariViewController( url: URL( string: "https://chat.spectre.app" )! ), animated: true )
+            let controller = SFSafariViewController( url: URL( string: "https://chat.spectre.app" )! )
+            controller.dismissButtonStyle = .close
+            controller.modalPresentationStyle = .pageSheet
+            controller.preferredBarTintColor = Theme.current.color.backdrop.get()
+            controller.preferredControlTintColor = Theme.current.color.tint.get()
+            return self.present( controller, animated: true )
         } )
 
         self.userToolbar.items = [
@@ -62,10 +94,13 @@ class MainUsersViewController: BaseUsersViewController {
         ]
 
         // - Hierarchy
+        self.view.insertSubview( self.tipsView, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.appToolbar, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.userToolbar, belowSubview: self.detailsHost.view )
 
         // - Layout
+        LayoutConfiguration( view: self.tipsView )
+                .constrain( as: .topCenter, margin: true ).activate()
         LayoutConfiguration( view: self.appToolbar )
                 .constrain( as: .bottomCenter, margin: true ).activate()
         LayoutConfiguration( view: self.userToolbar )
