@@ -164,7 +164,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             self.apply( configurations )
         }
         self.activated = true
-        self.deactivate()
+        self.deactivate( parent: self )
     }
 
     //! Add child configurations that triggers when this configuration's activation changes.
