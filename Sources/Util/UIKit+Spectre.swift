@@ -543,7 +543,7 @@ extension UIImage {
         if let text = String( data: data, encoding: .utf8 ), !text.isEmpty,
            let svg = try? SVGParser.parse( text: text ) {
             let ratio = (svg.bounds?.size().h ?? 1) / (svg.bounds?.size().w ?? 1)
-            return svg.toNativeImage( size: Size( Double( UIScreen.main.nativeBounds.width ), Double( UIScreen.main.nativeBounds.height ) * ratio ) )
+            return svg.toNativeImage( size: Size( Double( UIScreen.main.nativeBounds.width ), Double( UIScreen.main.nativeBounds.width ) * ratio ) )
         }
 
         return nil

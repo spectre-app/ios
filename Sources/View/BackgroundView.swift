@@ -52,7 +52,7 @@ class BackgroundView: UIView, ThemeObserver {
         }
     }
 
-    let imageView = UIImageView()
+    let imageView = ImageView()
     let imageTint = UIView()
     override var backgroundColor: UIColor? {
         didSet {
@@ -90,6 +90,7 @@ class BackgroundView: UIView, ThemeObserver {
 
         // - View
         self.imageView.contentMode = .scaleAspectFill
+        self.imageView.preservesImageRatio = true
         self.imageView.layer.compositingFilter = "luminosityBlendMode"
         self.imageView.layer.mask = self.imageMask
         self.imageMask.needsDisplayOnBoundsChange = true

@@ -89,26 +89,10 @@ class TipsView: UIView {
                 tip = self.tips[self.currentTip]
             }
 
-            let attributedTip = NSMutableAttributedString( attributedString: (tip ?? "").attributedString )
-            attributedTip.enumerateAttributes( in: NSRange( location: 0, length: attributedTip.length ) ) { attributes, range, stop in
-                var fixedAttributes = attributes, fixed = false
-                if let font = attributes[.font] as? UIFont, font.pointSize != self.tipLabel.font.pointSize {
-                    fixedAttributes[.font] = font.withSize( self.tipLabel.font.pointSize )
-                    fixed = true
-                }
-                if let color = attributes[.foregroundColor] as? UIColor, color != self.tipLabel.textColor.with( alpha: color.alpha ) {
-                    fixedAttributes[.foregroundColor] = self.tipLabel.textColor.with( alpha: color.alpha )
-                    fixed = true
-                }
-                if fixed {
-                    attributedTip.setAttributes( fixedAttributes, range: range )
-                }
-            }
-
-            UIView.animate( withDuration: .long, animations: {
+            UIView.animate( withDuration: .short, animations: {
                 self.tipLabel.alpha = .off
             }, completion: { _ in
-                self.tipLabel.attributedText = attributedTip
+                self.tipLabel.attributedText = (tip ?? "").attributedString( for: self.tipLabel )
 
                 UIView.animate( withDuration: .short, animations: {
                     self.tipLabel.alpha = .on

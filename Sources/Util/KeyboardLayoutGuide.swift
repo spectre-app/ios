@@ -143,7 +143,7 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
         // Bug: iOS doesn't include window translation when converting screen coordinates.
         // Usually screen and window bounds are identical, but not always (eg. app extension windows).
         // Best we can do is guess the vertical offset in the case of iPhone (only top edge offset).
-        trc( "window: %@, screen: %@", window.bounds, window.screen.bounds )
+        //dbg( "window: %@, screen: %@", window.bounds, window.screen.bounds )
         var keyboardWindowFrame = keyboardScreenFrame
         if window.bounds.size.width == window.screen.bounds.size.width, window.bounds.size.height != window.screen.bounds.size.height {
             keyboardWindowFrame.origin.y -= window.screen.bounds.maxY - window.bounds.maxY
@@ -156,12 +156,12 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
         self.keyboardRightConstraint?.constant = self.keyboardFrame.maxX - view.bounds.maxX
         self.keyboardBottomConstraint?.constant = self.keyboardFrame.maxY - view.bounds.maxY
 
-        trc( "keyboardFrame in window: %@, view: %@", keyboardWindowFrame, self.keyboardFrame )
-        trc( "keyboardFrame view insets: %@, constraints: t=%g, l=%g, r=%g, b=%g", self.keyboardInsets,
-             self.keyboardTopConstraint?.constant ?? -1,
-             self.keyboardLeftConstraint?.constant ?? -1,
-             self.keyboardRightConstraint?.constant ?? -1,
-             self.keyboardBottomConstraint?.constant ?? -1 )
+        //dbg( "keyboardFrame in window: %@, view: %@", keyboardWindowFrame, self.keyboardFrame )
+        //dbg( "keyboardFrame view insets: %@, constraints: t=%g, l=%g, r=%g, b=%g", self.keyboardInsets,
+        //     self.keyboardTopConstraint?.constant ?? -1,
+        //     self.keyboardLeftConstraint?.constant ?? -1,
+        //     self.keyboardRightConstraint?.constant ?? -1,
+        //     self.keyboardBottomConstraint?.constant ?? -1 )
     }
 }
 

@@ -173,7 +173,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
     class DeviceIdentifierItem: Item<Model> {
         init() {
             super.init( title: "Device Identifier",
-                        caption: { _ in Tracker.shared.identifierForDevice } )
+                        caption: { _ in "\(Tracker.shared.identifierForDevice)" } )
 
             self.addBehaviour( BlockTapBehaviour() { _ in
                 UIPasteboard.general.setItems(
@@ -185,7 +185,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
     class OwnerIdentifierItem: Item<Model> {
         init() {
             super.init( title: "Owner Identifier",
-                        caption: { _ in Tracker.shared.identifierForOwner } )
+                        caption: { _ in "\(Tracker.shared.identifierForOwner)" } )
 
             self.addBehaviour( BlockTapBehaviour() { _ in
                 UIPasteboard.general.setItems(

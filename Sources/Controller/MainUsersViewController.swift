@@ -16,27 +16,27 @@ class MainUsersViewController: BaseUsersViewController {
         "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
         "Spectre is 100% open source \(.icon( "" )) and Free Software.",
         "Leave no traces by using incognito \(.icon( "" )) mode.",
-        "With Diagnostics \(.icon( "" )) on, we can build you the best app.",
+        "With Diagnostics \(.icon( "" )), we can build you the best app.",
         "Be reachable for emergency security alerts \(.icon( "" )).",
-        "Personalize your app with our \(Theme.allCases.count) custom-made themes.",
-        "Premium  subscribers make this app possible.",
+        "Personalize your app with our \(Theme.allCases.count) custom-made themes \(.icon( "" )).",
+        "Premium \(.icon( "" )) subscribers make this app possible.",
         "Shake \(.icon( "" )) for logs and advanced settings.",
         "Join the discussion \(.icon( "" )) in the Spectre Community.",
         // User
         "Your identicon ╚☻╯⛄ helps you spot typos.",
-        "Set your user's Standard Login, usually your e-mail.",
-        "For extra security, set your user's Default Password to max.",
-        "Worried about an attack? Set a Defense Strategy.",
-        "Mask ••• site passwords from your user's settings.",
+        "Set your user's Standard Login \(.icon( "" )), usually your e-mail.",
+        "For extra security, set your user's Default Password to max \(.icon( "" )).",
+        "Worried about an attack? Set a Defense Strategy \(.icon( "" )).",
+        "Turn on Masked •••• passwords to deter shoulder-snooping.",
         "Enable AutoFill \(.icon( "" )) to use Spectre from other apps.",
         "Biometric \(.icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon )) login is the quickest way to sign in.",
         // Site
-        "Increment your site's counter if its password is compromised.",
+        "Increment your site's counter \(.icon( "" )) if its password is compromised.",
         "Site doesn't accept your password? Try a different Type.",
-        "Defense Strategy shows password time-to-crack if attacked.",
-        "Security Answers help you avoid divulging private information.",
-        "Sites are automatically styled from the site's home page.",
-    ], first: 0 )
+        "Defense Strategy shows password time-to-crack \(.icon( "" )) if attacked.",
+        "Use Security Answers \(.icon( "" )) to avoid divulging private information.",
+        "Sites are automatically styled \(.icon( "" )) from their home page.",
+    ], first: 0, random: false)
 
     private let appToolbar  = UIStackView()
     private let userToolbar = UIToolbar( frame: .infinite )
@@ -152,7 +152,6 @@ class MainUsersViewController: BaseUsersViewController {
 
                 do {
                     try Marshal.shared.delete( userFile: userFile )
-                    // TODO: Check that fileSource is getting updated.
                 }
                 catch {
                     mperror( title: "Couldn't delete user", error: error )

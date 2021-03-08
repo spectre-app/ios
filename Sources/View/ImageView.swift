@@ -22,11 +22,12 @@ class ImageView: UIImageView {
     override func updateConstraints() {
         super.updateConstraints()
 
-        if let image = self.image {
+        if self.preservesImageRatio, let image = self.image {
             let ratio = image.size.width / image.size.height
             if self.ratioPreservingConstraint?.multiplier != ratio {
                 self.ratioPreservingConstraint?.isActive = false
                 self.ratioPreservingConstraint = self.widthAnchor.constraint( equalTo: self.heightAnchor, multiplier: ratio )
+                self.ratioPreservingConstraint?.priority = .defaultHigh + 10
                 self.ratioPreservingConstraint?.isActive = true
             }
         }

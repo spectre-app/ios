@@ -138,7 +138,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             self.semaphore.enter()
         }
 
-        trc( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, toElementsBySection )
+        //dbg( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, toElementsBySection )
 
         if !self.elementsConsumed || !animated {
             DispatchQueue.main.perform( group: self.semaphore ) {
@@ -182,7 +182,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                 // Remove dataSource sections no longer present in the new sections (should be empty of items now).
                 for section in (0..<self.elementsBySection.count).reversed() {
                     if section >= toElementsBySection.count {
-                        trc( "delete section %d", section )
+                        //dbg( "delete section %d", section )
                         self.elementsBySection.remove( at: section )
                         self.collectionView?.deleteSections( IndexSet( integer: section ) )
                         self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
@@ -192,7 +192,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                 // Add empty dataSource sections for newly introduced sections.
                 for toSection in 0..<toElementsBySection.count {
                     if toSection >= self.elementsBySection.count {
-                        trc( "insert section %d", toSection )
+                        //dbg( "insert section %d", toSection )
                         self.elementsBySection.append( [ E ]() )
                         self.collectionView?.insertSections( IndexSet( integer: toSection ) )
                         self.tableView?.insertSections( IndexSet( integer: toSection ), with: .automatic )
@@ -204,12 +204,12 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                     for (fromItem, fromElement) in fromElements.enumerated().reversed() {
                         let fromIndexPath = IndexPath( item: fromItem, section: fromSection )
                         if let toIndexPath = self.indexPath( for: fromElement, in: toElementsBySection, elementsMatch: elementsMatch ) {
-                            trc( "move item %@ -> %@", fromIndexPath, toIndexPath )
+                            //dbg( "move item %@ -> %@", fromIndexPath, toIndexPath )
                             self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
                             self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
                         }
                         else {
-                            trc( "delete item %@", fromIndexPath )
+                            //dbg( "delete item %@", fromIndexPath )
                             self.collectionView?.deleteItems( at: [ fromIndexPath ] )
                             self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
                         }
@@ -222,7 +222,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                         if self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) == nil {
                             // New element missing in old dataSource.
                             let toIndexPath = IndexPath( item: toItem, section: toSection )
-                            trc( "insert item %@", toIndexPath )
+                            //dbg( "insert item %@", toIndexPath )
                             self.collectionView?.insertItems( at: [ toIndexPath ] )
                             self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
                         }
@@ -235,7 +235,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             if success {
                 // We reload after updates since it's illegal to move & reload an indexPath at the same time.
                 if !reloadPaths.isEmpty {
-                    trc( "reload items %@", reloadPaths )
+                    //dbg( "reload items %@", reloadPaths )
                     self.collectionView?.reloadItems( at: reloadPaths )
                     self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
                 }
@@ -257,11 +257,11 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
         if selectionPaths.isEmpty || self.tableView?.allowsMultipleSelection ?? false || self.collectionView?.allowsMultipleSelection ?? false {
             self.tableView?.indexPathsForSelectedRows?.filter { !selectionPaths.contains( $0 ) }.forEach {
-                trc( "deselect item %@", $0 )
+                //dbg( "deselect item %@", $0 )
                 self.tableView?.deselectRow( at: $0, animated: animated )
             }
             self.collectionView?.indexPathsForSelectedItems?.filter { !selectionPaths.contains( $0 ) }.forEach {
-                trc( "deselect item %@", $0 )
+                //dbg( "deselect item %@", $0 )
                 self.collectionView?.deselectItem( at: $0, animated: animated )
             }
         }
@@ -269,7 +269,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             selectionPaths = [ selectionPaths[0] ]
         }
         selectionPaths.forEach {
-            trc( "select item %@", $0 )
+            //dbg( "select item %@", $0 )
             self.tableView?.selectRow( at: $0, animated: animated, scrollPosition: .middle )
             self.collectionView?.selectItem( at: $0, animated: animated, scrollPosition: .centeredVertically )
         }
