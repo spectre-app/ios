@@ -240,8 +240,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                         User( userName: keyFactory.userName ).login( using: keyFactory )
             }
             self.secretField.authenticated = { result in
-                trc( "User secret authentication: %@", result )
-
                 do {
                     let user = try result.get()
                     Feedback.shared.play( .trigger )
@@ -412,8 +410,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             keychainKeyFactory.unlock().promising {
                 userFile.authenticate( using: $0 )
             }.then( on: .main ) { [unowned self] result in
-                trc( "User biometric authentication: %@", result )
-
                 do {
                     let user = try result.get()
                     Feedback.shared.play( .trigger )

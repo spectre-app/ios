@@ -87,7 +87,7 @@ class SitePreview: Equatable {
 
         // If a preview exists with a known image < 30 days old, don't refresh it yet.
         if let date = self.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
-            trc( "[preview cached] %@: %d", self.url, self.data.imageData?.count ?? 0 )
+            //dbg( "[preview cached] %@: %d", self.url, self.data.imageData?.count ?? 0 )
             return Promise( .success( false ) )
         }
 
@@ -103,7 +103,7 @@ class SitePreview: Equatable {
 
         // Successful image resolution updates the preview, cache cost and persists the change to disk.
         resolution.promise { imageData in
-            trc( "[preview fetched] %@: %d", self.url, imageData.count )
+            //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
 
             self.data.imageDate = Date()
             self.data.imageData = imageData
@@ -142,28 +142,37 @@ class SitePreview: Equatable {
     private func loadImage(for url: String) -> Promise<Data> {
         let promise = Promise<Data>()
 
-        SitePreview.linkPreview.preview( url, onSuccess: { response in
-            // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
-            guard let imageURL = [ response.image, response.icon ]
-                    .compactMap( { SitePreview.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
-                    ?? SitePreview.byImageSize( [ response.image, response.icon ] + (response.images ?? []) )
-                                  .reordered( last: { $0.pathExtension == "gif" } ).first
-            else {
-                trc( "[preview missing] %@: %@", self.url, response )
-                promise.finish( .failure( AppError.issue(
-                        title: "No candidate images on site.", details: String( describing: response ) ) ) )
-                return
-            }
-
-            // Fetch the image's data.
-            self.data.imageURL = imageURL.absoluteString
-            URLSession.optional.promise( with: URLRequest( url: imageURL ) ).promise { $0.0 }.finishes( promise )
+        SitePreview.linkPreview.preview( url, onSuccess: {
+            self.extractImage( response: $0, into: promise )
         }, onError: { error in
-            trc( "[preview error] %@: %@", self.url, error )
-            promise.finish( .failure( error ) )
+            SitePreview.linkPreview.preview( "https://\(url)", onSuccess: {
+                self.extractImage( response: $0, into: promise )
+            }, onError: { error in
+                wrn( "[preview error] %@: %@", self.url, error )
+
+                promise.finish( .failure( error ) )
+            } )
         } )
 
         return promise
+    }
+
+    private func extractImage(response: Response, into promise: Promise<Data>) {
+        // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
+        guard let imageURL = [ response.image, response.icon ]
+                .compactMap( { SitePreview.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
+                ?? SitePreview.byImageSize( [ response.image, response.icon ] + (response.images ?? []) )
+                              .reordered( last: { $0.pathExtension == "gif" } ).first
+        else {
+            //dbg( "[preview missing] %@: %@", self.url, response )
+            promise.finish( .failure( AppError.issue(
+                    title: "No candidate images on site.", details: String( describing: response ) ) ) )
+            return
+        }
+
+        // Fetch the image's data.
+        self.data.imageURL = imageURL.absoluteString
+        URLSession.optional.promise( with: URLRequest( url: imageURL ) ).promise { $0.0 }.finishes( promise )
     }
     #endif
 }

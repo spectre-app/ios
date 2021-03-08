@@ -68,7 +68,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
         init() {
             super.init( title: "\(productName)",
                         value: { _ in Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) },
-                        caption: { _ in Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String } )
+                        caption: { _ in (Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String).flatMap { "\($0)" } } )
         }
     }
 
@@ -114,7 +114,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                                     Theme.allCases ).unique()
                         },
                         value: { Theme.with( path: $0.theme ) ?? .default }, update: { $0.model?.theme = $1.path },
-                        caption: { _ in Theme.current } )
+                        caption: { _ in "\(Theme.current)" } )
 
             self.addBehaviour( PremiumTapBehaviour() )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
@@ -125,6 +125,12 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
         }
 
         class Cell: EffectCell {
+            let iconView = UIImageView( image: .icon( "" ) )
+            override var isSelected: Bool {
+                didSet {
+                    self.iconView.isHidden = !self.isSelected
+                }
+            }
             weak var theme: Theme? = Theme.default {
                 didSet {
                     DispatchQueue.main.perform {
@@ -132,6 +138,21 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                         self.effectView => \.backgroundColor => self.theme?.color.panel
                     }
                 }
+            }
+
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            override init(frame: CGRect) {
+                super.init( frame: frame )
+
+                // - Hierarchy
+                self.contentView.addSubview( self.iconView )
+
+                // - Layout
+                LayoutConfiguration( view: self.iconView )
+                        .constrain( as: .center ).activate()
             }
         }
     }

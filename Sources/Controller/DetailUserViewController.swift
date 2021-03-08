@@ -49,7 +49,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
 
     class IdenticonItem: LabelItem<User> {
         init() {
-            super.init( value: { $0.identicon.attributedText() }, caption: { $0.userName } )
+            super.init( value: { $0.identicon.attributedText() }, caption: { "\($0.userName)" } )
         }
     }
 
@@ -116,6 +116,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             view.valueField.autocapitalizationType = .none
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
+            view.valueField.leftViewMode = .always
+            view.valueField.leftView = MarginView( for: UIImageView( image: .icon( "" ) ), margins: .border( 4 ) )
             return view
         }
 
@@ -340,7 +342,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class IdentifierItem: Item<User> {
         init() {
             super.init( title: "Private User Identifier",
-                        caption: { try? $0.authenticatedIdentifier.await() } )
+                        caption: { (try? $0.authenticatedIdentifier.await()).flatMap { "\($0)" } } )
 
             self.addBehaviour( BlockTapBehaviour() {
                 _ = $0.model.flatMap {

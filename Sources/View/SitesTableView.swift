@@ -235,7 +235,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             didSet {
                 let key           = self.site.siteName
                 let attributedKey = NSMutableAttributedString( string: key )
-                defer { self.subtitle = attributedKey }
+                defer { self.subtitle = NSAttributedString( attributedString: attributedKey ) }
                 self.isExact = key == self.query
 
                 if self.isExact {
@@ -589,7 +589,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     case .identification:
                         self.modeButton.image = .icon( "" )
                     case .recovery:
-                        self.modeButton.image = .icon( "" )
+                        self.modeButton.image = .icon( "" )
                     @unknown default:
                         self.modeButton.image = nil
                 }

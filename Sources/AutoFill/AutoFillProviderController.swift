@@ -33,7 +33,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
-        dbg( "prepareCredentialList: %@", serviceIdentifiers )
+        //dbg( "prepareCredentialList: %@", serviceIdentifiers )
         AutoFillModel.shared.context = AutoFillModel.Context( serviceIdentifiers: serviceIdentifiers )
 
         let usersViewController = AutoFillUsersViewController()
@@ -49,7 +49,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
-        dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
+        //dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
         do { let _ = try Marshal.shared.setNeedsUpdate().await() }
@@ -105,7 +105,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
-        dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
+        //dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
         let usersViewController = AutoFillUsersViewController()
@@ -121,7 +121,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func prepareInterfaceForExtensionConfiguration() {
-        dbg( "prepareInterfaceForExtensionConfiguration" )
+        //dbg( "prepareInterfaceForExtensionConfiguration" )
     }
 }
 

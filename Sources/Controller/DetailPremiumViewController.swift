@@ -263,7 +263,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
     }
 
     class FeatureItem: ImageItem<Void> {
-        init(name: String?, icon: String, caption: String?) {
+        init(name: Text?, icon: String, caption: Text?) {
             super.init( title: name, value: { _ in .icon( icon, withSize: 48 ) }, caption: { _ in caption } )
         }
     }

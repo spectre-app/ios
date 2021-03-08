@@ -164,7 +164,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             self.apply( configurations )
         }
         self.activated = true
-        self.deactivate()
+        self.deactivate( parent: self )
     }
 
     //! Add child configurations that triggers when this configuration's activation changes.
@@ -410,14 +410,14 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
             return self
         }
-        trc( "%@: activate: %@", parent, self )
+        //dbg( "%@: activate: %@", parent, self )
 
         DispatchQueue.main.perform {
             let owningView = self.target.owningView
             let targetView = self.target.view
 
             self.inactiveConfigurations.forEach {
-                trc( "%@:%@: -> deactivate inactive child: %@", parent, self.target, $0 )
+                //dbg( "%@:%@: -> deactivate inactive child: %@", parent, self.target, $0 )
                 $0.deactivate( animationDuration: duration, parent: self )
             }
 
@@ -450,7 +450,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 targetView?.translatesAutoresizingMaskIntoConstraints = false
                 for constrainer in self.constrainers {
                     for constraint in constrainer( owningView ?? dummyView, self.target ) {
-                        trc( "%@:%@: activating %@", parent, self.target, constraint )
+                        //dbg( "%@:%@: activating %@", parent, self.target, constraint )
                         if constraint.firstItem !== dummyView && constraint.secondItem !== dummyView {
                             constraint.isActive = true
                             self.activeConstraints.insert( constraint )
@@ -468,7 +468,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             targetView.flatMap { targetView in self.actions.forEach { $0( targetView, true ) } }
 
             self.activeConfigurations.forEach {
-                trc( "%@:%@: -> activate active child: %@", parent, self.target, $0 )
+                //dbg( "%@:%@: -> activate active child: %@", parent, self.target, $0 )
                 $0.activate( animationDuration: duration, parent: self )
             }
 
@@ -503,13 +503,13 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
             return self
         }
-        trc( "%@: deactivate: %@", parent, self )
+        //dbg( "%@: deactivate: %@", parent, self )
 
         DispatchQueue.main.perform {
             let targetView = self.target.view
 
             self.activeConfigurations.forEach {
-                trc( "%@:%@: -> deactivate active child: %@", parent, self.target, $0 )
+                //dbg( "%@:%@: -> deactivate active child: %@", parent, self.target, $0 )
                 $0.deactivate( animationDuration: duration, parent: self )
             }
 
@@ -531,7 +531,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
 
             self.activeConstraints.forEach {
-                trc( "%@:%@: deactivating %@", parent, self.target, $0 )
+                //dbg( "%@:%@: deactivating %@", parent, self.target, $0 )
                 $0.isActive = false
             }
             self.activeConstraints.removeAll()
@@ -542,7 +542,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             targetView.flatMap { targetView in self.actions.forEach { $0( targetView, false ) } }
 
             self.inactiveConfigurations.forEach {
-                trc( "%@:%@: -> activate inactive child: %@", parent, self.target, $0 )
+                //dbg( "%@:%@: -> activate inactive child: %@", parent, self.target, $0 )
                 $0.activate( animationDuration: duration, parent: self )
             }
 
@@ -644,8 +644,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         self.inactiveValue = oldValue
                     }
 
-                    trc( "%@ %@[%@]:activate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
-                         String( reflecting: oldValue ), String( reflecting: newValue ) )
+                    //dbg( "%@ %@[%@]:activate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                    //     String( reflecting: oldValue ), String( reflecting: newValue ) )
                     target[keyPath: self.keyPath] = newValue
                 }
             }
@@ -659,8 +659,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                     let oldValue = target[keyPath: keyPath]
 
                     if newValue != oldValue {
-                        trc( "%@ %@[%@]:deactivate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
-                             String( reflecting: oldValue ), String( reflecting: newValue ) )
+                        //dbg( "%@ %@[%@]:deactivate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                        //     String( reflecting: oldValue ), String( reflecting: newValue ) )
                         target[keyPath: self.keyPath] = newValue
                     }
                 }
@@ -677,8 +677,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 let newValue = self.activeValue(), oldValue = target[keyPath: self.keyPath]
 
                 if newValue != oldValue {
-                    trc( "%@ %@[%@]:update: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
-                         String( reflecting: oldValue ), String( reflecting: newValue ) )
+                    //dbg( "%@ %@[%@]:update: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                    //     String( reflecting: oldValue ), String( reflecting: newValue ) )
                     target[keyPath: self.keyPath] = newValue
                 }
             }
