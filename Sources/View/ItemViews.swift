@@ -7,11 +7,12 @@ import UIKit
 import SafariServices
 
 class AnyItem: NSObject, Updatable {
-    let title: String?
+    let title: Text?
 
-    private lazy var updateTask = DispatchTask( named: self.title, deadline: .now() + .milliseconds( 100 ), update: self, animated: true )
+    private lazy var updateTask = DispatchTask(
+            named: self.title?.description, deadline: .now() + .milliseconds( 100 ), update: self, animated: true )
 
-    init(title: String? = nil) {
+    init(title: Text? = nil) {
         self.title = title
     }
 
@@ -39,7 +40,7 @@ class Item<M>: AnyItem {
     }
     private var behaviours = [ Behaviour<M> ]()
 
-    private let captionProvider: (M) -> CustomStringConvertible?
+    private let captionProvider: (M) -> Text?
     private let subitems:        [Item<M>]
     private let subitemAxis:     NSLayoutConstraint.Axis
     private (set) lazy var view = createItemView()
@@ -48,9 +49,9 @@ class Item<M>: AnyItem {
         self.viewController?.updatesPostponed ?? true
     }
 
-    init(title: String? = nil,
+    init(title: Text? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption captionProvider: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption captionProvider: @escaping (M) -> Text? = { _ in nil }) {
         self.subitems = subitems
         self.subitemAxis = subitemAxis
         self.captionProvider = captionProvider
@@ -172,11 +173,13 @@ class Item<M>: AnyItem {
             updateHidden( self.item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: self.item ) ?? $0) } )
             updateEnabled( self.item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: self.item ) ?? $0) } )
 
-            self.titleLabel.text = self.item.title
-            self.titleLabel.isHidden = self.item.title == nil
+            self.titleLabel.attributedText = self.item.title?.attributedString( for: self.titleLabel )
+            self.titleLabel.isHidden = self.titleLabel.attributedText == nil
 
-            self.captionLabel.text = self.item.model.flatMap { self.item.captionProvider( $0 )?.description }
-            self.captionLabel.isHidden = self.captionLabel.text == nil
+            self.captionLabel.attributedText = self.item.model.flatMap {
+                self.item.captionProvider( $0 )?.attributedString( for: self.captionLabel )
+            }
+            self.captionLabel.isHidden = self.captionLabel.attributedText == nil
 
             for i in 0..<max( self.item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
                 let subitemView  = i < self.item.subitems.count ? self.item.subitems[i].view: nil
@@ -427,11 +430,11 @@ class ValueItem<M, V>: Item<M> {
     }
     let update: ((Item<M>, V) -> Void)?
 
-    init(title: String? = nil,
+    init(title: Text? = nil,
          value valueProvider: @escaping (M) -> V? = { _ in nil },
          update: ((Item<M>, V) -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> Text? = { _ in nil }) {
         self.valueProvider = valueProvider
         self.update = update
         super.init( title: title, subitems: subitems, axis: subitemAxis, caption: caption )
@@ -474,7 +477,7 @@ class LabelItem<M>: ValueItem<M, Any> {
             super.update()
 
             let value = self.item.value
-            if let value = value as? NSAttributedString {
+            if let value = value as? NSAttributedString ?? (value as? Text)?.attributedString {
                 self.valueLabel.attributedText = value
                 self.valueLabel.isHidden = false
             }
@@ -534,12 +537,12 @@ class ToggleItem<M>: ValueItem<M, Bool> {
     let tracking: Tracking
     let icon:     (M) -> UIImage?
 
-    init(track: Tracking, title: String? = nil,
+    init(track: Tracking, title: Text? = nil,
          icon: @escaping (M) -> UIImage?,
          value: @escaping (M) -> Bool,
          update: ((Item<M>, Bool) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> Text? = { _ in nil }) {
         self.tracking = track
         self.icon = icon
 
@@ -584,14 +587,14 @@ class ToggleItem<M>: ValueItem<M, Bool> {
     }
 }
 
-class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
+class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
     let tracking: Tracking
     let action:   (ButtonItem<M>) -> Void
 
-    init(track: Tracking, title: String? = nil,
-         value: @escaping (M) -> (label: String?, image: UIImage?),
+    init(track: Tracking, title: Text? = nil,
+         value: @escaping (M) -> (label: Text?, image: UIImage?),
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil },
+         caption: @escaping (M) -> Text? = { _ in nil },
          action: @escaping (ButtonItem<M>) -> () = { _ in }) {
         self.tracking = track
         self.action = action
@@ -627,7 +630,7 @@ class ButtonItem<M>: ValueItem<M, (label: String?, image: UIImage?)> {
             super.update()
 
             let value = self.item.value
-            self.button.title = value?.label
+            self.button.attributedTitle = value?.label?.attributedString( for: self.button.button )
             self.button.image = value?.image
         }
     }
@@ -681,11 +684,11 @@ class DateItem<M>: ValueItem<M, Date> {
 class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     let placeholder: String?
 
-    init(title: String? = nil, placeholder: String?,
+    init(title: Text? = nil, placeholder: String?,
          value: @escaping (M) -> String? = { _ in nil },
          update: ((Item<M>, String) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> Text? = { _ in nil }) {
         self.placeholder = placeholder
         super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
     }
@@ -805,7 +808,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
             self.valueView.isEditable = self.item.update != nil
 
             let value = self.item.value
-            if let value = value as? NSAttributedString {
+            if let value = value as? NSAttributedString ?? (value as? Text)?.attributedString {
                 self.valueView.attributedText = value
                 self.valueView.isHidden = false
             }
@@ -825,12 +828,12 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: ValueItem<M, V> {
     let step: V.Stride, min: V, max: V
 
-    init(title: String? = nil,
+    init(title: Text? = nil,
          value: @escaping (M) -> V? = { _ in nil },
          update: ((Item<M>, V) -> ())? = nil,
          step: V.Stride, min: V, max: V,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> Text? = { _ in nil }) {
         self.step = step
         self.min = min
         self.max = max
@@ -912,12 +915,12 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     let tracking: Tracking?
     let values:   (M) -> [V?]
 
-    init(track: Tracking? = nil, title: String? = nil,
+    init(track: Tracking? = nil, title: Text? = nil,
          values: @escaping (M) -> [V?],
          value: @escaping (M) -> V,
          update: ((Item<M>, V) -> ())? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> Text? = { _ in nil }) {
         self.tracking = track
         self.values = values
 
@@ -932,7 +935,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     }
 
     func tracking(indexPath: IndexPath, value: V) -> Tracking? {
-        if let tracking = self.tracking, let value = (value as? CustomStringConvertible)?.description {
+        if let tracking = self.tracking, let value = (value as? Text)?.description {
             return tracking.with( parameters: [ "value": value ] )
         }
 
@@ -1077,10 +1080,10 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
     var deletable = false
     var animated  = true
 
-    init(title: String? = nil,
+    init(title: Text? = nil,
          values: @escaping (M) -> [V],
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> CustomStringConvertible? = { _ in nil }) {
+         caption: @escaping (M) -> Text? = { _ in nil }) {
         self.values = values
 
         super.init( title: title, subitems: subitems, axis: subitemAxis, caption: caption )

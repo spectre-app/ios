@@ -94,7 +94,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                             if InAppFeature.premium.isEnabled,
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
                                        attacker.timeToCrack( string: try? $0.result().token.await() ) {
-                                return "Time to crack: \(timeToCrack) 🅿︎"
+                                return "\(.icon( "" )) Time to crack: \(timeToCrack) 🅿︎"
                             }
                             else {
                                 return "Time to crack: unknown 🅿︎"
@@ -268,7 +268,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                                             controller.addAction( UIAlertAction( title: "Help", style: .default ) { _ in
                                                 let helpController = UIAlertController( title: "Adding Security Questions", message:
                                                 """
-                                                Find the single word from the question that best describes the answer.
+                                                Find the word from the question that most narrowly describes its answer.
                                                 Consider answering the question and wondering:
                                                 "What is this answer? It is a ____."
 
@@ -276,7 +276,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                                                 It is a "city".
 
                                                 What is the middle name of your youngest child?
-                                                It is a "name".
+                                                It is a "child".
 
                                                 What is your youngest brother’s birthday month and year?
                                                 It is a "birthday".

@@ -589,7 +589,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     case .identification:
                         self.modeButton.image = .icon( "" )
                     case .recovery:
-                        self.modeButton.image = .icon( "" )
+                        self.modeButton.image = .icon( "" )
                     @unknown default:
                         self.modeButton.image = nil
                 }
