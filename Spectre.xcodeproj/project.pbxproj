@@ -1319,9 +1319,7 @@
 						CreatedOnToolsVersion = 12.0;
 					};
 					DA5BFA43147E415C00F98B1E = {
-						DevelopmentTeam = HL3Q45LX9N;
 						LastSwiftMigration = 1020;
-						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 0;
@@ -1693,7 +1691,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = "/bin/sh -e";
-			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nSENTRY_ORG=lyndir SENTRY_PROJECT=spectre sentry-cli upload-dif --include-sources --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
+			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nsentry-cli upload-dif --include-sources --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FA35C1C35E346A6267315897 /* [CP] Embed Pods Frameworks */ = {
@@ -2128,6 +2126,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -2150,6 +2150,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
@@ -2161,6 +2162,8 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -2184,6 +2187,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
 			name = Debug;
@@ -2193,7 +2197,9 @@
 			baseConfigurationReference = ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -2217,6 +2223,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Ad Hoc";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
 			name = Release;
@@ -2227,6 +2234,8 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -2250,6 +2259,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PRODUCT_NAME = "Spectre AutoFill";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
 			name = Public;
@@ -2610,6 +2620,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -2632,6 +2644,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
@@ -2643,7 +2656,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -2666,6 +2681,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PRODUCT_NAME = Spectre;
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre Ad Hoc";
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};

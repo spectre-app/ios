@@ -1,0 +1,38 @@
+opt_out_usage
+update_fastlane
+skip_docs
+
+platform :ios do
+  desc "Build an application archive"
+  lane :archive do
+    ensure_no_debug_code(text: "<<<<<<|WIP:", exclude_dirs: [".git", "fastlane"])
+    #verify_xcode
+    cocoapods
+    #swiftlint
+
+    build_app(scheme: "Spectre-iOS", export_options: { method: "ad-hoc" })
+    verify_build
+  end
+
+  desc "Build an application archive and send it to TestFlight"
+  lane :beta do
+    ensure_git_status_clean
+    ensure_git_branch(branch: "^stream/(alpha|beta|probe)$")
+
+    archive
+    install_on_device(skip_wifi: true)
+    prompt(boolean: true, text: "Please test the app on your device. Is everything alright?") # TODO: check
+    upload_to_testflight
+    download_dsyms
+    sentry_upload_dsym #(include_sources: true)
+
+    build = get_build_number().split(".").map(&:to_i)
+    build[-1] += 1
+    increment_build_number(build_number: build.join("."), skip_info_plist: true)
+    reset_git_repo(files: [ "Sources/Info.plist", "Sources/AutoFill/Info.plist" ])
+  end
+
+  lane :release do
+    #precheck
+  end
+end

@@ -1,3 +1,5 @@
 source "https://rubygems.org"
 
-gem "cocoapods-binary"
+gem "cocoapods"
+gem "fastlane"
+gem 'fastlane-plugin-sentry'
