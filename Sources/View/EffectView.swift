@@ -198,7 +198,7 @@ class EffectView: UIView, ThemeObserver {
             }
 
             if #available( iOS 13.0, * ) {
-                self.blurEffectView.layer.cornerCurve = .continuous
+                self.blurEffectView.layer.cornerCurve = self.isCircular ? .circular : .continuous
             }
             self.blurEffectView.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
             self.blurEffectView.layer.borderWidth = self.borderWidth

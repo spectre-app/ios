@@ -8,7 +8,7 @@ import UIKit
 class EffectToggleButton: UIView {
     private let button     = UIButton()
     private let checkLabel = UILabel()
-    private lazy var contentView = EffectView( content: self.button )
+    private lazy var contentView = EffectView()
 
     var tapEffect = true
     var tracking: Tracking?
@@ -67,6 +67,9 @@ class EffectToggleButton: UIView {
         self.action = action
         super.init( frame: .zero )
 
+        // - View
+        self.layoutMargins = .border( 12 )
+
         self.checkLabel => \.font => Theme.current.font.callout
         self.checkLabel => \.textColor => Theme.current.color.body
         self.checkLabel => \.backgroundColor => Theme.current.color.panel
@@ -77,7 +80,7 @@ class EffectToggleButton: UIView {
 
         self.contentView.isCircular = true
 
-        self.button.contentEdgeInsets = .border( 12 )
+        self.button.contentEdgeInsets = .border( 32 )
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.action( !self.isSelected ).flatMap { self.isSelected = $0 }
             self.track()
@@ -89,14 +92,17 @@ class EffectToggleButton: UIView {
             Feedback.shared.play( .trigger )
         }
 
-        self.layoutMargins = self.button.contentEdgeInsets
-
+        // - Hierarchy
         self.addSubview( self.contentView )
         self.addSubview( self.checkLabel )
+        self.addSubview( self.button )
 
+        // - Layout
         self.widthAnchor.constraint( equalTo: self.heightAnchor ).isActive = true
         self.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ).isActive = true
 
+        LayoutConfiguration( view: self.button )
+                .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.contentView )
                 .constrain( as: .box, margin: true ).activate()
         LayoutConfiguration( view: self.checkLabel )

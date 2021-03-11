@@ -83,10 +83,10 @@ class EffectResultTypeCell: EffectClassifiedCell {
                 self.name = resultType.abbreviation
 
                 if resultType.in( class: .template ) {
-                    self.class = "Template"
+                    self.class = "Scheme"
                 }
                 else if resultType.in( class: .stateful ) {
-                    self.class = "Stateful"
+                    self.class = "Saved"
                 }
                 else if resultType.in( class: .derive ) {
                     self.class = "Derive"

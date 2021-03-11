@@ -178,7 +178,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
             if value == .none {
                 cell.name = nil
-                cell.class = "Standard Login"
+                cell.class = "Standard\nLogin"
             }
         }
     }
