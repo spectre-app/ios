@@ -245,8 +245,7 @@ extension UICollectionView {
                                  animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
                     -> Bool {
         if let item = item {
-            let x = IndexPath( item: item, section: section )
-            return self.requestSelection( at: x, animated: animated, scrollPosition: scrollPosition )
+            return self.requestSelection( at: IndexPath( item: item, section: section ), animated: animated, scrollPosition: scrollPosition )
         }
         else {
             return self.requestSelection( at: nil, animated: animated, scrollPosition: scrollPosition )

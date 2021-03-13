@@ -12,7 +12,7 @@ class PickerView: UICollectionView {
 
     override var intrinsicContentSize: CGSize {
         CGSize( width: UIView.noIntrinsicMetric,
-                height: self.isHidden ? UIView.noIntrinsicMetric: self.layout.collectionViewContentSize.height )
+                height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
     }
 
     // MARK: --- Life ---
@@ -31,7 +31,7 @@ class PickerView: UICollectionView {
 
     // MARK: --- Types ---
 
-    class PickerLayout: UICollectionViewLayout {
+    internal class PickerLayout: UICollectionViewLayout {
         private let spacing     = CGFloat( 12 )
         private var initialSize = [ UICollectionView.ElementCategory: CGSize ]()
         private var attributes  = [ UICollectionView.ElementCategory: [ IndexPath: UICollectionViewLayoutAttributes ] ]()
@@ -45,7 +45,7 @@ class PickerView: UICollectionView {
 
         // MARK: --- State ---
 
-        open override var collectionViewContentSize: CGSize {
+        override var collectionViewContentSize: CGSize {
             self.contentSize
         }
 
@@ -123,16 +123,16 @@ class PickerView: UICollectionView {
             return super.invalidationContext( forPreferredLayoutAttributes: preferredAttributes, withOriginalAttributes: originalAttributes )
         }
 
-        open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
             self.attributes.values.flatMap( { $0.values } ).filter( { rect.intersects( $0.frame ) } )
                                   .compactMap { self.effectiveLayoutAttributes( for: $0 ) }
         }
 
-        open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[indexPath] )
         }
 
-        open override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[itemIndexPath] )
         }
 

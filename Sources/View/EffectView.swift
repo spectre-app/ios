@@ -13,21 +13,21 @@ class EffectView: UIView, ThemeObserver {
             }
         }
     }
-    public var isBackground: Bool {
+    public var   isBackground:        Bool {
         didSet {
             if self.isBackground != oldValue {
                 self.update()
             }
         }
     }
-    public var isCircular:   Bool {
+    public var   isCircular:          Bool {
         didSet {
             if self.isCircular != oldValue {
                 self.update()
             }
         }
     }
-    public var rounding:     CGFloat {
+    public var   rounding:            CGFloat {
         didSet {
             if self.rounding != oldValue {
                 self.update()
@@ -198,7 +198,7 @@ class EffectView: UIView, ThemeObserver {
             }
 
             if #available( iOS 13.0, * ) {
-                self.blurEffectView.layer.cornerCurve = self.isCircular ? .circular : .continuous
+                self.blurEffectView.layer.cornerCurve = self.isCircular ? .circular: .continuous
             }
             self.blurEffectView.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
             self.blurEffectView.layer.borderWidth = self.borderWidth

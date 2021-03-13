@@ -10,6 +10,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
     lazy var screen = Tracker.shared.screen( named: Self.self.description() )
 
     internal let keyboardLayoutGuide = KeyboardLayoutGuide()
+    internal let inputLayoutGuide    = UILayoutGuide()
     internal var backgroundView      = BackgroundView( mode: .clear )
     internal var activeChildController: UIViewController? {
         didSet {
@@ -51,6 +52,12 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         self.view = self.backgroundView
     }
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.view.addLayoutGuide( self.keyboardLayoutGuide )
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         if self.trackScreen {
             self.screen.open()
@@ -66,7 +73,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        self.keyboardLayoutGuide.install( in: self.view, observer: self )
+        self.keyboardLayoutGuide.didAppear( in: self.view, observer: self )
         self.notificationObservers = [
             NotificationCenter.default.addObserver(
                     forName: UIApplication.willResignActiveNotification, object: nil, queue: .main ) { [weak self] _ in self?.willResignActive() },
@@ -81,7 +88,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
 
     override func viewWillDisappear(_ animated: Bool) {
         self.notificationObservers.forEach { NotificationCenter.default.removeObserver( $0 ) }
-        self.keyboardLayoutGuide.uninstall()
+        self.keyboardLayoutGuide.willDisappear()
         self.updateTask.cancel()
 
         super.viewWillDisappear( animated )
