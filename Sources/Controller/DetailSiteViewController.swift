@@ -39,11 +39,11 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
         self.model.observers.unregister( observer: self )
     }
 
-    override func update() {
+    override func doUpdate() {
         self.color = self.model.preview.color
         self.image = self.model.preview.image
 
-        super.update()
+        super.doUpdate()
     }
 
     // MARK: --- SiteObserver ---
@@ -138,8 +138,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             return view
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
@@ -232,8 +232,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             super.textFieldShouldBeginEditing( textField ) && (self.model?.loginType.in( class: .stateful ) ?? false)
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.userButton.title = self.model?.user.userName.name( style: .abbreviated )
             self.userButton.sizeToFit()
@@ -469,8 +469,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             } )
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             if let itemView = self.view as? LabelItemView {
                 if self.model?.algorithm == .current {

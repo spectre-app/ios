@@ -32,6 +32,12 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         AutoFillModel.shared.context = AutoFillModel.Context()
     }
 
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange( previousTraitCollection )
+
+        Theme.current.updateTask.request()
+    }
+
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
         //dbg( "prepareCredentialList: %@", serviceIdentifiers )
         AutoFillModel.shared.context = AutoFillModel.Context( serviceIdentifiers: serviceIdentifiers )

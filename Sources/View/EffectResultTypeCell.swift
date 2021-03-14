@@ -9,17 +9,16 @@ class EffectClassifiedCell: EffectCell, Updatable {
     private let separatorView = UIView()
     private let nameLabel     = UILabel()
     private let classLabel    = UILabel()
-    private lazy var stackView  = UIStackView( arrangedSubviews: [ self.nameLabel, self.separatorView, self.classLabel ] )
-    private lazy var updateTask = DispatchTask( named: self.name, update: self )
+    private lazy var stackView = UIStackView( arrangedSubviews: [ self.nameLabel, self.separatorView, self.classLabel ] )
 
     var name:    String? {
         didSet {
-            self.setNeedsUpdate()
+            self.updateTask.request()
         }
     }
     var `class`: String? {
         didSet {
-            self.setNeedsUpdate()
+            self.updateTask.request()
         }
     }
 
@@ -61,11 +60,10 @@ class EffectClassifiedCell: EffectCell, Updatable {
 
     // MARK: --- Updatable ---
 
-    func setNeedsUpdate() {
-        self.updateTask.request()
-    }
+    lazy var updateTask = DispatchTask.update( self ) { [weak self] in
+        guard let self = self
+        else { return }
 
-    func update() {
         self.nameLabel.text = self.name
         self.classLabel.text = self.class
         self.nameLabel.isHidden = self.name?.isEmpty ?? true

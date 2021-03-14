@@ -35,10 +35,6 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         self.activeChildController ?? super.childForScreenEdgesDeferringSystemGestures
     }
 
-    var updatesPostponed: Bool {
-        !self.isViewLoaded || self.view.superview == nil
-    }
-    private lazy var updateTask = DispatchTask( deadline: .now() + .milliseconds( 100 ), update: self, animated: true )
     private var notificationObservers = [ NSObjectProtocol ]()
 
     // MARK: --- Life ---
@@ -62,7 +58,9 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
 
         super.viewWillAppear( animated )
 
-        UIView.performWithoutAnimation { self.update() }
+        UIView.performWithoutAnimation {
+            self.updateTask.request( immediate: true )
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -121,7 +119,17 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         self.updateTask.request()
     }
 
-    func update() {
-        self.updateTask.cancel()
+    var updatesPostponed: Bool {
+        !self.isViewLoaded// || self.view.superview == nil
+    }
+
+    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( 100 ), animated: true ) { [weak self] in
+        guard let self = self
+        else { return }
+
+        self.doUpdate()
+    }
+
+    func doUpdate() {
     }
 }

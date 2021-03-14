@@ -44,7 +44,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public private(set) var userKeyFactory: KeyFactory? {
         willSet {
             if self.userKeyFactory != nil, newValue == nil {
-                let _ = try? self.saveTask.request().await()
+                let _ = try? self.saveTask.request( immediate: true ).await()
             }
         }
         didSet {

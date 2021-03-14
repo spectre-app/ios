@@ -37,11 +37,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     public var preferredSite:   String?
 
     private lazy var sitesDataSource = SitesSource( view: self )
-    private lazy var updateTask      = DispatchTask( queue: .global(), deadline: .now() + .milliseconds( 100 ), update: self )
-    var updatesPostponed: Bool {
-        // Updates prior to attachment may result in an incorrect initial content offset.
-        DispatchQueue.main.sync { self.window == nil }
-    }
 
     // MARK: --- State ---
 
@@ -76,8 +71,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     // MARK: --- Internal ---
 
-    func update() {
-        self.updateTask.cancel()
+    var updatesPostponed: Bool {
+        // Updates prior to attachment may result in an incorrect initial content offset.
+        DispatchQueue.main.await { self.window == nil }
+    }
+
+    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( 100 ) ) { [weak self] in
+        guard let self = self
+        else { return }
 
         var elementsBySection = [ [ SiteItem ] ]()
 
@@ -335,7 +336,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
             cell.sitesView = self.view
             cell.result = result
-            cell.update()
+            cell.updateTask.request(immediate: true)
             return cell
         }
     }
@@ -377,7 +378,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         private let resultLabel     = UITextField()
         private let captionLabel    = UILabel()
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
-        private lazy var updateTask   = DispatchTask( named: self.site?.siteName, update: self )
         private lazy var selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
             active.constrain {
                 $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
@@ -559,57 +559,56 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         // MARK: --- Private ---
 
-        public func update() {
-            self.updateTask.cancel()
+        lazy var updateTask = DispatchTask.update( self ) { [weak self] in
+            guard let self = self
+            else { return }
 
-            DispatchQueue.main.perform {
-                self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
+            self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
 
-                self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
-                self.backgroundImage.image = self.site?.preview.image
-                self.backgroundImage.imageColor = self.site?.preview.color
+            self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
+            self.backgroundImage.image = self.site?.preview.image
+            self.backgroundImage.imageColor = self.site?.preview.color
 
-                let isNew = self.site?.isNew ?? false
-                if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
-                    if isNew {
-                        resultCaption.append( NSAttributedString( string: " (new site)" ) )
-                    }
-                    self.captionLabel.attributedText = resultCaption
+            let isNew = self.site?.isNew ?? false
+            if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
+                if isNew {
+                    resultCaption.append( NSAttributedString( string: " (new site)" ) )
                 }
-                else {
-                    self.captionLabel.attributedText = nil
-                }
+                self.captionLabel.attributedText = resultCaption
+            }
+            else {
+                self.captionLabel.attributedText = nil
+            }
 
-                if !InAppFeature.premium.isEnabled {
-                    self.mode = .authentication
-                }
-                switch self.mode {
-                    case .authentication:
-                        self.modeButton.image = .icon( "" )
-                    case .identification:
-                        self.modeButton.image = .icon( "" )
-                    case .recovery:
-                        self.modeButton.image = .icon( "" )
-                    @unknown default:
-                        self.modeButton.image = nil
-                }
+            if !InAppFeature.premium.isEnabled {
+                self.mode = .authentication
+            }
+            switch self.mode {
+                case .authentication:
+                    self.modeButton.image = .icon( "" )
+                case .identification:
+                    self.modeButton.image = .icon( "" )
+                case .recovery:
+                    self.modeButton.image = .icon( "" )
+                @unknown default:
+                    self.modeButton.image = nil
+            }
 
-                self.modeButton.alpha = InAppFeature.premium.isEnabled ? .on: .off
-                self.modeButton.isUserInteractionEnabled = self.modeButton.alpha != .off
-                self.actionsStack.alpha = self.isSelected && !isNew ? .on: .off
-                self.actionsStack.isUserInteractionEnabled = self.actionsStack.alpha != .off
-                self.newButton.alpha = self.isSelected && isNew ? .on: .off
-                self.newButton.isUserInteractionEnabled = self.newButton.alpha != .off
-                self.selectionConfiguration.isActive = self.isSelected
-                self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
+            self.modeButton.alpha = InAppFeature.premium.isEnabled ? .on: .off
+            self.modeButton.isUserInteractionEnabled = self.modeButton.alpha != .off
+            self.actionsStack.alpha = self.isSelected && !isNew ? .on: .off
+            self.actionsStack.isUserInteractionEnabled = self.actionsStack.alpha != .off
+            self.newButton.alpha = self.isSelected && isNew ? .on: .off
+            self.newButton.isUserInteractionEnabled = self.newButton.alpha != .off
+            self.selectionConfiguration.isActive = self.isSelected
+            self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
 
-                self.site?.result( keyPurpose: self.mode ).token.then( on: .main ) {
-                    do {
-                        self.resultLabel.text = try $0.get()
-                    }
-                    catch {
-                        mperror( title: "Couldn't update site cell.", error: error )
-                    }
+            self.site?.result( keyPurpose: self.mode ).token.then( on: .main ) {
+                do {
+                    self.resultLabel.text = try $0.get()
+                }
+                catch {
+                    mperror( title: "Couldn't update site cell.", error: error )
                 }
             }
         }

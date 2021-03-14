@@ -20,7 +20,7 @@ class PagerView: UIView, UICollectionViewDelegate {
 
     public var page  = 0 {
         didSet {
-            self.indicatorView.setNeedsUpdate()
+            self.indicatorView.updateTask.request()
         }
     }
     public var pages = [ UIView ]() {
@@ -31,7 +31,7 @@ class PagerView: UIView, UICollectionViewDelegate {
             if oldValue != self.pages {
                 self.source.update( [ self.pages ] )
             }
-            self.indicatorView.setNeedsUpdate()
+            self.indicatorView.updateTask.request()
         }
     }
 
@@ -257,8 +257,6 @@ class PagerView: UIView, UICollectionViewDelegate {
     }
 
     class PagerIndicator: UIView, Updatable {
-        private lazy var updateTask = DispatchTask( update: self, animated: true )
-
         let pagerView: PagerView
         let stackView = UIStackView()
 
@@ -294,11 +292,10 @@ class PagerView: UIView, UICollectionViewDelegate {
 
         // - Updatable
 
-        func setNeedsUpdate() {
-            self.updateTask.request()
-        }
+        lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
+            guard let self = self
+            else { return }
 
-        func update() {
             while self.stackView.arrangedSubviews.count > self.pagerView.pages.count {
                 self.stackView.arrangedSubviews.first?.removeFromSuperview()
             }

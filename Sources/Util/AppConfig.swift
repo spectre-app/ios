@@ -89,11 +89,11 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
         self.isPublic = true
         #endif
 
-        self.update()
+        self.updateTask.request( immediate: true )
 
         self.didChangeObserver = NotificationCenter.default.addObserver(
                 forName: UserDefaults.didChangeNotification, object: UserDefaults.shared, queue: nil ) { [unowned self] _ in
-            self.update()
+            self.updateTask.request()
         }
         InAppFeature.observers.register( observer: self )
 
@@ -109,12 +109,15 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
     // MARK: --- InAppFeatureObserver ---
 
     func featureDidChange(_ feature: InAppFeature) {
-        self.update()
+        self.updateTask.request()
     }
 
     // MARK: --- Private ---
 
-    public func update() {
+    lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
+        guard let self = self
+        else { return }
+
         self.runCount = UserDefaults.shared.integer( forKey: "runCount" )
         self.diagnostics = UserDefaults.shared.bool( forKey: "diagnostics" )
         self.diagnosticsDecided = UserDefaults.shared.bool( forKey: "diagnosticsDecided" )
