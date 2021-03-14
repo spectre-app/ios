@@ -36,16 +36,9 @@ extension InAppProduct {
     }
 
     var isActive: Bool {
-        guard let receipt = AppStore.shared.receipt
-        else { return false }
-
-        for purchase in receipt.purchases( ofProductIdentifier: self.productIdentifier ) {
-            if !purchase.isRenewableSubscription || purchase.isActiveAutoRenewableSubscription( forDate: Date() ) {
-                return true
-            }
-        }
-
-        return false
+        AppStore.shared.receipt?.purchases( ofProductIdentifier: self.productIdentifier ).contains { purchase in
+            !purchase.isRenewableSubscription || purchase.isActiveAutoRenewableSubscription( forDate: Date() )
+        } ?? false
     }
 
     var wasActiveButExpired: Bool {

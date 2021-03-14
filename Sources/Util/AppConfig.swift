@@ -5,7 +5,7 @@
 
 import Foundation
 
-public class AppConfig: Observable, Updatable, InAppFeatureObserver {
+public class AppConfig: Observable {
     public static let shared = AppConfig()
 
     public let observers = Observers<AppConfigObserver>()
@@ -13,67 +13,72 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
     public var isApp    = false
     public var isDebug  = false
     public var isPublic = false
-    public var runCount = 0 {
-        didSet {
-            if self.runCount != UserDefaults.shared.integer( forKey: "runCount" ) {
-                UserDefaults.shared.set( self.runCount, forKey: "runCount" )
+    public var runCount: Int {
+        get {
+            UserDefaults.shared.integer( forKey: #function )
+        }
+        set {
+            if newValue != self.runCount {
+                UserDefaults.shared.set( newValue, forKey: #function )
             }
         }
     }
-    public var diagnostics = false {
-        didSet {
-            if self.diagnostics != UserDefaults.shared.bool( forKey: "diagnostics" ) {
-                UserDefaults.shared.set( self.diagnostics, forKey: "diagnostics" )
-            }
-            if oldValue != self.diagnostics {
+    public var diagnostics: Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.diagnostics {
+                UserDefaults.shared.set( newValue, forKey: #function )
                 self.observers.notify { $0.didChangeConfig() }
             }
         }
     }
-    public var diagnosticsDecided = false {
-        didSet {
-            if self.diagnosticsDecided != UserDefaults.shared.bool( forKey: "diagnosticsDecided" ) {
-                UserDefaults.shared.set( self.diagnosticsDecided, forKey: "diagnosticsDecided" )
+    public var diagnosticsDecided:   Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.diagnosticsDecided {
+                UserDefaults.shared.set( newValue, forKey: #function )
             }
         }
     }
-    public var notificationsDecided = false {
-        didSet {
-            if self.notificationsDecided != UserDefaults.shared.bool( forKey: "notificationsDecided" ) {
-                UserDefaults.shared.set( self.notificationsDecided, forKey: "notificationsDecided" )
+    public var notificationsDecided: Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.notificationsDecided {
+                UserDefaults.shared.set( newValue, forKey: #function )
             }
-            self.observers.notify { $0.didChangeConfig() }
         }
     }
-    public var sandboxStore = false {
-        didSet {
-            if self.sandboxStore != UserDefaults.shared.bool( forKey: "sandboxStore" ) {
-                UserDefaults.shared.set( self.sandboxStore, forKey: "sandboxStore" )
-            }
-            self.observers.notify { $0.didChangeConfig() }
+    public var sandboxStore: Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
         }
-    }
-    public private(set) var hasLegacy = false {
-        didSet {
-            if oldValue != self.hasLegacy {
+        set {
+            if newValue != self.sandboxStore {
+                UserDefaults.shared.set( newValue, forKey: #function )
                 self.observers.notify { $0.didChangeConfig() }
             }
         }
     }
-    public var theme = Theme.default.path {
-        didSet {
-            if self.theme != UserDefaults.shared.string( forKey: "theme" ) {
-                UserDefaults.shared.set( self.theme, forKey: "theme" )
-            }
-            if Theme.current.parent?.path != self.theme {
-                Theme.current.parent = Theme.with( path: self.theme ) ?? .default
-            }
-            if oldValue != self.theme {
+    public var theme: String {
+        get {
+            (InAppFeature.premium.isEnabled ? UserDefaults.shared.string( forKey: #function ): nil)
+                    ?? Theme.default.path
+        }
+        set {
+            if newValue != self.theme {
+                UserDefaults.shared.set( newValue, forKey: #function )
                 self.observers.notify { $0.didChangeConfig() }
             }
         }
     }
 
+    private lazy var themeObserver = ThemeConfigObserver( appConfig: self )
     private var didChangeObserver: NSObjectProtocol?
 
     // MARK: --- Life ---
@@ -88,17 +93,12 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
         #if PUBLIC
         self.isPublic = true
         #endif
+        self.runCount += 1
 
-        self.updateTask.request( immediate: true )
-
+        self.observers.register( observer: self.themeObserver ).didChangeConfig()
         self.didChangeObserver = NotificationCenter.default.addObserver(
                 forName: UserDefaults.didChangeNotification, object: UserDefaults.shared, queue: nil ) { [unowned self] _ in
-            self.updateTask.request()
-        }
-        InAppFeature.observers.register( observer: self )
-
-        defer {
-            self.runCount += 1
+            self.observers.notify { $0.didChangeConfig() }
         }
     }
 
@@ -106,24 +106,18 @@ public class AppConfig: Observable, Updatable, InAppFeatureObserver {
         self.didChangeObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 
-    // MARK: --- InAppFeatureObserver ---
+    class ThemeConfigObserver: AppConfigObserver {
+        let appConfig: AppConfig
 
-    func featureDidChange(_ feature: InAppFeature) {
-        self.updateTask.request()
-    }
+        init(appConfig: AppConfig) {
+            self.appConfig = appConfig
+        }
 
-    // MARK: --- Private ---
-
-    lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
-        guard let self = self
-        else { return }
-
-        self.runCount = UserDefaults.shared.integer( forKey: "runCount" )
-        self.diagnostics = UserDefaults.shared.bool( forKey: "diagnostics" )
-        self.diagnosticsDecided = UserDefaults.shared.bool( forKey: "diagnosticsDecided" )
-        self.notificationsDecided = UserDefaults.shared.bool( forKey: "notificationsDecided" )
-        self.sandboxStore = UserDefaults.shared.bool( forKey: "sandboxStore" )
-        self.theme = (InAppFeature.premium.isEnabled ? UserDefaults.shared.string( forKey: "theme" ): nil) ?? Theme.default.path
+        func didChangeConfig() {
+            if Theme.current.parent?.path != appConfig.theme {
+                Theme.current.parent = Theme.with( path: appConfig.theme ) ?? .default
+            }
+        }
     }
 }
 

@@ -200,23 +200,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // file share
         else if let utisValue = UTTypeCreateAllIdentifiersForTag(
                 kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
-                let utis = utisValue as? Array<String> {
-            for format in SpectreFormat.allCases {
-                if let uti = format.uti, utis.contains( uti ) {
-                    URLSession.required.dataTask( with: url, completionHandler: { (data, response, error) in
-                        if let data = data, error == nil {
-                            Marshal.shared.import( data: data, viewController: viewController ).then {
-                                if case .failure(let error) = $0 {
-                                    mperror( title: "Couldn't import user", error: error )
-                                }
+                let utis = utisValue as? Array<String?> {
+            for format in SpectreFormat.allCases
+                where utis.contains( format.uti ) {
+                URLSession.required.dataTask( with: url, completionHandler: { (data, response, error) in
+                    if let data = data, error == nil {
+                        Marshal.shared.import( data: data, viewController: viewController ).then {
+                            if case .failure(let error) = $0 {
+                                mperror( title: "Couldn't import user", error: error )
                             }
                         }
-                        else {
-                            mperror( title: "Couldn't open document", details: url, error: error )
-                        }
-                    } ).resume()
-                    return true
-                }
+                    }
+                    else {
+                        mperror( title: "Couldn't open document", details: url, error: error )
+                    }
+                } ).resume()
+                return true
             }
 
             wrn( "Import UTI not supported: %@: %@", url, utis )

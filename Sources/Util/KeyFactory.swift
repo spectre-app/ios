@@ -73,9 +73,7 @@ public class KeyFactory {
 
             // Try to produce the user key in the factory.
             return self.createKey( for: algorithm )
-        }.success( on: keyQueue ) { createdKey in
-            self.cacheKey( createdKey )
-        }
+        }.success( on: keyQueue, self.cacheKey )
     }
 
     fileprivate func cacheKey(_ key: UnsafePointer<SpectreUserKey>) {
@@ -246,11 +244,10 @@ public class KeychainKeyFactory: KeyFactory {
         keyQueue.promising {
             keys.reduce( Promise( .success( () ) ) ) {
                 $0.and(
-                        $1.success {
-                            self.cacheKey( $0 )
-                        }.promising {
-                            Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
-                        }
+                        $1.success( self.cacheKey )
+                          .promising {
+                              Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
+                          }
                 )
             }.promise { self }
         }

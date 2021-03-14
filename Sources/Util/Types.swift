@@ -112,7 +112,7 @@ extension SpectreIdenticon: Equatable {
 
 extension SpectreKeyID: Hashable, CustomStringConvertible {
     public static func ==(lhs: Self, rhs: Self) -> Bool {
-        withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, { rhs in lhs.elementsEqual( rhs ) } ) } )
+        withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, lhs.elementsEqual ) } )
     }
 
     public func hash(into hasher: inout Hasher) {

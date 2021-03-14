@@ -146,7 +146,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     self.addChild( activeController )
                     activeController.beginAppearanceTransition( true, animated: true )
                     self.contentView.addSubview( activeController.view )
-                    activeController.view.frame.size = self.contentView.bounds.size.union(
+                    activeController.view.bounds.size = self.contentView.bounds.size.union(
                             activeController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
                     self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
                     LayoutConfiguration( view: activeController.view )

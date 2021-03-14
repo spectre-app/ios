@@ -117,7 +117,6 @@ class DialogSiteChangedViewController: DialogViewController {
                                                    distribution: .fillEqually, spacing: 8 ) )
 
         for q in 0..<max( self.oldSite.questions.count, self.newSite.questions.count ) {
-
             let oldQuestion = q < self.oldSite.questions.count ? self.oldSite.questions[q]: nil
             let newQuestion = q < self.newSite.questions.count ? self.newSite.questions[q]: nil
             let oldAnswer   = oldQuestion?.result( keyPurpose: .recovery )
