@@ -144,11 +144,11 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                 let detailController = activeController as? DetailViewController
                 UIView.performWithoutAnimation {
                     self.addChild( activeController )
+                    activeController.beginAppearanceTransition( true, animated: true )
+                    self.contentView.addSubview( activeController.view )
                     activeController.view.frame.size = self.contentView.bounds.size.union(
                             activeController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
-                    activeController.beginAppearanceTransition( true, animated: true )
                     self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
-                    self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view )
                             .constrain( as: .box, margin: true ).activate()
                 }
@@ -175,7 +175,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     self.popupConfiguration.deactivate()
                     self.closeButton.alpha = .off
                 }, completion: { finished in
-                    detailsController.view.removeFromSuperview()
+                    detailsController.viewIfLoaded?.removeFromSuperview()
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
                     self.contentView.layoutIfNeeded()
