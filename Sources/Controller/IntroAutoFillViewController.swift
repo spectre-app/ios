@@ -138,8 +138,8 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
 
     // MARK: --- Updatable ---
 
-    override func update() {
-        super.update()
+    override func doUpdate() {
+        super.doUpdate()
 
         if self.autoFillState?.isEnabled ?? false && self.model.autofill {
             self.hide {
@@ -199,8 +199,8 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
             return view
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
         }

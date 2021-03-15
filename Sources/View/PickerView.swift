@@ -12,7 +12,7 @@ class PickerView: UICollectionView {
 
     override var intrinsicContentSize: CGSize {
         CGSize( width: UIView.noIntrinsicMetric,
-                height: self.isHidden ? UIView.noIntrinsicMetric: self.layout.collectionViewContentSize.height )
+                height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
     }
 
     // MARK: --- Life ---
@@ -31,7 +31,7 @@ class PickerView: UICollectionView {
 
     // MARK: --- Types ---
 
-    class PickerLayout: UICollectionViewLayout {
+    internal class PickerLayout: UICollectionViewLayout {
         private let spacing     = CGFloat( 12 )
         private var initialSize = [ UICollectionView.ElementCategory: CGSize ]()
         private var attributes  = [ UICollectionView.ElementCategory: [ IndexPath: UICollectionViewLayoutAttributes ] ]()
@@ -45,7 +45,7 @@ class PickerView: UICollectionView {
 
         // MARK: --- State ---
 
-        open override var collectionViewContentSize: CGSize {
+        override var collectionViewContentSize: CGSize {
             self.contentSize
         }
 
@@ -85,25 +85,23 @@ class PickerView: UICollectionView {
                 for item in 0..<collectionView.numberOfItems( inSection: section ) {
                     let indexPath = IndexPath( item: item, section: section )
                     if let attributes = self.attributes[.cell]?[indexPath] {
-                        if attributes.frame.size.isEmpty, let initialSize = self.initialSize[attributes.representedElementCategory] {
-                            attributes.frame.size = initialSize
+                        if attributes.size.isEmpty, let initialSize = self.initialSize[attributes.representedElementCategory] {
+                            attributes.size = initialSize
                         }
-                        attributes.frame.origin.x = offset
-                        attributes.frame.origin.y = (contentHeight - attributes.frame.size.height) / 2
-                        offset = attributes.frame.maxX + spacing
+                        attributes.center = CGPoint( x: offset + attributes.size.width / 2, y: contentHeight / 2 )
+                        offset += attributes.size.width + spacing
                     }
                 }
 
                 if section < collectionView.numberOfSections - 1 {
                     let indexPath = IndexPath( item: 0, section: section )
                     if let attributes = self.attributes[.decorationView]?[indexPath] {
-                        if attributes.frame.size.isEmpty, let initialSize = self.initialSize[attributes.representedElementCategory] {
-                            attributes.frame.size = initialSize
+                        if attributes.size.isEmpty, let initialSize = self.initialSize[attributes.representedElementCategory] {
+                            attributes.size = initialSize
                         }
-                        attributes.frame.size.height = separatorHeight
-                        attributes.frame.origin.x = offset
-                        attributes.frame.origin.y = (contentHeight - attributes.frame.size.height) / 2
-                        offset = attributes.frame.maxX + spacing
+                        attributes.size.height = separatorHeight
+                        attributes.center = CGPoint( x: offset + attributes.size.width / 2, y: contentHeight / 2 )
+                        offset += attributes.size.width + spacing
                     }
                 }
             }
@@ -111,8 +109,8 @@ class PickerView: UICollectionView {
             self.contentSize = CGSize( width: max( margins.width + 1, offset - spacing + margins.right ), height: contentHeight )
         }
 
-        open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
-                                                  withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+        override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
+                                             withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
             originalAttributes.size != preferredAttributes.size
         }
 
@@ -125,16 +123,16 @@ class PickerView: UICollectionView {
             return super.invalidationContext( forPreferredLayoutAttributes: preferredAttributes, withOriginalAttributes: originalAttributes )
         }
 
-        open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
             self.attributes.values.flatMap( { $0.values } ).filter( { rect.intersects( $0.frame ) } )
                                   .compactMap { self.effectiveLayoutAttributes( for: $0 ) }
         }
 
-        open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[indexPath] )
         }
 
-        open override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[itemIndexPath] )
         }
 
@@ -152,7 +150,7 @@ class PickerView: UICollectionView {
             guard let attributes = attributes
             else { return nil }
 
-            if attributes.frame.size.isEmpty && !(attributes.indexPath.section == 0 && attributes.indexPath.item == 0) {
+            if attributes.size.isEmpty && !(attributes.indexPath.section == 0 && attributes.indexPath.item == 0) {
                 return nil
             }
 

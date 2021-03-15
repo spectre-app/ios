@@ -9,8 +9,7 @@ private let kAnimationLayerKey = "com.nshipster.animationLayer"
 
 class EmitterView: UIView, CAAnimationDelegate {
 
-    func emit(with contents: [Content],
-              for duration: TimeInterval = 4.0) {
+    func emit(with contents: [Content], for duration: TimeInterval = 4.0) {
         let layer = Layer()
         layer.configure( with: contents )
         layer.frame = self.bounds

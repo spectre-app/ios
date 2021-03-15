@@ -32,11 +32,9 @@ public class Observers<O> {
     public func notify(event: (O) -> Void) -> Bool {
         var notified = false
 
-        for observer in self.observers {
-            if let observer = observer.value {
-                event( observer )
-                notified = true
-            }
+        for observer in self.observers.compactMap( { $0.value } ) {
+            event( observer )
+            notified = true
         }
 
         return notified

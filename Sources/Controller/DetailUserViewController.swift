@@ -121,8 +121,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             return view
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
         }
@@ -324,8 +324,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             } )
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             if let itemView = self.view as? LabelItemView {
                 if self.model?.algorithm == .current {

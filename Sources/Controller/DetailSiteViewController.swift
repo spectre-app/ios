@@ -39,11 +39,11 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
         self.model.observers.unregister( observer: self )
     }
 
-    override func update() {
+    override func doUpdate() {
         self.color = self.model.preview.color
         self.image = self.model.preview.image
 
-        super.update()
+        super.doUpdate()
     }
 
     // MARK: --- SiteObserver ---
@@ -60,7 +60,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                         value: { $0.counter },
                         update: { item, counter in
                             if let site = item.model, let viewController = item.viewController {
-                                AlertController.showChange( to: site, in: viewController ) { site.counter = counter }
+                                AlertController.showChange( to: site, in: viewController ) {
+                                    site.counter = counter
+                                }
                             }
                         },
                         step: 1, min: .initial, max: .last,
@@ -85,7 +87,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                         value: { $0.resultType },
                         update: { item, resultType in
                             if let site = item.model, let viewController = item.viewController {
-                                AlertController.showChange( to: site, in: viewController ) { site.resultType = resultType }
+                                AlertController.showChange( to: site, in: viewController ) {
+                                    site.resultType = resultType
+                                }
                             }
                         },
                         subitems: [ PasswordResultItem() ],
@@ -122,7 +126,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
                             site.state( resultParam: password ).token.then { result in
                                 do {
-                                    try AlertController.showChange( to: site, in: viewController ) { site.resultState = try result.get() }
+                                    try AlertController.showChange( to: site, in: viewController ) {
+                                        site.resultState = try result.get()
+                                    }
                                 }
                                 catch { mperror( title: "Couldn't update site password", error: error ) }
                             }
@@ -138,8 +144,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             return view
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
@@ -159,7 +165,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                         value: { $0.loginType },
                         update: { item, loginType in
                             if let site = item.model, let viewController = item.viewController {
-                                AlertController.showChange( to: site, in: viewController ) { site.loginType = loginType }
+                                AlertController.showChange( to: site, in: viewController ) {
+                                    site.loginType = loginType
+                                }
                             }
                         },
                         subitems: [ LoginResultItem() ],
@@ -178,7 +186,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
             if value == .none {
                 cell.name = nil
-                cell.class = "Standard Login"
+                cell.class = "Standard\nLogin"
             }
         }
     }
@@ -200,7 +208,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
                             site.state( keyPurpose: .identification, resultParam: login ).token.then { result in
                                 do {
-                                    try AlertController.showChange( to: site, in: viewController ) { site.loginState = try result.get() }
+                                    try AlertController.showChange( to: site, in: viewController ) {
+                                        site.loginState = try result.get()
+                                    }
                                 }
                                 catch { mperror( title: "Couldn't update login name", error: error ) }
                             }
@@ -232,8 +242,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             super.textFieldShouldBeginEditing( textField ) && (self.model?.loginType.in( class: .stateful ) ?? false)
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.userButton.title = self.model?.user.userName.name( style: .abbreviated )
             self.userButton.sizeToFit()
@@ -455,13 +465,17 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                 if site.algorithm < .last {
                     let upgrade = site.algorithm.advanced( by: 1 )
                     controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
-                        AlertController.showChange( to: site, in: viewController ) { site.algorithm = upgrade }
+                        AlertController.showChange( to: site, in: viewController ) {
+                            site.algorithm = upgrade
+                        }
                     } )
                 }
                 if site.algorithm > .first {
                     let downgrade = site.algorithm.advanced( by: -1 )
                     controller.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
-                        AlertController.showChange( to: site, in: viewController ) { site.algorithm = downgrade }
+                        AlertController.showChange( to: site, in: viewController ) {
+                            site.algorithm = downgrade
+                        }
                     } )
                 }
                 controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
@@ -469,8 +483,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
             } )
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             if let itemView = self.view as? LabelItemView {
                 if self.model?.algorithm == .current {

@@ -163,8 +163,6 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         if let configurations = configurations {
             self.apply( configurations )
         }
-        self.activated = true
-        self.deactivate( parent: self )
     }
 
     //! Add child configurations that triggers when this configuration's activation changes.
@@ -182,11 +180,11 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     @discardableResult func apply(_ configuration: AnyLayoutConfiguration, active: Bool = true) -> Self {
         if active {
             self.activeConfigurations.append( configuration )
-            configuration.isActive = self.activated
+            configuration.isActive = self.isActive
         }
         else {
             self.inactiveConfigurations.append( configuration )
-            configuration.isActive = !self.activated
+            configuration.isActive = !self.isActive
         }
 
         return self
@@ -205,6 +203,9 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
     @discardableResult func constrainAll(_ constrainers: @escaping (UIView, LayoutTarget<T>) -> [NSLayoutConstraint]) -> Self {
         self.constrainers.append( constrainers )
+        if self.isActive {
+            self.activate( constrainers: constrainers )
+        }
         return self
     }
 
@@ -331,11 +332,22 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     @discardableResult func compressionResistance(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 )) -> Self {
+        guard let targetView = self.target.view
+        else { preconditionFailure( "compressionResistance is only supported for view-based LayoutConfigurations" ) }
+
         if horizontal.rawValue >= 0 {
             self.activeProperties["compressionResistance.horizontal"] = horizontal
+            if self.activated {
+                self.inactiveProperties["compressionResistance.horizontal"] = targetView.contentCompressionResistancePriority( for: .horizontal )
+                targetView.setContentCompressionResistancePriority( horizontal, for: .horizontal )
+            }
         }
         if vertical.rawValue >= 0 {
             self.activeProperties["compressionResistance.vertical"] = vertical
+            if self.activated {
+                self.inactiveProperties["compressionResistance.vertical"] = targetView.contentCompressionResistancePriority( for: .vertical )
+                targetView.setContentCompressionResistancePriority( vertical, for: .vertical )
+            }
         }
         return self
     }
@@ -345,25 +357,46 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     @discardableResult func hugging(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 )) -> Self {
+        guard let targetView = self.target.view
+        else { preconditionFailure( "hugging is only supported for view-based LayoutConfigurations" ) }
+
         if horizontal.rawValue >= 0 {
             self.activeProperties["hugging.horizontal"] = horizontal
+            if self.activated {
+                self.inactiveProperties["hugging.horizontal"] = targetView.contentHuggingPriority( for: .horizontal )
+                targetView.setContentHuggingPriority( horizontal, for: .horizontal )
+            }
         }
         if vertical.rawValue >= 0 {
             self.activeProperties["hugging.vertical"] = vertical
+            if self.activated {
+                self.inactiveProperties["hugging.vertical"] = targetView.contentHuggingPriority( for: .vertical )
+                targetView.setContentHuggingPriority( vertical, for: .horizontal )
+            }
         }
         return self
     }
 
     //! Mark the view as needing an refresh after toggling the configuration.
     @discardableResult func needs(_ refresh: Refresh) -> Self {
+        guard let targetView = self.target.view
+        else { preconditionFailure( "\(refresh) is only supported for view-based LayoutConfigurations" ) }
+
         self.refreshViews.append( refresh )
+        if self.isActive {
+            refresh.perform( in: targetView )
+        }
+
         return self
     }
 
     //! Run this action when the configuration becomes active.
     @discardableResult func didSet(_ action: @escaping (T, Bool) -> ()) -> Self {
+        guard let targetView = self.target.view
+        else { preconditionFailure( "didSet is only supported for view-based LayoutConfigurations" ) }
+
         self.actions.append( action )
-        self.target.view.flatMap { action( $0, self.isActive ) }
+        action( targetView, self.isActive )
         return self
     }
 
@@ -413,12 +446,11 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         //dbg( "%@: activate: %@", parent, self )
 
         DispatchQueue.main.perform {
-            let owningView = self.target.owningView
             let targetView = self.target.view
 
             self.inactiveConfigurations.forEach {
                 //dbg( "%@:%@: -> deactivate inactive child: %@", parent, self.target, $0 )
-                $0.deactivate( animationDuration: duration, parent: self )
+                $0.deactivate( animationDuration: -1, parent: self )
             }
 
             if let newPriority = self.activeProperties["compressionResistance.horizontal"] as? UILayoutPriority,
@@ -447,35 +479,22 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
 
             if !self.constrainers.isEmpty {
-                targetView?.translatesAutoresizingMaskIntoConstraints = false
-                for constrainer in self.constrainers {
-                    for constraint in constrainer( owningView ?? dummyView, self.target ) {
-                        //dbg( "%@:%@: activating %@", parent, self.target, constraint )
-                        if constraint.firstItem !== dummyView && constraint.secondItem !== dummyView {
-                            constraint.isActive = true
-                            self.activeConstraints.insert( constraint )
-                        }
-                        else {
-                            assertionFailure( "Cannot constrain against owning view since view is not yet attached to the hierarchy." )
-                        }
-                    }
-                }
+                self.constrainers.forEach( self.activate )
             }
 
             self.properties.forEach { $0.activate( self.target.view ) }
             Theme.current.observers.register( observer: self )
 
-            targetView.flatMap { targetView in self.actions.forEach { $0( targetView, true ) } }
-
             self.activeConfigurations.forEach {
                 //dbg( "%@:%@: -> activate active child: %@", parent, self.target, $0 )
-                $0.activate( animationDuration: duration, parent: self )
+                $0.activate( animationDuration: -1, parent: self )
             }
 
             self.activated = true
 
-            self.refreshViews.forEach { refresh in
-                refresh.perform( in: targetView )
+            targetView.flatMap { targetView in
+                self.actions.forEach { $0( targetView, true ) }
+                self.refreshViews.forEach { $0.perform( in: targetView ) }
             }
 
             if parent == nil {
@@ -484,6 +503,20 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         }
 
         return self
+    }
+
+    private func activate(constrainers: (UIView, LayoutTarget<T>) -> [NSLayoutConstraint]) {
+        for constraint in constrainers( self.target.owningView ?? dummyView, self.target ) {
+            //dbg( "%@:%@: activating %@", parent, self.target, constraint )
+            if constraint.firstItem !== dummyView && constraint.secondItem !== dummyView {
+                constraint.isActive = true
+                self.target.view?.translatesAutoresizingMaskIntoConstraints = false
+                self.activeConstraints.insert( constraint )
+            }
+            else {
+                assertionFailure( "Cannot constrain against owning view since view is not yet attached to the hierarchy." )
+            }
+        }
     }
 
     //! Deactivate this configuration and reverse its relevant operations.
@@ -510,7 +543,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
             self.activeConfigurations.forEach {
                 //dbg( "%@:%@: -> deactivate active child: %@", parent, self.target, $0 )
-                $0.deactivate( animationDuration: duration, parent: self )
+                $0.deactivate( animationDuration: -1, parent: self )
             }
 
             if let newPriority = self.inactiveProperties["compressionResistance.horizontal"] as? UILayoutPriority,
@@ -539,17 +572,16 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             self.properties.forEach { $0.deactivate( self.target.view ) }
             Theme.current.observers.unregister( observer: self )
 
-            targetView.flatMap { targetView in self.actions.forEach { $0( targetView, false ) } }
-
             self.inactiveConfigurations.forEach {
                 //dbg( "%@:%@: -> activate inactive child: %@", parent, self.target, $0 )
-                $0.activate( animationDuration: duration, parent: self )
+                $0.activate( animationDuration: -1, parent: self )
             }
 
             self.activated = false
 
-            self.refreshViews.forEach { refresh in
-                refresh.perform( in: targetView )
+            targetView.flatMap { targetView in
+                self.actions.forEach { $0( targetView, false ) }
+                self.refreshViews.forEach { $0.perform( in: targetView ) }
             }
 
             if parent == nil {
@@ -577,33 +609,30 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
     public enum Refresh {
         //! Request a redraw. Useful if it affects custom draw code.
-        case display(view: WeakBox<UIView?>? = nil)
+        case display
         //! Request a layout. Useful if it affects custom layout code.
-        case layout(view: WeakBox<UIView?>? = nil)
+        case layout
         //! Request an update. Useful if it affects table or collection cell sizing.
-        case update(view: WeakBox<UIView?>? = nil)
+        case update
 
-        func perform(in targetView: UIView?) {
+        func perform(in targetView: UIView) {
             switch self {
-                case .display(let refreshView):
-                    (refreshView?.value ?? targetView)?.setNeedsDisplay()
+                case .display:
+                    targetView.setNeedsDisplay()
 
-                case .layout(let refreshView):
-                    (refreshView?.value ?? targetView)?.setNeedsLayout()
+                case .layout:
+                    targetView.setNeedsLayout()
 
-                case .update(let refreshView):
-                    var updateView = refreshView?.value ?? nil
-                    if updateView == nil {
-                        updateView = targetView
-                        while let needle = updateView {
-                            if needle is UITableView || needle is UICollectionView {
-                                break
-                            }
-                            updateView = needle.superview
+                case .update:
+                    var targetView: UIView? = targetView
+                    while let needle = targetView {
+                        if needle is UITableView || needle is UICollectionView {
+                            break
                         }
+                        targetView = needle.superview
                     }
-                    (updateView as? UITableView)?.performBatchUpdates( {} )
-                    (updateView as? UICollectionView)?.performBatchUpdates( {} )
+                    (targetView as? UITableView)?.performBatchUpdates( {} )
+                    (targetView as? UICollectionView)?.performBatchUpdates( {} )
             }
         }
     }

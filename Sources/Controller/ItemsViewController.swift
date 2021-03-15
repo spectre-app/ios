@@ -98,8 +98,8 @@ class ItemsViewController<M>: BaseViewController {
 
     // MARK: --- Updatable ---
 
-    override func update() {
-        super.update()
+    override func doUpdate() {
+        super.doUpdate()
 
         if let color = self.color {
             self.backgroundView.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: color.hue ) )
@@ -113,6 +113,6 @@ class ItemsViewController<M>: BaseViewController {
         self.backgroundView.imageColor = self.color
         self.view.layoutMargins.top = self.image == nil ? 40: 108
 
-        self.items.forEach { $0.update() }
+        self.items.forEach { $0.updateTask.request( immediate: true ) }
     }
 }

@@ -44,7 +44,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public private(set) var userKeyFactory: KeyFactory? {
         willSet {
             if self.userKeyFactory != nil, newValue == nil {
-                let _ = try? self.saveTask.request().await()
+                let _ = try? self.saveTask.request( immediate: true ).await()
             }
         }
         didSet {
@@ -445,20 +445,11 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     // MARK: --- Types ---
 
     enum Avatar: UInt32, CaseIterable, CustomStringConvertible {
-        static let userAvatars: [Avatar] = [
-            .avatar_0, .avatar_1, .avatar_2, .avatar_3, .avatar_4, .avatar_5, .avatar_6, .avatar_7, .avatar_8, .avatar_9,
-            .avatar_10, .avatar_11, .avatar_12, .avatar_13, .avatar_14, .avatar_15, .avatar_16, .avatar_17, .avatar_18 ]
-
         case avatar_0, avatar_1, avatar_2, avatar_3, avatar_4, avatar_5, avatar_6, avatar_7, avatar_8, avatar_9,
-             avatar_10, avatar_11, avatar_12, avatar_13, avatar_14, avatar_15, avatar_16, avatar_17, avatar_18,
-             avatar_add
+             avatar_10, avatar_11, avatar_12, avatar_13, avatar_14, avatar_15, avatar_16, avatar_17, avatar_18
 
         public var description: String {
-            if case .avatar_add = self {
-                return "avatar-add"
-            }
-
-            return "avatar-\(self.rawValue)"
+            "avatar-\(self.rawValue)"
         }
 
         public var image: UIImage? {
@@ -466,7 +457,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
 
         public mutating func next() {
-            self = Avatar.userAvatars[((Avatar.userAvatars.firstIndex( of: self ) ?? -1) + 1) % Avatar.userAvatars.count]
+            self = Avatar.allCases[((Avatar.allCases.firstIndex( of: self ) ?? -1) + 1) % Avatar.allCases.count]
         }
     }
 }

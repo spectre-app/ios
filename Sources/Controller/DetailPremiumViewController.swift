@@ -76,8 +76,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         InAppFeature.observers.unregister( observer: self )
     }
 
-    override func update() {
-        super.update()
+    override func doUpdate() {
+        super.doUpdate()
 
         // Automatic subscription restoration or renewal.
         if !InAppFeature.premium.isEnabled {

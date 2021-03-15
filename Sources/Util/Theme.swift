@@ -416,7 +416,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.selection.parent = self.parent?.color.selection
             self.color.tint.parent = self.parent?.color.tint
 
-            self.update()
+            self.updateTask.request()
         }
     }
     private let name:        String
@@ -512,30 +512,33 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         }
     }
 
-    public func update() {
-        self.font.largeTitle.update()
-        self.font.title1.update()
-        self.font.title2.update()
-        self.font.title3.update()
-        self.font.headline.update()
-        self.font.subheadline.update()
-        self.font.body.update()
-        self.font.callout.update()
-        self.font.caption1.update()
-        self.font.caption2.update()
-        self.font.footnote.update()
-        self.font.password.update()
-        self.font.mono.update()
-        self.color.body.update()
-        self.color.secondary.update()
-        self.color.placeholder.update()
-        self.color.backdrop.update()
-        self.color.panel.update()
-        self.color.shade.update()
-        self.color.shadow.update()
-        self.color.mute.update()
-        self.color.selection.update()
-        self.color.tint.update()
+    lazy var updateTask = DispatchTask.update( self ) { [weak self] in
+        guard let self = self
+        else { return }
+
+        self.font.largeTitle.doUpdate()
+        self.font.title1.doUpdate()
+        self.font.title2.doUpdate()
+        self.font.title3.doUpdate()
+        self.font.headline.doUpdate()
+        self.font.subheadline.doUpdate()
+        self.font.body.doUpdate()
+        self.font.callout.doUpdate()
+        self.font.caption1.doUpdate()
+        self.font.caption2.doUpdate()
+        self.font.footnote.doUpdate()
+        self.font.password.doUpdate()
+        self.font.mono.doUpdate()
+        self.color.body.doUpdate()
+        self.color.secondary.doUpdate()
+        self.color.placeholder.doUpdate()
+        self.color.backdrop.doUpdate()
+        self.color.panel.doUpdate()
+        self.color.shade.doUpdate()
+        self.color.shadow.doUpdate()
+        self.color.mute.doUpdate()
+        self.color.selection.doUpdate()
+        self.color.tint.doUpdate()
 
         self.observers.notify( event: { $0.didChangeTheme() } )
     }
@@ -578,13 +581,13 @@ public class AnyProperty: _Property {
     }
 }
 
-public class Property<V>: _Property, Updatable, CustomStringConvertible {
+public class Property<V>: _Property, Updates, CustomStringConvertible {
     var parent: Property<V>? {
         didSet {
-            self.update()
+            self.doUpdate()
         }
     }
-    var dependants = [ Updatable ]()
+    var dependants = [ Updates ]()
 
     init(parent: Property<V>? = nil) {
         self.parent = parent
@@ -605,22 +608,22 @@ public class Property<V>: _Property, Updatable, CustomStringConvertible {
         let updater = PropertyUpdater( value: self.get, propertyPath: propertyPath )
         propertyPath.property = AnyProperty( self )
         self.dependants.append( updater )
-        updater.update()
+        updater.doUpdate()
     }
 
     func bind<E>(propertyPath: PropertyPath<E, NSAttributedString>) {
         let updater = AnyPropertyUpdater( value: self.get, propertyPath: propertyPath )
         propertyPath.property = AnyProperty( self )
         self.dependants.append( updater )
-        updater.update()
+        updater.doUpdate()
     }
 
     public func unbind(propertyPath: _PropertyPath) {
         self.dependants.removeAll { ($0 as? AnyPropertyUpdater)?.has( propertyPath ) ?? false }
     }
 
-    public func update() {
-        self.dependants.forEach { $0.update() }
+    public func doUpdate() {
+        self.dependants.forEach { $0.doUpdate() }
     }
 
     public var description: String {
@@ -633,7 +636,7 @@ public class Property<V>: _Property, Updatable, CustomStringConvertible {
     }
 }
 
-private class AnyPropertyUpdater: Updatable {
+private class AnyPropertyUpdater: Updates {
     private let propertyPath:  _PropertyPath
     private let valueFunction: () -> Any?
 
@@ -646,7 +649,7 @@ private class AnyPropertyUpdater: Updatable {
         self.propertyPath === propertyPath
     }
 
-    func update() {
+    func doUpdate() {
         self.propertyPath.assign( value: self.valueFunction() )
     }
 }
@@ -672,7 +675,7 @@ public class ValueProperty<V>: Property<V> {
 
     func set(_ value: V?) {
         self.value = value
-        self.update()
+        self.doUpdate()
     }
 
     func clear() {
@@ -838,6 +841,6 @@ public extension Property where V == UIColor {
         let updater = PropertyUpdater( value: { self.get() }, propertyPath: propertyPath )
         propertyPath.property = AnyProperty( self )
         self.dependants.append( updater )
-        updater.update()
+        updater.doUpdate()
     }
 }

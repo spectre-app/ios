@@ -48,27 +48,29 @@ class Tracker: AppConfigObserver {
             }
 
             UNUserNotificationCenter.current().requestAuthorization( options: [ .alert, .badge, .sound ] ) { granted, error in
-                AppConfig.shared.notificationsDecided = true
+                DispatchQueue.main.perform {
+                    AppConfig.shared.notificationsDecided = true
 
-                if let error = error {
-                    wrn( "Notification authorization error: %@", error )
-                }
-                if granted {
-                    Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                    self.observers.notify { $0.didChangeTracker() }
-                    completion( true )
-                    return
-                }
+                    if let error = error {
+                        wrn( "Notification authorization error: %@", error )
+                    }
+                    if granted {
+                        Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                        self.observers.notify { $0.didChangeTracker() }
+                        completion( true )
+                        return
+                    }
 
-                if consented, let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
-                    Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                    self.observers.notify { $0.didChangeTracker() }
-                    UIApplication.shared.open( settingsURL )
-                    completion( true )
-                    return
-                }
+                    if consented, let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+                        Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                        self.observers.notify { $0.didChangeTracker() }
+                        UIApplication.shared.open( settingsURL )
+                        completion( true )
+                        return
+                    }
 
-                completion( false )
+                    completion( false )
+                }
             }
         }
     }
@@ -124,6 +126,10 @@ class Tracker: AppConfigObserver {
             countlyConfig.pushTestMode = AppConfig.shared.isDebug ? .development: .testFlightOrAdHoc
             #endif
             Countly.sharedInstance().start( with: countlyConfig )
+
+            if UIApplication.shared.isRegisteredForRemoteNotifications {
+                Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+            }
         }
         #endif
 

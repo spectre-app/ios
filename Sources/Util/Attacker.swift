@@ -59,13 +59,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
     }
 
     static func named(_ identifier: String) -> Attacker {
-        for attacker in Attacker.allCases {
-            if attacker.description == identifier {
-                return attacker
-            }
-        }
-
-        return .private
+        Attacker.allCases.first { $0.description == identifier } ?? .private
     }
 
     static func permutations(type: SpectreResultType) -> Decimal? {
