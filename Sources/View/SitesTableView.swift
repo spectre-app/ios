@@ -383,7 +383,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
                                .with( priority: .defaultHigh + 10 )
             }
-        }.needs( .update() )
+        }.needs( .update )
 
         // MARK: --- Life ---
 

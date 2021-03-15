@@ -195,7 +195,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let secretField   = UserSecretField<User>()
         private let idBadgeView   = UIImageView( image: .icon( "" ) )
         private let authBadgeView = UIImageView( image: .icon( "" ) )
-        private var authenticationConfiguration: LayoutConfiguration<UserSecretField<User>>!
+        private var authenticationConfiguration: LayoutConfiguration<UserCell>!
         private var path:                        CGPath? {
             didSet {
                 if oldValue != self.path {
@@ -335,7 +335,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                         inactive.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
                         inactive.set( .off, keyPath: \.alpha )
                     } )
-                    .needs( .layout( view: WeakBox( self ) ) )
+                    .needs( .layout )
         }
 
         required init?(coder aDecoder: NSCoder) {

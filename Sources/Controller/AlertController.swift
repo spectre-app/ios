@@ -54,19 +54,12 @@ class AlertController {
         active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: 4 ) }
         inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
     }
-    private lazy var activationConfiguration = LayoutConfiguration( view: self.view )
-            .apply( LayoutConfiguration( view: self.titleLabel ).didSet {
-                $0 => \.font => ($1 ? Theme.current.font.headline: Theme.current.font.headline)
-            } )
-            .apply( LayoutConfiguration( view: self.messageLabel ).didSet {
-                $0 => \.font => ($1 ? Theme.current.font.subheadline: Theme.current.font.subheadline)
-            } )
-            .apply( LayoutConfiguration( view: self.expandChevron ).didSet {
-                $0.isHidden = $1 || self.detailLabel.text?.isEmpty ?? true
-            } )
-            .apply( LayoutConfiguration( view: self.detailLabel ).didSet {
-                $0.isHidden = !$1
-            } )
+    private lazy var activationConfiguration = LayoutConfiguration( view: self.view ).didSet { _, isActive in
+        self.titleLabel => \.font => (isActive ? Theme.current.font.headline: Theme.current.font.headline)
+        self.messageLabel => \.font => (isActive ? Theme.current.font.subheadline: Theme.current.font.subheadline)
+        self.expandChevron.isHidden = isActive || self.detailLabel.text?.isEmpty ?? true
+        self.detailLabel.isHidden = !isActive
+    }
     private lazy var dismissTask = DispatchTask( named: "Dismiss Alert: \(self.title ?? "-")", queue: .main,
                                                  deadline: .now() + .seconds( 5 ), execute: { self.dismiss() } )
 
@@ -81,10 +74,6 @@ class AlertController {
     private let detailsFactory: () -> String?
     private let contentFactory: () -> UIView?
     private let level:          SpectreLogLevel
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
-    }
 
     init(title: @escaping @autoclosure () -> String?, message: @escaping @autoclosure () -> String? = nil,
          details: @escaping @autoclosure () -> String? = nil, content: @escaping @autoclosure () -> UIView? = nil,
@@ -119,15 +108,12 @@ class AlertController {
                 return
             }
 
-            UIView.performWithoutAnimation {
-                LayoutConfiguration( view: self.view )
-                        .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
-                        .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
-                        .activate()
-
-                self.appearanceConfiguration.deactivate()
-                self.activationConfiguration.deactivate()
-            }
+            LayoutConfiguration( view: self.view )
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
+                    .activate()
+            self.appearanceConfiguration.deactivate()
+            self.activationConfiguration.deactivate()
             UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
                 if dismissAutomatically {
                     self.dismissTask.request()
