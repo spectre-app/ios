@@ -69,6 +69,10 @@ class MainUsersViewController: BaseUsersViewController {
                                            "error": $0.error ?? "-",
                                          ] )
 
+                                 if $0.isCancelled {
+                                     return
+                                 }
+
                                  do {
                                      let user = try $0.get()
                                      self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )

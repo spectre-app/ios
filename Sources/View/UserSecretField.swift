@@ -149,7 +149,6 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
 
     init(userName: String? = nil, nameField: UITextField? = nil) {
         self.userName = userName
-        self.nameField = nameField
         super.init( frame: .zero )
 
         self.activityIndicator.frame = self.activityIndicator.frame.insetBy( dx: -8, dy: 0 )
@@ -172,6 +171,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 .activate()
 
         defer {
+            self.nameField = nameField
             self.passwordField = self
         }
     }
