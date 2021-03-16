@@ -57,6 +57,29 @@ enum InAppProduct: String, CaseIterable {
 }
 
 extension SKProduct {
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let object = object as? SKProduct
+        else { return false }
+        if #available( iOS 14.0, * ) {
+            guard self.isFamilyShareable == object.isFamilyShareable
+            else { return false }
+        }
+
+        return self.localizedDescription == object.localizedDescription &&
+                self.localizedTitle == object.localizedTitle &&
+                self.price == object.price &&
+                self.priceLocale == object.priceLocale &&
+                self.productIdentifier == object.productIdentifier &&
+                self.isDownloadable == object.isDownloadable &&
+                self.downloadContentLengths == object.downloadContentLengths &&
+                self.contentVersion == object.contentVersion &&
+                self.downloadContentVersion == object.downloadContentVersion &&
+                self.subscriptionPeriod == object.subscriptionPeriod &&
+                self.introductoryPrice == object.introductoryPrice &&
+                self.subscriptionGroupIdentifier == object.subscriptionGroupIdentifier &&
+                self.discounts == object.discounts
+    }
+
     func localizedPrice(quantity: Int = 1) -> String {
         let price = self.price.doubleValue * Double( quantity )
         return "\(number: price, locale: self.priceLocale, .currency)"
@@ -81,6 +104,19 @@ extension SKProduct {
 }
 
 extension SKProductDiscount {
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let object = object as? SKProductDiscount
+        else { return false }
+
+        return self.price == object.price &&
+                self.priceLocale == object.priceLocale &&
+                self.identifier == object.identifier &&
+                self.subscriptionPeriod == object.subscriptionPeriod &&
+                self.numberOfPeriods == object.numberOfPeriods &&
+                self.paymentMode == object.paymentMode &&
+                self.type == object.type
+    }
+
     var localizedOffer: String {
         switch self.paymentMode {
             case .freeTrial:
@@ -117,6 +153,14 @@ extension SKProductDiscount {
 }
 
 extension SKProductSubscriptionPeriod {
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let object = object as? SKProductSubscriptionPeriod
+        else { return false }
+
+        return self.numberOfUnits == object.numberOfUnits &&
+                self.unit == object.unit
+    }
+
     func localizedDescription(periods: Int = 1, context: LocalizedContext) -> String {
         let units = Decimal( self.numberOfUnits * periods )
 

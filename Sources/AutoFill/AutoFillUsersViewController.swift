@@ -121,10 +121,10 @@ class AutoFillUsersViewController: BaseUsersViewController {
         super.viewDidAppear( animated )
 
         if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
-            self.usersSpinner.requestSelection( at: self.fileSource.indexPath( where: { $0?.userName == userName } ) )
+            self.usersCarousel.requestSelection( at: self.fileSource.indexPath( where: { $0?.userName == userName } ) )
         }
         else if self.fileSource.count() == 1, let only = self.fileSource.elements().first( where: { _ in true } )?.indexPath {
-            self.usersSpinner.requestSelection( at: only )
+            self.usersCarousel.requestSelection( at: only )
         }
     }
 

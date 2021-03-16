@@ -32,12 +32,10 @@ class ConstraintResolver: CustomDebugStringConvertible {
         var constraints = Set<HashableConstraint>()
         var holder      = (item as? UIView) ?? (item as? UILayoutGuide)?.owningView
         while let holder_ = holder {
-            for constraint in holder_.constraints {
-                if constraint.firstItem === item || constraint.secondItem === item {
-                    if axis == nil || constraint.firstAttribute.on( axis: axis! ) || constraint.secondAttribute.on( axis: axis! ) {
-                        constraints.insert( HashableConstraint( constraint: constraint ) )
-                    }
-                }
+            for constraint in holder_.constraints
+                where (constraint.firstItem === item || constraint.secondItem === item) &&
+                        (axis == nil || constraint.firstAttribute.on( axis: axis! ) || constraint.secondAttribute.on( axis: axis! )) {
+                constraints.insert( HashableConstraint( constraint: constraint ) )
             }
             holder = holder_.superview
         }

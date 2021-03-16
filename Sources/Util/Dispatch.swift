@@ -348,8 +348,12 @@ public class DispatchTask<V> {
      * The task is removed from the request queue as soon as the work begins.
      */
     @discardableResult
-    public func request() -> Promise<V> {
+    public func request(immediate: Bool = false) -> Promise<V> {
         self.requestQueue.await {
+            if immediate {
+                self.cancel()
+            }
+
             if let requestPromise = self.requestPromise {
                 return requestPromise
             }
@@ -360,13 +364,13 @@ public class DispatchTask<V> {
 
             var value: V?, workError: Error?
             self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
-                do { value = try self.work() }
-                catch { workError = error }
+                do { value = try self.work(); workError = nil }
+                catch { value = nil; workError = error }
             }
 
             let requestPromise = Promise<V>()
             self.requestPromise = requestPromise
-            let _ = self.workQueue.promise( requestPromise, deadline: self.deadline(), group: self.group,
+            let _ = self.workQueue.promise( requestPromise, deadline: immediate ? .now(): self.deadline(), group: self.group,
                                             qos: self.qos, flags: self.flags ) { () -> V in
                 if self.requestItem?.isCancelled ?? false {
                     throw AppError.internal( cause: "Task was cancelled." )
@@ -404,31 +408,6 @@ public class DispatchTask<V> {
 
             self.requestItem?.cancel()
             return self.requestItem?.isCancelled ?? false
-        }
-    }
-}
-
-extension DispatchTask where V == Void {
-    public convenience init(named name: String? = nil, queue: DispatchQueue = .main, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
-                            qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], update updatable: Updatable, animated: Bool = false) {
-        self.init( named: "\(type( of: updatable )): \(name ?? "-")", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
-            guard let updatable = updatable
-            else { throw Promise<V>.Interruption.invalidated }
-
-            if updatable.updatesRejected {
-                throw Promise<V>.Interruption.rejected
-            }
-            if updatable.updatesPostponed {
-                wrn( "Postponing update of: %@", updatable )
-                throw Promise<V>.Interruption.postponed
-            }
-
-            if animated {
-                UIView.animate( withDuration: .short ) { updatable.update() }
-            }
-            else {
-                updatable.update()
-            }
         }
     }
 }

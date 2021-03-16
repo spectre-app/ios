@@ -33,7 +33,7 @@ public enum IconStyle {
 }
 
 extension NSAttributedString {
-    public static func icon(_ icon: String?, withSize size: CGFloat? = nil) -> NSAttributedString? {
+    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, invert: Bool = false) -> NSAttributedString? {
         guard let icon = icon
         else { return nil }
 
@@ -41,12 +41,12 @@ extension NSAttributedString {
         let attributedIcon = NSMutableAttributedString( string: icon, attributes: [
             NSAttributedString.Key.kern: -1000,
             NSAttributedString.Key.font: font,
-            NSAttributedString.Key.foregroundColor: UIColor.black,
+            NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
         ] )
         if let iconScalar = icon.unicodeScalars.first, let toneScalar = Unicode.Scalar( 0x100000 + iconScalar.value ) {
             attributedIcon.append( NSAttributedString( string: String( String.UnicodeScalarView( [ toneScalar ] ) ), attributes: [
                 NSAttributedString.Key.font: font,
-                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: .short ),
+                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
             ] ) )
         }
 
@@ -55,8 +55,8 @@ extension NSAttributedString {
 }
 
 extension UIImage {
-    public static func icon(_ icon: String?, withSize size: CGFloat? = nil) -> UIImage? {
-        guard let attributedIcon = NSAttributedString.icon( icon, withSize: size )
+    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, invert: Bool = false) -> UIImage? {
+        guard let attributedIcon = NSAttributedString.icon( icon, withSize: size, invert: invert )
         else { return nil }
 
         let size = attributedIcon.size()

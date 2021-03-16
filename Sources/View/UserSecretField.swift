@@ -140,7 +140,6 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     private let activityIndicator  = UIActivityIndicatorView( style: .gray )
     private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
     private let identiconLabel     = UILabel()
-    private lazy var updateTask = DispatchTask( deadline: .now() + .milliseconds( .random( in: 300..<500 ) ), update: self )
 
     // MARK: --- Life ---
 
@@ -150,7 +149,6 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
 
     init(userName: String? = nil, nameField: UITextField? = nil) {
         self.userName = userName
-        self.nameField = nameField
         super.init( frame: .zero )
 
         self.activityIndicator.frame = self.activityIndicator.frame.insetBy( dx: -8, dy: 0 )
@@ -173,6 +171,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 .activate()
 
         defer {
+            self.nameField = nameField
             self.passwordField = self
         }
     }
@@ -240,17 +239,18 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
 
     // MARK: --- Updatable ---
 
-    func update() {
-        DispatchQueue.main.perform {
-            let userName   = self.nameField?.text ?? self.userName
-            let userSecret = self.passwordField?.text
+    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( .random( in: 300..<500 ) ) ) { [weak self] in
+        guard let self = self
+        else { return }
 
-            DispatchQueue.api.perform {
-                let identicon = spectre_identicon( userName, userSecret )
+        let userName   = self.nameField?.text ?? self.userName
+        let userSecret = self.passwordField?.text
 
-                DispatchQueue.main.perform {
-                    self.identiconLabel.attributedText = identicon.attributedText()
-                }
+        DispatchQueue.api.perform {
+            let identicon = spectre_identicon( userName, userSecret )
+
+            DispatchQueue.main.perform {
+                self.identiconLabel.attributedText = identicon.attributedText()
             }
         }
     }

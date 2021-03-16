@@ -9,19 +9,18 @@ import SafariServices
 class AnyItem: NSObject, Updatable {
     let title: Text?
 
-    private lazy var updateTask = DispatchTask(
-            named: self.title?.description, deadline: .now() + .milliseconds( 100 ), update: self, animated: true )
-
     init(title: Text? = nil) {
         self.title = title
     }
 
-    func setNeedsUpdate() {
-        self.updateTask.request()
+    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( 100 ), animated: true ) { [weak self] in
+        guard let self = self
+        else { return }
+
+        self.doUpdate()
     }
 
-    func update() {
-        self.updateTask.cancel()
+    func doUpdate() {
     }
 }
 
@@ -35,7 +34,7 @@ class Item<M>: AnyItem {
         didSet {
             ({ self.subitems.forEach { $0.model = self.model } }())
 
-            self.setNeedsUpdate()
+            self.updateTask.request()
         }
     }
     private var behaviours = [ Behaviour<M> ]()
@@ -72,12 +71,12 @@ class Item<M>: AnyItem {
 
     // MARK: --- Updatable ---
 
-    override func update() {
-        super.update()
+    override func doUpdate() {
+        super.doUpdate()
 
-        self.view.update()
+        self.view.doUpdate()
         self.behaviours.forEach { $0.didUpdate( item: self ) }
-        self.subitems.forEach { $0.update() }
+        self.subitems.forEach { $0.updateTask.request( immediate: true ) }
     }
 
     // MARK: --- Types ---
@@ -86,7 +85,7 @@ class Item<M>: AnyItem {
         case inline, pager
     }
 
-    class ItemView: UIView, Updatable {
+    class ItemView: UIView {
         let titleLabel    = UILabel()
         let captionLabel  = UILabel()
         let contentView   = UIStackView()
@@ -169,7 +168,7 @@ class Item<M>: AnyItem {
 
         // MARK: --- Updatable ---
 
-        func update() {
+        func doUpdate() {
             updateHidden( self.item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: self.item ) ?? $0) } )
             updateEnabled( self.item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: self.item ) ?? $0) } )
 
@@ -241,7 +240,7 @@ class Behaviour<M> {
     }
 
     func setNeedsUpdate() {
-        self.items.forEach { $0.value?.setNeedsUpdate() }
+        self.items.forEach { $0.value?.updateTask.request() }
     }
 
     func isHidden(item: Item<M>) -> Bool? {
@@ -473,8 +472,8 @@ class LabelItem<M>: ValueItem<M, Any> {
             self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             let value = self.item.value
             if let value = value as? NSAttributedString ?? (value as? Text)?.attributedString {
@@ -524,8 +523,8 @@ class ImageItem<M>: ValueItem<M, UIImage> {
             self.valueImage.setContentHuggingPriority( .defaultHigh, for: .vertical )
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.valueImage.image = self.item.value
             self.valueImage.isHidden = self.valueImage.image == nil
@@ -574,8 +573,8 @@ class ToggleItem<M>: ValueItem<M, Bool> {
             self.button
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.button.image = self.item.model.flatMap { self.item.icon( $0 ) }
             self.button.isSelected = self.item.value ?? false
@@ -626,8 +625,8 @@ class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
             self.button
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             let value = self.item.value
             self.button.attributedTitle = value?.label?.attributedString( for: self.button.button )
@@ -673,8 +672,8 @@ class DateItem<M>: ValueItem<M, Date> {
                     .activate()
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.dateView.date = self.item.value
         }
@@ -739,8 +738,8 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             }
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.valueField.placeholder = self.item.placeholder
             self.valueField.text = self.item.value
@@ -802,8 +801,8 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
             }
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.valueView.isEditable = self.item.update != nil
 
@@ -903,8 +902,8 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
                     .activate()
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.valueLabel.text = self.item.value?.description
         }
@@ -978,8 +977,8 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
             }
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.updateDataSource()
         }
@@ -1064,13 +1063,13 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
             self.pageItems.forEach { $0.model = self.item.model }
             self.pagerView.pages = self.pageItems.map { $0.view }
             self.pageItems.forEach { $0.view.didLoad() }
-            self.pageItems.forEach { $0.update() } // TODO: self.update?
+            self.pageItems.forEach { $0.updateTask.request( immediate: true ) } // TODO: self.doUpdate()?
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
-            self.pageItems.forEach { $0.update() }
+            self.pageItems.forEach { $0.updateTask.request( immediate: true ) }
         }
     }
 }
@@ -1128,8 +1127,8 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             self.activityIndicator.startAnimating()
         }
 
-        override func update() {
-            super.update()
+        override func doUpdate() {
+            super.doUpdate()
 
             self.tableView.isHidden = false
             self.tableView.tableHeaderView = self.activityIndicator

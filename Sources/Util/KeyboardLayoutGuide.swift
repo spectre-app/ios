@@ -9,13 +9,25 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
     var observers = Observers<KeyboardLayoutObserver>()
 
     /// The frame that encompasses the software keyboard, in the view's coordinate space.
-    public var keyboardFrame  = CGRect.null
+    public var keyboardFrame    = CGRect.null
     /// The view insets that make way for the software keyboard, in the view's coordinate space.
-    public var keyboardInsets = UIEdgeInsets.zero
+    public var keyboardInsets   = UIEdgeInsets.zero
+    /// A layout guide that encompasses the area in the view that is not obstructed by the keyboard.
+    public var inputLayoutGuide = UILayoutGuide()
     /// Whether the software keyboard is currently active and on-screen.
     public var keyboardShowing = false {
         didSet {
             self.observers.notify { $0.keyboardDidChange( showing: self.keyboardShowing, layoutGuide: self ) }
+        }
+    }
+    override var owningView: UIView? {
+        didSet {
+            if let view = self.owningView {
+                view.addLayoutGuide( self.inputLayoutGuide )
+            }
+            else {
+                self.inputLayoutGuide.owningView?.removeLayoutGuide( self.inputLayoutGuide )
+            }
         }
     }
 
@@ -25,17 +37,21 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
     private var keyboardLeftConstraint:   NSLayoutConstraint?
     private var keyboardRightConstraint:  NSLayoutConstraint?
     private var keyboardBottomConstraint: NSLayoutConstraint?
+    private var inputTopConstraint:       NSLayoutConstraint?
+    private var inputLeftConstraint:      NSLayoutConstraint?
+    private var inputRightConstraint:     NSLayoutConstraint?
+    private var inputBottomConstraint:    NSLayoutConstraint?
 
     /**
      * Install the layout guide into the view.
      * Optionally, install constraints onto the layout guide and/or monitor the keyboard frame in the view's coordinate space.
      */
     @discardableResult
-    func install(in view: UIView, constraints: ((UILayoutGuide) -> [NSLayoutConstraint]?)? = nil, observer: KeyboardLayoutObserver? = nil) -> Self {
-        self.uninstall()
+    func didAppear(in view: UIView, constraints: ((UILayoutGuide) -> [NSLayoutConstraint]?)? = nil, observer: KeyboardLayoutObserver? = nil) -> Self {
+        self.willDisappear()
         self.identifier = "KeyboardLayoutGuide:\(view.describe())"
+        self.inputLayoutGuide.identifier = "InputLayoutGuide:\(view.describe())"
 
-        view.addLayoutGuide( self )
         self.keyboardTopConstraint = self.topAnchor.constraint( equalTo: view.topAnchor )
         self.keyboardLeftConstraint = self.leftAnchor.constraint( equalTo: view.leftAnchor )
         self.keyboardRightConstraint = self.rightAnchor.constraint( equalTo: view.rightAnchor )
@@ -44,6 +60,15 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
         self.keyboardLeftConstraint?.isActive = true
         self.keyboardRightConstraint?.isActive = true
         self.keyboardBottomConstraint?.isActive = true
+
+        self.inputTopConstraint = self.inputLayoutGuide.topAnchor.constraint( equalTo: view.topAnchor )
+        self.inputLeftConstraint = self.inputLayoutGuide.leftAnchor.constraint( equalTo: view.leftAnchor )
+        self.inputRightConstraint = self.inputLayoutGuide.rightAnchor.constraint( equalTo: view.rightAnchor )
+        self.inputBottomConstraint = self.inputLayoutGuide.bottomAnchor.constraint( equalTo: view.bottomAnchor )
+        self.inputTopConstraint?.isActive = true
+        self.inputLeftConstraint?.isActive = true
+        self.inputRightConstraint?.isActive = true
+        self.inputBottomConstraint?.isActive = true
 
         if let constraints = constraints {
             self.add( constraints: constraints )
@@ -88,7 +113,7 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
     }
 
     @discardableResult
-    func uninstall() -> Self {
+    func willDisappear() -> Self {
         self.notificationObservers.forEach { NotificationCenter.default.removeObserver( $0 ) }
         self.keyboardTopConstraint?.isActive = false
         self.keyboardLeftConstraint?.isActive = false
@@ -98,8 +123,6 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
 
         self.constraints.forEach { $0.isActive = false }
         self.constraints.removeAll()
-
-        self.owningView?.removeLayoutGuide( self )
 
         return self
     }
@@ -155,6 +178,10 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
         self.keyboardLeftConstraint?.constant = self.keyboardFrame.minX
         self.keyboardRightConstraint?.constant = self.keyboardFrame.maxX - view.bounds.maxX
         self.keyboardBottomConstraint?.constant = self.keyboardFrame.maxY - view.bounds.maxY
+        self.inputTopConstraint?.constant = self.keyboardInsets.top
+        self.inputLeftConstraint?.constant = self.keyboardInsets.left
+        self.inputRightConstraint?.constant = -self.keyboardInsets.right
+        self.inputBottomConstraint?.constant = -self.keyboardInsets.bottom
 
         //dbg( "keyboardFrame in window: %@, view: %@", keyboardWindowFrame, self.keyboardFrame )
         //dbg( "keyboardFrame view insets: %@, constraints: t=%g, l=%g, r=%g, b=%g", self.keyboardInsets,

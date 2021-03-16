@@ -180,23 +180,21 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             // Check if element layout has changed and apply deletes, inserts & moves required to adopt new layout, in that order.
             if !self.elementsBySection.elementsEqual( toElementsBySection, by: { $0.elementsEqual( $1, by: elementsMatch ) } ) {
                 // Remove dataSource sections no longer present in the new sections (should be empty of items now).
-                for section in (0..<self.elementsBySection.count).reversed() {
-                    if section >= toElementsBySection.count {
-                        //dbg( "delete section %d", section )
-                        self.elementsBySection.remove( at: section )
-                        self.collectionView?.deleteSections( IndexSet( integer: section ) )
-                        self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
-                    }
+                for section in (0..<self.elementsBySection.count).reversed()
+                    where section >= toElementsBySection.count {
+                    //dbg( "delete section %d", section )
+                    self.elementsBySection.remove( at: section )
+                    self.collectionView?.deleteSections( IndexSet( integer: section ) )
+                    self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
                 }
 
                 // Add empty dataSource sections for newly introduced sections.
-                for toSection in 0..<toElementsBySection.count {
-                    if toSection >= self.elementsBySection.count {
-                        //dbg( "insert section %d", toSection )
-                        self.elementsBySection.append( [ E ]() )
-                        self.collectionView?.insertSections( IndexSet( integer: toSection ) )
-                        self.tableView?.insertSections( IndexSet( integer: toSection ), with: .automatic )
-                    }
+                for toSection in 0..<toElementsBySection.count
+                    where toSection >= self.elementsBySection.count {
+                    //dbg( "insert section %d", toSection )
+                    self.elementsBySection.append( [ E ]() )
+                    self.collectionView?.insertSections( IndexSet( integer: toSection ) )
+                    self.tableView?.insertSections( IndexSet( integer: toSection ), with: .automatic )
                 }
 
                 // DELETE/MOVE: Delete dataSource elements no longer reflected in the new sections.
@@ -218,14 +216,13 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
                 // INSERT: Reflect the new sections by moving or reloading existing elements and inserting missing ones.
                 for (toSection, toElements) in toElementsBySection.enumerated() {
-                    for (toItem, toElement) in toElements.enumerated() {
-                        if self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) == nil {
-                            // New element missing in old dataSource.
-                            let toIndexPath = IndexPath( item: toItem, section: toSection )
-                            //dbg( "insert item %@", toIndexPath )
-                            self.collectionView?.insertItems( at: [ toIndexPath ] )
-                            self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
-                        }
+                    for (toItem, toElement) in toElements.enumerated()
+                        where self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) == nil {
+                        // New element missing in old dataSource.
+                        let toIndexPath = IndexPath( item: toItem, section: toSection )
+                        //dbg( "insert item %@", toIndexPath )
+                        self.collectionView?.insertItems( at: [ toIndexPath ] )
+                        self.tableView?.insertRows( at: [ toIndexPath ], with: .automatic )
                     }
                 }
             }

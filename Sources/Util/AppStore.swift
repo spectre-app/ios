@@ -36,16 +36,9 @@ extension InAppProduct {
     }
 
     var isActive: Bool {
-        guard let receipt = AppStore.shared.receipt
-        else { return false }
-
-        for purchase in receipt.purchases( ofProductIdentifier: self.productIdentifier ) {
-            if !purchase.isRenewableSubscription || purchase.isActiveAutoRenewableSubscription( forDate: Date() ) {
-                return true
-            }
-        }
-
-        return false
+        AppStore.shared.receipt?.purchases( ofProductIdentifier: self.productIdentifier ).contains { purchase in
+            !purchase.isRenewableSubscription || purchase.isActiveAutoRenewableSubscription( forDate: Date() )
+        } ?? false
     }
 
     var wasActiveButExpired: Bool {
@@ -103,18 +96,13 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         self.updatePromise ?? using( Promise<Bool>() ) { updatePromise in
             self.updatePromise = updatePromise
 
-            self.updateReceipt( allowRefresh: active ).then {
-                guard active || (try? $0.get()) != nil
-                else {
+            self.updateReceipt( allowRefresh: active ).then { _ in
+                if active || self.products.isEmpty {
                     // Passive mode and no receipt: give up for now to avoid undesirable store errors.
-                    self.updatePromise?.finish( .success( false ) )
-                    self.updatePromise = nil
-                    return
+                    let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
+                    productsRequest.delegate = self
+                    productsRequest.start()
                 }
-
-                let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
-                productsRequest.delegate = self
-                productsRequest.start()
             }
         }
     }
@@ -122,7 +110,10 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     func purchase(product: SKProduct, promotion: SKPaymentDiscount? = nil, quantity: Int = 1) {
         #if !PUBLIC
         guard AppConfig.shared.sandboxStore
-        else { return }
+        else {
+            inf( "Sandbox store disabled, skipping product purchase." )
+            return
+        }
         #endif
 
         let payment = SKMutablePayment( product: product )
@@ -135,8 +126,16 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     func restorePurchases() {
         #if !PUBLIC
         guard AppConfig.shared.sandboxStore
-        else { return }
+        else {
+            inf( "Sandbox store disabled, skipping purchase restoration." )
+            return
+        }
         #endif
+        guard self.canBuyProducts
+        else {
+            wrn( "In-app purchases disabled, skipping purchase restoration." )
+            return
+        }
 
         SKPaymentQueue.default().restoreCompletedTransactions()
     }
@@ -214,6 +213,14 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     private func refreshReceipt() -> Promise<InAppReceipt?> {
         using( Promise<InAppReceipt?>() ) { promise in
+            #if !PUBLIC
+            if !AppConfig.shared.sandboxStore {
+                inf( "Sandbox store disabled, skipping receipt refresh." )
+                self.updateReceipt( allowRefresh: false ).finishes( promise )
+                return
+            }
+            #endif
+
             InAppReceipt.refresh { error in
                 if let error = error {
                     promise.finish( .failure( error ) )
@@ -241,6 +248,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
             #if !PUBLIC
             if !AppConfig.shared.sandboxStore {
+                inf( "Sandbox store disabled, skipping receipt parsing." )
                 promise.finish( .success( self.receipt ) )
                 return
             }

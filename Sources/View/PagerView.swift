@@ -20,7 +20,7 @@ class PagerView: UIView, UICollectionViewDelegate {
 
     public var page  = 0 {
         didSet {
-            self.indicatorView.setNeedsUpdate()
+            self.indicatorView.updateTask.request()
         }
     }
     public var pages = [ UIView ]() {
@@ -31,7 +31,7 @@ class PagerView: UIView, UICollectionViewDelegate {
             if oldValue != self.pages {
                 self.source.update( [ self.pages ] )
             }
-            self.indicatorView.setNeedsUpdate()
+            self.indicatorView.updateTask.request()
         }
     }
 
@@ -139,13 +139,13 @@ class PagerView: UIView, UICollectionViewDelegate {
             }
             for indexPath in context.invalidateEverything ? Array( self.attributes.keys ): context.invalidatedItemIndexPaths ?? [] {
                 if let attrs = self.attributes[indexPath] {
-                    attrs.frame.size.width = self.pageSize.width
-                    attrs.frame.origin = CGPoint( x: self.pageSize.width * CGFloat( indexPath.item ), y: 0 )
+                    attrs.size.width = self.pageSize.width
+                    attrs.center = CGPoint( x: self.pageSize.width * (CGFloat( indexPath.item ) + 0.5), y: attrs.size.height / 2 )
                 }
             }
 
             self.contentSize = CGSize( width: max( 1, self.pageSize.width * CGFloat( collectionView.numberOfItems( inSection: 0 ) ) ),
-                                       height: max( 1, self.pageSize.height ) )
+                                       height: self.attributes.values.reduce( 1 ) { max( $0, $1.frame.maxY ) } )
         }
 
         override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
@@ -190,9 +190,9 @@ class PagerView: UIView, UICollectionViewDelegate {
             guard var attributes = attributes
             else { return nil }
 
-            if attributes.frame.size.height == 0 {
+            if attributes.size.height == 0 {
                 attributes = attributes.copy() as! UICollectionViewLayoutAttributes
-                attributes.frame.size.height = self.pageSize.height
+                attributes.size.height = self.pageSize.height
             }
 
             return attributes
@@ -257,8 +257,6 @@ class PagerView: UIView, UICollectionViewDelegate {
     }
 
     class PagerIndicator: UIView, Updatable {
-        private lazy var updateTask = DispatchTask( update: self, animated: true )
-
         let pagerView: PagerView
         let stackView = UIStackView()
 
@@ -294,11 +292,10 @@ class PagerView: UIView, UICollectionViewDelegate {
 
         // - Updatable
 
-        func setNeedsUpdate() {
-            self.updateTask.request()
-        }
+        lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
+            guard let self = self
+            else { return }
 
-        func update() {
             while self.stackView.arrangedSubviews.count > self.pagerView.pages.count {
                 self.stackView.arrangedSubviews.first?.removeFromSuperview()
             }

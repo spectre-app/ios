@@ -23,9 +23,15 @@ class AvatarCell: EffectCell {
     override init(frame: CGRect) {
         super.init( frame: frame )
 
+        self.avatarImage.contentMode = .scaleAspectFill
+        self.effectView.isCircular = false
+        self.effectView.rounding = 20
+        self.effectView.borderWidth = 1
         self.effectView.addContentView( self.avatarImage )
 
         LayoutConfiguration( view: self.avatarImage )
-                .constrain( as: .box, margin: true ).activate()
+                .constrain( as: .box )
+                .constrain { $1.heightAnchor.constraint( equalToConstant: 150 ) }
+                .activate()
     }
 }

@@ -69,6 +69,10 @@ class MainUsersViewController: BaseUsersViewController {
                                            "error": $0.error ?? "-",
                                          ] )
 
+                                 if $0.isCancelled {
+                                     return
+                                 }
+
                                  do {
                                      let user = try $0.get()
                                      self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
@@ -100,7 +104,7 @@ class MainUsersViewController: BaseUsersViewController {
 
         // - Layout
         LayoutConfiguration( view: self.tipsView )
-                .constrain( as: .topCenter, margin: true ).activate()
+                .constrain( as: .topCenter, to: self.view.safeAreaLayoutGuide ).activate()
         LayoutConfiguration( view: self.appToolbar )
                 .constrain( as: .bottomCenter, margin: true ).activate()
         LayoutConfiguration( view: self.userToolbar )

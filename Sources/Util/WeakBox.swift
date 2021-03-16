@@ -4,10 +4,11 @@
 
 import Foundation
 
-public class WeakBox<E>: Equatable {
+public class WeakBox<E>: Equatable, CustomDebugStringConvertible {
     private weak var _value: AnyObject?
 
-    public var value: E? {
+    private let name:  String
+    public var  value: E? {
         get {
             self._value as? E
         }
@@ -16,7 +17,12 @@ public class WeakBox<E>: Equatable {
         }
     }
 
+    public var debugDescription: String {
+        "[\(self.value.flatMap { String( reflecting: $0 ) } ?? "gone: \(self.name)")]"
+    }
+
     public init(_ value: E) {
+        self.name = "\(String( reflecting: value ))"
         self.value = value
     }
 
@@ -37,6 +43,12 @@ public class WeakBox<E>: Equatable {
 
     public static func ==(lhs: WeakBox<E>, rhs: E) -> Bool where E: Equatable {
         lhs.value == rhs
+    }
+}
+
+extension WeakBox: CustomStringConvertible where E: CustomStringConvertible {
+    public var description: String {
+        "<\(self.value?.description ?? "nil")>"
     }
 }
 

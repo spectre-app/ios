@@ -18,7 +18,6 @@ class Marshal: Observable, Updatable {
     }
 
     private let marshalQueue = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
-    private lazy var updateTask = DispatchTask( queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ), update: self )
 
     // MARK: --- Interface ---
 
@@ -463,7 +462,10 @@ class Marshal: Observable, Updatable {
         self.updateTask.request().promise { self.userFiles }
     }
 
-    func update() {
+    lazy var updateTask = DispatchTask.update( self, queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ) ) { [weak self] in
+        guard let self = self
+        else { return }
+
         do {
             self.userFiles = try self.userDocuments().compactMap { try UserFile( origin: $0 ) }
         }
