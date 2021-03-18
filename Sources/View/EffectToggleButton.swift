@@ -73,7 +73,7 @@ class EffectToggleButton: UIView {
         self.checkLabel => \.font => Theme.current.font.callout
         self.checkLabel => \.textColor => Theme.current.color.body
         self.checkLabel => \.backgroundColor => Theme.current.color.panel
-        self.checkLabel.layer => \.borderColor => Theme.current.color.secondary
+        self.checkLabel.layer => \.borderColor => Theme.current.color.mute
         self.checkLabel.layer.masksToBounds = true
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"

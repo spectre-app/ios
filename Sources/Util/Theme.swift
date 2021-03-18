@@ -205,8 +205,8 @@ public struct ThemePattern {
     static let spectre = ThemePattern(
             dark: .hex( "0E3345" ),
             dusk: .hex( "173D50" ),
-            flat: .hex( "57CBCC" ),
-            dawn: .hex( "87A4A9" ),
+            flat: .hex( "41A0A0" ),
+            dawn: .hex( "F1F9FC" ),
             pale: .hex( "FFFFFF" ) )
     static let dream   = ThemePattern(
             dark: .hex( "385359" ),
