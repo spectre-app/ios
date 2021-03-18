@@ -10,7 +10,7 @@ platform :ios do
     cocoapods
     #swiftlint
 
-    build_app(scheme: "Spectre-iOS", include_bitcode: true, export_options: { method: "ad-hoc" })
+    build_app(scheme: "Spectre-iOS", include_symbols: true, include_bitcode: true, export_method: "ad-hoc" )
     verify_build
   end
 
