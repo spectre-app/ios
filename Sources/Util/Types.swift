@@ -67,7 +67,7 @@ extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
 }
 
 extension SpectreCounter: Strideable, CustomStringConvertible {
-    public var description:          String {
+    public var description: String {
         "\(self.rawValue)"
     }
 }
@@ -203,6 +203,16 @@ extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
             default:
                 fatalError( "Unsupported format: \(self.rawValue)" )
         }
+    }
+
+    public func `is`(url: URL) -> Bool {
+        var count      = 0
+        let extensions = UnsafeBufferPointer( start: spectre_format_extensions( self, &count ), count: count );
+        defer {
+            extensions.deallocate()
+        }
+
+        return extensions.map { String.valid( $0 ) }.contains( url.pathExtension )
     }
 }
 

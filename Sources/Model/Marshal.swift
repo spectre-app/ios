@@ -34,16 +34,30 @@ class Marshal: Observable, Updatable {
         }
     }
 
-    public func save(user: User, format: SpectreFormat = .default, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
+    public func save(user: User) -> Promise<URL> {
+        let redacted = user.file?.pointee.info?.pointee.redacted ?? true
+        let format = user.file.flatMap { $0.pointee.info?.pointee.format ?? .default } ?? .none
+        guard let userURL = user.origin.flatMap( { format.is( url: $0 ) ? $0: nil } ) ?? self.createURL( for: user, format: format )
+        else {
+            return Promise( .failure( AppError.internal( cause: "No path to marshal user.", details: user ) ) )
+        }
+
+        return self.save( user: user, to: userURL, format: format, redacted: redacted )
+    }
+
+    private func save(user: User, in directory: URL?, format: SpectreFormat, redacted: Bool) -> Promise<URL> {
+        guard let userURL = self.createURL( for: user, in: directory, format: format )
+        else {
+            return Promise( .failure( AppError.internal( cause: "No path to marshal user.", details: user ) ) )
+        }
+
+        return self.save( user: user, to: userURL, format: format, redacted: redacted )
+    }
+
+    private func save(user: User, to userURL: URL, format: SpectreFormat, redacted: Bool) -> Promise<URL> {
         let saveEvent = Tracker.shared.begin( track: .subject( "user", action: "save" ) )
 
         return self.marshalQueue.promising {
-            guard let userURL = user.origin
-            else {
-                saveEvent.end( [ "result": "!url" ] )
-                throw AppError.internal( cause: "No path to marshal user.", details: user )
-            }
-
             guard !userURL.hasDirectoryPath
             else {
                 saveEvent.end( [ "result": "!dir" ] )
@@ -538,8 +552,8 @@ class Marshal: Observable, Updatable {
         func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
             do {
                 // FIXME: possible deadlock if await needs main thread?
-                let exportFile = try Marshal.shared.save( user: self.user, format: self.format, redacted: self.redacted,
-                                                          in: URL( fileURLWithPath: NSTemporaryDirectory() ) ).await()
+                let exportFile = try Marshal.shared.save( user: self.user, in: URL( fileURLWithPath: NSTemporaryDirectory() ),
+                                                          format: self.format, redacted: self.redacted ).await()
                 self.cleanup.append( exportFile )
                 return exportFile
             }
