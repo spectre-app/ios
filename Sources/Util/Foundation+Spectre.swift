@@ -101,10 +101,11 @@ extension Decimal {
 }
 
 extension FileManager {
-    public static let caches    = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
-                                                     .appendingPathComponent( "Library/Caches" )
-    public static let documents = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
-                                                     .appendingPathComponent( "Documents" )
+    public static let groupCaches    = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
+                                                          .appendingPathComponent( "Library/Caches" )
+    public static let groupDocuments = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
+                                                          .appendingPathComponent( "Documents" )
+    public static let appDocuments   = FileManager.default.urls( for: .documentDirectory, in: .userDomainMask ).first
 }
 
 extension Locale {

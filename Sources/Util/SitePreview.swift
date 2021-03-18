@@ -36,7 +36,7 @@ class SitePreview: Equatable {
 
         // If a preview exists on disk, use it.
         do {
-            if let previewURL = FileManager.caches?.appendingPathComponent( "preview-\(siteURL)" ).appendingPathExtension( "json" ),
+            if let previewURL = FileManager.groupCaches?.appendingPathComponent( "preview-\(siteURL)" ).appendingPathExtension( "json" ),
                FileManager.default.fileExists( atPath: previewURL.path ) {
                 return SitePreview( url: siteURL, data:
                 try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewURL ) ) )
@@ -112,7 +112,7 @@ class SitePreview: Equatable {
                 SitePreview.previews.setObject( self, forKey: self.url as NSString, cost: self.data.imageData?.count ?? 0 )
             }
 
-            if let previewURL = FileManager.caches?.appendingPathComponent( "preview-\(self.url)" ).appendingPathExtension( "json" ) {
+            if let previewURL = FileManager.groupCaches?.appendingPathComponent( "preview-\(self.url)" ).appendingPathExtension( "json" ) {
                 try JSONEncoder().encode( self.data ).write( to: previewURL )
             }
 

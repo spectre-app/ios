@@ -6,9 +6,17 @@
 import UIKit
 
 extension UIAlertController {
-    static func authenticate<U>(userName: String? = nil, title: String, message: String, in viewController: UIViewController,
-                                track: Tracking? = nil, action: String, authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>,
-                                failOnError: Bool = false) -> Promise<U> {
+    static func authenticate(userFile: Marshal.UserFile, title: String, message: String? = nil, in viewController: UIViewController,
+                                track: Tracking? = nil, action: String, retryOnError: Bool = true) -> Promise<User> {
+        self.authenticate(userName: userFile.userName, title: title, message: message, in: viewController,
+                          track: track, action: action, retryOnError: retryOnError) {
+            userFile.authenticate( using: $0 )
+        }
+    }
+
+    static func authenticate<U>(userName: String? = nil, title: String, message: String? = nil, in viewController: UIViewController,
+                                track: Tracking? = nil, action: String, retryOnError: Bool = true,
+                                authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>) -> Promise<U> {
         let promise         = Promise<U>()
         let spinner         = AlertController( title: "Unlocking", message: userName, content: UIActivityIndicatorView( style: .whiteLarge ) )
         let alertController = UIAlertController( title: title, message: message, preferredStyle: .alert )
@@ -27,7 +35,7 @@ extension UIAlertController {
         secretField.authenticated = { result in
             spinner.dismiss()
             alertController.dismiss( animated: true ) {
-                if failOnError {
+                if !retryOnError {
                     promise.finish( result )
                     return
                 }
