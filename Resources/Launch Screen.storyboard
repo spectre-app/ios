@@ -16,9 +16,23 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="30S-Ez-3is">
+                                <rect key="frame" x="0.0" y="333" width="375" height="1"/>
+                                <color key="backgroundColor" name="tint"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="F1E-52-XDW"/>
+                                </constraints>
+                            </view>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" name="backdrop"/>
                         <color key="tintColor" name="tint"/>
+                        <constraints>
+                            <constraint firstItem="30S-Ez-3is" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="Ayu-ud-gFY"/>
+                            <constraint firstAttribute="trailing" secondItem="30S-Ez-3is" secondAttribute="trailing" id="Z3l-ud-4LP"/>
+                            <constraint firstItem="30S-Ez-3is" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="tCG-3y-OeP"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>

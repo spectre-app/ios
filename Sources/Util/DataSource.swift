@@ -134,13 +134,16 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                         reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
                         animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil, elementsMatch: @escaping (E, E) -> Bool) {
         self.queue.sync {
+            //dbg( "%@: wait", self.semaphore )
             self.semaphore.wait()
+            //dbg( "%@: enter", self.semaphore )
             self.semaphore.enter()
         }
 
         //dbg( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, toElementsBySection )
 
         if !self.elementsConsumed || !animated {
+            //dbg( "%@: perform", self.semaphore )
             DispatchQueue.main.perform( group: self.semaphore ) {
                 self.elementsBySection = toElementsBySection
                 if self.elementsConsumed {
@@ -148,38 +151,30 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                     self.collectionView?.reloadData()
                 }
                 self.select( selectElements, paths: selectPaths )
+                //dbg( "%@: leave", self.semaphore )
                 self.semaphore.leave()
                 completion?( true )
+                //dbg( "%@: done", self.semaphore )
             }
             return
         }
 
-        // RELOAD: Check if element values have changed and mark updated paths for reload.
+        // RELOAD ITEMS: Check if element values have changed and mark updated paths for reload.
         var reloadPaths = reloadPaths ?? []
         for (toSection, toElements) in toElementsBySection.enumerated() {
-            for (toItem, toElement) in toElements.enumerated() {
-                let toIndexPath = IndexPath( item: toItem, section: toSection )
-                if reloadAll || (reloadElements?.contains( toElement ) ?? false) || {
-                    let fromElement = self.firstElement( where: { elementsMatch( $0, toElement ) } );
+            for (toItem, toElement) in toElements.enumerated()
+                where reloadAll || (reloadElements?.contains( toElement ) ?? false) || {
+                    let fromElement = self.firstElement( where: { elementsMatch( $0, toElement ) } )
                     return fromElement != nil && fromElement != toElement }() {
-                    // Element reload requested or required due to the new element being different from the old.
-                    reloadPaths.append( toIndexPath )
-                }
+                // Element reload requested or required due to the new element being different from the old.
+                reloadPaths.append( IndexPath( item: toItem, section: toSection ) )
             }
         }
 
-        self.performBatchUpdates {
-            // OPERATION | INDEXPATH
-            // --------- | ---------
-            // reload    | at:   before updates
-            // delete    | at:   before updates
-            // move      | from: before updates
-            //           | to:   after updates
-            // insert    | at:   after updates
-
+        self.performBatch( reloads: reloadPaths ) {
             // Check if element layout has changed and apply deletes, inserts & moves required to adopt new layout, in that order.
             if !self.elementsBySection.elementsEqual( toElementsBySection, by: { $0.elementsEqual( $1, by: elementsMatch ) } ) {
-                // Remove dataSource sections no longer present in the new sections (should be empty of items now).
+                // DELETE SECTIONS: Remove dataSource sections no longer present in the new sections (should be empty of items now).
                 for section in (0..<self.elementsBySection.count).reversed()
                     where section >= toElementsBySection.count {
                     //dbg( "delete section %d", section )
@@ -188,7 +183,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                     self.tableView?.deleteSections( IndexSet( integer: section ), with: .automatic )
                 }
 
-                // Add empty dataSource sections for newly introduced sections.
+                // INSERT SECTIONS: Add empty dataSource sections for newly introduced sections.
                 for toSection in 0..<toElementsBySection.count
                     where toSection >= self.elementsBySection.count {
                     //dbg( "insert section %d", toSection )
@@ -197,24 +192,32 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                     self.tableView?.insertSections( IndexSet( integer: toSection ), with: .automatic )
                 }
 
-                // DELETE/MOVE: Delete dataSource elements no longer reflected in the new sections.
+                // TODO: reload sections?
+                // TODO: move sections?
+
+                // DELETE ITEMS: Delete dataSource elements no longer reflected in the new sections.
                 for (fromSection, fromElements) in self.elementsBySection.enumerated() {
-                    for (fromItem, fromElement) in fromElements.enumerated().reversed() {
-                        let fromIndexPath = IndexPath( item: fromItem, section: fromSection )
+                    var deletedItems = 0
+                    for (fromItem, fromElement) in fromElements.enumerated() {
                         if let toIndexPath = self.indexPath( for: fromElement, in: toElementsBySection, elementsMatch: elementsMatch ) {
-                            //dbg( "move item %@ -> %@", fromIndexPath, toIndexPath )
-                            self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
-                            self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
+                            let fromIndexPath = IndexPath( item: fromItem - deletedItems, section: fromSection )
+                            if fromIndexPath != toIndexPath {
+                                //dbg( "move item %@ -> %@", fromIndexPath, toIndexPath )
+                                self.collectionView?.moveItem( at: fromIndexPath, to: toIndexPath )
+                                self.tableView?.moveRow( at: fromIndexPath, to: toIndexPath )
+                            }
                         }
                         else {
+                            let fromIndexPath = IndexPath( item: fromItem, section: fromSection )
                             //dbg( "delete item %@", fromIndexPath )
                             self.collectionView?.deleteItems( at: [ fromIndexPath ] )
                             self.tableView?.deleteRows( at: [ fromIndexPath ], with: .automatic )
+                            deletedItems += 1
                         }
                     }
                 }
 
-                // INSERT: Reflect the new sections by moving or reloading existing elements and inserting missing ones.
+                // INSERT ITEMS: Reflect the new sections by moving or reloading existing elements and inserting missing ones.
                 for (toSection, toElements) in toElementsBySection.enumerated() {
                     for (toItem, toElement) in toElements.enumerated()
                         where self.indexPath( for: toElement, in: self.elementsBySection, elementsMatch: elementsMatch ) == nil {
@@ -228,19 +231,13 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
             }
 
             self.elementsBySection = toElementsBySection
+
+            //dbg( "%@: leave", self.semaphore )
+            self.semaphore.leave()
         } completion: { success in
             if success {
-                // We reload after updates since it's illegal to move & reload an indexPath at the same time.
-                if !reloadPaths.isEmpty {
-                    //dbg( "reload items %@", reloadPaths )
-                    self.collectionView?.reloadItems( at: reloadPaths )
-                    self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
-                }
-
                 self.select( selectElements, paths: selectPaths )
             }
-
-            self.semaphore.leave()
             completion?( success )
         }
     }
@@ -283,7 +280,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
               indexPath.section < self.elementsBySection.count && indexPath.item < self.elementsBySection[indexPath.section].count
         else { return false }
 
-        self.performBatchUpdates {
+        self.performBatch {
             self.elementsBySection[indexPath.section].remove( at: indexPath.item )
             self.collectionView?.deleteItems( at: [ indexPath ] )
             self.tableView?.deleteRows( at: [ indexPath ], with: .automatic )
@@ -297,7 +294,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
               toIndexPath.section < self.elementsBySection.count && toIndexPath.item < self.elementsBySection[toIndexPath.section].count
         else { return false }
 
-        self.performBatchUpdates {
+        self.performBatch {
             let element = self.elementsBySection[fromIndexPath.section].remove( at: fromIndexPath.item )
 
             var toItem = toIndexPath.item
@@ -372,10 +369,28 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
     // MARK: --- Private ---
 
-    private func performBatchUpdates(_ updates: @escaping () -> (), completion: ((Bool) -> ())? = nil) {
+    /// Perform a batch of updates on the view.
+    ///
+    /// NOTE: Item reloads must be specified in the separate reloads block and use the post-updates indexPaths
+    ///       since -performBatchUpdates does not support simultaneous reloads and moves.
+    ///
+    /// OPERATION | INDEXPATH
+    /// --------- | ---------
+    /// reload    | at:   before updates
+    /// delete    | at:   before updates
+    /// move      | from: before updates
+    ///           | to:   after updates
+    /// insert    | at:   after updates
+    private func performBatch(reloads reloadPaths: [IndexPath]? = nil, updates: @escaping () -> (), completion: ((Bool) -> ())? = nil) {
+        //dbg( "%@: perform", self.semaphore )
         DispatchQueue.main.perform( group: self.semaphore ) {
             self.tableView?.performBatchUpdates( updates, completion: completion )
             self.collectionView?.performBatchUpdates( updates, completion: completion )
+            if let reloadPaths = reloadPaths, !reloadPaths.isEmpty {
+                self.collectionView?.reloadItems( at: reloadPaths )
+                self.tableView?.reloadRows( at: reloadPaths, with: .automatic )
+            }
+            //dbg( "%@: done", self.semaphore )
         }
     }
 

@@ -443,15 +443,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         // MARK: --- Private ---
 
-        private func attemptBiometrics() {
-            guard InAppFeature.premium.isEnabled, let userFile = self.userFile, userFile.biometricLock
-            else { return }
-
+        @discardableResult
+        private func attemptBiometrics() -> Promise<User> {
+            guard InAppFeature.premium.isEnabled
+            else { return Promise( .failure( AppError.state( title: "Biometrics not available." ) ) ) }
+            guard let userFile = self.userFile, userFile.biometricLock
+            else { return Promise( .failure( AppError.state( title: "Biometrics not enabled.", details: self.userFile ) ) ) }
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.hasKey( for: userFile.algorithm )
-            else { return }
+            else { return Promise( .failure( AppError.state( title: "Biometrics key not present." ) ) ) }
 
-            keychainKeyFactory.unlock().promising {
+            return keychainKeyFactory.unlock().promising {
                 userFile.authenticate( using: $0 )
             }.then( on: .main ) { [unowned self] result in
                 do {
