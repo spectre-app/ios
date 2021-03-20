@@ -20,7 +20,8 @@ class ItemsViewController<M>: BaseViewController {
     }
 
     private let focus: Item<M>.Type?
-    private let itemsView = UIStackView()
+    private let imageSpacer = UIView()
+    private let itemsView   = UIStackView()
     private lazy var items = self.loadItems()
 
     // MARK: --- Interface ---
@@ -47,7 +48,7 @@ class ItemsViewController<M>: BaseViewController {
         super.viewDidLoad()
 
         // - View
-        self.view.layoutMargins.bottom = 40
+        self.view.layoutMargins = .vertical( 40 )
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = .on
@@ -57,6 +58,7 @@ class ItemsViewController<M>: BaseViewController {
 
         self.itemsView.axis = .vertical
         self.itemsView.spacing = 32
+        self.itemsView.addArrangedSubview( self.imageSpacer )
         for item in self.items {
             item.viewController = self
             self.itemsView.addArrangedSubview( item.view )
@@ -66,9 +68,11 @@ class ItemsViewController<M>: BaseViewController {
         self.view.addSubview( self.itemsView )
 
         // - Layout
+        LayoutConfiguration( view: self.imageSpacer )
+                .constrain { $1.heightAnchor.constraint( equalTo: self.backgroundView.imageView.heightAnchor, multiplier: .long, constant: -40 ) }
+                .activate()
         LayoutConfiguration( view: self.itemsView )
-                .constrain( as: .vertical, margin: true )
-                .constrain( as: .horizontal )
+                .constrain( as: .box, margin: true )
                 .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
                 .activate()
 
@@ -111,7 +115,7 @@ class ItemsViewController<M>: BaseViewController {
         }
         self.backgroundView.image = self.image
         self.backgroundView.imageColor = self.color
-        self.view.layoutMargins.top = self.image == nil ? 40: 108
+        self.imageSpacer.isHidden = self.image == nil
 
         self.items.forEach { $0.updateTask.request( immediate: true ) }
     }
