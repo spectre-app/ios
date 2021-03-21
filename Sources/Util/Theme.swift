@@ -500,8 +500,8 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( light: pattern.pale, dark: pattern.dark )
             self.color.panel.set( light: pattern.dawn, dark: pattern.dusk )
             self.color.shade.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
-            self.color.shadow.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
-            self.color.mute.set( light: pattern.dusk?.with( alpha: .short ), dark: pattern.dawn?.with( alpha: .short ) )
+            self.color.shadow.set( light: pattern.flat?.with( alpha: .long ), dark: pattern.flat?.with( alpha: .long ) )
+            self.color.mute.set( light: pattern.dusk?.with( alpha: .short * .short ), dark: pattern.dawn?.with( alpha: .short * .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.tint.set( light: pattern.flat, dark: pattern.flat )
         }
