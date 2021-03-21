@@ -112,6 +112,7 @@ class Item<M>: AnyItem {
             self.contentView.axis = .vertical
             self.contentView.alignment = .center
             self.contentView.spacing = 8
+            self.contentView.insetsLayoutMarginsFromSafeArea = false
 
             self.titleLabel.numberOfLines = 0
             self.titleLabel => \.textColor => Theme.current.color.body
@@ -120,6 +121,7 @@ class Item<M>: AnyItem {
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
 
             self.subitemsStack.preservesSuperviewLayoutMargins = true
+            self.subitemsStack.insetsLayoutMarginsFromSafeArea = false
             self.subitemsStack.isLayoutMarginsRelativeArrangement = true
 
             self.captionLabel => \.textColor => Theme.current.color.secondary

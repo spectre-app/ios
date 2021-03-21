@@ -172,8 +172,9 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
             keyboardWindowFrame.origin.y -= window.screen.bounds.maxY - window.bounds.maxY
         }
 
+        view.layoutIfNeeded()
         self.keyboardFrame = view.convert( keyboardWindowFrame, from: window.coordinateSpace )
-        self.keyboardInsets = UIEdgeInsets( in: view.bounds, subtracting: self.keyboardFrame )
+        self.keyboardInsets = UIEdgeInsets( in: view.convert( view.frame, from: view.superview ), subtracting: self.keyboardFrame )
         self.keyboardTopConstraint?.constant = self.keyboardFrame.minY
         self.keyboardLeftConstraint?.constant = self.keyboardFrame.minX
         self.keyboardRightConstraint?.constant = self.keyboardFrame.maxX - view.bounds.maxX

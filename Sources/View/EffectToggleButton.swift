@@ -69,6 +69,7 @@ class EffectToggleButton: UIView {
 
         // - View
         self.layoutMargins = .border( 12 )
+        self.insetsLayoutMarginsFromSafeArea = false
 
         self.checkLabel => \.font => Theme.current.font.callout
         self.checkLabel => \.textColor => Theme.current.color.body
@@ -102,6 +103,7 @@ class EffectToggleButton: UIView {
         self.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ).isActive = true
 
         LayoutConfiguration( view: self.button )
+                .hugging( horizontal: .defaultHigh, vertical: .defaultHigh )
                 .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.contentView )
                 .constrain( as: .box, margin: true ).activate()

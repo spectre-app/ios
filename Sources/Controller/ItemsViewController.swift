@@ -49,6 +49,7 @@ class ItemsViewController<M>: BaseViewController {
 
         // - View
         self.view.layoutMargins = .vertical( 40 )
+        self.view.insetsLayoutMarginsFromSafeArea = false
         self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = .on
@@ -98,6 +99,13 @@ class ItemsViewController<M>: BaseViewController {
                 }
             } )
         }
+    }
+
+    // MARK: --- KeyboardLayoutObserver ---
+
+    override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+        // FIXME: items child view controllers are not seeing their additionalSafeAreaInsets changes applied to their view.
+        //super.keyboardDidChange( showing: showing, layoutGuide: layoutGuide )
     }
 
     // MARK: --- Updatable ---

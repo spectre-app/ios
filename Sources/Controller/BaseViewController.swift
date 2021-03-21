@@ -117,7 +117,8 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
     // MARK: --- KeyboardLayoutObserver ---
 
     func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
-        self.additionalSafeAreaInsets = layoutGuide.keyboardInsets
+        self.additionalSafeAreaInsets = .zero
+        self.additionalSafeAreaInsets = layoutGuide.keyboardInsets - self.view.safeAreaInsets
     }
 
     // MARK: --- Updatable ---
