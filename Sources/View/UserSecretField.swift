@@ -8,13 +8,14 @@ import UIKit
 extension UIAlertController {
     static func authenticate(userFile: Marshal.UserFile, title: String, message: String? = nil, in viewController: UIViewController,
                              track: Tracking? = nil, action: String, retryOnError: Bool = true) -> Promise<User> {
-        self.authenticate( userName: userFile.userName, title: title, message: message, in: viewController,
+        self.authenticate( userName: userFile.userName, identicon: userFile.identicon, title: title, message: message, in: viewController,
                            track: track, action: action, retryOnError: retryOnError ) {
             userFile.authenticate( using: $0 )
         }
     }
 
-    static func authenticate<U>(userName: String? = nil, title: String, message: String? = nil, in viewController: UIViewController,
+    static func authenticate<U>(userName: String? = nil, identicon: SpectreIdenticon = SpectreIdenticonUnset,
+                                title: String, message: String? = nil, in viewController: UIViewController,
                                 track: Tracking? = nil, action: String, retryOnError: Bool = true,
                                 authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>) -> Promise<U> {
         let promise         = Promise<U>()
@@ -27,7 +28,7 @@ extension UIAlertController {
             alertController.addTextField { nameField = $0 }
         }
 
-        let secretField = UserSecretField<U>( userName: userName, nameField: nameField )
+        let secretField = UserSecretField<U>( userName: userName, identicon: identicon, nameField: nameField )
         secretField.authenticater = { factory in
             spinner.show( in: viewController.view, dismissAutomatically: false )
             return try authenticator( factory )
@@ -94,12 +95,15 @@ extension UIAlertController {
 
 class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     var userName:  String?
-    var nameField: UITextField? {
-        willSet {
-            self.nameField?.delegate = nil
-        }
+    var identicon: SpectreIdenticon {
         didSet {
-            if let nameField = self.nameField {
+            self.setNeedsIdenticon()
+        }
+    }
+    var nameField: UITextField? {
+        didSet {
+            if let nameField = self.nameField, nameField != oldValue {
+                oldValue?.delegate = nil
                 nameField.delegate = self
                 nameField.placeholder = "Your full name"
                 nameField.autocapitalizationType = .words
@@ -157,8 +161,9 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(userName: String? = nil, nameField: UITextField? = nil) {
+    init(userName: String? = nil, identicon: SpectreIdenticon = SpectreIdenticonUnset, nameField: UITextField? = nil) {
         self.userName = userName
+        self.identicon = identicon
         super.init( frame: .zero )
 
         self.identiconLabel => \.font => Theme.current.font.password.transform { $0?.withSize( UIFont.labelFontSize ) }
@@ -255,7 +260,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         let userSecret = self.passwordField?.text
 
         DispatchQueue.api.perform {
-            let identicon = spectre_identicon( userName, userSecret )
+            let identicon = userSecret?.nonEmpty.flatMap { spectre_identicon( userName, $0 ) } ?? self.identicon
 
             DispatchQueue.main.perform {
                 self.identiconLabel.attributedText = identicon.attributedText()
