@@ -70,12 +70,12 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
         function.withCString { function in
             format.description.withCString { format in
                 withVaList( args.map { arg in
+                    guard let arg = arg
+                    else { return Int( bitPattern: nil ) }
+
                     if let error = arg as? LocalizedError {
                         return [ error.failureReason, error.errorDescription ].compactMap { $0 }.joined( separator: ": " )
                     }
-
-                    guard let arg = arg
-                    else { return Int( bitPattern: nil ) }
 
                     return arg as? CVarArg ?? String( reflecting: arg )
                 } ) {
@@ -151,7 +151,7 @@ public class LogSink: AppConfigObserver {
     private var records    = [ LogRecord ]()
 
     public func register() {
-        self.queue.sync {
+        self.queue.await {
             guard !registered
             else { return }
 
@@ -195,7 +195,7 @@ public class LogSink: AppConfigObserver {
     }
 
     func enumerate(level: SpectreLogLevel) -> [LogRecord] {
-        self.queue.sync { self.records.filter( { $0.level <= level } ).sorted() }
+        self.queue.await { self.records.filter( { $0.level <= level } ).sorted() }
     }
 
     fileprivate func record(_ event: SpectreLogEvent) -> Bool {
@@ -204,7 +204,7 @@ public class LogSink: AppConfigObserver {
               let message = String.valid( event.formatted )
         else { return false }
 
-        self.queue.sync {
+        self.queue.await {
             self.records.append(
                     LogRecord( occurrence: Date( timeIntervalSince1970: TimeInterval( event.occurrence ) ),
                                level: event.level, file: file, line: event.line, function: function, message: message )

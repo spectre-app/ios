@@ -67,7 +67,7 @@ extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
 }
 
 extension SpectreCounter: Strideable, CustomStringConvertible {
-    public var description:          String {
+    public var description: String {
         "\(self.rawValue)"
     }
 }
@@ -78,23 +78,25 @@ extension SpectreIdenticon: Equatable {
                 lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
 
+    public var isUnset: Bool {
+        self.color == .unset
+    }
+
     public func encoded() -> String? {
-        self.color == .unset ? nil: .valid( spectre_identicon_encode( self ), consume: true )
+        self.isUnset ? nil:
+                .valid( spectre_identicon_encode( self ), consume: true )
     }
 
     public func text() -> String? {
-        if self.color == .unset {
-            return nil
-        }
-
-        return [ String( cString: self.leftArm ),
-                 String( cString: self.body ),
-                 String( cString: self.rightArm ),
-                 String( cString: self.accessory ) ].joined()
+        self.isUnset ? nil:
+                [ String( cString: self.leftArm ),
+                  String( cString: self.body ),
+                  String( cString: self.rightArm ),
+                  String( cString: self.accessory ) ].joined()
     }
 
     public func attributedText() -> NSAttributedString? {
-        if self.color == .unset {
+        if self.isUnset {
             return nil
         }
 
@@ -203,6 +205,16 @@ extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
             default:
                 fatalError( "Unsupported format: \(self.rawValue)" )
         }
+    }
+
+    public func `is`(url: URL) -> Bool {
+        var count      = 0
+        let extensions = UnsafeBufferPointer( start: spectre_format_extensions( self, &count ), count: count );
+        defer {
+            extensions.deallocate()
+        }
+
+        return extensions.map { String.valid( $0 ) }.contains( url.pathExtension )
     }
 }
 

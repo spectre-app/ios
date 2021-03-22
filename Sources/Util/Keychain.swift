@@ -104,7 +104,6 @@ public class Keychain {
         keyFactory.newKey( for: algorithm ).promise( on: .api ) { userKey in
             defer { userKey.deallocate() }
 
-            let query  = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
             let attributes: [CFString: Any] = [
                 kSecValueData: Data( buffer: UnsafeBufferPointer( start: userKey, count: 1 ) ),
                 kSecAttrSynchronizable: false,
@@ -112,6 +111,7 @@ public class Keychain {
                 kSecAttrDescription: "\(productName) user key (\(algorithm))",
             ]
 
+            let query  = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
             var status = SecItemUpdate( query as CFDictionary, attributes as CFDictionary )
             if status == errSecItemNotFound {
                 status = SecItemAdd( query.merging( attributes, uniquingKeysWith: { $1 } ) as CFDictionary, nil )

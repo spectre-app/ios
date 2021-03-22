@@ -34,42 +34,80 @@ class Marshal: Observable, Updatable {
         }
     }
 
-    public func save(user: User, format: SpectreFormat = .default, redacted: Bool = true, in directory: URL? = nil) -> Promise<URL> {
+    public func save(user: User) -> Promise<URL> {
+        let redacted = user.file?.pointee.info?.pointee.redacted ?? true
+        let format = user.file.flatMap { $0.pointee.info?.pointee.format ?? .default } ?? .none
+        guard let userURL = user.origin.flatMap( { format.is( url: $0 ) ? $0: nil } ) ?? self.createURL( for: user, format: format )
+        else {
+            return Promise( .failure( AppError.internal( cause: "No path to marshal user.", details: user ) ) )
+        }
+
+        return self.save( user: user, to: userURL, format: format, redacted: redacted )
+    }
+
+    private func save(user: User, in directory: URL?, format: SpectreFormat, redacted: Bool) -> Promise<URL> {
+        guard let userURL = self.createURL( for: user, in: directory, format: format )
+        else {
+            return Promise( .failure( AppError.internal( cause: "No path to marshal user.", details: user ) ) )
+        }
+
+        return self.save( user: user, to: userURL, format: format, redacted: redacted )
+    }
+
+    private func save(user: User, to userURL: URL, format: SpectreFormat, redacted: Bool) -> Promise<URL> {
         let saveEvent = Tracker.shared.begin( track: .subject( "user", action: "save" ) )
 
         return self.marshalQueue.promising {
-            guard let documentURL = self.url( for: user, in: directory, format: format )
-            else {
-                saveEvent.end( [ "result": "!url" ] )
-                throw AppError.internal( cause: "No path to marshal user.", details: user )
-            }
-
-            guard !documentURL.hasDirectoryPath
+            guard !userURL.hasDirectoryPath
             else {
                 saveEvent.end( [ "result": "!dir" ] )
-                throw AppError.internal( cause: "Cannot save to a directory URL.", details: documentURL )
+                throw AppError.internal( cause: "Cannot save to a directory URL.", details: userURL )
             }
 
             do {
-                let documentDirectory = documentURL.deletingLastPathComponent()
+                let documentDirectory = userURL.deletingLastPathComponent()
                 if documentDirectory.hasDirectoryPath {
                     try FileManager.default.createDirectory( at: documentDirectory, withIntermediateDirectories: true )
                 }
             }
             catch {
                 saveEvent.end( [ "result": "!path" ] )
-                throw AppError.issue( error, title: "Cannot Create Document Path", details: documentURL )
+                throw AppError.issue( error, title: "Cannot Create Document Path", details: userURL )
             }
 
             return self.export( user: user, format: format, redacted: redacted ).thenPromise { result in
                 saveEvent.end( [ "result": result.name, "error": result.error ?? "-" ] )
+                let exportData = try result.get()
 
-                if !FileManager.default.createFile( atPath: documentURL.path, contents: try result.get() ) {
-                    throw AppError.internal( cause: "Couldn't create file.", details: documentURL )
+                // Save export data to user's origin.
+                var coordinateError: NSError?, saveError: Error?
+                NSFileCoordinator().coordinate( writingItemAt: userURL, error: &coordinateError ) { userURL in
+                    let securityScoped = userURL.startAccessingSecurityScopedResource()
+                    if !FileManager.default.createFile( atPath: userURL.path, contents: exportData ) {
+                        saveError = AppError.internal( cause: "Couldn't create file.", details: userURL )
+                    }
+                    if securityScoped {
+                        userURL.stopAccessingSecurityScopedResource()
+                    }
+                }
+                if let error = coordinateError ?? saveError {
+                    throw error
+                }
+
+                // If user sharing is enabled, share the export through the app's public documents as well.
+                if user.sharing {
+                    if let sharingURL = self.createURL( for: user, in: FileManager.appDocuments, format: format ) {
+                        if !FileManager.default.createFile( atPath: sharingURL.path, contents: exportData ) {
+                            wrn( "Issue sharing user: %@. Couldn't create user file: %@.", user, sharingURL )
+                        }
+                    }
+                    else {
+                        wrn( "Issue sharing user: %@. No application document path available.", user )
+                    }
                 }
 
                 self.setNeedsUpdate()
-                return documentURL
+                return userURL
             }
         }
     }
@@ -146,7 +184,7 @@ class Marshal: Observable, Updatable {
 
         return DispatchQueue.api.promising {
             let importingFile = try UserFile( data: data )
-            guard let importingURL = self.url( for: importingFile.userName, format: importingFile.format )
+            guard let importingURL = self.createURL( for: importingFile.userName, format: importingFile.format )
             else {
                 importEvent.end( [ "result": "!url" ] )
                 throw AppError.issue( title: "User Not Savable", details: importingFile )
@@ -183,7 +221,7 @@ class Marshal: Observable, Updatable {
 
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
                                                    content: UIActivityIndicatorView( style: .whiteLarge ) )
-            let secretField     = UserSecretField<User>( userName: existingFile.userName )
+            let secretField     = UserSecretField<User>( userName: existingFile.userName, identicon: existingFile.identicon)
             let alertController = UIAlertController( title: "Merge Users", message:
             """
             \(existingFile.userName) already exists.
@@ -269,7 +307,7 @@ class Marshal: Observable, Updatable {
                                 .promise { _ in existingFile }.finishes( promise )
                         }
                         else if let importedUser = importedUser {
-                            UIAlertController.authenticate( userName: existingFile.userName, title: "Unlock Existing User", message:
+                            UIAlertController.authenticate( userFile: existingFile, title: "Unlock Existing User", message:
                                              """
                                              The existing user is locked with a different personal secret.
 
@@ -277,20 +315,20 @@ class Marshal: Observable, Updatable {
 
                                              Replacing will delete the existing user and replace it with the imported user.
                                              """, in: viewController, track: .subject( "import.to-file.merge", action: "unlockUser" ),
-                                                            action: "Unlock", authenticator: { existingFile.authenticate( using: $0 ) } )
+                                                            action: "Unlock" )
                                              .promising { existingUser in
                                                  self.import( from: importedUser, into: existingUser, viewController: viewController )
                                              }
                                              .promise { _ in existingFile }.finishes( promise )
                         }
                         else if let existedUser = existedUser {
-                            UIAlertController.authenticate( userName: importingFile.userName, title: "Unlock Import", message:
+                            UIAlertController.authenticate( userFile: importingFile, title: "Unlock Import", message:
                                              """
                                              The import user is locked with a different personal secret.
 
                                              The continue merging, also provide the imported user's personal secret.
                                              """, in: viewController, track: .subject( "import.to-file.merge", action: "unlockImport" ),
-                                                            action: "Unlock", authenticator: { importingFile.authenticate( using: $0 ) } )
+                                                            action: "Unlock" )
                                              .promising { importingUser in
                                                  self.import( from: importingUser, into: existedUser, viewController: viewController )
                                              }
@@ -434,7 +472,7 @@ class Marshal: Observable, Updatable {
 
     private func userDocuments() throws -> [URL] {
         var isDirectory: ObjCBool = false
-        guard let documents = FileManager.documents,
+        guard let documents = FileManager.groupDocuments,
               FileManager.default.fileExists( atPath: documents.path, isDirectory: &isDirectory ),
               isDirectory.boolValue
         else { return [] }
@@ -442,13 +480,13 @@ class Marshal: Observable, Updatable {
         return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil, options: .skipsHiddenFiles )
     }
 
-    private func url(for user: User, in directory: URL? = nil, format: SpectreFormat) -> URL? {
-        self.url( for: user.userName, in: directory, format: format )
+    private func createURL(for user: User, in directory: URL? = nil, format: SpectreFormat) -> URL? {
+        self.createURL( for: user.userName, in: directory, format: format )
     }
 
-    private func url(for name: String, in directory: URL? = nil, format: SpectreFormat) -> URL? {
+    private func createURL(for name: String, in directory: URL? = nil, format: SpectreFormat) -> URL? {
         guard let formatExtension = String.valid( spectre_format_extension( format ) ),
-              let directory = directory ?? FileManager.documents
+              let directory = directory ?? FileManager.groupDocuments
         else { return nil }
 
         return directory.appendingPathComponent( name.replacingOccurrences( of: "/", with: "_" ), isDirectory: false )
@@ -514,8 +552,8 @@ class Marshal: Observable, Updatable {
         func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
             do {
                 // FIXME: possible deadlock if await needs main thread?
-                let exportFile = try Marshal.shared.save( user: self.user, format: self.format, redacted: self.redacted,
-                                                          in: URL( fileURLWithPath: NSTemporaryDirectory() ) ).await()
+                let exportFile = try Marshal.shared.save( user: self.user, in: URL( fileURLWithPath: NSTemporaryDirectory() ),
+                                                          format: self.format, redacted: self.redacted ).await()
                 self.cleanup.append( exportFile )
                 return exportFile
             }
@@ -572,16 +610,23 @@ class Marshal: Observable, Updatable {
         public var isMasterPasswordCustomer = false
 
         static func load(origin: URL) throws -> UnsafeMutablePointer<SpectreMarshalledFile>? {
-            guard FileManager.default.fileExists( atPath: origin.path ),
-                  let data = FileManager.default.contents( atPath: origin.path )
+            var error:      NSError?
+            var originData: Data?
+            NSFileCoordinator().coordinate( readingItemAt: origin, error: &error ) { origin in
+                let securityScoped = origin.startAccessingSecurityScopedResource()
+                originData = FileManager.default.contents( atPath: origin.path )
+                if securityScoped {
+                    origin.stopAccessingSecurityScopedResource()
+                }
+            }
+            guard let documentData = originData
             else { return nil }
 
-            guard let document = String( data: data, encoding: .utf8 )
+            guard let document = String( data: documentData, encoding: .utf8 )
             else { throw AppError.issue( title: "Cannot Read User Document", details: origin ) }
 
             guard let file = spectre_marshal_read( nil, document )
             else { throw AppError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
-
             return file
         }
 

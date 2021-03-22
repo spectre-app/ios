@@ -52,7 +52,7 @@ class BackgroundView: UIView, ThemeObserver {
         }
     }
 
-    let imageView = ImageView()
+    let imageView = UIImageView()
     let imageTint = UIView()
     override var backgroundColor: UIColor? {
         didSet {
@@ -90,7 +90,6 @@ class BackgroundView: UIView, ThemeObserver {
 
         // - View
         self.imageView.contentMode = .scaleAspectFill
-        self.imageView.preservesImageRatio = true
         self.imageView.layer.compositingFilter = "luminosityBlendMode"
         self.imageView.layer.mask = self.imageMask
         self.imageMask.needsDisplayOnBoundsChange = true
@@ -113,8 +112,7 @@ class BackgroundView: UIView, ThemeObserver {
         LayoutConfiguration( view: self.imageTint )
                 .constrain( as: .topBox )
                 .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                .constrain { $1.heightAnchor.constraint( equalToConstant: 200 ).with( priority: .defaultHigh ) }
-                .compressionResistance( horizontal: .fittingSizeLevel, vertical: .fittingSizeLevel )
+                .constrain { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: .long ).with( priority: .defaultHigh + 1 ) }
                 .activate()
 
         defer {

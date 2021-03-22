@@ -6,9 +6,18 @@
 import UIKit
 
 extension UIAlertController {
-    static func authenticate<U>(userName: String? = nil, title: String, message: String, in viewController: UIViewController,
-                                track: Tracking? = nil, action: String, authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>,
-                                failOnError: Bool = false) -> Promise<U> {
+    static func authenticate(userFile: Marshal.UserFile, title: String, message: String? = nil, in viewController: UIViewController,
+                             track: Tracking? = nil, action: String, retryOnError: Bool = true) -> Promise<User> {
+        self.authenticate( userName: userFile.userName, identicon: userFile.identicon, title: title, message: message, in: viewController,
+                           track: track, action: action, retryOnError: retryOnError ) {
+            userFile.authenticate( using: $0 )
+        }
+    }
+
+    static func authenticate<U>(userName: String? = nil, identicon: SpectreIdenticon = SpectreIdenticonUnset,
+                                title: String, message: String? = nil, in viewController: UIViewController,
+                                track: Tracking? = nil, action: String, retryOnError: Bool = true,
+                                authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>) -> Promise<U> {
         let promise         = Promise<U>()
         let spinner         = AlertController( title: "Unlocking", message: userName, content: UIActivityIndicatorView( style: .whiteLarge ) )
         let alertController = UIAlertController( title: title, message: message, preferredStyle: .alert )
@@ -19,7 +28,7 @@ extension UIAlertController {
             alertController.addTextField { nameField = $0 }
         }
 
-        let secretField = UserSecretField<U>( userName: userName, nameField: nameField )
+        let secretField = UserSecretField<U>( userName: userName, identicon: identicon, nameField: nameField )
         secretField.authenticater = { factory in
             spinner.show( in: viewController.view, dismissAutomatically: false )
             return try authenticator( factory )
@@ -27,7 +36,7 @@ extension UIAlertController {
         secretField.authenticated = { result in
             spinner.dismiss()
             alertController.dismiss( animated: true ) {
-                if failOnError {
+                if !retryOnError {
                     promise.finish( result )
                     return
                 }
@@ -86,12 +95,15 @@ extension UIAlertController {
 
 class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     var userName:  String?
-    var nameField: UITextField? {
-        willSet {
-            self.nameField?.delegate = nil
-        }
+    var identicon: SpectreIdenticon {
         didSet {
-            if let nameField = self.nameField {
+            self.setNeedsIdenticon()
+        }
+    }
+    var nameField: UITextField? {
+        didSet {
+            if let nameField = self.nameField, nameField != oldValue {
+                oldValue?.delegate = nil
                 nameField.delegate = self
                 nameField.placeholder = "Your full name"
                 nameField.autocapitalizationType = .words
@@ -116,9 +128,8 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 passwordField.isSecureTextEntry = true
                 passwordField.placeholder = "Your personal secret"
                 passwordField.returnKeyType = .continue
-                passwordField.inputAccessoryView = self.identiconAccessory
-                passwordField.rightView = self.activityIndicator
-                passwordField.leftView = UIView( frame: self.activityIndicator.frame )
+                passwordField.leftView = self.leftItemView
+                passwordField.rightView = self.rightItemView
                 passwordField.leftViewMode = .always
                 passwordField.rightViewMode = .always
                 passwordField.textAlignment = .center
@@ -137,9 +148,12 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     var authenticater: ((SecretKeyFactory) throws -> Promise<U>)?
     var authenticated: ((Result<U, Error>) -> Void)?
 
-    private let activityIndicator  = UIActivityIndicatorView( style: .gray )
-    private let identiconAccessory = UIInputView( frame: .zero, inputViewStyle: .default )
-    private let identiconLabel     = UILabel()
+    private let activityIndicator = UIActivityIndicatorView( style: .gray )
+    private lazy var identiconLabel    = UILabel()
+    private lazy var leftItemView      = UIView()
+    private lazy var rightItemView     = UIView()
+    private lazy var leftMinimumWidth  = self.leftItemView.widthAnchor.constraint( equalToConstant: 0 ).with( priority: .defaultLow )
+    private lazy var rightMinimumWidth = self.rightItemView.widthAnchor.constraint( equalToConstant: 0 ).with( priority: .defaultLow )
 
     // MARK: --- Life ---
 
@@ -147,27 +161,26 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(userName: String? = nil, nameField: UITextField? = nil) {
+    init(userName: String? = nil, identicon: SpectreIdenticon = SpectreIdenticonUnset, nameField: UITextField? = nil) {
         self.userName = userName
+        self.identicon = identicon
         super.init( frame: .zero )
-
-        self.activityIndicator.frame = self.activityIndicator.frame.insetBy( dx: -8, dy: 0 )
 
         self.identiconLabel => \.font => Theme.current.font.password.transform { $0?.withSize( UIFont.labelFontSize ) }
         self.identiconLabel => \.textColor => Theme.current.color.body
         self.identiconLabel => \.shadowColor => Theme.current.color.shadow
         self.identiconLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
-        self.identiconAccessory.allowsSelfSizing = true
-        self.identiconAccessory.translatesAutoresizingMaskIntoConstraints = false
-        self.identiconAccessory.addSubview( self.identiconLabel )
+        self.leftItemView.addSubview( self.activityIndicator )
+        self.rightItemView.addSubview( self.identiconLabel )
+        self.leftMinimumWidth.isActive = true
+        self.rightMinimumWidth.isActive = true
 
+        LayoutConfiguration( view: self.activityIndicator )
+                .constrain( as: .center, margin: true )
+                .activate()
         LayoutConfiguration( view: self.identiconLabel )
-                .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor, constant: 4 ) }
-                .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.leadingAnchor, constant: 4 ) }
-                .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.trailingAnchor, constant: -4 ) }
-                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -4 ) }
+                .constrain( as: .center, margin: true )
                 .activate()
 
         defer {
@@ -247,10 +260,16 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         let userSecret = self.passwordField?.text
 
         DispatchQueue.api.perform {
-            let identicon = spectre_identicon( userName, userSecret )
+            let identicon = userSecret?.nonEmpty.flatMap { spectre_identicon( userName, $0 ) } ?? self.identicon
 
             DispatchQueue.main.perform {
                 self.identiconLabel.attributedText = identicon.attributedText()
+                self.leftMinimumWidth.constant = 0
+                self.rightMinimumWidth.constant = 0
+                let rightWidth = self.rightItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize ).width,
+                    leftWidth  = self.leftItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize ).width
+                self.leftMinimumWidth.constant = rightWidth
+                self.rightMinimumWidth.constant = leftWidth
             }
         }
     }

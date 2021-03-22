@@ -104,6 +104,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
         guard let viewController = app.keyWindow?.rootViewController
         else { return false }
+        let navigationController = viewController as? UINavigationController ?? viewController.navigationController
 
         if let components = URLComponents( url: url, resolvingAgainstBaseURL: false ),
            components.scheme == "spectre" {
@@ -162,7 +163,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
 
                 let id = (components.queryItems?.first( where: { $0.name == "id" } )?.value as NSString?)?.integerValue
-                AppStore.shared.present( appleID: id, in: viewController )
+                AppStore.shared.presentStore( appleID: id, in: viewController )
                 return true
             }
 
@@ -186,7 +187,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         }
                         else {
                             inf( "%@ is outdated: build[%@] < store[%@]", productName, result.buildVersion, result.storeVersion )
-                            AppStore.shared.present( in: viewController )
+                            AppStore.shared.presentStore( in: viewController )
                         }
                     }
                     catch {
@@ -203,18 +204,92 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let utis = utisValue as? Array<String?> {
             for format in SpectreFormat.allCases
                 where utis.contains( format.uti ) {
-                URLSession.required.dataTask( with: url, completionHandler: { (data, response, error) in
-                    if let data = data, error == nil {
-                        Marshal.shared.import( data: data, viewController: viewController ).then {
-                            if case .failure(let error) = $0 {
-                                mperror( title: "Couldn't import user", error: error )
+                var error: NSError?
+                NSFileCoordinator().coordinate( readingItemAt: url, error: &error ) { url in
+                    // Not In-Place: import the user from the file.
+                    if !((options[.openInPlace] as? Bool) ?? false) {
+                        guard let importData = FileManager.default.contents( atPath: url.path )
+                        else {
+                            mperror( title: "Couldn't read import", details: url )
+                            return
+                        }
+                        Marshal.shared.import( data: importData, viewController: viewController ).failure { error in
+                            mperror( title: "Couldn't import user", error: error )
+                        }
+                        return
+                    }
+
+                    // In-Place: allow choice between editing in-place or importing.
+                    let securityScoped = url.startAccessingSecurityScopedResource()
+                    guard let importData = FileManager.default.contents( atPath: url.path )
+                    else {
+                        mperror( title: "Couldn't read import", details: url )
+                        return
+                    }
+                    guard InAppFeature.premium.isEnabled
+                    else {
+                        inf( "In-place editing is not available at this time." )
+                        Marshal.shared.import( data: importData, viewController: viewController )
+                                      .failure { error in
+                                          mperror( title: "Couldn't import user", error: error )
+                                      }
+                                      .finally {
+                                          if securityScoped {
+                                              url.stopAccessingSecurityScopedResource()
+                                          }
+                                      }
+                        return
+                    }
+
+                    do {
+                        let importFile = try Marshal.UserFile( data: importData, origin: url )
+                        let controller = UIAlertController( title: importFile.userName, message:
+                        """
+                        Import this user into Spectre or sign-in from its current location?
+                        """, preferredStyle: .alert )
+                        controller.addAction( UIAlertAction( title: "Import", style: .default ) { _ in
+                            Marshal.shared.import( data: importData, viewController: viewController )
+                                          .failure { error in
+                                              mperror( title: "Couldn't import user", error: error )
+                                          }
+                                          .finally {
+                                              if securityScoped {
+                                                  url.stopAccessingSecurityScopedResource()
+                                              }
+                                          }
+                        } )
+                        controller.addAction( UIAlertAction( title: "Sign In (In-Place)", style: .default ) { _ in
+                            UIAlertController.authenticate( userFile: importFile, title: importFile.userName, in: viewController, action: "Log In" )
+                                             .success {
+                                                 navigationController?.pushViewController(
+                                                         MainSitesViewController( user: $0 ), animated: true )
+                                             }
+                                             .failure { error in
+                                                 mperror( title: "Couldn't unlock user", error: error )
+                                             }
+                                             .finally {
+                                                 if securityScoped {
+                                                     url.stopAccessingSecurityScopedResource()
+                                                 }
+                                             }
+                        } )
+                        controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                            if securityScoped {
+                                url.stopAccessingSecurityScopedResource()
                             }
+                        } )
+                        viewController.present( controller, animated: true )
+                    }
+                    catch {
+                        mperror( title: "Couldn't open import", error: error )
+                        if securityScoped {
+                            url.stopAccessingSecurityScopedResource()
                         }
                     }
-                    else {
-                        mperror( title: "Couldn't open document", details: url, error: error )
-                    }
-                } ).resume()
+                }
+                if let error = error {
+                    mperror( title: "Couldn't access import", error: error )
+                }
                 return true
             }
 

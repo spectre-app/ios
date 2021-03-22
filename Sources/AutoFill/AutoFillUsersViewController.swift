@@ -121,9 +121,9 @@ class AutoFillUsersViewController: BaseUsersViewController {
         super.viewDidAppear( animated )
 
         if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
-            self.usersCarousel.requestSelection( at: self.fileSource.indexPath( where: { $0?.userName == userName } ) )
+            self.usersCarousel.requestSelection( at: self.usersSource.indexPath( where: { $0?.userName == userName } ) )
         }
-        else if self.fileSource.count() == 1, let only = self.fileSource.elements().first( where: { _ in true } )?.indexPath {
+        else if self.usersSource.count() == 1, let only = self.usersSource.elements().first( where: { _ in true } )?.indexPath {
             self.usersCarousel.requestSelection( at: only )
         }
     }
@@ -131,10 +131,10 @@ class AutoFillUsersViewController: BaseUsersViewController {
     // MARK: --- MarshalObserver ---
 
     override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.fileSource.update( [ userFiles.filter( { $0.autofill } ).sorted() ] )
+        self.usersSource.update( [ userFiles.filter( { $0.autofill } ).sorted() ] )
 
         DispatchQueue.main.perform {
-            self.emptyView.isHidden = !self.fileSource.isEmpty
+            self.emptyView.isHidden = !self.usersSource.isEmpty
         }
     }
 

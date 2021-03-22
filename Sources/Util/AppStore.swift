@@ -190,7 +190,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         }
     }
 
-    func present(appleID: Int? = nil, in viewController: UIViewController) {
+    func presentStore(appleID: Int? = nil, in viewController: UIViewController) {
         let controller = SKStoreProductViewController()
         controller.delegate = self
         controller.loadProduct( withParameters: [ SKStoreProductParameterITunesItemIdentifier: appleID ?? productAppleID ] ) { success, error in

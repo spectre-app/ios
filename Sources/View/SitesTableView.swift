@@ -81,6 +81,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         else { return }
 
         var elementsBySection = [ [ SiteItem ] ]()
+        let wasSelectedItem = self.sitesDataSource.selectedItem
+        self.sitesDataSource.selectedItem = nil
 
         if let user = self.user, user.userKeyFactory != nil {
             // Filter sites by query and order by preference.
@@ -89,34 +91,30 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             // Add "new site" result if there is a query and no exact result
             if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
-                elementsBySection.append( [ using( self.sitesDataSource.newItem ) {
-                    $0?.site.siteName = query
-                    $0?.query = query
-                } ??
-                        using( SiteItem( site: Site( user: user, siteName: query ), query: query ) ) {
-                            self.sitesDataSource.newItem = $0
-                        } ] )
+                let newItem = SiteItem( site: Site( user: user, siteName: query ), query: query )
+                elementsBySection.append( [ newItem ] )
+
+                if wasSelectedItem?.site.isNew ?? false {
+                    self.sitesDataSource.selectedItem = newItem
+                }
             }
             // Add "new site" result if there is a preferred site and no preferred results
             else if let preferredSite = self.preferredSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
-                elementsBySection.insert( [ self.sitesDataSource.preferredItem ??
-                        using( SiteItem( site: Site( user: user, siteName: preferredSite ), preferred: true ) ) {
-                            self.sitesDataSource.preferredItem = $0
-                        } ], at: 0 )
+                let preferredItem = SiteItem( site: Site( user: user, siteName: preferredSite ), preferred: true )
+                elementsBySection.append( [ preferredItem ] )
+
+                if wasSelectedItem?.id == preferredItem.id {
+                    self.sitesDataSource.selectedItem = preferredItem
+                }
             }
+            // No "new site" results.
             else {
                 elementsBySection.append( [] )
-                self.sitesDataSource.newItem = nil
             }
 
-            // Special case for selected site: keep selection on the site result that matches the query
-            if let selectedItem = self.sitesDataSource.selectedItem {
-                if let newItem = self.sitesDataSource.newItem, selectedItem == newItem {
-                    self.sitesDataSource.selectedItem = newItem
-                }
-                else {
-                    self.sitesDataSource.selectedItem = results.first { $0.id == selectedItem.id }
-                }
+            // If no selection override, restore originally selected item if it's still in the results.
+            if self.sitesDataSource.selectedItem == nil {
+                self.sitesDataSource.selectedItem = results.first { $0.id == wasSelectedItem?.id }
             }
         }
 
@@ -305,8 +303,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     class SitesSource: DataSource<SiteItem> {
         unowned let view: SitesTableView
-        var newItem:       SiteItem?
-        var preferredItem: SiteItem?
         var selectedItem:  SiteItem?
 
         init(view: SitesTableView) {

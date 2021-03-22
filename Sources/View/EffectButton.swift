@@ -73,8 +73,8 @@ class EffectButton: EffectView {
 
         // - View
         self.layoutMargins = .zero
-        self.button.titleLabel?.numberOfLines = 0
         self.button.titleLabel?.textAlignment = .center
+        self.button.titleLabel?.allowsDefaultTighteningForTruncation = true
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.track()
 

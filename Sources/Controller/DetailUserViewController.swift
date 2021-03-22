@@ -196,6 +196,17 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     Useful to deter screen snooping.
                     """
                 } ),
+                ToggleItem( track: .subject( "user", action: "biometricLock" ), title: "Biometric Lock 🅿︎",
+                            icon: { _ in .icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon ) },
+                            value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 }, caption: { _ in
+                    """
+                    Sign in using biometrics (eg. TouchID, FaceID).
+                    Saves your user key in the device's key chain.
+                    """
+                } )
+                        // TODO: Enable toggle if premium is off but biometric key is set to allow clearing it?
+                        .addBehaviour( PremiumTapBehaviour() )
+                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
             ] )
         }
     }
@@ -216,17 +227,12 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
-                ToggleItem( track: .subject( "user", action: "biometricLock" ), title: "Biometric Lock 🅿︎",
-                            icon: { _ in .icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon ) },
-                            value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 }, caption: { _ in
+                ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "Sharing", icon: { _ in .icon( "" ) },
+                                  value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """
-                    Sign in using biometrics (eg. TouchID, FaceID).
-                    Saves your user key in the device's key chain.
+                    Expose for backups through Apple file sharing.
                     """
                 } )
-                        // TODO: Enable toggle if premium is off but biometric key is set to allow clearing it?
-                        .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
             ] )
         }
     }
@@ -296,7 +302,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: upgrade ).or(
                                     UIAlertController.authenticate(
-                                            title: "Upgrade", message: "Your personal secret is required to perform the upgrade.",
+                                            userName: user.userName, title: "Upgrade", message: "Your personal secret is required to perform the upgrade.",
                                             in: viewController, action: "Authenticate", authenticator: { $0.newKey( for: upgrade ) } ) )
                             .success { upgradedKey in
                                 defer { upgradedKey.deallocate() }
@@ -310,7 +316,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     controller.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: downgrade ).or(
                                     UIAlertController.authenticate(
-                                            title: "Downgrade", message: "Your personal secret is required to perform the downgrade.",
+                                            userName: user.userName, title: "Downgrade", message: "Your personal secret is required to perform the downgrade.",
                                             in: viewController, action: "Authenticate", authenticator: { $0.newKey( for: downgrade ) } ) )
                             .success { downgradedKey in
                                 defer { downgradedKey.deallocate() }

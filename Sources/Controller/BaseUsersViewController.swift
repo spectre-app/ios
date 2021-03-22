@@ -16,35 +16,12 @@ extension Optional: Identifiable where Wrapped == Marshal.UserFile {
 }
 
 class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, MarshalObserver {
-    internal var selectedFile: Marshal.UserFile? {
-        didSet {
-            if oldValue != self.selectedFile {
-                trc( "Selected user: %@", self.selectedFile )
-
-                UIView.animate( withDuration: .short ) {
-                    self.userEvent?.end( [ "result": "deselected" ] )
-
-                    if let selectedItem = self.usersCarousel.selectedItem {
-                        Feedback.shared.play( .activate )
-
-                        Tracker.shared.event( track: .subject( "users", action: "user", [
-                            "value": selectedItem,
-                            "items": self.usersCarousel.numberOfItems( inSection: 0 ),
-                        ] ) )
-                        self.userEvent = Tracker.shared.begin( track: .subject( "users", action: "user" ) )
-                    }
-                    else {
-                        self.userEvent = nil
-                    }
-                }
-            }
-        }
-    }
-    internal lazy var fileSource = UsersSource( viewController: self )
+    internal lazy var usersSource = UsersSource( viewController: self )
     private var userEvent: Tracker.TimedEvent?
 
     internal let usersCarousel = CarouselView()
     internal let detailsHost   = DetailHostController()
+    internal var userActions   = [ UserAction ]()
 
     // MARK: --- Life ---
 
@@ -60,7 +37,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         self.usersCarousel.register( UserCell.self )
         self.usersCarousel.delegate = self
-        self.usersCarousel.dataSource = self.fileSource
+        self.usersCarousel.dataSource = self.usersSource
         self.usersCarousel.backgroundColor = .clear
         self.usersCarousel.indicatorStyle = .white
 
@@ -111,21 +88,31 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        self.selectedFile = self.fileSource.element( item: self.usersCarousel.selectedItem ) ?? nil
+        Feedback.shared.play( .activate )
+        Tracker.shared.event( track: .subject( "users", action: "user", [
+            "value": indexPath.item,
+            "items": self.usersCarousel.numberOfItems( inSection: indexPath.section ),
+        ] ) )
+
+        self.userEvent?.end( [ "result": "deselected" ] )
+        self.userEvent = Tracker.shared.begin( track: .subject( "users", action: "user" ) )
+
         (self.usersCarousel.cellForItem( at: indexPath ) as? UserCell)?.userEvent = self.userEvent
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = true }
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        self.userEvent?.end( [ "result": "deselected" ] )
+        self.userEvent = nil
+
         (self.usersCarousel.cellForItem( at: indexPath ) as? UserCell)?.userEvent = nil
-        self.selectedFile = self.fileSource.element( item: self.usersCarousel.selectedItem ) ?? nil
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = false }
     }
 
     // MARK: --- MarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.fileSource.update( [ userFiles.sorted() ] )
+        self.usersSource.update( [ userFiles.sorted() ] )
     }
 
     // MARK: --- Types ---
@@ -141,9 +128,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             using( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) { cell in
                 UIView.performWithoutAnimation {
-                    cell.viewController = self.viewController
-                    cell.userFile = self.element( at: indexPath ) ?? nil
-                    cell.updateTask.request( immediate: true )
+                    cell.state = (userFile: self.element( at: indexPath ) ?? nil,
+                                  userActions: self.viewController.userActions,
+                                  viewController: self.viewController)
                 }
             }
         }
@@ -188,16 +175,40 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
         internal weak var userEvent: Tracker.TimedEvent?
-        internal var userFile: Marshal.UserFile? {
+        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], viewController: BaseUsersViewController)! {
+            didSet {
+                self.userFile = self.state.userFile
+                self.userActions = self.state.userActions
+                self.viewController = self.state.viewController
+                self.updateTask.request( immediate: true )
+            }
+        }
+
+        private var userFile: Marshal.UserFile? {
             didSet {
                 if self.userFile != oldValue {
                     self.secretField.userName = self.userFile?.userName
+                    self.secretField.identicon = self.userFile?.identicon ?? SpectreIdenticonUnset
                     self.avatar = self.userFile?.avatar
-                    self.updateTask.request()
                 }
             }
         }
-        internal weak var viewController: BaseUsersViewController?
+        private var userActions = [ UserAction ]() {
+            didSet {
+                self.actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+                self.userActions.forEach { action in
+                    self.actionsStack.addArrangedSubview(
+                            EffectButton( track: action.tracking, image: .icon( action.icon ), border: 0, background: false ) {
+                                [unowned self] _, _ in
+                                if let userFile = self.userFile {
+                                    action.action( userFile )
+                                }
+                            } )
+                    self.actionsStack.addArrangedSubview( self.biometricButton )
+                }
+            }
+        }
+        private weak var viewController: BaseUsersViewController?
 
         private var avatar: User.Avatar? {
             didSet {
@@ -213,9 +224,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private lazy var avatarButton = EffectButton( track: .subject( "users.user", action: "avatar" ),
                                                       border: 0, background: false, circular: false ) { _, _ in self.avatar?.next() }
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
-                                                        image: .icon( "" ), border: 0, background: false, square: true )
+                                                        image: .icon( "" ), border: 0, background: false )
         private var secretEvent:                 Tracker.TimedEvent?
         private let secretField   = UserSecretField<User>()
+        private let actionsStack  = UIStackView()
         private let idBadgeView   = UIImageView( image: .icon( "" ) )
         private let authBadgeView = UIImageView( image: .icon( "" ) )
         private var authenticationConfiguration: LayoutConfiguration<UserCell>!
@@ -260,8 +272,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.borderStyle = .roundedRect
             self.secretField => \.font => Theme.current.font.callout
             self.secretField.placeholder = "Your personal secret"
-            self.secretField.rightView = self.biometricButton
-            self.secretField.rightViewMode = .always
             self.secretField.authenticater = { keyFactory in
                 self.secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
 
@@ -314,6 +324,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.contentView.addSubview( self.nameLabel )
             self.contentView.addSubview( self.nameField )
             self.contentView.addSubview( self.secretField )
+            self.contentView.addSubview( self.actionsStack )
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
@@ -343,6 +354,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             LayoutConfiguration( view: self.secretField )
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .activate()
+            LayoutConfiguration( view: self.actionsStack )
+                    .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
 
@@ -357,11 +372,11 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .apply( LayoutConfiguration( view: self.secretField ) { active, inactive in
                         active.set( .on, keyPath: \.alpha )
                         active.set( true, keyPath: \.isEnabled )
-                        active.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 32 ) }
+                        active.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 28 ) }
                         inactive.set( .off, keyPath: \.alpha )
                         inactive.set( false, keyPath: \.isEnabled )
                         inactive.set( nil, keyPath: \.text )
-                        inactive.constrain { $1.topAnchor.constraint( equalTo: self.nameLabel.bottomAnchor, constant: 8 ) }
+                        inactive.constrain { $1.topAnchor.constraint( equalTo: self.nameLabel.bottomAnchor ) }
                     } )
                     .apply( LayoutConfiguration( view: self.idBadgeView ) { active, inactive in
                         active.constrain { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
@@ -443,15 +458,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         // MARK: --- Private ---
 
-        private func attemptBiometrics() {
-            guard InAppFeature.premium.isEnabled, let userFile = self.userFile, userFile.biometricLock
-            else { return }
-
+        @discardableResult
+        private func attemptBiometrics() -> Promise<User> {
+            guard InAppFeature.premium.isEnabled
+            else { return Promise( .failure( AppError.state( title: "Biometrics not available." ) ) ) }
+            guard let userFile = self.userFile, userFile.biometricLock
+            else { return Promise( .failure( AppError.state( title: "Biometrics not enabled.", details: self.userFile ) ) ) }
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.hasKey( for: userFile.algorithm )
-            else { return }
+            else { return Promise( .failure( AppError.state( title: "Biometrics key not present." ) ) ) }
 
-            keychainKeyFactory.unlock().promising {
+            return keychainKeyFactory.unlock().promising {
                 userFile.authenticate( using: $0 )
             }.then( on: .main ) { [unowned self] result in
                 do {
@@ -498,11 +515,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.nameField = !self.nameField.isHidden ? self.nameField: nil
             self.avatarButton.isUserInteractionEnabled = self.isSelected
             self.avatarButton.image = self.avatar?.image ?? .icon( "", withSize: 96, invert: true )
-
+            self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
             self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||
                     !(self.userFile?.keychainKeyFactory.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
             self.biometricButton.image = .icon( KeychainKeyFactory.factor.icon )
-            self.biometricButton.sizeToFit()
 
             if self.isSelected {
                 if !self.nameField.isHidden {
@@ -517,5 +533,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 self.nameField.resignFirstResponder()
             }
         }
+    }
+
+    struct UserAction {
+        let tracking: Tracking?
+        let title:    String
+        let icon:     String
+        let action:   (Marshal.UserFile) -> Void
     }
 }

@@ -11,7 +11,7 @@ import LocalAuthentication
 import SafariServices
 
 class MainUsersViewController: BaseUsersViewController {
-    private let tipsView = TipsView( tips: [
+    private let tipsView   = TipsView( tips: [
         // App
         "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
         "Spectre is 100% open source \(.icon( "" )) and Free Software.",
@@ -36,11 +36,12 @@ class MainUsersViewController: BaseUsersViewController {
         "Defense Strategy shows password time-to-crack \(.icon( "" )) if attacked.",
         "Use Security Answers \(.icon( "" )) to avoid divulging private information.",
         "Sites are automatically styled \(.icon( "" )) from their home page.",
-    ], first: 0, random: false)
-
-    private let appToolbar  = UIStackView()
-    private let userToolbar = UIToolbar( frame: .infinite )
-    private var userToolbarConfiguration: LayoutConfiguration<UIToolbar>!
+    ], first: 0, random: false )
+    private let appToolbar = UIStackView()
+    private lazy var appUpdate = EffectButton( track: .subject( "users", action: "update" ),
+                                               title: "Update Available", background: false ) { _, _ in
+        AppStore.shared.presentStore( in: self )
+    }
 
     // MARK: --- Life ---
 
@@ -48,6 +49,7 @@ class MainUsersViewController: BaseUsersViewController {
         super.viewDidLoad()
 
         // - View
+        self.appUpdate.isHidden = true
         self.appToolbar.axis = .horizontal
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ),
                                                           image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
@@ -92,38 +94,49 @@ class MainUsersViewController: BaseUsersViewController {
             return self.present( controller, animated: true )
         } )
 
-        self.userToolbar.items = [
-            UIBarButtonItem( title: "🗑 Delete", style: .plain, target: self, action: #selector( didTrashUser ) ),
-            UIBarButtonItem( title: "🔑 Reset", style: .plain, target: self, action: #selector( didResetUser ) )
+        self.userActions = [
+            .init( tracking: .subject( "users.user", action: "delete" ),
+                   title: "Delete", icon: "" ) { [unowned self] userFile in
+                self.doDelete( userFile: userFile )
+            },
+            .init( tracking: .subject( "users.user", action: "reset" ),
+                   title: "Reset", icon: "" ) { [unowned self] userFile in
+                self.doReset( userFile: userFile )
+            },
         ]
 
         // - Hierarchy
         self.view.insertSubview( self.tipsView, belowSubview: self.detailsHost.view )
+        self.view.insertSubview( self.appUpdate, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.appToolbar, belowSubview: self.detailsHost.view )
-        self.view.insertSubview( self.userToolbar, belowSubview: self.detailsHost.view )
 
         // - Layout
         LayoutConfiguration( view: self.tipsView )
                 .constrain( as: .topCenter, to: self.view.safeAreaLayoutGuide ).activate()
         LayoutConfiguration( view: self.appToolbar )
                 .constrain( as: .bottomCenter, margin: true ).activate()
-        LayoutConfiguration( view: self.userToolbar )
-                .constrain( as: .horizontal ).activate()
-
-        self.userToolbarConfiguration = LayoutConfiguration( view: self.userToolbar ) { active, inactive in
-            active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
-            active.set( .on, keyPath: \.alpha )
-            inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ).with( priority: .defaultHigh ) }
-            inactive.set( .off, keyPath: \.alpha )
-        }
+        LayoutConfiguration( view: self.appUpdate )
+                .constrain { $1.bottomAnchor.constraint( equalTo: self.appToolbar.topAnchor ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: self.appToolbar.centerXAnchor ) }
+                .activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        self.keyboardLayoutGuide.add( constraints: { keyboardLayoutGuide in
-            [ self.userToolbar.bottomAnchor.constraint( equalTo: keyboardLayoutGuide.topAnchor ).with( priority: .defaultHigh + 1 ) ]
-        } )
+        AppStore.shared.isUpToDate().then( on: .main ) {
+            do {
+                let result = try $0.get()
+                if !result.upToDate {
+                    inf( "Update available: %@", result )
+                }
+
+                self.appUpdate.isHidden = result.upToDate
+            }
+            catch {
+                wrn( "Application update check failed: %@", error )
+            }
+        }
     }
 
     // MARK: --- Interface ---
@@ -136,67 +149,53 @@ class MainUsersViewController: BaseUsersViewController {
 
     // MARK: --- Private ---
 
-    @objc
-    private func didTrashUser() {
-        if let userFile = self.selectedFile {
-            let alert = UIAlertController( title: "Delete User?", message:
-            """
-            This will delete the user and all of its recorded state:
-            \(userFile)
+    private func doDelete(userFile: Marshal.UserFile) {
+        let alert = UIAlertController( title: "Delete User?", message:
+        """
+        This will delete the user and all of its recorded state:
+        \(userFile)
 
-            Note: You can re-create the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
-            When re-creating the user, make sure to use the exact same name and personal secret.
-            The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
-            """, preferredStyle: .alert )
-            alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak userFile] _ in
-                guard let userFile = userFile
-                else { return }
-                trc( "Trashing user: %@", userFile )
+        Note: You can re-create the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
+        When re-creating the user, make sure to use the exact same name and personal secret.
+        The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
+        """, preferredStyle: .alert )
+        alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+        alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak userFile] _ in
+            guard let userFile = userFile
+            else { return }
+            trc( "Trashing user: %@", userFile )
 
-                do {
-                    try Marshal.shared.delete( userFile: userFile )
-                }
-                catch {
-                    mperror( title: "Couldn't delete user", error: error )
-                }
-            } )
-            self.present( alert, animated: true )
-        }
+            do {
+                try Marshal.shared.delete( userFile: userFile )
+            }
+            catch {
+                mperror( title: "Couldn't delete user", error: error )
+            }
+        } )
+        self.present( alert, animated: true )
     }
 
-    @objc
-    private func didResetUser() {
-        if let userFile = self.selectedFile {
-            let alert = UIAlertController( title: "Reset Personal Secret?", message:
-            """
-            This will allow you to change the personal secret for:
-            \(userFile)
+    private func doReset(userFile: Marshal.UserFile) {
+        let alert = UIAlertController( title: "Reset Personal Secret?", message:
+        """
+        This will allow you to change the personal secret for:
+        \(userFile)
 
-            Note: When your personal secret changes, all site passwords and other generated content will also change accordingly.
-            The personal secret can always be changed back to revert to your current site passwords and generated content.
-            """, preferredStyle: .alert )
-            alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-            alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in
-                trc( "Resetting user: %@", userFile )
+        Note: When your personal secret changes, all site passwords and other generated content will also change accordingly.
+        The personal secret can always be changed back to revert to your current site passwords and generated content.
+        """, preferredStyle: .alert )
+        alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+        alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in
+            trc( "Resetting user: %@", userFile )
 
-                userFile?.resetKey = true
-            } )
-            self.present( alert, animated: true )
-        }
-    }
-
-    // MARK: --- KeyboardLayoutObserver ---
-
-    override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
-        super.keyboardDidChange( showing: showing, layoutGuide: layoutGuide )
-
-        self.userToolbarConfiguration.isActive = showing && self.selectedFile != nil
+            userFile?.resetKey = true
+        } )
+        self.present( alert, animated: true )
     }
 
     // MARK: --- MarshalObserver ---
 
     override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.fileSource.update( [ userFiles.sorted() + [ nil ] ] )
+        self.usersSource.update( [ userFiles.sorted() + [ nil ] ] )
     }
 }

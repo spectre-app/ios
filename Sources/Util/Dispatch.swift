@@ -198,14 +198,20 @@ public class Promise<V> {
     /** When this promise is finished, consume its result with the given block. */
     @discardableResult
     public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void) -> Self {
-        if let result = self.semaphore.sync( execute: { self.result } ), queue?.isActive ?? true {
-            consumer( result )
+        self.semaphore.sync {
+            if let result = self.result {
+                if queue?.isActive ?? true {
+                    consumer( result )
+                }
+                else {
+                    queue?.perform { consumer( result ) }
+                }
+            }
+            else {
+                self.targets.append( (queue: queue, consumer: consumer) )
+            }
+            return self
         }
-        else {
-            self.semaphore.sync { self.targets.append( (queue: queue, consumer: consumer) ) }
-        }
-
-        return self
     }
 
     /** When this promise is finished, transform its successful result with the given block, yielding a new promise for the block's result. */
@@ -298,17 +304,17 @@ public class Promise<V> {
 
     /** Obtain the result of this promise if it has already been submitted, or block the current thread until it is. */
     public func await() throws -> V {
-        if let result = self.semaphore.sync( execute: { self.result } ) {
-            return try result.get()
-        }
-
         // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         let group = DispatchGroup()
-        group.enter()
-        self.semaphore.sync { self.targets.append( (queue: nil, consumer: { _ in group.leave() }) ) }
+        self.semaphore.sync {
+            if self.result == nil {
+                group.enter()
+                self.targets.append( (queue: nil, consumer: { _ in group.leave() }) )
+            }
+        }
         group.wait()
 
-        return try self.await()
+        return try self.semaphore.sync { try self.result!.get() }
     }
 
     enum Interruption: Error {

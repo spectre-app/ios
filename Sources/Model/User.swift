@@ -136,6 +136,15 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public var autofillDecided: Bool {
         self.file?.spectre_find( path: "user", "_ext_spectre", "autofill" ) != nil
     }
+    public var sharing = false {
+        didSet {
+            if oldValue != self.sharing, !self.initializing,
+               self.file?.spectre_set( self.sharing, path: "user", "_ext_spectre", "sharing" ) ?? true {
+                self.dirty = true
+                self.observers.notify { $0.userDidChange( self ) }
+            }
+        }
+    }
     public var attacker: Attacker? {
         didSet {
             if oldValue != self.attacker, !self.initializing,
@@ -236,6 +245,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             self.maskPasswords = self.file?.spectre_get( path: "user", "_ext_spectre", "maskPasswords" ) ?? false
             self.biometricLock = self.file?.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
             self.autofill = self.file?.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
+            self.sharing = self.file?.spectre_get( path: "user", "_ext_spectre", "sharing" ) ?? false
             self.attacker = self.file?.spectre_get( path: "user", "_ext_spectre", "attacker" ).flatMap { Attacker.named( $0 ) }
 
             initialize( self )

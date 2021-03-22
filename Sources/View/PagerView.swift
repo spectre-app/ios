@@ -59,12 +59,12 @@ class PagerView: UIView, UICollectionViewDelegate {
         self.addSubview( self.indicatorView )
 
         // - Layout
-        LayoutConfiguration( view: self.indicatorView )
-                .constrain( as: .bottomCenter, margin: true ).activate()
         LayoutConfiguration( view: self.collectionView )
                 .constrain( as: .topBox )
-                .constrain { $1.bottomAnchor.constraint( equalTo: self.indicatorView.topAnchor ) }
                 .activate()
+        LayoutConfiguration( view: self.indicatorView )
+                .constrain { $1.topAnchor.constraint( equalTo: self.collectionView.bottomAnchor, constant: 8 ) }
+                .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     // MARK: --- UICollectionViewDelegate ---
@@ -202,14 +202,14 @@ class PagerView: UIView, UICollectionViewDelegate {
     internal class PagerSource: DataSource<UIView> {
         override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             using( PagerCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.collectonView = collectionView
+                $0.collectionView = collectionView
                 $0.pageView = self.element( at: indexPath )
             }
         }
     }
 
     class PagerCell: UICollectionViewCell {
-        var collectonView: UICollectionView?
+        var collectionView: UICollectionView?
         var pageView: UIView? {
             didSet {
                 self.contentView.subviews.filter { $0 != self.pageView }.forEach {
@@ -218,7 +218,7 @@ class PagerView: UIView, UICollectionViewDelegate {
                 if let pageView = self.pageView, pageView.superview != self.contentView {
                     self.contentView.addSubview( pageView )
                     LayoutConfiguration( view: pageView )
-                            .constrain( as: .box, margin: true ).activate()
+                            .constrain( as: .box ).activate()
                 }
             }
         }
@@ -244,7 +244,7 @@ class PagerView: UIView, UICollectionViewDelegate {
             // Detect when the constraints in the page have changed such that it wants a larger page height.
             let fitting = self.systemLayoutSizeFitting( self.bounds.size )
             if self.bounds.size.height < fitting.height {
-                self.collectonView?.collectionViewLayout.invalidateLayout()
+                self.collectionView?.collectionViewLayout.invalidateLayout()
             }
         }
 
@@ -273,6 +273,7 @@ class PagerView: UIView, UICollectionViewDelegate {
             // - View
             self => \.backgroundColor => Theme.current.color.mute
             self.layoutMargins = .border( horizontal: 6, vertical: 4 )
+            self.insetsLayoutMarginsFromSafeArea = false
             self.stackView.axis = .horizontal
             self.stackView.spacing = 4
 
