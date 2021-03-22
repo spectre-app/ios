@@ -11,7 +11,7 @@ import LocalAuthentication
 import SafariServices
 
 class MainUsersViewController: BaseUsersViewController {
-    private let tipsView = TipsView( tips: [
+    private let tipsView   = TipsView( tips: [
         // App
         "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
         "Spectre is 100% open source \(.icon( "" )) and Free Software.",
@@ -37,8 +37,11 @@ class MainUsersViewController: BaseUsersViewController {
         "Use Security Answers \(.icon( "" )) to avoid divulging private information.",
         "Sites are automatically styled \(.icon( "" )) from their home page.",
     ], first: 0, random: false )
-
-    private let appToolbar  = UIStackView()
+    private let appToolbar = UIStackView()
+    private lazy var appUpdate = EffectButton( track: .subject( "users", action: "update" ),
+                                               title: "Update Available", background: false ) { _, _ in
+        AppStore.shared.presentStore( in: self )
+    }
 
     // MARK: --- Life ---
 
@@ -46,6 +49,7 @@ class MainUsersViewController: BaseUsersViewController {
         super.viewDidLoad()
 
         // - View
+        self.appUpdate.isHidden = true
         self.appToolbar.axis = .horizontal
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ),
                                                           image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
@@ -103,6 +107,7 @@ class MainUsersViewController: BaseUsersViewController {
 
         // - Hierarchy
         self.view.insertSubview( self.tipsView, belowSubview: self.detailsHost.view )
+        self.view.insertSubview( self.appUpdate, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.appToolbar, belowSubview: self.detailsHost.view )
 
         // - Layout
@@ -110,6 +115,28 @@ class MainUsersViewController: BaseUsersViewController {
                 .constrain( as: .topCenter, to: self.view.safeAreaLayoutGuide ).activate()
         LayoutConfiguration( view: self.appToolbar )
                 .constrain( as: .bottomCenter, margin: true ).activate()
+        LayoutConfiguration( view: self.appUpdate )
+                .constrain { $1.bottomAnchor.constraint( equalTo: self.appToolbar.topAnchor ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: self.appToolbar.centerXAnchor ) }
+                .activate()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        AppStore.shared.isUpToDate().then( on: .main ) {
+            do {
+                let result = try $0.get()
+                if !result.upToDate {
+                    inf( "Update available: %@", result )
+                }
+
+                self.appUpdate.isHidden = result.upToDate
+            }
+            catch {
+                wrn( "Application update check failed: %@", error )
+            }
+        }
     }
 
     // MARK: --- Interface ---
