@@ -81,7 +81,8 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
         self.notificationObservers.append( NotificationCenter.default.addObserver(
                 forName: UIResponder.keyboardWillChangeFrameNotification, object: nil, queue: .main ) {
             guard let keyboardScreenFrom = ($0.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue,
-                  let keyboardScreenTo = ($0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+                  let keyboardScreenTo = ($0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue,
+                  keyboardScreenFrom != keyboardScreenTo
             else { return }
 
             self.animate( notification: $0, prior: { self.updateKeyboardFrame( inScreen: keyboardScreenFrom, silent: true ) } ) {
