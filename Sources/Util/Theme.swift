@@ -205,8 +205,8 @@ public struct ThemePattern {
     static let spectre = ThemePattern(
             dark: .hex( "0E3345" ),
             dusk: .hex( "173D50" ),
-            flat: .hex( "57CBCC" ),
-            dawn: .hex( "87A4A9" ),
+            flat: .hex( "41A0A0" ),
+            dawn: .hex( "F1F9FC" ),
             pale: .hex( "FFFFFF" ) )
     static let dream   = ThemePattern(
             dark: .hex( "385359" ),
@@ -327,10 +327,10 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
                                             mood: "It's just a mental reflection." ),
                                      Theme( path: ".dream", pattern: .dream,
                                             mood: "This weather is for dreaming." ),
-                                     Theme( path: ".aged", pattern: .aged,
-                                            mood: "Whiff of a Victorian manuscript." ),
-                                     Theme( path: ".pale", pattern: .pale,
-                                            mood: "Weathered stone foundation standing tall." ),
+                                     Theme( path: ".deep", pattern: .deep,
+                                            mood: "I am my past and I am beautiful." ),
+                                     Theme( path: ".sand", pattern: .sand,
+                                            mood: "Sandstone cabin by the beech." ),
                                      Theme( path: ".lush", pattern: .lush,
                                             mood: "A clean and modest kind of lush." ),
                                      Theme( path: ".oak", pattern: .oak,
@@ -341,10 +341,10 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
                                             mood: "Soft and just a touch fuzzy." ),
                                      Theme( path: ".premium", pattern: .premium,
                                             mood: "The kind of wealthy you don't advertise." ),
-                                     Theme( path: ".deep", pattern: .deep,
-                                            mood: "I am my past and I am beautiful." ),
-                                     Theme( path: ".sand", pattern: .sand,
-                                            mood: "Sandstone cabin by the beech." ),
+                                     Theme( path: ".pale", pattern: .pale,
+                                            mood: "Weathered stone foundation standing tall." ),
+                                     Theme( path: ".aged", pattern: .aged,
+                                            mood: "Whiff of a Victorian manuscript." ),
     ]
     public static let  current   = Theme( path: "current" )
 
@@ -500,8 +500,8 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( light: pattern.pale, dark: pattern.dark )
             self.color.panel.set( light: pattern.dawn, dark: pattern.dusk )
             self.color.shade.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
-            self.color.shadow.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
-            self.color.mute.set( light: pattern.dusk?.with( alpha: .short ), dark: pattern.dawn?.with( alpha: .short ) )
+            self.color.shadow.set( light: pattern.flat?.with( alpha: .long ), dark: pattern.flat?.with( alpha: .long ) )
+            self.color.mute.set( light: pattern.dusk?.with( alpha: .short * .short ), dark: pattern.dawn?.with( alpha: .short * .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.tint.set( light: pattern.flat, dark: pattern.flat )
         }

@@ -188,6 +188,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             didSet {
                 if self.userFile != oldValue {
                     self.secretField.userName = self.userFile?.userName
+                    self.secretField.identicon = self.userFile?.identicon ?? SpectreIdenticonUnset
                     self.avatar = self.userFile?.avatar
                 }
             }

@@ -128,6 +128,17 @@ extension CGSize {
     }
 }
 
+
+public func max(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+    UIEdgeInsets( top: Swift.max( lhs.top, rhs.top ), left: Swift.max( lhs.left, rhs.left ),
+                  bottom: Swift.max( lhs.bottom, rhs.bottom ), right: Swift.max( lhs.right, rhs.right ) )
+}
+
+public func min(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+    UIEdgeInsets( top: Swift.min( lhs.top, rhs.top ), left: Swift.min( lhs.left, rhs.left ),
+                  bottom: Swift.min( lhs.bottom, rhs.bottom ), right: Swift.min( lhs.right, rhs.right ) )
+}
+
 extension UIEdgeInsets {
     public static func border(_ inset: CGFloat = 8) -> UIEdgeInsets {
         UIEdgeInsets( top: inset, left: inset, bottom: inset, right: inset )
@@ -150,27 +161,27 @@ extension UIEdgeInsets {
     }
 
     public static func +(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
-        UIEdgeInsets( top: max( lhs.top, rhs.top ), left: max( lhs.left, rhs.left ),
-                      bottom: max( lhs.bottom, rhs.bottom ), right: max( lhs.right, rhs.right ) )
+        UIEdgeInsets( top: lhs.top + rhs.top, left: lhs.left + rhs.left,
+                      bottom: lhs.bottom + rhs.bottom, right: lhs.right + rhs.right )
     }
 
     public static func -(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
-        UIEdgeInsets( top: min( lhs.top, rhs.top ), left: min( lhs.left, rhs.left ),
-                      bottom: min( lhs.bottom, rhs.bottom ), right: min( lhs.right, rhs.right ) )
+        UIEdgeInsets( top: lhs.top - rhs.top, left: lhs.left - rhs.left,
+                      bottom: lhs.bottom - rhs.bottom, right: lhs.right - rhs.right )
     }
 
     public static func +=(lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
-        lhs.top = max( lhs.top, rhs.top )
-        lhs.left = max( lhs.left, rhs.left )
-        lhs.bottom = max( lhs.bottom, rhs.bottom )
-        lhs.right = max( lhs.right, rhs.right )
+        lhs.top += rhs.top
+        lhs.left += rhs.left
+        lhs.bottom += rhs.bottom
+        lhs.right += rhs.right
     }
 
     public static func -=(lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
-        lhs.top = min( lhs.top, rhs.top )
-        lhs.left = min( lhs.left, rhs.left )
-        lhs.bottom = min( lhs.bottom, rhs.bottom )
-        lhs.right = min( lhs.right, rhs.right )
+        lhs.top -= rhs.top
+        lhs.left -= rhs.left
+        lhs.bottom -= rhs.bottom
+        lhs.right -= rhs.right
     }
 
     var width:  CGFloat {

@@ -163,7 +163,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
 
                 let id = (components.queryItems?.first( where: { $0.name == "id" } )?.value as NSString?)?.integerValue
-                AppStore.shared.present( appleID: id, in: viewController )
+                AppStore.shared.presentStore( appleID: id, in: viewController )
                 return true
             }
 
@@ -187,7 +187,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         }
                         else {
                             inf( "%@ is outdated: build[%@] < store[%@]", productName, result.buildVersion, result.storeVersion )
-                            AppStore.shared.present( in: viewController )
+                            AppStore.shared.presentStore( in: viewController )
                         }
                     }
                     catch {

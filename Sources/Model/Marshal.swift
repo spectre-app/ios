@@ -221,7 +221,7 @@ class Marshal: Observable, Updatable {
 
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
                                                    content: UIActivityIndicatorView( style: .whiteLarge ) )
-            let secretField     = UserSecretField<User>( userName: existingFile.userName )
+            let secretField     = UserSecretField<User>( userName: existingFile.userName, identicon: existingFile.identicon)
             let alertController = UIAlertController( title: "Merge Users", message:
             """
             \(existingFile.userName) already exists.

@@ -202,8 +202,8 @@ class EffectView: UIView, ThemeObserver {
             }
             self.blurEffectView.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
             self.blurEffectView.layer.borderWidth = self.borderWidth
-            self.blurEffectView.layer.borderColor = (self.borderColor ?? Theme.current.color.secondary.get())?.cgColor
-            self.blurEffectView.alpha = self.isDimmed ? .short: .on
+            self.blurEffectView.layer.borderColor = (self.borderColor ?? Theme.current.color.mute.get())?.cgColor
+            self.blurEffectView.alpha = self.isDimmed ? .long: .on
         }
     }
 }

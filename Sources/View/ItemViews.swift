@@ -112,6 +112,7 @@ class Item<M>: AnyItem {
             self.contentView.axis = .vertical
             self.contentView.alignment = .center
             self.contentView.spacing = 8
+            self.contentView.insetsLayoutMarginsFromSafeArea = false
 
             self.titleLabel.numberOfLines = 0
             self.titleLabel => \.textColor => Theme.current.color.body
@@ -120,6 +121,7 @@ class Item<M>: AnyItem {
             self.titleLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
 
             self.subitemsStack.preservesSuperviewLayoutMargins = true
+            self.subitemsStack.insetsLayoutMarginsFromSafeArea = false
             self.subitemsStack.isLayoutMarginsRelativeArrangement = true
 
             self.captionLabel => \.textColor => Theme.current.color.secondary
@@ -158,9 +160,9 @@ class Item<M>: AnyItem {
 
         /** The view was loaded and added to the view hierarchy. */
         func didLoad() {
-            if let valueView = self.valueView {
-                valueView.superview?.readableContentGuide.widthAnchor
-                        .constraint( equalTo: valueView.widthAnchor ).with( priority: .defaultLow + 1 ).isActive = true
+            if let valueView = self.valueView, let superview = valueView.superview {
+                valueView.widthAnchor.constraint( equalTo: superview.readableContentGuide.widthAnchor )
+                                     .with( priority: .defaultLow + 1 ).isActive = true
             }
 
             self.item.subitems.forEach { $0.view.didLoad() }
@@ -730,7 +732,6 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.delegate = self.item
             self.valueField => \.textColor => Theme.current.color.body
             self.valueField.textAlignment = .center
-            self.valueField.setContentHuggingPriority( .defaultLow + 100, for: .horizontal )
             self.valueField.action( for: .editingChanged ) { [unowned self] in
                 if let text = self.valueField.text {
                     self.item.update?( self.item, text )
