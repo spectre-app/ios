@@ -114,7 +114,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     // MARK: --- MarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.usersSource.update( self.sectioned( userFiles: userFiles ) )
+        let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
+        self.usersSource.update( self.sectioned( userFiles: userFiles ) ) { _ in
+            self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
+        }
     }
 
     // MARK: --- Types ---

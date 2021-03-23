@@ -22,7 +22,7 @@ import UIKit
  is not animated due to it triggering a full reloadData. The work-around is to leave the section empty (or remove it separately).
  http://www.openradar.me/48941363
  */
-open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
+class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableViewDataSource {
     private let semaphore        = DispatchGroup()
     private let queue            = DispatchQueue( label: "DataSource" )
     private var elementsBySection: [[E]]
@@ -48,7 +48,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
 
     // MARK: --- Interface ---
 
-    open func count(section: Int? = nil) -> Int {
+    func count(section: Int? = nil) -> Int {
         if let section = section {
             return self.elementsBySection[section].count
         }
@@ -57,19 +57,19 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         }
     }
 
-    open func indexPath(for item: E?) -> IndexPath? {
+    func indexPath(for item: E?) -> IndexPath? {
         item.flatMap { self.indexPath( for: $0, in: self.elementsBySection, elementsMatch: { $0 == $1 } ) }
     }
 
-    open func indexPath(for item: E?) -> IndexPath? where E: Identifiable {
+    func indexPath(for item: E?) -> IndexPath? where E: Identifiable {
         item.flatMap { self.indexPath( for: $0, in: self.elementsBySection, elementsMatch: { $0.id == $1.id } ) }
     }
 
-    open func indexPath(where predicate: (E) -> Bool) -> IndexPath? {
+    func indexPath(where predicate: (E) -> Bool) -> IndexPath? {
         self.indexPath( where: predicate, in: self.elementsBySection )
     }
 
-    open func firstElement(section: Int? = nil) -> E? {
+    func firstElement(section: Int? = nil) -> E? {
         if let section = section {
             return self.elementsBySection[section].first
         }
@@ -78,18 +78,18 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         }
     }
 
-    open func firstElement(where predicate: (E) -> Bool) -> E? {
+    func firstElement(where predicate: (E) -> Bool) -> E? {
         self.elementsBySection.flatMap { $0 }.first( where: predicate ).flatMap { $0 }
     }
 
-    open func element(at indexPath: IndexPath?) -> E? {
+    func element(at indexPath: IndexPath?) -> E? {
         guard let indexPath = indexPath
         else { return nil }
 
         return element( item: indexPath.item, section: indexPath.section )
     }
 
-    open func element(item: Int?, section: Int = 0) -> E? {
+    func element(item: Int?, section: Int = 0) -> E? {
         guard let item = item
         else { return nil }
 
@@ -98,7 +98,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                 self.elementsBySection[section][item]: nil
     }
 
-    open func elements() -> AnySequence<(indexPath: IndexPath, element: E)> {
+    func elements() -> AnySequence<(indexPath: IndexPath, element: E)> {
         AnySequence( self.elementsBySection.enumerated().lazy.flatMap {
             (enumeratedSection) -> LazyMapSequence<EnumeratedSequence<[E]>, (indexPath: IndexPath, element: E)> in
             let (section, sectionElements) = enumeratedSection
@@ -112,26 +112,27 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
     }
 
     // Note: IndexPath parameters should represent element paths as in the new dataSource.
-    open func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
-                     reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
-                     animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil) {
+    func update(_ toElementsBySection: [[E]], selected selectElements: [E]? = nil, selecting selectPaths: [IndexPath]? = nil,
+                reload reloadAll: Bool = false, reloaded reloadElements: [E]? = nil, reloading reloadPaths: [IndexPath]? = nil,
+                animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil) {
         self.update( toElementsBySection, selected: selectElements, selecting: selectPaths,
                      reload: reloadAll, reloaded: reloadElements, reloading: reloadPaths,
                      animated: animated, completion: completion, elementsMatch: { $0 == $1 } )
     }
 
     // Note: IndexPath parameters should represent element paths as in the new dataSource.
-    open func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
-                     reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
-                     animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil) where E: Identifiable {
+    func update(_ toElementsBySection: [[E]], selected selectElements: [E]? = nil, selecting selectPaths: [IndexPath]? = nil,
+                reload reloadAll: Bool = false, reloaded reloadElements: [E]? = nil, reloading reloadPaths: [IndexPath]? = nil,
+                animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil)
+            where E: Identifiable {
         self.update( toElementsBySection, selected: selectElements, selecting: selectPaths,
                      reload: reloadAll, reloaded: reloadElements, reloading: reloadPaths,
                      animated: animated, completion: completion, elementsMatch: { $0.id == $1.id } )
     }
 
     // Note: IndexPath parameters should represent element paths as in the new dataSource.
-    private func update(_ toElementsBySection: [[E]], selected selectElements: Set<E?>? = nil, selecting selectPaths: [IndexPath]? = nil,
-                        reload reloadAll: Bool = false, reloaded reloadElements: Set<E>? = nil, reloading reloadPaths: [IndexPath]? = nil,
+    private func update(_ toElementsBySection: [[E]], selected selectElements: [E]? = nil, selecting selectPaths: [IndexPath]? = nil,
+                        reload reloadAll: Bool = false, reloaded reloadElements: [E]? = nil, reloading reloadPaths: [IndexPath]? = nil,
                         animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil, elementsMatch: @escaping (E, E) -> Bool) {
         self.queue.sync {
             //dbg( "%@: wait", self.semaphore )
@@ -150,7 +151,9 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
                     self.tableView?.reloadData()
                     self.collectionView?.reloadData()
                 }
-                self.select( selectElements, paths: selectPaths )
+                DispatchQueue.main.async {
+                    self.select( selectElements, paths: selectPaths )
+                }
                 //dbg( "%@: leave", self.semaphore )
                 self.semaphore.leave()
                 completion?( true )
@@ -242,7 +245,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         }
     }
 
-    open func select(_ elements: Set<E?>? = nil, paths: [IndexPath]? = nil, animated: Bool = true) {
+    func select(_ elements: [E]? = nil, paths: [IndexPath]? = nil, animated: Bool = true) {
         guard elements != nil || paths != nil
         else { return }
 
@@ -262,20 +265,30 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
         else if selectionPaths.count > 1 {
             selectionPaths = [ selectionPaths[0] ]
         }
-        selectionPaths.forEach {
-            //dbg( "select item %@", $0 )
-            self.tableView?.selectRow( at: $0, animated: animated, scrollPosition: .middle )
-            self.collectionView?.selectItem( at: $0, animated: animated, scrollPosition: .centeredVertically )
+
+        //dbg( "select items %@", selectionPaths )
+        if !((self.tableView ?? self.collectionView)?.bounds.isEmpty ?? true) {
+            if self.tableView?.indexPathsForSelectedRows ?? self.collectionView?.indexPathsForSelectedItems == selectionPaths,
+               let scrolledPath = selectionPaths.first {
+                self.tableView?.scrollToNearestSelectedRow( at: .middle, animated: animated )
+                self.collectionView?.scrollToItem( at: scrolledPath, at: .centeredHorizontally, animated: animated )
+            }
+            else {
+                selectionPaths.forEach {
+                    self.tableView?.selectRow( at: $0, animated: animated, scrollPosition: .middle )
+                    self.collectionView?.selectItem( at: $0, animated: animated, scrollPosition: .centeredHorizontally )
+                }
+            }
         }
     }
 
     @discardableResult
-    open func remove(_ item: E, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
+    func remove(_ item: E, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
         self.remove( at: self.indexPath( for: item ) )
     }
 
     @discardableResult
-    open func remove(at indexPath: IndexPath?, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
+    func remove(at indexPath: IndexPath?, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
         guard let indexPath = indexPath,
               indexPath.section < self.elementsBySection.count && indexPath.item < self.elementsBySection[indexPath.section].count
         else { return false }
@@ -289,7 +302,7 @@ open class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITabl
     }
 
     @discardableResult
-    open func move(at fromIndexPath: IndexPath, to toIndexPath: IndexPath, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
+    func move(at fromIndexPath: IndexPath, to toIndexPath: IndexPath, animated: Bool = true, completion: ((Bool) -> Void)? = nil) -> Bool {
         guard fromIndexPath.section < self.elementsBySection.count && fromIndexPath.item < self.elementsBySection[fromIndexPath.section].count,
               toIndexPath.section < self.elementsBySection.count && toIndexPath.item < self.elementsBySection[toIndexPath.section].count
         else { return false }

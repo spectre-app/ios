@@ -265,8 +265,16 @@ extension UICollectionView {
     @discardableResult
     public func requestSelection(at selectPath: IndexPath?, animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
                     -> Bool {
-        guard self.indexPathsForSelectedItems != selectPath.flatMap( { [ $0 ] } ) ?? []
-        else { return true }
+        guard !self.bounds.isEmpty
+        else { return false }
+
+        guard self.indexPathsForSelectedItems != selectPath.flatMap( { [ $0 ] } )
+        else {
+            if let selectPath = selectPath {
+                self.scrollToItem( at: selectPath, at: .centeredHorizontally, animated: animated )
+            }
+            return true
+        }
 
         let selectedPath = self.indexPathsForSelectedItems?.first
         if let selectPath = selectPath, selectPath == selectedPath ||

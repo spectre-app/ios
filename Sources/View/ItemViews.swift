@@ -970,33 +970,15 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         }
 
         func updateDataSource() {
-            let values = self.item.model.flatMap { self.item.values( $0 ) } ?? []
-            self.dataSource.update( values.split( separator: nil ).map( { $0.compactMap { $0 } } ) ) { [unowned self] _ in
-                DispatchQueue.main.async {
-                    self.updateSelection()
-                }
-            }
+            let values = self.item.model.flatMap( self.item.values ) ?? []
+            let selection = self.item.model.flatMap( self.item.valueProvider ).flatMap { [ $0 ] }
+            self.dataSource.update( values.split( separator: nil ).map( { $0.compactMap { $0 } } ), selected: selection )
         }
 
         override func doUpdate() {
             super.doUpdate()
 
             self.updateDataSource()
-        }
-
-        // MARK: --- Private ---
-
-        private func updateSelection(animated: Bool = UIView.areAnimationsEnabled) {
-            if let model = self.item.model,
-               let selectedValue = self.item.valueProvider( model ),
-               let selectedIndexPath = self.dataSource.indexPath( for: selectedValue ) {
-                if self.collectionView.indexPathsForSelectedItems == [ selectedIndexPath ] {
-                    self.collectionView.scrollToItem( at: selectedIndexPath, at: .centeredHorizontally, animated: animated )
-                }
-                else {
-                    self.collectionView.selectItem( at: selectedIndexPath, animated: animated, scrollPosition: .centeredHorizontally )
-                }
-            }
         }
 
         // MARK: --- UICollectionViewDelegate ---
@@ -1135,7 +1117,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             self.tableView.tableHeaderView = self.activityIndicator
 
             DispatchQueue.api.perform {
-                self.dataSource.update( [ self.item.model.flatMap { self.item.values( $0 ) } ?? [] ], animated: self.item.animated ) { finished in
+                self.dataSource.update( [ self.item.model.flatMap(self.item.values) ?? [] ], animated: self.item.animated ) { finished in
                     if finished {
                         self.tableView.isHidden = self.dataSource.isEmpty
                         self.tableView.tableHeaderView = nil
