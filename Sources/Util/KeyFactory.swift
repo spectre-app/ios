@@ -158,7 +158,7 @@ public class KeychainKeyFactory: KeyFactory {
 
     private var _context:         LAContext? {
         didSet {
-            if let expiry = self.expiry, _context != nil {
+            if let expiry = self.expiry, self._context != nil {
                 self._contextValidity = Date() + expiry
             }
             else {
@@ -167,7 +167,7 @@ public class KeychainKeyFactory: KeyFactory {
         }
     }
     private var _contextValidity: Date?
-    private var contextValid:     Bool {
+    private var isContextValid:   Bool {
         if let validity = self._contextValidity {
             return validity > Date()
         }
@@ -175,7 +175,7 @@ public class KeychainKeyFactory: KeyFactory {
         return true
     }
     private var context:          LAContext {
-        if let context = self._context, self.contextValid {
+        if let context = self._context, self.isContextValid {
             return context
         }
 
@@ -211,7 +211,7 @@ public class KeychainKeyFactory: KeyFactory {
     // MARK: --- Life ---
 
     public override func invalidate() {
-        keyQueue.await { self.context.invalidate() }
+        keyQueue.await { self._context?.invalidate() }
 
         super.invalidate()
     }

@@ -10,9 +10,10 @@ protocol Updates: class {
 }
 
 protocol Updatable: class {
+    associatedtype V = Void
     var updatesPostponed: Bool { get }
     var updatesRejected:  Bool { get }
-    var updateTask:       DispatchTask<Void> { get }
+    var updateTask:       DispatchTask<V> { get }
 }
 
 extension Updatable {
@@ -24,9 +25,10 @@ extension Updatable {
     }
 }
 
-extension DispatchTask where V == Void {
-    static func update(_ updatable: Updatable, queue: DispatchQueue = .main, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
-                              qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], animated: Bool = false, update: @escaping () -> ()) -> DispatchTask<V> {
+extension DispatchTask {
+    static func update<U>(_ updatable: U, queue: DispatchQueue = .main, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+                          qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], animated: Bool = false, update: @escaping () -> V)
+                    -> DispatchTask<V> where U: Updatable, U.V == V {
         DispatchTask( named: "Update: \(type( of: updatable ))", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
             guard let updatable = updatable
             else { throw Promise<V>.Interruption.invalidated }
@@ -39,12 +41,15 @@ extension DispatchTask where V == Void {
                 throw Promise<V>.Interruption.postponed
             }
 
+            var result: V?
             if animated {
-                UIView.animate( withDuration: .short ) { update() }
+                UIView.animate( withDuration: .short ) { result = update() }
             }
             else {
-                update()
+                result = update()
             }
+
+            return result!
         }
     }
 }

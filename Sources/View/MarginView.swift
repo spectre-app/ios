@@ -30,7 +30,7 @@ class MarginView: UIView {
         self.init( for: spacer, margins: .zero )
     }
 
-    init(for view: UIView, margins: UIEdgeInsets? = nil) {
+    init(for view: UIView, margins: UIEdgeInsets? = nil, anchor: Anchor = .box) {
         super.init( frame: .zero )
 
         if let margins = margins {
@@ -39,7 +39,7 @@ class MarginView: UIView {
 
         self.addSubview( view )
         LayoutConfiguration( view: view )
-                .constrain( as: .box, margin: true ).activate()
+                .constrain( as: anchor, margin: true ).activate()
     }
 
     required init?(coder aDecoder: NSCoder) {

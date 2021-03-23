@@ -22,6 +22,11 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSExtension</key>
 	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>ASCredentialProviderExtensionShowsConfigurationUI</key>
+			<true/>
+		</dict>
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.authentication-services-credential-provider-ui</string>
 		<key>NSExtensionPrincipalClass</key>

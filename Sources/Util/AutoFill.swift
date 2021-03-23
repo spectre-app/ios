@@ -15,9 +15,13 @@ final class AutoFill {
             else { return }
 
             ASCredentialIdentityStore.shared.getState { state in
-                // If extension is disabled, API is unavailable.
+                // If extension is disabled credentials in the store got purged by the system: reflect that in our cache.
                 guard state.isEnabled
-                else { return }
+                else {
+                    UserDefaults.shared.removeObject( forKey: "autofill.credentials" )
+                    self.credentials.removeAll()
+                    return
+                }
 
                 self.queue.sync { [unowned self] in
                     let expiredCredentials = oldValue.subtracting( self.credentials ).map { $0.identity() }
@@ -57,19 +61,17 @@ final class AutoFill {
     }
 
     public func seed<S: Sequence>(_ suppliers: S) where S.Element == CredentialSupplier {
-        suppliers.forEach { self.update( for: $0 ) }
+        self.credentials = Set( suppliers.flatMap { $0.credentials ?? [] } )
     }
 
     public func update(for supplier: CredentialSupplier) {
         self.queue.sync { [unowned self] in
-            let otherCredentials = self.credentials.filter { !$0.supplied( by: supplier ) }
-
+            var otherCredentials = self.credentials.filter { !$0.isSupplied( by: supplier ) }
             if let suppliedCredentials = supplier.credentials {
-                self.credentials = otherCredentials.union( suppliedCredentials )
+                otherCredentials.formUnion( suppliedCredentials )
             }
-            else {
-                self.credentials = otherCredentials
-            }
+
+            self.credentials = otherCredentials
         }
     }
 
@@ -96,7 +98,7 @@ final class AutoFill {
             self.siteName = site
         }
 
-        func supplied(by supplier: CredentialSupplier) -> Bool {
+        func isSupplied(by supplier: CredentialSupplier) -> Bool {
             self.userName == supplier.credentialOwner
         }
 

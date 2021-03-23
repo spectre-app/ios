@@ -128,7 +128,6 @@ extension CGSize {
     }
 }
 
-
 public func max(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
     UIEdgeInsets( top: Swift.max( lhs.top, rhs.top ), left: Swift.max( lhs.left, rhs.left ),
                   bottom: Swift.max( lhs.bottom, rhs.bottom ), right: Swift.max( lhs.right, rhs.right ) )
@@ -266,13 +265,15 @@ extension UICollectionView {
     @discardableResult
     public func requestSelection(at selectPath: IndexPath?, animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
                     -> Bool {
-        let selectedPath = self.indexPathsForSelectedItems?.first
+        guard self.indexPathsForSelectedItems != selectPath.flatMap( { [ $0 ] } ) ?? []
+        else { return true }
 
+        let selectedPath = self.indexPathsForSelectedItems?.first
         if let selectPath = selectPath, selectPath == selectedPath ||
                 !(self.delegate?.collectionView?( self, shouldSelectItemAt: selectPath ) ?? true) {
             return false
         }
-        if let selectedPath = selectedPath, selectedPath.item != selectPath?.item &&
+        if let selectedPath = selectedPath, selectedPath != selectPath &&
                 !(self.delegate?.collectionView?( self, shouldDeselectItemAt: selectedPath ) ?? true) {
             return false
         }

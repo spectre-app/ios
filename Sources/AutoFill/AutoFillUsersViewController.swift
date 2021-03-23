@@ -10,7 +10,7 @@ import UIKit
 import AuthenticationServices
 
 class AutoFillUsersViewController: BaseUsersViewController {
-    private let emptyView = UIScrollView()
+    private let configurationView = AutoFillConfigurationView( fromSettings: false )
     private lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ),
                                                  image: .icon( "" ), border: 0, background: false, square: true ) { _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
@@ -18,99 +18,15 @@ class AutoFillUsersViewController: BaseUsersViewController {
 
     // MARK: --- Life ---
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    override init() {
-        super.init()
-
-        self.userFilesDidChange( AutoFillModel.shared.userFiles )
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // - View
-        let messageLabel = UILabel()
-        messageLabel => \.font => Theme.current.font.callout
-        messageLabel => \.textColor => Theme.current.color.secondary
-        messageLabel.numberOfLines = 0
-        messageLabel.textAlignment = .center
-        messageLabel.text =
-                """
-                To begin, activate the AutoFill setting for the Spectre user you want to use.
-                """
-
-        let step1Title = UILabel()
-        step1Title => \.font => Theme.current.font.headline
-        step1Title.numberOfLines = 0
-        step1Title.textAlignment = .center
-        step1Title.text = "1. Open Spectre"
-        let step1Image = EffectButton( image: UIImage( named: "icon" ), background: false, square: true, circular: false, rounding: 22 )
-        step1Image.padded = false
-        LayoutConfiguration( view: step1Image )
-                .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
-                .activate()
-
-        let step2Title = UILabel()
-        step2Title => \.font => Theme.current.font.headline
-        step2Title.numberOfLines = 0
-        step2Title.textAlignment = .center
-        step2Title.text = "2. Sign into your user"
-        let step2Image = EffectButton( image: UIImage( named: "avatar-0" ), border: 0, background: false, square: true, circular: false )
-        step2Image.padded = false
-        LayoutConfiguration( view: step2Image )
-                .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
-                .activate()
-
-        let step3Title = UILabel()
-        step3Title => \.font => Theme.current.font.headline
-        step3Title.numberOfLines = 0
-        step3Title.textAlignment = .center
-        step3Title.text = "3. Tap your user initials"
-        let step3Image = EffectButton( title: "RLM" )
-
-        let step4Title = UILabel()
-        step4Title => \.font => Theme.current.font.headline
-        step4Title.numberOfLines = 0
-        step4Title.textAlignment = .center
-        step4Title.text = "4. Turn on AutoFill for the user"
-        let step4Image = EffectToggleButton( action: { _ in nil } )
-        step4Image.image = .icon( "" )
-        step4Image.isSelected = true
-
-        let emptyStack = UIStackView()
-        emptyStack.axis = .vertical
-        emptyStack.spacing = 12
-        emptyStack.alignment = .center
-        emptyStack.addArrangedSubview( MarginView() )
-        emptyStack.addArrangedSubview( messageLabel )
-        emptyStack.addArrangedSubview( MarginView() )
-        emptyStack.addArrangedSubview( step1Title )
-        emptyStack.addArrangedSubview( step1Image )
-        emptyStack.addArrangedSubview( MarginView() )
-        emptyStack.addArrangedSubview( step2Title )
-        emptyStack.addArrangedSubview( step2Image )
-        emptyStack.addArrangedSubview( MarginView() )
-        emptyStack.addArrangedSubview( step3Title )
-        emptyStack.addArrangedSubview( step3Image )
-        emptyStack.addArrangedSubview( MarginView() )
-        emptyStack.addArrangedSubview( step4Title )
-        emptyStack.addArrangedSubview( step4Image )
-        emptyStack.addArrangedSubview( MarginView() )
-
         // - Hierarchy
-        self.emptyView.addSubview( emptyStack )
-        self.view.insertSubview( self.emptyView, belowSubview: self.detailsHost.view )
+        self.view.insertSubview( self.configurationView, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.closeButton, belowSubview: self.detailsHost.view )
 
         // - Layout
-        LayoutConfiguration( view: emptyStack )
-                .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
-                .constrain( as: .center, to: self.emptyView.contentLayoutGuide )
-                .activate()
-        LayoutConfiguration( view: self.emptyView )
+        LayoutConfiguration( view: self.configurationView )
                 .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
                 .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.closeButton )
@@ -120,6 +36,9 @@ class AutoFillUsersViewController: BaseUsersViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
+        // Necessary to ensure usersCarousel is fully laid-out; selection in empty collection view leads to a hang in -selectItemAtIndexPath.
+        self.view.layoutIfNeeded()
+
         if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
             self.usersCarousel.requestSelection( at: self.usersSource.indexPath( where: { $0?.userName == userName } ) )
         }
@@ -128,13 +47,19 @@ class AutoFillUsersViewController: BaseUsersViewController {
         }
     }
 
+    // MARK: --- Interface ---
+
+    override func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+        [ userFiles.filter( { $0.autofill } ).sorted() ]
+    }
+
     // MARK: --- MarshalObserver ---
 
     override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.usersSource.update( [ userFiles.filter( { $0.autofill } ).sorted() ] )
+        super.userFilesDidChange( userFiles )
 
         DispatchQueue.main.perform {
-            self.emptyView.isHidden = !self.usersSource.isEmpty
+            self.configurationView.isHidden = !self.usersSource.isEmpty
         }
     }
 
