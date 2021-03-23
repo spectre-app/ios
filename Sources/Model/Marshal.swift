@@ -477,7 +477,7 @@ class Marshal: Observable, Updatable {
               isDirectory.boolValue
         else { return [] }
 
-        return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil, options: .skipsHiddenFiles )
+        return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil )
     }
 
     private func createURL(for user: User, in directory: URL? = nil, format: SpectreFormat) -> URL? {
