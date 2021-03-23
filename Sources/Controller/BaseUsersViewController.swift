@@ -57,9 +57,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        Marshal.shared.observers.register( observer: self )
-        do { let _ = try Marshal.shared.setNeedsUpdate().await() }
-        catch { err( "Cannot read user documents: %@", error ) }
+        Marshal.shared.observers.register( observer: self ).userFilesDidChange( Marshal.shared.userFiles )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -75,6 +73,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     }
 
     // MARK: --- Interface ---
+
+    func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+        [ userFiles.sorted() ]
+    }
 
     func login(user: User) {
         self.usersCarousel.selectedItem = nil
@@ -112,7 +114,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     // MARK: --- MarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.usersSource.update( [ userFiles.sorted() ] )
+        let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
+        self.usersSource.update( self.sectioned( userFiles: userFiles ) ) { _ in
+            self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
+        }
     }
 
     // MARK: --- Types ---

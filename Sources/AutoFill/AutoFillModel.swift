@@ -9,24 +9,37 @@ import AuthenticationServices
 class AutoFillModel: MarshalObserver {
     static let shared = AutoFillModel()
 
-    var users     = [ User ]()
-    var userFiles = [ Marshal.UserFile ]()
-    var context   = Context()
+    private var usersCache  = NSCache<NSString, User>()
+    private var cachedUsers = Set<String>()
+
+    var context = Context()
 
     init() {
-        do { self.userFiles = try Marshal.shared.setNeedsUpdate().await() }
-        catch { err( "Cannot read user documents: %@", error ) }
-
         Marshal.shared.observers.register( observer: self )
+    }
+
+    func cachedUser(userName: String?) -> User? {
+        userName.flatMap { self.usersCache.object( forKey: $0 as NSString ) }
+    }
+
+    func cacheUser(_ user: User) {
+        self.usersCache.setObject( user, forKey: user.userName as NSString )
+        self.cachedUsers.insert( user.userName )
     }
 
     // MARK: --- MarshalObserver ---
 
     func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.userFiles = userFiles
-
-        for userFile in self.userFiles {
-            self.users.removeAll( where: { $0.userName == userFile.userName && $0 != userFile } )
+        // Purge cached users that have: changed, disappeared, or have disabled autofill.
+        self.cachedUsers.filter { (userName) in
+            guard let userFile = userFiles.first( where: { $0.autofill && $0.userName == userName } )
+            else { return true }
+            guard let cachedUser = self.usersCache.object( forKey: userFile.userName as NSString )
+            else { return true }
+            return cachedUser != userFile
+        }.forEach {
+            self.usersCache.removeObject( forKey: $0 as NSString )
+            self.cachedUsers.remove( $0 )
         }
     }
 

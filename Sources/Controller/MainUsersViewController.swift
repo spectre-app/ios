@@ -141,6 +141,10 @@ class MainUsersViewController: BaseUsersViewController {
 
     // MARK: --- Interface ---
 
+    override func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+        [ userFiles.sorted() + [ nil ] ]
+    }
+
     override func login(user: User) {
         super.login( user: user )
 
@@ -191,11 +195,5 @@ class MainUsersViewController: BaseUsersViewController {
             userFile?.resetKey = true
         } )
         self.present( alert, animated: true )
-    }
-
-    // MARK: --- MarshalObserver ---
-
-    override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        self.usersSource.update( [ userFiles.sorted() + [ nil ] ] )
     }
 }
