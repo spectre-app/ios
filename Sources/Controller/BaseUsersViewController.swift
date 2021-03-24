@@ -117,6 +117,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
         self.usersSource.update( self.sectioned( userFiles: userFiles ) ) { _ in
             self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
+            self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = self.usersCarousel.selectedItem != nil }
         }
     }
 
@@ -135,6 +136,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 UIView.performWithoutAnimation {
                     cell.state = (userFile: self.element( at: indexPath ) ?? nil,
                                   userActions: self.viewController.userActions,
+                                  hasSelected: self.viewController.usersCarousel.selectedItem != nil,
                                   viewController: self.viewController)
                 }
             }
@@ -165,12 +167,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     self.secretField.text = nil
                 }
 
-//                self.nameLabel.font = self.nameLabel.font.withSize( UIFont.labelFontSize * (self.isSelected ? 2: 1) )
-//                self.nameLabel.font.pointSize.animate(
-//                        to: UIFont.labelFontSize * (self.isSelected ? 2: 1), duration: .long, render: {
-//                    self.nameLabel.font = self.nameLabel.font.withSize( $0 )
-//                } )
-
                 self.updateTask.request()
             }
         }
@@ -180,10 +176,11 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
         internal weak var userEvent: Tracker.TimedEvent?
-        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], viewController: BaseUsersViewController)! {
+        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], hasSelected: Bool, viewController: BaseUsersViewController)! {
             didSet {
                 self.userFile = self.state.userFile
                 self.userActions = self.state.userActions
+                self.hasSelected = self.state.hasSelected
                 self.viewController = self.state.viewController
                 self.updateTask.request( immediate: true )
             }
