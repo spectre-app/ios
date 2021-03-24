@@ -11,10 +11,17 @@ import UIKit
  */
 class CarouselView: UICollectionView {
     var scrolledItem: Int {
-        let currentOffset = self.contentOffset.x
-        let maximumOffset = max( 0, self.contentSize.width - self.bounds.size.width )
-        let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset: 0
-        return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
+        get {
+            let currentOffset = self.contentOffset.x
+            let maximumOffset = max( 0, self.contentSize.width - self.bounds.size.width )
+            let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset: 0
+            return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
+        }
+        set {
+            if !self.bounds.isEmpty {
+                self.scrollToItem( at: IndexPath( item: newValue, section: 0 ), at: .centeredHorizontally, animated: true )
+            }
+        }
     }
     var selectedItem: Int? {
         get {
@@ -140,7 +147,7 @@ class CarouselView: UICollectionView {
 
                 attrs.size = self.bounds.size
                 attrs.center = self.bounds.center
-                attrs.zIndex = itemDistance == 0 ? 1 : -1
+                attrs.zIndex = itemDistance == 0 ? 1: -1
                 attrs.alpha = alpha
                 attrs.isHidden = alpha == .off
                 attrs.transform = CGAffineTransform( translationX: offset, y: 0 ).scaledBy( x: scale, y: scale )

@@ -119,7 +119,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
 
         // Update the sites table to show the newly filtered sites
-        self.sitesDataSource.update( elementsBySection, selected: Set( [ self.sitesDataSource.selectedItem ] ) )
+        self.sitesDataSource.update( elementsBySection, selected: self.sitesDataSource.selectedItem.flatMap { [ $0 ] } )
     }
 
     // MARK: --- UITableViewDelegate ---

@@ -68,6 +68,7 @@
 		93D39830BD42CE3468F6AFCB /* IntroAutoFillViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394C13D268B6594F0E358 /* IntroAutoFillViewController.swift */; };
 		93D3983CA421991D12ADDDBA /* LogSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39941059143124D09AE05 /* LogSink.swift */; };
 		93D39854B7171FE34024CEED /* PagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* PagerView.swift */; };
+		93D398AD2C2E9552DA9C8BB2 /* AutoFillConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391B2ECDAF6C1CA85C985 /* AutoFillConfigurationView.swift */; };
 		93D398C964D8B1FC0F320085 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* User.swift */; };
 		93D398FB645DCA89A4BCC5A2 /* MarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MarginView.swift */; };
 		93D39943D01E70DAC3B0DF76 /* spectre-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* spectre-util.c */; };
@@ -80,6 +81,7 @@
 		93D39AA2456367CDF6A7A296 /* Question.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* Question.swift */; };
 		93D39AB0E8841E744F4B6F4C /* EffectCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39865ECFD34CF3ADF930D /* EffectCell.swift */; };
 		93D39AC3658384147B2361C9 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39508BCB9FBB697699194 /* Text.swift */; };
+		93D39AD3EE3877767AC30ECE /* AutoFillConfigurationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F482ED58056C88FAA6 /* AutoFillConfigurationViewController.swift */; };
 		93D39B0F44709C2D285A04D1 /* Foundation+Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39326375ED0DDA441ADC2 /* Foundation+Spectre.swift */; };
 		93D39B58BB6046893F274C8D /* DetailAppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3982288CE686F671A3201 /* DetailAppViewController.swift */; };
 		93D39BBE1211113524BCBF9D /* EffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* EffectView.swift */; };
@@ -302,6 +304,7 @@
 		93D3917402B9BC4575713560 /* Tracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tracker.swift; sourceTree = "<group>"; };
 		93D3919570F5FA9F5A3C0F63 /* Question.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Question.swift; sourceTree = "<group>"; };
 		93D391A0FB6EB085237A8BF3 /* PickerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickerView.swift; sourceTree = "<group>"; };
+		93D391B2ECDAF6C1CA85C985 /* AutoFillConfigurationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillConfigurationView.swift; sourceTree = "<group>"; };
 		93D391CA68F34BB05A4B8AC3 /* Keychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		93D39203C899BA783F02D3B5 /* EffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectView.swift; sourceTree = "<group>"; };
 		93D39267543CBFB6B0D7F54C /* Operand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Operand.swift; sourceTree = "<group>"; };
@@ -314,6 +317,7 @@
 		93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseUserViewController.swift; sourceTree = "<group>"; };
 		93D393A49E8705F3E38EB779 /* BaseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		93D393E2C339F220532F1D53 /* WeakBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WeakBox.swift; sourceTree = "<group>"; };
+		93D393F482ED58056C88FAA6 /* AutoFillConfigurationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillConfigurationViewController.swift; sourceTree = "<group>"; };
 		93D393F8D17BB4283C64AC37 /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		93D3940575E4CC62A8F6CE04 /* Dispatch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dispatch.swift; sourceTree = "<group>"; };
 		93D394077F8FAB8167647187 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
@@ -725,6 +729,8 @@
 				93D392986FB7C71256EABBB0 /* AutoFillSitesViewController.swift */,
 				93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */,
 				DA0E5532250D6F7F002B3AB1 /* Info.plist */,
+				93D393F482ED58056C88FAA6 /* AutoFillConfigurationViewController.swift */,
+				93D391B2ECDAF6C1CA85C985 /* AutoFillConfigurationView.swift */,
 			);
 			path = AutoFill;
 			sourceTree = "<group>";
@@ -1455,6 +1461,8 @@
 				93D39216C0E8F79F5F06734B /* TipsView.swift in Sources */,
 				93D3910202AF273E8E318625 /* Text.swift in Sources */,
 				93D39FF336ACC2C451C5CFB2 /* CarouselView.swift in Sources */,
+				93D39AD3EE3877767AC30ECE /* AutoFillConfigurationViewController.swift in Sources */,
+				93D398AD2C2E9552DA9C8BB2 /* AutoFillConfigurationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

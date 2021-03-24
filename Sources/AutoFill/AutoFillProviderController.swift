@@ -58,15 +58,15 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         //dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
-        do { let _ = try Marshal.shared.setNeedsUpdate().await() }
+        do { let _ = try Marshal.shared.updateTask.request( immediate: true ).await() }
         catch { err( "Cannot read user documents: %@", error ) }
 
         DispatchQueue.api.promising {
-            if let user = AutoFillModel.shared.users.first( where: { $0.userName == credentialIdentity.recordIdentifier } ) {
+            if let user = AutoFillModel.shared.cachedUser( userName: credentialIdentity.recordIdentifier ) {
                 return Promise( .success( user ) )
             }
 
-            guard let userFile = AutoFillModel.shared.userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
+            guard let userFile = Marshal.shared.userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
@@ -76,7 +76,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
         }.promising { (user: User) in
-            AutoFillModel.shared.users.append( user )
+            AutoFillModel.shared.cacheUser( user )
 
             guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) }
@@ -127,7 +127,16 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func prepareInterfaceForExtensionConfiguration() {
-        //dbg( "prepareInterfaceForExtensionConfiguration" )
+        let configurationViewController = AutoFillConfigurationViewController()
+
+        // - Hierarchy
+        self.addChild( configurationViewController )
+        self.view.addSubview( configurationViewController.view )
+        configurationViewController.didMove( toParent: self )
+
+        // - Layout
+        LayoutConfiguration( view: configurationViewController.view )
+                .constrain( as: .box ).activate()
     }
 }
 

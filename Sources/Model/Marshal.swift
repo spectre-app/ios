@@ -9,7 +9,7 @@ class Marshal: Observable, Updatable {
     public static let shared = Marshal()
 
     public let observers = Observers<MarshalObserver>()
-    public var userFiles = [ UserFile ]() {
+    public lazy var userFiles: [UserFile] = self.loadUserFiles() {
         didSet {
             self.observers.notify { $0.userFilesDidChange( self.userFiles ) }
 
@@ -106,7 +106,7 @@ class Marshal: Observable, Updatable {
                     }
                 }
 
-                self.setNeedsUpdate()
+                self.updateTask.request()
                 return userURL
             }
         }
@@ -221,7 +221,7 @@ class Marshal: Observable, Updatable {
 
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
                                                    content: UIActivityIndicatorView( style: .whiteLarge ) )
-            let secretField     = UserSecretField<User>( userName: existingFile.userName, identicon: existingFile.identicon)
+            let secretField     = UserSecretField<User>( userName: existingFile.userName, identicon: existingFile.identicon )
             let alertController = UIAlertController( title: "Merge Users", message:
             """
             \(existingFile.userName) already exists.
@@ -420,7 +420,7 @@ class Marshal: Observable, Updatable {
                     """ ).show( in: viewController.view )
                 }
 
-                self.setNeedsUpdate()
+                self.updateTask.request()
                 return existedUser
             }
         }
@@ -463,7 +463,7 @@ class Marshal: Observable, Updatable {
             This was a direct installation of the import data, not a merge import.
             """ ).show( in: viewController.view )
 
-            self.setNeedsUpdate()
+            self.updateTask.request()
             return importingFile
         }.finally {
             spinner.dismiss()
@@ -477,7 +477,7 @@ class Marshal: Observable, Updatable {
               isDirectory.boolValue
         else { return [] }
 
-        return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil, options: .skipsHiddenFiles )
+        return try FileManager.default.contentsOfDirectory( at: documents, includingPropertiesForKeys: nil )
     }
 
     private func createURL(for user: User, in directory: URL? = nil, format: SpectreFormat) -> URL? {
@@ -495,20 +495,22 @@ class Marshal: Observable, Updatable {
 
     // MARK: --- Updatable ---
 
-    @discardableResult
-    public func setNeedsUpdate() -> Promise<[UserFile]> {
-        self.updateTask.request().promise { self.userFiles }
+    lazy var updateTask: DispatchTask<[UserFile]>
+            = DispatchTask.update( self, queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ) ) { [weak self] in
+        guard let self = self
+        else { return [] }
+
+        self.userFiles = self.loadUserFiles()
+        return self.userFiles
     }
 
-    lazy var updateTask = DispatchTask.update( self, queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ) ) { [weak self] in
-        guard let self = self
-        else { return }
-
+    private func loadUserFiles() -> [UserFile] {
         do {
-            self.userFiles = try self.userDocuments().compactMap { try UserFile( origin: $0 ) }
+            return try self.userDocuments().compactMap { try UserFile( origin: $0 ) }
         }
         catch {
             mperror( title: "Couldn't read user documents.", error: error )
+            return []
         }
     }
 
@@ -766,11 +768,19 @@ class Marshal: Observable, Updatable {
                     lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
         }
 
+        static func !=(lhs: UserFile, rhs: UserFile) -> Bool {
+            !(lhs == rhs)
+        }
+
+        static func ==(lhs: User, rhs: UserFile) -> Bool {
+            lhs.origin == rhs.origin && lhs.exportDate == rhs.exportDate &&
+                    lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
+                    lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
+                    lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
+        }
+
         static func !=(lhs: User, rhs: UserFile) -> Bool {
-            lhs.origin != rhs.origin || lhs.exportDate != rhs.exportDate ||
-                    lhs.algorithm != rhs.algorithm || lhs.avatar != rhs.avatar || lhs.userName != rhs.userName ||
-                    lhs.identicon != rhs.identicon || lhs.userKeyID != rhs.userKeyID || lhs.lastUsed != rhs.lastUsed ||
-                    lhs.biometricLock != rhs.biometricLock || lhs.autofill != rhs.autofill
+            !(lhs == rhs)
         }
 
         // MARK: --- Comparable ---
