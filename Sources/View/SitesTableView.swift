@@ -81,7 +81,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         else { return }
 
         var elementsBySection = [ [ SiteItem ] ]()
-        let wasSelectedItem = self.sitesDataSource.selectedItem
+        let wasSelectedItem   = self.sitesDataSource.selectedItem
         self.sitesDataSource.selectedItem = nil
 
         if let user = self.user, user.userKeyFactory != nil {
@@ -125,15 +125,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     // MARK: --- UITableViewDelegate ---
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        (cell as? LiefsteCell)?.willDisplay()
-
-        #if TARGET_APP
-        (cell as? SiteCell)?.site?.refresh()
-        #endif
+        (cell as? CellAppearance)?.willDisplay()
     }
 
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        (cell as? LiefsteCell)?.didEndDisplaying()
+        (cell as? CellAppearance)?.didEndDisplaying()
     }
 
     @available( iOS 13, * )
@@ -303,7 +299,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     class SitesSource: DataSource<SiteItem> {
         unowned let view: SitesTableView
-        var selectedItem:  SiteItem?
+        var selectedItem: SiteItem?
 
         init(view: SitesTableView) {
             self.view = view
@@ -332,12 +328,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
             cell.sitesView = self.view
             cell.result = result
-            cell.updateTask.request(immediate: true)
+            cell.updateTask.request( immediate: true )
             return cell
         }
     }
 
-    class SiteCell: UITableViewCell, Updatable, SiteObserver, UserObserver, AppConfigObserver, InAppFeatureObserver {
+    class SiteCell: UITableViewCell, CellAppearance, Updatable, SiteObserver, UserObserver, AppConfigObserver, InAppFeatureObserver {
         public weak var sitesView: SitesTableView?
         public var result: SiteItem? {
             willSet {
@@ -514,6 +510,15 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
         }
 
+        func willDisplay() {
+            #if TARGET_APP
+            self.site?.refresh()
+            #endif
+        }
+
+        func didEndDisplaying() {
+        }
+
         override var isSelected: Bool {
             didSet {
                 if oldValue != self.isSelected {
@@ -610,7 +615,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
     }
 
-    class LiefsteCell: UITableViewCell {
+    class LiefsteCell: UITableViewCell, CellAppearance {
         private let emitterView = EmitterView()
         private let propLabel   = UILabel()
         private var player: AVPlayer?
@@ -693,4 +698,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             case cell, menu
         }
     }
+}
+
+protocol CellAppearance {
+    func willDisplay()
+    func didEndDisplaying()
 }
