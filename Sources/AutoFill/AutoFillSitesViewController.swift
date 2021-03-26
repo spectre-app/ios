@@ -49,6 +49,8 @@ class AutoFillSitesViewController: BaseSitesViewController {
                         self.completeRequest( site: site, trackingFrom: "site>cell" )
                     case .menu:
                         self.completeRequest( site: site, trackingFrom: "site>cell>menu" )
+                    case .mode:
+                        self.completeRequest( site: site, trackingFrom: "site>cell>mode" )
                 }
             },
         ]

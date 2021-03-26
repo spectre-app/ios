@@ -31,6 +31,7 @@ class MainUsersViewController: BaseUsersViewController {
         "Enable AutoFill \(.icon( "" )) to use Spectre from other apps.",
         "Biometric \(.icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon )) login is the quickest way to sign in.",
         // Site
+        "Long press a site's mode (\(.icon( "" ))/\(.icon( "" ))/\(.icon( "" ))) to configure it.",
         "Increment your site's counter \(.icon( "" )) if its password is compromised.",
         "Site doesn't accept your password? Try a different Type.",
         "Defense Strategy shows password time-to-crack \(.icon( "" )) if attacked.",

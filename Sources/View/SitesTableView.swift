@@ -426,11 +426,22 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     case .authentication:
                         self.mode = .identification
                     case .identification:
+                        self.mode = .recovery
+                    case .recovery:
                         self.mode = .authentication
-                    default:
+                    @unknown default:
                         self.mode = .authentication
                 }
             }
+            self.modeButton.addGestureRecognizer( UILongPressGestureRecognizer {
+                guard let site = self.site, case .began = $0.state
+                else { return }
+
+                self.sitesView?.siteActions.filter { $0.appearance.contains( .mode ) }.forEach {
+                    $0.tracking.flatMap { Tracker.shared.event( track: $0 ) }
+                    $0.action( site, self.mode, .menu )
+                }
+            } )
 
             // - Hierarchy
             self.contentView.addSubview( self.contentStack )
@@ -695,7 +706,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let action:     (Site, SpectreKeyPurpose?, Appearance) -> Void
 
         enum Appearance {
-            case cell, menu
+            case cell, menu, mode
         }
     }
 }

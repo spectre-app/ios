@@ -40,6 +40,19 @@ class MainSitesViewController: BaseSitesViewController {
                    title: "Copy", icon: "", appearance: [ .cell ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: mode! ).copy( fromView: self.view, trackingFrom: "site>cell" )
             },
+            .init( tracking: .subject( "sites.site", action: "mode" ),
+                   title: "Configure", icon: "", appearance: [ .mode ] ) { [unowned self] site, mode, appearance in
+                switch mode {
+                    case .authentication:
+                        self.detailsHost.show( DetailSiteViewController( model: site, focus: DetailSiteViewController.PasswordTypeItem.self ), sender: self )
+                    case .identification:
+                        self.detailsHost.show( DetailSiteViewController( model: site, focus: DetailSiteViewController.LoginTypeItem.self ), sender: self )
+                    case .recovery:
+                        self.detailsHost.show( DetailSiteViewController( model: site, focus: DetailSiteViewController.SecurityAnswerItem.self ), sender: self )
+                    case .none, .some( _ ):
+                        self.detailsHost.show( DetailSiteViewController( model: site ), sender: self )
+                }
+            },
             .init( tracking: .subject( "sites.site", action: "copy" ),
                    title: "Copy Login", icon: "", appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
