@@ -24,6 +24,7 @@ class MainUsersViewController: BaseUsersViewController {
         "Join the discussion \(.icon( "" )) in the Spectre Community.",
         // User
         "Your identicon ╚☻╯⛄ helps you spot typos.",
+        "Long press your user's initials button to sign out quickly \(.icon( "" )).",
         "Set your user's Standard Login \(.icon( "" )), usually your e-mail.",
         "For extra security, set your user's Default Password to max \(.icon( "" )).",
         "Worried about an attack? Set a Defense Strategy \(.icon( "" )).",

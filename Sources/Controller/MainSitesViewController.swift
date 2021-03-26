@@ -30,6 +30,11 @@ class MainSitesViewController: BaseSitesViewController {
                 self.detailsHost.show( DetailUserViewController( model: user ), sender: self )
             }
         }
+        self.userButton.addGestureRecognizer( UILongPressGestureRecognizer {
+            guard case .began = $0.state
+            else { return }
+            self.user?.logout()
+        } )
         self.searchField.rightView = self.userButton
         self.sitesTableView.siteActions = [
             .init( tracking: .subject( "sites.site", action: "settings" ),
