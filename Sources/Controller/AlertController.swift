@@ -182,37 +182,24 @@ class AlertController {
         self.detailLabel.numberOfLines = 0
         self.detailLabel => \.font => Theme.current.font.footnote
 
-        let dismissRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didDismissSwipe ) )
+        let dismissRecognizer = UISwipeGestureRecognizer { _ in self.dismiss() }
         dismissRecognizer.direction = .down
-        let activateRecognizer = UISwipeGestureRecognizer( target: self, action: #selector( self.didActivateSwipe ) )
+        let activateRecognizer = UISwipeGestureRecognizer { _ in self.activate() }
         activateRecognizer.direction = .up
 
         let view = EffectView( content: contentStack )
         view.addGestureRecognizer( dismissRecognizer )
         view.addGestureRecognizer( activateRecognizer )
-        view.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( self.didTap ) ) )
+        view.addGestureRecognizer( UITapGestureRecognizer { _ in
+            if !self.activationConfiguration.isActive && self.details?.nonEmpty != nil {
+                self.activate()
+            }
+            else {
+                self.dismiss()
+            }
+        } )
 
         return view
-    }
-
-    @objc
-    private func didTap(_ recognizer: UITapGestureRecognizer) {
-        if !self.activationConfiguration.isActive && self.details?.nonEmpty != nil {
-            self.activate()
-        }
-        else {
-            self.dismiss()
-        }
-    }
-
-    @objc
-    private func didDismissSwipe(_ recognizer: UISwipeGestureRecognizer) {
-        self.dismiss()
-    }
-
-    @objc
-    private func didActivateSwipe(_ recognizer: UISwipeGestureRecognizer) {
-        self.activate()
     }
 }
 

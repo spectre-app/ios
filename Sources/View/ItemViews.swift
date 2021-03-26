@@ -308,18 +308,16 @@ class TapBehaviour<M>: Behaviour<M> {
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
-        let tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didReceiveGesture ) )
+        let tapRecognizer = UITapGestureRecognizer {
+            if let item = self.tapRecognizers[$0], $0.state == .ended {
+                self.doTapped( item: item )
+            }
+        }
         tapRecognizer.name = _describe( type( of: self ) )
         tapRecognizer.isEnabled = self.isEnabled
         self.tapRecognizers[tapRecognizer] = item
         item.view.addGestureRecognizer( tapRecognizer )
         item.view.contentView.isUserInteractionEnabled = !self.isEnabled
-    }
-
-    @objc func didReceiveGesture(_ recognizer: UIGestureRecognizer) {
-        if let item = self.tapRecognizers[recognizer], recognizer.state == .ended {
-            self.doTapped( item: item )
-        }
     }
 
     func doTapped(item: Item<M>) {

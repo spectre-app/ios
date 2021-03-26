@@ -318,19 +318,19 @@ extension UIContextMenuConfiguration {
     }
     var action:    UIAction? {
         get {
-            objc_getAssociatedObject( self, &Key.action ) as? UIAction
+            objc_getAssociatedObject( self, #function ) as? UIAction
         }
         set {
-            objc_setAssociatedObject( self, &Key.action, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN )
+            objc_setAssociatedObject( self, #function, newValue, .OBJC_ASSOCIATION_RETAIN )
         }
     }
 
     var event: Tracker.TimedEvent? {
         get {
-            objc_getAssociatedObject( self, &Key.event ) as? Tracker.TimedEvent
+            objc_getAssociatedObject( self, #function ) as? Tracker.TimedEvent
         }
         set {
-            objc_setAssociatedObject( self, &Key.event, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN )
+            objc_setAssociatedObject( self, #function, newValue, .OBJC_ASSOCIATION_RETAIN )
         }
     }
 
@@ -344,13 +344,6 @@ extension UIContextMenuConfiguration {
                    actionProvider: { actionProvider.provide( $0 ) } )
         previewProvider.configuration = self
         actionProvider.configuration = self
-    }
-
-    // MARK: --- Types ---
-
-    private struct Key {
-        static var action = 0
-        static var event  = 1
     }
 }
 
@@ -547,6 +540,29 @@ extension UIFont {
         }
 
         return self
+    }
+}
+
+extension UIGestureRecognizer {
+    convenience init(_ block: @escaping (Self) -> ()) {
+        let receiver = Receiver( action: block )
+        self.init( target: receiver, action: #selector( receiver.handle ) )
+        objc_setAssociatedObject( self, #function, receiver, .OBJC_ASSOCIATION_RETAIN )
+    }
+
+    class Receiver<R: UIGestureRecognizer> {
+        let action: (R) -> ()
+
+        init(action: @escaping (R) -> ()) {
+            self.action = action
+        }
+
+        @objc
+        func handle(_ recognizer: UIGestureRecognizer) {
+            if let recognizer = recognizer as? R {
+                self.action( recognizer )
+            }
+        }
     }
 }
 
