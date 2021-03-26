@@ -272,7 +272,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let isPreferred: Bool
 
         var id: String {
-            self.site.siteName
+            self.site.isNew ? "": self.site.siteName
         }
 
         init(site: Site, query: String = "", preferred: Bool = false) {
