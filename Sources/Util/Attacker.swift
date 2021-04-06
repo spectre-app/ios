@@ -5,14 +5,11 @@
 
 import Foundation
 
-/* An Nvidia GTX 1080 Ti (250W) calculates ~20273 bcrypt-5 hashes per second @ ~490$ -> 21 H/$ */
-/* An GeForce GTX 1050 Ti (75W) calculates ~4104 bcrypt-5 hashes per second @ ~160$ -> 25 H/$ */
-/* An GeForce GTX 980 Ti (250W) calculates ~12306 bcrypt-5 hashes per second @ ~480$ -> 25 H/$ */
-/* An Nvidia GTX 1060 (120W) calculates ~7800 bcrypt-5 hashes per second @ ~310$ -> 25 H/$ */
-let attempts_per_second = Decimal( 7800 ) // H/s
-let cost_fixed          = Decimal( 310 ) // $
-let cost_watt           = Decimal( 120 ) // W
-let cost_per_kwh        = Decimal( 0.1 ) // $/kWh
+/* An Nvidia GTX 1080 Ti (250W) calculates ~727 bcrypt-10 hashes per second */
+let attempts_per_second = Decimal( 727 ) // H/s
+let cost_fixed          = Decimal( 1200 ) // $
+let cost_watt           = Decimal( 250 ) // W
+let cost_per_kwh        = Decimal( 0.15 ) // $/kWh
 
 enum Attacker: Int, CaseIterable, CustomStringConvertible {
     static let `default` = Attacker.private
@@ -104,7 +101,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         for passwordCharacter in string.utf8CString {
             var characterEntropy = Decimal( 256 ) /* a byte */
 
-            for characterClass in [ "v", "c", "a", "x" ] {
+            for characterClass in [ "v", "c", "a", "n", "x" ] {
                 guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
                 else { continue }
 
