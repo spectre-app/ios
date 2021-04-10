@@ -134,6 +134,9 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 passwordField.rightViewMode = .always
                 passwordField.textAlignment = .center
 
+                self.leftItemView.frame.size = self.leftItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize )
+                self.rightItemView.frame.size = self.rightItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize )
+
                 NotificationCenter.default.addObserver( forName: UITextField.textDidChangeNotification, object: passwordField, queue: nil ) { notification in
                     self.setNeedsIdenticon()
                 }

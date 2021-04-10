@@ -330,7 +330,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
-                    .constrain( as: .horizontalCenterV ).activate()
+                    .constrain( as: .box ).activate()
             LayoutConfiguration( view: self.avatarButton )
                     .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
                     .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
@@ -339,6 +339,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor ) }
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with(priority: .defaultHigh) }
                     .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
                     .activate()
             LayoutConfiguration( view: self.avatarTip )

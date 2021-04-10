@@ -297,6 +297,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         "!! \(user.userName) is NOT using the latest algorithm. !!")
                 """, preferredStyle: .actionSheet )
                 controller.popoverPresentationController?.sourceView = item.view
+                controller.popoverPresentationController?.sourceRect = item.view.bounds
                 if user.algorithm < .last {
                     let upgrade = user.algorithm.advanced( by: 1 )
                     controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in

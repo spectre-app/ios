@@ -104,7 +104,7 @@ class CarouselView: UICollectionView {
 
             self.bounds = self.collectionView?.bounds ?? .null
             self.count = self.collectionView?.numberOfSections == 0 ? 0: self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
-            let scan = self.bounds.origin.x / self.bounds.size.width
+            let scan = self.bounds.isEmpty ? 0: self.bounds.origin.x / self.bounds.size.width
 
             // Align attributes keys when indexPaths change.
             let attributes = self.attributes.values.filter { $0.indexPath.item < self.count }

@@ -466,6 +466,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                         "!! \(site.siteName) is NOT using the latest algorithm. !!")
                 """, preferredStyle: .actionSheet )
                 controller.popoverPresentationController?.sourceView = item.view
+                controller.popoverPresentationController?.sourceRect = item.view.bounds
                 if site.algorithm < .last {
                     let upgrade = site.algorithm.advanced( by: 1 )
                     controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
