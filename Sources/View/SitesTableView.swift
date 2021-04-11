@@ -34,7 +34,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.updateTask.request()
         }
     }
-    public var preferredSite:   String?
+    public var proposedSite:    String?
 
     private lazy var sitesDataSource = SitesSource( view: self )
 
@@ -69,9 +69,17 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    override func didMoveToWindow() {
+        if self.window != nil {
+            self.updateTask.request( now: true )
+        }
+
+        super.didMoveToWindow()
+    }
+
     // MARK: --- Internal ---
 
-    var updatesPostponed: Bool {
+    var updatesRejected: Bool {
         // Updates prior to attachment may result in an incorrect initial content offset.
         DispatchQueue.main.await { self.window == nil }
     }
@@ -89,7 +97,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             let results = SiteItem.filtered( user.sites, query: self.query ?? "", preferred: self.preferredFilter )
             elementsBySection.append( results )
 
-            // Add "new site" result if there is a query and no exact result
+            // Add "new site" from query if there is one and no exact result
             if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
                 let newItem = SiteItem( site: Site( user: user, siteName: query ), query: query )
                 elementsBySection.append( [ newItem ] )
@@ -98,13 +106,17 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     self.sitesDataSource.selectedItem = newItem
                 }
             }
-            // Add "new site" result if there is a preferred site and no preferred results
-            else if let preferredSite = self.preferredSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
-                let preferredItem = SiteItem( site: Site( user: user, siteName: preferredSite ), preferred: true )
-                elementsBySection.append( [ preferredItem ] )
+            // Add "new site" from proposed site if there is one and no preferred results
+            else if let proposedSite = self.proposedSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
+                let proposedItem = SiteItem( site: Site( user: user, siteName: proposedSite ), preferred: true )
+                elementsBySection.append( [ proposedItem ] )
 
-                if wasSelectedItem?.id == preferredItem.id {
-                    self.sitesDataSource.selectedItem = preferredItem
+                if let wasSelectedItem = wasSelectedItem {
+                    if wasSelectedItem.id == proposedItem.id {
+                        self.sitesDataSource.selectedItem = proposedItem
+                    }
+                } else {
+                    self.sitesDataSource.selectedItem = proposedItem
                 }
             }
             // No "new site" results.
@@ -112,9 +124,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 elementsBySection.append( [] )
             }
 
-            // If no selection override, restore originally selected item if it's still in the results.
+            // If no selection requested, restore originally selected item if it's still in the results, or initially select the first item.
             if self.sitesDataSource.selectedItem == nil {
-                self.sitesDataSource.selectedItem = results.first { $0.id == wasSelectedItem?.id }
+                if let wasSelectedItem = wasSelectedItem {
+                    self.sitesDataSource.selectedItem = results.first { $0.id == wasSelectedItem.id }
+                }
+                else if self.sitesDataSource.isFirstTimeUse, let firstResult = results.first {
+                    self.sitesDataSource.selectedItem = firstResult
+                }
             }
         }
 
@@ -328,7 +345,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
             cell.sitesView = self.view
             cell.result = result
-            cell.updateTask.request( immediate: true )
+            cell.updateTask.request( now: true )
             return cell
         }
     }

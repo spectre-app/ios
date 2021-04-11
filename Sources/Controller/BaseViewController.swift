@@ -66,7 +66,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         super.viewWillAppear( animated )
 
         UIView.performWithoutAnimation {
-            self.updateTask.request( immediate: true )
+            self.updateTask.request( now: true )
         }
     }
 

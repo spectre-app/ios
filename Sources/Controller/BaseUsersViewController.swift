@@ -136,7 +136,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 UIView.performWithoutAnimation {
                     cell.state = (userFile: self.element( at: indexPath ) ?? nil,
                                   userActions: self.viewController.userActions,
-                                  hasSelected: self.viewController.usersCarousel.selectedItem != nil,
                                   viewController: self.viewController)
                 }
             }
@@ -176,13 +175,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
         internal weak var userEvent: Tracker.TimedEvent?
-        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], hasSelected: Bool, viewController: BaseUsersViewController)! {
+        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], viewController: BaseUsersViewController)! {
             didSet {
                 self.userFile = self.state.userFile
                 self.userActions = self.state.userActions
-                self.hasSelected = self.state.hasSelected
                 self.viewController = self.state.viewController
-                self.updateTask.request( immediate: true )
+                self.updateTask.request( now: true )
             }
         }
 
@@ -210,7 +208,11 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 }
             }
         }
-        private weak var viewController: BaseUsersViewController?
+        private weak var viewController: BaseUsersViewController? {
+            didSet {
+                self.hasSelected = self.viewController?.usersCarousel.selectedItem != nil
+            }
+        }
 
         private var avatar: User.Avatar? {
             didSet {
