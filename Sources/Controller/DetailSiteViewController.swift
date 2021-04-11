@@ -98,7 +98,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                             if InAppFeature.premium.isEnabled,
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
                                        attacker.timeToCrack( string: try? $0.result().token.await() ) {
-                                return "\(.icon( "" )) Time to crack: \(timeToCrack) 🅿︎"
+                                return "\(.icon( "" )) Time to crack: \(timeToCrack) 🅿︎"
                             }
                             else {
                                 return "Time to crack: unknown 🅿︎"

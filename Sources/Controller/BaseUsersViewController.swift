@@ -223,8 +223,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let nameField = UITextField()
         private let floorView = BackgroundView( mode: .tint )
         private let avatarTip = UILabel()
-        private lazy var avatarButton = EffectButton( track: .subject( "users.user", action: "avatar" ),
-                                                      border: 0, background: false, circular: false ) { _, _ in self.avatar?.next() }
+        private lazy var avatarButton    = EffectButton( track: .subject( "users.user", action: "avatar" ),
+                                                         border: 0, background: false, circular: false )
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
                                                         image: .icon( "" ), border: 0, background: false )
         private var secretEvent:                 Tracker.TimedEvent?
@@ -265,6 +265,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.avatarButton.padded = false
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
+            self.avatarButton.action( for: .primaryActionTriggered ) {
+                self.avatar?.next()
+            }
 
             self.biometricButton.action( for: .primaryActionTriggered ) {
                 self.attemptBiometrics()
@@ -339,7 +342,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor ) }
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with(priority: .defaultHigh) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultHigh ) }
                     .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
                     .activate()
             LayoutConfiguration( view: self.avatarTip )
@@ -516,7 +519,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameField.isHidden = !self.nameLabel.isHidden
             self.avatarTip.isHidden = self.nameField.isHidden
             self.secretField.nameField = !self.nameField.isHidden ? self.nameField: nil
-            self.avatarButton.isUserInteractionEnabled = self.isSelected
+            self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userFile == nil
             self.avatarButton.image = self.avatar?.image ?? .icon( "", withSize: 96, invert: true )
             self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
             self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||

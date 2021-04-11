@@ -99,7 +99,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
           Item<Void>( subitems: [
               FeatureItem( name: "Biometric Lock", icon: "",
                            caption: "A touch or smile and we can recognize you now. Skip your personal secret." ),
-              FeatureItem( name: "Password Auto-Fill", icon: "",
+              FeatureItem( name: "Auto-Fill", icon: "",
                            caption: "Your passwords exactly when you need them, instantly, from any app." ),
           ] ),
           Item<Void>( subitems: [
@@ -114,6 +114,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
               FeatureItem( name: "Application Themes", icon: "",
                            caption: "Make it yours and dye \(productName) with a dash of personality." ),
           ] ),
+          FeatureItem( name: "Support", icon: "",
+                       caption: "Supercharge the development of \(productName)'s open source privacy-first digital identity platform." ),
           SeparatorItem( subitems: [
               EnablePremiumItem(),
               EnableStoreItem(),
@@ -275,7 +277,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                         value: { _ in InAppFeature.premium.isEnabled }, update: { InAppFeature.premium.enable( $1 ) },
                         caption: { _ in
                             """
-                            Developer override for premium features.
+                            Toggle access to all Premium features while testing the app.
                             """
                         } )
         }
@@ -284,11 +286,11 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
     class EnableStoreItem: ToggleItem<Void> {
         init() {
             super.init( track: .subject( "premium", action: "sandbox" ),
-                        title: "App Store 🅳", icon: { _ in .icon( "" ) },
+                        title: "Sandbox 🅳", icon: { _ in .icon( "" ) },
                         value: { _ in AppConfig.shared.sandboxStore }, update: { AppConfig.shared.sandboxStore = $1 },
                         caption: { _ in
                             """
-                            App Store sandbox subscriptions.
+                            Temporary subscription purchase testing through the App Store sandbox.
                             """
                         } )
         }

@@ -227,10 +227,10 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         } )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
-                ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "Sharing", icon: { _ in .icon( "" ) },
+                ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "" ) },
                                   value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """
-                    Expose for backups through Apple file sharing.
+                    Allow other apps to see and backup your user through On My iPhone.
                     """
                 } )
             ] )

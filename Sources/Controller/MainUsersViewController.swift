@@ -14,7 +14,7 @@ class MainUsersViewController: BaseUsersViewController {
     private let tipsView   = TipsView( tips: [
         // App
         "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
-        "Spectre is 100% open source \(.icon( "" )) and Free Software.",
+        "Spectre is 100% open source \(.icon( "" )) and Free Software.",
         "Leave no traces by using incognito \(.icon( "" )) mode.",
         "With Diagnostics \(.icon( "" )), we can build you the best app.",
         "Be reachable for emergency security alerts \(.icon( "" )).",
@@ -24,7 +24,7 @@ class MainUsersViewController: BaseUsersViewController {
         "Join the discussion \(.icon( "" )) in the Spectre Community.",
         // User
         "Your identicon ╚☻╯⛄ helps you spot typos.",
-        "Long press your user's initials button to sign out quickly \(.icon( "" )).",
+        "Long press your user's initials button to sign out quickly \(.icon( "" )).",
         "Set your user's Standard Login \(.icon( "" )), usually your e-mail.",
         "For extra security, set your user's Default Password to max \(.icon( "" )).",
         "Worried about an attack? Set a Defense Strategy \(.icon( "" )).",
@@ -32,11 +32,11 @@ class MainUsersViewController: BaseUsersViewController {
         "Enable AutoFill \(.icon( "" )) to use Spectre from other apps.",
         "Biometric \(.icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon )) login is the quickest way to sign in.",
         // Site
-        "Long press a site's mode (\(.icon( "" ))/\(.icon( "" ))/\(.icon( "" ))) to configure it.",
+        "Long press a site's mode (\(.icon( "" ))/\(.icon( "" ))/\(.icon( "" ))) to configure it.",
         "Increment your site's counter \(.icon( "" )) if its password is compromised.",
         "Site doesn't accept your password? Try a different Type.",
-        "Defense Strategy shows password time-to-crack \(.icon( "" )) if attacked.",
-        "Use Security Answers \(.icon( "" )) to avoid divulging private information.",
+        "Defense Strategy shows password time-to-crack \(.icon( "" )) if attacked.",
+        "Use Security Answers \(.icon( "" )) to avoid divulging private information.",
         "Sites are automatically styled \(.icon( "" )) from their home page.",
     ], first: 0, random: false )
     private let appToolbar = UIStackView()

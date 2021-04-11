@@ -40,7 +40,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
 
     private lazy var detailRecognizer = UITapGestureRecognizer { _ in self.hide() }
     private lazy var closeButton = EffectButton( track: .subject( "details", action: "close" ),
-                                                 attributedTitle: .icon( "" ) ) { _, _ in self.hide() }
+                                                 attributedTitle: .icon( "" ) ) { _, _ in self.hide() }
     private var popupConfiguration:        LayoutConfiguration<UIView>!
     private var fixedContentConfiguration: LayoutConfiguration<UIView>!
     private var contentSizeObservation:    NSKeyValueObservation?
