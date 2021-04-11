@@ -34,7 +34,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.updateTask.request()
         }
     }
-    public var preferredSite:   String?
+    public var proposedSite:    String?
 
     private lazy var sitesDataSource = SitesSource( view: self )
 
@@ -69,9 +69,17 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         fatalError( "init(coder:) is not supported for this class" )
     }
 
+    override func didMoveToWindow() {
+        if self.window != nil {
+            self.updateTask.request( now: true )
+        }
+
+        super.didMoveToWindow()
+    }
+
     // MARK: --- Internal ---
 
-    var updatesPostponed: Bool {
+    var updatesRejected: Bool {
         // Updates prior to attachment may result in an incorrect initial content offset.
         DispatchQueue.main.await { self.window == nil }
     }
@@ -81,7 +89,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         else { return }
 
         var elementsBySection = [ [ SiteItem ] ]()
-        let wasSelectedItem = self.sitesDataSource.selectedItem
+        let wasSelectedItem   = self.sitesDataSource.selectedItem
         self.sitesDataSource.selectedItem = nil
 
         if let user = self.user, user.userKeyFactory != nil {
@@ -89,7 +97,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             let results = SiteItem.filtered( user.sites, query: self.query ?? "", preferred: self.preferredFilter )
             elementsBySection.append( results )
 
-            // Add "new site" result if there is a query and no exact result
+            // Add "new site" from query if there is one and no exact result
             if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
                 let newItem = SiteItem( site: Site( user: user, siteName: query ), query: query )
                 elementsBySection.append( [ newItem ] )
@@ -98,13 +106,17 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     self.sitesDataSource.selectedItem = newItem
                 }
             }
-            // Add "new site" result if there is a preferred site and no preferred results
-            else if let preferredSite = self.preferredSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
-                let preferredItem = SiteItem( site: Site( user: user, siteName: preferredSite ), preferred: true )
-                elementsBySection.append( [ preferredItem ] )
+            // Add "new site" from proposed site if there is one and no preferred results
+            else if let proposedSite = self.proposedSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
+                let proposedItem = SiteItem( site: Site( user: user, siteName: proposedSite ), preferred: true )
+                elementsBySection.append( [ proposedItem ] )
 
-                if wasSelectedItem?.id == preferredItem.id {
-                    self.sitesDataSource.selectedItem = preferredItem
+                if let wasSelectedItem = wasSelectedItem {
+                    if wasSelectedItem.id == proposedItem.id {
+                        self.sitesDataSource.selectedItem = proposedItem
+                    }
+                } else {
+                    self.sitesDataSource.selectedItem = proposedItem
                 }
             }
             // No "new site" results.
@@ -112,9 +124,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 elementsBySection.append( [] )
             }
 
-            // If no selection override, restore originally selected item if it's still in the results.
+            // If no selection requested, restore originally selected item if it's still in the results, or initially select the first item.
             if self.sitesDataSource.selectedItem == nil {
-                self.sitesDataSource.selectedItem = results.first { $0.id == wasSelectedItem?.id }
+                if let wasSelectedItem = wasSelectedItem {
+                    self.sitesDataSource.selectedItem = results.first { $0.id == wasSelectedItem.id }
+                }
+                else if self.sitesDataSource.isFirstTimeUse, let firstResult = results.first {
+                    self.sitesDataSource.selectedItem = firstResult
+                }
             }
         }
 
@@ -125,15 +142,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     // MARK: --- UITableViewDelegate ---
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        (cell as? LiefsteCell)?.willDisplay()
-
-        #if TARGET_APP
-        (cell as? SiteCell)?.site?.refresh()
-        #endif
+        (cell as? CellAppearance)?.willDisplay()
     }
 
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        (cell as? LiefsteCell)?.didEndDisplaying()
+        (cell as? CellAppearance)?.didEndDisplaying()
     }
 
     @available( iOS 13, * )
@@ -276,7 +289,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let isPreferred: Bool
 
         var id: String {
-            self.site.siteName
+            self.site.isNew ? "": self.site.siteName
         }
 
         init(site: Site, query: String = "", preferred: Bool = false) {
@@ -303,7 +316,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     class SitesSource: DataSource<SiteItem> {
         unowned let view: SitesTableView
-        var selectedItem:  SiteItem?
+        var selectedItem: SiteItem?
 
         init(view: SitesTableView) {
             self.view = view
@@ -332,12 +345,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
             cell.sitesView = self.view
             cell.result = result
-            cell.updateTask.request(immediate: true)
+            cell.updateTask.request( now: true )
             return cell
         }
     }
 
-    class SiteCell: UITableViewCell, Updatable, SiteObserver, UserObserver, AppConfigObserver, InAppFeatureObserver {
+    class SiteCell: UITableViewCell, CellAppearance, Updatable, SiteObserver, UserObserver, AppConfigObserver, InAppFeatureObserver {
         public weak var sitesView: SitesTableView?
         public var result: SiteItem? {
             willSet {
@@ -430,11 +443,22 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     case .authentication:
                         self.mode = .identification
                     case .identification:
+                        self.mode = .recovery
+                    case .recovery:
                         self.mode = .authentication
-                    default:
+                    @unknown default:
                         self.mode = .authentication
                 }
             }
+            self.modeButton.addGestureRecognizer( UILongPressGestureRecognizer {
+                guard let site = self.site, case .began = $0.state
+                else { return }
+
+                self.sitesView?.siteActions.filter { $0.appearance.contains( .mode ) }.forEach {
+                    $0.tracking.flatMap { Tracker.shared.event( track: $0 ) }
+                    $0.action( site, self.mode, .menu )
+                }
+            } )
 
             // - Hierarchy
             self.contentView.addSubview( self.contentStack )
@@ -514,6 +538,15 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
         }
 
+        func willDisplay() {
+            #if TARGET_APP
+            self.site?.refresh()
+            #endif
+        }
+
+        func didEndDisplaying() {
+        }
+
         override var isSelected: Bool {
             didSet {
                 if oldValue != self.isSelected {
@@ -585,7 +618,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 case .identification:
                     self.modeButton.image = .icon( "" )
                 case .recovery:
-                    self.modeButton.image = .icon( "" )
+                    self.modeButton.image = .icon( "" )
                 @unknown default:
                     self.modeButton.image = nil
             }
@@ -610,7 +643,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
     }
 
-    class LiefsteCell: UITableViewCell {
+    class LiefsteCell: UITableViewCell, CellAppearance {
         private let emitterView = EmitterView()
         private let propLabel   = UILabel()
         private var player: AVPlayer?
@@ -690,7 +723,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let action:     (Site, SpectreKeyPurpose?, Appearance) -> Void
 
         enum Appearance {
-            case cell, menu
+            case cell, menu, mode
         }
     }
+}
+
+protocol CellAppearance {
+    func willDisplay()
+    func didEndDisplaying()
 }

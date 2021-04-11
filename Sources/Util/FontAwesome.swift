@@ -37,14 +37,23 @@ extension NSAttributedString {
         guard let icon = icon
         else { return nil }
 
-        let font           = IconStyle.duotone.font( withSize: size )
+        var duotone = true
+        var font    = IconStyle.duotone.font( withSize: size )
+        var glyphs  = [ CGGlyph ]( repeating: kCGFontIndexInvalid, count: icon.utf16.count )
+        if !CTFontGetGlyphsForCharacters( font as CTFont, [ UniChar ]( icon.utf16 ), &glyphs, icon.utf16.count ) {
+            duotone = false
+            font = IconStyle.brands.font( withSize: size )
+        }
+
         let attributedIcon = NSMutableAttributedString( string: icon, attributes: [
-            NSAttributedString.Key.kern: -1000,
+            NSAttributedString.Key.kern: duotone ? -1000: 0,
             NSAttributedString.Key.font: font,
             NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
         ] )
-        if let iconScalar = icon.unicodeScalars.first, let toneScalar = Unicode.Scalar( 0x100000 + iconScalar.value ) {
-            attributedIcon.append( NSAttributedString( string: String( String.UnicodeScalarView( [ toneScalar ] ) ), attributes: [
+
+        if duotone {
+            let toneScalars = icon.unicodeScalars.compactMap { Unicode.Scalar( 0x100000 + $0.value ) }
+            attributedIcon.append( NSAttributedString( string: String( String.UnicodeScalarView( toneScalars ) ), attributes: [
                 NSAttributedString.Key.font: font,
                 NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
             ] ) )

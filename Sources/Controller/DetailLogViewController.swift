@@ -54,6 +54,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             We're here to help.  You can also reach us at:\nsupport@spectre.app
                             """
                         } ) {
+
                 if let viewController = $0.viewController {
                     let options = ConversationOptions()
                     options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
@@ -61,6 +62,14 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                 }
             }
 
+            if Freshchat.sharedInstance().config.appKey.nonEmpty == nil,
+               let freshchatApp = freshchatApp.b64Decrypt(), let freshchatKey = freshchatKey.b64Decrypt() {
+                let freshchatConfig = FreshchatConfig( appID: freshchatApp, andAppKey: freshchatKey )
+                freshchatConfig.domain = "msdk.eu.freshchat.com"
+                Freshchat.sharedInstance().initWith( freshchatConfig )
+            }
+
+            self.addBehaviour( ConditionalBehaviour( mode: .hides ) { _ in Freshchat.sharedInstance().config.appKey.nonEmpty == nil } )
             self.addBehaviour( PremiumTapBehaviour() )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }

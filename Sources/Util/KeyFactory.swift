@@ -290,7 +290,7 @@ public class KeychainKeyFactory: KeyFactory {
                     return ""
 
                 case .biometricFace:
-                    return ""
+                    return ""
 
                 case .biometricNone:
                     return nil

@@ -40,17 +40,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = MainNavigationController( rootViewController: MainUsersViewController() )
         self.window!.makeKeyAndVisible()
 
-        if let freshchatApp = freshchatApp.b64Decrypt(), let freshchatKey = freshchatKey.b64Decrypt() {
-            let freshchatConfig = FreshchatConfig( appID: freshchatApp, andAppKey: freshchatKey )
-            freshchatConfig.domain = "msdk.eu.freshchat.com"
-            Freshchat.sharedInstance().initWith( freshchatConfig )
-        }
-
         return true
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        self.launchDecisions()
+        OperationQueue.main.addOperation {
+            self.launchDecisions()
+        }
 
         // Automatic subscription renewal (only if user is logged in to App Store and capable).
         AppStore.shared.update()
@@ -59,6 +55,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func launchDecisions(completion: @escaping () -> () = {}) {
+        guard let window = self.window
+        else { return }
 
         // Diagnostics decision
         if !AppConfig.shared.diagnosticsDecided {
@@ -78,8 +76,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 AppConfig.shared.diagnosticsDecided = true
                 self.launchDecisions( completion: completion )
             } )
-            controller.popoverPresentationController?.sourceView = self.window
-            self.window?.rootViewController?.present( controller, animated: true )
+            controller.popoverPresentationController?.sourceView = window
+            controller.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
+            window.rootViewController?.present( controller, animated: true )
             return
         }
 
@@ -91,13 +90,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
             If you enable notifications, we can inform you of known breaches and keep you current on important security events.
             """, preferredStyle: .actionSheet )
-            controller.popoverPresentationController?.sourceView = self.window
+            controller.popoverPresentationController?.sourceView = window
+            controller.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
             controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
                 Tracker.shared.enableNotifications( consented: false ) { _ in
                     self.launchDecisions( completion: completion )
                 }
             } )
-            self.window?.rootViewController?.present( controller, animated: true )
+            window.rootViewController?.present( controller, animated: true )
         }
     }
 

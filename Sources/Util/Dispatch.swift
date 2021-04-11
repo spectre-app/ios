@@ -5,6 +5,12 @@
 
 import Foundation
 
+extension DispatchTime {
+    static func -(lhs: DispatchTime, rhs: DispatchTime) -> TimeInterval {
+        TimeInterval( lhs.uptimeNanoseconds - rhs.uptimeNanoseconds ) / TimeInterval( NSEC_PER_SEC )
+    }
+}
+
 extension DispatchQueue {
     public static let api = DispatchQueue( label: "\(productName): api", qos: .utility, attributes: [ .concurrent ] )
 
@@ -30,13 +36,23 @@ extension DispatchQueue {
      *   - its label matches the current dispatch queue's label.
      */
     public func perform(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
-                        execute work: @escaping @convention(block) () -> Void) {
-        let deadNow = deadline ?? .now() <= DispatchTime.now()
+                        await: Bool = false, execute work: @escaping @convention(block) () -> Void) {
+        let deadNow = deadline.flatMap { $0 <= DispatchTime.now() } ?? true
 
-        if self.isActive && deadNow {
-            self.run( group: group ) { DispatchWorkItem( qos: qos, flags: flags, block: work ).perform() }
+        if await {
+            if self.isActive {
+                self.run( deadline: deadNow ? nil: deadline, group: group, qos: qos, flags: flags, work: work )
+            }
+            else {
+                self.sync( flags: flags ) {
+                    self.run( deadline: deadNow ? nil: deadline, group: group, qos: qos, flags: flags, work: work )
+                }
+            }
         }
-        else if let deadline = deadline, !deadNow {
+        else if deadNow && self.isActive {
+            self.run( group: group, qos: qos, flags: flags, work: work )
+        }
+        else if !deadNow, let deadline = deadline {
             self.asyncAfter( deadline: deadline, qos: qos, flags: flags ) {
                 self.run( group: group, work: work )
             }
@@ -48,7 +64,12 @@ extension DispatchQueue {
         }
     }
 
-    private func run(group: DispatchGroup? = nil, work: @escaping @convention(block) () -> Void) {
+    private func run(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                     work: @escaping @convention(block) () -> Void) {
+        if let deadline = deadline {
+            Thread.sleep( forTimeInterval: deadline - .now() )
+        }
+
         group?.enter()
         let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
         defer {
@@ -56,7 +77,12 @@ extension DispatchQueue {
             group?.leave()
         }
 
-        work()
+        if qos != .unspecified || !flags.isEmpty {
+            DispatchWorkItem( qos: qos, flags: flags, block: work ).perform()
+        }
+        else {
+            work()
+        }
     }
 
     /** Performs the work synchronously, returning the work's result. */
@@ -318,7 +344,7 @@ public class Promise<V> {
     }
 
     enum Interruption: Error {
-        case invalidated, rejected, postponed
+        case cancelled, invalidated, rejected, postponed
     }
 }
 
@@ -354,9 +380,9 @@ public class DispatchTask<V> {
      * The task is removed from the request queue as soon as the work begins.
      */
     @discardableResult
-    public func request(immediate: Bool = false) -> Promise<V> {
+    public func request(now: Bool = false, await: Bool = false) -> Promise<V> {
         self.requestQueue.await {
-            if immediate {
+            if now {
                 self.cancel()
             }
 
@@ -365,36 +391,35 @@ public class DispatchTask<V> {
             }
 
             if self.requestItem?.isCancelled ?? false {
-                return Promise( .failure( AppError.internal( cause: "Task is cancelled." ) ) )
-            }
-
-            var value: V?, workError: Error?
-            self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
-                do { value = try self.work(); workError = nil }
-                catch { value = nil; workError = error }
+                return Promise( .failure( Promise<V>.Interruption.cancelled ) )
             }
 
             let requestPromise = Promise<V>()
-            self.requestPromise = requestPromise
-            let _ = self.workQueue.promise( requestPromise, deadline: immediate ? .now(): self.deadline(), group: self.group,
-                                            qos: self.qos, flags: self.flags ) { () -> V in
-                if self.requestItem?.isCancelled ?? false {
-                    throw AppError.internal( cause: "Task was cancelled." )
-                }
-
-                self.requestItem?.perform()
-                if let workError = workError {
-                    throw workError
-                }
-
-                if let value = value {
-                    return value
-                }
-
-                throw AppError.internal( cause: "Task was skipped." )
-            }.then( on: self.requestQueue ) { _ in
+            self.requestPromise = requestPromise.finally( on: self.requestQueue ) {
                 self.requestItem = nil
                 self.requestPromise = nil
+            }
+            self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
+                do {
+                    guard !(self.requestItem?.isCancelled ?? false)
+                    else {
+                        throw Promise<V>.Interruption.cancelled
+                    }
+
+                    requestPromise.finish( .success( try self.work() ) )
+                }
+                catch Promise<V>.Interruption.postponed {
+                    self.workQueue.perform( deadline: .now() + .milliseconds( 300 ), group: self.group, qos: self.qos, flags: self.flags ) {
+                        self.requestItem?.perform()
+                    }
+                }
+                catch {
+                    requestPromise.finish( .failure( error ) )
+                }
+            }
+
+            self.workQueue.perform( deadline: now ? nil: self.deadline(), group: self.group, qos: self.qos, flags: self.flags, await: await ) {
+                self.requestItem?.perform()
             }
 
             return requestPromise

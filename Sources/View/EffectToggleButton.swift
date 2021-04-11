@@ -8,7 +8,7 @@ import UIKit
 class EffectToggleButton: UIView {
     private let button     = UIButton()
     private let checkLabel = UILabel()
-    private lazy var contentView = EffectView()
+    private lazy var contentView = EffectView( circular: true, dims: true )
 
     var tapEffect = true
     var tracking: Tracking?
@@ -20,14 +20,15 @@ class EffectToggleButton: UIView {
         set {
             DispatchQueue.main.perform {
                 self.button.isSelected = newValue
+                self.contentView.isSelected = newValue
 
                 UIView.animate( withDuration: .short ) {
-                    self.button.alpha = self.isSelected ? .on: .short
-//                    self.button.imageView?.alpha = self.isSelected ? .on: .short
+                    self.button.alpha = self.isSelected ? .on: .long
                     self.checkLabel => \.textColor => Theme.current.color.body.transform { [unowned self] in
                         $0?.with( alpha: self.isSelected ? .on: .off )
                     }
                     self.checkLabel.layer.borderWidth = self.isSelected ? 1.5: 1
+                    self.checkLabel.layer => \.borderColor => (self.isSelected ? Theme.current.color.body: Theme.current.color.mute)
                 }
             }
         }
@@ -78,8 +79,6 @@ class EffectToggleButton: UIView {
         self.checkLabel.layer.masksToBounds = true
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
-
-        self.contentView.isCircular = true
 
         self.button.contentEdgeInsets = .border( 32 )
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in

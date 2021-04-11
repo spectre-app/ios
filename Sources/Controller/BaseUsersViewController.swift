@@ -136,7 +136,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 UIView.performWithoutAnimation {
                     cell.state = (userFile: self.element( at: indexPath ) ?? nil,
                                   userActions: self.viewController.userActions,
-                                  hasSelected: self.viewController.usersCarousel.selectedItem != nil,
                                   viewController: self.viewController)
                 }
             }
@@ -176,13 +175,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
         internal weak var userEvent: Tracker.TimedEvent?
-        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], hasSelected: Bool, viewController: BaseUsersViewController)! {
+        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], viewController: BaseUsersViewController)! {
             didSet {
                 self.userFile = self.state.userFile
                 self.userActions = self.state.userActions
-                self.hasSelected = self.state.hasSelected
                 self.viewController = self.state.viewController
-                self.updateTask.request( immediate: true )
+                self.updateTask.request( now: true )
             }
         }
 
@@ -210,7 +208,11 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 }
             }
         }
-        private weak var viewController: BaseUsersViewController?
+        private weak var viewController: BaseUsersViewController? {
+            didSet {
+                self.hasSelected = self.viewController?.usersCarousel.selectedItem != nil
+            }
+        }
 
         private var avatar: User.Avatar? {
             didSet {
@@ -223,8 +225,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let nameField = UITextField()
         private let floorView = BackgroundView( mode: .tint )
         private let avatarTip = UILabel()
-        private lazy var avatarButton = EffectButton( track: .subject( "users.user", action: "avatar" ),
-                                                      border: 0, background: false, circular: false ) { _, _ in self.avatar?.next() }
+        private lazy var avatarButton    = EffectButton( track: .subject( "users.user", action: "avatar" ),
+                                                         border: 0, background: false, circular: false )
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
                                                         image: .icon( "" ), border: 0, background: false )
         private var secretEvent:                 Tracker.TimedEvent?
@@ -265,6 +267,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.avatarButton.padded = false
             self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
+            self.avatarButton.action( for: .primaryActionTriggered ) {
+                self.avatar?.next()
+            }
 
             self.biometricButton.action( for: .primaryActionTriggered ) {
                 self.attemptBiometrics()
@@ -330,7 +335,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
-                    .constrain( as: .horizontalCenterV ).activate()
+                    .constrain( as: .box ).activate()
             LayoutConfiguration( view: self.avatarButton )
                     .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
                     .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
@@ -339,6 +344,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor ) }
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultHigh ) }
                     .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
                     .activate()
             LayoutConfiguration( view: self.avatarTip )
@@ -515,7 +521,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameField.isHidden = !self.nameLabel.isHidden
             self.avatarTip.isHidden = self.nameField.isHidden
             self.secretField.nameField = !self.nameField.isHidden ? self.nameField: nil
-            self.avatarButton.isUserInteractionEnabled = self.isSelected
+            self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userFile == nil
             self.avatarButton.image = self.avatar?.image ?? .icon( "", withSize: 96, invert: true )
             self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
             self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||

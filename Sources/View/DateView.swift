@@ -40,7 +40,7 @@ class DateView: EffectView {
 
         self.layoutMargins = .border( 4 )
 
-        self.separatorView => \.backgroundColor => Theme.current.color.secondary
+        self.separatorView => \.backgroundColor => Theme.current.color.mute
 
         self.monthLabel.textAlignment = .center
         self.monthLabel => \.textColor => Theme.current.color.body

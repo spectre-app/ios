@@ -125,6 +125,6 @@ class ItemsViewController<M>: BaseViewController {
         self.backgroundView.imageColor = self.color
         self.imageSpacer.isHidden = self.image == nil
 
-        self.items.forEach { $0.updateTask.request( immediate: true ) }
+        self.items.forEach { $0.updateTask.request( now: true ) }
     }
 }

@@ -26,10 +26,10 @@ class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableView
     private let semaphore        = DispatchGroup()
     private let queue            = DispatchQueue( label: "DataSource" )
     private var elementsBySection: [[E]]
-    private var elementsConsumed = false
     private weak var tableView:      UITableView?
     private weak var collectionView: UICollectionView?
 
+    public var isFirstTimeUse = true
     public var isEmpty: Bool {
         self.elementsBySection.reduce( true ) { $0 && $1.isEmpty }
     }
@@ -143,11 +143,11 @@ class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableView
 
         //dbg( "updating dataSource:\n%@\n<=\n%@", self.elementsBySection, toElementsBySection )
 
-        if !self.elementsConsumed || !animated {
+        if self.isFirstTimeUse || !animated {
             //dbg( "%@: perform", self.semaphore )
             DispatchQueue.main.perform( group: self.semaphore ) {
                 self.elementsBySection = toElementsBySection
-                if self.elementsConsumed {
+                if !self.isFirstTimeUse {
                     self.tableView?.reloadData()
                     self.collectionView?.reloadData()
                 }
@@ -325,12 +325,12 @@ class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableView
     // MARK: --- UICollectionViewDataSource ---
 
     public func numberOfSections(in collectionView: UICollectionView) -> Int {
-        self.elementsConsumed = true
+        self.isFirstTimeUse = false
         return self.elementsBySection.count
     }
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        self.elementsConsumed = true
+        self.isFirstTimeUse = false
         return section < self.elementsBySection.count ? self.elementsBySection[section].count: 0
     }
 
@@ -349,12 +349,12 @@ class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableView
     // MARK: --- UITableViewDataSource ---
 
     public func numberOfSections(in tableView: UITableView) -> Int {
-        self.elementsConsumed = true
+        self.isFirstTimeUse = false
         return self.elementsBySection.count
     }
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.elementsConsumed = true
+        self.isFirstTimeUse = false
         return section < self.elementsBySection.count ? self.elementsBySection[section].count: 0
     }
 

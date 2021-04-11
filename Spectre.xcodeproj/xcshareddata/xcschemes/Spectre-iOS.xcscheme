@@ -58,11 +58,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-FIRDebugEnabled"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-FIRDebugDisabled"
+            argument = "-UIViewLayoutFeedbackLoopDebuggingThreshold 10"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
