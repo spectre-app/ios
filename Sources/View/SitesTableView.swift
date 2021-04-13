@@ -370,15 +370,15 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.result?.site
         }
 
-        private var mode            = SpectreKeyPurpose.authentication {
+        private var mode                    = SpectreKeyPurpose.authentication {
             didSet {
                 if oldValue != self.mode {
                     self.updateTask.request()
                 }
             }
         }
-        private let backgroundImage = BackgroundView( mode: .clear )
-        private let modeButton      = EffectButton( track: .subject( "sites.site", action: "mode" ),
+        private let selectedBackgroundImage = BackgroundView( mode: .clear )
+        private let modeButton              = EffectButton( track: .subject( "sites.site", action: "mode" ),
                                                     image: .icon( "" ), border: 0, background: false )
         private let newButton       = EffectButton( track: .subject( "sites.site", action: "add" ),
                                                     image: .icon( "" ), border: 0, background: false )
@@ -407,7 +407,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.isOpaque = false
             self.clipsToBounds = true
 
-            self.selectedBackgroundView = self.backgroundImage
+            self.selectedBackgroundView = self.selectedBackgroundImage
 
             self.contentView.insetsLayoutMarginsFromSafeArea = false
 
@@ -594,9 +594,13 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
 
-            self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
-            self.backgroundImage.image = self.site?.preview.image
-            self.backgroundImage.imageColor = self.site?.preview.color
+            if self.isSelected {
+                self.selectedBackgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
+                self.selectedBackgroundImage.image = self.site?.preview.image
+                self.selectedBackgroundImage.imageColor = self.site?.preview.color
+            } else {
+                self.selectedBackgroundImage.image = nil
+            }
 
             let isNew = self.site?.isNew ?? false
             if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
