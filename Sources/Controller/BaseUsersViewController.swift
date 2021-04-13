@@ -266,7 +266,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.avatarTip => \.textColor => Theme.current.color.secondary
 
             self.avatarButton.padded = false
-            self.avatarButton.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
+            self.avatarButton.button.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
             self.avatarButton.action( for: .primaryActionTriggered ) {
                 self.avatar?.next()
             }
@@ -344,7 +344,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor ) }
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultHigh ) }
                     .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
                     .activate()
             LayoutConfiguration( view: self.avatarTip )
@@ -371,7 +370,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.authenticationConfiguration = LayoutConfiguration( view: self )
                     .apply( LayoutConfiguration( view: self.avatarButton ) { active, inactive in
-                        inactive.constrain { $1.bottomAnchor.constraint( equalTo: $0.centerYAnchor ) }
+                        active.constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
+                        inactive.constrain { $1.bottomAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
                     } )
                     .apply( LayoutConfiguration( view: self.nameLabel ) { active, inactive in
                         active.constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: -20 ) }

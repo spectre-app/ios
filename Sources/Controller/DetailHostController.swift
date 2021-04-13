@@ -138,10 +138,9 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                 UIView.performWithoutAnimation {
                     self.addChild( activeController )
                     activeController.beginAppearanceTransition( true, animated: true )
-                    self.contentView.addSubview( activeController.view )
-                    activeController.view.bounds.size = self.contentView.bounds.size.union(
-                            activeController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
                     self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
+                    activeController.view.bounds.size = self.contentView.bounds.size
+                    self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view )
                             .constrain( as: .box, margin: true ).activate()
                 }
