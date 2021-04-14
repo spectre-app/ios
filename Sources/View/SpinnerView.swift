@@ -34,23 +34,18 @@ public class SpinnerView: UICollectionView {
 
         self.isPagingEnabled = true
         self.contentInsetAdjustmentBehavior = .never
-        self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
+        self.addGestureRecognizer( UITapGestureRecognizer { _ in
+            if self.scrolledItem == self.selectedItem {
+                self.requestSelection( item: nil )
+            }
+            else {
+                self.requestSelection( item: self.scrolledItem )
+            }
+        } )
     }
 
     public required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    // MARK: --- Private ---
-
-    @objc
-    private func didTap(recognizer: UITapGestureRecognizer) {
-        if self.scrolledItem == self.selectedItem {
-            self.requestSelection( item: nil )
-        }
-        else {
-            self.requestSelection( item: self.scrolledItem )
-        }
     }
 
     // MARK: --- Types ---

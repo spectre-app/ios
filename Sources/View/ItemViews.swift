@@ -76,7 +76,7 @@ class Item<M>: AnyItem {
 
         self.view.doUpdate()
         self.behaviours.forEach { $0.didUpdate( item: self ) }
-        self.subitems.forEach { $0.updateTask.request( immediate: true ) }
+        self.subitems.forEach { $0.updateTask.request( now: true ) }
     }
 
     // MARK: --- Types ---
@@ -308,18 +308,16 @@ class TapBehaviour<M>: Behaviour<M> {
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
-        let tapRecognizer = UITapGestureRecognizer( target: self, action: #selector( didReceiveGesture ) )
+        let tapRecognizer = UITapGestureRecognizer {
+            if let item = self.tapRecognizers[$0], $0.state == .ended {
+                self.doTapped( item: item )
+            }
+        }
         tapRecognizer.name = _describe( type( of: self ) )
         tapRecognizer.isEnabled = self.isEnabled
         self.tapRecognizers[tapRecognizer] = item
         item.view.addGestureRecognizer( tapRecognizer )
         item.view.contentView.isUserInteractionEnabled = !self.isEnabled
-    }
-
-    @objc func didReceiveGesture(_ recognizer: UIGestureRecognizer) {
-        if let item = self.tapRecognizers[recognizer], recognizer.state == .ended {
-            self.doTapped( item: item )
-        }
     }
 
     func doTapped(item: Item<M>) {
@@ -1046,13 +1044,13 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
             self.pageItems.forEach { $0.model = self.item.model }
             self.pagerView.pages = self.pageItems.map { $0.view }
             self.pageItems.forEach { $0.view.didLoad() }
-            self.pageItems.forEach { $0.updateTask.request( immediate: true ) } // TODO: self.doUpdate()?
+            self.pageItems.forEach { $0.updateTask.request( now: true ) } // TODO: self.doUpdate()?
         }
 
         override func doUpdate() {
             super.doUpdate()
 
-            self.pageItems.forEach { $0.updateTask.request( immediate: true ) }
+            self.pageItems.forEach { $0.updateTask.request( now: true ) }
         }
     }
 }

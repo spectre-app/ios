@@ -458,10 +458,10 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.backdrop.set( UIColor.groupTableViewBackground )
         self.color.panel.set( UIColor.white )
         self.color.shade.set( UIColor.lightText )
-        self.color.shadow.set( UIColor.gray.with( alpha: .short ) )
-        self.color.mute.set( UIColor.darkGray.with( alpha: .short ) )
+        self.color.shadow.set( UIColor.gray.with( alpha: .long ) )
+        self.color.mute.set( UIColor.darkGray.with( alpha: .short * .short ) )
         self.color.selection.set( UIColor.gray.with( alpha: .short ) )
-        self.color.tint.set( UIColor.systemBlue )
+        self.color.tint.set( .hex( "41A0A0" ) )
 
         if #available( iOS 13, * ) {
             self.font.mono.set( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
@@ -474,7 +474,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.shadow.set( UIColor.secondarySystemFill )
             self.color.mute.set( UIColor.separator )
             self.color.selection.set( UIColor.tertiarySystemFill )
-            self.color.tint.set( UIColor.link )
+            self.color.tint.set( .hex( "41A0A0" ) )
         }
 
         Theme.byPath[""] = self

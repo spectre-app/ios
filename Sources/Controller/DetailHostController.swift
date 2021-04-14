@@ -38,9 +38,9 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         }
     }
 
-    private lazy var detailRecognizer = UITapGestureRecognizer( target: self, action: #selector( hideAction ) )
+    private lazy var detailRecognizer = UITapGestureRecognizer { _ in self.hide() }
     private lazy var closeButton = EffectButton( track: .subject( "details", action: "close" ),
-                                                 attributedTitle: .icon( "" ) ) { _, _ in self.hide() }
+                                                 attributedTitle: .icon( "" ) ) { _, _ in self.hide() }
     private var popupConfiguration:        LayoutConfiguration<UIView>!
     private var fixedContentConfiguration: LayoutConfiguration<UIView>!
     private var contentSizeObservation:    NSKeyValueObservation?
@@ -127,13 +127,6 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
     }
     #endif
 
-    // MARK: --- Private ---
-
-    @objc
-    private func hideAction() {
-        self.hide()
-    }
-
     // MARK: --- Interface ---
 
     override func show(_ vc: UIViewController, sender: Any?) {
@@ -145,10 +138,9 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                 UIView.performWithoutAnimation {
                     self.addChild( activeController )
                     activeController.beginAppearanceTransition( true, animated: true )
-                    self.contentView.addSubview( activeController.view )
-                    activeController.view.bounds.size = self.contentView.bounds.size.union(
-                            activeController.view.systemLayoutSizeFitting( self.contentView.bounds.size ) )
                     self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
+                    activeController.view.bounds.size = self.contentView.bounds.size
+                    self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view )
                             .constrain( as: .box, margin: true ).activate()
                 }

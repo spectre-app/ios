@@ -58,15 +58,12 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         //dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
-        do { let _ = try Marshal.shared.updateTask.request( immediate: true ).await() }
-        catch { err( "Cannot read user documents: %@", error ) }
-
-        DispatchQueue.api.promising {
+        Marshal.shared.updateTask.request( now: true ).promising( on: .api ) { userFiles in
             if let user = AutoFillModel.shared.cachedUser( userName: credentialIdentity.recordIdentifier ) {
                 return Promise( .success( user ) )
             }
 
-            guard let userFile = Marshal.shared.userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
+            guard let userFile = userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
             else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )

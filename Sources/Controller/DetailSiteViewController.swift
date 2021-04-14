@@ -98,7 +98,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                             if InAppFeature.premium.isEnabled,
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
                                        attacker.timeToCrack( string: try? $0.result().token.await() ) {
-                                return "\(.icon( "" )) Time to crack: \(timeToCrack) 🅿︎"
+                                return "\(.icon( "" )) Time to crack: \(timeToCrack) 🅿︎"
                             }
                             else {
                                 return "Time to crack: unknown 🅿︎"
@@ -262,11 +262,12 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                         },
                         subitems: [
                             ButtonItem( track: .subject( "site.question", action: "add" ),
+                                        title: "Need more security answers?",
                                         value: { _ in (label: "Add Security Question", image: nil) },
                                         action: { item in
                                             let controller = UIAlertController( title: "Security Question", message:
                                             """
-                                            Enter the question's word that best describes the answer.
+                                            Find the word in your security question which best describes its answer.
                                             """, preferredStyle: .alert )
                                             controller.addTextField {
                                                 $0.placeholder = "eg. teacher"
@@ -278,21 +279,24 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                                             controller.addAction( UIAlertAction( title: "Help", style: .default ) { _ in
                                                 let helpController = UIAlertController( title: "Adding Security Questions", message:
                                                 """
-                                                Find the word from the question that most narrowly describes its answer.
-                                                Consider answering the question and wondering:
-                                                "What is this answer? It is a ____."
+                                                To answer your security question, we'll identify it using a single word.
 
-                                                In what city did you meet your spouse/significant other?
-                                                It is a "city".
+                                                The best word to use is that which best describes the question's answer.
 
-                                                What is the middle name of your youngest child?
-                                                It is a "child".
+                                                Think of the question's answer and ask yourself:
+                                                «What is this answer? It is a ____.»
 
-                                                What is your youngest brother’s birthday month and year?
-                                                It is a "birthday".
+                                                “In what city did you meet your spouse/significant other?”
+                                                It is a ‘city’.
 
-                                                Where were you when you had your first kiss?
-                                                It is a "where".
+                                                “What is the middle name of your youngest child?”
+                                                It is a ‘child’.
+
+                                                “What is your youngest brother’s birthday month and year?”
+                                                It is a ‘birthday’.
+
+                                                “Where were you when you had your first kiss?”
+                                                It is a ‘where’.
                                                 """, preferredStyle: .alert )
                                                 helpController.addAction( UIAlertAction( title: "Thanks!", style: .cancel ) { _ in
                                                     item.viewController?.present( controller, animated: true )
@@ -462,6 +466,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
                         "!! \(site.siteName) is NOT using the latest algorithm. !!")
                 """, preferredStyle: .actionSheet )
                 controller.popoverPresentationController?.sourceView = item.view
+                controller.popoverPresentationController?.sourceRect = item.view.bounds
                 if site.algorithm < .last {
                     let upgrade = site.algorithm.advanced( by: 1 )
                     controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in

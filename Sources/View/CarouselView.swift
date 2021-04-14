@@ -48,23 +48,18 @@ class CarouselView: UICollectionView {
 
         self.isPagingEnabled = true
         self.contentInsetAdjustmentBehavior = .never
-        self.addGestureRecognizer( UITapGestureRecognizer( target: self, action: #selector( didTap ) ) )
+        self.addGestureRecognizer( UITapGestureRecognizer { _ in
+            if self.scrolledItem == self.selectedItem {
+                self.requestSelection( item: nil )
+            }
+            else {
+                self.requestSelection( item: self.scrolledItem )
+            }
+        } )
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    // MARK: --- Private ---
-
-    @objc
-    private func didTap(recognizer: UITapGestureRecognizer) {
-        if self.scrolledItem == self.selectedItem {
-            self.requestSelection( item: nil )
-        }
-        else {
-            self.requestSelection( item: self.scrolledItem )
-        }
     }
 
     // MARK: --- Types ---
@@ -109,7 +104,7 @@ class CarouselView: UICollectionView {
 
             self.bounds = self.collectionView?.bounds ?? .null
             self.count = self.collectionView?.numberOfSections == 0 ? 0: self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
-            let scan = self.bounds.origin.x / self.bounds.size.width
+            let scan = self.bounds.isEmpty ? 0: self.bounds.origin.x / self.bounds.size.width
 
             // Align attributes keys when indexPaths change.
             let attributes = self.attributes.values.filter { $0.indexPath.item < self.count }

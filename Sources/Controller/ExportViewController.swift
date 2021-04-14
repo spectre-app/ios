@@ -94,6 +94,8 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
                                              returnedItems: returnedItems, activityError: activityError )
                 self.dismiss( animated: true )
             }
+            controller.popoverPresentationController?.sourceView = self.exportButton
+            controller.popoverPresentationController?.sourceRect = self.exportButton.bounds
             self.present( controller, animated: true )
         }
 

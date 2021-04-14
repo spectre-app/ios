@@ -39,16 +39,18 @@ class AutoFillSitesViewController: BaseSitesViewController {
                 return serviceHost.contains( site.siteName ) || site.siteName.contains( serviceHost )
             } )
         }
-        self.sitesTableView.preferredSite = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
+        self.sitesTableView.proposedSite = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
         self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
             .init( tracking: .subject( "sites.site", action: "fill" ),
-                   title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
+                   title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
                 switch appearance {
                     case .cell:
                         self.completeRequest( site: site, trackingFrom: "site>cell" )
                     case .menu:
                         self.completeRequest( site: site, trackingFrom: "site>cell>menu" )
+                    case .mode:
+                        self.completeRequest( site: site, trackingFrom: "site>cell>mode" )
                 }
             },
         ]
