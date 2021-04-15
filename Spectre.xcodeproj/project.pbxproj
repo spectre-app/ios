@@ -222,7 +222,7 @@
 		DABC7BB8251C14160021ADD8 /* BaseSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */; };
 		DABC7BBB251C1B410021ADD8 /* BaseUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
-		DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */ = {isa = PBXBuildFile; fileRef = DACA29721705E1A8002C6C22 /* dictionary.lst */; };
+		DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */ = {isa = PBXBuildFile; fileRef = DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */; };
 		DAF560502393411A000475BA /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DAF5605123934134000475BA /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
 		DAF80F05251AE651001C2963 /* AutoFillUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DF5379D26AF4A1096F9 /* AutoFillUsersViewController.swift */; };
@@ -528,7 +528,7 @@
 		DAC510C6247C7286006CC5D6 /* json_inttypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_inttypes.h; sourceTree = "<group>"; };
 		DAC510C7247C7286006CC5D6 /* json_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object.h; sourceTree = "<group>"; };
 		DAC632871486D95D0075AEA5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		DACA29721705E1A8002C6C22 /* dictionary.lst */ = {isa = PBXFileReference; fileEncoding = 1; lastKnownFileType = text; path = dictionary.lst; sourceTree = "<group>"; };
+		DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "enwiki-top-30000.txt"; sourceTree = "<group>"; };
 		DAEBC45214F6364500987BF6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		E031B36E37668A9E5B3200BF /* Pods-Spectre-AutoFill.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.public.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.public.xcconfig"; sourceTree = "<group>"; };
 		F564A2A37D7D01F0A3BF1728 /* Pods-Spectre.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre.release.xcconfig"; path = "Target Support Files/Pods-Spectre/Pods-Spectre.release.xcconfig"; sourceTree = "<group>"; };
@@ -989,7 +989,7 @@
 		DACA29701705E1A8002C6C22 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				DACA29721705E1A8002C6C22 /* dictionary.lst */,
+				DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -1251,7 +1251,6 @@
 				DA762FB624E0C58700E61D3F /* Poppins-VF.otf in Resources */,
 				DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */,
 				DAAEDE1925E1DF5500E78F79 /* Font Awesome 6 Duotone-Solid-900.otf in Resources */,
-				DACA29741705E1A8002C6C22 /* dictionary.lst in Resources */,
 				DA762FB124E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf in Resources */,
 				DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */,
 				DAAEDE1F25E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf in Resources */,
@@ -1259,6 +1258,7 @@
 				DAAEDE1B25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
 				DAAEDE1725E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */,
 				DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */,
+				DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */,
 				DAAEDE2125E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */,
 				DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */,
 			);

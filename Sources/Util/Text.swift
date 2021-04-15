@@ -83,8 +83,8 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
             string.flatMap { self.attributedString.append( $0 ) }
         }
 
-        mutating func appendInterpolation(_ string: CustomStringConvertible, _ attributes: [NSAttributedString.Key: Any] = [:]) {
-            self.attributedString.append( NSAttributedString( string: string.description, attributes: attributes ) )
+        mutating func appendInterpolation(_ string: CustomStringConvertible?, _ attributes: [NSAttributedString.Key: Any] = [:]) {
+            string.flatMap { self.attributedString.append( NSAttributedString( string: $0.description, attributes: attributes ) ) }
         }
     }
 }

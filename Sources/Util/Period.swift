@@ -5,6 +5,8 @@
 
 import Foundation
 
+var age_of_the_universe : Decimal = 14_000_000_000.0 * 356 * 24 * 3600
+
 enum Period {
     case hours(_ hours: Decimal), seconds(_ seconds: Decimal), zero
     case years(_ years: Decimal), months(_ months: Decimal), weeks(_ weeks: Decimal), days(_ days: Decimal)
@@ -31,6 +33,48 @@ enum Period {
         }
     }
 
+    var brief: String {
+        switch self {
+            case .zero:
+                return "Immediate"
+            case .universes:
+                return "Age of the universe"
+            case .seconds(let seconds):
+                return self.count( seconds, suffix: "Seconds" )
+            case .hours(let hours):
+                return self.count( hours, suffix: "Hours" )
+            case .days(let days):
+                return self.count( days, suffix: "Days" )
+            case .weeks(let weeks):
+                return self.count( weeks, suffix: "Weeks" )
+            case .months(let months):
+                return self.count( months, suffix: "Months" )
+            case .years(let years):
+                return self.count( years, suffix: "Years" )
+        }
+    }
+
+    private func count(_ value: Decimal, suffix: String) -> String {
+        if value > 1_000_000_000_000 {
+            return "Trillions of \(suffix)"
+        }
+        else if value > 1_000_000_000 {
+            return "Billions of \(suffix)"
+        }
+        else if value > 1_000_000 {
+            return "Millions of \(suffix)"
+        }
+        else if value > 1_000 {
+            return "Thousands of \(suffix)"
+        }
+        else if value > 100 {
+            return "Hundreds of \(suffix)"
+        }
+        else {
+            return suffix
+        }
+    }
+
     var localizedDescription: String {
         switch self {
             case .zero:
@@ -38,17 +82,17 @@ enum Period {
             case .universes:
                 return "> age of the universe"
             case .seconds(let seconds):
-                return seconds.isNaN ? "second": seconds == 1 ? "1 second": "\(number: seconds, decimals: 0...1, .abbreviated) seconds"
+                return seconds.isNaN ? "unknown": seconds == 1 ? "1 second": "\(number: seconds, decimals: 0...1, .abbreviated) seconds"
             case .hours(let hours):
-                return hours.isNaN ? "hour": hours == 1 ? "1 hour": "\(number: hours, decimals: 0...1, .abbreviated) hours"
+                return hours.isNaN ? "unknown": hours == 1 ? "1 hour": "\(number: hours, decimals: 0...1, .abbreviated) hours"
             case .days(let days):
-                return days.isNaN ? "day": days == 1 ? "1 day": "\(number: days, decimals: 0...1, .abbreviated) days"
+                return days.isNaN ? "unknown": days == 1 ? "1 day": "\(number: days, decimals: 0...1, .abbreviated) days"
             case .weeks(let weeks):
-                return weeks.isNaN ? "week": weeks == 1 ? "1 week": "\(number: weeks, decimals: 0...1, .abbreviated) weeks"
+                return weeks.isNaN ? "unknown": weeks == 1 ? "1 week": "\(number: weeks, decimals: 0...1, .abbreviated) weeks"
             case .months(let months):
-                return months.isNaN ? "month": months == 1 ? "1 month": "\(number: months, decimals: 0...1, .abbreviated) months"
+                return months.isNaN ? "unknown": months == 1 ? "1 month": "\(number: months, decimals: 0...1, .abbreviated) months"
             case .years(let years):
-                return years.isNaN ? "year": years == 1 ? "1 year": "\(number: years, decimals: 0...1, .abbreviated) years"
+                return years.isNaN ? "unknown": years == 1 ? "1 year": "\(number: years, decimals: 0...1, .abbreviated) years"
         }
     }
 
@@ -69,7 +113,7 @@ enum Period {
             case .years(let years):
                 return years * 356 * 24 * 3600
             case .universes(let universes):
-                return universes * 14_000_000_000.0 * 356 * 24 * 3600
+                return universes * age_of_the_universe
         }
     }
 

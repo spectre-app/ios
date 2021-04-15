@@ -232,6 +232,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private var secretEvent:                 Tracker.TimedEvent?
         private let secretField   = UserSecretField<User>()
         private let actionsStack  = UIStackView()
+        private let strengthMeter = UIProgressView()
+        private let strengthLabel = UILabel()
         private let idBadgeView   = UIImageView( image: .icon( "" ) )
         private let authBadgeView = UIImageView( image: .icon( "" ) )
         private var authenticationConfiguration: LayoutConfiguration<UserCell>!
@@ -313,6 +315,18 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
                 }
             }
+            self.secretField.action( for: .editingChanged ) {
+                var strengthText: Text?, strengthProgress: Double = 0
+                if let timeToCrack = Attacker.single.timeToCrack( string: self.secretField.text, hash: .spectre ) {
+                    strengthProgress = ((timeToCrack.period.seconds / age_of_the_universe) as NSDecimalNumber).doubleValue
+                    strengthProgress = pow( 1 - pow( strengthProgress - 1, 30 ), 1 / 30.0 )
+                    strengthText = "\(.icon( "" )) \(timeToCrack.period.normalize.brief)︎"
+                }
+                self.strengthMeter.progress = Float( strengthProgress )
+                self.strengthMeter.progressTintColor = .systemGreen
+                self.strengthMeter.trackTintColor = strengthProgress < 0.5 ? .systemRed: .systemOrange
+                self.strengthLabel.attributedText = strengthText?.attributedString( for: self.strengthLabel )
+            }
 
             self.nameField.isHidden = true
             self.nameField.borderStyle = .none
@@ -321,6 +335,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameField => \.font => Theme.current.font.title1
             self.nameField => \.textColor => Theme.current.color.body
             self.nameField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
+
+            self.strengthLabel => \.font => Theme.current.font.caption1
+            self.strengthLabel.textAlignment = .center
+            self.strengthLabel => \.textColor => Theme.current.color.secondary
 
             // - Hierarchy
             self.contentView.addSubview( self.idBadgeView )
@@ -332,6 +350,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.contentView.addSubview( self.nameField )
             self.contentView.addSubview( self.secretField )
             self.contentView.addSubview( self.actionsStack )
+            self.contentView.addSubview( self.strengthMeter )
+            self.contentView.addSubview( self.strengthLabel )
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
@@ -364,6 +384,16 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .activate()
             LayoutConfiguration( view: self.actionsStack )
                     .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .activate()
+            LayoutConfiguration( view: self.strengthMeter )
+                    .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: self.secretField.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: self.secretField.trailingAnchor ) }
+                    .activate()
+            LayoutConfiguration( view: self.strengthLabel )
+                    .constrain { $1.topAnchor.constraint( equalTo: self.strengthMeter.bottomAnchor, constant: 4 ) }
                     .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
@@ -524,9 +554,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userFile == nil
             self.avatarButton.image = self.avatar?.image ?? .icon( "", withSize: 96, invert: true )
             self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
+            self.strengthMeter.isHidden = !self.isSelected || self.userFile != nil
+            self.strengthLabel.isHidden = !self.isSelected || self.userFile != nil
             self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||
                     !(self.userFile?.keychainKeyFactory.hasKey( for: self.userFile?.algorithm ?? .current ) ?? false)
             self.biometricButton.image = .icon( KeychainKeyFactory.factor.icon )
+
+            if self.secretField.text?.isEmpty ?? true {
+                self.strengthMeter.progress = 0
+                self.strengthMeter.progressTintColor = .systemGreen
+                self.strengthMeter.trackTintColor = nil
+            }
 
             if self.isSelected {
                 if !self.nameField.isHidden {
