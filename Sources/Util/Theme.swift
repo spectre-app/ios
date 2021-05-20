@@ -83,7 +83,7 @@ class Identity: Equatable, Hashable {
     }
 }
 
-public protocol _PropertyPath: class {
+public protocol _PropertyPath: AnyObject {
     func assign(value: @autoclosure () -> Any?)
 }
 
@@ -444,7 +444,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.font.title2.set( UIFont.poppins( .medium, asTextStyle: .title2 ), withTextStyle: .title2 )
         self.font.title3.set( UIFont.poppins( .regular, asTextStyle: .title3 ), withTextStyle: .title3 )
         self.font.headline.set( UIFont.poppins( .medium, asTextStyle: .headline ), withTextStyle: .headline )
-        self.font.subheadline.set( UIFont.poppins( .bold, asTextStyle: .subheadline ), withTextStyle: .subheadline )
+        self.font.subheadline.set( UIFont.poppins( .regular, asTextStyle: .subheadline ), withTextStyle: .subheadline )
         self.font.body.set( UIFont.poppins( .light, asTextStyle: .body ), withTextStyle: .body )
         self.font.callout.set( UIFont.poppins( .regular, asTextStyle: .callout ), withTextStyle: .callout )
         self.font.caption1.set( UIFont.poppins( .regular, asTextStyle: .caption1 ), withTextStyle: .caption1 )
@@ -458,7 +458,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.backdrop.set( UIColor.groupTableViewBackground )
         self.color.panel.set( UIColor.white )
         self.color.shade.set( UIColor.lightText )
-        self.color.shadow.set( UIColor.gray.with( alpha: .long ) )
+        self.color.shadow.set( UIColor.gray.with( alpha: .off ) )
         self.color.mute.set( UIColor.darkGray.with( alpha: .short * .short ) )
         self.color.selection.set( UIColor.gray.with( alpha: .short ) )
         self.color.tint.set( .hex( "41A0A0" ) )
@@ -471,7 +471,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( UIColor.systemBackground )
             self.color.panel.set( UIColor.secondarySystemBackground )
             self.color.shade.set( UIColor.systemFill )
-            self.color.shadow.set( UIColor.secondarySystemFill )
+            self.color.shadow.set( UIColor.secondarySystemFill.with( alpha: .off ) )
             self.color.mute.set( UIColor.separator )
             self.color.selection.set( UIColor.tertiarySystemFill )
             self.color.tint.set( .hex( "41A0A0" ) )
@@ -500,7 +500,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( light: pattern.pale, dark: pattern.dark )
             self.color.panel.set( light: pattern.dawn, dark: pattern.dusk )
             self.color.shade.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
-            self.color.shadow.set( light: pattern.flat?.with( alpha: .long ), dark: pattern.flat?.with( alpha: .long ) )
+            self.color.shadow.set( light: pattern.flat?.with( alpha: .off ), dark: pattern.flat?.with( alpha: .off ) )
             self.color.mute.set( light: pattern.dusk?.with( alpha: .short * .short ), dark: pattern.dawn?.with( alpha: .short * .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.tint.set( light: pattern.flat, dark: pattern.flat )

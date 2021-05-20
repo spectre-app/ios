@@ -5,11 +5,11 @@
 
 import Foundation
 
-protocol Updates: class {
+protocol Updates: AnyObject {
     func doUpdate()
 }
 
-protocol Updatable: class {
+protocol Updatable: AnyObject {
     associatedtype V = Void
     var updatesPostponed: Bool { get }
     var updatesRejected:  Bool { get }

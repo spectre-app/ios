@@ -608,14 +608,16 @@ extension UITableView {
 }
 
 extension UITableViewCell {
-    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> Self {
+    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> C {
         let cell = tableView.dequeueReusableCell( withIdentifier: NSStringFromClass( self ), for: indexPath ) as! C
 
         if let initialize = initializer {
-            initialize( cell )
+            UIView.performWithoutAnimation {
+                initialize( cell )
+            }
         }
 
-        return cell as! Self
+        return cell
     }
 }
 

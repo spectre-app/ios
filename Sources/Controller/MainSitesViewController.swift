@@ -38,15 +38,15 @@ class MainSitesViewController: BaseSitesViewController {
         self.searchField.rightView = self.userButton
         self.sitesTableView.siteActions = [
             .init( tracking: .subject( "sites.site", action: "settings" ),
-                   title: "Details", icon: "", appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
+                   title: "Details", icon: .icon( "", invert: true ), appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
                 self.detailsHost.show( DetailSiteViewController( model: site ), sender: self )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy", icon: "", appearance: [ .cell ] ) { [unowned self] site, mode, appearance in
+                   title: "Copy", icon: .icon( "" ), appearance: [ .cell ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: mode! ).copy( fromView: self.view, trackingFrom: "site>cell" )
             },
             .init( tracking: .subject( "sites.site", action: "mode" ),
-                   title: "Configure", icon: "", appearance: [ .mode ] ) { [unowned self] site, mode, appearance in
+                   title: "Configure", icon: .icon( "" ), appearance: [ .mode ] ) { [unowned self] site, mode, appearance in
                 switch mode {
                     case .authentication:
                         self.detailsHost.show( DetailSiteViewController( model: site, focus: DetailSiteViewController.PasswordTypeItem.self ), sender: self )
@@ -59,11 +59,11 @@ class MainSitesViewController: BaseSitesViewController {
                 }
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy Login", icon: "", appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
+                   title: "Copy Login", icon: .icon( "" ), appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy Password", icon: "", appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
+                   title: "Copy Password", icon: .icon( "" ), appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
                 site.result( keyPurpose: .authentication ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
         ]

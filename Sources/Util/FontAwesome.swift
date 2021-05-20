@@ -37,27 +37,25 @@ extension NSAttributedString {
         guard let icon = icon
         else { return nil }
 
-        var duotone = true
-        var font    = IconStyle.duotone.font( withSize: size )
-        var glyphs  = [ CGGlyph ]( repeating: kCGFontIndexInvalid, count: icon.utf16.count )
-        if !CTFontGetGlyphsForCharacters( font as CTFont, [ UniChar ]( icon.utf16 ), &glyphs, icon.utf16.count ) {
-            duotone = false
+        let attributedIcon = NSMutableAttributedString()
+        var font           = IconStyle.duotone.font( withSize: size )
+        if !CTFontGetGlyphsForCharacters(
+                font as CTFont, [ UniChar ]( icon.utf16 ), UnsafeMutablePointer.allocate( capacity: icon.utf16.count ), icon.utf16.count ) {
             font = IconStyle.brands.font( withSize: size )
         }
-
-        let attributedIcon = NSMutableAttributedString( string: icon, attributes: [
-            NSAttributedString.Key.kern: duotone ? -1000: 0,
-            NSAttributedString.Key.font: font,
-            NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
-        ] )
-
-        if duotone {
+        else {
             let toneScalars = icon.unicodeScalars.compactMap { Unicode.Scalar( 0x100000 + $0.value ) }
             attributedIcon.append( NSAttributedString( string: String( String.UnicodeScalarView( toneScalars ) ), attributes: [
+                NSAttributedString.Key.kern: -1000,
                 NSAttributedString.Key.font: font,
                 NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
             ] ) )
         }
+
+        attributedIcon.append( NSAttributedString( string: icon, attributes: [
+            NSAttributedString.Key.font: font,
+            NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert && attributedIcon.length > 0 ? .short: .on ),
+        ] ) )
 
         return attributedIcon
     }
@@ -65,13 +63,17 @@ extension NSAttributedString {
 
 extension UIImage {
     public static func icon(_ icon: String?, withSize size: CGFloat? = nil, invert: Bool = false) -> UIImage? {
-        guard let attributedIcon = NSAttributedString.icon( icon, withSize: size, invert: invert )
+        .icon( NSAttributedString.icon( icon, withSize: size, invert: invert ) )
+    }
+
+    public static func icon(_ icon: NSAttributedString?) -> UIImage? {
+        guard let icon = icon
         else { return nil }
 
-        let size = attributedIcon.size()
+        let size = icon.size()
         UIGraphicsBeginImageContextWithOptions( size, false, 0 )
         defer { UIGraphicsEndImageContext() }
-        attributedIcon.draw( in: CGRect( origin: .zero, size: size ) )
+        icon.draw( in: CGRect( origin: .zero, size: size ) )
 
         return UIGraphicsGetImageFromCurrentImageContext()?.withRenderingMode( .alwaysTemplate )
     }

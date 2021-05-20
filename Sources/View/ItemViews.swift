@@ -1115,7 +1115,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             self.tableView.tableHeaderView = self.activityIndicator
 
             DispatchQueue.api.perform {
-                self.dataSource.update( [ self.item.model.flatMap(self.item.values) ?? [] ], animated: self.item.animated ) { finished in
+                self.dataSource.update( [ self.item.model.flatMap( self.item.values ) ?? [] ], animated: self.item.animated ) { finished in
                     if finished {
                         self.tableView.isHidden = self.dataSource.isEmpty
                         self.tableView.tableHeaderView = nil
@@ -1138,8 +1138,8 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             }
 
             override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-                using( C.dequeue( from: tableView, indexPath: indexPath ) ) {
-                    self.view.item.populate( $0, indexPath: indexPath, value: self.element( at: indexPath )! )
+                C.dequeue( from: tableView, indexPath: indexPath ) { (cell: C) in
+                    self.view.item.populate( cell, indexPath: indexPath, value: self.element( at: indexPath )! )
                 }
             }
 
