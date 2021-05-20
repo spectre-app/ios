@@ -84,7 +84,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         DispatchQueue.main.await { self.window == nil }
     }
 
-    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( 100 ) ) { [weak self] in
+    lazy var updateTask = DispatchTask.update( self ) { [weak self] in
         guard let self = self
         else { return }
 
@@ -115,7 +115,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     if wasSelectedItem.id == proposedItem.id {
                         self.sitesDataSource.selectedItem = proposedItem
                     }
-                } else {
+                }
+                else {
                     self.sitesDataSource.selectedItem = proposedItem
                 }
             }

@@ -495,8 +495,7 @@ class Marshal: Observable, Updatable {
 
     // MARK: --- Updatable ---
 
-    lazy var updateTask: DispatchTask<[UserFile]>
-            = DispatchTask.update( self, queue: self.marshalQueue, deadline: .now() + .milliseconds( 300 ) ) { [weak self] in
+    lazy var updateTask: DispatchTask<[UserFile]> = DispatchTask.update( self, queue: self.marshalQueue ) { [weak self] in
         guard let self = self
         else { return [] }
 

@@ -60,8 +60,6 @@ class AlertController {
         self.expandChevron.isHidden = isActive || self.detailLabel.text?.isEmpty ?? true
         self.detailLabel.isHidden = !isActive
     }
-    private lazy var dismissTask = DispatchTask( named: "Dismiss Alert: \(self.title ?? "-")", queue: .main,
-                                                 deadline: .now() + .seconds( 5 ), execute: { self.dismiss() } )
 
     // MARK: --- Life ---
 
@@ -124,17 +122,17 @@ class AlertController {
         return self
     }
 
+    private lazy var dismissTask = DispatchTask( named: "Dismiss: \(self.title ?? "-")", queue: .main, deadline: .now() + .seconds( 5 ) ) {
+        guard self.view.superview != nil
+        else { return }
+
+        UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
+            self.view.removeFromSuperview()
+        } )
+    }
+
     public func dismiss() {
-        self.dismissTask.cancel()
-
-        DispatchQueue.main.perform {
-            guard self.view.superview != nil
-            else { return }
-
-            UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
-                self.view.removeFromSuperview()
-            } )
-        }
+        self.dismissTask.request( now: true )
     }
 
     public func activate() {

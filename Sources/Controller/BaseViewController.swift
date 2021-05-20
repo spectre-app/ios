@@ -131,7 +131,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         !self.isViewLoaded// || self.view.superview == nil
     }
 
-    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( 100 ), animated: true ) { [weak self] in
+    lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
         guard let self = self
         else { return }
 
