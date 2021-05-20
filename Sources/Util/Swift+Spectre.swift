@@ -251,7 +251,7 @@ extension String {
     }
 
     func b64Decrypt() -> String? {
-        var secretLength = spectre_base64_decode_max( self ), keyLength = 0
+        var secretLength = spectre_base64_decode_max( self.lengthOfBytes( using: .utf8 ) ), keyLength = 0
         guard secretLength > 0
         else { return nil }
 

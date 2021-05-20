@@ -114,7 +114,6 @@
 		93D39FD2F39B2AFE27A88A97 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* Secrets.swift */; };
 		93D39FF336ACC2C451C5CFB2 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169D757760D11F5D3E4 /* CarouselView.swift */; };
 		DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
-		DA0E5565251022EB002B3AB1 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = DA5B0B3E1F36469400B663F0 /* base64.c */; };
 		DA0E5566251022EB002B3AB1 /* spectre-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */; };
 		DA0E5567251022EB002B3AB1 /* spectre-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* spectre-types.c */; };
 		DA0E5568251022EB002B3AB1 /* spectre-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* spectre-util.c */; };
@@ -196,7 +195,6 @@
 		DA4563D8265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
 		DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4A0C20201531BA004E2CE5 /* AppDelegate.swift */; };
-		DA5B0B401F36469400B663F0 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = DA5B0B3E1F36469400B663F0 /* base64.c */; };
 		DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */; };
 		DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6B24E04F2E00E61D3F /* SourceCodePro-Regular.otf */; };
 		DA762FB124E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6F24E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf */; };
@@ -417,8 +415,6 @@
 		DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		DA4A0C1F201531B9004E2CE5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA4A0C20201531BA004E2CE5 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		DA5B0B3E1F36469400B663F0 /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
-		DA5B0B3F1F36469400B663F0 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
 		DA5BFA44147E415C00F98B1E /* Spectre.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spectre.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA5BFA48147E415C00F98B1E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DA5BFA4A147E415C00F98B1E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -661,8 +657,6 @@
 			children = (
 				DAB07C9B1F7725C500CC6D43 /* aes.c */,
 				DAB07C9C1F7725C500CC6D43 /* aes.h */,
-				DA5B0B3E1F36469400B663F0 /* base64.c */,
-				DA5B0B3F1F36469400B663F0 /* base64.h */,
 				93D390A99850139D0FF0211E /* spectre-algorithm_v0.c */,
 				DA351489233EF8FE00BCF504 /* spectre-algorithm_v0.h */,
 				93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */,
@@ -1434,7 +1428,6 @@
 				DA0E55AA2510E9BB002B3AB1 /* ItemViews.swift in Sources */,
 				DA0E55BC2510E9BB002B3AB1 /* EffectResultTypeCell.swift in Sources */,
 				DA0E558D2510E985002B3AB1 /* Foundation+Spectre.swift in Sources */,
-				DA0E5565251022EB002B3AB1 /* base64.c in Sources */,
 				DAA0EE1825E93A2F00533479 /* DialogSiteChangedViewController.swift in Sources */,
 				DA0E55992510E985002B3AB1 /* Keychain.swift in Sources */,
 				DA0E556D251022EB002B3AB1 /* spectre-marshal-util.c in Sources */,
@@ -1489,7 +1482,6 @@
 				93D395B715D15F2B56F2A2EE /* spectre-types.c in Sources */,
 				93D39943D01E70DAC3B0DF76 /* spectre-util.c in Sources */,
 				DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */,
-				DA5B0B401F36469400B663F0 /* base64.c in Sources */,
 				DA35148C233EF93400BCF504 /* spectre-algorithm_v2.c in Sources */,
 				93D398C964D8B1FC0F320085 /* User.swift in Sources */,
 				93D39BED3DFB61513B0D015D /* MainUsersViewController.swift in Sources */,
