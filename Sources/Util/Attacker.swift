@@ -132,13 +132,13 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
     }
 
     static func permutations(string: String?) -> Decimal? {
-        guard var string = string
+        guard var string = string, let dictionary = dictionary
         else { return nil }
 
         var stringPermutations = Decimal( 1 )
 
         for word in dictionary {
-            let newString = string.replacingOccurrences( of: word as! String, with: "" )
+            let newString = string.replacingOccurrences( of: word, with: "" )
             if newString != string {
                 stringPermutations *= Decimal( dictionary.count )
                 string = newString
@@ -217,21 +217,4 @@ struct TimeToCrack: CustomStringConvertible {
         }
         return "~\(normalizedPeriod.localizedDescription) & ~\(number: cost, locale: .C, .currency, .abbreviated), ~\(number: Wh, .abbreviated)Wh"
     }
-}
-
-private let cache = NSCache<NSString, NSArray>()
-var dictionary: NSArray {
-    if let dictionary = cache.object( forKey: "dictionary" ) {
-        return dictionary
-    }
-
-    if let wordsURL = Bundle.main.url( forResource: "enwiki-top-30000", withExtension: "txt" ),
-       let wordsData = try? Data( contentsOf: wordsURL ),
-       let wordsList = String( data: wordsData, encoding: .utf8 )?.split( separator: "\n" ) {
-        let dictionary = wordsList as NSArray
-        cache.setObject( dictionary, forKey: "dictionary" )
-        return dictionary
-    }
-
-    return NSArray()
 }

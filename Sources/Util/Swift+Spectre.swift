@@ -118,7 +118,7 @@ extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {
 }
 
 extension Result {
-    var error: Failure? {
+    var error:       Failure? {
         guard case .failure(let error) = self
         else { return nil }
 
@@ -214,6 +214,23 @@ extension String {
 
         if let components = formatter.personNameComponents( from: self ) {
             return formatter.string( from: components )
+        }
+
+        return self
+    }
+
+    public func topPrivateDomain() -> String {
+        guard let publicSuffixes = publicSuffixes
+        else { return self }
+
+        for publicSuffix in publicSuffixes {
+            if self.hasSuffix( ".\(publicSuffix)" ) {
+                var privateDomain = self.prefix( upTo: self.index( self.endIndex, offsetBy: -publicSuffix.count - 1 ) )
+                if let lastDot = privateDomain.lastIndex( of: "." ) {
+                    privateDomain = privateDomain.suffix( from: privateDomain.index( after: lastDot ) )
+                }
+                return "\(privateDomain).\(publicSuffix)"
+            }
         }
 
         return self
