@@ -102,7 +102,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         LayoutConfiguration( view: self.closeButton )
                 .constrain { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
                 .constrain { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).with( priority: .fittingSizeLevel ) }
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -8 ) }
                 .activate()
 
         self.popupConfiguration = LayoutConfiguration( view: self.view )

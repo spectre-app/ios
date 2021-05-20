@@ -115,12 +115,18 @@ class KeyboardLayoutGuide: UILayoutGuide, Observable {
 
     @discardableResult
     func willDisappear() -> Self {
+        self.observers.clear()
         self.notificationObservers.forEach { NotificationCenter.default.removeObserver( $0 ) }
+        self.notificationObservers.removeAll()
+
         self.keyboardTopConstraint?.isActive = false
         self.keyboardLeftConstraint?.isActive = false
         self.keyboardRightConstraint?.isActive = false
         self.keyboardBottomConstraint?.isActive = false
-        self.notificationObservers.removeAll()
+        self.inputTopConstraint?.isActive = false
+        self.inputLeftConstraint?.isActive = false
+        self.inputRightConstraint?.isActive = false
+        self.inputBottomConstraint?.isActive = false
 
         self.constraints.forEach { $0.isActive = false }
         self.constraints.removeAll()
