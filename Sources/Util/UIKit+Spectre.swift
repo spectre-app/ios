@@ -648,7 +648,7 @@ extension UIView {
     public var ownership: (owner: UIResponder, property: String)? {
         var nextResponder = self.next
         while let nextResponder_ = nextResponder {
-            if let property = nextResponder_.property( withValue: self ) {
+            if let property = property( of: nextResponder_, withValue: self ) {
                 return (nextResponder_, property)
             }
 
