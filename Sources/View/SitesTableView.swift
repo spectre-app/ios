@@ -321,7 +321,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         init(view: SitesTableView) {
             self.view = view
-
             super.init( tableView: view )
         }
 
@@ -469,7 +468,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                         self.mode = .authentication
                 }
             }
-            self.modeButton.addGestureRecognizer( UILongPressGestureRecognizer {
+            self.modeButton.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
                 guard let site = self.site, case .began = $0.state
                 else { return }
 

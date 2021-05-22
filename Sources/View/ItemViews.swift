@@ -91,8 +91,8 @@ class Item<M>: AnyItem {
         let contentView   = UIStackView()
         let subitemsStack = UIStackView()
 
-        private lazy var valueView = self.createValueView()
-        private let item: Item<M>
+        private lazy var     valueView = self.createValueView()
+        internal unowned var item: Item<M>
 
         override var forLastBaselineLayout: UIView {
             self.titleLabel
@@ -295,12 +295,12 @@ class ColorizeBehaviour<M>: Behaviour<M> {
 }
 
 class TapBehaviour<M>: Behaviour<M> {
-    var tapRecognizers = [ UIGestureRecognizer: Item<M> ]()
+    var tapRecognizers = [ UIGestureRecognizer: WeakBox<Item<M>> ]()
     var isEnabled = true {
         didSet {
             self.tapRecognizers.forEach {
                 $0.key.isEnabled = self.isEnabled
-                $0.value.view.contentView.isUserInteractionEnabled = !self.isEnabled
+                $0.value.value?.view.contentView.isUserInteractionEnabled = !self.isEnabled
             }
         }
     }
@@ -308,14 +308,14 @@ class TapBehaviour<M>: Behaviour<M> {
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
-        let tapRecognizer = UITapGestureRecognizer {
-            if let item = self.tapRecognizers[$0], $0.state == .ended {
+        let tapRecognizer = UITapGestureRecognizer { [unowned self] in
+            if let item = self.tapRecognizers[$0]?.value, $0.state == .ended {
                 self.doTapped( item: item )
             }
         }
         tapRecognizer.name = _describe( type( of: self ) )
         tapRecognizer.isEnabled = self.isEnabled
-        self.tapRecognizers[tapRecognizer] = item
+        self.tapRecognizers[tapRecognizer] = WeakBox( item )
         item.view.addGestureRecognizer( tapRecognizer )
         item.view.contentView.isUserInteractionEnabled = !self.isEnabled
     }
@@ -397,17 +397,7 @@ class SeparatorItem<M>: Item<M> {
     }
 
     class SeparatorItemView: ItemView {
-        let item: SeparatorItem
         let separatorView = UIView()
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! SeparatorItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.separatorView
@@ -438,6 +428,12 @@ class ValueItem<M, V>: Item<M> {
         self.update = update
         super.init( title: title, subitems: subitems, axis: subitemAxis, caption: caption )
     }
+
+    class ValueItemView: ItemView {
+        var valueItem: ValueItem? {
+            self.item as? ValueItem
+        }
+    }
 }
 
 class LabelItem<M>: ValueItem<M, Any> {
@@ -445,18 +441,8 @@ class LabelItem<M>: ValueItem<M, Any> {
         LabelItemView( withItem: self )
     }
 
-    class LabelItemView: ItemView {
-        let item: LabelItem
+    class LabelItemView: ValueItemView {
         let valueLabel = UILabel()
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! LabelItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.valueLabel
@@ -475,7 +461,7 @@ class LabelItem<M>: ValueItem<M, Any> {
         override func doUpdate() {
             super.doUpdate()
 
-            let value = self.item.value
+            let value = self.valueItem?.value
             if let value = value as? NSAttributedString ?? (value as? Text)?.attributedString {
                 self.valueLabel.attributedText = value
                 self.valueLabel.isHidden = false
@@ -498,18 +484,8 @@ class ImageItem<M>: ValueItem<M, UIImage> {
         ImageItemView( withItem: self )
     }
 
-    class ImageItemView: ItemView {
-        let item: ImageItem
+    class ImageItemView: ValueItemView {
         let valueImage = UIImageView()
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! ImageItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.valueImage
@@ -526,7 +502,7 @@ class ImageItem<M>: ValueItem<M, UIImage> {
         override func doUpdate() {
             super.doUpdate()
 
-            self.valueImage.image = self.item.value
+            self.valueImage.image = self.valueItem?.value
             self.valueImage.isHidden = self.valueImage.image == nil
         }
     }
@@ -552,21 +528,14 @@ class ToggleItem<M>: ValueItem<M, Bool> {
         ToggleItemView( withItem: self )
     }
 
-    class ToggleItemView: ItemView {
-        let item: ToggleItem
-        lazy var button = EffectToggleButton( track: self.item.tracking ) { [unowned self] isSelected in
-            self.item.update?( self.item, isSelected )
-
-            return self.item.value ?? false
+    class ToggleItemView: ValueItemView {
+        var toggleItem: ToggleItem? {
+            self.item as? ToggleItem
         }
+        lazy var button = EffectToggleButton( track: self.toggleItem?.tracking ) { [unowned self] isSelected in
+            self.toggleItem.flatMap { $0.update?( $0, isSelected ) }
 
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! ToggleItem
-            super.init( withItem: item )
+            return self.toggleItem?.value ?? false
         }
 
         override func createValueView() -> UIView? {
@@ -576,8 +545,8 @@ class ToggleItem<M>: ValueItem<M, Bool> {
         override func doUpdate() {
             super.doUpdate()
 
-            self.button.image = self.item.model.flatMap { self.item.icon( $0 ) }
-            self.button.isSelected = self.item.value ?? false
+            self.button.image = self.toggleItem?.model.flatMap { self.toggleItem?.icon( $0 ) }
+            self.button.isSelected = self.toggleItem?.value ?? false
         }
 
         override func updateEnabled(_ enabled: Bool) {
@@ -605,20 +574,13 @@ class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
         ButtonItemView( withItem: self )
     }
 
-    class ButtonItemView: ItemView {
-        let item: ButtonItem
-
-        lazy var button = EffectButton( track: self.item.tracking ) { [unowned self] _, _ in
-            self.item.action( self.item )
+    class ButtonItemView: ValueItemView {
+        var buttonItem: ButtonItem? {
+            self.item as? ButtonItem
         }
 
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! ButtonItem
-            super.init( withItem: item )
+        lazy var button = EffectButton( track: self.buttonItem?.tracking ) { [unowned self] _, _ in
+            self.buttonItem.flatMap { $0.action( $0 ) }
         }
 
         override func createValueView() -> UIView? {
@@ -628,7 +590,7 @@ class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
         override func doUpdate() {
             super.doUpdate()
 
-            let value = self.item.value
+            let value = self.buttonItem?.value
             self.button.attributedTitle = value?.label?.attributedString( for: self.button.button )
             self.button.image = value?.image
         }
@@ -640,19 +602,9 @@ class DateItem<M>: ValueItem<M, Date> {
         DateItemView( withItem: self )
     }
 
-    class DateItemView: ItemView {
-        let item: DateItem
+    class DateItemView: ValueItemView {
         let valueView = UIView()
         let dateView  = DateView()
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! DateItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.valueView
@@ -675,7 +627,7 @@ class DateItem<M>: ValueItem<M, Date> {
         override func doUpdate() {
             super.doUpdate()
 
-            self.dateView.date = self.item.value
+            self.dateView.date = self.valueItem?.value
         }
     }
 }
@@ -708,17 +660,10 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     }
 
     class FieldItemView: ItemView {
-        let item: FieldItem
+        var fieldItem: FieldItem? {
+            self.item as? FieldItem
+        }
         let valueField = UITextField()
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! FieldItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.valueField
@@ -727,12 +672,12 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         override func didLoad() {
             super.didLoad()
 
-            self.valueField.delegate = self.item
+            self.valueField.delegate = self.fieldItem
             self.valueField => \.textColor => Theme.current.color.body
             self.valueField.textAlignment = .center
             self.valueField.action( for: .editingChanged ) { [unowned self] in
-                if let text = self.valueField.text {
-                    self.item.update?( self.item, text )
+                if let text = self.valueField.text, let fieldItem = self.fieldItem {
+                    fieldItem.update?( fieldItem, text )
                 }
             }
         }
@@ -740,8 +685,8 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         override func doUpdate() {
             super.doUpdate()
 
-            self.valueField.placeholder = self.item.placeholder
-            self.valueField.text = self.item.value
+            self.valueField.placeholder = self.fieldItem?.placeholder
+            self.valueField.text = self.fieldItem?.value
         }
     }
 }
@@ -765,18 +710,11 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
         }
     }
 
-    class AreaItemView: ItemView {
-        let item: AreaItem
+    class AreaItemView: ValueItemView {
+        var areaItem: AreaItem? {
+            self.item as? AreaItem
+        }
         let valueView = UITextView()
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! AreaItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.valueView
@@ -785,7 +723,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
         override func didLoad() {
             super.didLoad()
 
-            self.valueView.delegate = self.item
+            self.valueView.delegate = self.areaItem
             self.valueView => \.font => Theme.current.font.mono
             self.valueView => \.textColor => Theme.current.color.body
             self.valueView.backgroundColor = .clear
@@ -803,9 +741,9 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
         override func doUpdate() {
             super.doUpdate()
 
-            self.valueView.isEditable = self.item.update != nil
+            self.valueView.isEditable = self.areaItem?.update != nil
 
-            let value = self.item.value
+            let value = self.areaItem?.value
             if let value = value as? NSAttributedString ?? (value as? Text)?.attributedString {
                 self.valueView.attributedText = value
                 self.valueView.isHidden = false
@@ -842,28 +780,21 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
         StepperItemView( withItem: self )
     }
 
-    class StepperItemView: ItemView {
-        let item: StepperItem
+    class StepperItemView: ValueItemView {
+        var stepperItem: StepperItem? {
+            self.item as? StepperItem
+        }
         let valueView  = UIView()
         let valueLabel = UILabel()
         lazy var downButton = EffectButton( attributedTitle: .icon( "" ), border: 0, background: false ) { [unowned self]  _, _ in
-            if let value = self.item.value, value > self.item.min {
-                self.item.update?( self.item, value.advanced( by: -self.item.step ) )
+            if let stepperItem = self.stepperItem, let value = stepperItem.value, value > stepperItem.min {
+                stepperItem.update?( stepperItem, value.advanced( by: -stepperItem.step ) )
             }
         }
         lazy var upButton = EffectButton( attributedTitle: .icon( "" ), border: 0, background: false ) { [unowned self] _, _ in
-            if let value = self.item.value, value < self.item.max {
-                self.item.update?( self.item, value.advanced( by: self.item.step ) )
+            if let stepperItem = self.stepperItem, let value = stepperItem.value, value < stepperItem.max {
+                stepperItem.update?( stepperItem, value.advanced( by: stepperItem.step ) )
             }
-        }
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! StepperItem
-            super.init( withItem: item )
         }
 
         override func createValueView() -> UIView? {
@@ -904,7 +835,7 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
         override func doUpdate() {
             super.doUpdate()
 
-            self.valueLabel.text = self.item.value?.description
+            self.valueLabel.text = self.stepperItem?.value?.description
         }
     }
 }
@@ -940,19 +871,12 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         return self.tracking
     }
 
-    class PickerItemView: ItemView, UICollectionViewDelegate {
-        let item: PickerItem
+    class PickerItemView: ValueItemView, UICollectionViewDelegate {
+        var pickerItem: PickerItem? {
+            self.item as? PickerItem
+        }
         let collectionView = PickerView()
         lazy var dataSource = PickerSource( view: self )
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! PickerItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.collectionView
@@ -968,9 +892,10 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         }
 
         func updateDataSource() {
-            let values = self.item.model.flatMap( self.item.values ) ?? []
-            let selection = self.item.model.flatMap( self.item.valueProvider ).flatMap { [ $0 ] }
-            self.dataSource.update( values.split( separator: nil ).map( { $0.compactMap { $0 } } ), selected: selection )
+            if let pickerItem = self.pickerItem, let model = pickerItem.model {
+                let values = pickerItem.values( model ), selection = pickerItem.valueProvider( model ).flatMap { [ $0 ] }
+                self.dataSource.update( values.split( separator: nil ).map( { $0.compactMap { $0 } } ), selected: selection )
+            }
         }
 
         override func doUpdate() {
@@ -982,17 +907,17 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         // MARK: --- UICollectionViewDelegate ---
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            if let value = self.dataSource.element( at: indexPath ) {
-                if let tracking = self.item.tracking( indexPath: indexPath, value: value ) {
+            if let value = self.dataSource.element( at: indexPath ), let pickerItem = self.pickerItem {
+                if let tracking = pickerItem.tracking( indexPath: indexPath, value: value ) {
                     Tracker.shared.event( track: tracking )
                 }
 
-                self.item.update?( self.item, value )
+                pickerItem.update?( pickerItem, value )
             }
         }
 
         class PickerSource: DataSource<V> {
-            let view: PickerItemView
+            unowned var view: PickerItemView
 
             init(view: PickerItemView) {
                 self.view = view
@@ -1002,7 +927,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
 
             override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
                 using( C.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                    self.view.item.populate( $0, indexPath: indexPath, value: self.element( at: indexPath )! )
+                    self.view.pickerItem?.populate( $0, indexPath: indexPath, value: self.element( at: indexPath )! )
                 }
             }
         }
@@ -1020,18 +945,10 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
         PagerItemView( withItem: self )
     }
 
-    class PagerItemView: ItemView {
-        let item: PagerItem
+    class PagerItemView: ValueItemView {
         let pagerView = PagerView()
-        lazy var pageItems = self.item.value ?? []
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! PagerItem
-            super.init( withItem: item )
+        var pageItems: [Item<M>] {
+            self.valueItem?.value ?? []
         }
 
         override func createValueView() -> UIView? {
@@ -1041,7 +958,7 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
         override func didLoad() {
             super.didLoad()
 
-            self.pageItems.forEach { $0.model = self.item.model }
+            self.pageItems.forEach { $0.model = self.valueItem?.model }
             self.pagerView.pages = self.pageItems.map { $0.view }
             self.pageItems.forEach { $0.view.didLoad() }
             self.pageItems.forEach { $0.updateTask.request( now: true ) } // TODO: self.doUpdate()?
@@ -1080,19 +997,12 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
     }
 
     class ListItemView: ItemView, UITableViewDelegate {
-        let item: ListItem
+        var listItem: ListItem? {
+            self.item as? ListItem
+        }
         let tableView         = TableView()
         let activityIndicator = UIActivityIndicatorView( style: .whiteLarge )
         lazy var dataSource = ListSource( view: self )
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(withItem item: Item<M>) {
-            self.item = item as! ListItem
-            super.init( withItem: item )
-        }
 
         override func createValueView() -> UIView? {
             self.tableView
@@ -1111,11 +1021,14 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         override func doUpdate() {
             super.doUpdate()
 
+            guard let listItem = self.listItem
+            else { return }
+
             self.tableView.isHidden = false
             self.tableView.tableHeaderView = self.activityIndicator
 
             DispatchQueue.api.perform {
-                self.dataSource.update( [ self.item.model.flatMap( self.item.values ) ?? [] ], animated: self.item.animated ) { finished in
+                self.dataSource.update( [ listItem.model.flatMap( listItem.values ) ?? [] ], animated: listItem.animated ) { finished in
                     if finished {
                         self.tableView.isHidden = self.dataSource.isEmpty
                         self.tableView.tableHeaderView = nil
@@ -1129,27 +1042,26 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         // MARK: --- Types ---
 
         class ListSource: DataSource<V> {
-            let view: ListItemView
+            unowned var view: ListItemView
 
             init(view: ListItemView) {
                 self.view = view
-
                 super.init( tableView: view.tableView )
             }
 
             override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
                 C.dequeue( from: tableView, indexPath: indexPath ) { (cell: C) in
-                    self.view.item.populate( cell, indexPath: indexPath, value: self.element( at: indexPath )! )
+                    self.view.listItem?.populate( cell, indexPath: indexPath, value: self.element( at: indexPath )! )
                 }
             }
 
             override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-                self.view.item.deletable
+                self.view.listItem?.deletable ?? false
             }
 
             override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-                if editingStyle == .delete, self.view.item.deletable, let value = self.element( at: indexPath ) {
-                    self.view.item.delete( indexPath: indexPath, value: value )
+                if editingStyle == .delete, self.view.listItem?.deletable ?? false, let value = self.element( at: indexPath ) {
+                    self.view.listItem?.delete( indexPath: indexPath, value: value )
                 }
             }
         }
@@ -1208,7 +1120,7 @@ class LinksItem<M>: ListItem<M, LinksItem.Link, LinksItem.Cell> {
     }
 
     class Cell: UITableViewCell {
-        var item: LinksItem?
+        weak var item: LinksItem?
         var link: Link? {
             didSet {
                 DispatchQueue.main.perform {

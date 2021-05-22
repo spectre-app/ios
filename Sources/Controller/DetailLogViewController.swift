@@ -54,7 +54,6 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             We're here to help.  You can also reach us at:\nsupport@spectre.app
                             """
                         } ) {
-
                 if let viewController = $0.viewController {
                     let options = ConversationOptions()
                     options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )

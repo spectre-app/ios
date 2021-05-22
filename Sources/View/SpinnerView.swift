@@ -34,7 +34,7 @@ public class SpinnerView: UICollectionView {
 
         self.isPagingEnabled = true
         self.contentInsetAdjustmentBehavior = .never
-        self.addGestureRecognizer( UITapGestureRecognizer { _ in
+        self.addGestureRecognizer( UITapGestureRecognizer { [unowned self] _ in
             if self.scrolledItem == self.selectedItem {
                 self.requestSelection( item: nil )
             }

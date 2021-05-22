@@ -46,7 +46,7 @@ class DialogViewController: BaseViewController {
         self.stackView.isLayoutMarginsRelativeArrangement = true
         self.stackView.layoutMargins = UIEdgeInsets( top: 108, left: 8, bottom: 40, right: 8 )
 
-        self.closeButton.action( for: .primaryActionTriggered ) {
+        self.closeButton.action( for: .primaryActionTriggered ) { [unowned self] in
             self.dismiss( animated: true )
         }
 

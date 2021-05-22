@@ -124,7 +124,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     // MARK: --- Types ---
 
     class UsersSource: DataSource<Marshal.UserFile?> {
-        let viewController: BaseUsersViewController
+        unowned let viewController: BaseUsersViewController
 
         init(viewController: BaseUsersViewController) {
             self.viewController = viewController
@@ -269,11 +269,11 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.avatarButton.padded = false
             self.avatarButton.button.setContentCompressionResistancePriority( .defaultHigh - 1, for: .vertical )
-            self.avatarButton.action( for: .primaryActionTriggered ) {
+            self.avatarButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.avatar?.next()
             }
 
-            self.biometricButton.action( for: .primaryActionTriggered ) {
+            self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.attemptBiometrics()
             }
 
@@ -315,7 +315,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
                 }
             }
-            self.secretField.action( for: .editingChanged ) {
+            self.secretField.action( for: .editingChanged ) { [unowned self] in
                 var strengthText: Text?, strengthProgress: Double = 0
                 if let timeToCrack = Attacker.single.timeToCrack( string: self.secretField.text, hash: .spectre ) {
                     strengthProgress = ((timeToCrack.period.seconds / age_of_the_universe) as NSDecimalNumber).doubleValue
