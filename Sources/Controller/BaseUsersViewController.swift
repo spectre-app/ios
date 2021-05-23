@@ -69,7 +69,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: --- KeyboardLayoutObserver ---
 
-    override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+    override func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
     }
 
     // MARK: --- Interface ---

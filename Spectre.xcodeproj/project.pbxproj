@@ -98,7 +98,7 @@
 		93D39D8B9142B6F4077CFBD2 /* UntouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399B27F5C5F2D42EA7C0B /* UntouchableView.swift */; };
 		93D39DA73327FB4E3D600A31 /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39813D4D15F649C54ADE0 /* Updatable.swift */; };
 		93D39DC523A8A2E162CEB420 /* UIKit+Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+Spectre.swift */; };
-		93D39DE4534EF967532011C2 /* KeyboardLayoutGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */; };
+		93D39DE4534EF967532011C2 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardMonitor.swift */; };
 		93D39DE5CFF2446F5D8B85FF /* DialogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CCF90A49C099A05280B /* DialogViewController.swift */; };
 		93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39813D4D15F649C54ADE0 /* Updatable.swift */; };
 		93D39E0E73178FE39CF12B45 /* BaseSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */; };
@@ -155,7 +155,7 @@
 		DA0E559D2510E985002B3AB1 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909E003FF5E936687AA6 /* Feedback.swift */; };
 		DA0E559E2510E985002B3AB1 /* Describe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396FE084F709867C7C6CC /* Describe.swift */; };
 		DA0E559F2510E985002B3AB1 /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BAACC08C85F91D1C5C2 /* Graph.swift */; };
-		DA0E55A02510E985002B3AB1 /* KeyboardLayoutGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */; };
+		DA0E55A02510E985002B3AB1 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398631A101C926C513B08 /* KeyboardMonitor.swift */; };
 		DA0E55A12510E985002B3AB1 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
 		DA0E55A22510E985002B3AB1 /* Period.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39651387222CBD2F9CCE0 /* Period.swift */; };
 		DA0E55A42510E992002B3AB1 /* Marshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* Marshal.swift */; };
@@ -355,7 +355,7 @@
 		93D3982288CE686F671A3201 /* DetailAppViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailAppViewController.swift; sourceTree = "<group>"; };
 		93D3985695447159F2D4BE76 /* AutoFillModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillModel.swift; sourceTree = "<group>"; };
 		93D3985EDA6E3B7A05799E2C /* TintedField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TintedField.swift; sourceTree = "<group>"; };
-		93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyboardLayoutGuide.swift; sourceTree = "<group>"; };
+		93D398631A101C926C513B08 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		93D39865ECFD34CF3ADF930D /* EffectCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectCell.swift; sourceTree = "<group>"; };
 		93D398A0CC7A860ADA1315EF /* DateView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateView.swift; sourceTree = "<group>"; };
 		93D398D4B9F2323DC419DC82 /* Plumbing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Plumbing.swift; sourceTree = "<group>"; };
@@ -624,7 +624,7 @@
 				93D394F4DFBE67E0A55104D4 /* FontAwesome.swift */,
 				93D39326375ED0DDA441ADC2 /* Foundation+Spectre.swift */,
 				93D39BAACC08C85F91D1C5C2 /* Graph.swift */,
-				93D398631A101C926C513B08 /* KeyboardLayoutGuide.swift */,
+				93D398631A101C926C513B08 /* KeyboardMonitor.swift */,
 				93D391CA68F34BB05A4B8AC3 /* Keychain.swift */,
 				93D395FD92D751588A645D15 /* KeyFactory.swift */,
 				93D39D2A58D9E8BB54065115 /* LayoutConfiguration.swift */,
@@ -1435,7 +1435,7 @@
 				DA0E55BA2510E9BB002B3AB1 /* ImageView.swift in Sources */,
 				DA0E55BD2510E9BB002B3AB1 /* UntouchableView.swift in Sources */,
 				DA0E55832510649E002B3AB1 /* Plumbing.swift in Sources */,
-				DA0E55A02510E985002B3AB1 /* KeyboardLayoutGuide.swift in Sources */,
+				DA0E55A02510E985002B3AB1 /* KeyboardMonitor.swift in Sources */,
 				DA0E557F251063BF002B3AB1 /* Utilities.swift in Sources */,
 				DA0E5568251022EB002B3AB1 /* spectre-util.c in Sources */,
 				DA0E55A52510E992002B3AB1 /* Question.swift in Sources */,
@@ -1539,7 +1539,7 @@
 				93D39F69D0EDD80B5DCAF0BB /* AppConfig.swift in Sources */,
 				93D39676011DF46822C3BEAC /* Feedback.swift in Sources */,
 				93D3983CA421991D12ADDDBA /* LogSink.swift in Sources */,
-				93D39DE4534EF967532011C2 /* KeyboardLayoutGuide.swift in Sources */,
+				93D39DE4534EF967532011C2 /* KeyboardMonitor.swift in Sources */,
 				93D394687CCE5DACAE237129 /* Describe.swift in Sources */,
 				93D39284CA724E394A9E91FD /* Plumbing.swift in Sources */,
 				93D3952C2984BC63002825C5 /* LayoutConfiguration.swift in Sources */,

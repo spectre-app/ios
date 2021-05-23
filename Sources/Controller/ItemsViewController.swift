@@ -103,9 +103,9 @@ class ItemsViewController<M>: BaseViewController {
 
     // MARK: --- KeyboardLayoutObserver ---
 
-    override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+    override func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         // FIXME: items child view controllers are not seeing their additionalSafeAreaInsets changes applied to their view.
-        //super.keyboardDidChange( showing: showing, layoutGuide: layoutGuide )
+        //super.keyboardDidChange( showing: showing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
     }
 
     // MARK: --- Updatable ---
