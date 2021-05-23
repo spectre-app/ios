@@ -74,7 +74,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: --- Interface ---
 
-    func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+    func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.sorted() ]
     }
 
@@ -115,7 +115,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
         let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
-        self.usersSource.update( self.sectioned( userFiles: userFiles ) ) { _ in
+        self.usersSource.update( self.sections( for: userFiles ) ) { _ in
             self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
             self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = self.usersCarousel.selectedItem != nil }
         }

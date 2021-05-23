@@ -143,7 +143,7 @@ class MainUsersViewController: BaseUsersViewController {
 
     // MARK: --- Interface ---
 
-    override func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.sorted() + [ nil ] ]
     }
 

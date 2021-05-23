@@ -49,7 +49,7 @@ class AutoFillUsersViewController: BaseUsersViewController {
 
     // MARK: --- Interface ---
 
-    override func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.filter( { $0.autofill } ).sorted() ]
     }
 

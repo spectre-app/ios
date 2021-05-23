@@ -143,6 +143,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view )
                             .constrain( as: .box, margin: true ).activate()
+                    self.view.isHidden = false
                 }
                 UIView.animate( withDuration: .short, animations: {
                     self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
@@ -172,6 +173,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     detailsController.removeFromParent()
                     self.contentView.layoutIfNeeded()
                     self.activeController = nil
+                    self.view.isHidden = true
                     completion?()
                 } )
             }
@@ -180,6 +182,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         else {
             DispatchQueue.main.perform {
                 self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
+                self.view.isHidden = true
                 completion?()
             }
             return false
