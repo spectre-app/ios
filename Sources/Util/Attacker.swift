@@ -18,9 +18,9 @@ enum Rig {
                 // https://gist.github.com/epixoip/ace60d09981be09544fdd35005051505
                 switch hash {
                     case .bcrypt10:
-                        return Decimal( 727 ) // H/s
+                        return Decimal( 722 ) // H/s
                     case .spectre:
-                        return Decimal( 1811 ) // H/s
+                        return Decimal( 168 ) // H/s
                 }
         }
     }
