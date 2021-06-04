@@ -84,7 +84,7 @@ public struct LayoutTarget<T: UIView>: CustomStringConvertible {
 /**
  * A layout configuration holds a set of operations that will be performed on the target when the configuration's active state changes.
  */
-public protocol AnyLayoutConfiguration: class, CustomStringConvertible, CustomDebugStringConvertible {
+public protocol AnyLayoutConfiguration: AnyObject, CustomStringConvertible, CustomDebugStringConvertible {
     var isActive: Bool { get set }
 
     @discardableResult

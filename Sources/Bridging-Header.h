@@ -11,6 +11,5 @@
 #import "spectre-util.h"
 #import "spectre-marshal.h"
 #import "spectre-marshal-util.h"
-#import "base64.h"
 
 #import "UIView+Spectre.h"

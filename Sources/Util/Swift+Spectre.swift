@@ -118,7 +118,7 @@ extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {
 }
 
 extension Result {
-    var error: Failure? {
+    var error:       Failure? {
         guard case .failure(let error) = self
         else { return nil }
 
@@ -219,6 +219,23 @@ extension String {
         return self
     }
 
+    public func topPrivateDomain() -> String {
+        guard let publicSuffixes = publicSuffixes
+        else { return self }
+
+        for publicSuffix in publicSuffixes {
+            if self.hasSuffix( ".\(publicSuffix)" ) {
+                var privateDomain = self.prefix( upTo: self.index( self.endIndex, offsetBy: -publicSuffix.count - 1 ) )
+                if let lastDot = privateDomain.lastIndex( of: "." ) {
+                    privateDomain = privateDomain.suffix( from: privateDomain.index( after: lastDot ) )
+                }
+                return "\(privateDomain).\(publicSuffix)"
+            }
+        }
+
+        return self
+    }
+
     public var lastPathComponent: String {
         (self as NSString).lastPathComponent
     }
@@ -234,7 +251,7 @@ extension String {
     }
 
     func b64Decrypt() -> String? {
-        var secretLength = spectre_base64_decode_max( self ), keyLength = 0
+        var secretLength = spectre_base64_decode_max( self.lengthOfBytes( using: .utf8 ) ), keyLength = 0
         guard secretLength > 0
         else { return nil }
 

@@ -107,7 +107,7 @@ public class AppConfig: Observable {
     }
 
     class ThemeConfigObserver: AppConfigObserver {
-        let appConfig: AppConfig
+        unowned let appConfig: AppConfig
 
         init(appConfig: AppConfig) {
             self.appConfig = appConfig

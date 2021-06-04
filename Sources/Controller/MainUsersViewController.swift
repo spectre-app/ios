@@ -41,7 +41,7 @@ class MainUsersViewController: BaseUsersViewController {
     ], first: 0, random: false )
     private let appToolbar = UIStackView()
     private lazy var appUpdate = EffectButton( track: .subject( "users", action: "update" ),
-                                               title: "Update Available", background: false ) { _, _ in
+                                               title: "Update Available", background: false ) { [unowned self] _, _ in
         AppStore.shared.presentStore( in: self )
     }
 
@@ -143,7 +143,7 @@ class MainUsersViewController: BaseUsersViewController {
 
     // MARK: --- Interface ---
 
-    override func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.sorted() + [ nil ] ]
     }
 

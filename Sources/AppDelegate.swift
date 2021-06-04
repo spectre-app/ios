@@ -35,6 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         LogSink.shared.register()
         Tracker.shared.startup()
+        KeyboardMonitor.shared.install()
 
         self.window! => \.tintColor => Theme.current.color.tint
         self.window!.rootViewController = MainNavigationController( rootViewController: MainUsersViewController() )

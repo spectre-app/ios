@@ -257,7 +257,7 @@ class PagerView: UIView, UICollectionViewDelegate {
     }
 
     class PagerIndicator: UIView, Updatable {
-        let pagerView: PagerView
+        unowned let pagerView: PagerView
         let stackView = UIStackView()
 
         // - Life

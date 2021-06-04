@@ -38,9 +38,9 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         }
     }
 
-    private lazy var detailRecognizer = UITapGestureRecognizer { _ in self.hide() }
+    private lazy var detailRecognizer = UITapGestureRecognizer { [unowned self] _ in self.hide() }
     private lazy var closeButton = EffectButton( track: .subject( "details", action: "close" ),
-                                                 attributedTitle: .icon( "" ) ) { _, _ in self.hide() }
+                                                 attributedTitle: .icon( "" ) ) { [unowned self] _, _ in self.hide() }
     private var popupConfiguration:        LayoutConfiguration<UIView>!
     private var fixedContentConfiguration: LayoutConfiguration<UIView>!
     private var contentSizeObservation:    NSKeyValueObservation?
@@ -102,13 +102,13 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         LayoutConfiguration( view: self.closeButton )
                 .constrain { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
                 .constrain { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).with( priority: .fittingSizeLevel ) }
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.bottomAnchor, constant: -8 ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -8 ) }
                 .activate()
 
         self.popupConfiguration = LayoutConfiguration( view: self.view )
                 .apply { active, inactive in
                     active.set( Theme.current.color.shade.get(), keyPath: \.backgroundColor )
-                    inactive.set( Theme.current.color.shade.get( alpha: .off ), keyPath: \.backgroundColor )
+                    inactive.set( Theme.current.color.shade.get()?.with( alpha: .off ), keyPath: \.backgroundColor )
                 }
                 .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
                     active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -143,6 +143,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view )
                             .constrain( as: .box, margin: true ).activate()
+                    self.view.isHidden = false
                 }
                 UIView.animate( withDuration: .short, animations: {
                     self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
@@ -172,6 +173,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     detailsController.removeFromParent()
                     self.contentView.layoutIfNeeded()
                     self.activeController = nil
+                    self.view.isHidden = true
                     completion?()
                 } )
             }
@@ -180,15 +182,16 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         else {
             DispatchQueue.main.perform {
                 self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
+                self.view.isHidden = true
                 completion?()
             }
             return false
         }
     }
 
-    override func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+    override func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         if !self.fixedContentConfiguration.isActive {
-            super.keyboardDidChange( showing: showing, layoutGuide: layoutGuide )
+            super.keyboardDidChange( showing: showing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
         }
     }
 

@@ -5,11 +5,11 @@
 
 import Foundation
 
-protocol Updates: class {
+protocol Updates: AnyObject {
     func doUpdate()
 }
 
-protocol Updatable: class {
+protocol Updatable: AnyObject {
     associatedtype V = Void
     var updatesPostponed: Bool { get }
     var updatesRejected:  Bool { get }
@@ -26,8 +26,10 @@ extension Updatable {
 }
 
 extension DispatchTask {
-    static func update<U>(_ updatable: U, queue: DispatchQueue = .main, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
-                          qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], animated: Bool = false, update: @escaping () -> V)
+    static func update<U>(_ updatable: U, queue: DispatchQueue = .main,
+                          deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now() + .seconds( .short * .short ),
+                          group: DispatchGroup? = nil, qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [],
+                          animated: Bool = false, update: @escaping () -> V)
                     -> DispatchTask<V> where U: Updatable, U.V == V {
         DispatchTask( named: "Update: \(type( of: updatable ))", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
             guard let updatable = updatable

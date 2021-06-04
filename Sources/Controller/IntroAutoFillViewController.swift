@@ -28,7 +28,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                          """
                      } ),
             SeparatorItem(),
-            PagerItem( value: { _ in
+            PagerItem( value: { [unowned self] _ in
                 [
                     // Step 0
                     Item( subitems: [
@@ -77,11 +77,13 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem( track: .subject( "autofill_setup", action: "settings" ),
-                                    icon: { _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "" ): .icon( "" ) },
-                                    value: { _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
+                                    icon: { [unowned self] _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "" ): .icon( "" ) },
+                                    value: { [unowned self] _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
                             URL( string: UIApplication.openSettingsURLString ).flatMap { UIApplication.shared.open( $0 ) }
                         } )
-                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { _ in self.autoFillState?.isEnabled ?? false } )
+                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { [unowned self] _ in
+                                    self.autoFillState?.isEnabled ?? false
+                                } )
                     ], axis: .vertical ),
 
                     // Step 4

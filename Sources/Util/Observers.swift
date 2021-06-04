@@ -28,6 +28,10 @@ public class Observers<O> {
         return observer
     }
 
+    public func clear() {
+        self.observers.removeAll()
+    }
+
     @discardableResult
     public func notify(event: (O) -> Void) -> Bool {
         var notified = false

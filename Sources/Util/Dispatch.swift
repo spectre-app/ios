@@ -39,7 +39,7 @@ extension DispatchQueue {
                         await: Bool = false, execute work: @escaping @convention(block) () -> Void) {
         let deadNow = deadline.flatMap { $0 <= DispatchTime.now() } ?? true
 
-        if await {
+        if `await` {
             if self.isActive {
                 self.run( deadline: deadNow ? nil: deadline, group: group, qos: qos, flags: flags, work: work )
             }
@@ -364,7 +364,8 @@ public class DispatchTask<V> {
     private var requestPromise: Promise<V>?
     private lazy var requestQueue = DispatchQueue( label: "\(productName): DispatchTask: \(self.name)", qos: .userInitiated )
 
-    public init(named name: String, queue: DispatchQueue, deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now(), group: DispatchGroup? = nil,
+    public init(named name: String, queue: DispatchQueue,
+                deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now() + .seconds( .short ), group: DispatchGroup? = nil,
                 qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [], execute work: @escaping () throws -> V) {
         self.name = name
         self.workQueue = queue
@@ -390,36 +391,39 @@ public class DispatchTask<V> {
                 return requestPromise
             }
 
-            if self.requestItem?.isCancelled ?? false {
-                return Promise( .failure( Promise<V>.Interruption.cancelled ) )
-            }
-
             let requestPromise = Promise<V>()
-            self.requestPromise = requestPromise.finally( on: self.requestQueue ) {
-                self.requestItem = nil
-                self.requestPromise = nil
-            }
-            self.requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
+            let requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
                 do {
-                    guard !(self.requestItem?.isCancelled ?? false)
-                    else {
-                        throw Promise<V>.Interruption.cancelled
-                    }
+                    let result = try self.work()
 
-                    requestPromise.finish( .success( try self.work() ) )
+                    self.requestQueue.await {
+                        if !(self.requestItem?.isCancelled ?? true) {
+                            requestPromise.finish( .success( result ) )
+                        }
+                    }
                 }
                 catch Promise<V>.Interruption.postponed {
-                    self.workQueue.perform( deadline: .now() + .milliseconds( 300 ), group: self.group, qos: self.qos, flags: self.flags ) {
+                    self.workQueue.perform( deadline: .now() + .seconds( .short ), group: self.group, qos: self.qos, flags: self.flags ) {
                         self.requestItem?.perform()
                     }
                 }
                 catch {
-                    requestPromise.finish( .failure( error ) )
+                    self.requestQueue.await {
+                        if !(self.requestItem?.isCancelled ?? true) {
+                            requestPromise.finish( .failure( error ) )
+                        }
+                    }
                 }
             }
 
-            self.workQueue.perform( deadline: now ? nil: self.deadline(), group: self.group, qos: self.qos, flags: self.flags, await: await ) {
-                self.requestItem?.perform()
+            self.requestItem = requestItem
+            self.requestPromise = requestPromise.finally( on: self.requestQueue ) {
+                self.requestItem = nil
+                self.requestPromise = nil
+            }
+
+            self.workQueue.perform( deadline: now ? nil: self.deadline(), group: self.group, qos: self.qos, flags: self.flags, await: `await` ) {
+                requestItem.perform()
             }
 
             return requestPromise
@@ -437,7 +441,11 @@ public class DispatchTask<V> {
                 self.requestPromise = nil
             }
 
-            self.requestItem?.cancel()
+            if !(self.requestItem?.isCancelled ?? true) {
+                self.requestItem?.cancel()
+                self.requestPromise?.finish( .failure( Promise<V>.Interruption.cancelled ) )
+            }
+
             return self.requestItem?.isCancelled ?? false
         }
     }

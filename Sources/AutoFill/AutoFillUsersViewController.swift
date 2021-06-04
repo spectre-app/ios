@@ -12,7 +12,7 @@ import AuthenticationServices
 class AutoFillUsersViewController: BaseUsersViewController {
     private let configurationView = AutoFillConfigurationView( fromSettings: false )
     private lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ),
-                                                 image: .icon( "" ), border: 0, background: false, square: true ) { _, _ in
+                                                 image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
     }
 
@@ -49,7 +49,7 @@ class AutoFillUsersViewController: BaseUsersViewController {
 
     // MARK: --- Interface ---
 
-    override func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.filter( { $0.autofill } ).sorted() ]
     }
 

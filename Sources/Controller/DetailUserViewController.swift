@@ -154,9 +154,9 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( track: .subject( "user", action: "attacker" ), title: "Defense Strategy 🅿︎", values: { _ in Attacker.allCases },
                         value: { $0.attacker ?? .default }, update: { $0.model?.attacker = $1 },
-                        caption: { _ in
+                        caption: {
                             """
-                            Yearly budget of the primary attacker persona you're seeking to repel (@ \(cost_per_kwh)$/kWh).
+                            Yearly budget of the primary attacker persona you're seeking to repel (@ \($0.attacker?.rig.cost_per_kwh)$/kWh).
                             """
                         } )
 

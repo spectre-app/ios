@@ -608,14 +608,16 @@ extension UITableView {
 }
 
 extension UITableViewCell {
-    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> Self {
+    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> C {
         let cell = tableView.dequeueReusableCell( withIdentifier: NSStringFromClass( self ), for: indexPath ) as! C
 
         if let initialize = initializer {
-            initialize( cell )
+            UIView.performWithoutAnimation {
+                initialize( cell )
+            }
         }
 
-        return cell as! Self
+        return cell
     }
 }
 
@@ -646,7 +648,7 @@ extension UIView {
     public var ownership: (owner: UIResponder, property: String)? {
         var nextResponder = self.next
         while let nextResponder_ = nextResponder {
-            if let property = nextResponder_.property( withValue: self ) {
+            if let property = property( of: nextResponder_, withValue: self ) {
                 return (nextResponder_, property)
             }
 

@@ -5,69 +5,48 @@
 
 import UIKit
 
+//
+// An object O has a key path K with value V. A property P can bind to O's K to sync its V with the property's own value.
+//
+
 infix operator =>: MultiplicationPrecedence
 
-private var propertyPaths = [ Identity: AnyObject ]()
+// Level 1: Obtain a property path to object O's key path K.
 
-public func =><E: NSObject, V>(target: E, keyPath: KeyPath<E, V>)
+func =><E: NSObject, V>(target: E, keyPath: KeyPath<E, V>)
                 -> PropertyPath<E, V> {
     find( propertyPath: PropertyPath( target: target, nonnullKeyPath: keyPath, nullableKeyPath: nil, attribute: nil ),
           identity: target, keyPath )
 }
 
-public func =><E: NSObject, V>(target: E, keyPath: KeyPath<E, V?>)
+func =><E: NSObject, V>(target: E, keyPath: KeyPath<E, V?>)
                 -> PropertyPath<E, V> {
     find( propertyPath: PropertyPath( target: target, nonnullKeyPath: nil, nullableKeyPath: keyPath, attribute: nil ),
           identity: target, keyPath )
 }
 
-public func =><E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, attribute: NSAttributedString.Key)
+func =><E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, attribute: NSAttributedString.Key)
                 -> PropertyPath<E, NSAttributedString> {
-    find( propertyPath: PropertyPath( target: propertyPath.target, nonnullKeyPath: propertyPath.nonnullKeyPath,
+    find( propertyPath: PropertyPath( target: propertyPath.target!, nonnullKeyPath: propertyPath.nonnullKeyPath,
                                       nullableKeyPath: propertyPath.nullableKeyPath, attribute: attribute ),
           identity: propertyPath.target, propertyPath.nonnullKeyPath ?? propertyPath.nullableKeyPath, attribute.rawValue as NSString )
 }
 
+private var propertyPaths = NSCache<Identity, AnyPropertyPath>()
+
 private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, identity members: AnyObject?...)
                 -> PropertyPath<E, V> {
     let identity = Identity( members )
-    if let propertyPath = propertyPaths[identity] as? PropertyPath<E, V>, propertyPath.target != nil {
+    if let propertyPath = propertyPaths.object( forKey: identity ) as? PropertyPath<E, V>, propertyPath.target != nil {
         return propertyPath
     }
 
     let propertyPath = propertyPath()
-    propertyPaths[identity] = propertyPath
+    propertyPaths.setObject( propertyPath, forKey: identity )
     return propertyPath
 }
 
-public func =><E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
-    if let property = property {
-        property.bind( propertyPath: propertyPath )
-    }
-    else {
-        propertyPath.assign( value: nil )
-    }
-}
-
-public func =><E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
-    if let property = property {
-        property.bind( propertyPath: propertyPath )
-    }
-    else {
-        propertyPath.assign( value: nil )
-    }
-}
-
-public func =><E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
-    if let property = property {
-        property.bind( propertyPath: propertyPath )
-    }
-    else {
-        propertyPath.assign( value: nil )
-    }
-}
-
-class Identity: Equatable, Hashable {
+private class Identity: Equatable, Hashable {
     let members: [ObjectIdentifier]
 
     init(_ members: [AnyObject?]) {
@@ -83,35 +62,66 @@ class Identity: Equatable, Hashable {
     }
 }
 
-public protocol _PropertyPath: class {
-    func assign(value: @autoclosure () -> Any?)
+// Level 2: Bind the property path to a property P.
+
+func =><E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
+    if let property = property {
+        propertyPath.bind( property: property )
+    }
+    else {
+        propertyPath.assign( value: nil )
+    }
 }
 
-public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E: AnyObject {
+func =><E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
+    if let property = property {
+        propertyPath.bind( property: property )
+    }
+    else {
+        propertyPath.assign( value: nil )
+    }
+}
 
-    weak var target: E?
+func =><E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
+    if let property = property {
+        propertyPath.bind( property: property )
+    }
+    else {
+        propertyPath.assign( value: nil )
+    }
+}
+
+class AnyPropertyPath: CustomDebugStringConvertible {
+    var debugDescription: String {
+        "-"
+    }
+
+    func assign(value: @autoclosure () -> Any?) {
+    }
+}
+
+class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
+
     let nonnullKeyPath:  KeyPath<E, V>?
     let nullableKeyPath: KeyPath<E, V?>?
     let attribute:       NSAttributedString.Key?
-    var property:        AnyProperty? {
-        willSet {
-            if self.target == nil {
-                dbg( "<bp>" )
-            }
-            if let property = self.property {
-                property.unbind( propertyPath: self )
+
+    internal weak var target: E?
+    private var property: AnyProperty? {
+        didSet {
+            if oldValue !== self.property {
+                if let oldProperty = oldValue, let binding = self.binding {
+                    oldProperty.unbind( binding: binding )
+                }
+                if let newProperty = self.property {
+                    self.binding = newProperty.bind( propertyPath: self )
+                }
             }
         }
     }
+    private var binding:  Updates?
 
-    fileprivate init(target: E?, nonnullKeyPath: KeyPath<E, V>?, nullableKeyPath: KeyPath<E, V?>?, attribute: NSAttributedString.Key?) {
-        self.target = target
-        self.nonnullKeyPath = nonnullKeyPath
-        self.nullableKeyPath = nullableKeyPath
-        self.attribute = attribute
-    }
-
-    public var description: String {
+    override var debugDescription: String {
         if let attribute = self.attribute {
             return "\(self.propertyDescription) => \(attribute)"
         }
@@ -139,15 +149,41 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
         }
     }
 
-    public func unbind() {
+    fileprivate init(target: E, nonnullKeyPath: KeyPath<E, V>?, nullableKeyPath: KeyPath<E, V?>?, attribute: NSAttributedString.Key?) {
+        self.target = target
+        self.nonnullKeyPath = nonnullKeyPath
+        self.nullableKeyPath = nullableKeyPath
+        self.attribute = attribute
+    }
+
+    func bind(property: AnyProperty) {
+        if self.property == nil, let target = self.target {
+            let cleaners = objc_getAssociatedObject( target, #function ) as? NSMutableArray ?? .init()
+            //dbg( "[properties] creating property path: %@", self )
+            cleaners.add( PropertyPathCleaner( target: target, propertyPath: self ) )
+            objc_setAssociatedObject( target, #function, cleaners, .OBJC_ASSOCIATION_RETAIN )
+        }
+
+        //dbg( "[properties] bind property path: %@ to %@", self, property )
+        self.property = property
+    }
+
+    func unbind() {
+        if self.property != nil {
+            //dbg( "[properties] unbind property path: %@", self )
+        }
         self.property = nil
     }
 
-    public func assign(value: @autoclosure () -> Any?) {
+    override func assign(value: @autoclosure () -> Any?) {
         guard let target = self.target
         else { return }
 
         var value = value()
+
+        if let color = (value as? UIColor)?.cgColor as? V {
+            value = color
+        }
 
         if let attribute = self.attribute, let string = target[keyPath: self.nullableKeyPath!] as? NSAttributedString {
             let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
@@ -201,7 +237,24 @@ public class PropertyPath<E, V>: _PropertyPath, CustomStringConvertible where E:
     }
 }
 
-public struct ThemePattern {
+class PropertyPathCleaner<E, V> where E: AnyObject {
+    weak var target: E?
+    let propertyPath: PropertyPath<E, V>
+
+    init(target: E?, propertyPath: PropertyPath<E, V>) {
+        self.target = target
+        self.propertyPath = propertyPath
+    }
+
+    deinit {
+        //dbg( "[properties] deinit property path cleaner for: %@", self.propertyPath )
+        if self.propertyPath.target === self.target {
+            self.propertyPath.unbind()
+        }
+    }
+}
+
+struct ThemePattern {
     static let spectre = ThemePattern(
             dark: .hex( "0E3345" ),
             dusk: .hex( "173D50" ),
@@ -317,80 +370,80 @@ extension UIFont.Weight {
     }
 }
 
-public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
-    private static var byPath    = [ String: Theme ]()
-    private static let base      = Theme()
+class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
+    private static var byPath = [ String: Theme ]()
+    private static let base   = Theme()
 
     // Register all theme objects
-    public static let  allCases  = [ Theme.base,
-                                     Theme( path: ".spectre", pattern: .spectre,
-                                            mood: "It's just a mental reflection." ),
-                                     Theme( path: ".dream", pattern: .dream,
-                                            mood: "This weather is for dreaming." ),
-                                     Theme( path: ".deep", pattern: .deep,
-                                            mood: "I am my past and I am beautiful." ),
-                                     Theme( path: ".sand", pattern: .sand,
-                                            mood: "Sandstone cabin by the beech." ),
-                                     Theme( path: ".lush", pattern: .lush,
-                                            mood: "A clean and modest kind of lush." ),
-                                     Theme( path: ".oak", pattern: .oak,
-                                            mood: "The cabin below deck on my yacht." ),
-                                     Theme( path: ".spring", pattern: .spring,
-                                            mood: "Bright morning fog in spring-time." ),
-                                     Theme( path: ".fuzzy", pattern: .fuzzy,
-                                            mood: "Soft and just a touch fuzzy." ),
-                                     Theme( path: ".premium", pattern: .premium,
-                                            mood: "The kind of wealthy you don't advertise." ),
-                                     Theme( path: ".pale", pattern: .pale,
-                                            mood: "Weathered stone foundation standing tall." ),
-                                     Theme( path: ".aged", pattern: .aged,
-                                            mood: "Whiff of a Victorian manuscript." ),
+    static let allCases  = [ Theme.base,
+                             Theme( path: ".spectre", pattern: .spectre,
+                                    mood: "It's just a mental reflection." ),
+                             Theme( path: ".dream", pattern: .dream,
+                                    mood: "This weather is for dreaming." ),
+                             Theme( path: ".deep", pattern: .deep,
+                                    mood: "I am my past and I am beautiful." ),
+                             Theme( path: ".sand", pattern: .sand,
+                                    mood: "Sandstone cabin by the beech." ),
+                             Theme( path: ".lush", pattern: .lush,
+                                    mood: "A clean and modest kind of lush." ),
+                             Theme( path: ".oak", pattern: .oak,
+                                    mood: "The cabin below deck on my yacht." ),
+                             Theme( path: ".spring", pattern: .spring,
+                                    mood: "Bright morning fog in spring-time." ),
+                             Theme( path: ".fuzzy", pattern: .fuzzy,
+                                    mood: "Soft and just a touch fuzzy." ),
+                             Theme( path: ".premium", pattern: .premium,
+                                    mood: "The kind of wealthy you don't advertise." ),
+                             Theme( path: ".pale", pattern: .pale,
+                                    mood: "Weathered stone foundation standing tall." ),
+                             Theme( path: ".aged", pattern: .aged,
+                                    mood: "Whiff of a Victorian manuscript." ),
     ]
-    public static let  current   = Theme( path: "current" )
+    static let current   = Theme( path: "current" )
 
     // SPECTRE:
-    public static let  `default` = allCases[1]
+    static let `default` = allCases[1]
 
-    public class func with(path: String?) -> Theme? {
+    class func with(path: String?) -> Theme? {
         self.allCases.first { $0.path == path } ?? path?.nonEmpty.flatMap { Theme.byPath[$0] } ?? .base
     }
 
-    public let observers = Observers<ThemeObserver>()
-    public let font      = Fonts()
-    public let color     = Colors()
+    let observers = Observers<ThemeObserver>()
+    let font      = Fonts()
+    let color     = Colors()
 
-    public struct Fonts {
-        public let largeTitle  = FontProperty()
-        public let title1      = FontProperty()
-        public let title2      = FontProperty()
-        public let title3      = FontProperty()
-        public let headline    = FontProperty()
-        public let subheadline = FontProperty()
-        public let body        = FontProperty()
-        public let callout     = FontProperty()
-        public let caption1    = FontProperty()
-        public let caption2    = FontProperty()
-        public let footnote    = FontProperty()
-        public let password    = FontProperty()
-        public let mono        = FontProperty()
+    struct Fonts {
+        let largeTitle  = FontProperty()
+        let title1      = FontProperty()
+        let title2      = FontProperty()
+        let title3      = FontProperty()
+        let headline    = FontProperty()
+        let subheadline = FontProperty()
+        let body        = FontProperty()
+        let callout     = FontProperty()
+        let caption1    = FontProperty()
+        let caption2    = FontProperty()
+        let footnote    = FontProperty()
+        let password    = FontProperty()
+        let mono        = FontProperty()
     }
 
-    public struct Colors {
-        public let body        = AppearanceProperty<UIColor>() //! Text body
-        public let secondary   = AppearanceProperty<UIColor>() //! Text accents / Captions
-        public let placeholder = AppearanceProperty<UIColor>() //! Field hints
-        public let backdrop    = AppearanceProperty<UIColor>() //! Main content background
-        public let panel       = AppearanceProperty<UIColor>() //! Detail content background
-        public let shade       = AppearanceProperty<UIColor>() //! Detail dimming background
-        public let shadow      = AppearanceProperty<UIColor>() //! Text contrast
-        public let mute        = AppearanceProperty<UIColor>() //! Dim content hinting
-        public let selection   = AppearanceProperty<UIColor>() //! Selected content background
-        public let tint        = AppearanceProperty<UIColor>() //! Control accents
+    struct Colors {
+        let body        = AppearanceProperty<UIColor>() //! Text body
+        let secondary   = AppearanceProperty<UIColor>() //! Text accents / Captions
+        let placeholder = AppearanceProperty<UIColor>() //! Field hints
+        let backdrop    = AppearanceProperty<UIColor>() //! Main content background
+        let panel       = AppearanceProperty<UIColor>() //! Detail content background
+        let shade       = AppearanceProperty<UIColor>() //! Detail dimming background
+        let shadow      = AppearanceProperty<UIColor>() //! Text contrast
+        let mute        = AppearanceProperty<UIColor>() //! Dim content hinting
+        let selection   = AppearanceProperty<UIColor>() //! Selected content background
+        let tint        = AppearanceProperty<UIColor>() //! Control accents
     }
 
     // MARK: --- Life ---
 
-    public var  parent:      Theme? {
+    var parent: Theme? {
         didSet {
             self.font.largeTitle.parent = self.parent?.font.largeTitle
             self.font.title1.parent = self.parent?.font.title1
@@ -419,8 +472,8 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.updateTask.request()
         }
     }
-    private let name:        String
-    public var  path:        String {
+    private let name: String
+    var path:        String {
         if let parent = parent {
             return "\(parent.path).\(self.name)"
         }
@@ -428,8 +481,8 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             return self.name
         }
     }
-    public var  mood:        String?
-    public var  description: String {
+    var mood:        String?
+    var description: String {
         self.mood ?? self.parent?.description ?? self.path
     }
 
@@ -444,7 +497,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.font.title2.set( UIFont.poppins( .medium, asTextStyle: .title2 ), withTextStyle: .title2 )
         self.font.title3.set( UIFont.poppins( .regular, asTextStyle: .title3 ), withTextStyle: .title3 )
         self.font.headline.set( UIFont.poppins( .medium, asTextStyle: .headline ), withTextStyle: .headline )
-        self.font.subheadline.set( UIFont.poppins( .bold, asTextStyle: .subheadline ), withTextStyle: .subheadline )
+        self.font.subheadline.set( UIFont.poppins( .regular, asTextStyle: .subheadline ), withTextStyle: .subheadline )
         self.font.body.set( UIFont.poppins( .light, asTextStyle: .body ), withTextStyle: .body )
         self.font.callout.set( UIFont.poppins( .regular, asTextStyle: .callout ), withTextStyle: .callout )
         self.font.caption1.set( UIFont.poppins( .regular, asTextStyle: .caption1 ), withTextStyle: .caption1 )
@@ -458,7 +511,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.backdrop.set( UIColor.groupTableViewBackground )
         self.color.panel.set( UIColor.white )
         self.color.shade.set( UIColor.lightText )
-        self.color.shadow.set( UIColor.gray.with( alpha: .long ) )
+        self.color.shadow.set( UIColor.gray.with( alpha: .off ) )
         self.color.mute.set( UIColor.darkGray.with( alpha: .short * .short ) )
         self.color.selection.set( UIColor.gray.with( alpha: .short ) )
         self.color.tint.set( .hex( "41A0A0" ) )
@@ -471,7 +524,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( UIColor.systemBackground )
             self.color.panel.set( UIColor.secondarySystemBackground )
             self.color.shade.set( UIColor.systemFill )
-            self.color.shadow.set( UIColor.secondarySystemFill )
+            self.color.shadow.set( UIColor.secondarySystemFill.with( alpha: .off ) )
             self.color.mute.set( UIColor.separator )
             self.color.selection.set( UIColor.tertiarySystemFill )
             self.color.tint.set( .hex( "41A0A0" ) )
@@ -500,7 +553,7 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( light: pattern.pale, dark: pattern.dark )
             self.color.panel.set( light: pattern.dawn, dark: pattern.dusk )
             self.color.shade.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
-            self.color.shadow.set( light: pattern.flat?.with( alpha: .long ), dark: pattern.flat?.with( alpha: .long ) )
+            self.color.shadow.set( light: pattern.flat?.with( alpha: .off ), dark: pattern.flat?.with( alpha: .off ) )
             self.color.mute.set( light: pattern.dusk?.with( alpha: .short * .short ), dark: pattern.dawn?.with( alpha: .short * .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.tint.set( light: pattern.flat, dark: pattern.flat )
@@ -543,124 +596,113 @@ public class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.observers.notify( event: { $0.didChangeTheme() } )
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hash(into hasher: inout Hasher) {
         hasher.combine( self.path )
     }
 
-    public static func ==(lhs: Theme, rhs: Theme) -> Bool {
+    static func ==(lhs: Theme, rhs: Theme) -> Bool {
         lhs.path == rhs.path
     }
 }
 
-public protocol ThemeObserver {
+protocol ThemeObserver {
     func didChangeTheme()
 }
 
-public protocol _Property {
-    associatedtype V
+class AnyProperty: Updates {
+    var updates = [ WeakBox<Updates> ]()
 
-    func get() -> V?
-    func unbind(propertyPath: _PropertyPath)
+    func getAny() -> Any? {
+        nil
+    }
+
+    func bind(propertyPath: AnyPropertyPath) -> Updates {
+        let updater = PropertyUpdater( property: self, propertyPath: propertyPath )
+        self.updates.append( WeakBox( updater ) )
+        updater.doUpdate()
+        //dbg( "[properties] bind => property %@, bound to: %@", self, self.updates )
+
+        return updater
+    }
+
+    func unbind(binding: Updates) {
+        self.updates.removeAll { $0.value === binding }
+        //dbg( "[properties] unbind => property %@, bound to: %@", self, self.updates )
+    }
+
+    func doUpdate() {
+        self.updates.forEach { $0.value?.doUpdate() }
+    }
 }
 
-public class AnyProperty: _Property {
-    let _get:    () -> Any
-    let _unbind: (_PropertyPath) -> ()
+private class PropertyUpdater: Updates, CustomDebugStringConvertible {
+    private weak var propertyPath: AnyPropertyPath?
+    private let property: AnyProperty
 
-    public init<P: _Property>(_ property: P) {
-        self._get = property.get
-        self._unbind = { property.unbind( propertyPath: $0 ) }
+    var debugDescription: String {
+        "update[\(self.propertyPath?.debugDescription ?? "gone"), from: \(self.property)]"
     }
 
-    public func get() -> Any? {
-        self._get()
+    init(property: AnyProperty, propertyPath: AnyPropertyPath) {
+        self.property = property
+        self.propertyPath = propertyPath
     }
 
-    public func unbind(propertyPath: _PropertyPath) {
-        self._unbind( propertyPath )
+    func doUpdate() {
+        self.propertyPath?.assign( value: self.property.getAny() )
     }
 }
 
-public class Property<V>: _Property, Updates, CustomStringConvertible {
-    var parent: Property<V>? {
+class Property<V>: AnyProperty, CustomDebugStringConvertible {
+    weak var parent: Property<V>? {
         didSet {
             self.doUpdate()
         }
     }
-    var dependants = [ Updates ]()
+
+    var debugDescription: String {
+        if let property = property( of: Theme.current.color, withValue: self ) {
+            return "Theme.color.\(property)"
+        }
+        else if let property = property( of: Theme.current.font, withValue: self ) {
+            return "Theme.font.\(property)"
+        }
+        else {
+            return self.valueDescription
+        }
+    }
+
+    var valueDescription: String {
+        if let parent = self.parent {
+            return "child-of[ \(parent) ]"
+        }
+        else {
+            return "child-of[]"
+        }
+    }
 
     init(parent: Property<V>? = nil) {
         self.parent = parent
     }
 
-    public func get() -> V? {
+    override func getAny() -> Any? {
+        self.get()
+    }
+
+    func get() -> V? {
         self.parent?.get()
     }
 
-    public func transform<T>(_ function: @escaping (V?) -> T?) -> Property<T> {
-        let transform = TransformProperty( self, function: function )
-        self.dependants.append( transform )
+    func transform<T>(_ function: @escaping (V?) -> T?) -> Property<T> {
+        let updater = TransformProperty( self, function: function )
+        self.updates.append( WeakBox( updater ) )
+        //dbg( "[properties] transform => property %@, bound to: %@", self, self.updates )
 
-        return transform
-    }
-
-    func bind<E>(propertyPath: PropertyPath<E, V>) {
-        let updater = PropertyUpdater( value: self.get, propertyPath: propertyPath )
-        propertyPath.property = AnyProperty( self )
-        self.dependants.append( updater )
-        updater.doUpdate()
-    }
-
-    func bind<E>(propertyPath: PropertyPath<E, NSAttributedString>) {
-        let updater = AnyPropertyUpdater( value: self.get, propertyPath: propertyPath )
-        propertyPath.property = AnyProperty( self )
-        self.dependants.append( updater )
-        updater.doUpdate()
-    }
-
-    public func unbind(propertyPath: _PropertyPath) {
-        self.dependants.removeAll { ($0 as? AnyPropertyUpdater)?.has( propertyPath ) ?? false }
-    }
-
-    public func doUpdate() {
-        self.dependants.forEach { $0.doUpdate() }
-    }
-
-    public var description: String {
-        if let parent = self.parent {
-            return "parent[ \(parent) ]"
-        }
-        else {
-            return "parent[]"
-        }
+        return updater
     }
 }
 
-private class AnyPropertyUpdater: Updates {
-    private let propertyPath:  _PropertyPath
-    private let valueFunction: () -> Any?
-
-    init(value valueFunction: @escaping () -> Any?, propertyPath: _PropertyPath) {
-        self.valueFunction = valueFunction
-        self.propertyPath = propertyPath
-    }
-
-    func has(_ propertyPath: _PropertyPath) -> Bool {
-        self.propertyPath === propertyPath
-    }
-
-    func doUpdate() {
-        self.propertyPath.assign( value: self.valueFunction() )
-    }
-}
-
-private class PropertyUpdater: AnyPropertyUpdater {
-    init<E: AnyObject, V>(value valueFunction: @escaping () -> V?, propertyPath: PropertyPath<E, V>) {
-        super.init( value: valueFunction, propertyPath: propertyPath )
-    }
-}
-
-public class ValueProperty<V>: Property<V> {
+class ValueProperty<V>: Property<V> {
     private var value: V?
     var properties = [ (Any, KeyPath<Any, V?>) ]()
 
@@ -669,7 +711,7 @@ public class ValueProperty<V>: Property<V> {
         self.value = value
     }
 
-    public override func get() -> V? {
+    override func get() -> V? {
         self.value ?? super.get()
     }
 
@@ -682,17 +724,17 @@ public class ValueProperty<V>: Property<V> {
         self.set( nil )
     }
 
-    public override var description: String {
+    override var valueDescription: String {
         if let value = self.value {
             return "value[ \(type( of: value )) ]"
         }
         else {
-            return super.description
+            return super.valueDescription
         }
     }
 }
 
-public class FontProperty: ValueProperty<UIFont> {
+class FontProperty: ValueProperty<UIFont> {
     private var textStyle: UIFont.TextStyle?
 
     init(_ value: UIFont? = nil, withTextStyle textStyle: UIFont.TextStyle? = nil, parent: Property<UIFont>? = nil) {
@@ -700,7 +742,7 @@ public class FontProperty: ValueProperty<UIFont> {
         super.init( value, parent: parent )
     }
 
-    public override func get() -> UIFont? {
+    override func get() -> UIFont? {
         guard let value = super.get()
         else { return nil }
 
@@ -720,17 +762,17 @@ public class FontProperty: ValueProperty<UIFont> {
         super.clear()
     }
 
-    public override var description: String {
+    override var valueDescription: String {
         if let textStyle = self.textStyle {
-            return "\(super.description), textStyle(\(textStyle)) ]"
+            return "\(super.valueDescription), textStyle(\(textStyle)) ]"
         }
         else {
-            return super.description
+            return super.valueDescription
         }
     }
 }
 
-public class AppearanceProperty<V>: Property<V> {
+class AppearanceProperty<V>: Property<V> {
     private var value: (light: V?, dark: V?)
 
     init(_ value: (light: V?, dark: V?) = (light: nil, dark: nil), parent: Property<V>? = nil) {
@@ -738,7 +780,7 @@ public class AppearanceProperty<V>: Property<V> {
         super.init( parent: parent )
     }
 
-    public override func get() -> V? {
+    override func get() -> V? {
         if #available( iOS 13, * ) {
             return (UITraitCollection.current.userInterfaceStyle == .dark ? self.value.dark: self.value.light) ?? super.get()
         }
@@ -755,14 +797,14 @@ public class AppearanceProperty<V>: Property<V> {
         self.set( light: value, dark: value )
     }
 
-    public override var description: String {
+    override var valueDescription: String {
         if #available( iOS 13, * ) {
             if UITraitCollection.current.userInterfaceStyle == .dark {
                 if let value = self.value.dark {
                     return "dark[ \(type( of: value )) ]"
                 }
                 else {
-                    return super.description
+                    return super.valueDescription
                 }
             }
             else {
@@ -770,7 +812,7 @@ public class AppearanceProperty<V>: Property<V> {
                     return "light[ \(type( of: value )) ]"
                 }
                 else {
-                    return super.description
+                    return super.valueDescription
                 }
             }
         }
@@ -779,13 +821,13 @@ public class AppearanceProperty<V>: Property<V> {
                 return "light[ \(type( of: value )) ]"
             }
             else {
-                return super.description
+                return super.valueDescription
             }
         }
     }
 }
 
-public class TransformProperty<F, T>: Property<T> {
+class TransformProperty<F, T>: Property<T> {
     let from:     Property<F>
     let function: (F?) -> T?
 
@@ -795,52 +837,11 @@ public class TransformProperty<F, T>: Property<T> {
         super.init( parent: nil )
     }
 
-    public override func get() -> T? {
+    override func get() -> T? {
         self.function( self.from.get() )
     }
 
-    public override var description: String {
+    override var valueDescription: String {
         "transform[ \(self.from) ]"
-    }
-}
-
-public extension Property where V == UIFont {
-    func get(size: CGFloat? = nil, traits: UIFontDescriptor.SymbolicTraits? = nil) -> UIFont? {
-        var font = self.get()
-
-        if let traits = traits {
-            font = font?.withSymbolicTraits( traits )
-        }
-        if let size = size {
-            font = font?.withSize( size )
-        }
-
-        return font
-    }
-}
-
-public extension Property where V == UIColor {
-    func get(tint: UIColor? = nil, alpha: CGFloat? = nil) -> UIColor? {
-        var color: UIColor? = self.get()
-
-        if let tint = tint {
-            color = color?.with( hue: tint.hue )
-        }
-        if let alpha = alpha {
-            color = color?.with( alpha: alpha )
-        }
-
-        return color
-    }
-
-    func get(x: Void = ()) -> CGColor? {
-        self.get()?.cgColor
-    }
-
-    func bind<E>(propertyPath: PropertyPath<E, CGColor>) {
-        let updater = PropertyUpdater( value: { self.get() }, propertyPath: propertyPath )
-        propertyPath.property = AnyProperty( self )
-        self.dependants.append( updater )
-        updater.doUpdate()
     }
 }

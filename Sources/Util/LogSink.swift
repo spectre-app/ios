@@ -18,7 +18,9 @@ public func trp(file: String = #file, line: Int32 = #line, function: String = #f
     guard condition
     else { return false }
 
-    return log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
+    let logged = log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
+    print( "<breakpoint>" )
+    return logged
 }
 
 @discardableResult

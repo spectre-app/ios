@@ -195,9 +195,8 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         }
     }
 
-    private lazy var saveTask = DispatchTask( named: self.userName, queue: .global( qos: .utility ), deadline: .now() + .seconds( 1 ) ) {
-        () -> URL? in
-        guard self.dirty, self.file != nil
+    private lazy var saveTask = DispatchTask( named: self.userName, queue: .global( qos: .utility ) ) { [weak self] () -> URL? in
+        guard let self = self, self.dirty, self.file != nil
         else { return nil }
 
         return try Marshal.shared.save( user: self ).then( {

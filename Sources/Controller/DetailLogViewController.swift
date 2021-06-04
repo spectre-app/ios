@@ -54,7 +54,6 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             We're here to help.  You can also reach us at:\nsupport@spectre.app
                             """
                         } ) {
-
                 if let viewController = $0.viewController {
                     let options = ConversationOptions()
                     options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
@@ -152,17 +151,18 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             dateFormatter.dateFormat = "DDD'-'HH':'mm':'ss"
 
             super.init( value: {
-                LogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
+                let font = Theme.current.font.mono.get()?.withSize( 11 ), boldFont = font?.withSymbolicTraits( .traitBold )
+                return LogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
                     logs.append( NSAttributedString(
                             string: "\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)\n",
                             attributes: [
-                                .font: Theme.current.font.mono.get( size: 11 ) as Any,
+                                .font: font as Any,
                                 .foregroundColor: Theme.current.color.secondary.get() as Any,
                             ] ) )
                     logs.append( NSAttributedString(
                             string: "\(record.message)\n",
                             attributes: [
-                                .font: Theme.current.font.mono.get( size: 11, traits: record.level <= .warning ? .traitBold: [] ) as Any,
+                                .font: (record.level <= .warning ? boldFont: font) as Any,
                                 .foregroundColor: Theme.current.color.body.get() as Any,
                             ] ) )
                     return logs
