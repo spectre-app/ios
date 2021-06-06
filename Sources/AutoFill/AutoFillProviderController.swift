@@ -12,6 +12,7 @@ import LocalAuthentication
 class AutoFillProviderController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         LogSink.shared.register()
+        KeyboardMonitor.shared.install()
 
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
     }
@@ -67,8 +68,8 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
-            guard keychainKeyFactory.hasKey( for: userFile.algorithm )
-            else { throw ASExtensionError( .userInteractionRequired, "No key in keychain for: \(userFile.userName)" ) }
+            guard keychainKeyFactory.isKeyAvailable( for: userFile.algorithm )
+            else { throw ASExtensionError( .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" ) }
 
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
@@ -111,15 +112,15 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         //dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
-        let usersViewController = AutoFillUsersViewController()
+        let credentialViewController = AutoFillCredentialViewController()
 
         // - Hierarchy
-        self.addChild( usersViewController )
-        self.view.addSubview( usersViewController.view )
-        usersViewController.didMove( toParent: self )
+        self.addChild( credentialViewController )
+        self.view.addSubview( credentialViewController.view )
+        credentialViewController.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: usersViewController.view )
+        LayoutConfiguration( view: credentialViewController.view )
                 .constrain( as: .box ).activate()
     }
 

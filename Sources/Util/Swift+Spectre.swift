@@ -81,6 +81,26 @@ extension Dictionary {
     }
 }
 
+extension Error {
+    var fullDescription: String {
+        var underlyingErrors = [ NSError ]()
+        if let underlyingError = (self as NSError).userInfo[NSUnderlyingErrorKey] as? NSError {
+            underlyingErrors.append( underlyingError )
+        }
+        if #available( iOS 14.5, * ),
+           let multipleUnderlyingError = (self as NSError).userInfo[NSMultipleUnderlyingErrorsKey] as? [NSError] {
+            underlyingErrors.append( contentsOf: multipleUnderlyingError )
+        }
+
+        return [
+            self.localizedDescription,
+            (self as NSError).localizedFailureReason.flatMap { "Reason: \($0)" },
+            (self as NSError).localizedRecoverySuggestion.flatMap { "Suggestion: \($0)" },
+            underlyingErrors.compactMap { $0.fullDescription }.joined( separator: "\n\n" ).nonEmpty.flatMap { "Underlying:\n\($0)" },
+        ].compactMap( { $0 } ).joined( separator: "\n" )
+    }
+}
+
 extension Double {
     public static let φ     = (1 + sqrt( 5 )) / 2 // Golden Ratio
     public static let short = (1 - long)

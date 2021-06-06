@@ -75,8 +75,8 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
                     guard let arg = arg
                     else { return Int( bitPattern: nil ) }
 
-                    if let error = arg as? LocalizedError {
-                        return [ error.failureReason, error.errorDescription ].compactMap { $0 }.joined( separator: ": " )
+                    if let error = arg as? Error {
+                        return error.fullDescription
                     }
 
                     return arg as? CVarArg ?? String( reflecting: arg )
