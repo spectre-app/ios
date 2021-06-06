@@ -11,7 +11,13 @@ private var keyFactories = [ String: KeyFactory ]()
 
 private func keyFactoryProvider(_ algorithm: SpectreAlgorithm, _ userName: UnsafePointer<CChar>?) -> UnsafePointer<SpectreUserKey>? {
     keyQueue.await {
-        try? String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm ).await()
+        do {
+            return try String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm ).await()
+        }
+        catch {
+            wrn( "Key Unavailable: %@", error )
+            return nil
+        }
     }
 }
 

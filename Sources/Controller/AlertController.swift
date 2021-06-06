@@ -95,7 +95,7 @@ class AlertController {
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
-            let host = host()
+            let host   = host()
             var window = host?.window ?? host as? UIWindow
             #if TARGET_APP
             window = window ?? UIApplication.shared.keyWindow
@@ -208,11 +208,8 @@ class AlertController {
 
 public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil, in view: UIView? = nil,
                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-    let message = message?.description ?? error?.localizedDescription
-    let details = [ details?.description, message == error?.localizedDescription ? nil: error?.localizedDescription,
-                    (error as NSError?)?.localizedFailureReason,
-                    (error as NSError?)?.localizedRecoverySuggestion,
-                    ((error as NSError?)?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ]
+    let message = message?.description ?? error.flatMap { String( describing: type( of: $0 ) ) }
+    let details = [ details?.description, error?.fullDescription ]
             .compactMap( { $0 } ).joined( separator: "\n\n" )
 
     AlertController( title: title, message: message?.description, details: details, level: .error )

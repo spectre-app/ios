@@ -86,12 +86,12 @@ class AutoFillSitesViewController: BaseSitesViewController {
                         let _ = try site.user.save().await()
                     }
                     catch {
-                        mperror( title: "Couldn't save user.", error: error )
+                        mperror( title: "Couldn't save user", error: error )
                     }
                 }
             }
             catch {
-                mperror( title: "Couldn't compute site result.", error: error )
+                mperror( title: "Couldn't compute site result", error: error )
                 event.end(
                         [ "result": $0.name,
                           "from": trackingFrom,

@@ -155,7 +155,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                         self.avatar = User.Avatar.allCases.randomElement()
                     }
                     else {
-                        self.attemptBiometrics()
+                        self.attemptBiometrics().failure { error in
+                            inf( "Skipping biometrics: %@", error )
+                        }
                     }
                 }
                 else {
@@ -274,7 +276,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
 
             self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                self.attemptBiometrics()
+                self.attemptBiometrics().failure { error in
+                    err( "Failed biometrics: %@", error )
+                }
             }
 
             self.secretField.alignmentRectOutsets = .horizontal()
