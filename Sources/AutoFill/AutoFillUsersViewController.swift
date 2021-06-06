@@ -68,6 +68,8 @@ class AutoFillUsersViewController: BaseUsersViewController {
     override func login(user: User) {
         super.login( user: user )
 
+        AutoFillModel.shared.cacheUser( user )
+
         self.detailsHost.show( AutoFillSitesViewController( user: user ), sender: self )
     }
 }

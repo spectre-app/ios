@@ -196,8 +196,12 @@ public class KeychainKeyFactory: KeyFactory {
 
     // MARK: --- Interface ---
 
-    public func hasKey(for algorithm: SpectreAlgorithm) -> Bool {
-        Keychain.hasKey( for: self.userName, algorithm: algorithm )
+    public func isKeyPresent(for algorithm: SpectreAlgorithm) -> Bool {
+        Keychain.keyStatus( for: self.userName, algorithm: algorithm, context: self.context ).present
+    }
+
+    public func isKeyAvailable(for algorithm: SpectreAlgorithm) -> Bool {
+        Keychain.keyStatus( for: self.userName, algorithm: algorithm, context: self.context ).available
     }
 
     public func purgeKeys() {

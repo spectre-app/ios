@@ -22,7 +22,6 @@ public class Keychain {
             kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
             kSecUseOperationPrompt: "Access \(userName)'s user key.",
-            kSecUseAuthenticationUI: kSecUseAuthenticationUIFail,
         ]
         if #available( iOS 13, * ) {
             query[kSecUseDataProtectionKeychain] = true
@@ -34,29 +33,28 @@ public class Keychain {
             else { throw AppError.issue( error, title: "Biometrics Unavailable", details: "Biometrics authentication is not available at this time." ) }
 
             query[kSecUseAuthenticationContext] = context
-            query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIAllow
         }
 
         return query
     }
 
-    public static func hasKey(for userName: String, algorithm: SpectreAlgorithm)
-                    -> Bool {
-        do {
-            var query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
-            query[kSecReturnAttributes] = false
-            query[kSecReturnData] = false
-
-            let status = SecItemCopyMatching( query as CFDictionary, nil )
-            guard status == errSecSuccess || status == errSecInteractionNotAllowed || status == errSecItemNotFound
-            else { throw status }
-
-            return status == errSecSuccess || status == errSecInteractionNotAllowed
+    public static func keyStatus(for userName: String, algorithm: SpectreAlgorithm, context: LAContext?)
+                    -> (present: Bool, available: Bool, status: OSStatus) {
+        guard var query = try? self.keyQuery( for: userName, algorithm: algorithm, context: context )
+        else {
+            return (present: false, available: false, status: errSecBadReq)
         }
-        catch {
-            wrn( "Issue looking for user key in keychain: %@", error )
-            return false
+        query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
+        query[kSecReturnAttributes] = false
+        query[kSecReturnData] = false
+
+        let status = SecItemCopyMatching( query as CFDictionary, nil )
+        guard status == errSecSuccess || status == errSecInteractionNotAllowed || status == errSecItemNotFound
+        else {
+            return (present: false, available: false, status: status)
         }
+
+        return (present: status != errSecItemNotFound, available: status == errSecSuccess, status: status)
     }
 
     @discardableResult

@@ -67,8 +67,8 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
 
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
-            guard keychainKeyFactory.hasKey( for: userFile.algorithm )
-            else { throw ASExtensionError( .userInteractionRequired, "No key in keychain for: \(userFile.userName)" ) }
+            guard keychainKeyFactory.isKeyAvailable( for: userFile.algorithm )
+            else { throw ASExtensionError( .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" ) }
 
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
