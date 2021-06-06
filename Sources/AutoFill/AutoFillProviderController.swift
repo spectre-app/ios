@@ -12,6 +12,7 @@ import LocalAuthentication
 class AutoFillProviderController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         LogSink.shared.register()
+        KeyboardMonitor.shared.install()
 
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
     }

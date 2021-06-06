@@ -192,6 +192,8 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
     override func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         if !self.fixedContentConfiguration.isActive {
             super.keyboardDidChange( showing: showing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
+        } else {
+            self.additionalSafeAreaInsets = .zero - self.view.safeAreaInsets
         }
     }
 
