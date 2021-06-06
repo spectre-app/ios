@@ -111,15 +111,15 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         //dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
-        let usersViewController = AutoFillUsersViewController()
+        let credentialViewController = AutoFillCredentialViewController()
 
         // - Hierarchy
-        self.addChild( usersViewController )
-        self.view.addSubview( usersViewController.view )
-        usersViewController.didMove( toParent: self )
+        self.addChild( credentialViewController )
+        self.view.addSubview( credentialViewController.view )
+        credentialViewController.didMove( toParent: self )
 
         // - Layout
-        LayoutConfiguration( view: usersViewController.view )
+        LayoutConfiguration( view: credentialViewController.view )
                 .constrain( as: .box ).activate()
     }
 

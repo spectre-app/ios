@@ -11,6 +11,7 @@
 		8F1100A6204DF2C772C69C18 /* Pods_Spectre_AutoFill.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */; };
 		93D390276912B43B33158168 /* PagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* PagerView.swift */; };
 		93D39034C6EAEAE0C47ED2F4 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* BaseViewController.swift */; };
+		93D3907BEF0B169A0A4BCB8C /* AutoFillCredentialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3910E4960F25080C4C779 /* AutoFillCredentialViewController.swift */; };
 		93D390D13B1FAA3CF0CAF377 /* UserSecretField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3931E2B7B432862570208 /* UserSecretField.swift */; };
 		93D390D2B19CB69F721DD7A6 /* TintedField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985EDA6E3B7A05799E2C /* TintedField.swift */; };
 		93D390E5179B5CEB830DAAB0 /* DialogSiteChangedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */; };
@@ -299,6 +300,7 @@
 		93D390A3B351FEF1B9EDAB56 /* spectre-algorithm_v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm_v2.c"; sourceTree = "<group>"; };
 		93D390A99850139D0FF0211E /* spectre-algorithm_v0.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm_v0.c"; sourceTree = "<group>"; };
 		93D390CB091CCF46AF6EAB4C /* AutoFill.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFill.swift; sourceTree = "<group>"; };
+		93D3910E4960F25080C4C779 /* AutoFillCredentialViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillCredentialViewController.swift; sourceTree = "<group>"; };
 		93D391193A2AED1BCDD3B83D /* EffectToggleButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectToggleButton.swift; sourceTree = "<group>"; };
 		93D3911FED606FAE34608C50 /* BackgroundView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundView.swift; sourceTree = "<group>"; };
 		93D39169D757760D11F5D3E4 /* CarouselView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarouselView.swift; sourceTree = "<group>"; };
@@ -732,6 +734,7 @@
 				DA0E5532250D6F7F002B3AB1 /* Info.plist */,
 				93D393F482ED58056C88FAA6 /* AutoFillConfigurationViewController.swift */,
 				93D391B2ECDAF6C1CA85C985 /* AutoFillConfigurationView.swift */,
+				93D3910E4960F25080C4C779 /* AutoFillCredentialViewController.swift */,
 			);
 			path = AutoFill;
 			sourceTree = "<group>";
@@ -1467,6 +1470,7 @@
 				93D39AD3EE3877767AC30ECE /* AutoFillConfigurationViewController.swift in Sources */,
 				93D398AD2C2E9552DA9C8BB2 /* AutoFillConfigurationView.swift in Sources */,
 				93D3963FF4A58C3753DC80D1 /* Resources.swift in Sources */,
+				93D3907BEF0B169A0A4BCB8C /* AutoFillCredentialViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
