@@ -92,7 +92,7 @@ class Item<M>: AnyItem {
         let subitemsStack = UIStackView()
 
         private lazy var     valueView = self.createValueView()
-        internal unowned var item: Item<M>
+        internal weak var item: Item<M>?
 
         override var forLastBaselineLayout: UIView {
             self.titleLabel
@@ -165,25 +165,30 @@ class Item<M>: AnyItem {
                                      .with( priority: .defaultLow + 1 ).isActive = true
             }
 
-            self.item.subitems.forEach { $0.view.didLoad() }
+            self.item?.subitems.forEach { $0.view.didLoad() }
         }
 
         // MARK: --- Updatable ---
 
         func doUpdate() {
-            updateHidden( self.item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: self.item ) ?? $0) } )
-            updateEnabled( self.item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: self.item ) ?? $0) } )
+            guard let item = self.item
+            else { return }
 
-            self.titleLabel.attributedText = self.item.title?.attributedString( for: self.titleLabel )
-            self.titleLabel.isHidden = self.titleLabel.attributedText == nil
+            updateHidden( item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: item ) ?? $0) } )
+            updateEnabled( item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: item ) ?? $0) } )
 
-            self.captionLabel.attributedText = self.item.model.flatMap {
-                self.item.captionProvider( $0 )?.attributedString( for: self.captionLabel )
+            self.titleLabel.attributedText = item.title?.attributedString( for: self.titleLabel )
+            self.titleLabel.isHidden = self.titleLabel.attributedText?.string.nonEmpty == nil
+            dbg("Item[%@]: title label: %@, hidden: %d", item.title, self.titleLabel)
+
+            self.captionLabel.attributedText = item.model.flatMap {
+                item.captionProvider( $0 )?.attributedString( for: self.captionLabel )
             }
-            self.captionLabel.isHidden = self.captionLabel.attributedText == nil
+            self.captionLabel.isHidden = self.captionLabel.attributedText?.string.nonEmpty == nil
 
-            for i in 0..<max( self.item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
-                let subitemView  = i < self.item.subitems.count ? self.item.subitems[i].view: nil
+            dbg("Item[%@]: subitems: %@", item.title, item.subitems)
+            for i in 0..<max( item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
+                let subitemView  = i < item.subitems.count ? item.subitems[i].view: nil
                 let arrangedView = i < self.subitemsStack.arrangedSubviews.count ? self.subitemsStack.arrangedSubviews[i]: nil
 
                 if arrangedView != subitemView {
@@ -195,9 +200,9 @@ class Item<M>: AnyItem {
                 }
             }
             self.subitemsStack.isHidden = self.subitemsStack.arrangedSubviews.count == 0
-            self.subitemsStack.axis = self.item.subitemAxis
+            self.subitemsStack.axis = item.subitemAxis
 
-            switch self.item.subitemAxis {
+            switch item.subitemAxis {
                 case .horizontal:
                     self.subitemsStack.alignment = .lastBaseline
                     self.subitemsStack.distribution = .fillEqually
@@ -947,9 +952,7 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
 
     class PagerItemView: ValueItemView {
         let pagerView = PagerView()
-        var pageItems: [Item<M>] {
-            self.valueItem?.value ?? []
-        }
+        lazy var pageItems: [Item<M>] = self.valueItem?.value ?? []
 
         override func createValueView() -> UIView? {
             self.pagerView
