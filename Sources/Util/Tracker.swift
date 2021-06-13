@@ -49,7 +49,7 @@ class Tracker: AppConfigObserver {
             if $0.authorizationStatus == .authorized {
                 AppConfig.shared.notificationsDecided = true
                 Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                self.observers.notify { $0.didChangeTracker() }
+                self.observers.notify { $0.didChange( tracker: self ) }
                 completion( true )
                 return
             }
@@ -63,14 +63,14 @@ class Tracker: AppConfigObserver {
                     }
                     if granted {
                         Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                        self.observers.notify { $0.didChangeTracker() }
+                        self.observers.notify { $0.didChange( tracker: self ) }
                         completion( true )
                         return
                     }
 
                     if consented, let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
                         Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                        self.observers.notify { $0.didChangeTracker() }
+                        self.observers.notify { $0.didChange( tracker: self ) }
                         UIApplication.shared.open( settingsURL )
                         completion( true )
                         return
@@ -173,7 +173,7 @@ class Tracker: AppConfigObserver {
             return true
         } )
 
-        AppConfig.shared.observers.register( observer: self ).didChangeConfig()
+        AppConfig.shared.observers.register( observer: self ).didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
 
         #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
@@ -309,8 +309,11 @@ class Tracker: AppConfigObserver {
 
     // MARK: --- AppConfigObserver ---
 
-    public func didChangeConfig() {
-        if AppConfig.shared.isApp && AppConfig.shared.diagnostics {
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        guard change == \AppConfig.isApp || change == \AppConfig.diagnostics
+        else { return }
+
+        if appConfig.isApp && appConfig.diagnostics {
             SentrySDK.currentHub().getClient()?.options.enabled = true
             #if TARGET_APP
             Countly.sharedInstance().giveConsent( forFeatures: [
@@ -412,6 +415,6 @@ class Tracker: AppConfigObserver {
     }
 }
 
-public protocol TrackerObserver {
-    func didChangeTracker()
+protocol TrackerObserver {
+    func didChange(tracker: Tracker)
 }

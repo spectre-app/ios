@@ -184,7 +184,7 @@ class EffectView: UIView, ThemeObserver {
 
     // MARK: --- ThemeObserver ---
 
-    func didChangeTheme() {
+    func didChange(theme: Theme) {
         self.setNeedsDisplay()
     }
 

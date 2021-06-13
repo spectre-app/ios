@@ -24,7 +24,7 @@ enum InAppFeature: String, CaseIterable {
 
     func enable(_ enabled: Bool) {
         UserDefaults.shared.set( enabled, forKey: self.rawValue )
-        InAppFeature.observers.notify { $0.featureDidChange( self ) }
+        InAppFeature.observers.notify { $0.didChange( feature: self ) }
     }
 }
 
@@ -218,9 +218,5 @@ extension SKPaymentTransactionState: CustomStringConvertible {
 }
 
 protocol InAppFeatureObserver {
-    func featureDidChange(_ feature: InAppFeature)
-}
-
-protocol InAppStoreObserver {
-    func productsDidChange(_ products: [SKProduct])
+    func didChange(feature: InAppFeature)
 }

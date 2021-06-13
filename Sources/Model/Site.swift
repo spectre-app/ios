@@ -21,7 +21,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if oldValue != self.siteName {
                 self.dirty = true
                 self.preview = SitePreview.for( self.siteName )
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.siteName ) }
             }
         }
     }
@@ -29,7 +29,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.algorithm ) }
             }
         }
     }
@@ -37,7 +37,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.counter {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.counter ) }
             }
         }
     }
@@ -45,7 +45,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.resultType ) }
             }
         }
     }
@@ -53,7 +53,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.loginType ) }
             }
         }
     }
@@ -62,7 +62,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.resultState {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.resultState ) }
             }
         }
     }
@@ -70,7 +70,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.loginState {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.loginState ) }
             }
         }
     }
@@ -79,7 +79,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.url {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.url ) }
             }
         }
     }
@@ -87,7 +87,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.uses {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.uses ) }
             }
         }
     }
@@ -95,14 +95,14 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.lastUsed {
                 self.dirty = true
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.lastUsed ) }
             }
         }
     }
     public lazy var preview: SitePreview = SitePreview.for( self.siteName ) {
         didSet {
             if oldValue != self.preview {
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
             }
         }
     }
@@ -111,7 +111,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if oldValue != self.questions {
                 self.dirty = true
                 self.questions.forEach { question in question.observers.register( observer: self ) }
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.questions ) }
             }
         }
     }
@@ -197,7 +197,7 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     public func refresh() {
         self.preview.update().success { updated in
             if updated {
-                self.observers.notify { $0.siteDidChange( self ) }
+                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
             }
         }
     }
@@ -215,12 +215,15 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
     // MARK: --- SiteObserver ---
 
-    func siteDidChange(_ site: Site) {
+    func didChange(site: Site, at change: PartialKeyPath<Site>) {
+        if change == \Site.url {
+            AutoFill.shared.update( for: self.user )
+        }
     }
 
     // MARK: --- QuestionObserver ---
 
-    func questionDidChange(_ question: Question) {
+    func didChange(question: Question) {
     }
 
     // MARK: --- Operand ---
@@ -279,5 +282,5 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 }
 
 protocol SiteObserver {
-    func siteDidChange(_ site: Site)
+    func didChange(site: Site, at: PartialKeyPath<Site>)
 }

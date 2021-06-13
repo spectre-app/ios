@@ -20,7 +20,7 @@ class SitePreviewController: UIViewController, SiteObserver {
     init(site: Site) {
         super.init( nibName: nil, bundle: nil )
 
-        site.observers.register( observer: self ).siteDidChange( site )
+        site.observers.register( observer: self ).didChange( site: site, at: \Site.preview )
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -50,7 +50,10 @@ class SitePreviewController: UIViewController, SiteObserver {
 
     // MARK: --- SiteObserver ---
 
-    func siteDidChange(_ site: Site) {
+    func didChange(site: Site, at change: PartialKeyPath<Site>) {
+        guard change == \Site.preview || change == \Site.siteName
+        else { return }
+
         DispatchQueue.main.perform {
             self.view.backgroundColor = site.preview.color
             self.siteButton.setImage( site.preview.image, for: .normal )

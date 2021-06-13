@@ -600,7 +600,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.selection.doUpdate()
         self.color.tint.doUpdate()
 
-        self.observers.notify( event: { $0.didChangeTheme() } )
+        self.observers.notify( event: { $0.didChange( theme: self ) } )
     }
 
     func hash(into hasher: inout Hasher) {
@@ -613,7 +613,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
 }
 
 protocol ThemeObserver {
-    func didChangeTheme()
+    func didChange(theme: Theme)
 }
 
 class AnyProperty: Updates {

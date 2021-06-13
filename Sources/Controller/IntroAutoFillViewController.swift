@@ -141,8 +141,16 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
 
     // MARK: --- UserObserver ---
 
-    func userDidChange(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
         self.setNeedsUpdate()
+    }
+
+    // MARK: --- SiteObserver ---
+
+    func siteDidChange(_ site: Site, at change: PartialKeyPath<Site>) {
+        if change == \Site.preview {
+            self.setNeedsUpdate()
+        }
     }
 
     // MARK: --- Updatable ---

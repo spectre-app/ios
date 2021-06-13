@@ -214,19 +214,19 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     // MARK: --- UserObserver ---
 
-    func userDidLogin(_ user: User) {
+    func didLogin(user: User) {
         self.updateTask.request()
     }
 
-    func userDidLogout(_ user: User) {
+    func didLogout(user: User) {
         self.updateTask.request()
     }
 
-    func userDidChange(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
         self.updateTask.request()
     }
 
-    func userDidUpdateSites(_ user: User) {
+    func didUpdateSites(user: User) {
         self.updateTask.request()
     }
 
@@ -620,25 +620,28 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         // MARK: --- UserObserver ---
 
-        func userDidChange(_ user: User) {
+        func didChange(user: User, at change: PartialKeyPath<User>) {
             self.updateTask.request()
         }
 
         // MARK: --- SiteObserver ---
 
-        func siteDidChange(_ site: Site) {
+        func didChange(site: Site, at change: PartialKeyPath<Site>) {
             self.updateTask.request()
         }
 
         // MARK: --- AppConfigObserver ---
 
-        func didChangeConfig() {
+        func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
             self.updateTask.request()
         }
 
         // MARK: --- InAppFeatureObserver ---
 
-        func featureDidChange(_ feature: InAppFeature) {
+        func didChange(feature: InAppFeature) {
+            guard case .premium = feature
+            else { return }
+
             self.updateTask.request()
         }
 

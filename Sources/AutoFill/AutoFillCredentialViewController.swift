@@ -34,7 +34,7 @@ class AutoFillCredentialViewController: BaseUsersViewController {
 
     // MARK: --- MarshalObserver ---
 
-    override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
+    override func didChange(userFiles: [Marshal.UserFile]) {
         if let userFile = AutoFillModel.shared.context.credentialIdentity.flatMap( { credentialIdentity in
             userFiles.first( where: { $0.userName == credentialIdentity.user } )
         } ) {

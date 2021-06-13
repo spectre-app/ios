@@ -197,7 +197,7 @@ public class LogSink: AppConfigObserver {
                 return LogSink.shared.record( event )
             } )
 
-            AppConfig.shared.observers.register( observer: self ).didChangeConfig()
+            AppConfig.shared.observers.register( observer: self ).didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
 
             self.registered = true
         }
@@ -224,8 +224,8 @@ public class LogSink: AppConfigObserver {
 
     // MARK: --- AppConfigObserver ---
 
-    public func didChangeConfig() {
-        self.level = AppConfig.shared.isDebug ? .debug: AppConfig.shared.diagnostics ? .info: .warning
+    public func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        self.level = appConfig.isDebug ? .debug: appConfig.diagnostics ? .info: .warning
     }
 }
 

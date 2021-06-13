@@ -59,13 +59,13 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
     // MARK: --- AppConfigObserver ---
 
-    func didChangeConfig() {
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         self.setNeedsUpdate()
     }
 
     // MARK: --- TrackerObserver ---
 
-    func didChangeTracker() {
+    func didChange(tracker: Tracker) {
         self.setNeedsUpdate()
     }
 

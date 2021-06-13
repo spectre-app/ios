@@ -59,8 +59,8 @@ class AutoFillUsersViewController: BaseUsersViewController {
 
     // MARK: --- MarshalObserver ---
 
-    override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        super.userFilesDidChange( userFiles )
+    override func didChange(userFiles: [Marshal.UserFile]) {
+        super.didChange( userFiles: userFiles )
 
         DispatchQueue.main.perform {
             self.configurationView.isHidden = !self.usersSource.isEmpty

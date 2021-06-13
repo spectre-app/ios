@@ -20,7 +20,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
         didSet {
             if oldValue != self.keyword {
                 self.dirty = true
-                self.observers.notify { $0.questionDidChange( self ) }
+                self.observers.notify { $0.didChange( question: self ) }
             }
         }
     }
@@ -28,7 +28,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
-                self.observers.notify { $0.questionDidChange( self ) }
+                self.observers.notify { $0.didChange( question: self ) }
             }
         }
     }
@@ -36,7 +36,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
         didSet {
             if oldValue != self.resultState {
                 self.dirty = true
-                self.observers.notify { $0.questionDidChange( self ) }
+                self.observers.notify { $0.didChange( question: self ) }
             }
         }
     }
@@ -84,7 +84,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
 
     // MARK: --- QuestionObserver ---
 
-    func questionDidChange(_ question: Question) {
+    func didChange(question: Question) {
     }
 
     // MARK: --- Operand ---
@@ -109,5 +109,5 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
 }
 
 protocol QuestionObserver {
-    func questionDidChange(_ question: Question)
+    func didChange(question: Question)
 }

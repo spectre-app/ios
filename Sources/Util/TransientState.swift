@@ -19,7 +19,7 @@ public enum TransientState {
         didSet {
             self.activeStates.forEach { state, counter in
                 if (counter == 0) != (oldValue[state] == 0) {
-                    self.observers.notify { $0.stateChanged( state ) }
+                    self.observers.notify { $0.didChange( state: state ) }
                 }
             }
         }
@@ -40,5 +40,5 @@ public enum TransientState {
 }
 
 protocol TransientStateObserver {
-    func stateChanged(_ state: TransientState)
+    func didChange(state: TransientState)
 }

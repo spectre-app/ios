@@ -61,7 +61,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        Marshal.shared.observers.register( observer: self ).userFilesDidChange( Marshal.shared.userFiles )
+        Marshal.shared.observers.register( observer: self ).didChange( userFiles: Marshal.shared.userFiles )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -73,7 +73,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: --- KeyboardLayoutObserver ---
 
-    override func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
     }
 
     // MARK: --- Interface ---
@@ -117,7 +117,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: --- MarshalObserver ---
 
-    func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
+    func didChange(userFiles: [Marshal.UserFile]) {
         let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
         self.usersSource.update( self.sections( for: userFiles ) ) { _ in
             self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
@@ -490,16 +490,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         // MARK: --- ThemeObserver ---
 
-        func didChangeTheme() {
+        func didChange(theme: Theme) {
             self.setNeedsDisplay()
         }
 
         // MARK: --- InAppFeatureObserver ---
 
-        func featureDidChange(_ feature: InAppFeature) {
-            if case .premium = feature {
-                self.updateTask.request()
-            }
+        func didChange(feature: InAppFeature) {
+            guard case .premium = feature
+            else { return }
+
+            self.updateTask.request()
         }
 
         // MARK: --- Private ---

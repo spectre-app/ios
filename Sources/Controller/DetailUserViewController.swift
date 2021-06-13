@@ -48,7 +48,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
 
     // MARK: --- UserObserver ---
 
-    func userDidChange(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
         self.setNeedsUpdate()
     }
 

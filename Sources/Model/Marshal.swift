@@ -18,7 +18,7 @@ class Marshal: Observable, Updatable {
     public let observers = Observers<MarshalObserver>()
     public lazy var userFiles: [UserFile] = self.loadUserFiles() {
         didSet {
-            self.observers.notify { $0.userFilesDidChange( self.userFiles ) }
+            self.observers.notify { $0.didChange( userFiles: self.userFiles ) }
 
             AutoFill.shared.seed( self.userFiles )
         }
@@ -854,5 +854,5 @@ extension SpectreMarshalError: LocalizedError {
 }
 
 protocol MarshalObserver {
-    func userFilesDidChange(_ userFiles: [Marshal.UserFile])
+    func didChange(userFiles: [Marshal.UserFile])
 }

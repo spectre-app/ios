@@ -52,13 +52,13 @@ class BaseUserViewController: BaseViewController, UserObserver {
         // TODO: is this still necessary?
         if let user = self.user, user.userKeyFactory == nil {
             mperror( title: "User logged out", message: "User is no longer authenticated", details: user )
-            self.userDidLogout( user )
+            self.didLogout( user: user )
         }
     }
 
     // MARK: --- UserObserver ---
 
-    func userDidLogout(_ user: User) {
+    func didLogout(user: User) {
         if self.user == user {
             self.user = nil
         }

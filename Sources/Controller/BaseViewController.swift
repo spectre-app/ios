@@ -123,7 +123,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
 
     // MARK: --- KeyboardMonitorObserver ---
 
-    func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         self.additionalSafeAreaInsets = .zero
         self.additionalSafeAreaInsets = self.keyboardLayoutGuide.keyboardInsets - self.view.safeAreaInsets
     }

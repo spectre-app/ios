@@ -26,7 +26,7 @@ class BackgroundView: UIView, ThemeObserver {
                     self.isOpaque = false
 
                 case .gradient:
-                    self.didChangeTheme()
+                    self.didChange( theme: Theme.current )
 
                 case .backdrop:
                     self => \.backgroundColor => Theme.current.color.backdrop
@@ -170,7 +170,7 @@ class BackgroundView: UIView, ThemeObserver {
 
     // MARK: --- ThemeObserver ---
 
-    func didChangeTheme() {
+    func didChange(theme: Theme) {
         if case .gradient = self.mode {
             self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
                 Theme.current.color.panel.get(), Theme.current.color.backdrop.get(),

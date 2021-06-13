@@ -55,7 +55,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
     // MARK: --- SiteObserver ---
 
-    func siteDidChange(_ site: Site) {
+    func didChange(site: Site, at change: PartialKeyPath<Site>) {
         self.setNeedsUpdate()
     }
 

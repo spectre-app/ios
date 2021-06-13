@@ -46,7 +46,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
 
     // MARK: --- ModelObserver ---
 
-    func didChange() {
+    func didChange(model: Model) {
         self.setNeedsUpdate()
     }
 
@@ -217,12 +217,12 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             didSet {
                 LogSink.shared.level = max( .info, self.logbookLevel )
 
-                self.observers.notify { $0.didChange() }
+                self.observers.notify { $0.didChange( model: self ) }
             }
         }
     }
 }
 
 protocol ModelObserver {
-    func didChange()
+    func didChange(model: DetailLogViewController.Model)
 }

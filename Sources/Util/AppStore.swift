@@ -84,7 +84,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     var products = [ SKProduct ]() {
         didSet {
             if self.products != oldValue {
-                self.observers.notify { $0.productsDidChange( self.products ) }
+                self.observers.notify { $0.didChange( store: self, products: self.products ) }
             }
         }
     }
@@ -372,4 +372,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         self.updatePromise?.finish( .success( false ) )
         self.updatePromise = nil
     }
+}
+
+protocol InAppStoreObserver {
+    func didChange(store: AppStore, products: [SKProduct])
 }

@@ -27,6 +27,7 @@ public class AppConfig: Observable {
         set {
             if newValue != self.runCount {
                 UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.runCount ) }
             }
         }
     }
@@ -37,7 +38,7 @@ public class AppConfig: Observable {
         set {
             if newValue != self.diagnostics {
                 UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChangeConfig() }
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.diagnostics ) }
             }
         }
     }
@@ -48,6 +49,7 @@ public class AppConfig: Observable {
         set {
             if newValue != self.diagnosticsDecided {
                 UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.diagnosticsDecided ) }
             }
         }
     }
@@ -58,6 +60,7 @@ public class AppConfig: Observable {
         set {
             if newValue != self.notificationsDecided {
                 UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.notificationsDecided ) }
             }
         }
     }
@@ -68,7 +71,7 @@ public class AppConfig: Observable {
         set {
             if newValue != self.sandboxStore {
                 UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChangeConfig() }
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.sandboxStore ) }
             }
         }
     }
@@ -80,13 +83,11 @@ public class AppConfig: Observable {
         set {
             if newValue != self.theme {
                 UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChangeConfig() }
+                Theme.current.parent = Theme.with( path: self.theme ) ?? .default
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.theme ) }
             }
         }
     }
-
-    private lazy var themeObserver = ThemeConfigObserver( appConfig: self )
-    private var didChangeObserver: NSObjectProtocol?
 
     // MARK: --- Life ---
 
@@ -102,32 +103,10 @@ public class AppConfig: Observable {
         #endif
         self.runCount += 1
 
-        self.observers.register( observer: self.themeObserver ).didChangeConfig()
-        self.didChangeObserver = NotificationCenter.default.addObserver(
-                forName: UserDefaults.didChangeNotification, object: UserDefaults.shared, queue: nil ) { [unowned self] _ in
-            self.observers.notify { $0.didChangeConfig() }
-        }
-    }
-
-    deinit {
-        self.didChangeObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
-    }
-
-    class ThemeConfigObserver: AppConfigObserver {
-        unowned let appConfig: AppConfig
-
-        init(appConfig: AppConfig) {
-            self.appConfig = appConfig
-        }
-
-        func didChangeConfig() {
-            if Theme.current.parent?.path != appConfig.theme {
-                Theme.current.parent = Theme.with( path: appConfig.theme ) ?? .default
-            }
-        }
+        Theme.current.parent = Theme.with( path: self.theme ) ?? .default
     }
 }
 
 public protocol AppConfigObserver {
-    func didChangeConfig()
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>)
 }

@@ -608,7 +608,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
     // MARK: --- ThemeObserver ---
 
-    public func didChangeTheme() {
+    func didChange(theme: Theme) {
         self.properties.forEach { $0.update( self.target.view ) }
     }
 
