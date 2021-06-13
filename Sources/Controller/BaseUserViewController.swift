@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-06-28.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -45,13 +52,13 @@ class BaseUserViewController: BaseViewController, UserObserver {
         // TODO: is this still necessary?
         if let user = self.user, user.userKeyFactory == nil {
             mperror( title: "User logged out", message: "User is no longer authenticated", details: user )
-            self.userDidLogout( user )
+            self.didLogout( user: user )
         }
     }
 
     // MARK: --- UserObserver ---
 
-    func userDidLogout(_ user: User) {
+    func didLogout(user: User) {
         if self.user == user {
             self.user = nil
         }

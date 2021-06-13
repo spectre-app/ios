@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-11-01.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Foundation
 
@@ -145,8 +152,8 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
             }
         }
 
-        var previousCharacter: CChar = 0
-        for passwordCharacter in string.utf8CString {
+        var previousCharacter: Int32 = 0
+        for passwordCharacter in string.utf8CString.map(Int32.init) {
             defer {
                 previousCharacter = passwordCharacter
             }
@@ -161,7 +168,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
                 guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
                 else { continue }
 
-                if (strchr( charactersForClass, Int32( passwordCharacter ) )) != nil {
+                if (strchr( charactersForClass, passwordCharacter )) != nil {
                     // Found class for password character.
                     characterEntropy = Decimal( strlen( charactersForClass ) )
                     break

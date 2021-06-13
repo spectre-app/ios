@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-03-24.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -34,7 +41,7 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
         self.searchField.clearButtonMode = .whileEditing
         self.searchField.clearsOnBeginEditing = true
         self.searchField.keyboardAppearance = .dark
-        self.searchField.keyboardType = .URL
+        self.searchField.keyboardType = .emailAddress
         self.searchField.textContentType = .URL
         self.searchField.autocapitalizationType = .none
         self.searchField.autocorrectionType = .no

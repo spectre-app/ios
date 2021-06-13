@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-03-04.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -12,7 +19,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.algorithm ) }
             }
         }
     }
@@ -20,7 +27,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.avatar {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.avatar ) }
             }
         }
     }
@@ -29,7 +36,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.identicon {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.identicon ) }
             }
         }
     }
@@ -37,7 +44,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if !spectre_id_equals( [ oldValue ], &self.userKeyID ) {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.userKeyID ) }
             }
         }
     }
@@ -51,11 +58,11 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if self.userKeyFactory !== oldValue {
                 if self.userKeyFactory != nil, oldValue == nil {
                     trc( "Logging in: %@", self )
-                    self.observers.notify { $0.userDidLogin( self ) }
+                    self.observers.notify { $0.didLogin( user: self ) }
                 }
                 if self.userKeyFactory == nil, oldValue != nil {
                     trc( "Logging out: %@", self )
-                    self.observers.notify { $0.userDidLogout( self ) }
+                    self.observers.notify { $0.didLogout( user: self ) }
                 }
 
                 self.tryKeyFactoryMigration()
@@ -70,7 +77,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.defaultType {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.defaultType ) }
             }
         }
     }
@@ -78,7 +85,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.loginType ) }
             }
         }
     }
@@ -86,7 +93,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.loginState {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.loginState ) }
             }
         }
     }
@@ -94,7 +101,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         didSet {
             if oldValue != self.lastUsed {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.lastUsed ) }
             }
         }
     }
@@ -107,7 +114,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if oldValue != self.maskPasswords, !self.initializing,
                self.file?.spectre_set( self.maskPasswords, path: "user", "_ext_spectre", "maskPasswords" ) ?? true {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.maskPasswords ) }
             }
         }
     }
@@ -116,7 +123,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if oldValue != self.biometricLock, !self.initializing,
                self.file?.spectre_set( self.biometricLock, path: "user", "_ext_spectre", "biometricLock" ) ?? true {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.biometricLock ) }
             }
 
             self.tryKeyFactoryMigration()
@@ -127,7 +134,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if oldValue != self.autofill, !self.initializing,
                self.file?.spectre_set( self.autofill, path: "user", "_ext_spectre", "autofill" ) ?? true {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.autofill ) }
 
                 AutoFill.shared.update( for: self )
             }
@@ -141,7 +148,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if oldValue != self.sharing, !self.initializing,
                self.file?.spectre_set( self.sharing, path: "user", "_ext_spectre", "sharing" ) ?? true {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.autofillDecided ) }
             }
         }
     }
@@ -150,7 +157,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
             if oldValue != self.attacker, !self.initializing,
                self.file?.spectre_set( self.attacker?.description, path: "user", "_ext_spectre", "attacker" ) ?? true {
                 self.dirty = true
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.attacker ) }
             }
         }
     }
@@ -164,8 +171,7 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
                 self.dirty = true
                 Set( oldValue ).subtracting( self.sites ).forEach { site in site.observers.unregister( observer: self ) }
                 self.sites.forEach { site in site.observers.register( observer: self ) }
-                self.observers.notify { $0.userDidUpdateSites( self ) }
-                self.observers.notify { $0.userDidChange( self ) }
+                self.observers.notify { $0.didChange( user: self, at: \User.sites ) }
             }
         }
     }
@@ -334,24 +340,23 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 
     // MARK: --- UserObserver ---
 
-    func userDidLogin(_ user: User) {
+    func didLogin(user: User) {
         Tracker.shared.login( user: self )
     }
 
-    func userDidLogout(_ user: User) {
+    func didLogout(user: User) {
         Tracker.shared.logout()
     }
 
-    func userDidChange(_ user: User) {
-    }
-
-    func userDidUpdateSites(_ user: User) {
-        AutoFill.shared.update( for: self )
+    func didChange(user: User, at change: PartialKeyPath<User>) {
+        if change == \User.sites {
+            AutoFill.shared.update( for: self )
+        }
     }
 
     // MARK: --- SiteObserver ---
 
-    func siteDidChange(_ site: Site) {
+    func didChange(site: Site, at change: PartialKeyPath<Site>) {
     }
 
     // MARK: --- CredentialSupplier ---
@@ -360,7 +365,14 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         self.userName
     }
     var credentials: [AutoFill.Credential]? {
-        self.autofill ? self.sites.map { AutoFill.Credential( supplier: self, name: $0.siteName ) }: nil
+        self.autofill ? self.sites.flatMap { site -> [AutoFill.Credential] in
+            var siteHosts = Set<String>( [ site.siteName, site.siteName.topPrivateDomain() ] )
+            if let urlComponents = site.url.flatMap( URL.init ).flatMap( { URLComponents( url: $0, resolvingAgainstBaseURL: false ) } ),
+               let urlHost = urlComponents.host {
+                siteHosts.formUnion( [ urlHost, urlHost.topPrivateDomain() ] )
+            }
+            return siteHosts.map { AutoFill.Credential( supplier: self, name: $0 ) }
+        }: nil
     }
 
     // MARK: --- Operand ---
@@ -472,25 +484,20 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
 }
 
 protocol UserObserver {
-    func userDidLogin(_ user: User)
+    func didLogin(user: User)
 
-    func userDidLogout(_ user: User)
+    func didLogout(user: User)
 
-    func userDidChange(_ user: User)
-
-    func userDidUpdateSites(_ user: User)
+    func didChange(user: User, at change: PartialKeyPath<User>)
 }
 
 extension UserObserver {
-    func userDidLogin(_ user: User) {
+    func didLogin(user: User) {
     }
 
-    func userDidLogout(_ user: User) {
+    func didLogout(user: User) {
     }
 
-    func userDidChange(_ user: User) {
-    }
-
-    func userDidUpdateSites(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
     }
 }

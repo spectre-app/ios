@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-05-10.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -15,10 +22,7 @@ class KeyboardMonitor {
         didSet {
             if self.keyboardShowing != oldValue {
                 self.observers.notify {
-                    $0.keyboardDidChange(
-                            showing: self.keyboardShowing,
-                            fromScreenFrame: self.keyboardScreenFrameLatest, toScreenFrame: self.keyboardScreenFrameLatest,
-                            curve: nil, duration: nil )
+                    $0.didChange( keyboard: self, showing: self.keyboardShowing, fromScreenFrame: self.keyboardScreenFrameLatest, toScreenFrame: self.keyboardScreenFrameLatest, curve: nil, duration: nil )
                 }
             }
         }
@@ -36,8 +40,8 @@ class KeyboardMonitor {
             self.keyboardScreenFrameLatest = keyboardScreenFrameTo
 
             self.observers.notify {
-                $0.keyboardDidChange(
-                        showing: self.keyboardShowing,
+                $0.didChange(
+                        keyboard: self, showing: self.keyboardShowing,
                         fromScreenFrame: keyboardScreenFrameFrom, toScreenFrame: keyboardScreenFrameTo,
                         curve: (notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber).flatMap( { UIView.AnimationCurve( rawValue: $0.intValue ) } ),
                         duration: (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue )
@@ -94,9 +98,11 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
                     self.inputRightConstraint?.isActive = true
                     self.inputBottomConstraint?.isActive = true
 
-                    self.keyboardDidChange(
+                    self.didChange(
+                            keyboard: KeyboardMonitor.shared,
                             showing: KeyboardMonitor.shared.keyboardShowing,
-                            fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest, toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
+                            fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
+                            toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
                             curve: nil, duration: nil )
                 }
             }
@@ -130,15 +136,19 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
             self.add( constraints: constraints )
         }
 
-        KeyboardMonitor.shared.observers.register( observer: self ).keyboardDidChange(
+        KeyboardMonitor.shared.observers.register( observer: self ).didChange(
+                keyboard: KeyboardMonitor.shared,
                 showing: KeyboardMonitor.shared.keyboardShowing,
-                fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest, toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
+                fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
+                toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
                 curve: nil, duration: nil )
 
         if let observer = observer {
-            KeyboardMonitor.shared.observers.register( observer: observer ).keyboardDidChange(
+            KeyboardMonitor.shared.observers.register( observer: observer ).didChange(
+                    keyboard: KeyboardMonitor.shared,
                     showing: KeyboardMonitor.shared.keyboardShowing,
-                    fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest, toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
+                    fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
+                    toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
                     curve: nil, duration: nil )
         }
     }
@@ -165,7 +175,7 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
 
     // MARK: --- KeyboardMonitorObserver ---
 
-    func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         if let curve = curve, let duration = duration, let owningView = self.owningView {
             if fromScreenFrame != toScreenFrame {
                 self.updateKeyboard( frameInScreen: fromScreenFrame, transient: true )
@@ -232,5 +242,5 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
 }
 
 protocol KeyboardMonitorObserver {
-    func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?)
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?)
 }

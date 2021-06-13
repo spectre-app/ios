@@ -1,10 +1,14 @@
+//==============================================================================
+// Created by Maarten Billemont on 2018-01-21.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
-//  BaseUsersViewController.swift
-//  Spectre
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
-//  Created by Maarten Billemont on 2018-01-21.
-//  Copyright © 2018 Maarten Billemont. All rights reserved.
-//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import LocalAuthentication
@@ -57,7 +61,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        Marshal.shared.observers.register( observer: self ).userFilesDidChange( Marshal.shared.userFiles )
+        Marshal.shared.observers.register( observer: self ).didChange( userFiles: Marshal.shared.userFiles )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -69,7 +73,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: --- KeyboardLayoutObserver ---
 
-    override func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
     }
 
     // MARK: --- Interface ---
@@ -113,7 +117,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: --- MarshalObserver ---
 
-    func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
+    func didChange(userFiles: [Marshal.UserFile]) {
         let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
         self.usersSource.update( self.sections( for: userFiles ) ) { _ in
             self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
@@ -486,16 +490,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         // MARK: --- ThemeObserver ---
 
-        func didChangeTheme() {
+        func didChange(theme: Theme) {
             self.setNeedsDisplay()
         }
 
         // MARK: --- InAppFeatureObserver ---
 
-        func featureDidChange(_ feature: InAppFeature) {
-            if case .premium = feature {
-                self.updateTask.request()
-            }
+        func didChange(feature: InAppFeature) {
+            guard case .premium = feature
+            else { return }
+
+            self.updateTask.request()
         }
 
         // MARK: --- Private ---

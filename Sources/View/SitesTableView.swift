@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-03-25.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import AVKit
@@ -207,19 +214,19 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     // MARK: --- UserObserver ---
 
-    func userDidLogin(_ user: User) {
+    func didLogin(user: User) {
         self.updateTask.request()
     }
 
-    func userDidLogout(_ user: User) {
+    func didLogout(user: User) {
         self.updateTask.request()
     }
 
-    func userDidChange(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
         self.updateTask.request()
     }
 
-    func userDidUpdateSites(_ user: User) {
+    func didUpdateSites(user: User) {
         self.updateTask.request()
     }
 
@@ -613,25 +620,28 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         // MARK: --- UserObserver ---
 
-        func userDidChange(_ user: User) {
+        func didChange(user: User, at change: PartialKeyPath<User>) {
             self.updateTask.request()
         }
 
         // MARK: --- SiteObserver ---
 
-        func siteDidChange(_ site: Site) {
+        func didChange(site: Site, at change: PartialKeyPath<Site>) {
             self.updateTask.request()
         }
 
         // MARK: --- AppConfigObserver ---
 
-        func didChangeConfig() {
+        func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
             self.updateTask.request()
         }
 
         // MARK: --- InAppFeatureObserver ---
 
-        func featureDidChange(_ feature: InAppFeature) {
+        func didChange(feature: InAppFeature) {
+            guard case .premium = feature
+            else { return }
+
             self.updateTask.request()
         }
 

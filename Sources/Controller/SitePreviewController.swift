@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-09-16.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -13,7 +20,7 @@ class SitePreviewController: UIViewController, SiteObserver {
     init(site: Site) {
         super.init( nibName: nil, bundle: nil )
 
-        site.observers.register( observer: self ).siteDidChange( site )
+        site.observers.register( observer: self ).didChange( site: site, at: \Site.preview )
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -43,7 +50,10 @@ class SitePreviewController: UIViewController, SiteObserver {
 
     // MARK: --- SiteObserver ---
 
-    func siteDidChange(_ site: Site) {
+    func didChange(site: Site, at change: PartialKeyPath<Site>) {
+        guard change == \Site.preview || change == \Site.siteName
+        else { return }
+
         DispatchQueue.main.perform {
             self.view.backgroundColor = site.preview.color
             self.siteButton.setImage( site.preview.image, for: .normal )

@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-07-05.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import StoreKit
@@ -10,7 +17,7 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
-        InAppFeature.observers.register( observer: self ).featureDidChange( .premium )
+        InAppFeature.observers.register( observer: self ).didChange( feature: .premium )
     }
 
     override func doTapped(item: Item<M>) {
@@ -21,7 +28,7 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
 
     // MARK: --- InAppFeatureObserver ---
 
-    func featureDidChange(_ feature: InAppFeature) {
+    func didChange(feature: InAppFeature) {
         guard case .premium = feature
         else { return }
 
@@ -43,7 +50,10 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObser
 
     // MARK: --- InAppFeatureObserver ---
 
-    func featureDidChange(_ feature: InAppFeature) {
+    func didChange(feature: InAppFeature) {
+        guard case .premium = feature
+        else { return }
+
         self.setNeedsUpdate()
     }
 }
@@ -125,19 +135,24 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
     // MARK: --- AppConfigObserver ---
 
-    func didChangeConfig() {
-        self.setNeedsUpdate()
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        if change == \AppConfig.sandboxStore {
+            self.setNeedsUpdate()
+        }
     }
 
     // MARK: --- InAppStoreObserver ---
 
-    func productsDidChange(_ products: [SKProduct]) {
+    func didChange(store: AppStore, products: [SKProduct]) {
         self.setNeedsUpdate()
     }
 
     // MARK: --- InAppFeatureObserver ---
 
-    func featureDidChange(_ feature: InAppFeature) {
+    func didChange(feature: InAppFeature) {
+        guard case .premium = feature
+        else { return }
+
         self.setNeedsUpdate()
     }
 

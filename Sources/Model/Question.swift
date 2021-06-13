@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-03-25.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -13,7 +20,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
         didSet {
             if oldValue != self.keyword {
                 self.dirty = true
-                self.observers.notify { $0.questionDidChange( self ) }
+                self.observers.notify { $0.didChange( question: self ) }
             }
         }
     }
@@ -21,7 +28,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
-                self.observers.notify { $0.questionDidChange( self ) }
+                self.observers.notify { $0.didChange( question: self ) }
             }
         }
     }
@@ -29,7 +36,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
         didSet {
             if oldValue != self.resultState {
                 self.dirty = true
-                self.observers.notify { $0.questionDidChange( self ) }
+                self.observers.notify { $0.didChange( question: self ) }
             }
         }
     }
@@ -77,7 +84,7 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
 
     // MARK: --- QuestionObserver ---
 
-    func questionDidChange(_ question: Question) {
+    func didChange(question: Question) {
     }
 
     // MARK: --- Operand ---
@@ -102,5 +109,5 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
 }
 
 protocol QuestionObserver {
-    func questionDidChange(_ question: Question)
+    func didChange(question: Question)
 }

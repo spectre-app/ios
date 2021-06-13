@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-10-15.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Foundation
 import UIKit
@@ -103,7 +110,7 @@ class ItemsViewController<M>: BaseViewController {
 
     // MARK: --- KeyboardLayoutObserver ---
 
-    override func keyboardDidChange(showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         // FIXME: items child view controllers are not seeing their additionalSafeAreaInsets changes applied to their view.
         //super.keyboardDidChange( showing: showing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
     }

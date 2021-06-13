@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-11-14.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Foundation
 import Sentry
@@ -42,7 +49,7 @@ class Tracker: AppConfigObserver {
             if $0.authorizationStatus == .authorized {
                 AppConfig.shared.notificationsDecided = true
                 Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                self.observers.notify { $0.didChangeTracker() }
+                self.observers.notify { $0.didChange( tracker: self ) }
                 completion( true )
                 return
             }
@@ -56,14 +63,14 @@ class Tracker: AppConfigObserver {
                     }
                     if granted {
                         Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                        self.observers.notify { $0.didChangeTracker() }
+                        self.observers.notify { $0.didChange( tracker: self ) }
                         completion( true )
                         return
                     }
 
                     if consented, let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
                         Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                        self.observers.notify { $0.didChangeTracker() }
+                        self.observers.notify { $0.didChange( tracker: self ) }
                         UIApplication.shared.open( settingsURL )
                         completion( true )
                         return
@@ -166,7 +173,7 @@ class Tracker: AppConfigObserver {
             return true
         } )
 
-        AppConfig.shared.observers.register( observer: self ).didChangeConfig()
+        AppConfig.shared.observers.register( observer: self ).didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
 
         #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
@@ -302,8 +309,11 @@ class Tracker: AppConfigObserver {
 
     // MARK: --- AppConfigObserver ---
 
-    public func didChangeConfig() {
-        if AppConfig.shared.isApp && AppConfig.shared.diagnostics {
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        guard change == \AppConfig.isApp || change == \AppConfig.diagnostics
+        else { return }
+
+        if appConfig.isApp && appConfig.diagnostics {
             SentrySDK.currentHub().getClient()?.options.enabled = true
             #if TARGET_APP
             Countly.sharedInstance().giveConsent( forFeatures: [
@@ -405,6 +415,6 @@ class Tracker: AppConfigObserver {
     }
 }
 
-public protocol TrackerObserver {
-    func didChangeTracker()
+protocol TrackerObserver {
+    func didChange(tracker: Tracker)
 }
