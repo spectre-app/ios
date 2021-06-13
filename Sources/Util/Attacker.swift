@@ -152,8 +152,8 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
             }
         }
 
-        var previousCharacter: CChar = 0
-        for passwordCharacter in string.utf8CString {
+        var previousCharacter: Int32 = 0
+        for passwordCharacter in string.utf8CString.map(Int32.init) {
             defer {
                 previousCharacter = passwordCharacter
             }
@@ -168,7 +168,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
                 guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
                 else { continue }
 
-                if (strchr( charactersForClass, Int32( passwordCharacter ) )) != nil {
+                if (strchr( charactersForClass, passwordCharacter )) != nil {
                     // Found class for password character.
                     characterEntropy = Decimal( strlen( charactersForClass ) )
                     break
