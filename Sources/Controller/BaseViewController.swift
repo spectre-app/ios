@@ -1,11 +1,18 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-10-30.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
-class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
+class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
     var trackScreen = true
     lazy var screen = Tracker.shared.screen( named: Self.self.description() )
 
@@ -73,7 +80,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        self.keyboardLayoutGuide.didAppear( in: self.view, observer: self )
+        self.keyboardLayoutGuide.didAppear( observer: self )
         self.notificationObservers = [
             NotificationCenter.default.addObserver(
                     forName: UIApplication.willResignActiveNotification, object: nil, queue: .main ) { [weak self] _ in self?.willResignActive() },
@@ -114,11 +121,11 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
     func didBecomeActive() {
     }
 
-    // MARK: --- KeyboardLayoutObserver ---
+    // MARK: --- KeyboardMonitorObserver ---
 
-    func keyboardDidChange(showing: Bool, layoutGuide: KeyboardLayoutGuide) {
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         self.additionalSafeAreaInsets = .zero
-        self.additionalSafeAreaInsets = layoutGuide.keyboardInsets - self.view.safeAreaInsets
+        self.additionalSafeAreaInsets = self.keyboardLayoutGuide.keyboardInsets - self.view.safeAreaInsets
     }
 
     // MARK: --- Updatable ---
@@ -131,7 +138,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardLayoutObserver {
         !self.isViewLoaded// || self.view.superview == nil
     }
 
-    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( 100 ), animated: true ) { [weak self] in
+    lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
         guard let self = self
         else { return }
 

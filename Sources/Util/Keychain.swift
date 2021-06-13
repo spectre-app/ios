@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-10-03.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import LocalAuthentication
@@ -22,7 +29,6 @@ public class Keychain {
             kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
             kSecUseOperationPrompt: "Access \(userName)'s user key.",
-            kSecUseAuthenticationUI: kSecUseAuthenticationUIFail,
         ]
         if #available( iOS 13, * ) {
             query[kSecUseDataProtectionKeychain] = true
@@ -34,29 +40,28 @@ public class Keychain {
             else { throw AppError.issue( error, title: "Biometrics Unavailable", details: "Biometrics authentication is not available at this time." ) }
 
             query[kSecUseAuthenticationContext] = context
-            query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIAllow
         }
 
         return query
     }
 
-    public static func hasKey(for userName: String, algorithm: SpectreAlgorithm)
-                    -> Bool {
-        do {
-            var query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
-            query[kSecReturnAttributes] = false
-            query[kSecReturnData] = false
-
-            let status = SecItemCopyMatching( query as CFDictionary, nil )
-            guard status == errSecSuccess || status == errSecInteractionNotAllowed || status == errSecItemNotFound
-            else { throw status }
-
-            return status == errSecSuccess || status == errSecInteractionNotAllowed
+    public static func keyStatus(for userName: String, algorithm: SpectreAlgorithm, context: LAContext?)
+                    -> (present: Bool, available: Bool, status: OSStatus) {
+        guard var query = try? self.keyQuery( for: userName, algorithm: algorithm, context: context )
+        else {
+            return (present: false, available: false, status: errSecBadReq)
         }
-        catch {
-            wrn( "Issue looking for user key in keychain: %@", error )
-            return false
+        query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
+        query[kSecReturnAttributes] = false
+        query[kSecReturnData] = false
+
+        let status = SecItemCopyMatching( query as CFDictionary, nil )
+        guard status == errSecSuccess || status == errSecInteractionNotAllowed || status == errSecItemNotFound
+        else {
+            return (present: false, available: false, status: status)
         }
+
+        return (present: status != errSecItemNotFound, available: status == errSecSuccess, status: status)
     }
 
     @discardableResult

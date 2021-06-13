@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-03-25.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import AVKit
@@ -84,7 +91,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         DispatchQueue.main.await { self.window == nil }
     }
 
-    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .milliseconds( 100 ) ) { [weak self] in
+    lazy var updateTask = DispatchTask.update( self ) { [weak self] in
         guard let self = self
         else { return }
 
@@ -115,7 +122,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     if wasSelectedItem.id == proposedItem.id {
                         self.sitesDataSource.selectedItem = proposedItem
                     }
-                } else {
+                }
+                else {
                     self.sitesDataSource.selectedItem = proposedItem
                 }
             }
@@ -206,19 +214,19 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     // MARK: --- UserObserver ---
 
-    func userDidLogin(_ user: User) {
+    func didLogin(user: User) {
         self.updateTask.request()
     }
 
-    func userDidLogout(_ user: User) {
+    func didLogout(user: User) {
         self.updateTask.request()
     }
 
-    func userDidChange(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
         self.updateTask.request()
     }
 
-    func userDidUpdateSites(_ user: User) {
+    func didUpdateSites(user: User) {
         self.updateTask.request()
     }
 
@@ -320,7 +328,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         init(view: SitesTableView) {
             self.view = view
-
             super.init( tableView: view )
         }
 
@@ -342,11 +349,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
             }
 
-            let cell = SiteCell.dequeue( from: tableView, indexPath: indexPath )
-            cell.sitesView = self.view
-            cell.result = result
-            cell.updateTask.request( now: true )
-            return cell
+            return SiteCell.dequeue( from: tableView, indexPath: indexPath ) { (cell: SiteCell) in
+                cell.sitesView = self.view
+                cell.result = result
+                cell.updateTask.request( now: true )
+            }
         }
     }
 
@@ -370,29 +377,39 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.result?.site
         }
 
-        private var mode                    = SpectreKeyPurpose.authentication {
+        private var unmasked = false {
+            didSet {
+                if oldValue != self.unmasked {
+                    self.updateTask.request()
+                }
+            }
+        }
+        private var mode     = SpectreKeyPurpose.authentication {
             didSet {
                 if oldValue != self.mode {
                     self.updateTask.request()
                 }
             }
         }
-        private let selectedBackgroundImage = BackgroundView( mode: .clear )
-        private let modeButton              = EffectButton( track: .subject( "sites.site", action: "mode" ),
+
+        private let backgroundImage = BackgroundView( mode: .clear )
+        private let maskButton      = EffectButton( track: .subject( "sites.site", action: "mask" ),
+                                                    image: .icon( "" ), border: 0, background: false )
+        private let modeButton      = EffectButton( track: .subject( "sites.site", action: "mode" ),
                                                     image: .icon( "" ), border: 0, background: false )
         private let newButton       = EffectButton( track: .subject( "sites.site", action: "add" ),
                                                     image: .icon( "" ), border: 0, background: false )
-        private let actionsStack    = UIStackView()
-        private let selectionView   = UIView()
-        private let resultLabel     = UITextField()
-        private let captionLabel    = UILabel()
-        private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.captionLabel ] )
-        private lazy var selectionConfiguration = LayoutConfiguration( view: self.contentStack ) { active, inactive in
-            active.constrain {
-                $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
-                               .with( priority: .defaultHigh + 10 )
-            }
-        }.needs( .update )
+
+        private let actionStack   = UIStackView()
+        private let selectionView = UIView()
+        private let resultLabel   = UITextField()
+        private let nameLabel     = UILabel()
+        private let separatorView = UIView()
+
+        private lazy var modeStack    = UIStackView( arrangedSubviews: [ self.maskButton, self.modeButton ] )
+        private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.nameLabel ] )
+
+        private var selectionConfiguration: LayoutConfiguration<SiteCell>!
 
         // MARK: --- Life ---
 
@@ -406,15 +423,18 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             // - View
             self.isOpaque = false
             self.clipsToBounds = true
-
-            self.selectedBackgroundView = self.selectedBackgroundImage
+            self.backgroundView = self.backgroundImage
+            self.selectedBackgroundView = UIView()
 
             self.contentView.insetsLayoutMarginsFromSafeArea = false
 
             self.contentStack.axis = .vertical
 
-            self.actionsStack.axis = .vertical
-            self.actionsStack.distribution = .fillEqually
+            self.modeStack.axis = .vertical
+            self.modeStack.distribution = .fillEqually
+
+            self.actionStack.axis = .vertical
+            self.actionStack.distribution = .fillEqually
 
             self.resultLabel.adjustsFontSizeToFitWidth = true
             self.resultLabel => \.font => Theme.current.font.password.transform { $0?.withSize( 32 ) }
@@ -423,11 +443,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.resultLabel => \.textColor => Theme.current.color.body
             self.resultLabel.isEnabled = false
 
-            self.captionLabel => \.font => Theme.current.font.caption1
-            self.captionLabel.textAlignment = .center
-            self.captionLabel => \.textColor => Theme.current.color.secondary
-            self.captionLabel => \.shadowColor => Theme.current.color.shadow
-            self.captionLabel.shadowOffset = CGSize( width: 0, height: 1 )
+            self.nameLabel => \.font => Theme.current.font.subheadline
+            self.nameLabel.textAlignment = .center
+            self.nameLabel => \.textColor => Theme.current.color.secondary
+            self.nameLabel => \.shadowColor => Theme.current.color.shadow
+            self.nameLabel.shadowOffset = CGSize( width: 0, height: 1 )
 
             self.newButton.tapEffect = false
             self.newButton.isUserInteractionEnabled = false
@@ -435,6 +455,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 if let site = self.site, site.isNew {
                     site.user.sites.append( site )
                 }
+            }
+
+            self.maskButton.tapEffect = false
+            self.maskButton.action( for: .primaryActionTriggered ) { [unowned self] in
+                self.unmasked = !self.unmasked
             }
 
             self.modeButton.tapEffect = false
@@ -450,7 +475,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                         self.mode = .authentication
                 }
             }
-            self.modeButton.addGestureRecognizer( UILongPressGestureRecognizer {
+            self.modeButton.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
                 guard let site = self.site, case .began = $0.state
                 else { return }
 
@@ -461,20 +486,27 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             } )
 
             // - Hierarchy
+            self.contentView.addSubview( self.separatorView )
             self.contentView.addSubview( self.contentStack )
-            self.contentView.addSubview( self.modeButton )
-            self.contentView.addSubview( self.actionsStack )
+            self.contentView.addSubview( self.modeStack )
+            self.contentView.addSubview( self.actionStack )
             self.contentView.addSubview( self.newButton )
 
             // - Layout
-            LayoutConfiguration( view: self.modeButton )
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                    .constrain { $1.centerYAnchor.constraint( equalTo: self.resultLabel.centerYAnchor ) }
+            LayoutConfiguration( view: self.separatorView )
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .constrain { $1.widthAnchor.constraint( equalToConstant: 40 ).with( priority: .defaultHigh ) }
+                    .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
                     .activate()
 
-            LayoutConfiguration( view: self.actionsStack )
+            LayoutConfiguration( view: self.modeStack )
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                    .activate()
+
+            LayoutConfiguration( view: self.actionStack )
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
                     .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
@@ -488,9 +520,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             LayoutConfiguration( view: self.contentStack )
                     .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeButton.trailingAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeStack.trailingAnchor ) }
                     .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.actionsStack.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.actionStack.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.newButton.leadingAnchor ) }
                     .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
@@ -504,10 +536,23 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 3 )
                     .activate()
 
-            LayoutConfiguration( view: self.captionLabel )
+            LayoutConfiguration( view: self.nameLabel )
                     .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
                     .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 2 )
                     .activate()
+
+            self.selectionConfiguration = LayoutConfiguration( view: self )
+                    .apply( LayoutConfiguration( view: self.contentStack ) { active, inactive in
+                        active.constrain {
+                            $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
+                                           .with( priority: .defaultHigh + 10 )
+                        }
+                    } )
+                    .apply( LayoutConfiguration( view: self.separatorView ) { active, inactive in
+                        active.constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                        active.constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                    } )
+                    .needs( .update )
         }
 
         override func willMove(toWindow newWindow: UIWindow?) {
@@ -526,9 +571,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
 
-            self.actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+            self.actionStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
             self.sitesView?.siteActions.filter( { $0.appearance.contains( .cell ) } ).forEach { action in
-                self.actionsStack.addArrangedSubview(
+                self.actionStack.addArrangedSubview(
                         EffectButton( track: action.tracking, image: .icon( action.icon ), border: 0, background: false ) {
                             [unowned self] _, _ in
                             if let site = self.site {
@@ -538,6 +583,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
         }
 
+        override func prepareForReuse() {
+            super.prepareForReuse()
+
+            self.unmasked = false
+            self.mode = .authentication
+            self.backgroundImage.image = nil
+        }
+
         func willDisplay() {
             #if TARGET_APP
             self.site?.refresh()
@@ -545,6 +598,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
 
         func didEndDisplaying() {
+            if self.backgroundImage.alpha == .off {
+                self.backgroundImage.image = nil
+            }
         }
 
         override var isSelected: Bool {
@@ -558,48 +614,54 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         override func setSelected(_ selected: Bool, animated: Bool) {
             if self.isSelected != selected {
                 super.setSelected( selected, animated: animated )
-                self.updateTask.request()
+                self.updateTask.request( now: true )
             }
         }
 
         // MARK: --- UserObserver ---
 
-        func userDidChange(_ user: User) {
+        func didChange(user: User, at change: PartialKeyPath<User>) {
             self.updateTask.request()
         }
 
         // MARK: --- SiteObserver ---
 
-        func siteDidChange(_ site: Site) {
+        func didChange(site: Site, at change: PartialKeyPath<Site>) {
             self.updateTask.request()
         }
 
         // MARK: --- AppConfigObserver ---
 
-        func didChangeConfig() {
+        func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
             self.updateTask.request()
         }
 
         // MARK: --- InAppFeatureObserver ---
 
-        func featureDidChange(_ feature: InAppFeature) {
+        func didChange(feature: InAppFeature) {
+            guard case .premium = feature
+            else { return }
+
             self.updateTask.request()
         }
 
         // MARK: --- Private ---
 
-        lazy var updateTask = DispatchTask.update( self ) { [weak self] in
+        lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
             guard let self = self
             else { return }
 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
+            self.separatorView.backgroundColor = Theme.current.color.tint.get()?.with( hue: self.site?.preview.color?.hue )
 
             if self.isSelected {
-                self.selectedBackgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
-                self.selectedBackgroundImage.image = self.site?.preview.image
-                self.selectedBackgroundImage.imageColor = self.site?.preview.color
-            } else {
-                self.selectedBackgroundImage.image = nil
+                self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
+                self.backgroundImage.image = self.site?.preview.image
+                self.backgroundImage.imageColor = self.site?.preview.color
+                self.backgroundImage.alpha = .on
+            }
+            else {
+                self.backgroundImage.alpha = .off
             }
 
             let isNew = self.site?.isNew ?? false
@@ -607,12 +669,13 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 if isNew {
                     resultCaption.append( NSAttributedString( string: " (new site)" ) )
                 }
-                self.captionLabel.attributedText = resultCaption
+                self.nameLabel.attributedText = resultCaption
             }
             else {
-                self.captionLabel.attributedText = nil
+                self.nameLabel.attributedText = nil
             }
 
+            self.maskButton.image = self.unmasked ? .icon( "", invert: true ): .icon( "", invert: true )
             if !InAppFeature.premium.isEnabled {
                 self.mode = .authentication
             }
@@ -627,14 +690,24 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     self.modeButton.image = nil
             }
 
-            self.modeButton.alpha = InAppFeature.premium.isEnabled ? .on: .off
-            self.modeButton.isUserInteractionEnabled = self.modeButton.alpha != .off
-            self.actionsStack.alpha = self.isSelected && !isNew ? .on: .off
-            self.actionsStack.isUserInteractionEnabled = self.actionsStack.alpha != .off
-            self.newButton.alpha = self.isSelected && isNew ? .on: .off
-            self.newButton.isUserInteractionEnabled = self.newButton.alpha != .off
+            self.maskButton.isSelected = self.unmasked
+            self.maskButton.isUserInteractionEnabled = (self.site?.user.maskPasswords ?? false)
+            self.maskButton.alpha = self.maskButton.isUserInteractionEnabled ? .on: .off
+            self.modeButton.isUserInteractionEnabled = InAppFeature.premium.isEnabled
+            self.modeButton.alpha = self.modeButton.isUserInteractionEnabled ? .on: .off
+            self.modeStack.isUserInteractionEnabled = self.isSelected
+            self.modeStack.alpha = self.modeStack.isUserInteractionEnabled ? .on: .off
+            self.actionStack.isUserInteractionEnabled = self.isSelected && !isNew
+            self.actionStack.alpha = self.actionStack.isUserInteractionEnabled ? .on: .off
+            self.newButton.isUserInteractionEnabled = self.isSelected && isNew
+            self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on: .off
             self.selectionConfiguration.isActive = self.isSelected
-            self.resultLabel.isSecureTextEntry = self.mode == .authentication && self.site?.user.maskPasswords ?? true
+
+            self.resultLabel.isSecureTextEntry = (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.mode == .authentication
+            self.resultLabel.isUserInteractionEnabled = !self.resultLabel.isSecureTextEntry
+            self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on: .off
+
+            self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3: Theme.current.font.subheadline)
 
             self.site?.result( keyPurpose: self.mode ).token.then( on: .main ) {
                 do {
@@ -722,7 +795,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     struct SiteAction {
         let tracking:   Tracking?
         let title:      String
-        let icon:       String
+        let icon:       NSAttributedString?
         let appearance: [Appearance]
         let action:     (Site, SpectreKeyPurpose?, Appearance) -> Void
 

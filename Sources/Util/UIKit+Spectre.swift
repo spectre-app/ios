@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2020-09-11.
-// Copyright (c) 2020 Lyndir. All rights reserved.
+// Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import Macaw
@@ -608,14 +615,16 @@ extension UITableView {
 }
 
 extension UITableViewCell {
-    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> Self {
+    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> C {
         let cell = tableView.dequeueReusableCell( withIdentifier: NSStringFromClass( self ), for: indexPath ) as! C
 
         if let initialize = initializer {
-            initialize( cell )
+            UIView.performWithoutAnimation {
+                initialize( cell )
+            }
         }
 
-        return cell as! Self
+        return cell
     }
 }
 
@@ -646,7 +655,7 @@ extension UIView {
     public var ownership: (owner: UIResponder, property: String)? {
         var nextResponder = self.next
         while let nextResponder_ = nextResponder {
-            if let property = nextResponder_.property( withValue: self ) {
+            if let property = property( of: nextResponder_, withValue: self ) {
                 return (nextResponder_, property)
             }
 

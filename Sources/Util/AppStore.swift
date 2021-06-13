@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-07-18.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import StoreKit
 import TPInAppReceipt
@@ -77,7 +84,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     var products = [ SKProduct ]() {
         didSet {
             if self.products != oldValue {
-                self.observers.notify { $0.productsDidChange( self.products ) }
+                self.observers.notify { $0.didChange( store: self, products: self.products ) }
             }
         }
     }
@@ -365,4 +372,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         self.updatePromise?.finish( .success( false ) )
         self.updatePromise = nil
     }
+}
+
+protocol InAppStoreObserver {
+    func didChange(store: AppStore, products: [SKProduct])
 }

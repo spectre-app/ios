@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-07-05.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import Countly
@@ -39,7 +46,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
 
     // MARK: --- ModelObserver ---
 
-    func didChange() {
+    func didChange(model: Model) {
         self.setNeedsUpdate()
     }
 
@@ -54,7 +61,6 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             We're here to help.  You can also reach us at:\nsupport@spectre.app
                             """
                         } ) {
-
                 if let viewController = $0.viewController {
                     let options = ConversationOptions()
                     options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
@@ -152,17 +158,18 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             dateFormatter.dateFormat = "DDD'-'HH':'mm':'ss"
 
             super.init( value: {
-                LogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
+                let font = Theme.current.font.mono.get()?.withSize( 11 ), boldFont = font?.withSymbolicTraits( .traitBold )
+                return LogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
                     logs.append( NSAttributedString(
                             string: "\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)\n",
                             attributes: [
-                                .font: Theme.current.font.mono.get( size: 11 ) as Any,
+                                .font: font as Any,
                                 .foregroundColor: Theme.current.color.secondary.get() as Any,
                             ] ) )
                     logs.append( NSAttributedString(
                             string: "\(record.message)\n",
                             attributes: [
-                                .font: Theme.current.font.mono.get( size: 11, traits: record.level <= .warning ? .traitBold: [] ) as Any,
+                                .font: (record.level <= .warning ? boldFont: font) as Any,
                                 .foregroundColor: Theme.current.color.body.get() as Any,
                             ] ) )
                     return logs
@@ -210,12 +217,12 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             didSet {
                 LogSink.shared.level = max( .info, self.logbookLevel )
 
-                self.observers.notify { $0.didChange() }
+                self.observers.notify { $0.didChange( model: self ) }
             }
         }
     }
 }
 
 protocol ModelObserver {
-    func didChange()
+    func didChange(model: DetailLogViewController.Model)
 }

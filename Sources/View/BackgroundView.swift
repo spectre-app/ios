@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-08-08.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -19,7 +26,7 @@ class BackgroundView: UIView, ThemeObserver {
                     self.isOpaque = false
 
                 case .gradient:
-                    self.didChangeTheme()
+                    self.didChange( theme: Theme.current )
 
                 case .backdrop:
                     self => \.backgroundColor => Theme.current.color.backdrop
@@ -94,10 +101,10 @@ class BackgroundView: UIView, ThemeObserver {
         self.imageView.layer.mask = self.imageMask
         self.imageMask.needsDisplayOnBoundsChange = true
         self.imageMask.colors = [
-            UIColor.black.with( alpha: .long ).cgColor,
-            UIColor.black.with( alpha: .short ).cgColor,
             UIColor.black.with( alpha: .short * .short ).cgColor,
-            UIColor.clear.cgColor ]
+            UIColor.black.with( alpha: .short * .short ).cgColor,
+            UIColor.black.with( alpha: .off ).cgColor
+        ]
         self.imageViewObservation = self.imageView.observe( \.bounds ) { [unowned self] _, _ in
             self.imageMask.frame = self.imageView.bounds
         }
@@ -162,7 +169,7 @@ class BackgroundView: UIView, ThemeObserver {
 
     // MARK: --- ThemeObserver ---
 
-    func didChangeTheme() {
+    func didChange(theme: Theme) {
         if case .gradient = self.mode {
             self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
                 Theme.current.color.panel.get(), Theme.current.color.backdrop.get(),

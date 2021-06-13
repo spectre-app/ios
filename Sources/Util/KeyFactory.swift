@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-10-10.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import LocalAuthentication
@@ -11,7 +18,13 @@ private var keyFactories = [ String: KeyFactory ]()
 
 private func keyFactoryProvider(_ algorithm: SpectreAlgorithm, _ userName: UnsafePointer<CChar>?) -> UnsafePointer<SpectreUserKey>? {
     keyQueue.await {
-        try? String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm ).await()
+        do {
+            return try String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm ).await()
+        }
+        catch {
+            wrn( "Key Unavailable: %@", error )
+            return nil
+        }
     }
 }
 
@@ -196,8 +209,12 @@ public class KeychainKeyFactory: KeyFactory {
 
     // MARK: --- Interface ---
 
-    public func hasKey(for algorithm: SpectreAlgorithm) -> Bool {
-        Keychain.hasKey( for: self.userName, algorithm: algorithm )
+    public func isKeyPresent(for algorithm: SpectreAlgorithm) -> Bool {
+        Keychain.keyStatus( for: self.userName, algorithm: algorithm, context: self.context ).present
+    }
+
+    public func isKeyAvailable(for algorithm: SpectreAlgorithm) -> Bool {
+        Keychain.keyStatus( for: self.userName, algorithm: algorithm, context: self.context ).available
     }
 
     public func purgeKeys() {

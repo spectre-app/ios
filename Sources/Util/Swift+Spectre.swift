@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2020-09-11.
-// Copyright (c) 2020 Lyndir. All rights reserved.
+// Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Swift
 
@@ -81,6 +88,26 @@ extension Dictionary {
     }
 }
 
+extension Error {
+    var fullDescription: String {
+        var underlyingErrors = [ NSError ]()
+        if let underlyingError = (self as NSError).userInfo[NSUnderlyingErrorKey] as? NSError {
+            underlyingErrors.append( underlyingError )
+        }
+        if #available( iOS 14.5, * ),
+           let multipleUnderlyingError = (self as NSError).userInfo[NSMultipleUnderlyingErrorsKey] as? [NSError] {
+            underlyingErrors.append( contentsOf: multipleUnderlyingError )
+        }
+
+        return [
+            self.localizedDescription,
+            (self as NSError).localizedFailureReason.flatMap { "Reason: \($0)" },
+            (self as NSError).localizedRecoverySuggestion.flatMap { "Suggestion: \($0)" },
+            underlyingErrors.compactMap { $0.fullDescription }.joined( separator: "\n\n" ).nonEmpty.flatMap { "Underlying:\n\($0)" },
+        ].compactMap( { $0 } ).joined( separator: "\n" )
+    }
+}
+
 extension Double {
     public static let φ     = (1 + sqrt( 5 )) / 2 // Golden Ratio
     public static let short = (1 - long)
@@ -118,7 +145,7 @@ extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {
 }
 
 extension Result {
-    var error: Failure? {
+    var error:       Failure? {
         guard case .failure(let error) = self
         else { return nil }
 
@@ -219,6 +246,23 @@ extension String {
         return self
     }
 
+    public func topPrivateDomain() -> String {
+        guard let publicSuffixes = publicSuffixes
+        else { return self }
+
+        for publicSuffix in publicSuffixes {
+            if self.hasSuffix( ".\(publicSuffix)" ) {
+                var privateDomain = self.prefix( upTo: self.index( self.endIndex, offsetBy: -publicSuffix.count - 1 ) )
+                if let lastDot = privateDomain.lastIndex( of: "." ) {
+                    privateDomain = privateDomain.suffix( from: privateDomain.index( after: lastDot ) )
+                }
+                return "\(privateDomain).\(publicSuffix)"
+            }
+        }
+
+        return self
+    }
+
     public var lastPathComponent: String {
         (self as NSString).lastPathComponent
     }
@@ -234,7 +278,7 @@ extension String {
     }
 
     func b64Decrypt() -> String? {
-        var secretLength = spectre_base64_decode_max( self ), keyLength = 0
+        var secretLength = spectre_base64_decode_max( self.lengthOfBytes( using: .utf8 ) ), keyLength = 0
         guard secretLength > 0
         else { return nil }
 

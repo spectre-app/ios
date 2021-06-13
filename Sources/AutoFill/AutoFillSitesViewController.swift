@@ -1,10 +1,14 @@
+//==============================================================================
+// Created by Maarten Billemont on 2018-01-21.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
-//  AutoFillSitesViewController.swift
-//  Spectre
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
-//  Created by Maarten Billemont on 2018-01-21.
-//  Copyright © 2018 Maarten Billemont. All rights reserved.
-//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import AuthenticationServices
@@ -39,11 +43,13 @@ class AutoFillSitesViewController: BaseSitesViewController {
                 return serviceHost.contains( site.siteName ) || site.siteName.contains( serviceHost )
             } )
         }
-        self.sitesTableView.proposedSite = allServiceIdentifiers.first.flatMap { URL( string: $0.identifier )?.host ?? $0.identifier }
+        self.sitesTableView.proposedSite = allServiceIdentifiers.first.flatMap {
+            (URL( string: $0.identifier )?.host ?? $0.identifier).topPrivateDomain()
+        }
         self.sitesTableView.siteActions = [
-            .init( tracking: nil, title: "", icon: "", appearance: [ .cell ], action: { _, _, _ in } ),
+            .init( tracking: nil, title: "", icon: nil, appearance: [ .cell ], action: { _, _, _ in } ),
             .init( tracking: .subject( "sites.site", action: "fill" ),
-                   title: "Fill", icon: "", appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
+                   title: "Fill", icon: .icon( "" ), appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
                 switch appearance {
                     case .cell:
                         self.completeRequest( site: site, trackingFrom: "site>cell" )
@@ -84,12 +90,12 @@ class AutoFillSitesViewController: BaseSitesViewController {
                         let _ = try site.user.save().await()
                     }
                     catch {
-                        mperror( title: "Couldn't save user.", error: error )
+                        mperror( title: "Couldn't save user", error: error )
                     }
                 }
             }
             catch {
-                mperror( title: "Couldn't compute site result.", error: error )
+                mperror( title: "Couldn't compute site result", error: error )
                 event.end(
                         [ "result": $0.name,
                           "from": trackingFrom,

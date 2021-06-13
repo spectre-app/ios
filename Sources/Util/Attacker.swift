@@ -1,15 +1,58 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-11-01.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Foundation
 
-/* An Nvidia GTX 1080 Ti (250W) calculates ~727 bcrypt-10 hashes per second */
-let attempts_per_second = Decimal( 727 ) // H/s
-let cost_fixed          = Decimal( 1200 ) // $
-let cost_watt           = Decimal( 250 ) // W
-let cost_per_kwh        = Decimal( 0.15 ) // $/kWh
+enum Hash {
+    case bcrypt10, spectre
+}
+
+enum Rig {
+    case gtx1080ti
+
+    func attempts_per_second(for hash: Hash) -> Decimal {
+        switch self {
+            case .gtx1080ti:
+                // https://gist.github.com/epixoip/ace60d09981be09544fdd35005051505
+                switch hash {
+                    case .bcrypt10:
+                        return Decimal( 722 ) // H/s
+                    case .spectre:
+                        return Decimal( 168 ) // H/s
+                }
+        }
+    }
+
+    var cost_fixed: Decimal {
+        switch self {
+            case .gtx1080ti:
+                return Decimal( 1200 ) // $
+        }
+    }
+
+    var cost_watt: Decimal {
+        switch self {
+            case .gtx1080ti:
+                return Decimal( 250 ) // W
+        }
+    }
+
+    var cost_per_kwh: Decimal {
+        switch self {
+            case .gtx1080ti:
+                return Decimal( 0.15 ) // $/kWh
+        }
+    }
+}
 
 enum Attacker: Int, CaseIterable, CustomStringConvertible {
     static let `default` = Attacker.private
@@ -29,12 +72,15 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         }
     }
     var localizedDescription: String {
-        "\(number: self.scale, as: "0.#") x \(number: attempts_per_second, .abbreviated)/s (~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) HW + $\(number: self.monthly_budget, .currency, .abbreviated)/m)"
+        "\(number: self.scale, as: "0.#") x \(number: Rig.gtx1080ti.attempts_per_second( for: .bcrypt10 ), .abbreviated)/s (~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) HW + $\(number: self.monthly_budget, .currency, .abbreviated)/m)"
+    }
+    var rig:                  Rig {
+        .gtx1080ti
     }
     var fixed_budget:         Decimal {
         switch self {
             case .single:
-                return cost_fixed
+                return self.rig.cost_fixed
 
             case .private:
                 return 5_000
@@ -47,12 +93,12 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         }
     }
     var monthly_budget:       Decimal {
-        (self.scale * cost_watt / 1000) * 24 * 30 * cost_per_kwh
+        (self.scale * self.rig.cost_watt / 1000) * 24 * 30 * self.rig.cost_per_kwh
     }
 
     /// The hardware scale that the attacker employs to attack a hash.
     var scale:                Decimal {
-        self.fixed_budget / cost_fixed
+        self.fixed_budget / self.rig.cost_fixed
     }
 
     static func named(_ identifier: String) -> Attacker {
@@ -88,19 +134,36 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         self.permutations( type: type ).flatMap { self.entropy( permutations: $0 ) }
     }
 
-    func timeToCrack(type: SpectreResultType) -> TimeToCrack? {
-        Attacker.permutations( type: type ).flatMap { self.timeToCrack( permutations: $0 ) }
+    func timeToCrack(type: SpectreResultType, hash: Hash = .bcrypt10) -> TimeToCrack? {
+        Attacker.permutations( type: type ).flatMap { self.timeToCrack( permutations: $0, hash: hash ) }
     }
 
     static func permutations(string: String?) -> Decimal? {
-        guard let string = string
+        guard var string = string, let dictionary = dictionary
         else { return nil }
 
         var stringPermutations = Decimal( 1 )
 
-        for passwordCharacter in string.utf8CString {
-            var characterEntropy = Decimal( 256 ) /* a byte */
+        for word in dictionary {
+            let newString = string.replacingOccurrences( of: word, with: "" )
+            if newString != string {
+                stringPermutations *= Decimal( dictionary.count )
+                string = newString
+            }
+        }
 
+        var previousCharacter: CChar = 0
+        for passwordCharacter in string.utf8CString {
+            defer {
+                previousCharacter = passwordCharacter
+            }
+
+            // Skip terminator and repeating characters.
+            if passwordCharacter == 0 || abs( passwordCharacter - previousCharacter ) < 2 {
+                continue
+            }
+
+            var characterEntropy = Decimal( 256 ) /* a byte */
             for characterClass in [ "v", "c", "a", "n", "x" ] {
                 guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
                 else { continue }
@@ -122,18 +185,18 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         self.permutations( string: string ).flatMap { self.entropy( permutations: $0 ) }
     }
 
-    func timeToCrack(string: String?) -> TimeToCrack? {
-        Attacker.permutations( string: string ).flatMap { self.timeToCrack( permutations: $0 ) }
+    func timeToCrack(string: String?, hash: Hash = .bcrypt10) -> TimeToCrack? {
+        Attacker.permutations( string: string ).flatMap { self.timeToCrack( permutations: $0, hash: hash ) }
     }
 
     static func entropy(permutations: Decimal) -> Int {
         Int( truncating: permutations.log( base: 2 ) as NSNumber )
     }
 
-    func timeToCrack(permutations: Decimal) -> TimeToCrack {
+    func timeToCrack(permutations: Decimal, hash: Hash = .bcrypt10) -> TimeToCrack {
 
         // Amount of seconds to search half the permutations (average hit chance)
-        var secondsToCrack = (permutations / 2) / attempts_per_second
+        var secondsToCrack = (permutations / 2) / self.rig.attempts_per_second( for: hash )
 
         // The search scale employed by the attacker.
         secondsToCrack /= self.scale
@@ -149,8 +212,8 @@ struct TimeToCrack: CustomStringConvertible {
     var period:       Period
 
     var description: String {
-        let Wh   = (self.attacker.scale * cost_watt) * self.period.seconds / 3600
-        let cost = (self.attacker.scale * cost_fixed) + cost_per_kwh * Wh / 1000
+        let Wh   = (self.attacker.scale * self.attacker.rig.cost_watt) * self.period.seconds / 3600
+        let cost = (self.attacker.scale * self.attacker.rig.cost_fixed) + self.attacker.rig.cost_per_kwh * Wh / 1000
         if self.period.seconds < 2 {
             return "trivial"
         }

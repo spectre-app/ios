@@ -1,10 +1,14 @@
+//==============================================================================
+// Created by Maarten Billemont on 2018-01-21.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
-//  AppDelegate.swift
-//  Spectre
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
-//  Created by Maarten Billemont on 2018-01-21.
-//  Copyright © 2018 Maarten Billemont. All rights reserved.
-//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import CoreServices
@@ -35,6 +39,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         LogSink.shared.register()
         Tracker.shared.startup()
+        KeyboardMonitor.shared.install()
 
         self.window! => \.tintColor => Theme.current.color.tint
         self.window!.rootViewController = MainNavigationController( rootViewController: MainUsersViewController() )

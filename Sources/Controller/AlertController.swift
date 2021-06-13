@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-09-22.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -44,7 +51,9 @@ extension AlertController {
 }
 
 class AlertController {
-    private lazy var view          = self.loadView()
+    // The view owns the AlertController instead of the other way around since the controller's lifetime depends on the alert presence in the view.
+    private weak var view: UIView?
+
     private lazy var titleLabel    = UILabel()
     private lazy var messageLabel  = UILabel()
     private lazy var expandChevron = UILabel()
@@ -54,14 +63,12 @@ class AlertController {
         active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: 4 ) }
         inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
     }
-    private lazy var activationConfiguration = LayoutConfiguration( view: self.view ).didSet { _, isActive in
+    private lazy var activationConfiguration = LayoutConfiguration( view: self.view ).didSet { [unowned self] _, isActive in
         self.titleLabel => \.font => (isActive ? Theme.current.font.headline: Theme.current.font.headline)
         self.messageLabel => \.font => (isActive ? Theme.current.font.subheadline: Theme.current.font.subheadline)
         self.expandChevron.isHidden = isActive || self.detailLabel.text?.isEmpty ?? true
         self.detailLabel.isHidden = !isActive
     }
-    private lazy var dismissTask = DispatchTask( named: "Dismiss Alert: \(self.title ?? "-")", queue: .main,
-                                                 deadline: .now() + .seconds( 5 ), execute: { self.dismiss() } )
 
     // MARK: --- Life ---
 
@@ -88,27 +95,29 @@ class AlertController {
     // MARK: --- Interface ---
 
     @discardableResult
-    public func show(in view: @escaping @autoclosure () -> UIView? = nil, dismissAutomatically: Bool = true,
+    public func show(in host: @escaping @autoclosure () -> UIView? = nil, dismissAutomatically: Bool = true,
                      file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) -> Self {
         log( file: file, line: line, function: function, dso: dso, level: self.level, "[ %@ ]", [ self.title ] )
         pii( file: file, line: line, function: function, dso: dso, "> %@: %@", self.message, self.details )
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {
-            let view   = view()
-            var window = view?.window ?? view as? UIWindow
+            let host   = host()
+            var window = host?.window ?? host as? UIWindow
             #if TARGET_APP
             window = window ?? UIApplication.shared.keyWindow
             #endif
-            if let window = window {
-                window.addSubview( self.view )
-            }
+            guard let window = window
             else {
                 wrn( "No view to present alert: %@", self.title )
                 return
             }
 
-            LayoutConfiguration( view: self.view )
+            let view = self.loadView()
+            window.addSubview( view )
+            self.view = view
+
+            LayoutConfiguration( view: view )
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
                     .activate()
@@ -124,17 +133,18 @@ class AlertController {
         return self
     }
 
+    private lazy var dismissTask = DispatchTask( named: "Dismiss: \(self.title ?? "-")",
+                                                 queue: .main, deadline: .now() + .seconds( 5 ) ) { [weak self] in
+        guard let self = self, let view = self.view, view.superview != nil
+        else { return }
+
+        UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
+            view.removeFromSuperview()
+        } )
+    }
+
     public func dismiss() {
-        self.dismissTask.cancel()
-
-        DispatchQueue.main.perform {
-            guard self.view.superview != nil
-            else { return }
-
-            UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
-                self.view.removeFromSuperview()
-            } )
-        }
+        self.dismissTask.request( now: true )
     }
 
     public func activate() {
@@ -205,11 +215,8 @@ class AlertController {
 
 public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil, in view: UIView? = nil,
                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-    let message = message?.description ?? error?.localizedDescription
-    let details = [ details?.description, message == error?.localizedDescription ? nil: error?.localizedDescription,
-                    (error as NSError?)?.localizedFailureReason,
-                    (error as NSError?)?.localizedRecoverySuggestion,
-                    ((error as NSError?)?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ]
+    let message = message?.description ?? error.flatMap { String( describing: type( of: $0 ) ) }
+    let details = [ details?.description, error?.fullDescription ]
             .compactMap( { $0 } ).joined( separator: "\n\n" )
 
     AlertController( title: title, message: message?.description, details: details, level: .error )

@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-07-05.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 
@@ -66,8 +73,8 @@ class DialogSiteChangedViewController: DialogViewController {
 
         let oldPassword = self.oldSite.result( keyPurpose: .authentication )
         let newPassword = self.newSite.result( keyPurpose: .authentication )
-        let oldPasswordButton = EffectButton { oldPassword.copy( fromView: self.view, trackingFrom: "site>changed" ) }
-        let newPasswordButton = EffectButton { newPassword.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        let oldPasswordButton = EffectButton { [unowned self] in oldPassword.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        let newPasswordButton = EffectButton { [unowned self] in newPassword.copy( fromView: self.view, trackingFrom: "site>changed" ) }
         oldPassword.token.then( on: .main ) { oldPasswordButton.title = try? $0.get() }
         newPassword.token.then( on: .main ) { newPasswordButton.title = try? $0.get() }
         oldPassword.token.and( newPassword.token ).success( on: .main ) {
@@ -85,8 +92,8 @@ class DialogSiteChangedViewController: DialogViewController {
 
         let oldLogin = self.oldSite.result( keyPurpose: .identification )
         let newLogin = self.newSite.result( keyPurpose: .identification )
-        let oldLoginButton = EffectButton { oldLogin.copy( fromView: self.view, trackingFrom: "site>changed" ) }
-        let newLoginButton = EffectButton { newLogin.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        let oldLoginButton = EffectButton { [unowned self] in oldLogin.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        let newLoginButton = EffectButton { [unowned self] in newLogin.copy( fromView: self.view, trackingFrom: "site>changed" ) }
         oldLogin.token.then( on: .main ) { oldLoginButton.title = try? $0.get() }
         newLogin.token.then( on: .main ) { newLoginButton.title = try? $0.get() }
         oldLogin.token.and( newLogin.token ).success( on: .main ) {
@@ -104,10 +111,10 @@ class DialogSiteChangedViewController: DialogViewController {
 
         let oldAnswer = self.oldSite.result( keyPurpose: .recovery )
         let newAnswer = self.newSite.result( keyPurpose: .recovery )
-        let oldAnswerButton = EffectButton( title: "(generic)" ) {
+        let oldAnswerButton = EffectButton( title: "(generic)" ) { [unowned self] in
             oldAnswer.copy( fromView: self.view, trackingFrom: "site>changed" )
         }
-        let newAnswerButton = EffectButton( title: "(generic)" ) {
+        let newAnswerButton = EffectButton( title: "(generic)" ) { [unowned self] in
             newAnswer.copy( fromView: self.view, trackingFrom: "site>changed" )
         }
         oldAnswer.token.and( newAnswer.token ).success( on: .main ) {

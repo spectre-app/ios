@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2019-11-09.
-// Copyright (c) 2019 Lyndir. All rights reserved.
+// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Foundation
 
@@ -13,57 +20,57 @@ typealias va_list_c = va_list
 typealias va_list_c = CVaListPointer?
 #endif
 
-extension NSObject {
-    dynamic func property(withValue value: AnyObject) -> String? {
-        var mirror: Mirror? = Mirror.init( reflecting: self )
-        while let mirror_ = mirror {
-            if let child = mirror_.children.first( where: { $0.value as AnyObject? === value } ) {
-                if child.label == nil {
-                    wrn( "Missing label for mirror: %@, child: %@", mirror_, child )
-                }
-
-                return child.label?.replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
+dynamic func property(of object: Any, withValue value: AnyObject) -> String? {
+    var mirror: Mirror? = Mirror.init( reflecting: object )
+    while let mirror_ = mirror {
+        if let child = mirror_.children.first( where: { $0.value as AnyObject? === value } ) {
+            if child.label == nil {
+                wrn( "Missing label for mirror: %@, child: %@", mirror_, child )
             }
 
-            mirror = mirror_.superclassMirror
+            return child.label?.replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
         }
 
-        var type: AnyClass? = Self.self
-        while (type != nil) {
-            var count: UInt32 = 0
-
-//            if let properties = class_copyPropertyList( type, &count ) {
-//                defer { free( properties ) }
-//
-//                for p in 0..<Int( count ) {
-//                    if let propertyName = String.valid( property_getName( properties[p] ) ),
-//                       let propertyValue = self.value( forKey: propertyName ) as AnyObject?,
-//                       value === propertyValue {
-//                        return propertyName
-//                    }
-//                }
-//            }
-
-            if let ivars = class_copyIvarList( type, &count ) {
-                defer { free( ivars ) }
-
-                for i in 0..<Int( count ) {
-                    let ivar = ivars[i]
-
-                    if let encoding = ivar_getTypeEncoding( ivar ), encoding.pointee == 64,
-                       value === object_getIvar( self, ivar ) as AnyObject? {
-                        return String.valid( ivar_getName( ivar ) )?
-                                     .replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
-                    }
-                }
-            }
-
-            type = class_getSuperclass( type )
-        }
-
-        return nil
+        mirror = mirror_.superclassMirror
     }
 
+    var type: AnyClass? = type( of: object ) as? AnyClass
+    while (type != nil) {
+        var count: UInt32 = 0
+
+//        if let properties = class_copyPropertyList( type, &count ) {
+//            defer { free( properties ) }
+//
+//            for p in 0..<Int( count ) {
+//                if let propertyName = String.valid( property_getName( properties[p] ) ),
+//                   let propertyValue = self.value( forKey: propertyName ) as AnyObject?,
+//                   value === propertyValue {
+//                    return propertyName
+//                }
+//            }
+//        }
+
+        if let ivars = class_copyIvarList( type, &count ) {
+            defer { free( ivars ) }
+
+            for i in 0..<Int( count ) {
+                let ivar = ivars[i]
+
+                if let encoding = ivar_getTypeEncoding( ivar ), encoding.pointee == 64,
+                   value === object_getIvar( object, ivar ) as AnyObject? {
+                    return String.valid( ivar_getName( ivar ) )?
+                                 .replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
+                }
+            }
+        }
+
+        type = class_getSuperclass( type )
+    }
+
+    return nil
+}
+
+extension NSObject {
     dynamic var identityDescription: String {
         var description      = ""
         var type_: AnyClass? = Self.self

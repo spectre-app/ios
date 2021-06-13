@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-10-15.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Foundation
 import UIKit
@@ -41,7 +48,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
 
     // MARK: --- UserObserver ---
 
-    func userDidChange(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
         self.setNeedsUpdate()
     }
 
@@ -154,9 +161,9 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( track: .subject( "user", action: "attacker" ), title: "Defense Strategy 🅿︎", values: { _ in Attacker.allCases },
                         value: { $0.attacker ?? .default }, update: { $0.model?.attacker = $1 },
-                        caption: { _ in
+                        caption: {
                             """
-                            Yearly budget of the primary attacker persona you're seeking to repel (@ \(cost_per_kwh)$/kWh).
+                            Yearly budget of the primary attacker persona you're seeking to repel (@ \($0.attacker?.rig.cost_per_kwh)$/kWh).
                             """
                         } )
 

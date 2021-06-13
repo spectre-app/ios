@@ -1,10 +1,14 @@
+//==============================================================================
+// Created by Maarten Billemont on 2018-01-21.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
-//  AutoFillUsersViewController.swift
-//  Spectre
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
-//  Created by Maarten Billemont on 2018-01-21.
-//  Copyright © 2018 Maarten Billemont. All rights reserved.
-//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import UIKit
 import AuthenticationServices
@@ -12,7 +16,7 @@ import AuthenticationServices
 class AutoFillUsersViewController: BaseUsersViewController {
     private let configurationView = AutoFillConfigurationView( fromSettings: false )
     private lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ),
-                                                 image: .icon( "" ), border: 0, background: false, square: true ) { _, _ in
+                                                 image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
     }
 
@@ -49,14 +53,14 @@ class AutoFillUsersViewController: BaseUsersViewController {
 
     // MARK: --- Interface ---
 
-    override func sectioned(userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.filter( { $0.autofill } ).sorted() ]
     }
 
     // MARK: --- MarshalObserver ---
 
-    override func userFilesDidChange(_ userFiles: [Marshal.UserFile]) {
-        super.userFilesDidChange( userFiles )
+    override func didChange(userFiles: [Marshal.UserFile]) {
+        super.didChange( userFiles: userFiles )
 
         DispatchQueue.main.perform {
             self.configurationView.isHidden = !self.usersSource.isEmpty
@@ -67,6 +71,8 @@ class AutoFillUsersViewController: BaseUsersViewController {
 
     override func login(user: User) {
         super.login( user: user )
+
+        AutoFillModel.shared.cacheUser( user )
 
         self.detailsHost.show( AutoFillSitesViewController( user: user ), sender: self )
     }

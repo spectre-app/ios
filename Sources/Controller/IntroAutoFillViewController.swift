@@ -1,7 +1,14 @@
-//
+//==============================================================================
 // Created by Maarten Billemont on 2018-10-15.
-// Copyright (c) 2018 Lyndir. All rights reserved.
+// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
+// This file is part of Spectre.
+// Spectre is free software. You can modify it under the terms of
+// the GNU General Public License, either version 3 or any later version.
+// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+//
+// Note: this grant does not include any rights for use of Spectre's trademarks.
+//==============================================================================
 
 import Foundation
 import UIKit
@@ -28,7 +35,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                          """
                      } ),
             SeparatorItem(),
-            PagerItem( value: { _ in
+            PagerItem( value: { [unowned self] _ in
                 [
                     // Step 0
                     Item( subitems: [
@@ -77,11 +84,13 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem( track: .subject( "autofill_setup", action: "settings" ),
-                                    icon: { _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "" ): .icon( "" ) },
-                                    value: { _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
+                                    icon: { [unowned self] _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "" ): .icon( "" ) },
+                                    value: { [unowned self] _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
                             URL( string: UIApplication.openSettingsURLString ).flatMap { UIApplication.shared.open( $0 ) }
                         } )
-                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { _ in self.autoFillState?.isEnabled ?? false } )
+                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { [unowned self] _ in
+                                    self.autoFillState?.isEnabled ?? false
+                                } )
                     ], axis: .vertical ),
 
                     // Step 4
@@ -132,8 +141,16 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
 
     // MARK: --- UserObserver ---
 
-    func userDidChange(_ user: User) {
+    func didChange(user: User, at change: PartialKeyPath<User>) {
         self.setNeedsUpdate()
+    }
+
+    // MARK: --- SiteObserver ---
+
+    func siteDidChange(_ site: Site, at change: PartialKeyPath<Site>) {
+        if change == \Site.preview {
+            self.setNeedsUpdate()
+        }
     }
 
     // MARK: --- Updatable ---
