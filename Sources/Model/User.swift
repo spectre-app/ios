@@ -367,7 +367,14 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
         self.userName
     }
     var credentials: [AutoFill.Credential]? {
-        self.autofill ? self.sites.map { AutoFill.Credential( supplier: self, name: $0.siteName ) }: nil
+        self.autofill ? self.sites.flatMap { site -> [AutoFill.Credential] in
+            var siteHosts = Set<String>( [ site.siteName, site.siteName.topPrivateDomain() ] )
+            if let urlComponents = site.url.flatMap( URL.init ).flatMap( { URLComponents( url: $0, resolvingAgainstBaseURL: false ) } ),
+               let urlHost = urlComponents.host {
+                siteHosts.formUnion( [ urlHost, urlHost.topPrivateDomain() ] )
+            }
+            return siteHosts.map { AutoFill.Credential( supplier: self, name: $0 ) }
+        }: nil
     }
 
     // MARK: --- Operand ---
