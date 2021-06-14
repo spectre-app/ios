@@ -142,7 +142,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                 didSet {
                     DispatchQueue.main.perform {
                         self.effectView => \.borderColor => self.theme?.color.secondary
-                        self.effectView => \.backgroundColor => self.theme?.color.panel
+                        self.effectView => \.backgroundColor => self.theme?.color.backdrop
                     }
                 }
             }

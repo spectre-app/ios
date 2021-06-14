@@ -47,10 +47,12 @@ class Tracker: AppConfigObserver {
     func enableNotifications(consented: Bool = true, completion: @escaping (Bool) -> () = { _ in }) {
         UNUserNotificationCenter.current().getNotificationSettings {
             if $0.authorizationStatus == .authorized {
-                AppConfig.shared.notificationsDecided = true
-                Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-                self.observers.notify { $0.didChange( tracker: self ) }
-                completion( true )
+                DispatchQueue.main.perform {
+                    AppConfig.shared.notificationsDecided = true
+                    Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                    self.observers.notify { $0.didChange( tracker: self ) }
+                    completion( true )
+                }
                 return
             }
 

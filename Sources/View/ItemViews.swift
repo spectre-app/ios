@@ -118,7 +118,7 @@ class Item<M>: AnyItem {
 
             self.contentView.axis = .vertical
             self.contentView.alignment = .center
-            self.contentView.spacing = 8
+            self.contentView.spacing = 12
             self.contentView.insetsLayoutMarginsFromSafeArea = false
 
             self.titleLabel.numberOfLines = 0

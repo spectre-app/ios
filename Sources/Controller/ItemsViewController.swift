@@ -65,7 +65,7 @@ class ItemsViewController<M>: BaseViewController {
         self.backgroundView.layer.masksToBounds = true
 
         self.itemsView.axis = .vertical
-        self.itemsView.spacing = 32
+        self.itemsView.spacing = 40
         self.itemsView.addArrangedSubview( self.imageSpacer )
         for item in self.items {
             item.viewController = self
