@@ -121,7 +121,7 @@ class ItemsViewController<M>: BaseViewController {
         super.doUpdate()
 
         if let color = self.color {
-            self.backgroundView.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: color.hue ) )
+            self.backgroundView.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: color.hue ) } )
             self.view.tintColor = Theme.current.color.tint.get()?.with( hue: color.hue )
         }
         else {

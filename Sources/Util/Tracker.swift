@@ -131,9 +131,11 @@ class Tracker: AppConfigObserver {
             countlyConfig.deviceID = self.identifierForOwner
             countlyConfig.customMetrics = identifiers
             countlyConfig.features = [ CLYFeature.pushNotifications ]
+            countlyConfig.enablePerformanceMonitoring = true
             #if !PUBLIC
             countlyConfig.pushTestMode = AppConfig.shared.isDebug ? .development: .testFlightOrAdHoc
             #endif
+            // TODO: turn on/off with AppConfig.shared.offline
             Countly.sharedInstance().start( with: countlyConfig )
 
             if UIApplication.shared.isRegisteredForRemoteNotifications {
@@ -312,10 +314,11 @@ class Tracker: AppConfigObserver {
     // MARK: --- AppConfigObserver ---
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
-        guard change == \AppConfig.isApp || change == \AppConfig.diagnostics
+        guard change == \AppConfig.isApp || change == \AppConfig.diagnostics || change == \AppConfig.offline
         else { return }
 
-        if appConfig.isApp && appConfig.diagnostics {
+        // TODO: make AppConfig.shared.offline distinct from consent revocation.
+        if appConfig.isApp && appConfig.diagnostics && !appConfig.offline {
             SentrySDK.currentHub().getClient()?.options.enabled = true
             #if TARGET_APP
             Countly.sharedInstance().giveConsent( forFeatures: [

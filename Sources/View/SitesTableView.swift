@@ -652,16 +652,27 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             else { return }
 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
-            self.separatorView.backgroundColor = Theme.current.color.tint.get()?.with( hue: self.site?.preview.color?.hue )
-
-            if self.isSelected {
-                self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
-                self.backgroundImage.image = self.site?.preview.image
-                self.backgroundImage.imageColor = self.site?.preview.color
-                self.backgroundImage.alpha = .on
+            if AppConfig.shared.themeSites, let siteColor = self.site?.preview.color {
+                self.separatorView => \.backgroundColor => Theme.current.color.tint.transform { $0?.with( hue: siteColor.hue ) }
+                self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
+                self.backgroundImage.imageColor = siteColor
             }
             else {
-                self.backgroundImage.alpha = .off
+                self.separatorView => \.backgroundColor => Theme.current.color.tint
+                self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get() } )
+                self.backgroundImage.imageColor = nil
+            }
+
+            if self.isSelected {
+                self.backgroundImage.alpha = .on
+                self.backgroundImage.image = self.site?.preview.image
+            }
+            else {
+                UIView.animate( withDuration: 0, animations: {
+                    self.backgroundImage.alpha = .off
+                }, completion: { _ in
+                    self.backgroundImage.image = nil
+                } )
             }
 
             let isNew = self.site?.isNew ?? false

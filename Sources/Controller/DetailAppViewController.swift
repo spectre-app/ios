@@ -29,13 +29,35 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
     override func loadItems() -> [Item<AppConfig>] {
         [ VersionItem(), SeparatorItem(),
+
           Item<AppConfig>( subitems: [
-              DiagnosticsItem(),
-              NotificationsItem(),
-          ] ), SeparatorItem(),
+              Item<AppConfig>( subitems: [
+                  DiagnosticsItem(),
+                  NotificationsItem(),
+              ] ), Item<AppConfig>( subitems: [
+                  ColoredSitesItem(),
+                  OfflineItem(),
+              ] ),
+              LinksItem<AppConfig>( values: { _ in
+                  [
+                      .init( title: "Privacy Policy", url: URL( string: "https://spectre.app/policy/privacy/" ) ),
+                  ]
+              } ),
+          ], axis: .vertical ),
+          SeparatorItem(),
+
           ThemeItem(),
           ManageSubscriptionItem(), SeparatorItem(),
-          InfoItem() ]
+
+          LinksItem<AppConfig>( title: "Links", values: { _ in
+              [
+                  .init( title: "Home", url: URL( string: "https://spectre.app" ) ),
+                  .init( title: "Questions", url: URL( string: "http://chat.spectre.app" ) ),
+                  .init( title: "White Paper", url: URL( string: "https://spectre.app/spectre-algorithm.pdf" ) ),
+                  .init( title: "Source Portal", url: URL( string: "https://source.spectre.app" ) ),
+              ]
+          } ),
+        ]
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -83,11 +105,13 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
         init() {
             super.init( track: .subject( "app", action: "diagnostics" ),
                         title: "Diagnostics", icon: { _ in .icon( "" ) },
-                        value: { $0.diagnostics }, update: { $0.model?.diagnostics = $1 }, caption: { _ in
+                        value: { $0.diagnostics && !$0.offline }, update: { $0.model?.diagnostics = $1 }, caption: { _ in
                 """
                 Share anonymized issue information to enable quick resolution.
                 """
             } )
+
+            self.addBehaviour( ConditionalBehaviour( mode: .enables ) { !$0.offline } )
         }
     }
 
@@ -105,6 +129,34 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             }, caption: { _ in
                 """
                 Be notified of important events that may affect your online security.
+                """
+            } )
+        }
+    }
+
+    class ColoredSitesItem: ToggleItem<AppConfig> {
+        init() {
+            super.init( track: .subject( "app", action: "themeSites" ),
+                        title: "Colorful Sites", icon: { _ in .icon( "" ) },
+                        value: { $0.themeSites }, update: {
+                $0.model?.themeSites = $1
+            }, caption: { _ in
+                """
+                Colorize the application theme with a site's personal look and feel.
+                """
+            } )
+        }
+    }
+
+    class OfflineItem: ToggleItem<AppConfig> {
+        init() {
+            super.init( track: .subject( "app", action: "offline" ),
+                        title: "Offline Mode", icon: { _ in .icon( "" ) },
+                        value: { $0.offline }, update: {
+                $0.model?.offline = $1
+            }, caption: { _ in
+                """
+                Run fully disconnected, turning off any features that use the Internet.
                 """
             } )
         }
@@ -169,19 +221,6 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             super.init( track: .subject( "app", action: "subscription" ),
                         value: { _ in (label: "Premium Subscription", image: nil) }, action: { item in
                 item.viewController?.show( DetailPremiumViewController(), sender: item )
-            } )
-        }
-    }
-
-    class InfoItem: LinksItem<AppConfig> {
-        init() {
-            super.init( title: "Links", values: { _ in
-                [
-                    Link( title: "Home", url: URL( string: "https://spectre.app" ) ),
-                    Link( title: "Questions", url: URL( string: "http://chat.spectre.app" ) ),
-                    Link( title: "White Paper", url: URL( string: "https://spectre.app/spectre-algorithm.pdf" ) ),
-                    Link( title: "Source Portal", url: URL( string: "https://source.spectre.app" ) ),
-                ]
             } )
         }
     }
