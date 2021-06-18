@@ -94,6 +94,9 @@ class Tracker: AppConfigObserver {
     // identifierForDevice     | survives: restart, reinstall                -- doesn't survive: other devices
     // identifierForOwner      | survives: restart, reinstall, owned devices -- doesn't survive: unowned devices
     // authenticatedIdentifier | survives: restart, reinstall, all devices   -- doesn't survive:
+    var identifierForVendor: String {
+        UIDevice.current.identifierForVendor?.uuidString ?? ""
+    }
     lazy var identifierForDevice = self.identifier( for: "device", attributes: [
         kSecAttrDescription: "Unique identifier for the device running this app.",
         kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
@@ -107,8 +110,7 @@ class Tracker: AppConfigObserver {
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                  extensionController: UIViewController? = nil) {
-        let identifiers = [ "device": self.identifierForDevice, "owner": self.identifierForOwner,
-                            "vendor": UIDevice.current.identifierForVendor?.uuidString ?? "" ]
+        let identifiers = [ "vendor": self.identifierForVendor, "device": self.identifierForDevice, "owner": self.identifierForOwner ]
         inf( "Startup [identifiers: %@]", identifiers )
 
         // Sentry
@@ -129,7 +131,6 @@ class Tracker: AppConfigObserver {
             countlyConfig.appKey = countlyKey
             countlyConfig.requiresConsent = true
             countlyConfig.deviceID = self.identifierForOwner
-            countlyConfig.customMetrics = identifiers
             countlyConfig.features = [ CLYFeature.pushNotifications ]
             countlyConfig.enablePerformanceMonitoring = true
             #if !PUBLIC
@@ -182,13 +183,81 @@ class Tracker: AppConfigObserver {
         #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
                     track: .subject( "app", action: "startup", [ "version": productVersion, "build": productBuild,
-                                                                 "run": AppConfig.shared.runCount ] ) )
+                                                                 "run": AppConfig.shared.runCount ].merging( identifiers ) ) )
         #elseif TARGET_AUTOFILL
         self.event( file: file, line: line, function: function, dso: dso,
                     track: .subject( "autofill", action: "startup", [ "version": productVersion, "build": productBuild,
-                                                                      "run": AppConfig.shared.runCount ] ) )
+                                                                      "run": AppConfig.shared.runCount ].merging( identifiers ) ) )
         #endif
     }
+
+    func appeared(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
+        #if TARGET_APP
+        Countly.sharedInstance().appLoadingFinished()
+        #endif
+
+        self.event( file: file, line: line, function: function, dso: dso,
+                    track: .subject( "app", action: "appeared" ) )
+    }
+
+    func login(user: User) {
+        user.authenticatedIdentifier.success { userId in
+            guard let userId = userId
+            else { return }
+
+            let userConfig: [String: Any] = [
+                "algorithm": user.algorithm,
+                "avatar": user.avatar,
+                "biometricLock": user.biometricLock,
+                "maskPasswords": user.maskPasswords,
+                "defaultType": user.defaultType,
+                "loginType": user.loginType,
+                "sites": user.sites.count,
+            ]
+
+            let user = Sentry.User( userId: userId )
+            user.data = userConfig
+            SentrySDK.setUser( user )
+            #if TARGET_APP
+            Countly.user().username = userId as NSString
+            Countly.user().custom = userConfig as NSDictionary
+            Countly.user().save()
+            Countly.sharedInstance().recordPushNotificationToken()
+            #endif
+
+            inf( "Login [user: %@]", userId )
+            self.event( track: .subject( "user", action: "signed_in", userConfig ) )
+        }
+    }
+
+    func logout() {
+        self.event( track: .subject( "user", action: "signed_out" ) )
+
+        SentrySDK.setUser( nil )
+        #if TARGET_APP
+        Countly.user().username = NSNull()
+        Countly.user().custom = NSNull()
+        Countly.user().save()
+        #endif
+    }
+
+    func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                named name: String, _ parameters: [String: Any] = [:]) -> Screen {
+        Screen( name: name, tracker: self )
+    }
+
+    func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+               track: Tracking) -> TimedEvent {
+        dbg( file: file, line: line, function: function, dso: dso, "> %@ #%@", track.subject, track.action )
+        return TimedEvent( track: track, start: Date() )
+    }
+
+    func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+               track: Tracking) {
+        self.event( file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters() )
+    }
+
+    // MARK: --- Private ---
 
     private func identifier(for named: String, attributes: [CFString: Any] = [:]) -> UUID {
         let query: [CFString: Any] = [
@@ -215,61 +284,6 @@ class Tracker: AppConfigObserver {
         return uuid
     }
 
-    func login(user: User) {
-        user.authenticatedIdentifier.success { userId in
-            guard let userId = userId
-            else { return }
-
-            let userConfig: [String: Any] = [
-                "algorithm": user.algorithm,
-                "avatar": user.avatar,
-                "biometricLock": user.biometricLock,
-                "maskPasswords": user.maskPasswords,
-                "defaultType": user.defaultType,
-                "loginType": user.loginType,
-                "sites": user.sites.count,
-            ]
-
-            let user = Sentry.User( userId: userId )
-            user.data = userConfig
-            SentrySDK.setUser( user )
-            #if TARGET_APP
-            Countly.sharedInstance().userLogged( in: userId )
-            Countly.user().custom = userConfig as NSDictionary
-            Countly.sharedInstance().recordPushNotificationToken()
-            #endif
-
-            inf( "Login [user: %@]", userId )
-            self.event( track: .subject( "user", action: "signed_in", userConfig ) )
-        }
-    }
-
-    func logout() {
-        self.event( track: .subject( "user", action: "signed_out" ) )
-
-        SentrySDK.setUser( nil )
-        #if TARGET_APP
-        //Countly.sharedInstance().userLoggedOut() // FIXME: Countly doesn't return to the configuration's deviceIdentifier on logout.
-        Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: false )
-        #endif
-    }
-
-    func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                named name: String, _ parameters: [String: Any] = [:]) -> Screen {
-        Screen( name: name, tracker: self )
-    }
-
-    func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               track: Tracking) -> TimedEvent {
-        dbg( file: file, line: line, function: function, dso: dso, "> %@ #%@", track.subject, track.action )
-        return TimedEvent( track: track, start: Date() )
-    }
-
-    func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               track: Tracking) {
-        self.event( file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters() )
-    }
-
     private func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                        named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
         var eventParameters = parameters
@@ -279,34 +293,36 @@ class Tracker: AppConfigObserver {
         eventParameters["using"] = "autofill"
         #endif
 
-        var duration = TimeInterval( 0 )
+        var duration               = TimeInterval( 0 )
+        var untimedEventParameters = eventParameters
         if let timing = timing {
             duration = Date().timeIntervalSince( timing.start )
-            eventParameters["duration"] = "\(number: duration, as: "0.#")"
+            untimedEventParameters["duration"] = "\(number: duration, as: "0.#")"
         }
 
         // Log
-        if eventParameters.isEmpty {
+        if untimedEventParameters.isEmpty {
             dbg( file: file, line: line, function: function, dso: dso, "# %@", name )
         }
         else {
-            dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, eventParameters )
+            dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, untimedEventParameters )
         }
 
-        eventParameters.merge( [ "file": file.lastPathComponent, "line": "\(line)", "function": function ], uniquingKeysWith: { $1 } )
-        let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
+        let sourceParameters: [String: Any] = [ "file": file.lastPathComponent, "line": line, "function": function ]
+        eventParameters.merge( sourceParameters, uniquingKeysWith: { $1 } )
+        untimedEventParameters.merge( sourceParameters, uniquingKeysWith: { $1 } )
 
         // Sentry
         let sentryBreadcrumb = Breadcrumb( level: .info, category: "event" )
         sentryBreadcrumb.type = "user"
         sentryBreadcrumb.message = name
-        sentryBreadcrumb.data = eventParameters
+        sentryBreadcrumb.data = untimedEventParameters
         SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
         // Countly
         #if TARGET_APP
         Countly.sharedInstance().recordEvent(
-                name, segmentation: stringParameters,
+                name, segmentation: eventParameters.mapValues { String( reflecting: $0 ) },
                 count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
         #endif
     }
@@ -323,6 +339,9 @@ class Tracker: AppConfigObserver {
             #if TARGET_APP
             Countly.sharedInstance().giveConsent( forFeatures: [
                 .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+            if Countly.sharedInstance().deviceID() != self.identifierForOwner {
+                Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: true )
+            }
             #endif
         }
         else {
