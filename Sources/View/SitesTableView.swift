@@ -671,7 +671,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 UIView.animate( withDuration: 0, animations: {
                     self.backgroundImage.alpha = .off
                 }, completion: { _ in
-                    self.backgroundImage.image = nil
+                    if !self.isSelected {
+                        self.backgroundImage.image = nil
+                    }
                 } )
             }
 
