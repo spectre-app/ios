@@ -15,7 +15,7 @@ import UIKit
 class EffectToggleButton: UIView {
     private let button     = UIButton()
     private let checkLabel = UILabel()
-    private lazy var contentView = EffectView( circular: true, dims: true )
+    private lazy var contentView = EffectView( dims: true )
 
     var tapEffect = true
     var tracking: Tracking?
@@ -34,7 +34,6 @@ class EffectToggleButton: UIView {
                     self.checkLabel => \.textColor => Theme.current.color.body.transform { [unowned self] in
                         $0?.with( alpha: self.isSelected ? .on: .off )
                     }
-                    self.checkLabel.layer.borderWidth = self.isSelected ? 1.5: 1
                     self.checkLabel.layer => \.borderColor => (self.isSelected ? Theme.current.color.body: Theme.current.color.mute)
                 }
             }
@@ -76,18 +75,19 @@ class EffectToggleButton: UIView {
         super.init( frame: .zero )
 
         // - View
-        self.layoutMargins = .border( 12 )
+        self.layoutMargins = UIEdgeInsets( top: 0, left: 0, bottom: 12, right: 0 )
         self.insetsLayoutMarginsFromSafeArea = false
 
         self.checkLabel => \.font => Theme.current.font.callout
         self.checkLabel => \.textColor => Theme.current.color.body
         self.checkLabel => \.backgroundColor => Theme.current.color.panel
         self.checkLabel.layer => \.borderColor => Theme.current.color.mute
+        self.checkLabel.layer.borderWidth = 1
         self.checkLabel.layer.masksToBounds = true
         self.checkLabel.textAlignment = .center
         self.checkLabel.text = "✓"
 
-        self.button.contentEdgeInsets = .border( 32 )
+        self.button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 20, right: 8)
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.action( !self.isSelected ).flatMap { self.isSelected = $0 }
             self.track()
@@ -105,13 +105,13 @@ class EffectToggleButton: UIView {
         self.addSubview( self.button )
 
         // - Layout
-        self.widthAnchor.constraint( equalTo: self.heightAnchor ).isActive = true
-        self.widthAnchor.constraint( equalToConstant: 70 ).with( priority: .defaultHigh ).isActive = true
+        self.heightAnchor.constraint( equalToConstant: 88 ).with( priority: .defaultHigh + 1 ).isActive = true
 
         LayoutConfiguration( view: self.button )
                 .hugging( horizontal: .defaultHigh, vertical: .defaultHigh )
                 .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.contentView )
+                .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
                 .constrain( as: .box, margin: true ).activate()
         LayoutConfiguration( view: self.checkLabel )
                 .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }

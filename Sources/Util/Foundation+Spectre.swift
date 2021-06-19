@@ -244,19 +244,35 @@ extension URLRequest {
 }
 
 extension URLSession {
-    public static let required = URLSession( configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue(
-            queue: DispatchQueue( label: "\(productName): Network Required", qos: .userInitiated, attributes: [ .concurrent ] ) ) )
-    public static let optional = URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(
-            queue: DispatchQueue( label: "\(productName): Network Optional", qos: .background, attributes: [ .concurrent ] ) ) )
+    public static var required = LazyBox<URLSession> {
+        guard !AppConfig.shared.offline
+        else { return nil }
+
+        return URLSession( configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue(
+                queue: DispatchQueue( label: "\(productName): Network Required", qos: .userInitiated, attributes: [ .concurrent ] ) ) )
+    } unset: {
+        $0.invalidateAndCancel()
+    }
+    public static var optional = LazyBox<URLSession> {
+        guard !AppConfig.shared.offline
+        else { return nil }
+
+        return URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(
+                queue: DispatchQueue( label: "\(productName): Network Optional", qos: .background, attributes: [ .concurrent ] ) ) )
+    } unset: {
+        $0.invalidateAndCancel()
+    }
 
     public static func requiredConfiguration() -> URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
         configuration.httpShouldSetCookies = false
         configuration.httpCookieAcceptPolicy = .never
-        configuration.sharedContainerIdentifier = productGroup
+        configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
             "User-Agent": "\(productName)/\(productVersion) (\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) Mozilla/5.0 AppleWebKit/605.1.15"
         ]
+        configuration.sharedContainerIdentifier = productGroup
+        configuration.networkServiceType = .responsiveData
         if #available( iOS 13.0, * ) {
             configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
         }
@@ -265,14 +281,18 @@ extension URLSession {
 
     public static func optionalConfiguration() -> URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
-        configuration.isDiscretionary = true
         configuration.httpShouldSetCookies = false
         configuration.httpCookieAcceptPolicy = .never
-        configuration.sharedContainerIdentifier = productGroup
+        configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
             "User-Agent": "\(productName)/\(productVersion) (\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) Mozilla/5.0 AppleWebKit/605.1.15"
         ]
+        configuration.sharedContainerIdentifier = productGroup
+        configuration.networkServiceType = .background
+        configuration.isDiscretionary = true
+        configuration.waitsForConnectivity = true
         if #available( iOS 13.0, * ) {
+            configuration.allowsExpensiveNetworkAccess = false
             configuration.allowsConstrainedNetworkAccess = false
             configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
         }

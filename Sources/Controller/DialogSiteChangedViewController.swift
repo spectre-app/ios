@@ -12,7 +12,7 @@
 
 import UIKit
 
-class DialogSiteChangedViewController: DialogViewController {
+class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
 
     private let oldSite: Site
     private let newSite: Site
@@ -35,7 +35,6 @@ class DialogSiteChangedViewController: DialogViewController {
 
         self.closeButton.image = .icon( "" )
         self.backgroundView.image = self.newSite.preview.image
-        self.backgroundView.imageColor = self.newSite.preview.color
 
         self.title = "Update Your Site"
         self.message =
@@ -45,6 +44,24 @@ class DialogSiteChangedViewController: DialogViewController {
                 Highlighted items have changed.
                 Log into your site and update your account with the new values.
                 """
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        AppConfig.shared.observers.register( observer: self )
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        AppConfig.shared.observers.unregister( observer: self )
+    }
+
+    override func doUpdate() {
+        super.doUpdate()
+
+        self.backgroundView.imageColor = AppConfig.shared.themeSites ? self.newSite.preview.color: nil
     }
 
     override func populate(stackView: UIStackView) {
@@ -144,5 +161,11 @@ class DialogSiteChangedViewController: DialogViewController {
             stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldAnswerButton, newAnswerButton ],
                                                        distribution: .fillEqually, spacing: 8 ) )
         }
+    }
+
+    // MARK: --- AppConfigObserver ---
+
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        self.setNeedsUpdate()
     }
 }

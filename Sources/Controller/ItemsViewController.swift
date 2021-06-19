@@ -65,7 +65,7 @@ class ItemsViewController<M>: BaseViewController {
         self.backgroundView.layer.masksToBounds = true
 
         self.itemsView.axis = .vertical
-        self.itemsView.spacing = 32
+        self.itemsView.spacing = 40
         self.itemsView.addArrangedSubview( self.imageSpacer )
         for item in self.items {
             item.viewController = self
@@ -108,20 +108,13 @@ class ItemsViewController<M>: BaseViewController {
         }
     }
 
-    // MARK: --- KeyboardLayoutObserver ---
-
-    override func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
-        // FIXME: items child view controllers are not seeing their additionalSafeAreaInsets changes applied to their view.
-        //super.keyboardDidChange( showing: showing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
-    }
-
     // MARK: --- Updatable ---
 
     override func doUpdate() {
         super.doUpdate()
 
         if let color = self.color {
-            self.backgroundView.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: color.hue ) )
+            self.backgroundView.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: color.hue ) } )
             self.view.tintColor = Theme.current.color.tint.get()?.with( hue: color.hue )
         }
         else {

@@ -13,7 +13,7 @@
 import Foundation
 import UIKit
 
-class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
+class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConfigObserver {
 
     // MARK: --- Life ---
 
@@ -37,17 +37,19 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
+        AppConfig.shared.observers.register( observer: self )
         self.model.observers.register( observer: self )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear( animated )
 
+        AppConfig.shared.observers.unregister( observer: self )
         self.model.observers.unregister( observer: self )
     }
 
     override func doUpdate() {
-        self.color = self.model.preview.color
+        self.color = AppConfig.shared.themeSites ? self.model.preview.color: nil
         self.image = self.model.preview.image
 
         super.doUpdate()
@@ -57,6 +59,14 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver {
 
     func didChange(site: Site, at change: PartialKeyPath<Site>) {
         self.setNeedsUpdate()
+    }
+
+    // MARK: --- AppConfigObserver ---
+
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        if change == \AppConfig.themeSites {
+            self.setNeedsUpdate()
+        }
     }
 
     // MARK: --- Types ---

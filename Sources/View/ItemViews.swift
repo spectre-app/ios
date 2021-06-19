@@ -118,7 +118,7 @@ class Item<M>: AnyItem {
 
             self.contentView.axis = .vertical
             self.contentView.alignment = .center
-            self.contentView.spacing = 8
+            self.contentView.spacing = 12
             self.contentView.insetsLayoutMarginsFromSafeArea = false
 
             self.titleLabel.numberOfLines = 0
@@ -186,14 +186,12 @@ class Item<M>: AnyItem {
 
             self.titleLabel.attributedText = item.title?.attributedString( for: self.titleLabel )
             self.titleLabel.isHidden = self.titleLabel.attributedText?.string.nonEmpty == nil
-            dbg("Item[%@]: title label: %@, hidden: %d", item.title, self.titleLabel)
 
             self.captionLabel.attributedText = item.model.flatMap {
                 item.captionProvider( $0 )?.attributedString( for: self.captionLabel )
             }
             self.captionLabel.isHidden = self.captionLabel.attributedText?.string.nonEmpty == nil
 
-            dbg("Item[%@]: subitems: %@", item.title, item.subitems)
             for i in 0..<max( item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
                 let subitemView  = i < item.subitems.count ? item.subitems[i].view: nil
                 let arrangedView = i < self.subitemsStack.arrangedSubviews.count ? self.subitemsStack.arrangedSubviews[i]: nil
@@ -361,6 +359,8 @@ class BlockTapBehaviour<M>: TapBehaviour<M> {
     }
 }
 
+/// An item is hidden if any one behaviour is hidden.
+/// An item is disabled if any one behaviour is not enabled.
 class ConditionalBehaviour<M>: Behaviour<M> {
     init(mode: Effect, condition: @escaping (M) -> Bool) {
         super.init( hidden: { model in

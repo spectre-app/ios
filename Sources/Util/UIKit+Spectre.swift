@@ -135,12 +135,12 @@ extension CGSize {
     }
 }
 
-public func max(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+public func max(_ lhs: UIEdgeInsets, _ rhs: UIEdgeInsets) -> UIEdgeInsets {
     UIEdgeInsets( top: Swift.max( lhs.top, rhs.top ), left: Swift.max( lhs.left, rhs.left ),
                   bottom: Swift.max( lhs.bottom, rhs.bottom ), right: Swift.max( lhs.right, rhs.right ) )
 }
 
-public func min(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+public func min(_ lhs: UIEdgeInsets, _ rhs: UIEdgeInsets) -> UIEdgeInsets {
     UIEdgeInsets( top: Swift.min( lhs.top, rhs.top ), left: Swift.min( lhs.left, rhs.left ),
                   bottom: Swift.min( lhs.bottom, rhs.bottom ), right: Swift.min( lhs.right, rhs.right ) )
 }
@@ -639,10 +639,10 @@ extension UITraitCollection {
 }
 
 extension UIView {
-    public static func find(superviewOf child: UIView) -> Self? {
-        var superview = child.superview
+    public func findSuperview<V : UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil) -> V? {
+        var superview = self.superview
         while superview != nil {
-            if let superview = superview as? Self {
+            if let superview = superview as? V, filter?( superview ) ?? true {
                 return superview
             }
 
@@ -650,6 +650,16 @@ extension UIView {
         }
 
         return nil
+    }
+
+    public func enumerateSubviews<V : UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil, execute: (V) -> ()) {
+        for subview in self.subviews {
+            if let subview = subview as? V, filter?( subview ) ?? true {
+                execute(subview)
+            }
+
+            subview.enumerateSubviews(ofType: type, where: filter, execute: execute)
+        }
     }
 
     public var ownership: (owner: UIResponder, property: String)? {

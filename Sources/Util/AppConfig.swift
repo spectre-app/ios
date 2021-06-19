@@ -42,7 +42,7 @@ public class AppConfig: Observable {
             }
         }
     }
-    public var diagnosticsDecided:   Bool {
+    public var diagnosticsDecided: Bool {
         get {
             UserDefaults.shared.bool( forKey: #function )
         }
@@ -88,10 +88,41 @@ public class AppConfig: Observable {
             }
         }
     }
+    public var themeSites: Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.themeSites {
+                UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.themeSites ) }
+            }
+        }
+    }
+    public var offline: Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.offline {
+                if self.offline {
+                    URLSession.optional.unset()
+                    URLSession.required.unset()
+                }
+
+                UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.offline ) }
+            }
+        }
+    }
 
     // MARK: --- Life ---
 
     init() {
+        UserDefaults.shared.register( defaults: [
+            "themeSites": true,
+        ] )
+
         #if TARGET_APP
         self.isApp = true
         #endif

@@ -78,6 +78,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             self.addBehaviour( ConditionalBehaviour( mode: .hides ) { _ in Freshchat.sharedInstance().config.appKey.nonEmpty == nil } )
             self.addBehaviour( PremiumTapBehaviour() )
             self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+            self.addBehaviour( ConditionalBehaviour( mode: .enables ) { _ in !AppConfig.shared.offline } )
         }
     }
 

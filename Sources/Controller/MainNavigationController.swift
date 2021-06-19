@@ -32,6 +32,12 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
                 .constrain( as: .box ).activate()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        Tracker.shared.appeared()
+    }
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange( previousTraitCollection )
 

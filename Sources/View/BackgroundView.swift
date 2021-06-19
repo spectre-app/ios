@@ -37,8 +37,8 @@ class BackgroundView: UIView, ThemeObserver {
                 case .tint:
                     self.tintColorDidChange()
 
-                case .custom(let color):
-                    self.backgroundColor = color
+                case .custom:
+                    self.didChange( theme: Theme.current )
             }
         }
     }
@@ -175,11 +175,14 @@ class BackgroundView: UIView, ThemeObserver {
                 Theme.current.color.panel.get(), Theme.current.color.backdrop.get(),
             ] as CFArray, locations: nil )
         }
+        else if case .custom(let color) = self.mode {
+            self.backgroundColor = color()
+        }
     }
 
     // MARK: --- Types ---
 
     enum Mode {
-        case clear, gradient, backdrop, panel, tint, custom(color: UIColor?)
+        case clear, gradient, backdrop, panel, tint, custom(color: () -> UIColor?)
     }
 }
