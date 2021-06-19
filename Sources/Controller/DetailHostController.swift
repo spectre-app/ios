@@ -48,9 +48,9 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
     private lazy var detailRecognizer = UITapGestureRecognizer { [unowned self] _ in self.hide() }
     private lazy var closeButton = EffectButton( track: .subject( "details", action: "close" ),
                                                  attributedTitle: .icon( "" ) ) { [unowned self] _, _ in self.hide() }
-    private var popupConfiguration:        LayoutConfiguration<UIView>!
-    private var fixedContentConfiguration: LayoutConfiguration<UIView>!
-    private var contentSizeObservation:    NSKeyValueObservation?
+    private var popupConfiguration:             LayoutConfiguration<UIView>!
+    private var scrollableContentConfiguration: LayoutConfiguration<UIView>!
+    private var contentSizeObservation:         NSKeyValueObservation?
 
     // MARK: --- Life ---
 
@@ -101,7 +101,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                 .constrain( as: .box )
                 .activate()
 
-        self.fixedContentConfiguration = LayoutConfiguration( view: self.contentView )
+        self.scrollableContentConfiguration = LayoutConfiguration( view: self.contentView )
                 .constrain { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
                 .apply( LayoutConfiguration( view: self.scrollView )
                                 .set( false, keyPath: \.isScrollEnabled, reverses: true ) )
@@ -145,12 +145,13 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                 UIView.performWithoutAnimation {
                     self.addChild( activeController )
                     activeController.beginAppearanceTransition( true, animated: true )
-                    self.fixedContentConfiguration.isActive = detailController?.isContentScrollable ?? false
+                    self.scrollableContentConfiguration.isActive = detailController?.isContentScrollable ?? false
                     activeController.view.bounds.size = self.contentView.bounds.size
                     self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view )
                             .constrain( as: .box, margin: true ).activate()
                     self.view.isHidden = false
+                    KeyboardMonitor.shared.notify( self )
                 }
                 UIView.animate( withDuration: .short, animations: {
                     self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
@@ -196,13 +197,13 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         }
     }
 
-    override func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
-        if !self.fixedContentConfiguration.isActive {
-            super.didChange( keyboard: keyboard, showing: showing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+        if !self.scrollView.isScrollEnabled {
+            self.additionalSafeAreaInsets = .zero
+            return
         }
-        else {
-            self.additionalSafeAreaInsets = .zero - self.view.safeAreaInsets
-        }
+
+        super.didChange( keyboard: keyboard, showing: showing, changing: changing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
     }
 
     // MARK: --- UIGestureRecognizerDelegate ---

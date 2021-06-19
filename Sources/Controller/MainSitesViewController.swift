@@ -94,7 +94,7 @@ class MainSitesViewController: BaseSitesViewController {
         super.viewDidLayoutSubviews()
 
         // Add space consumed by header and top container to details safe area.
-        self.detailsHost.additionalSafeAreaInsets.top = self.topContainer.frame.maxY - self.view.safeAreaInsets.top
+        self.detailsHost.additionalSafeAreaInsets.top = max( 0, self.topContainer.frame.maxY - self.view.safeAreaInsets.top )
     }
 
     // MARK: --- UITextFieldDelegate ---
