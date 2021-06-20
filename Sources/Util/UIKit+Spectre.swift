@@ -323,23 +323,6 @@ extension UIContextMenuConfiguration {
     var indexPath: IndexPath? {
         self.identifier as? IndexPath
     }
-    var action:    UIAction? {
-        get {
-            objc_getAssociatedObject( self, #function ) as? UIAction
-        }
-        set {
-            objc_setAssociatedObject( self, #function, newValue, .OBJC_ASSOCIATION_RETAIN )
-        }
-    }
-
-    var event: Tracker.TimedEvent? {
-        get {
-            objc_getAssociatedObject( self, #function ) as? Tracker.TimedEvent
-        }
-        set {
-            objc_setAssociatedObject( self, #function, newValue, .OBJC_ASSOCIATION_RETAIN )
-        }
-    }
 
     convenience init(indexPath: IndexPath,
                      previewProvider: ((UIContextMenuConfiguration) -> UIViewController?)? = nil,
