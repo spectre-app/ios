@@ -41,7 +41,7 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange( previousTraitCollection )
 
-        Theme.current.updateTask.request()
+        Theme.current.updateTask.request( now: true, await: true )
     }
 
     // MARK: --- UINavigationControllerDelegate ---

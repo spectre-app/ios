@@ -39,17 +39,22 @@ func =><E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, attribut
           identity: propertyPath.target, propertyPath.nonnullKeyPath ?? propertyPath.nullableKeyPath, attribute.rawValue as NSString )
 }
 
-private var propertyPaths = NSCache<Identity, AnyPropertyPath>()
+private var cachedPropertyPaths = NSCache<Identity, AnyPropertyPath>()
+private var activePropertyPaths = [ Identity: WeakBox<AnyPropertyPath>]()
 
 private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, identity members: AnyObject?...)
                 -> PropertyPath<E, V> {
     let identity = Identity( members )
-    if let propertyPath = propertyPaths.object( forKey: identity ) as? PropertyPath<E, V>, propertyPath.target != nil {
+    //dbg( "[properties] finding identity(%x) with members: %@", identity.hashValue, members )
+    if let propertyPath = activePropertyPaths[identity]?.value as? PropertyPath<E, V>, propertyPath.target != nil {
+        //dbg( "[properties] found existing property path with identity(%x): %@", identity.hashValue, propertyPath )
         return propertyPath
     }
 
     let propertyPath = propertyPath()
-    propertyPaths.setObject( propertyPath, forKey: identity )
+    //dbg( "[properties] no existing property paths with identity(%x), creating: %@", identity.hashValue, propertyPath )
+    cachedPropertyPaths.setObject( propertyPath, forKey: identity )
+    activePropertyPaths[identity] = WeakBox( propertyPath )
     return propertyPath
 }
 
@@ -65,7 +70,7 @@ private class Identity: Equatable, Hashable {
     }
 
     static func ==(lhs: Identity, rhs: Identity) -> Bool {
-        lhs.members == rhs.members
+        lhs.members.elementsEqual( rhs.members )
     }
 }
 
@@ -166,7 +171,7 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
     func bind(property: AnyProperty) {
         if self.property == nil, let target = self.target {
             let cleaners = objc_getAssociatedObject( target, #function ) as? NSMutableArray ?? .init()
-            //dbg( "[properties] creating property path: %@", self )
+            //dbg( "[properties] creating property path cleaner: %@", self )
             cleaners.add( PropertyPathCleaner( target: target, propertyPath: self ) )
             objc_setAssociatedObject( target, #function, cleaners, .OBJC_ASSOCIATION_RETAIN )
         }
@@ -215,6 +220,7 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
             value = string
         }
 
+        //dbg( "[properties] assign => path %@, value: %@", self, value )
         if self.nonnullKeyPath == \UIButton.currentTitleColor,
            let target = target as? UIButton, let value = value as? UIColor {
             target.setTitleColor( value, for: .normal )

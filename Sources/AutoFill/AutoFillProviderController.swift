@@ -40,7 +40,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange( previousTraitCollection )
 
-        Theme.current.updateTask.request()
+        Theme.current.updateTask.request( now: true, await: true )
     }
 
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
