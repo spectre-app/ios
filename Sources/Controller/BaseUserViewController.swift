@@ -49,11 +49,31 @@ class BaseUserViewController: BaseViewController, UserObserver {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
+        self.view.isHidden = false
+
         // TODO: is this still necessary?
         if let user = self.user, user.userKeyFactory == nil {
             mperror( title: "User logged out", message: "User is no longer authenticated", details: user )
             self.didLogout( user: user )
         }
+    }
+
+    override func willResignActive() {
+        super.willResignActive()
+
+        self.view.isHidden = true
+    }
+
+    override func didEnterBackground() {
+        super.didEnterBackground()
+
+        self.user?.logout()
+    }
+
+    override func didBecomeActive() {
+        super.didBecomeActive()
+
+        self.view.isHidden = false
     }
 
     // MARK: --- UserObserver ---
