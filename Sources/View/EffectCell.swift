@@ -30,7 +30,7 @@ class EffectCell: UICollectionViewCell {
         }
     }
 
-    let effectView = EffectView( circular: true, dims: true )
+    let effectView = EffectView( circular: false, dims: true )
     let debugLabel = UILabel()
 
     // MARK: --- Life ---
@@ -49,7 +49,7 @@ class EffectCell: UICollectionViewCell {
 
         LayoutConfiguration( view: self.contentView )
                 .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrain { $1.widthAnchor.constraint( equalToConstant: 80 ).with( priority: .defaultHigh - 1 ) }.constrain( as: .box )
+                .constrain { $1.widthAnchor.constraint( equalToConstant: 88 ).with( priority: .defaultHigh - 1 ) }.constrain( as: .box )
                 .activate()
         LayoutConfiguration( view: self.debugLabel )
                 .constrain( as: .bottomBox ).activate()

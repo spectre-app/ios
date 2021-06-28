@@ -148,18 +148,20 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     func isUpToDate(appleID: Int? = nil, buildVersion: String? = nil) -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
+        guard let urlSession = URLSession.required.get()
+        else { return Promise( .failure( AppError.state( title: "App is in offline mode." ) ) ) }
+
         var countryCode2 = "US"
         if #available( iOS 13.0, * ) {
             if let countryCode3 = SKPaymentQueue.default().storefront?.countryCode {
                 countryCode2 = self.countryCode3to2[countryCode3] ?? countryCode2
             }
         }
-
         let searchURLString = "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\(countryCode2)&limit=1"
         guard let searchURL = URL( string: searchURLString )
         else { return Promise( .failure( AppError.internal( cause: "Couldn't resolve store URL", details: searchURLString ) ) ) }
 
-        return URLSession.required.promise( with: URLRequest( url: searchURL ) ).promise {
+        return urlSession.promise( with: URLRequest( url: searchURL ) ).promise {
             if let error = (try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any])?["errorMessage"] as? String {
                 throw AppError.issue( title: "iTunes store lookup issue.", details: error )
             }
@@ -198,14 +200,14 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     func presentStore(appleID: Int? = nil, in viewController: UIViewController) {
-        let controller = SKStoreProductViewController()
-        controller.delegate = self
-        controller.loadProduct( withParameters: [ SKStoreProductParameterITunesItemIdentifier: appleID ?? productAppleID ] ) { success, error in
+        let storeController = SKStoreProductViewController()
+        storeController.delegate = self
+        storeController.loadProduct( withParameters: [ SKStoreProductParameterITunesItemIdentifier: appleID ?? productAppleID ] ) { success, error in
             if !success || error != nil {
                 wrn( "Couldn't load store controller: %@", error )
             }
         }
-        viewController.present( controller, animated: true )
+        viewController.present( storeController, animated: true )
     }
 
     // MARK: --- Private ---

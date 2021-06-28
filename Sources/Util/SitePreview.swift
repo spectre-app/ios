@@ -79,10 +79,14 @@ class SitePreview: Equatable {
     }
 
     #if TARGET_APP
-    private static let linkPreview = SwiftLinkPreview( session: .optional,
-                                                       workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background, attributes: [ .concurrent ] ),
-                                                       responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background, attributes: [ .concurrent ] ),
-                                                       cache: InMemoryCache() )
+    private static let linkPreview = LazyBox {
+        URLSession.optional.get().flatMap {
+            SwiftLinkPreview( session: $0,
+                              workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background, attributes: [ .concurrent ] ),
+                              responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background, attributes: [ .concurrent ] ),
+                              cache: InMemoryCache() )
+        }
+    }
 
     private var updating: Promise<Bool>?
 
@@ -132,7 +136,7 @@ class SitePreview: Equatable {
 
     private static func byImageSize<S: Sequence>(_ urls: S) -> [URL] where S.Element == String? {
         urls.compactMap { self.validURL( $0 ) }
-            .compactMap { URLSession.optional.promise( with: URLRequest( method: .head, url: $0 ) ) }
+            .compactMap { URLSession.optional.get()?.promise( with: URLRequest( method: .head, url: $0 ) ) }
             .compactMap { promise -> URLResponse? in (try? promise.await())?.response }
             .filter { $0.mimeType?.contains( "image/" ) ?? false }
             .sorted { $0.expectedContentLength > $1.expectedContentLength }
@@ -149,22 +153,33 @@ class SitePreview: Equatable {
     private func loadImage(for url: String) -> Promise<Data> {
         let promise = Promise<Data>()
 
-        SitePreview.linkPreview.preview( url, onSuccess: {
-            self.extractImage( response: $0, into: promise )
-        }, onError: { error in
-            SitePreview.linkPreview.preview( "https://\(url)", onSuccess: {
+        if let linkPreview = SitePreview.linkPreview.get() {
+            linkPreview.preview( url, onSuccess: {
                 self.extractImage( response: $0, into: promise )
             }, onError: { error in
-                wrn( "[preview error] %@: %@", self.url, error )
+                linkPreview.preview( "https://\(url)", onSuccess: {
+                    self.extractImage( response: $0, into: promise )
+                }, onError: { error in
+                    wrn( "[preview error] %@: %@", self.url, error )
 
-                promise.finish( .failure( error ) )
+                    promise.finish( .failure( error ) )
+                } )
             } )
-        } )
+        }
+        else {
+            promise.finish( .failure( AppError.state( title: "App is in offline mode." ) ) )
+        }
 
         return promise
     }
 
     private func extractImage(response: Response, into promise: Promise<Data>) {
+        guard let session = URLSession.optional.get()
+        else {
+            //dbg( "[preview unavailable] %@: %@", self.url, response )
+            promise.finish( .failure( AppError.state( title: "App is in offline mode." ) ) )
+            return
+        }
         // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
         guard let imageURL = [ response.image, response.icon ]
                 .compactMap( { SitePreview.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
@@ -179,7 +194,7 @@ class SitePreview: Equatable {
 
         // Fetch the image's data.
         self.data.imageURL = imageURL.absoluteString
-        URLSession.optional.promise( with: URLRequest( url: imageURL ) ).promise { $0.0 }.finishes( promise )
+        session.promise( with: URLRequest( url: imageURL ) ).promise { $0.0 }.finishes( promise )
     }
     #endif
 }

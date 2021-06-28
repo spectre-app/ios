@@ -88,7 +88,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authenticate to unlock your biometrics-enabled user.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2011, Maarten Billemont</string>
+	<string>$(INFOPLIST_KEY_NSHumanReadableCopyright)</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose photos to use in Spectre.</string>
 	<key>UIAppFonts</key>

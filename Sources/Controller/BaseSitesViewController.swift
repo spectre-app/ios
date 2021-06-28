@@ -41,7 +41,7 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
         self.searchField.clearButtonMode = .whileEditing
         self.searchField.clearsOnBeginEditing = true
         self.searchField.keyboardAppearance = .dark
-        self.searchField.keyboardType = .URL
+        self.searchField.keyboardType = .emailAddress
         self.searchField.textContentType = .URL
         self.searchField.autocapitalizationType = .none
         self.searchField.autocorrectionType = .no

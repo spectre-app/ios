@@ -18,15 +18,8 @@ class KeyboardMonitor {
 
     fileprivate var notificationObservers     = [ Any ]()
     fileprivate var keyboardScreenFrameLatest = CGRect.null
-    fileprivate var keyboardShowing = false {
-        didSet {
-            if self.keyboardShowing != oldValue {
-                self.observers.notify {
-                    $0.didChange( keyboard: self, showing: self.keyboardShowing, fromScreenFrame: self.keyboardScreenFrameLatest, toScreenFrame: self.keyboardScreenFrameLatest, curve: nil, duration: nil )
-                }
-            }
-        }
-    }
+    fileprivate var keyboardChanging          = false
+    fileprivate var keyboardShowing           = false
 
     func install() {
         self.notificationObservers.append( NotificationCenter.default.addObserver(
@@ -41,7 +34,7 @@ class KeyboardMonitor {
 
             self.observers.notify {
                 $0.didChange(
-                        keyboard: self, showing: self.keyboardShowing,
+                        keyboard: self, showing: self.keyboardShowing, changing: self.keyboardChanging,
                         fromScreenFrame: keyboardScreenFrameFrom, toScreenFrame: keyboardScreenFrameTo,
                         curve: (notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber).flatMap( { UIView.AnimationCurve( rawValue: $0.intValue ) } ),
                         duration: (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue )
@@ -52,20 +45,56 @@ class KeyboardMonitor {
             guard ($0.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? NSNumber)?.boolValue ?? true
             else { return }
 
+            self.keyboardChanging = true
             self.keyboardShowing = true
+            self.observers.notify {
+                self.notify( $0 )
+            }
+        } )
+        self.notificationObservers.append( NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardDidShowNotification, object: nil, queue: .main ) {
+            guard ($0.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? NSNumber)?.boolValue ?? true
+            else { return }
+
+            self.keyboardChanging = false
+            self.keyboardShowing = true
+            self.observers.notify {
+                self.notify( $0 )
+            }
         } )
         self.notificationObservers.append( NotificationCenter.default.addObserver(
                 forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main ) {
             guard ($0.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? NSNumber)?.boolValue ?? true
             else { return }
 
+            self.keyboardChanging = true
             self.keyboardShowing = false
+            self.observers.notify {
+                self.notify( $0 )
+            }
+        } )
+        self.notificationObservers.append( NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardDidHideNotification, object: nil, queue: .main ) {
+            guard ($0.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? NSNumber)?.boolValue ?? true
+            else { return }
+
+            self.keyboardChanging = false
+            self.keyboardShowing = false
+            self.observers.notify {
+                self.notify( $0 )
+            }
         } )
     }
 
     func uninstall() {
         self.notificationObservers.forEach { NotificationCenter.default.removeObserver( $0 ) }
         self.notificationObservers.removeAll()
+    }
+
+    func notify(_ observer: KeyboardMonitorObserver) {
+        observer.didChange( keyboard: self, showing: self.keyboardShowing, changing: self.keyboardChanging,
+                            fromScreenFrame: self.keyboardScreenFrameLatest, toScreenFrame: self.keyboardScreenFrameLatest,
+                            curve: nil, duration: nil )
     }
 }
 
@@ -100,7 +129,7 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
 
                     self.didChange(
                             keyboard: KeyboardMonitor.shared,
-                            showing: KeyboardMonitor.shared.keyboardShowing,
+                            showing: KeyboardMonitor.shared.keyboardShowing, changing: KeyboardMonitor.shared.keyboardChanging,
                             fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
                             toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
                             curve: nil, duration: nil )
@@ -124,7 +153,7 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
      * Optionally, install constraints onto the layout guide and/or monitor the keyboard frame in the view's coordinate space.
      */
     func didAppear(constraints: ((UILayoutGuide) -> [NSLayoutConstraint]?)? = nil, observer: KeyboardMonitorObserver? = nil) {
-        self.willDisappear()
+        self.willDisappear( observer: observer )
 
         guard let view = self.owningView
         else { return }
@@ -136,24 +165,16 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
             self.add( constraints: constraints )
         }
 
-        KeyboardMonitor.shared.observers.register( observer: self ).didChange(
-                keyboard: KeyboardMonitor.shared,
-                showing: KeyboardMonitor.shared.keyboardShowing,
-                fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
-                toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
-                curve: nil, duration: nil )
+        KeyboardMonitor.shared.observers.register( observer: self )
+        KeyboardMonitor.shared.notify( self )
 
         if let observer = observer {
-            KeyboardMonitor.shared.observers.register( observer: observer ).didChange(
-                    keyboard: KeyboardMonitor.shared,
-                    showing: KeyboardMonitor.shared.keyboardShowing,
-                    fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
-                    toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
-                    curve: nil, duration: nil )
+            KeyboardMonitor.shared.observers.register( observer: observer )
+            KeyboardMonitor.shared.notify( observer )
         }
     }
 
-    func willDisappear() {
+    func willDisappear(observer: KeyboardMonitorObserver? = nil) {
         self.keyboardTopConstraint?.isActive = false
         self.keyboardLeftConstraint?.isActive = false
         self.keyboardRightConstraint?.isActive = false
@@ -165,6 +186,12 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
 
         self.constraints.forEach { $0.isActive = false }
         self.constraints.removeAll()
+
+        KeyboardMonitor.shared.observers.unregister( observer: self )
+
+        if let observer = observer {
+            KeyboardMonitor.shared.observers.unregister( observer: observer )
+        }
     }
 
     @discardableResult
@@ -175,14 +202,15 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
 
     // MARK: --- KeyboardMonitorObserver ---
 
-    func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
+                   curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         if let curve = curve, let duration = duration, let owningView = self.owningView {
             if fromScreenFrame != toScreenFrame {
-                self.updateKeyboard( frameInScreen: fromScreenFrame, transient: true )
+                self.updateKeyboardFrame( inScreen: fromScreenFrame )
                 owningView.layoutIfNeeded()
             }
             let animator = UIViewPropertyAnimator( duration: duration, curve: curve ) {
-                self.updateKeyboard( frameInScreen: toScreenFrame )
+                self.updateKeyboardFrame( inScreen: toScreenFrame )
                 self.constraints.forEach { $0.isActive = showing }
 
                 owningView.layoutIfNeeded()
@@ -190,22 +218,22 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
             animator.startAnimation()
         }
         else {
-            self.updateKeyboard( frameInScreen: toScreenFrame )
+            self.updateKeyboardFrame( inScreen: toScreenFrame )
             self.constraints.forEach { $0.isActive = showing }
         }
     }
 
     // MARK: --- Private ---
 
-    private func updateKeyboard(frameInScreen keyboardScreenFrame: CGRect, transient: Bool = false) {
-        guard let view = self.owningView, let window = view.window
-        else { return }
-
+    private func updateKeyboardFrame(inScreen keyboardScreenFrame: CGRect) {
         if keyboardScreenFrame == .null {
             self.keyboardFrame = .null
             self.keyboardInsets = .zero
         }
         else {
+            guard let view = self.owningView, let window = view.window
+            else { return }
+
             // Bug: iOS doesn't include window translation when converting screen coordinates.
             // Usually screen and window bounds are identical, but not always (eg. app extension windows).
             // Best we can do is guess the vertical offset in the case of iPhone (only top edge offset).
@@ -242,5 +270,6 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
 }
 
 protocol KeyboardMonitorObserver {
-    func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?)
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
+                   curve: UIView.AnimationCurve?, duration: TimeInterval?)
 }

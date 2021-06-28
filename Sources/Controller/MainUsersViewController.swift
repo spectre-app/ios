@@ -92,12 +92,9 @@ class MainUsersViewController: BaseUsersViewController {
         } )
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ),
                                                           image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
-            let controller = SFSafariViewController( url: URL( string: "https://chat.spectre.app" )! )
-            controller.dismissButtonStyle = .close
-            controller.modalPresentationStyle = .pageSheet
-            controller.preferredBarTintColor = Theme.current.color.backdrop.get()
-            controller.preferredControlTintColor = Theme.current.color.tint.get()
-            return self.present( controller, animated: true )
+            if let url = URL( string: "https://chat.spectre.app" ) {
+                self.present( SFSafariViewController( url: url ), animated: true )
+            }
         } )
 
         self.userActions = [
@@ -160,7 +157,7 @@ class MainUsersViewController: BaseUsersViewController {
     // MARK: --- Private ---
 
     private func doDelete(userFile: Marshal.UserFile) {
-        let alert = UIAlertController( title: "Delete User?", message:
+        let alertController = UIAlertController( title: "Delete User?", message:
         """
         This will delete the user and all of its recorded state:
         \(userFile)
@@ -169,8 +166,8 @@ class MainUsersViewController: BaseUsersViewController {
         When re-creating the user, make sure to use the exact same name and personal secret.
         The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
         """, preferredStyle: .alert )
-        alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-        alert.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak userFile] _ in
+        alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+        alertController.addAction( UIAlertAction( title: "Delete", style: .destructive ) { [weak userFile] _ in
             guard let userFile = userFile
             else { return }
             trc( "Trashing user: %@", userFile )
@@ -182,11 +179,11 @@ class MainUsersViewController: BaseUsersViewController {
                 mperror( title: "Couldn't delete user", error: error )
             }
         } )
-        self.present( alert, animated: true )
+        self.present( alertController, animated: true )
     }
 
     private func doReset(userFile: Marshal.UserFile) {
-        let alert = UIAlertController( title: "Reset Personal Secret?", message:
+        let alertController = UIAlertController( title: "Reset Personal Secret?", message:
         """
         This will allow you to change the personal secret for:
         \(userFile)
@@ -194,12 +191,12 @@ class MainUsersViewController: BaseUsersViewController {
         Note: When your personal secret changes, all site passwords and other generated content will also change accordingly.
         The personal secret can always be changed back to revert to your current site passwords and generated content.
         """, preferredStyle: .alert )
-        alert.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-        alert.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in
+        alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+        alertController.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in
             trc( "Resetting user: %@", userFile )
 
             userFile?.resetKey = true
         } )
-        self.present( alert, animated: true )
+        self.present( alertController, animated: true )
     }
 }

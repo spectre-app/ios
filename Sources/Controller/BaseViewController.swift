@@ -11,6 +11,7 @@
 //==============================================================================
 
 import UIKit
+import SafariServices
 
 class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
     var trackScreen = true
@@ -95,7 +96,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
 
     override func viewWillDisappear(_ animated: Bool) {
         self.notificationObservers.forEach { NotificationCenter.default.removeObserver( $0 ) }
-        self.keyboardLayoutGuide.willDisappear()
+        self.keyboardLayoutGuide.willDisappear( observer: self )
         self.updateTask.cancel()
 
         super.viewWillDisappear( animated )
@@ -123,9 +124,28 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
 
     // MARK: --- KeyboardMonitorObserver ---
 
-    func didChange(keyboard: KeyboardMonitor, showing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
-        self.additionalSafeAreaInsets = .zero
-        self.additionalSafeAreaInsets = self.keyboardLayoutGuide.keyboardInsets - self.view.safeAreaInsets
+    var changingScrollViews = [ UIScrollView ]()
+
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+        if let _ = self.view.findSuperview( ofType: UIScrollView.self, where: { $0.isScrollEnabled } ) {
+            self.additionalSafeAreaInsets = .zero
+
+            // When inside a scrolling container, need to temporarily disable all inner scrolling.
+            // This is necessary to allow correct keyboard inset adjustment of the outer scroller when first responder is inside an inner scroller.
+            if changing {
+                self.view.enumerateSubviews( ofType: UIScrollView.self, where: { $0.isScrollEnabled } ) { v in
+                    self.changingScrollViews.append( v )
+                    v.isScrollEnabled = false
+                }
+            }
+            else {
+                self.changingScrollViews.forEach { $0.isScrollEnabled = true }
+                self.changingScrollViews.removeAll()
+            }
+            return
+        }
+
+        self.additionalSafeAreaInsets = max( .zero, self.keyboardLayoutGuide.keyboardInsets - (self.view.safeAreaInsets - self.additionalSafeAreaInsets) )
     }
 
     // MARK: --- Updatable ---

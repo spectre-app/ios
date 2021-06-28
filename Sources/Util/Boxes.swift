@@ -65,3 +65,33 @@ extension WeakBox: Hashable where E: Hashable {
         hasher.combine( self.value?.hashValue )
     }
 }
+
+public class LazyBox<E> {
+    private let valueFactory:  () -> E?
+    private let valueDisposal: (E) -> ()
+    private var value: E? {
+        didSet {
+            oldValue.flatMap { self.valueDisposal( $0 ) }
+        }
+    }
+
+    public init(_ valueFactory: @escaping () -> E?, unset valueDisposal: @escaping (E) -> () = { _ in }) {
+        self.valueFactory = valueFactory
+        self.valueDisposal = valueDisposal
+    }
+
+    public func get() -> E? {
+        if let value = self.value {
+            return value
+        }
+        if let value = self.valueFactory() {
+            self.value = value
+            return value
+        }
+        return nil
+    }
+
+    public func unset() {
+        self.value = nil
+    }
+}

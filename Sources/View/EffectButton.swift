@@ -50,7 +50,7 @@ class EffectButton: EffectView {
 
     private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
-                                                                     .with( priority: UILayoutPriority( 752 ) )
+                                                                     .with( priority: .defaultHigh + 2 )
 
     // MARK: --- Life ---
 
@@ -59,7 +59,7 @@ class EffectButton: EffectView {
     }
 
     convenience init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
-                     border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = true, rounding: CGFloat = 4,
+                     border: CGFloat = 0, background: Bool = true, square: Bool = false, circular: Bool = false, rounding: CGFloat = 12,
                      dims: Bool = false, action: @escaping () -> Void) {
         self.init( track: track, image: image, title: title, attributedTitle: attributedTitle,
                    border: border, background: background, square: square, circular: circular, rounding: rounding,
@@ -67,11 +67,11 @@ class EffectButton: EffectView {
     }
 
     init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
-         border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = true, rounding: CGFloat = 4, dims: Bool = false,
+         border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = false, rounding: CGFloat = 12, dims: Bool = false,
          action: ((UIEvent, EffectButton) -> Void)? = nil) {
         self.tracking = track
         self.action = action
-        super.init( border: border, background: background, circular: circular, rounding: rounding, dims: false )
+        super.init( border: border, background: background, circular: circular, rounding: rounding, dims: dims )
 
         self.image = image
         self.title = title

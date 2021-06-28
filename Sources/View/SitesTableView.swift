@@ -157,6 +157,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         (cell as? CellAppearance)?.didEndDisplaying()
     }
 
+    private var previewEvents = [ IndexPath: Tracker.TimedEvent ]()
+
     @available( iOS 13, * )
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         (self.sitesDataSource.element( at: indexPath )?.site).flatMap { site in
@@ -166,13 +168,20 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                         UIMenu( title: site.siteName, children: [
                             UIAction( title: "Delete", image: .icon( "" ),
                                       identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
-                                configuration.action = action
                                 site.user.sites.removeAll { $0 === site }
                             }
-                        ] + self.siteActions.filter( { $0.appearance.contains( .menu ) } ).map { siteAction in
-                            UIAction( title: siteAction.title, image: .icon( siteAction.icon ),
-                                      identifier: siteAction.tracking.flatMap { UIAction.Identifier( $0.action ) } ) { action in
-                                configuration.action = action
+                        ] + self.siteActions.filter { siteAction in
+                            siteAction.appearance.contains( .menu )
+                                    && (InAppFeature.premium.isEnabled || !siteAction.appearance.contains( .premium ))
+                        }.map { siteAction in
+                            UIAction( title: siteAction.title, image: .icon( siteAction.icon ) ) { action in
+                                if let tracking = siteAction.tracking {
+                                    self.previewEvents[indexPath]?.end( [ "action": tracking.action ] )
+                                    Tracker.shared.event( track: tracking.with( parameters: [
+                                        "appearance": "menu"
+                                    ] ) )
+                                }
+
                                 siteAction.action( site, nil, .menu )
                             }
                         } )
@@ -185,7 +194,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        configuration.event = Tracker.shared.begin( track: .subject( "sites.site", action: "menu" ) )
+        self.previewEvents[indexPath] = Tracker.shared.begin( track: .subject( "sites.site", action: "menu" ) )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.sitesDataSource.element( at: indexPath )?.site.preview.color?.with( alpha: .long )
@@ -197,7 +206,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
-        configuration.event?.end( [ "action": configuration.action?.identifier.rawValue ?? "none" ] )
+        self.previewEvents[indexPath]?.end( [ "action": "none" ] )
 
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = self.sitesDataSource.element( at: indexPath )?.site.preview.color?.with( alpha: .long )
@@ -384,9 +393,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 }
             }
         }
-        private var mode     = SpectreKeyPurpose.authentication {
+        private var purpose  = SpectreKeyPurpose.authentication {
             didSet {
-                if oldValue != self.mode {
+                if oldValue != self.purpose {
                     self.updateTask.request()
                 }
             }
@@ -395,7 +404,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         private let backgroundImage = BackgroundView( mode: .clear )
         private let maskButton      = EffectButton( track: .subject( "sites.site", action: "mask" ),
                                                     image: .icon( "" ), border: 0, background: false )
-        private let modeButton      = EffectButton( track: .subject( "sites.site", action: "mode" ),
+        private let purposeButton   = EffectButton( track: .subject( "sites.site", action: "purpose" ),
                                                     image: .icon( "" ), border: 0, background: false )
         private let newButton       = EffectButton( track: .subject( "sites.site", action: "add" ),
                                                     image: .icon( "" ), border: 0, background: false )
@@ -406,7 +415,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         private let nameLabel     = UILabel()
         private let separatorView = UIView()
 
-        private lazy var modeStack    = UIStackView( arrangedSubviews: [ self.maskButton, self.modeButton ] )
+        private lazy var modeStack    = UIStackView( arrangedSubviews: [ self.maskButton, self.purposeButton ] )
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.nameLabel ] )
 
         private var selectionConfiguration: LayoutConfiguration<SiteCell>!
@@ -462,26 +471,34 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 self.unmasked = !self.unmasked
             }
 
-            self.modeButton.tapEffect = false
-            self.modeButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                switch self.mode {
+            self.purposeButton.tapEffect = false
+            self.purposeButton.action( for: .primaryActionTriggered ) { [unowned self] in
+                switch self.purpose {
                     case .authentication:
-                        self.mode = .identification
+                        self.purpose = .identification
                     case .identification:
-                        self.mode = .recovery
+                        self.purpose = .recovery
                     case .recovery:
-                        self.mode = .authentication
+                        self.purpose = .authentication
                     @unknown default:
-                        self.mode = .authentication
+                        self.purpose = .authentication
                 }
             }
-            self.modeButton.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
+            self.purposeButton.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
                 guard let site = self.site, case .began = $0.state
                 else { return }
 
-                self.sitesView?.siteActions.filter { $0.appearance.contains( .mode ) }.forEach {
-                    $0.tracking.flatMap { Tracker.shared.event( track: $0 ) }
-                    $0.action( site, self.mode, .menu )
+                self.sitesView?.siteActions.filter { siteAction in
+                    siteAction.appearance.contains( .mode )
+                            && (InAppFeature.premium.isEnabled || !siteAction.appearance.contains( .premium ))
+                }.forEach { siteAction in
+                    if let tracking = siteAction.tracking {
+                        Tracker.shared.event( track: tracking.with( parameters: [
+                            "purpose": self.purpose,
+                            "appearance": "mode"
+                        ] ) )
+                    }
+                    siteAction.action( site, self.purpose, .mode )
                 }
             } )
 
@@ -572,12 +589,16 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             super.didMoveToSuperview()
 
             self.actionStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-            self.sitesView?.siteActions.filter( { $0.appearance.contains( .cell ) } ).forEach { action in
+            self.sitesView?.siteActions.filter { siteAction in
+                siteAction.appearance.contains( .cell )
+                        && (InAppFeature.premium.isEnabled || !siteAction.appearance.contains( .premium ))
+            }.forEach { siteAction in
                 self.actionStack.addArrangedSubview(
-                        EffectButton( track: action.tracking, image: .icon( action.icon ), border: 0, background: false ) {
+                        EffectButton( track: siteAction.tracking?.with( parameters: [ "appearance": "cell" ] ),
+                                      image: .icon( siteAction.icon ), border: 0, background: false ) {
                             [unowned self] _, _ in
                             if let site = self.site {
-                                action.action( site, self.mode, .cell )
+                                siteAction.action( site, self.purpose, .cell )
                             }
                         } )
             }
@@ -587,7 +608,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             super.prepareForReuse()
 
             self.unmasked = false
-            self.mode = .authentication
+            self.purpose = .authentication
             self.backgroundImage.image = nil
         }
 
@@ -652,16 +673,29 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             else { return }
 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
-            self.separatorView.backgroundColor = Theme.current.color.tint.get()?.with( hue: self.site?.preview.color?.hue )
-
-            if self.isSelected {
-                self.backgroundImage.mode = .custom( color: Theme.current.color.panel.get()?.with( hue: self.site?.preview.color?.hue ) )
-                self.backgroundImage.image = self.site?.preview.image
-                self.backgroundImage.imageColor = self.site?.preview.color
-                self.backgroundImage.alpha = .on
+            if AppConfig.shared.themeSites, let siteColor = self.site?.preview.color {
+                self.separatorView => \.backgroundColor => Theme.current.color.tint.transform { $0?.with( hue: siteColor.hue ) }
+                self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
+                self.backgroundImage.imageColor = siteColor
             }
             else {
-                self.backgroundImage.alpha = .off
+                self.separatorView => \.backgroundColor => Theme.current.color.tint
+                self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get() } )
+                self.backgroundImage.imageColor = nil
+            }
+
+            if self.isSelected {
+                self.backgroundImage.alpha = .on
+                self.backgroundImage.image = self.site?.preview.image
+            }
+            else {
+                UIView.animate( withDuration: 0, animations: {
+                    self.backgroundImage.alpha = .off
+                }, completion: { _ in
+                    if !self.isSelected {
+                        self.backgroundImage.image = nil
+                    }
+                } )
             }
 
             let isNew = self.site?.isNew ?? false
@@ -677,24 +711,24 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self.maskButton.image = self.unmasked ? .icon( "", invert: true ): .icon( "", invert: true )
             if !InAppFeature.premium.isEnabled {
-                self.mode = .authentication
+                self.purpose = .authentication
             }
-            switch self.mode {
+            switch self.purpose {
                 case .authentication:
-                    self.modeButton.image = .icon( "" )
+                    self.purposeButton.image = .icon( "" )
                 case .identification:
-                    self.modeButton.image = .icon( "" )
+                    self.purposeButton.image = .icon( "" )
                 case .recovery:
-                    self.modeButton.image = .icon( "" )
+                    self.purposeButton.image = .icon( "" )
                 @unknown default:
-                    self.modeButton.image = nil
+                    self.purposeButton.image = nil
             }
 
             self.maskButton.isSelected = self.unmasked
             self.maskButton.isUserInteractionEnabled = (self.site?.user.maskPasswords ?? false)
             self.maskButton.alpha = self.maskButton.isUserInteractionEnabled ? .on: .off
-            self.modeButton.isUserInteractionEnabled = InAppFeature.premium.isEnabled
-            self.modeButton.alpha = self.modeButton.isUserInteractionEnabled ? .on: .off
+            self.purposeButton.isUserInteractionEnabled = InAppFeature.premium.isEnabled
+            self.purposeButton.alpha = self.purposeButton.isUserInteractionEnabled ? .on: .off
             self.modeStack.isUserInteractionEnabled = self.isSelected
             self.modeStack.alpha = self.modeStack.isUserInteractionEnabled ? .on: .off
             self.actionStack.isUserInteractionEnabled = self.isSelected && !isNew
@@ -703,13 +737,13 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on: .off
             self.selectionConfiguration.isActive = self.isSelected
 
-            self.resultLabel.isSecureTextEntry = (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.mode == .authentication
+            self.resultLabel.isSecureTextEntry = (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
             self.resultLabel.isUserInteractionEnabled = !self.resultLabel.isSecureTextEntry
             self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on: .off
 
             self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3: Theme.current.font.subheadline)
 
-            self.site?.result( keyPurpose: self.mode ).token.then( on: .main ) {
+            self.site?.result( keyPurpose: self.purpose ).token.then( on: .main ) {
                 do {
                     self.resultLabel.text = try $0.get()
                 }
@@ -800,7 +834,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let action:     (Site, SpectreKeyPurpose?, Appearance) -> Void
 
         enum Appearance {
-            case cell, menu, mode
+            case cell, menu, mode, premium
         }
     }
 }

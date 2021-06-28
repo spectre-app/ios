@@ -12,6 +12,7 @@
 
 import UIKit
 
+#if DEBUG
 class WTFLabel: UILabel {
     override var isHidden: Bool {
         get {
@@ -22,3 +23,4 @@ class WTFLabel: UILabel {
         }
     }
 }
+#endif

@@ -11,6 +11,7 @@
 //==============================================================================
 
 import UIKit
+import SafariServices
 
 class MainSitesViewController: BaseSitesViewController {
     private let userButton  = EffectButton( track: .subject( "sites", action: "user" ) )
@@ -45,16 +46,16 @@ class MainSitesViewController: BaseSitesViewController {
         self.searchField.rightView = self.userButton
         self.sitesTableView.siteActions = [
             .init( tracking: .subject( "sites.site", action: "settings" ),
-                   title: "Details", icon: .icon( "", invert: true ), appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
+                   title: "Details", icon: .icon( "", invert: true ), appearance: [ .cell, .menu ] ) { [unowned self] site, purpose, appearance in
                 self.detailsHost.show( DetailSiteViewController( model: site ), sender: self )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy", icon: .icon( "" ), appearance: [ .cell ] ) { [unowned self] site, mode, appearance in
-                site.result( keyPurpose: mode! ).copy( fromView: self.view, trackingFrom: "site>cell" )
+                   title: "Copy", icon: .icon( "" ), appearance: [ .cell ] ) { [unowned self] site, purpose, appearance in
+                site.result( keyPurpose: purpose ?? .authentication ).copy( fromView: self.view, trackingFrom: "site>cell" )
             },
             .init( tracking: .subject( "sites.site", action: "mode" ),
-                   title: "Configure", icon: .icon( "" ), appearance: [ .mode ] ) { [unowned self] site, mode, appearance in
-                switch mode {
+                   title: "Configure", icon: .icon( "" ), appearance: [ .mode ] ) { [unowned self] site, purpose, appearance in
+                switch purpose {
                     case .authentication:
                         self.detailsHost.show( DetailSiteViewController( model: site, focus: DetailSiteViewController.PasswordTypeItem.self ), sender: self )
                     case .identification:
@@ -65,13 +66,23 @@ class MainSitesViewController: BaseSitesViewController {
                         self.detailsHost.show( DetailSiteViewController( model: site ), sender: self )
                 }
             },
-            .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy Login", icon: .icon( "" ), appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
-                site.result( keyPurpose: .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
+            .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.authentication)" ] ),
+                   title: "Copy Password", icon: .icon( "" ), appearance: [ .menu ] ) { [unowned self] site, purpose, appearance in
+                site.result( keyPurpose: purpose ?? .authentication ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
-            .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy Password", icon: .icon( "" ), appearance: [ .menu ] ) { [unowned self] site, mode, appearance in
-                site.result( keyPurpose: .authentication ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
+            .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.identification)" ] ),
+                   title: "Copy Login", icon: .icon( "" ), appearance: [ .menu, .premium ] ) { [unowned self] site, purpose, appearance in
+                site.result( keyPurpose: purpose ?? .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
+            },
+            .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.recovery)" ] ),
+                   title: "Copy Security Answer", icon: .icon( "" ), appearance: [ .menu, .premium ] ) { [unowned self] site, purpose, appearance in
+                site.result( keyPurpose: purpose ?? .recovery ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
+            },
+            .init( tracking: .subject( "sites.site", action: "open" ),
+                   title: "Open Site", icon: .icon( "" ), appearance: [ .menu, .premium ] ) { [unowned self] site, purpose, appearance in
+                if let url = URL( string: site.url ?? "https://\(site.siteName)" ) {
+                    self.present( SFSafariViewController( url: url ), animated: true )
+                }
             },
         ]
 
@@ -94,7 +105,7 @@ class MainSitesViewController: BaseSitesViewController {
         super.viewDidLayoutSubviews()
 
         // Add space consumed by header and top container to details safe area.
-        self.detailsHost.additionalSafeAreaInsets.top = self.topContainer.frame.maxY - self.view.safeAreaInsets.top
+        self.detailsHost.additionalSafeAreaInsets.top = max( 0, self.topContainer.frame.maxY - self.view.safeAreaInsets.top )
     }
 
     // MARK: --- UITextFieldDelegate ---

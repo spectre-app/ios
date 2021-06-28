@@ -49,7 +49,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
         self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: nil, appearance: [ .cell ], action: { _, _, _ in } ),
             .init( tracking: .subject( "sites.site", action: "fill" ),
-                   title: "Fill", icon: .icon( "" ), appearance: [ .cell, .menu ] ) { [unowned self] site, mode, appearance in
+                   title: "Fill", icon: .icon( "" ), appearance: [ .cell, .menu ] ) { [unowned self] site, purpose, appearance in
                 switch appearance {
                     case .cell:
                         self.completeRequest( site: site, trackingFrom: "site>cell" )
@@ -57,6 +57,8 @@ class AutoFillSitesViewController: BaseSitesViewController {
                         self.completeRequest( site: site, trackingFrom: "site>cell>menu" )
                     case .mode:
                         self.completeRequest( site: site, trackingFrom: "site>cell>mode" )
+                    case .premium:
+                        ()
                 }
             },
         ]
