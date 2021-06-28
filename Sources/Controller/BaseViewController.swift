@@ -11,6 +11,7 @@
 //==============================================================================
 
 import UIKit
+import SafariServices
 
 class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
     var trackScreen = true

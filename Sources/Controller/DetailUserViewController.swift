@@ -249,10 +249,10 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             super.init( subitems: [
                 ButtonItem( track: .subject( "user", action: "export" ), value: { _ in (label: "Export", image: nil) }, action: { item in
                     if let user = item.model {
-                        let controller = ExportViewController( user: user )
-                        controller.popoverPresentationController?.sourceView = item.view
-                        controller.popoverPresentationController?.sourceRect = item.view.bounds
-                        item.viewController?.present( controller, animated: true )
+                        let exportController = ExportViewController( user: user )
+                        exportController.popoverPresentationController?.sourceView = item.view
+                        exportController.popoverPresentationController?.sourceRect = item.view.bounds
+                        item.viewController?.present( exportController, animated: true )
                     }
                 } ),
                 ButtonItem( track: .subject( "user", action: "app" ), value: { _ in (label: "Settings", image: nil) }, action: { item in
@@ -295,7 +295,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 guard let user = item.model, let viewController = item.viewController
                 else { return }
 
-                let controller = UIAlertController( title: "User Algorithm", message:
+                let alertController = UIAlertController( title: "User Algorithm", message:
                 """
                 New protections roll out in new algorithm versions. Always use the latest algorithm to protect your sites.
 
@@ -303,11 +303,11 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         "\(user.userName) is using the latest algorithm.":
                         "!! \(user.userName) is NOT using the latest algorithm. !!")
                 """, preferredStyle: .actionSheet )
-                controller.popoverPresentationController?.sourceView = item.view
-                controller.popoverPresentationController?.sourceRect = item.view.bounds
+                alertController.popoverPresentationController?.sourceView = item.view
+                alertController.popoverPresentationController?.sourceRect = item.view.bounds
                 if user.algorithm < .last {
                     let upgrade = user.algorithm.advanced( by: 1 )
-                    controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
+                    alertController.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: upgrade ).or(
                                     UIAlertController.authenticate(
                                             userName: user.userName, title: "Upgrade", message: "Your personal secret is required to perform the upgrade.",
@@ -321,7 +321,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 }
                 if user.algorithm > .first {
                     let downgrade = user.algorithm.advanced( by: -1 )
-                    controller.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
+                    alertController.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: downgrade ).or(
                                     UIAlertController.authenticate(
                                             userName: user.userName, title: "Downgrade", message: "Your personal secret is required to perform the downgrade.",
@@ -333,8 +333,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                             }
                     } )
                 }
-                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                viewController.present( controller, animated: true )
+                alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                viewController.present( alertController, animated: true )
             } )
         }
 

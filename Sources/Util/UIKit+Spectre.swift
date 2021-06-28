@@ -12,6 +12,18 @@
 
 import UIKit
 import Macaw
+import SafariServices
+
+extension SFSafariViewController {
+    convenience init(url: URL) {
+        self.init( url: url, configuration: Configuration() )
+
+        self.dismissButtonStyle = .close
+        self.modalPresentationStyle = .pageSheet
+        self.preferredBarTintColor = Theme.current.color.backdrop.get()
+        self.preferredControlTintColor = Theme.current.color.tint.get()
+    }
+}
 
 extension CGPath {
     static func between(_ fromRect: CGRect, _ toRect: CGRect) -> CGPath {
@@ -323,23 +335,6 @@ extension UIContextMenuConfiguration {
     var indexPath: IndexPath? {
         self.identifier as? IndexPath
     }
-    var action:    UIAction? {
-        get {
-            objc_getAssociatedObject( self, #function ) as? UIAction
-        }
-        set {
-            objc_setAssociatedObject( self, #function, newValue, .OBJC_ASSOCIATION_RETAIN )
-        }
-    }
-
-    var event: Tracker.TimedEvent? {
-        get {
-            objc_getAssociatedObject( self, #function ) as? Tracker.TimedEvent
-        }
-        set {
-            objc_setAssociatedObject( self, #function, newValue, .OBJC_ASSOCIATION_RETAIN )
-        }
-    }
 
     convenience init(indexPath: IndexPath,
                      previewProvider: ((UIContextMenuConfiguration) -> UIViewController?)? = nil,
@@ -639,7 +634,7 @@ extension UITraitCollection {
 }
 
 extension UIView {
-    public func findSuperview<V : UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil) -> V? {
+    public func findSuperview<V: UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil) -> V? {
         var superview = self.superview
         while superview != nil {
             if let superview = superview as? V, filter?( superview ) ?? true {
@@ -652,13 +647,13 @@ extension UIView {
         return nil
     }
 
-    public func enumerateSubviews<V : UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil, execute: (V) -> ()) {
+    public func enumerateSubviews<V: UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil, execute: (V) -> ()) {
         for subview in self.subviews {
             if let subview = subview as? V, filter?( subview ) ?? true {
-                execute(subview)
+                execute( subview )
             }
 
-            subview.enumerateSubviews(ofType: type, where: filter, execute: execute)
+            subview.enumerateSubviews( ofType: type, where: filter, execute: execute )
         }
     }
 

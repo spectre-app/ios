@@ -41,10 +41,18 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange( previousTraitCollection )
 
-        Theme.current.updateTask.request()
+        Theme.current.updateTask.request( now: true, await: true )
     }
 
     // MARK: --- UINavigationControllerDelegate ---
+
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        viewController.viewIfLoaded?.alpha = .off
+    }
+
+    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+        viewController.viewIfLoaded?.alpha = .on
+    }
 
     func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation,
                               from fromVC: UIViewController, to toVC: UIViewController)
@@ -91,6 +99,8 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
             }
 
             else {
+                toView.alpha = .on
+                toView.transform = .identity
                 transitionContext.containerView.addSubview( toView )
                 transitionContext.completeTransition( true )
             }
