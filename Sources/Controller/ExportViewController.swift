@@ -92,18 +92,18 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
 
             trc( "Requested export of %@, format: %@, redacted: %d", user, self.format, self.redacted )
 
-            let item       = Marshal.ActivityItem( user: user, format: self.format, redacted: self.redacted )
-            let controller = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
-            controller.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
+            let item               = Marshal.ActivityItem( user: user, format: self.format, redacted: self.redacted )
+            let activityController = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
+            activityController.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
                 pii( "Export activity completed: %d, error: %@", completed, activityError )
 
-                item.activityViewController( controller, completed: completed, forActivityType: activityType,
+                item.activityViewController( activityController, completed: completed, forActivityType: activityType,
                                              returnedItems: returnedItems, activityError: activityError )
                 self.dismiss( animated: true )
             }
-            controller.popoverPresentationController?.sourceView = self.exportButton
-            controller.popoverPresentationController?.sourceRect = self.exportButton.bounds
-            self.present( controller, animated: true )
+            activityController.popoverPresentationController?.sourceView = self.exportButton
+            activityController.popoverPresentationController?.sourceRect = self.exportButton.bounds
+            self.present( activityController, animated: true )
         }
 
         self.contentView.axis = .vertical

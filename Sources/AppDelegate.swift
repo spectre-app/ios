@@ -65,44 +65,44 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Diagnostics decision
         if !AppConfig.shared.diagnosticsDecided {
-            let controller = UIAlertController( title: "Diagnostics", message:
+            let alertController = UIAlertController( title: "Diagnostics", message:
             """
             If a bug, crash or issue should happen, Diagnostics will let us know and fix it.
 
             It's just code and statistics, personal information is sacred and cannot leave your device.
             """, preferredStyle: .actionSheet )
-            controller.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
+            alertController.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
                 AppConfig.shared.diagnostics = false
                 AppConfig.shared.diagnosticsDecided = true
                 self.launchDecisions( completion: completion )
             } )
-            controller.addAction( UIAlertAction( title: "Engage", style: .default ) { _ in
+            alertController.addAction( UIAlertAction( title: "Engage", style: .default ) { _ in
                 AppConfig.shared.diagnostics = true
                 AppConfig.shared.diagnosticsDecided = true
                 self.launchDecisions( completion: completion )
             } )
-            controller.popoverPresentationController?.sourceView = window
-            controller.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
-            window.rootViewController?.present( controller, animated: true )
+            alertController.popoverPresentationController?.sourceView = window
+            alertController.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
+            window.rootViewController?.present( alertController, animated: true )
             return
         }
 
         // Notifications decision
         if !AppConfig.shared.notificationsDecided {
-            let controller = UIAlertController( title: "Keeping Safe", message:
+            let alertController = UIAlertController( title: "Keeping Safe", message:
             """
             Things move fast in the online world.
 
             If you enable notifications, we can inform you of known breaches and keep you current on important security events.
             """, preferredStyle: .actionSheet )
-            controller.popoverPresentationController?.sourceView = window
-            controller.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
-            controller.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
+            alertController.popoverPresentationController?.sourceView = window
+            alertController.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
+            alertController.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
                 Tracker.shared.enableNotifications( consented: false ) { _ in
                     self.launchDecisions( completion: completion )
                 }
             } )
-            window.rootViewController?.present( controller, animated: true )
+            window.rootViewController?.present( alertController, animated: true )
         }
     }
 
@@ -247,12 +247,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     }
 
                     do {
-                        let importFile = try Marshal.UserFile( data: importData, origin: url )
-                        let controller = UIAlertController( title: importFile.userName, message:
+                        let importFile      = try Marshal.UserFile( data: importData, origin: url )
+                        let alertController = UIAlertController( title: importFile.userName, message:
                         """
                         Import this user into Spectre or sign-in from its current location?
                         """, preferredStyle: .alert )
-                        controller.addAction( UIAlertAction( title: "Import", style: .default ) { _ in
+                        alertController.addAction( UIAlertAction( title: "Import", style: .default ) { _ in
                             Marshal.shared.import( data: importData, viewController: viewController )
                                           .failure { error in
                                               mperror( title: "Couldn't import user", error: error )
@@ -263,7 +263,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                               }
                                           }
                         } )
-                        controller.addAction( UIAlertAction( title: "Sign In (In-Place)", style: .default ) { _ in
+                        alertController.addAction( UIAlertAction( title: "Sign In (In-Place)", style: .default ) { _ in
                             UIAlertController.authenticate( userFile: importFile, title: importFile.userName, in: viewController, action: "Log In" )
                                              .success {
                                                  navigationController?.pushViewController(
@@ -278,12 +278,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                  }
                                              }
                         } )
-                        controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                        alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
                             if securityScoped {
                                 url.stopAccessingSecurityScopedResource()
                             }
                         } )
-                        viewController.present( controller, animated: true )
+                        viewController.present( alertController, animated: true )
                     }
                     catch {
                         mperror( title: "Couldn't open import", error: error )

@@ -1160,8 +1160,6 @@ class LinksItem<M>: ListItem<M, LinksItem.Link, LinksItem.Cell> {
             self.button.titleLabel!.shadowOffset = CGSize( width: 0, height: 1 )
             self.button.action( for: .primaryActionTriggered ) { [unowned self] in
                 if let url = self.link?.url {
-                    trc( "Opening link: %@", url )
-
                     self.item?.viewController?.present( SFSafariViewController( url: url ), animated: true )
                 }
             }

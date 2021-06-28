@@ -282,18 +282,18 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                                         title: "Need more security answers?",
                                         value: { _ in (label: "Add Security Question", image: nil) },
                                         action: { item in
-                                            let controller = UIAlertController( title: "Security Question", message:
+                                            let alertController = UIAlertController( title: "Security Question", message:
                                             """
                                             Find the word in your security question which best describes its answer.
                                             """, preferredStyle: .alert )
-                                            controller.addTextField {
+                                            alertController.addTextField {
                                                 $0.placeholder = "eg. teacher"
                                                 $0.autocapitalizationType = .none
                                                 $0.keyboardType = .alphabet
                                                 $0.returnKeyType = .done
                                             }
-                                            controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                                            controller.addAction( UIAlertAction( title: "Help", style: .default ) { _ in
+                                            alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                                            alertController.addAction( UIAlertAction( title: "Help", style: .default ) { _ in
                                                 let helpController = UIAlertController( title: "Adding Security Questions", message:
                                                 """
                                                 To answer your security question, we'll identify it using a single word.
@@ -316,18 +316,18 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                                                 It is a ‘where’.
                                                 """, preferredStyle: .alert )
                                                 helpController.addAction( UIAlertAction( title: "Thanks!", style: .cancel ) { _ in
-                                                    item.viewController?.present( controller, animated: true )
+                                                    item.viewController?.present( alertController, animated: true )
                                                 } )
                                                 item.viewController?.present( helpController, animated: true )
                                             } )
-                                            controller.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak controller] _ in
-                                                guard let site = item?.model, let keyword = controller?.textFields?.first?.text?.nonEmpty
+                                            alertController.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak alertController] _ in
+                                                guard let site = item?.model, let keyword = alertController?.textFields?.first?.text?.nonEmpty
                                                 else { return }
 
                                                 trc( "Adding security question <%@> for: %@", keyword, site )
                                                 site.questions.append( Question( site: site, keyword: keyword ) )
                                             } )
-                                            item.viewController?.present( controller, animated: true )
+                                            item.viewController?.present( alertController, animated: true )
                                         } )
                         ],
                         caption: { _ in
@@ -473,7 +473,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                 guard let site = item.model, let viewController = item.viewController
                 else { return }
 
-                let controller = UIAlertController( title: "Site Algorithm", message:
+                let alertController = UIAlertController( title: "Site Algorithm", message:
                 """
                 New protections roll out in new algorithm versions. Always use the latest algorithm to protect your sites.
                 Upgrading or downgrading may change your site password. Don't forget to update your site.
@@ -482,11 +482,11 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         "\(site.siteName) is using the latest algorithm.":
                         "!! \(site.siteName) is NOT using the latest algorithm. !!")
                 """, preferredStyle: .actionSheet )
-                controller.popoverPresentationController?.sourceView = item.view
-                controller.popoverPresentationController?.sourceRect = item.view.bounds
+                alertController.popoverPresentationController?.sourceView = item.view
+                alertController.popoverPresentationController?.sourceRect = item.view.bounds
                 if site.algorithm < .last {
                     let upgrade = site.algorithm.advanced( by: 1 )
-                    controller.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
+                    alertController.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
                         AlertController.showChange( to: site, in: viewController ) {
                             site.algorithm = upgrade
                         }
@@ -494,14 +494,14 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                 }
                 if site.algorithm > .first {
                     let downgrade = site.algorithm.advanced( by: -1 )
-                    controller.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
+                    alertController.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
                         AlertController.showChange( to: site, in: viewController ) {
                             site.algorithm = downgrade
                         }
                     } )
                 }
-                controller.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
-                viewController.present( controller, animated: true )
+                alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
+                viewController.present( alertController, animated: true )
             } )
         }
 
