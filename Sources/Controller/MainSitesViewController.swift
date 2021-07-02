@@ -41,6 +41,7 @@ class MainSitesViewController: BaseSitesViewController {
         self.userButton.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
             guard case .began = $0.state
             else { return }
+
             self.user?.logout()
         } )
         self.searchField.rightView = self.userButton

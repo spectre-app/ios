@@ -44,6 +44,14 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         self.usersCarousel.dataSource = self.usersSource
         self.usersCarousel.backgroundColor = .clear
         self.usersCarousel.indicatorStyle = .white
+        self.usersCarousel.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] recognizer in
+            guard case .began = recognizer.state
+            else { return }
+
+            self.usersCarousel.selectItem( at: IndexPath( item: self.usersCarousel.scrolledItem, section: 0 ),
+                                           animated: true, scrollPosition: .centeredHorizontally )
+            self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = true }
+        } )
 
         // - Hierarchy
         self.addChild( self.detailsHost )
@@ -104,7 +112,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         self.userEvent?.end( [ "result": "deselected" ] )
         self.userEvent = Tracker.shared.begin( track: .subject( "users", action: "user" ) )
 
-        (self.usersCarousel.cellForItem( at: indexPath ) as? UserCell)?.userEvent = self.userEvent
+        if let selectedCell = self.usersCarousel.cellForItem( at: indexPath ) as? UserCell {
+            selectedCell.userEvent = self.userEvent
+            selectedCell.attemptBiometrics().failure { error in
+                inf( "Skipping biometrics: %@", error )
+            }
+        }
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = true }
     }
 
@@ -158,11 +171,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 if self.isSelected {
                     if self.userFile == nil {
                         self.avatar = User.Avatar.allCases.randomElement()
-                    }
-                    else {
-                        self.attemptBiometrics().failure { error in
-                            inf( "Skipping biometrics: %@", error )
-                        }
                     }
                 }
                 else {
@@ -506,7 +514,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         // MARK: --- Private ---
 
-        private func attemptBiometrics() -> Promise<User> {
+        func attemptBiometrics() -> Promise<User> {
             guard InAppFeature.premium.isEnabled
             else { return Promise( .failure( AppError.state( title: "Biometrics not available." ) ) ) }
             guard let userFile = self.userFile, userFile.biometricLock
