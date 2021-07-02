@@ -160,7 +160,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         }
     }
 
-    class UserCell: UICollectionViewCell, ThemeObserver, InAppFeatureObserver, Updatable {
+    class UserCell: UICollectionViewCell, InAppFeatureObserver, Updatable {
         public var hasSelected = false {
             didSet {
                 self.contentView.alpha = self.hasSelected ? (self.isSelected ? .on: .off): .on
@@ -249,16 +249,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let actionsStack  = UIStackView()
         private let strengthMeter = UIProgressView()
         private let strengthLabel = UILabel()
-        private let idBadgeView   = UIImageView( image: .icon( "" ) )
-        private let authBadgeView = UIImageView( image: .icon( "" ) )
         private var authenticationConfiguration: LayoutConfiguration<UserCell>!
-        private var path:                        CGPath? {
-            didSet {
-                if oldValue != self.path {
-                    self.setNeedsDisplay()
-                }
-            }
-        }
 
         // MARK: --- Life ---
 
@@ -358,8 +349,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.strengthLabel => \.textColor => Theme.current.color.secondary
 
             // - Hierarchy
-            self.contentView.addSubview( self.idBadgeView )
-            self.contentView.addSubview( self.authBadgeView )
             self.contentView.addSubview( self.avatarButton )
             self.contentView.addSubview( self.floorView )
             self.contentView.addSubview( self.avatarTip )
@@ -433,23 +422,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                         inactive.set( nil, keyPath: \.text )
                         inactive.constrain { $1.topAnchor.constraint( equalTo: self.nameLabel.bottomAnchor ) }
                     } )
-                    .apply( LayoutConfiguration( view: self.idBadgeView ) { active, inactive in
-                        active.constrain { $1.trailingAnchor.constraint( equalTo: self.avatarButton.leadingAnchor ) }
-                        active.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        active.set( .on, keyPath: \.alpha )
-                        inactive.constrain { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
-                        inactive.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        inactive.set( .off, keyPath: \.alpha )
-                    } )
-                    .apply( LayoutConfiguration( view: self.authBadgeView ) { active, inactive in
-                        active.constrain { $1.leadingAnchor.constraint( equalTo: self.avatarButton.trailingAnchor ) }
-                        active.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        active.set( .on, keyPath: \.alpha )
-                        inactive.constrain { $1.centerXAnchor.constraint( equalTo: self.avatarButton.centerXAnchor ) }
-                        inactive.constrain { $1.centerYAnchor.constraint( equalTo: self.avatarButton.centerYAnchor ) }
-                        inactive.set( .off, keyPath: \.alpha )
-                    } )
-                    .needs( .layout )
         }
 
         required init?(coder aDecoder: NSCoder) {
@@ -461,46 +433,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             if newWindow != nil {
                 InAppFeature.observers.register( observer: self )
-                Theme.current.observers.register( observer: self )
             }
             else {
                 InAppFeature.observers.unregister( observer: self )
-                Theme.current.observers.unregister( observer: self )
             }
-        }
-
-        override func layoutSubviews() {
-            super.layoutSubviews()
-
-            let path          = CGMutablePath()
-            let idBadgeRect   = self.convert( self.idBadgeView.alignmentRect, from: self.contentView )
-            let nameRect      = self.convert( self.nameLabel.alignmentRect, from: self.contentView )
-            let authBadgeRect = self.convert( self.authBadgeView.alignmentRect, from: self.contentView )
-            let secretRect    = self.convert( self.secretField.alignmentRect, from: self.contentView )
-
-            if self.isSelected {
-                path.addPath( CGPath.between( idBadgeRect, nameRect ) )
-                if self.authenticationConfiguration.isActive {
-                    path.addPath( CGPath.between( authBadgeRect, secretRect ) )
-                }
-            }
-            self.path = path.isEmpty ? nil: path
-        }
-
-        override func draw(_ rect: CGRect) {
-            super.draw( rect )
-
-            if let path = self.path, let context = UIGraphicsGetCurrentContext() {
-                Theme.current.color.mute.get()?.setStroke()
-                context.addPath( path )
-                context.strokePath()
-            }
-        }
-
-        // MARK: --- ThemeObserver ---
-
-        func didChange(theme: Theme) {
-            self.setNeedsDisplay()
         }
 
         // MARK: --- InAppFeatureObserver ---
