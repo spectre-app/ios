@@ -13,34 +13,18 @@
 import UIKit
 import AuthenticationServices
 
-class AutoFillCredentialViewController: BaseUsersViewController {
-    private lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ),
-                                                 image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
-        self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
-    }
-
-    // MARK: --- Life ---
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // - Hierarchy
-        self.view.insertSubview( self.closeButton, belowSubview: self.detailsHost.view )
-
-        // - Layout
-        LayoutConfiguration( view: self.closeButton )
-                .constrain( as: .bottomCenter, margin: true ).activate()
-    }
+class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
 
     // MARK: --- MarshalObserver ---
 
+    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
+        [ [ userFiles.first( where: { $0.autofill && $0.userName == AutoFillModel.shared.context.credentialIdentity?.user } ) ] ]
+    }
+
     override func didChange(userFiles: [Marshal.UserFile]) {
-        if let userFile = AutoFillModel.shared.context.credentialIdentity.flatMap( { credentialIdentity in
-            userFiles.first( where: { $0.userName == credentialIdentity.user } )
-        } ) {
-            self.usersSource.update( [ [ userFile ] ], selected: [ userFile ] )
-        }
-        else {
+        super.didChange( userFiles: userFiles )
+
+        if self.usersSource.isEmpty {
             self.extensionContext?.cancelRequest( withError: ASExtensionError( .failed, "Expected a credential identity." ) )
         }
     }
@@ -49,8 +33,6 @@ class AutoFillCredentialViewController: BaseUsersViewController {
 
     override func login(user: User) {
         super.login( user: user )
-
-        AutoFillModel.shared.cacheUser( user )
 
         guard let credentialIdentity = AutoFillModel.shared.context.credentialIdentity
         else {
