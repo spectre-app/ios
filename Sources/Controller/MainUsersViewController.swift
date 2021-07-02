@@ -26,6 +26,8 @@ class MainUsersViewController: BaseUsersViewController {
         "Premium \(.icon( "" )) subscribers make this app possible.",
         "Shake \(.icon( "" )) for logs and advanced settings.",
         "Join the discussion \(.icon( "" )) in the Spectre Community.",
+        "While in Offline Mode \(.icon( "" )), Spectre disables any features that use the Internet.",
+        "Prefer a more consistent monochrome look? Try turning off Colorful Sites \(.icon( "" )).",
         // User
         "Your identicon ╚☻╯⛄ helps you spot typos.",
         "Long press your user's initials button to sign out quickly \(.icon( "" )).",
@@ -35,7 +37,9 @@ class MainUsersViewController: BaseUsersViewController {
         "Turn on Masked •••• passwords to deter shoulder-snooping.",
         "Enable AutoFill \(.icon( "" )) to use Spectre from other apps.",
         "Biometric \(.icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon )) login is the quickest way to sign in.",
+        "File Sharing \(.icon( "" )) makes your user's export file available from iTunes or the Files app.",
         // Site
+        "Long press a site to quickly perform an action or open the site in a browser \(.icon( "" )).",
         "Long press a site's mode (\(.icon( "" ))/\(.icon( "" ))/\(.icon( "" ))) to configure it.",
         "Increment your site's counter \(.icon( "" )) if its password is compromised.",
         "Site doesn't accept your password? Try a different Type.",
