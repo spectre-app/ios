@@ -69,7 +69,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             """
             If a bug, crash or issue should happen, Diagnostics will let us know and fix it.
 
-            It's just code and statistics, personal information is sacred and cannot leave your device.
+            It's just code and statistics; personal information is sacred and cannot leave your device.
             """, preferredStyle: .actionSheet )
             alertController.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
                 AppConfig.shared.diagnostics = false

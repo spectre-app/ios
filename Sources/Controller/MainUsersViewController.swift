@@ -15,7 +15,7 @@ import LocalAuthentication
 import SafariServices
 
 class MainUsersViewController: BaseUsersViewController {
-    private let tipsView   = TipsView( tips: [
+    private let tipsView    = TipsView( tips: [
         // App
         "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
         "Spectre is 100% open source \(.icon( "" )) and Free Software.",
@@ -47,10 +47,17 @@ class MainUsersViewController: BaseUsersViewController {
         "Use Security Answers \(.icon( "" )) to avoid divulging private information.",
         "Sites are automatically styled \(.icon( "" )) from their home page.",
     ], first: 0, random: false )
-    private let appToolbar = UIStackView()
+    private let actionStack = UIStackView()
+    private let appToolbar  = UIStackView()
     private lazy var appUpdate = EffectButton( track: .subject( "users", action: "update" ),
                                                title: "Update Available", background: false ) { [unowned self] _, _ in
         AppStore.shared.presentStore( in: self )
+    }
+    private lazy var appMigrate = EffectButton( track: .subject( "users", action: "masterPassword" ),
+                                                title: "Migrate from Master Password", background: false ) { [unowned self] _, _ in
+        if let masterPasswordURL = URL( string: "masterpassword:" ) {
+            UIApplication.shared.open( masterPasswordURL )
+        }
     }
 
     // MARK: --- Life ---
@@ -60,6 +67,12 @@ class MainUsersViewController: BaseUsersViewController {
 
         // - View
         self.appUpdate.isHidden = true
+        self.appMigrate.isHidden = true
+
+        self.actionStack.axis = .vertical
+        self.actionStack.addArrangedSubview( self.appUpdate )
+        self.actionStack.addArrangedSubview( self.appMigrate )
+
         self.appToolbar.axis = .horizontal
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ),
                                                           image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
@@ -114,18 +127,18 @@ class MainUsersViewController: BaseUsersViewController {
 
         // - Hierarchy
         self.view.insertSubview( self.tipsView, belowSubview: self.detailsHost.view )
-        self.view.insertSubview( self.appUpdate, belowSubview: self.detailsHost.view )
+        self.view.insertSubview( self.actionStack, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.appToolbar, belowSubview: self.detailsHost.view )
 
         // - Layout
         LayoutConfiguration( view: self.tipsView )
                 .constrain( as: .topCenter, to: self.view.safeAreaLayoutGuide ).activate()
-        LayoutConfiguration( view: self.appToolbar )
-                .constrain( as: .bottomCenter, margin: true ).activate()
-        LayoutConfiguration( view: self.appUpdate )
+        LayoutConfiguration( view: self.actionStack )
                 .constrain { $1.bottomAnchor.constraint( equalTo: self.appToolbar.topAnchor ) }
                 .constrain { $1.centerXAnchor.constraint( equalTo: self.appToolbar.centerXAnchor ) }
                 .activate()
+        LayoutConfiguration( view: self.appToolbar )
+                .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -156,6 +169,17 @@ class MainUsersViewController: BaseUsersViewController {
         super.login( user: user )
 
         self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
+    }
+
+    // MARK: --- MarshalObserver ---
+
+    override func didChange(userFiles: [Marshal.UserFile]) {
+        super.didChange( userFiles: userFiles )
+
+        DispatchQueue.main.perform {
+            self.appMigrate.isHidden = !userFiles.isEmpty ||
+                    !(URL( string: "masterpassword:" ).flatMap { UIApplication.shared.canOpenURL( $0 ) } ?? false)
+        }
     }
 
     // MARK: --- Private ---
