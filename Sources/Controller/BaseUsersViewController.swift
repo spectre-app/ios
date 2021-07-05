@@ -132,10 +132,14 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     // MARK: --- MarshalObserver ---
 
     func didChange(userFiles: [Marshal.UserFile]) {
-        let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
-        self.usersSource.update( self.sections( for: userFiles ) ) { _ in
-            self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
-            self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = self.usersCarousel.selectedItem != nil }
+        let sections = self.sections( for: userFiles )
+
+        DispatchQueue.main.perform {
+            let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
+            self.usersSource.update( sections ) { _ in
+                self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
+                self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = self.usersCarousel.selectedItem != nil }
+            }
         }
     }
 
@@ -324,16 +328,23 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 }
             }
             self.secretField.action( for: .editingChanged ) { [unowned self] in
-                var strengthText: Text?, strengthProgress: Double = 0
-                if let timeToCrack = Attacker.single.timeToCrack( string: self.secretField.text, hash: .spectre ) {
-                    strengthProgress = ((timeToCrack.period.seconds / age_of_the_universe) as NSDecimalNumber).doubleValue
-                    strengthProgress = pow( 1 - pow( strengthProgress - 1, 30 ), 1 / 30.0 )
-                    strengthText = "\(.icon( "" )) \(timeToCrack.period.normalize.brief)︎"
+                let secretText = self.secretField.text
+
+                DispatchQueue.api.perform {
+                    var strengthText: Text?, strengthProgress: Double = 0
+                    if let timeToCrack = Attacker.single.timeToCrack( string: secretText, hash: .spectre ) {
+                        strengthProgress = ((timeToCrack.period.seconds / age_of_the_universe) as NSDecimalNumber).doubleValue
+                        strengthProgress = pow( 1 - pow( strengthProgress - 1, 30 ), 1 / 30.0 )
+                        strengthText = "\(.icon( "" )) \(timeToCrack.period.normalize.brief)︎"
+                    }
+
+                    DispatchQueue.main.perform {
+                        self.strengthMeter.progress = Float( strengthProgress )
+                        self.strengthMeter.progressTintColor = .systemGreen
+                        self.strengthMeter.trackTintColor = strengthProgress < 0.5 ? .systemRed: .systemOrange
+                        self.strengthLabel.attributedText = strengthText?.attributedString( for: self.strengthLabel )
+                    }
                 }
-                self.strengthMeter.progress = Float( strengthProgress )
-                self.strengthMeter.progressTintColor = .systemGreen
-                self.strengthMeter.trackTintColor = strengthProgress < 0.5 ? .systemRed: .systemOrange
-                self.strengthLabel.attributedText = strengthText?.attributedString( for: self.strengthLabel )
             }
 
             self.nameField.isHidden = true
