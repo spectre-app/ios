@@ -223,6 +223,10 @@ class Tracker: AppConfigObserver {
             Countly.user().custom = userConfig as NSDictionary
             Countly.user().save()
             Countly.sharedInstance().recordPushNotificationToken()
+
+            // FIXME: Remove this temporary device ID fix.
+            Countly.sharedInstance().setNewDeviceID( userId, onServer: true )
+            Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: true )
             #endif
 
             inf( "Login [user: %@]", userId )
@@ -339,6 +343,7 @@ class Tracker: AppConfigObserver {
             #if TARGET_APP
             Countly.sharedInstance().giveConsent( forFeatures: [
                 .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+            // FIXME: Remove this temporary device ID fix.
             if Countly.sharedInstance().deviceID() != self.identifierForOwner {
                 Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: true )
             }

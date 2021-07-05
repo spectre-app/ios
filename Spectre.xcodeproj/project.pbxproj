@@ -75,6 +75,7 @@
 		93D398FB645DCA89A4BCC5A2 /* MarginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39613B68BCF56DD931C91 /* MarginView.swift */; };
 		93D39943D01E70DAC3B0DF76 /* spectre-util.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396C311C3725870343EE0 /* spectre-util.c */; };
 		93D3996D1AE5E03039DF29EC /* AutoFillModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3985695447159F2D4BE76 /* AutoFillModel.swift */; };
+		93D39992F33572F1E0D540C2 /* AutoFillBaseUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C43561D9C1E06BD1CD7 /* AutoFillBaseUsersViewController.swift */; };
 		93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		93D399FB0C4228E18FDFAC9F /* PickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391A0FB6EB085237A8BF3 /* PickerView.swift */; };
 		93D39A2954B245FC0D925312 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* Site.swift */; };
@@ -379,6 +380,7 @@
 		93D39BAACC08C85F91D1C5C2 /* Graph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainUsersViewController.swift; sourceTree = "<group>"; };
 		93D39C3FA9FA2CA5B234741E /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		93D39C43561D9C1E06BD1CD7 /* AutoFillBaseUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillBaseUsersViewController.swift; sourceTree = "<group>"; };
 		93D39C870A4BDC6A404826C2 /* EffectResultTypeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectResultTypeCell.swift; sourceTree = "<group>"; };
 		93D39CB804B95B268383FCB2 /* Persisting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persisting.swift; sourceTree = "<group>"; };
 		93D39CCF90A49C099A05280B /* DialogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DialogViewController.swift; sourceTree = "<group>"; };
@@ -735,6 +737,7 @@
 				93D393F482ED58056C88FAA6 /* AutoFillConfigurationViewController.swift */,
 				93D391B2ECDAF6C1CA85C985 /* AutoFillConfigurationView.swift */,
 				93D3910E4960F25080C4C779 /* AutoFillCredentialViewController.swift */,
+				93D39C43561D9C1E06BD1CD7 /* AutoFillBaseUsersViewController.swift */,
 			);
 			path = AutoFill;
 			sourceTree = "<group>";
@@ -1471,6 +1474,7 @@
 				93D398AD2C2E9552DA9C8BB2 /* AutoFillConfigurationView.swift in Sources */,
 				93D3963FF4A58C3753DC80D1 /* Resources.swift in Sources */,
 				93D3907BEF0B169A0A4BCB8C /* AutoFillCredentialViewController.swift in Sources */,
+				93D39992F33572F1E0D540C2 /* AutoFillBaseUsersViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
