@@ -41,8 +41,6 @@ enum InAppProduct: String, CaseIterable {
     case premiumMonthly        = "app.spectre.premium.monthly"
     case premiumMasterPassword = "app.spectre.premium.masterpassword"
 
-    public static let allCases = [ InAppProduct ]( [ .premiumAnnual, .premiumMonthly ] )
-
     static func find(_ productIdentifier: String) -> InAppProduct? {
         self.allCases.first( where: { $0.productIdentifier == productIdentifier } )
     }
