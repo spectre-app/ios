@@ -12,7 +12,7 @@
 
 import UIKit
 
-class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, QuestionObserver {
+class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, QuestionObserver {
     public let observers = Observers<QuestionObserver>()
 
     public let site: Site
@@ -94,15 +94,15 @@ class Question: Operand, Hashable, Comparable, CustomStringConvertible, Observab
     }
 
     public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
-                    -> Operation {
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+                    -> SpectreOperation {
         self.site.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                           resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, operand: operand ?? self )
     }
 
     public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
-                    -> Operation {
+                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+                    -> SpectreOperation {
         self.site.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam, algorithm: algorithm, operand: operand ?? self )
     }

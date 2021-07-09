@@ -12,7 +12,7 @@
 
 import UIKit
 
-class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, UserObserver, SiteObserver, CredentialSupplier {
+class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, UserObserver, SiteObserver, CredentialSupplier {
     public let observers = Observers<UserObserver>()
 
     public var algorithm: SpectreAlgorithm {
@@ -382,8 +382,8 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     }
 
     public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
-                    -> Operation {
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+                    -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
                 return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -401,15 +401,15 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
                                             algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
-                return Operation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
-                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                return SpectreOperation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
+                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
-                    -> Operation {
+                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+                    -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
                 return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -427,16 +427,16 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
                                            algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
-                return Operation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
-                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                return SpectreOperation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
+                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     private func spectre_result(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                                resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: Operand)
-                    -> Operation {
-        Operation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
+                                resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: SpectreOperand)
+                    -> SpectreOperation {
+        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
         self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
             defer { userKey.deallocate() }
 
@@ -449,9 +449,9 @@ class User: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     }
 
     private func spectre_state(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                               resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: Operand)
-                    -> Operation {
-        Operation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
+                               resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: SpectreOperand)
+                    -> SpectreOperation {
+        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
         self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
             defer { userKey.deallocate() }
 

@@ -12,7 +12,7 @@
 
 import UIKit
 
-class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, SiteObserver, QuestionObserver {
+class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, SiteObserver, QuestionObserver {
     public let observers = Observers<SiteObserver>()
 
     public let user: User
@@ -229,8 +229,8 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
     // MARK: --- Operand ---
 
     public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
-                    -> Operation {
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+                    -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
                 return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -248,15 +248,15 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
                                          algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
-                return Operation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
+                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 
     public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: Operand? = nil)
-                    -> Operation {
+                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+                    -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
                 return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
@@ -274,9 +274,9 @@ class Site: Operand, Hashable, Comparable, CustomStringConvertible, Observable, 
                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
-                return Operation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                  type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                  Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
+                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
         }
     }
 }

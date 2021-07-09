@@ -12,35 +12,35 @@
 
 import Foundation
 
-public protocol Operand {
+public protocol SpectreOperand {
 
     func use()
 
     func result(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                resultType: SpectreResultType?, resultParam: String?, algorithm: SpectreAlgorithm?, operand: Operand?)
-                    -> Operation
+                resultType: SpectreResultType?, resultParam: String?, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
+                    -> SpectreOperation
 
     func state(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-               resultType: SpectreResultType?, resultParam: String, algorithm: SpectreAlgorithm?, operand: Operand?)
-                    -> Operation
+               resultType: SpectreResultType?, resultParam: String, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
+                    -> SpectreOperation
 }
 
-public struct Operation {
+public struct SpectreOperation {
     let siteName:  String
     let counter:   SpectreCounter
     let purpose:   SpectreKeyPurpose
     let type:      SpectreResultType
     let algorithm: SpectreAlgorithm
-    let operand:   Operand
+    let operand:   SpectreOperand
     let token:     Promise<String>
 
     @discardableResult
-    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<(Operation, String), Error>) -> Void)
-                    -> Promise<(Operation, String)> {
+    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<(SpectreOperation, String), Error>) -> Void)
+                    -> Promise<(SpectreOperation, String)> {
         Promise( .success( self ) ).and( self.token ).then( on: queue, consumer )
     }
 
-    @discardableResult public func copy(fromView view: UIView, trackingFrom: String) -> Promise<(Operation, String)> {
+    @discardableResult public func copy(fromView view: UIView, trackingFrom: String) -> Promise<(SpectreOperation, String)> {
         let event = Tracker.shared.begin( track: .subject( "site", action: "use" ) )
 
         return self.token.promise { token in

@@ -91,7 +91,7 @@
 		93D39BBE1211113524BCBF9D /* EffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* EffectView.swift */; };
 		93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
 		93D39BED3DFB61513B0D015D /* MainUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */; };
-		93D39C05281D4E4CB11F07AC /* Operand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* Operand.swift */; };
+		93D39C05281D4E4CB11F07AC /* SpectreOperand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* SpectreOperand.swift */; };
 		93D39C0E969D1194203D5B9C /* ConstraintResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3909744CE918AB4432318 /* ConstraintResolver.swift */; };
 		93D39C76D6160B82127FBBB2 /* PickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391A0FB6EB085237A8BF3 /* PickerView.swift */; };
 		93D39C94D7BFAAE6C4B1471F /* KeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* KeyFactory.swift */; };
@@ -162,7 +162,7 @@
 		DA0E55A22510E985002B3AB1 /* Period.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39651387222CBD2F9CCE0 /* Period.swift */; };
 		DA0E55A42510E992002B3AB1 /* Marshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* Marshal.swift */; };
 		DA0E55A52510E992002B3AB1 /* Question.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* Question.swift */; };
-		DA0E55A62510E992002B3AB1 /* Operand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* Operand.swift */; };
+		DA0E55A62510E992002B3AB1 /* SpectreOperand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* SpectreOperand.swift */; };
 		DA0E55A72510E992002B3AB1 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* Site.swift */; };
 		DA0E55A82510E992002B3AB1 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169E1BADEFA0517D4D2 /* User.swift */; };
 		DA0E55A92510E9BB002B3AB1 /* TapEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D065D5339AC9DDF60E /* TapEffectView.swift */; };
@@ -312,7 +312,7 @@
 		93D391B2ECDAF6C1CA85C985 /* AutoFillConfigurationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillConfigurationView.swift; sourceTree = "<group>"; };
 		93D391CA68F34BB05A4B8AC3 /* Keychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		93D39203C899BA783F02D3B5 /* EffectView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectView.swift; sourceTree = "<group>"; };
-		93D39267543CBFB6B0D7F54C /* Operand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Operand.swift; sourceTree = "<group>"; };
+		93D39267543CBFB6B0D7F54C /* SpectreOperand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpectreOperand.swift; sourceTree = "<group>"; };
 		93D3926A5BF83C0816D6D00E /* EmitterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmitterView.swift; sourceTree = "<group>"; };
 		93D392986FB7C71256EABBB0 /* AutoFillSitesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillSitesViewController.swift; sourceTree = "<group>"; };
 		93D392C5A6572DB0EB5B82C8 /* spectre-types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-types.c"; sourceTree = "<group>"; };
@@ -572,7 +572,7 @@
 			isa = PBXGroup;
 			children = (
 				93D399D8E0D5A547143642A7 /* Marshal.swift */,
-				93D39267543CBFB6B0D7F54C /* Operand.swift */,
+				93D39267543CBFB6B0D7F54C /* SpectreOperand.swift */,
 				93D3919570F5FA9F5A3C0F63 /* Question.swift */,
 				93D39F718C1C38C46D9D5078 /* Site.swift */,
 				93D39169E1BADEFA0517D4D2 /* User.swift */,
@@ -1457,7 +1457,7 @@
 				DA0E55952510E985002B3AB1 /* FontAwesome.swift in Sources */,
 				DA0E5584251064D9002B3AB1 /* Boxes.swift in Sources */,
 				DA2FBD4325D89FB3000F3D8C /* AppProduct.swift in Sources */,
-				DA0E55A62510E992002B3AB1 /* Operand.swift in Sources */,
+				DA0E55A62510E992002B3AB1 /* SpectreOperand.swift in Sources */,
 				93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */,
 				93D39122A70525461AEE4D62 /* BaseUsersViewController.swift in Sources */,
 				93D394F428331F661FF95123 /* AutoFillSitesViewController.swift in Sources */,
@@ -1562,7 +1562,7 @@
 				93D39B0F44709C2D285A04D1 /* Foundation+Spectre.swift in Sources */,
 				93D39DC523A8A2E162CEB420 /* UIKit+Spectre.swift in Sources */,
 				93D3973CB116392EFE182225 /* Swift+Spectre.swift in Sources */,
-				93D39C05281D4E4CB11F07AC /* Operand.swift in Sources */,
+				93D39C05281D4E4CB11F07AC /* SpectreOperand.swift in Sources */,
 				93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */,
 				93D39DEE5848DB37A701B94E /* Updatable.swift in Sources */,
 				93D396F58C20BDAB74666831 /* AutoFill.swift in Sources */,
