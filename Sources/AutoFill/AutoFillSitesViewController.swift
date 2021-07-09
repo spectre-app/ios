@@ -88,10 +88,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
 
                 extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password )
                 ) { _ in
-                    do {
-                        let _ = try site.user.save().await()
-                    }
-                    catch {
+                    site.user.save( await: true ).failure { error in
                         mperror( title: "Couldn't save user", error: error )
                     }
                 }

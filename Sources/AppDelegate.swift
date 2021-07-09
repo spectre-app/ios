@@ -103,6 +103,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             } )
             window.rootViewController?.present( alertController, animated: true )
+            return
         }
     }
 

@@ -92,6 +92,9 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
             NotificationCenter.default.addObserver(
                     forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main ) { [weak self] _ in self?.didBecomeActive() },
         ]
+
+        self.willEnterForeground()
+        self.didBecomeActive()
     }
 
     override func viewWillDisappear(_ animated: Bool) {

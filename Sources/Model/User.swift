@@ -294,8 +294,8 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         self.userKeyFactory = nil
     }
 
-    func save() -> Promise<URL?> {
-        self.saveTask.request()
+    func save(await: Bool = false) -> Promise<URL?> {
+        self.saveTask.request( now: true, await: `await` )
     }
 
     // MARK: Hashable

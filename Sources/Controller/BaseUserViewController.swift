@@ -32,6 +32,8 @@ class BaseUserViewController: BaseViewController, UserObserver {
         }
     }
 
+    private var backgroundTime: Date?
+
     // MARK: --- Life ---
 
     required init?(coder aDecoder: NSCoder) {
@@ -55,25 +57,36 @@ class BaseUserViewController: BaseViewController, UserObserver {
         if let user = self.user, user.userKeyFactory == nil {
             mperror( title: "User logged out", message: "User is no longer authenticated", details: user )
             self.didLogout( user: user )
+            return
         }
     }
 
     override func willResignActive() {
         super.willResignActive()
 
-        self.view.isHidden = true
+        self.user?.save( await: true ).failure { error in
+            mperror( title: "Couldn't save user", error: error )
+        }
     }
 
     override func didEnterBackground() {
         super.didEnterBackground()
 
-        self.user?.logout()
+        self.view.isHidden = true
+
+        self.backgroundTime = Date()
     }
 
-    override func didBecomeActive() {
-        super.didBecomeActive()
+    override func willEnterForeground() {
+        super.willEnterForeground()
 
         self.view.isHidden = false
+
+        if let backgroundTime = self.backgroundTime,
+           Date().timeIntervalSince( backgroundTime ) > .minutes( 3 ) {
+            self.user?.logout()
+        }
+        self.backgroundTime = nil
     }
 
     // MARK: --- UserObserver ---
