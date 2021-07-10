@@ -98,7 +98,7 @@ class Item<M>: AnyItem {
         let contentView   = UIStackView()
         let subitemsStack = UIStackView()
 
-        private lazy var     valueView = self.createValueView()
+        private lazy var  valueView = self.createValueView()
         internal weak var item: Item<M>?
 
         override var forLastBaselineLayout: UIView {
@@ -562,6 +562,7 @@ class ToggleItem<M>: ValueItem<M, Bool> {
         }
 
         override func updateEnabled(_ enabled: Bool) {
+            super.updateEnabled( enabled )
             self.button.isEnabled = enabled
         }
     }
