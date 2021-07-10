@@ -780,9 +780,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
             self.contentView.layoutMargins = .border( 80 )
 
-            self.propLabel.text = "💁"
+            self.propLabel.text = "💁🏻‍♀️"
             self.propLabel.textAlignment = .center
-            self.propLabel => \.font => Theme.current.font.largeTitle
+            self.propLabel.font = Theme.current.font.largeTitle.get()?.withSize( 64 )
             self.propLabel.layer.shadowRadius = 8
             self.propLabel.layer.shadowOpacity = .long
             self.propLabel.layer.shadowOffset = .zero
