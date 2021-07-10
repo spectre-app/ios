@@ -12,9 +12,7 @@
 
 import Foundation
 import Sentry
-#if TARGET_APP
 import Countly
-#endif
 
 struct Tracking {
     let subject:    String
@@ -113,15 +111,8 @@ class Tracker: AppConfigObserver {
         let identifiers = [ "vendor": self.identifierForVendor, "device": self.identifierForDevice, "owner": self.identifierForOwner ]
         inf( "Startup [identifiers: %@]", identifiers )
 
-        // Sentry
-        SentrySDK.start {
-            $0.dsn = AppConfig.shared.diagnostics ? sentryDSN.b64Decrypt(): nil
-            $0.environment = AppConfig.shared.isDebug ? "Development": AppConfig.shared.isPublic ? "Public": "Private"
-        }
         SentrySDK.configureScope { $0.setTags( identifiers ) }
 
-        #if TARGET_APP
-        // Countly
         if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
             let countlyConfig = CountlyConfig()
             countlyConfig.host = "https://countly.spectre.app"
@@ -139,11 +130,12 @@ class Tracker: AppConfigObserver {
             // TODO: turn on/off with AppConfig.shared.offline
             Countly.sharedInstance().start( with: countlyConfig )
 
+            #if TARGET_APP
             if UIApplication.shared.isRegisteredForRemoteNotifications {
                 Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
             }
+            #endif
         }
-        #endif
 
         // Breadcrumbs & errors
         spectre_log_sink_register( { logPointer in
@@ -192,9 +184,7 @@ class Tracker: AppConfigObserver {
     }
 
     func appeared(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-        #if TARGET_APP
         Countly.sharedInstance().appLoadingFinished()
-        #endif
 
         self.event( file: file, line: line, function: function, dso: dso,
                     track: .subject( "app", action: "appeared" ) )
@@ -218,7 +208,6 @@ class Tracker: AppConfigObserver {
             let user = Sentry.User( userId: userId )
             user.data = userConfig
             SentrySDK.setUser( user )
-            #if TARGET_APP
             Countly.user().username = userId as NSString
             Countly.user().custom = userConfig as NSDictionary
             Countly.user().save()
@@ -227,7 +216,6 @@ class Tracker: AppConfigObserver {
             // FIXME: Remove this temporary device ID fix.
             Countly.sharedInstance().setNewDeviceID( userId, onServer: true )
             Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: true )
-            #endif
 
             inf( "Login [user: %@]", userId )
             self.event( track: .subject( "user", action: "signed_in", userConfig ) )
@@ -339,7 +327,11 @@ class Tracker: AppConfigObserver {
 
         // TODO: make AppConfig.shared.offline distinct from consent revocation.
         if appConfig.isApp && appConfig.diagnostics && !appConfig.offline {
-            SentrySDK.currentHub().getClient()?.options.enabled = true
+            SentrySDK.start {
+                $0.dsn = AppConfig.shared.diagnostics ? sentryDSN.b64Decrypt(): nil
+                $0.environment = AppConfig.shared.isDebug ? "Development": AppConfig.shared.isPublic ? "Public": "Private"
+            }
+
             #if TARGET_APP
             Countly.sharedInstance().giveConsent( forFeatures: [
                 .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
@@ -350,7 +342,8 @@ class Tracker: AppConfigObserver {
             #endif
         }
         else {
-            SentrySDK.currentHub().getClient()?.options.enabled = false
+            SentrySDK.close()
+
             #if TARGET_APP
             Countly.sharedInstance().cancelConsent( forFeatures: [
                 .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )

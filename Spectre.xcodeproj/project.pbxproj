@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4357EF342897F83AAECE9C24 /* Pods_Spectre.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D9A8115923B8DDE8237E9BF /* Pods_Spectre.framework */; };
-		8F1100A6204DF2C772C69C18 /* Pods_Spectre_AutoFill.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */; };
 		93D390276912B43B33158168 /* PagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F096A8C3E51C4DC2CDC /* PagerView.swift */; };
 		93D39034C6EAEAE0C47ED2F4 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393A49E8705F3E38EB779 /* BaseViewController.swift */; };
 		93D3907BEF0B169A0A4BCB8C /* AutoFillCredentialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3910E4960F25080C4C779 /* AutoFillCredentialViewController.swift */; };
@@ -197,6 +195,17 @@
 		DA4563D8265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
 		DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4A0C20201531BA004E2CE5 /* AppDelegate.swift */; };
+		DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */; };
+		DA5DAE7526A3BBA100D9EC22 /* Macaw in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7426A3BBA100D9EC22 /* Macaw */; };
+		DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */; };
+		DA5DAE7926A3BBA100D9EC22 /* Stacksift in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7826A3BBA100D9EC22 /* Stacksift */; };
+		DA5DAE7C26A623A800D9EC22 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7B26A623A800D9EC22 /* Countly */; };
+		DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7D26A623E300D9EC22 /* Sentry */; };
+		DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7F26A623F000D9EC22 /* Sentry */; };
+		DA5DAE8226A623F500D9EC22 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8126A623F500D9EC22 /* Countly */; };
+		DA5DAE8426A623FC00D9EC22 /* Stacksift in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8326A623FC00D9EC22 /* Stacksift */; };
+		DA5DAE8626A6244200D9EC22 /* Macaw in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8526A6244200D9EC22 /* Macaw */; };
+		DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */; };
 		DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */; };
 		DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6B24E04F2E00E61D3F /* SourceCodePro-Regular.otf */; };
 		DA762FB124E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6F24E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf */; };
@@ -290,9 +299,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		018A899658EF7807876BD088 /* Pods-Spectre.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre.public.xcconfig"; path = "Target Support Files/Pods-Spectre/Pods-Spectre.public.xcconfig"; sourceTree = "<group>"; };
-		27FFC4753DD6FA4FE2F9176A /* Pods-Spectre-AutoFill.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.debug.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.debug.xcconfig"; sourceTree = "<group>"; };
-		475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre_AutoFill.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D3900653D9D95598C41DFA /* Observers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observers.swift; sourceTree = "<group>"; };
 		93D3901C556A5B4D1C04E2D4 /* AutoFillProviderController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillProviderController.swift; sourceTree = "<group>"; };
 		93D3903B1B32B494FBD792EC /* SitesTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesTableView.swift; sourceTree = "<group>"; };
@@ -400,9 +406,6 @@
 		93D39F718C1C38C46D9D5078 /* Site.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* AvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarCell.swift; sourceTree = "<group>"; };
 		93D39FFBAB0E1072779FE7D2 /* TipsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TipsView.swift; sourceTree = "<group>"; };
-		9D9A8115923B8DDE8237E9BF /* Pods_Spectre.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Spectre.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.release.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.release.xcconfig"; sourceTree = "<group>"; };
-		D4037F137D913F600418DC09 /* Pods-Spectre.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre.debug.xcconfig"; path = "Target Support Files/Pods-Spectre/Pods-Spectre.debug.xcconfig"; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0E5532250D6F7F002B3AB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -536,8 +539,6 @@
 		DAC632871486D95D0075AEA5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "enwiki-top-30000.txt"; sourceTree = "<group>"; };
 		DAEBC45214F6364500987BF6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		E031B36E37668A9E5B3200BF /* Pods-Spectre-AutoFill.public.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre-AutoFill.public.xcconfig"; path = "Target Support Files/Pods-Spectre-AutoFill/Pods-Spectre-AutoFill.public.xcconfig"; sourceTree = "<group>"; };
-		F564A2A37D7D01F0A3BF1728 /* Pods-Spectre.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spectre.release.xcconfig"; path = "Target Support Files/Pods-Spectre/Pods-Spectre.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -547,8 +548,11 @@
 			files = (
 				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
 				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
+				DA5DAE8626A6244200D9EC22 /* Macaw in Frameworks */,
+				DA5DAE8226A623F500D9EC22 /* Countly in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
-				8F1100A6204DF2C772C69C18 /* Pods_Spectre_AutoFill.framework in Frameworks */,
+				DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */,
+				DA5DAE8426A623FC00D9EC22 /* Stacksift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -557,11 +561,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
+				DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */,
+				DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */,
+				DA5DAE7526A3BBA100D9EC22 /* Macaw in Frameworks */,
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
+				DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */,
 				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
+				DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */,
+				DA5DAE7C26A623A800D9EC22 /* Countly in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
-				4357EF342897F83AAECE9C24 /* Pods_Spectre.framework in Frameworks */,
+				DA5DAE7926A3BBA100D9EC22 /* Stacksift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -712,19 +722,6 @@
 			path = Controller;
 			sourceTree = "<group>";
 		};
-		C9DC157ABDB9805DFF33D123 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				D4037F137D913F600418DC09 /* Pods-Spectre.debug.xcconfig */,
-				F564A2A37D7D01F0A3BF1728 /* Pods-Spectre.release.xcconfig */,
-				018A899658EF7807876BD088 /* Pods-Spectre.public.xcconfig */,
-				27FFC4753DD6FA4FE2F9176A /* Pods-Spectre-AutoFill.debug.xcconfig */,
-				ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */,
-				E031B36E37668A9E5B3200BF /* Pods-Spectre-AutoFill.public.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		DA0E552C250D6F7F002B3AB1 /* AutoFill */ = {
 			isa = PBXGroup;
 			children = (
@@ -751,7 +748,6 @@
 				DACA23B41705DF7D002C6C22 /* Resources */,
 				DA5BFA47147E415C00F98B1E /* Frameworks */,
 				DA5BFA45147E415C00F98B1E /* Products */,
-				C9DC157ABDB9805DFF33D123 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -791,8 +787,6 @@
 				DABB981515100B4000B05417 /* SystemConfiguration.framework */,
 				93D394077F8FAB8167647187 /* Twitter.framework */,
 				DA5BFA48147E415C00F98B1E /* UIKit.framework */,
-				9D9A8115923B8DDE8237E9BF /* Pods_Spectre.framework */,
-				475BAE8FB7236933C5A34296 /* Pods_Spectre_AutoFill.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1040,7 +1034,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill" */;
 			buildPhases = (
-				24C3D10512B59BD4B9676E41 /* [CP] Check Pods Manifest.lock */,
 				DA0E5526250D6F7F002B3AB1 /* Sources */,
 				DA0E5527250D6F7F002B3AB1 /* Frameworks */,
 				DA0E5528250D6F7F002B3AB1 /* Resources */,
@@ -1052,6 +1045,12 @@
 				DA0E557C251052D4002B3AB1 /* PBXTargetDependency */,
 			);
 			name = "Spectre-AutoFill";
+			packageProductDependencies = (
+				DA5DAE7F26A623F000D9EC22 /* Sentry */,
+				DA5DAE8126A623F500D9EC22 /* Countly */,
+				DA5DAE8326A623FC00D9EC22 /* Stacksift */,
+				DA5DAE8526A6244200D9EC22 /* Macaw */,
+			);
 			productName = "Spectre-AutoFill";
 			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -1060,14 +1059,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre" */;
 			buildPhases = (
-				48AEE836966757E856CF870E /* [CP] Check Pods Manifest.lock */,
 				DA5BFA40147E415C00F98B1E /* Sources */,
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
 				DA0E5537250D6F7F002B3AB1 /* Embed App Extensions */,
 				DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */,
-				FA35C1C35E346A6267315897 /* [CP] Embed Pods Frameworks */,
-				780CF0ACFA088B2C381A3E86 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1077,6 +1073,15 @@
 				DA0E557625105196002B3AB1 /* PBXTargetDependency */,
 			);
 			name = Spectre;
+			packageProductDependencies = (
+				DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */,
+				DA5DAE7426A3BBA100D9EC22 /* Macaw */,
+				DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */,
+				DA5DAE7826A3BBA100D9EC22 /* Stacksift */,
+				DA5DAE7B26A623A800D9EC22 /* Countly */,
+				DA5DAE7D26A623E300D9EC22 /* Sentry */,
+				DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */,
+			);
 			productName = Spectre;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
 			productType = "com.apple.product-type.application";
@@ -1220,6 +1225,13 @@
 			);
 			mainGroup = DA5BFA39147E415C00F98B1E;
 			packageReferences = (
+				DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */,
+				DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */,
+				DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */,
+				DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */,
+				DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */,
+				DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */,
 			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
@@ -1277,67 +1289,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		24C3D10512B59BD4B9676E41 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Spectre-AutoFill-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		48AEE836966757E856CF870E /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Spectre-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		780CF0ACFA088B2C381A3E86 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 8;
@@ -1356,23 +1307,6 @@
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = "/bin/sh -e";
 			shellScript = "if ! hash sentry-cli 2>/dev/null; then\n    echo >&2 \"error: sentry-cli not installed. Try brew install getsentry/tools/sentry-cli\"\n    exit 1\nfi\n\nsentry-cli upload-dif --include-sources --log-level info \"$DWARF_DSYM_FOLDER_PATH\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FA35C1C35E346A6267315897 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spectre/Pods-Spectre-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1798,7 +1732,6 @@
 		};
 		DA09744A1E95703B00F0BFE8 /* Public */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 018A899658EF7807876BD088 /* Pods-Spectre.public.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
@@ -1835,7 +1768,6 @@
 		};
 		DA0E5538250D6F7F002B3AB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 27FFC4753DD6FA4FE2F9176A /* Pods-Spectre-AutoFill.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1871,7 +1803,6 @@
 		};
 		DA0E5539250D6F7F002B3AB1 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = ABD5EC6B008C8A8559B8D3A5 /* Pods-Spectre-AutoFill.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
@@ -1907,7 +1838,6 @@
 		};
 		DA0E553A250D6F7F002B3AB1 /* Public */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E031B36E37668A9E5B3200BF /* Pods-Spectre-AutoFill.public.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -2308,7 +2238,6 @@
 		};
 		DA5BFA6E147E415C00F98B1E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D4037F137D913F600418DC09 /* Pods-Spectre.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
@@ -2345,7 +2274,6 @@
 		};
 		DA5BFA6F147E415C00F98B1E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F564A2A37D7D01F0A3BF1728 /* Pods-Spectre.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
@@ -2550,6 +2478,123 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stacksift/SDK";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.3;
+			};
+		};
+		DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lhunath/countly-sdk-ios";
+			requirement = {
+				branch = "extension-availability";
+				kind = branch;
+			};
+		};
+		DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/LeonardoCardoso/SwiftLinkPreview";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+		DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/exyte/Macaw";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.7;
+			};
+		};
+		DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tikhop/TPInAppReceipt";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+		DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+		DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/freshworks/freshchat-ios";
+			requirement = {
+				branch = "spm-beta";
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */;
+			productName = SwiftLinkPreview;
+		};
+		DA5DAE7426A3BBA100D9EC22 /* Macaw */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */;
+			productName = Macaw;
+		};
+		DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */;
+			productName = FreshchatSDK;
+		};
+		DA5DAE7826A3BBA100D9EC22 /* Stacksift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */;
+			productName = Stacksift;
+		};
+		DA5DAE7B26A623A800D9EC22 /* Countly */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
+			productName = Countly;
+		};
+		DA5DAE7D26A623E300D9EC22 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
+		};
+		DA5DAE7F26A623F000D9EC22 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
+		};
+		DA5DAE8126A623F500D9EC22 /* Countly */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
+			productName = Countly;
+		};
+		DA5DAE8326A623FC00D9EC22 /* Stacksift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */;
+			productName = Stacksift;
+		};
+		DA5DAE8526A6244200D9EC22 /* Macaw */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */;
+			productName = Macaw;
+		};
+		DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */;
+			productName = TPInAppReceipt;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DA5BFA3B147E415C00F98B1E /* Project object */;
 }

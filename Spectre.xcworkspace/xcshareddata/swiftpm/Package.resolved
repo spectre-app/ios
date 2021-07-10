@@ -1,0 +1,112 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "ASN1Swift",
+        "repositoryURL": "https://github.com/tikhop/ASN1Swift",
+        "state": {
+          "branch": null,
+          "revision": "b53bee03a942623db25afc5bfb80227b2cb3b425",
+          "version": "1.2.4"
+        }
+      },
+      {
+        "package": "Countly",
+        "repositoryURL": "https://github.com/lhunath/countly-sdk-ios",
+        "state": {
+          "branch": "extension-availability",
+          "revision": "a3766f046b6823dfab615462af5d045c00205c48",
+          "version": null
+        }
+      },
+      {
+        "package": "freshchat-ios",
+        "repositoryURL": "https://github.com/freshworks/freshchat-ios",
+        "state": {
+          "branch": "spm-beta",
+          "revision": "6eece74f7f5e83934571b341a559e6222e11744c",
+          "version": null
+        }
+      },
+      {
+        "package": "Impact",
+        "repositoryURL": "https://github.com/stacksift/Impact",
+        "state": {
+          "branch": null,
+          "revision": "307b11b7d539113a173cf734388a4867df8c65f9",
+          "version": "0.3.8"
+        }
+      },
+      {
+        "package": "Macaw",
+        "repositoryURL": "https://github.com/exyte/Macaw",
+        "state": {
+          "branch": null,
+          "revision": "7cb4f5876423435e1a41628417230accc37284c6",
+          "version": "0.9.7"
+        }
+      },
+      {
+<<<<<<< HEAD
+        "package": "sentry-cocoa",
+||||||| parent of 1e9982ab (fixup! Move from CocoaPods to SPM.)
+        "package": "Sentry",
+=======
+        "package": "Stacksift",
+        "repositoryURL": "https://github.com/stacksift/SDK",
+        "state": {
+          "branch": null,
+          "revision": "f25e2e9d10c1f0d10933f2b42687c5ff07d07015",
+          "version": "0.3.3"
+        }
+      },
+      {
+        "package": "Sentry",
+>>>>>>> 1e9982ab (fixup! Move from CocoaPods to SPM.)
+        "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
+        "state": {
+          "branch": null,
+          "revision": "f7c3de2d9fc09d7a61f7259521d97091fb2f8bda",
+          "version": "7.1.3"
+        }
+      },
+      {
+        "package": "SwiftLinkPreview",
+        "repositoryURL": "https://github.com/LeonardoCardoso/SwiftLinkPreview",
+        "state": {
+          "branch": null,
+          "revision": "19547f9b48fe8c61578432656438768cc94ec50f",
+          "version": "3.3.0"
+        }
+      },
+      {
+        "package": "SWXMLHash",
+        "repositoryURL": "https://github.com/drmohundro/SWXMLHash",
+        "state": {
+          "branch": null,
+          "revision": "9183170d20857753d4f331b0ca63f73c60764bf3",
+          "version": "5.0.2"
+        }
+      },
+      {
+        "package": "TPInAppReceipt",
+        "repositoryURL": "https://github.com/tikhop/TPInAppReceipt",
+        "state": {
+          "branch": null,
+          "revision": "695f0db9a790c8c62d5335728877059851ffd912",
+          "version": "3.2.1"
+        }
+      },
+      {
+        "package": "Wells",
+        "repositoryURL": "https://github.com/stacksift/Wells",
+        "state": {
+          "branch": null,
+          "revision": "7c2322e991c15e3643fa16861f71fad902381463",
+          "version": "0.1.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
