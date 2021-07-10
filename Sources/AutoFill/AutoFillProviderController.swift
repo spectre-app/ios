@@ -13,6 +13,7 @@
 import AuthenticationServices
 import LocalAuthentication
 
+// Note: The Address Sanitizer will break the ability to load this extension due to its excessive memory usage.
 class AutoFillProviderController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         LogSink.shared.register()

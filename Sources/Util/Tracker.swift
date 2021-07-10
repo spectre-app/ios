@@ -11,6 +11,7 @@
 //==============================================================================
 
 import Foundation
+import Stacksift
 import Sentry
 import Countly
 
@@ -114,13 +115,12 @@ class Tracker: AppConfigObserver {
         kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: true,
     ] ).uuidString
+    private lazy var identifiers
+            = [ "id.vendor": self.identifierForVendor, "id.device": self.identifierForDevice, "id.owner": self.identifierForOwner ]
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                  extensionController: UIViewController? = nil) {
-        let identifiers = [ "vendor": self.identifierForVendor, "device": self.identifierForDevice, "owner": self.identifierForOwner ]
-        inf( "Startup [identifiers: %@]", identifiers )
-
-        SentrySDK.configureScope { $0.setTags( identifiers ) }
+        inf( "Startup [identifiers: %@]", self.identifiers )
 
         // Breadcrumbs & errors
         spectre_log_sink_register( { logPointer in
@@ -130,9 +130,9 @@ class Tracker: AppConfigObserver {
             let level: SentryLevel = map( logEvent.level, [
                 .trace: .debug, .debug: .debug, .info: .info, .warning: .warning, .error: .error, .fatal: .fatal ] ) ?? .debug
             let tags               =
-                    [ "srcFile": String.valid( logEvent.file )?.lastPathComponent ?? "-",
-                      "srcLine": "\(logEvent.line)",
-                      "srcFunc": String.valid( logEvent.function ) ?? "-" ]
+                    [ "src.file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
+                      "src.line": "\(logEvent.line)",
+                      "src.func": String.valid( logEvent.function ) ?? "-" ]
 
             if logEvent.level <= .error {
                 let event = Event( level: level )
@@ -159,12 +159,12 @@ class Tracker: AppConfigObserver {
 
         #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "app", action: "startup", [ "version": productVersion, "build": productBuild,
-                                                                 "run": AppConfig.shared.runCount ].merging( identifiers ) ) )
+                    track: .subject( "app", action: "startup", [ "app.version": productVersion, "app.build": productBuild,
+                                                                 "app.run": AppConfig.shared.runCount ].merging( self.identifiers ) ) )
         #elseif TARGET_AUTOFILL
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "autofill", action: "startup", [ "version": productVersion, "build": productBuild,
-                                                                      "run": AppConfig.shared.runCount ].merging( identifiers ) ) )
+                    track: .subject( "autofill", action: "startup", [ "app.version": productVersion, "app.build": productBuild,
+                                                                      "app.run": AppConfig.shared.runCount ].merging( self.identifiers ) ) )
         #endif
     }
 
@@ -200,7 +200,9 @@ class Tracker: AppConfigObserver {
                 Countly.user().username = userId as NSString
                 Countly.user().custom = userConfig as NSDictionary
                 Countly.user().save()
+                #if TARGET_APP
                 Countly.sharedInstance().recordPushNotificationToken()
+                #endif
             }
 
             inf( "Login [user: %@]", userId )
@@ -231,6 +233,11 @@ class Tracker: AppConfigObserver {
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                track: Tracking) {
         self.event( file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters() )
+    }
+
+    func crash() {
+        SentrySDK.crash()
+        Stacksift.testCrash()
     }
 
     // MARK: --- Private ---
@@ -264,16 +271,16 @@ class Tracker: AppConfigObserver {
                        named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
         var eventParameters = parameters
         #if TARGET_APP
-        eventParameters["using"] = "app"
+        eventParameters["app.container"] = "app"
         #elseif TARGET_AUTOFILL
-        eventParameters["using"] = "autofill"
+        eventParameters["app.container"] = "autofill"
         #endif
 
         var duration               = TimeInterval( 0 )
         var untimedEventParameters = eventParameters
         if let timing = timing {
             duration = Date().timeIntervalSince( timing.start )
-            untimedEventParameters["duration"] = "\(number: duration, as: "0.#")"
+            untimedEventParameters["event.duration"] = "\(number: duration, as: "0.#")"
         }
 
         // Log
@@ -284,7 +291,7 @@ class Tracker: AppConfigObserver {
             dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, untimedEventParameters )
         }
 
-        let sourceParameters: [String: Any] = [ "file": file.lastPathComponent, "line": line, "function": function ]
+        let sourceParameters: [String: Any] = [ "src.file": file.lastPathComponent, "src.line": line, "src.function": function ]
         eventParameters.merge( sourceParameters, uniquingKeysWith: { $1 } )
         untimedEventParameters.merge( sourceParameters, uniquingKeysWith: { $1 } )
 
@@ -299,7 +306,7 @@ class Tracker: AppConfigObserver {
         if self.hasCountlyStarted {
             Countly.sharedInstance().recordEvent(
                     name, segmentation: eventParameters.mapValues { String( reflecting: $0 ) },
-                    count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
+                    count: eventParameters["event.count"] as? UInt ?? 1, sum: eventParameters["event.sum"] as? Double ?? 0, duration: duration )
         }
     }
 
@@ -307,7 +314,7 @@ class Tracker: AppConfigObserver {
 
     // FIXME: We should use Countly.sharedInstance().hasStarted instead but it's not exposed yet.
     // https://support.count.ly/hc/en-us/community/posts/900002422786-Stopping-Countly
-    private var hasCountlyStarted = false
+    private var hasCountlyStarted = false, hasSentryStarted = false, hasStacksiftStarted = false
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         guard change == \AppConfig.isApp || change == \AppConfig.diagnostics || change == \AppConfig.offline
@@ -338,7 +345,6 @@ class Tracker: AppConfigObserver {
                 #endif
             }
         }
-
         if self.hasCountlyStarted {
             if appConfig.offline {
                 // FIXME: Instead of cancelling consent, we should turn Countly off instead.
@@ -356,13 +362,32 @@ class Tracker: AppConfigObserver {
         }
 
         if appConfig.diagnostics && !appConfig.offline {
-            SentrySDK.start {
-                $0.dsn = AppConfig.shared.diagnostics ? sentryDSN.b64Decrypt(): nil
-                $0.environment = AppConfig.shared.isDebug ? "Development": AppConfig.shared.isPublic ? "Public": "Private"
+            if !self.hasSentryStarted, let dsn = sentryDSN.b64Decrypt() {
+                // FIXME: Sentry crash reports break with the Address and Behaviour Sanitizer enabled.
+                // https://github.com/getsentry/sentry-cocoa/issues/369
+                SentrySDK.start {
+                    $0.dsn = dsn
+                    $0.environment = AppConfig.shared.isDebug ? "Development": AppConfig.shared.isPublic ? "Public": "Private"
+                }
+                SentrySDK.configureScope {
+                    $0.setTags( self.identifiers )
+                }
+                self.hasSentryStarted = true
             }
+            #if DEBUG
+            if !self.hasStacksiftStarted, let apiKey = stacksiftKey.b64Decrypt() {
+                Stacksift.shared.installIdentifier = self.identifierForDevice
+                Stacksift.start( APIKey: apiKey, monitor: .metricKitOnly )
+                self.hasStacksiftStarted = true
+            }
+            #endif
         }
         else {
             SentrySDK.close()
+            self.hasSentryStarted = false
+            // Stacksift doesn't currently support consent opt-out, but only transmits data on start-up.
+            // https://github.com/stacksift/SDK/issues/3
+            //Stacksift.close()
         }
     }
 

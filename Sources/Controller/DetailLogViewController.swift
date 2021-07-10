@@ -91,7 +91,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             Terminate the app with a crash, triggering a crash report on the next launch.
                             """
                         } ) { _ in
-                fatalError( "Forced Crash" )
+                Tracker.shared.crash()
             }
 
             self.addBehaviour( RequiresDebug( mode: .reveals ) )

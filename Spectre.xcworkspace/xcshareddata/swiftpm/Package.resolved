@@ -11,7 +11,7 @@
         }
       },
       {
-        "package": "Countly",
+        "package": "countly-sdk-ios",
         "repositoryURL": "https://github.com/lhunath/countly-sdk-ios",
         "state": {
           "branch": "extension-availability",
@@ -47,12 +47,7 @@
         }
       },
       {
-<<<<<<< HEAD
-        "package": "sentry-cocoa",
-||||||| parent of 1e9982ab (fixup! Move from CocoaPods to SPM.)
-        "package": "Sentry",
-=======
-        "package": "Stacksift",
+        "package": "SDK",
         "repositoryURL": "https://github.com/stacksift/SDK",
         "state": {
           "branch": null,
@@ -61,8 +56,7 @@
         }
       },
       {
-        "package": "Sentry",
->>>>>>> 1e9982ab (fixup! Move from CocoaPods to SPM.)
+        "package": "sentry-cocoa",
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,

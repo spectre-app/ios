@@ -60,8 +60,7 @@
       enableGPUValidationMode = "1"
       allowLocationSimulation = "YES"
       launchAutomaticallySubstyle = "2"
-      queueDebuggingEnabled = "No"
-      memoryGraphOnResourceException = "Yes">
+      queueDebuggingEnabled = "No">
       <RemoteRunnable
          runnableDebuggingMode = "1"
          BundleIdentifier = "com.apple.mobilesafari"
@@ -76,18 +75,6 @@
             ReferencedContainer = "container:Spectre.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <AdditionalOptions>
-         <AdditionalOption
-            key = "MallocStackLogging"
-            value = ""
-            isEnabled = "YES">
-         </AdditionalOption>
-         <AdditionalOption
-            key = "PrefersMallocStackLoggingLite"
-            value = ""
-            isEnabled = "YES">
-         </AdditionalOption>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -96,16 +83,20 @@
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES"
       launchAutomaticallySubstyle = "2">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "1"
+         BundleIdentifier = "com.apple.mobilesafari"
+         RemotePath = "/Applications/MobileSafari.app">
+      </RemoteRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DA5BFA43147E415C00F98B1E"
-            BuildableName = "Spectre.app"
-            BlueprintName = "Spectre"
+            BlueprintIdentifier = "DA0E5529250D6F7F002B3AB1"
+            BuildableName = "Spectre AutoFill.appex"
+            BlueprintName = "Spectre-AutoFill"
             ReferencedContainer = "container:Spectre.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
