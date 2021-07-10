@@ -51,7 +51,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     public private(set) var userKeyFactory: KeyFactory? {
         willSet {
             if self.userKeyFactory != nil, newValue == nil {
-                let _ = try? self.saveTask.request( now: true ).await()
+                self.save( onlyIfDirty: true )
             }
         }
         didSet {
@@ -190,14 +190,11 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     }
     internal var dirty = false {
         didSet {
-            if self.dirty {
-                if !self.initializing {
-                    self.saveTask.request()
-                }
-            }
-            else {
+            if !self.dirty {
                 self.sites.forEach { $0.dirty = false }
             }
+
+            self.save( onlyIfDirty: true )
         }
     }
 
@@ -221,7 +218,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                 self.origin = destination
             }
             catch {
-                mperror( title: "Couldn't save changes.", details: self, error: error )
+                mperror( title: "Couldn't save user", details: self, error: error )
             }
         } ).await()
     }
@@ -294,8 +291,14 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         self.userKeyFactory = nil
     }
 
-    func save(await: Bool = false) -> Promise<URL?> {
-        self.saveTask.request( now: true, await: `await` )
+    @discardableResult
+    func save(onlyIfDirty: Bool, await: Bool = false) -> Promise<URL?> {
+        if !onlyIfDirty || (self.dirty && !self.initializing) {
+            return self.saveTask.request( now: true, await: `await` )
+        }
+        else {
+            return Promise( .success( nil ) )
+        }
     }
 
     // MARK: Hashable

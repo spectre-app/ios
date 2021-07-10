@@ -47,7 +47,9 @@ class Tracker: AppConfigObserver {
             if $0.authorizationStatus == .authorized {
                 DispatchQueue.main.perform {
                     AppConfig.shared.notificationsDecided = true
-                    Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                    if self.hasCountlyStarted {
+                        Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                    }
                     self.observers.notify { $0.didChange( tracker: self ) }
                     completion( true )
                 }
@@ -62,14 +64,18 @@ class Tracker: AppConfigObserver {
                         wrn( "Notification authorization error: %@", error )
                     }
                     if granted {
-                        Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                        if self.hasCountlyStarted {
+                            Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                        }
                         self.observers.notify { $0.didChange( tracker: self ) }
                         completion( true )
                         return
                     }
 
                     if consented, let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
-                        Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                        if self.hasCountlyStarted {
+                            Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                        }
                         self.observers.notify { $0.didChange( tracker: self ) }
                         UIApplication.shared.open( settingsURL )
                         completion( true )
@@ -84,7 +90,10 @@ class Tracker: AppConfigObserver {
 
     func disableNotifications() {
         AppConfig.shared.notificationsDecided = true
-        Countly.sharedInstance().cancelConsent( forFeature: .pushNotifications )
+
+        if self.hasCountlyStarted {
+            Countly.sharedInstance().cancelConsent( forFeature: .pushNotifications )
+        }
     }
     #endif
 
@@ -112,30 +121,6 @@ class Tracker: AppConfigObserver {
         inf( "Startup [identifiers: %@]", identifiers )
 
         SentrySDK.configureScope { $0.setTags( identifiers ) }
-
-        if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
-            let countlyConfig = CountlyConfig()
-            countlyConfig.host = "https://countly.spectre.app"
-            countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
-            countlyConfig.alwaysUsePOST = true
-            countlyConfig.secretSalt = countlySalt
-            countlyConfig.appKey = countlyKey
-            countlyConfig.requiresConsent = true
-            countlyConfig.deviceID = self.identifierForOwner
-            countlyConfig.features = [ CLYFeature.pushNotifications ]
-            countlyConfig.enablePerformanceMonitoring = true
-            #if !PUBLIC
-            countlyConfig.pushTestMode = AppConfig.shared.isDebug ? .development: .testFlightOrAdHoc
-            #endif
-            // TODO: turn on/off with AppConfig.shared.offline
-            Countly.sharedInstance().start( with: countlyConfig )
-
-            #if TARGET_APP
-            if UIApplication.shared.isRegisteredForRemoteNotifications {
-                Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
-            }
-            #endif
-        }
 
         // Breadcrumbs & errors
         spectre_log_sink_register( { logPointer in
@@ -184,7 +169,9 @@ class Tracker: AppConfigObserver {
     }
 
     func appeared(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-        Countly.sharedInstance().appLoadingFinished()
+        if self.hasCountlyStarted {
+            Countly.sharedInstance().appLoadingFinished()
+        }
 
         self.event( file: file, line: line, function: function, dso: dso,
                     track: .subject( "app", action: "appeared" ) )
@@ -208,14 +195,13 @@ class Tracker: AppConfigObserver {
             let user = Sentry.User( userId: userId )
             user.data = userConfig
             SentrySDK.setUser( user )
-            Countly.user().username = userId as NSString
-            Countly.user().custom = userConfig as NSDictionary
-            Countly.user().save()
-            Countly.sharedInstance().recordPushNotificationToken()
 
-            // FIXME: Remove this temporary device ID fix.
-            Countly.sharedInstance().setNewDeviceID( userId, onServer: true )
-            Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: true )
+            if self.hasCountlyStarted {
+                Countly.user().username = userId as NSString
+                Countly.user().custom = userConfig as NSDictionary
+                Countly.user().save()
+                Countly.sharedInstance().recordPushNotificationToken()
+            }
 
             inf( "Login [user: %@]", userId )
             self.event( track: .subject( "user", action: "signed_in", userConfig ) )
@@ -226,11 +212,9 @@ class Tracker: AppConfigObserver {
         self.event( track: .subject( "user", action: "signed_out" ) )
 
         SentrySDK.setUser( nil )
-        #if TARGET_APP
         Countly.user().username = NSNull()
         Countly.user().custom = NSNull()
         Countly.user().save()
-        #endif
     }
 
     func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
@@ -312,42 +296,73 @@ class Tracker: AppConfigObserver {
         SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
         // Countly
-        #if TARGET_APP
-        Countly.sharedInstance().recordEvent(
-                name, segmentation: eventParameters.mapValues { String( reflecting: $0 ) },
-                count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
-        #endif
+        if self.hasCountlyStarted {
+            Countly.sharedInstance().recordEvent(
+                    name, segmentation: eventParameters.mapValues { String( reflecting: $0 ) },
+                    count: eventParameters["count"] as? UInt ?? 1, sum: eventParameters["sum"] as? Double ?? 0, duration: duration )
+        }
     }
 
     // MARK: --- AppConfigObserver ---
+
+    // FIXME: We should use Countly.sharedInstance().hasStarted instead but it's not exposed yet.
+    // https://support.count.ly/hc/en-us/community/posts/900002422786-Stopping-Countly
+    private var hasCountlyStarted = false
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         guard change == \AppConfig.isApp || change == \AppConfig.diagnostics || change == \AppConfig.offline
         else { return }
 
-        // TODO: make AppConfig.shared.offline distinct from consent revocation.
-        if appConfig.isApp && appConfig.diagnostics && !appConfig.offline {
+        if !appConfig.offline && !self.hasCountlyStarted {
+            if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
+                let countlyConfig = CountlyConfig()
+                countlyConfig.host = "https://countly.spectre.app"
+                countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
+                countlyConfig.alwaysUsePOST = true
+                countlyConfig.secretSalt = countlySalt
+                countlyConfig.appKey = countlyKey
+                countlyConfig.requiresConsent = true
+                countlyConfig.deviceID = self.identifierForOwner
+                countlyConfig.features = [ CLYFeature.pushNotifications ]
+                countlyConfig.enablePerformanceMonitoring = true
+                #if !PUBLIC
+                countlyConfig.pushTestMode = AppConfig.shared.isDebug ? .development: .testFlightOrAdHoc
+                #endif
+                Countly.sharedInstance().start( with: countlyConfig )
+                self.hasCountlyStarted = true
+
+                #if TARGET_APP
+                if UIApplication.shared.isRegisteredForRemoteNotifications {
+                    Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
+                }
+                #endif
+            }
+        }
+
+        if self.hasCountlyStarted {
+            if appConfig.offline {
+                // FIXME: Instead of cancelling consent, we should turn Countly off instead.
+                // https://support.count.ly/hc/en-us/community/posts/900002422786-Stopping-Countly
+                Countly.sharedInstance().cancelConsentForAllFeatures()
+            }
+            else if appConfig.diagnostics {
+                Countly.sharedInstance().giveConsent( forFeatures: [
+                    .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+            }
+            else {
+                Countly.sharedInstance().cancelConsent( forFeatures: [
+                    .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+            }
+        }
+
+        if appConfig.diagnostics && !appConfig.offline {
             SentrySDK.start {
                 $0.dsn = AppConfig.shared.diagnostics ? sentryDSN.b64Decrypt(): nil
                 $0.environment = AppConfig.shared.isDebug ? "Development": AppConfig.shared.isPublic ? "Public": "Private"
             }
-
-            #if TARGET_APP
-            Countly.sharedInstance().giveConsent( forFeatures: [
-                .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
-            // FIXME: Remove this temporary device ID fix.
-            if Countly.sharedInstance().deviceID() != self.identifierForOwner {
-                Countly.sharedInstance().setNewDeviceID( self.identifierForOwner, onServer: true )
-            }
-            #endif
         }
         else {
             SentrySDK.close()
-
-            #if TARGET_APP
-            Countly.sharedInstance().cancelConsent( forFeatures: [
-                .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
-            #endif
         }
     }
 
@@ -382,9 +397,9 @@ class Tracker: AppConfigObserver {
             SentrySDK.addBreadcrumb( crumb: sentryBreadcrumb )
 
             // Countly
-            #if TARGET_APP
-            Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )
-            #endif
+            if self.tracker.hasCountlyStarted {
+                Countly.sharedInstance().recordView( self.name, segmentation: stringParameters )
+            }
         }
 
         func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,

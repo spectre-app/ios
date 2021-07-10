@@ -90,8 +90,7 @@ class ItemsViewController<M>: BaseViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        // TODO: Move to DetailHostController?
-        if let focus = self.focus, let scrollView = (self.parent as? DetailHostController)?.scrollView,
+        if let focus = self.focus, let scrollView = self.view.findSuperview( ofType: UIScrollView.self ),
            let focusItem = self.items.first( where: { $0.isKind( of: focus ) } ) {
             let focusRect = scrollView.convert( focusItem.view.bounds, from: focusItem.view )
             scrollView.setContentOffset( CGPoint( x: 0, y: focusRect.center.y - scrollView.bounds.size.height / 2 ), animated: animated )

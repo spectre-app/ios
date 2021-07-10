@@ -86,11 +86,8 @@ class AutoFillSitesViewController: BaseSitesViewController {
                           "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ) ?? 0,
                         ] )
 
-                extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password )
-                ) { _ in
-                    site.user.save( await: true ).failure { error in
-                        mperror( title: "Couldn't save user", error: error )
-                    }
+                extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password ) ) { _ in
+                    site.user.save( onlyIfDirty: true, await: true )
                 }
             }
             catch {

@@ -18,17 +18,8 @@ class BaseUserViewController: BaseViewController, UserObserver {
             self.user?.observers.unregister( observer: self )
         }
         didSet {
-            if let user = self.user, user.userKeyFactory != nil {
-                user.observers.register( observer: self )
-            }
-            else {
-                DispatchQueue.main.perform {
-                    if let navigationController = self.navigationController {
-                        trc( "Dismissing %@ since user logged out.", Self.self )
-                        navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
-                    }
-                }
-            }
+            self.user?.observers.register( observer: self )
+            self.validate()
         }
     }
 
@@ -51,22 +42,15 @@ class BaseUserViewController: BaseViewController, UserObserver {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        self.view.isHidden = false
+        self.validate()
 
-        // TODO: is this still necessary?
-        if let user = self.user, user.userKeyFactory == nil {
-            mperror( title: "User logged out", message: "User is no longer authenticated", details: user )
-            self.didLogout( user: user )
-            return
-        }
+        self.view.isHidden = false
     }
 
     override func willResignActive() {
         super.willResignActive()
 
-        self.user?.save( await: true ).failure { error in
-            mperror( title: "Couldn't save user", error: error )
-        }
+        self.user?.save( onlyIfDirty: true, await: true )
     }
 
     override func didEnterBackground() {
@@ -92,8 +76,19 @@ class BaseUserViewController: BaseViewController, UserObserver {
     // MARK: --- UserObserver ---
 
     func didLogout(user: User) {
-        if self.user == user {
-            self.user = nil
+        self.validate()
+    }
+
+    // MARK: --- Private ---
+
+    private func validate() {
+        if self.user?.userKeyFactory == nil {
+            DispatchQueue.main.perform {
+                if let navigationController = self.navigationController {
+                    trc( "Dismissing %@ since user logged out.", Self.self )
+                    navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
+                }
+            }
         }
     }
 }
