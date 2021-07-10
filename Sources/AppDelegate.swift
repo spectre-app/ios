@@ -54,7 +54,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // Automatic subscription renewal (only if user is logged in to App Store and capable).
-        AppStore.shared.update()
+        AppStore.shared.update( active: true )
 
         return true
     }

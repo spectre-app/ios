@@ -76,18 +76,6 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         AppStore.shared.observers.register( observer: self )
         AppConfig.shared.observers.register( observer: self )
         InAppFeature.observers.register( observer: self )
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear( animated )
-
-        AppStore.shared.observers.unregister( observer: self )
-        AppConfig.shared.observers.unregister( observer: self )
-        InAppFeature.observers.unregister( observer: self )
-    }
-
-    override func doUpdate() {
-        super.doUpdate()
 
         // Automatic subscription restoration or renewal.
         if !InAppFeature.premium.isEnabled {
@@ -99,6 +87,14 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                 }
             }
         }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear( animated )
+
+        AppStore.shared.observers.unregister( observer: self )
+        AppConfig.shared.observers.unregister( observer: self )
+        InAppFeature.observers.unregister( observer: self )
     }
 
     override func loadItems() -> [Item<Void>] {
