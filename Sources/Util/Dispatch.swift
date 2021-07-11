@@ -19,7 +19,7 @@ extension DispatchTime {
 }
 
 extension DispatchQueue {
-    public static let api = DispatchQueue( label: "\(productName): api", qos: .utility, attributes: [ .concurrent ] )
+    public static let api = DispatchQueue( label: "\(productName): api", qos: .utility )
 
     public var isActive: Bool {
         (self == .main && Thread.isMainThread) || self.threadLabels.contains( self.label ) ||
@@ -185,8 +185,12 @@ public class Promise<V> {
 
     /** Submit the promised result, completing the promise for all that are awaiting it. */
     @discardableResult
-    public func finish(_ result: Result<V, Error>) -> Self {
+    public func finish(_ result: Result<V, Error>, maybe: Bool = false) -> Self {
         self.semaphore.sync { () -> [(queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void)] in
+            if maybe && self.result != nil {
+                return []
+            }
+
             assert( self.result == nil, "Tried to finish promise with \(result), but was already finished with \(self.result!)" )
             self.result = result
             return self.targets
@@ -369,6 +373,7 @@ public class DispatchTask<V> {
 
     private var requestItem:    DispatchWorkItem?
     private var requestPromise: Promise<V>?
+    private var requestRunning = false
     private lazy var requestQueue = DispatchQueue( label: "\(productName): DispatchTask: \(self.name)", qos: .userInitiated )
 
     public init(named name: String, queue: DispatchQueue,
@@ -390,7 +395,7 @@ public class DispatchTask<V> {
     @discardableResult
     public func request(now: Bool = false, await: Bool = false) -> Promise<V> {
         self.requestQueue.await {
-            if now {
+            if now && !self.requestRunning {
                 self.cancel()
             }
 
@@ -401,12 +406,19 @@ public class DispatchTask<V> {
             let requestPromise = Promise<V>()
             let requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
                 do {
-                    let result = try self.work()
-
                     self.requestQueue.await {
-                        if !(self.requestItem?.isCancelled ?? true) {
-                            requestPromise.finish( .success( result ) )
+                        if self.requestPromise === requestPromise {
+                            self.requestRunning = true
                         }
+                        else {
+                            return
+                        }
+                    }
+
+                    let result = try self.work()
+                    self.requestQueue.await {
+                        self.requestRunning = false
+                        let _ = requestPromise.finish( .success( result ), maybe: true )
                     }
                 }
                 catch Promise<V>.Interruption.postponed {
@@ -416,9 +428,8 @@ public class DispatchTask<V> {
                 }
                 catch {
                     self.requestQueue.await {
-                        if !(self.requestItem?.isCancelled ?? true) {
-                            requestPromise.finish( .failure( error ) )
-                        }
+                        self.requestRunning = false
+                        let _ = requestPromise.finish( .failure( error ), maybe: true )
                     }
                 }
             }
