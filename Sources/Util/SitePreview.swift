@@ -208,27 +208,23 @@ struct PreviewData: Codable, Equatable {
             guard oldValue != self.imageData
             else { return }
 
-            // Load image pixels and an image context.
+            // Load image pixels and convert the color space and pixel format to a known format.
             self.image = UIImage.load( data: self.imageData )
             guard let cgImage = self.image?.cgImage,
                   let cgContext = CGContext( data: nil, width: Int( cgImage.width ), height: Int( cgImage.height ),
                                              bitsPerComponent: 8, bytesPerRow: 0,
                                              space: CGColorSpaceCreateDeviceRGB(),
-                                             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue ),
-                  let pixelData = cgContext.data
+                                             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue )
             else { return }
-
-            // Draw the image into the context to convert its color space and pixel format to a known format.
             cgContext.draw( cgImage, in: CGRect( x: 0, y: 0, width: cgImage.width, height: cgImage.height ) )
+            guard let cgImage = cgContext.makeImage(), let pixelData = cgImage.dataProvider?.data as Data?
+            else { return }
 
             // Extract the colors from the image.
             var scoresByColor = [ ColorData: Int ]()
-            for offset in stride( from: 0, to: cgContext.bytesPerRow * cgContext.height, by: cgContext.bitsPerPixel / 8 ) {
+            for offset in stride( from: 0, to: cgImage.bytesPerRow * cgImage.height, by: cgImage.bitsPerPixel / 8 ) {
                 let color      = ColorData(
-                        red: pixelData.load( fromByteOffset: offset + 0, as: UInt8.self ),
-                        green: pixelData.load( fromByteOffset: offset + 1, as: UInt8.self ),
-                        blue: pixelData.load( fromByteOffset: offset + 2, as: UInt8.self ),
-                        alpha: pixelData.load( fromByteOffset: offset + 3, as: UInt8.self ) )
+                        red: pixelData[offset], green: pixelData[offset + 1], blue: pixelData[offset + 2], alpha: pixelData[offset + 3] )
 
                 // Weigh colors according to interested parameters.
                 let saturation = color.saturation, value = color.value, alpha = Int( color.alpha )
