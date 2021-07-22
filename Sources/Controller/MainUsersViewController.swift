@@ -19,33 +19,33 @@ class MainUsersViewController: BaseUsersViewController {
         // App
         "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
         "Spectre is 100% open source \(.icon( "" )) and Free Software.",
-        "Leave no traces by using incognito \(.icon( "" )) mode.",
+        "Leave no traces by using incognito \(.icon( "🕵" )) mode.",
         "With Diagnostics \(.icon( "" )), we can build you the best app.",
         "Be reachable for emergency security alerts \(.icon( "" )).",
         "Personalize your app with our \(Theme.allCases.count) custom-made themes \(.icon( "" )).",
         "Premium \(.icon( "" )) subscribers make this app possible.",
-        "Shake \(.icon( "" )) for logs and advanced settings.",
-        "Join the discussion \(.icon( "" )) in the Spectre Community.",
+        "Shake \(.icon( "📱" )) for logs and advanced settings.",
+        "Join the discussion \(.icon( "🗪" )) in the Spectre Community.",
         "While in Offline Mode \(.icon( "" )), Spectre disables any features that use the Internet.",
-        "Prefer a more consistent monochrome look? Try turning off Colorful Sites \(.icon( "" )).",
+        "Prefer a more consistent monochrome look? Try turning off Colorful Sites \(.icon( "🖌" )).",
         // User
         "Your identicon ╚☻╯⛄ helps you spot typos.",
         "Long press your user's initials button to sign out quickly \(.icon( "" )).",
         "Set your user's Standard Login \(.icon( "" )), usually your e-mail.",
-        "For extra security, set your user's Default Password to max \(.icon( "" )).",
-        "Worried about an attack? Set a Defense Strategy \(.icon( "" )).",
+        "For extra security, set your user's Default Password to max \(.icon( "" )).",
+        "Worried about an attack? Set a Defense Strategy \(.icon( "🛡" )).",
         "Turn on Masked •••• passwords to deter shoulder-snooping.",
-        "Enable AutoFill \(.icon( "" )) to use Spectre from other apps.",
+        "Enable AutoFill \(.icon( "⌨" )) to use Spectre from other apps.",
         "Biometric \(.icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon )) login is the quickest way to sign in.",
         "File Sharing \(.icon( "" )) makes your user's export file available from iTunes or the Files app.",
         // Site
-        "Long press a site to quickly perform an action or open the site in a browser \(.icon( "" )).",
-        "Long press a site's mode (\(.icon( "" ))/\(.icon( "" ))/\(.icon( "" ))) to configure it.",
+        "Long press a site to quickly perform an action or open the site in a browser \(.icon( "🌐" )).",
+        "Long press a site's mode (\(.icon( "🔑" ))/\(.icon( "" ))/\(.icon( "" ))) to configure it.",
         "Increment your site's counter \(.icon( "" )) if its password is compromised.",
         "Site doesn't accept your password? Try a different Type.",
         "Defense Strategy shows password time-to-crack \(.icon( "" )) if attacked.",
         "Use Security Answers \(.icon( "" )) to avoid divulging private information.",
-        "Sites are automatically styled \(.icon( "" )) from their home page.",
+        "Sites are automatically styled \(.icon( "🖌" )) from their home page.",
     ], first: 0, random: false )
     private let actionStack = UIStackView()
     private let appToolbar  = UIStackView()
@@ -79,7 +79,7 @@ class MainUsersViewController: BaseUsersViewController {
             self.detailsHost.show( DetailAppViewController(), sender: self )
         } )
         self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users", action: "user" ),
-                                                         image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, incognitoButton in
+                                                         image: .icon( "🕵" ), border: 0, background: false, square: true ) { [unowned self] _, incognitoButton in
             guard let incognitoButton = incognitoButton as? TimedButton
             else { return }
 
@@ -108,7 +108,7 @@ class MainUsersViewController: BaseUsersViewController {
                              }
         } )
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ),
-                                                          image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
+                                                          image: .icon( "🗪" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
             if let url = URL( string: "https://chat.spectre.app" ) {
                 self.present( SFSafariViewController( url: url ), animated: true )
             }
@@ -120,7 +120,7 @@ class MainUsersViewController: BaseUsersViewController {
                 self.doDelete( userFile: userFile )
             },
             .init( tracking: .subject( "users.user", action: "reset" ),
-                   title: "Reset", icon: "" ) { [unowned self] userFile in
+                   title: "Reset", icon: "⌫" ) { [unowned self] userFile in
                 self.doReset( userFile: userFile )
             },
         ]

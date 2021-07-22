@@ -28,7 +28,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
     // MARK: --- Life ---
 
     override func loadItems() -> [Item<User>] {
-        [ ImageItem( title: "AutoFill 🅿︎", value: { _ in .icon( "", withSize: 64 ) },
+        [ ImageItem( title: "AutoFill 🅿︎", value: { _ in .icon( "⌨", withSize: 64 ) },
                      caption: { _ in
                          """
                          Getting ready to use AutoFill on your \(UIDevice.current.model).
@@ -100,7 +100,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             Enable auto-filling \($0.userName)'s sites from other apps.
                             """
                         } ),
-                        ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "" ) },
+                        ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "⌨" ) },
                                           value: { $0.autofill }, update: { $0.model?.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                                 .addBehaviour( PremiumTapBehaviour() )

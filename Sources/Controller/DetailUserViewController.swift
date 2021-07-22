@@ -196,7 +196,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class UsageFeaturesItem: Item<User> {
         init() {
             super.init( subitems: [
-                ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords", icon: { _ in .icon( "" ) },
+                ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords", icon: { _ in .icon( "" ) },
                                   value: { $0.maskPasswords }, update: { $0.model?.maskPasswords = $1 }, caption: { _ in
                     """
                     Do not reveal passwords on screen.
@@ -221,7 +221,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class SystemFeaturesItem: Item<User> {
         init() {
             super.init( subitems: [
-                ToggleItem<User>( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "" ) },
+                ToggleItem<User>( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "⌨" ) },
                                   value: { $0.autofill }, update: { $0.model?.autofill = $1 }, caption: { _ in
                     """
                     Auto-fill your site passwords from other apps.

@@ -55,7 +55,7 @@ class MainSitesViewController: BaseSitesViewController {
                 site.result( keyPurpose: purpose ?? .authentication ).copy( fromView: self.view, trackingFrom: "site>cell" )
             },
             .init( tracking: .subject( "sites.site", action: "mode" ),
-                   title: "Configure", icon: .icon( "" ), appearance: [ .mode ] ) { [unowned self] site, purpose, appearance in
+                   title: "Configure", icon: .icon( "⚙" ), appearance: [ .mode ] ) { [unowned self] site, purpose, appearance in
                 switch purpose {
                     case .authentication:
                         self.detailsHost.show( DetailSiteViewController( model: site, focus: DetailSiteViewController.PasswordTypeItem.self ), sender: self )
@@ -80,7 +80,7 @@ class MainSitesViewController: BaseSitesViewController {
                 site.result( keyPurpose: purpose ?? .recovery ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "open" ),
-                   title: "Open Site", icon: .icon( "" ), appearance: [ .menu, .premium ] ) { [unowned self] site, purpose, appearance in
+                   title: "Open Site", icon: .icon( "🌐" ), appearance: [ .menu, .premium ] ) { [unowned self] site, purpose, appearance in
                 if let url = URL( string: site.url ?? "https://\(site.siteName)" ) {
                     self.present( SFSafariViewController( url: url ), animated: true )
                 }

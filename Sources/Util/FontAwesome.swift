@@ -45,24 +45,33 @@ extension NSAttributedString {
         else { return nil }
 
         let attributedIcon = NSMutableAttributedString()
-        var font           = IconStyle.duotone.font( withSize: size )
-        if !CTFontGetGlyphsForCharacters(
-                font as CTFont, [ UniChar ]( icon.utf16 ), UnsafeMutablePointer.allocate( capacity: icon.utf16.count ), icon.utf16.count ) {
-            font = IconStyle.brands.font( withSize: size )
-        }
-        else {
-            let toneScalars = icon.unicodeScalars.compactMap { Unicode.Scalar( 0x100000 + $0.value ) }
-            attributedIcon.append( NSAttributedString( string: String( String.UnicodeScalarView( toneScalars ) ), attributes: [
-                NSAttributedString.Key.kern: -1000,
-                NSAttributedString.Key.font: font,
-                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
-            ] ) )
+        let duotoneFont    = IconStyle.duotone.font( withSize: size )
+        let duotoneGlyphs  = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
+        defer {
+            duotoneGlyphs.deinitialize( count: icon.utf16.count )
         }
 
-        attributedIcon.append( NSAttributedString( string: icon, attributes: [
-            NSAttributedString.Key.font: font,
-            NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert && attributedIcon.length > 0 ? .short: .on ),
-        ] ) )
+        if let icon = icon.unicodeScalars.first, CTFontGetGlyphsForCharacters(
+                duotoneFont as CTFont, [ UniChar ]( icon.utf16 ), duotoneGlyphs, icon.utf16.count ) {
+            let tone1 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe01 ) )! ] ) )
+            let tone2 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe02 ) )! ] ) )
+            attributedIcon.append( NSAttributedString( string: tone2, attributes: [
+                NSAttributedString.Key.kern: -1000,
+                NSAttributedString.Key.font: duotoneFont,
+                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
+            ] ) )
+            attributedIcon.append( NSAttributedString( string: tone1, attributes: [
+                NSAttributedString.Key.font: duotoneFont,
+                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
+            ] ) )
+        }
+        else {
+            // Icon is not a duotone, try brands.
+            attributedIcon.append( NSAttributedString( string: icon, attributes: [
+                NSAttributedString.Key.font: IconStyle.brands.font( withSize: size ),
+                NSAttributedString.Key.foregroundColor: UIColor.black,
+            ] ) )
+        }
 
         return attributedIcon
     }

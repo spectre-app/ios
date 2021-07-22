@@ -105,13 +105,13 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
           Item<Void>( subitems: [
               FeatureItem( name: "Biometric Lock", icon: "",
                            caption: "A touch or smile and we can recognize you now. Skip your personal secret." ),
-              FeatureItem( name: "Auto-Fill", icon: "",
+              FeatureItem( name: "Auto-Fill", icon: "⌨",
                            caption: "Your passwords exactly when you need them, instantly, from any app." ),
           ] ),
           Item<Void>( subitems: [
-              FeatureItem( name: "Login Name Generator", icon: "",
+              FeatureItem( name: "Login Name Generator", icon: "",
                            caption: "Upgrade your inter-site anonymity with unique login names. Who is who?" ),
-              FeatureItem( name: "Security Answer Generator", icon: "",
+              FeatureItem( name: "Security Answer Generator", icon: "",
                            caption: "Say « No » to those pretentiously invasive \"security\" questions." ),
           ] ),
           Item<Void>( subitems: [
@@ -120,8 +120,12 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
               FeatureItem( name: "Application Themes", icon: "",
                            caption: "Make it yours and dye \(productName) with a dash of personality." ),
           ] ),
-          FeatureItem( name: "Support", icon: "",
-                       caption: "Supercharge the development of \(productName)'s open source privacy-first digital identity platform." ),
+          Item<Void>( subitems: [
+              FeatureItem( name: "Advanced Integrations", icon: "",
+                           caption: "Unlock special-case integrations such as storing your user in third-party apps." ),
+              FeatureItem( name: "Support", icon: "",
+                           caption: "Supercharge the development of \(productName)'s open source privacy-first digital identity platform." ),
+          ] ),
           SeparatorItem( subitems: [
               EnablePremiumItem(),
               EnableStoreItem(),
@@ -264,7 +268,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
     class SubscriptionActiveItem: ImageItem<Void> {
         init() {
-            super.init( title: "Enrolled", value: { _ in .icon( "", withSize: 64 ) },
+            super.init( title: "Enrolled", value: { _ in .icon( "✓", withSize: 64 ) },
                         caption: { _ in
                             """
                             Thank you for making \(productName) possible!

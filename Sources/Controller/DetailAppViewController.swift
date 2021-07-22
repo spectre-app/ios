@@ -137,7 +137,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class ColoredSitesItem: ToggleItem<AppConfig> {
         init() {
             super.init( track: .subject( "app", action: "themeSites" ),
-                        title: "Colorful Sites", icon: { _ in .icon( "" ) },
+                        title: "Colorful Sites", icon: { _ in .icon( "🖌" ) },
                         value: { $0.themeSites }, update: {
                 $0.model?.themeSites = $1
             }, caption: { _ in

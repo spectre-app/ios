@@ -15,7 +15,7 @@ import AuthenticationServices
 
 class AutoFillBaseUsersViewController: BaseUsersViewController {
     lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ),
-                                                 image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
+                                                 image: .icon( "×" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
     }
 

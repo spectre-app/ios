@@ -59,7 +59,7 @@ class AutoFillConfigurationView: UIScrollView {
 
         self.settingsImage.preservesImageRatio = true
         self.appImage.padded = false
-        self.autofillImage.image = .icon( "" )
+        self.autofillImage.image = .icon( "⌨" )
         self.autofillImage.isSelected = true
 
         self.stackView.axis = .vertical
