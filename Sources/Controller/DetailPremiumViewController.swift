@@ -122,9 +122,9 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
           ] ),
           Item<Void>( subitems: [
               FeatureItem( name: "Advanced Integrations", icon: "",
-                           caption: "Unlock special-case integrations such as storing your user in third-party apps." ),
+                           caption: "Universal Clipboard, third‑party storage apps, opening site URLs, etc." ),
               FeatureItem( name: "Support", icon: "",
-                           caption: "Supercharge the development of \(productName)'s open source privacy-first digital identity platform." ),
+                           caption: "Super‑charge development of \(productName)'s open source privacy‑first digital identity platform." ),
           ] ),
           SeparatorItem( subitems: [
               EnablePremiumItem(),

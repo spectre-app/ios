@@ -35,7 +35,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                   DiagnosticsItem(),
                   NotificationsItem(),
               ] ), Item<AppConfig>( subitems: [
-                  ColoredSitesItem(),
+                  HandoffItem(),
                   OfflineItem(),
               ] ),
               LinksItem<AppConfig>( values: { _ in
@@ -46,8 +46,12 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
           ], axis: .vertical ),
           SeparatorItem(),
 
-          ThemeItem(),
-          ManageSubscriptionItem(), SeparatorItem(),
+          Item<AppConfig>( subitems: [
+              ThemeItem(),
+              ColorfulSitesItem(),
+              ManageSubscriptionItem(),
+          ], axis: .vertical ),
+          SeparatorItem(),
 
           LinksItem<AppConfig>( title: "Links", values: { _ in
               [
@@ -134,17 +138,34 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
         }
     }
 
-    class ColoredSitesItem: ToggleItem<AppConfig> {
+    class ColorfulSitesItem: ToggleItem<AppConfig> {
         init() {
             super.init( track: .subject( "app", action: "themeSites" ),
                         title: "Colorful Sites", icon: { _ in .icon( "🖌" ) },
-                        value: { $0.themeSites }, update: {
-                $0.model?.themeSites = $1
+                        value: { $0.colorfulSites }, update: {
+                $0.model?.colorfulSites = $1
             }, caption: { _ in
                 """
-                Colorize the application theme with a site's personal look and feel.
+                Colorize the theme using the look and feel of your sites.
                 """
             } )
+        }
+    }
+
+    class HandoffItem: ToggleItem<AppConfig> {
+        init() {
+            super.init( track: .subject( "app", action: "handoff" ),
+                        title: "Handoff 🅿︎", icon: { _ in .icon( "" ) },
+                        value: { $0.allowHandoff }, update: {
+                $0.model?.allowHandoff = $1
+            }, caption: { _ in
+                """
+                Allow sharing of copied values through Apple's Universal Clipboard. 
+                """
+            } )
+
+            self.addBehaviour( PremiumTapBehaviour() )
+            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
         }
     }
 

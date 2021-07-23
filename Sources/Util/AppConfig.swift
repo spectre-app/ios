@@ -88,14 +88,25 @@ public class AppConfig: Observable {
             }
         }
     }
-    public var themeSites: Bool {
+    public var colorfulSites: Bool {
         get {
             UserDefaults.shared.bool( forKey: #function )
         }
         set {
-            if newValue != self.themeSites {
+            if newValue != self.colorfulSites {
                 UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.themeSites ) }
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.colorfulSites ) }
+            }
+        }
+    }
+    public var allowHandoff: Bool {
+        get {
+            InAppFeature.premium.isEnabled && UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.allowHandoff {
+                UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.allowHandoff ) }
             }
         }
     }
@@ -120,7 +131,8 @@ public class AppConfig: Observable {
 
     init() {
         UserDefaults.shared.register( defaults: [
-            "themeSites": true,
+            "colorfulSites": true,
+            "allowHandoff": true,
         ] )
 
         #if TARGET_APP

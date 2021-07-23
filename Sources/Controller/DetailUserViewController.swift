@@ -361,7 +361,11 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             self.addBehaviour( BlockTapBehaviour() {
                 _ = $0.model.flatMap {
                     $0.userKeyFactory?.authenticatedIdentifier( for: $0.algorithm ).promise {
-                        UIPasteboard.general.setItems( [ [ UIPasteboard.typeAutomatic: $0 ?? "" ] ] )
+                        UIPasteboard.general.setItems(
+                                [ [ UIPasteboard.typeAutomatic: $0 ?? "" ] ],
+                                options: [
+                                    UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
+                                ] )
                     }
                 }
             } )

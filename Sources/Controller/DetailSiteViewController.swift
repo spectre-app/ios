@@ -49,7 +49,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
     }
 
     override func doUpdate() {
-        self.color = AppConfig.shared.themeSites ? self.model.preview.color: nil
+        self.color = AppConfig.shared.colorfulSites ? self.model.preview.color: nil
         self.image = self.model.preview.image
 
         super.doUpdate()
@@ -64,7 +64,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
     // MARK: --- AppConfigObserver ---
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
-        if change == \AppConfig.themeSites {
+        if change == \AppConfig.colorfulSites {
             self.setNeedsUpdate()
         }
     }

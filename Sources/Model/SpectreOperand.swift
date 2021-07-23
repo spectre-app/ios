@@ -49,7 +49,7 @@ public struct SpectreOperation {
             UIPasteboard.general.setItems(
                     [ [ UIPasteboard.typeAutomatic: token ] ],
                     options: [
-                        UIPasteboard.OptionsKey.localOnly: true,
+                        UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff,
                         UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
                     ] )
             self.operand.use()

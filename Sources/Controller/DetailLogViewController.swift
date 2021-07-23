@@ -177,11 +177,15 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                 }
             }, subitems: [
                 ButtonItem( track: .subject( "logbook", action: "copy" ), value: { _ in (label: "Copy Logs", image: nil) }, action: {
-                    UIPasteboard.general.setItems( [ [ UIPasteboard.typeAutomatic:
-                    LogSink.shared.enumerate( level: $0.model?.logbookLevel ?? .info ).reduce( "" ) { logs, record in
-                        logs + "[\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)] " +
-                                record.message + "\n"
-                    } ] ] )
+                    UIPasteboard.general.setItems(
+                            [ [ UIPasteboard.typeAutomatic:
+                            LogSink.shared.enumerate( level: $0.model?.logbookLevel ?? .info ).reduce( "" ) { logs, record in
+                                logs + "[\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)] " +
+                                        record.message + "\n"
+                            } ] ],
+                            options: [
+                                UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
+                            ] )
                 } )
             ] )
         }
@@ -194,7 +198,10 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
 
             self.addBehaviour( BlockTapBehaviour() { _ in
                 UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: Tracker.shared.identifierForDevice ] ] )
+                        [ [ UIPasteboard.typeAutomatic: Tracker.shared.identifierForDevice ] ],
+                        options: [
+                            UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
+                        ] )
             } )
         }
     }
@@ -206,7 +213,10 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
 
             self.addBehaviour( BlockTapBehaviour() { _ in
                 UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: Tracker.shared.identifierForOwner ] ] )
+                        [ [ UIPasteboard.typeAutomatic: Tracker.shared.identifierForOwner ] ],
+                        options: [
+                            UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
+                        ] )
             } )
         }
     }

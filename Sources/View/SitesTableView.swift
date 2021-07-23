@@ -673,7 +673,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             else { return }
 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
-            if AppConfig.shared.themeSites, let siteColor = self.site?.preview.color {
+            if AppConfig.shared.colorfulSites, let siteColor = self.site?.preview.color {
                 self.separatorView => \.backgroundColor => Theme.current.color.tint.transform { $0?.with( hue: siteColor.hue ) }
                 self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
                 self.backgroundImage.imageColor = siteColor

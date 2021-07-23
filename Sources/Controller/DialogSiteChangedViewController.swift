@@ -61,7 +61,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
     override func doUpdate() {
         super.doUpdate()
 
-        self.backgroundView.imageColor = AppConfig.shared.themeSites ? self.newSite.preview.color: nil
+        self.backgroundView.imageColor = AppConfig.shared.colorfulSites ? self.newSite.preview.color: nil
     }
 
     override func populate(stackView: UIStackView) {
