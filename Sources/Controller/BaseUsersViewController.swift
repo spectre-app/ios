@@ -233,27 +233,29 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
 
-        private var avatar: User.Avatar? {
+        private var avatar:                      User.Avatar? {
             didSet {
                 if self.avatar != oldValue {
                     self.updateTask.request()
                 }
             }
         }
-        private let nameLabel = UILabel()
-        private let nameField = UITextField()
-        private let floorView = BackgroundView( mode: .tint )
-        private let avatarTip = UILabel()
-        private lazy var avatarButton    = EffectButton( track: .subject( "users.user", action: "avatar" ),
-                                                         border: 0, background: false, circular: false )
-        private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
-                                                        image: .icon( "" ), border: 0, background: false )
+        private let nameLabel     = UILabel()
+        private let nameField     = UITextField()
+        private let floorView     = BackgroundView( mode: .tint )
+        private let avatarTip     = UILabel()
         private var secretEvent:                 Tracker.TimedEvent?
+        private let userNameField = UITextField()
         private let secretField   = UserSecretField<User>()
         private let actionsStack  = UIStackView()
         private let strengthMeter = UIProgressView()
         private let strengthLabel = UILabel()
         private var authenticationConfiguration: LayoutConfiguration<UserCell>!
+
+        private lazy var avatarButton    = EffectButton( track: .subject( "users.user", action: "avatar" ),
+                                                         border: 0, background: false, circular: false )
+        private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
+                                                        image: .icon( "" ), border: 0, background: false )
 
         // MARK: --- Life ---
 
@@ -263,6 +265,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             // - View
             self.isOpaque = false
             self.contentView.layoutMargins = .border( 20 )
+
+            self.userNameField.textContentType = .username
+            self.userNameField.isUserInteractionEnabled = false
 
             self.nameLabel.alignmentRectOutsets = .horizontal()
             self.nameLabel => \.font => Theme.current.font.title1
@@ -365,6 +370,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.contentView.addSubview( self.avatarTip )
             self.contentView.addSubview( self.nameLabel )
             self.contentView.addSubview( self.nameField )
+            self.contentView.addSubview( self.userNameField )
             self.contentView.addSubview( self.secretField )
             self.contentView.addSubview( self.actionsStack )
             self.contentView.addSubview( self.strengthMeter )
@@ -395,6 +401,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .activate()
             LayoutConfiguration( view: self.nameField )
                     .constrain( as: .box, to: self.nameLabel ).activate()
+            LayoutConfiguration( view: userNameField )
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: self.secretField.topAnchor ) }
+                    .activate()
             LayoutConfiguration( view: self.secretField )
                     .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }

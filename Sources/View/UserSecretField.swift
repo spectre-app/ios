@@ -114,6 +114,9 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 nameField.delegate = self
                 nameField.placeholder = "Your full name"
                 nameField.autocapitalizationType = .words
+                nameField.keyboardType = .emailAddress
+                nameField.textContentType = .name
+                nameField.autocorrectionType = .no
                 nameField.returnKeyType = .next
                 nameField.textAlignment = .center
             }
@@ -134,6 +137,8 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 passwordField.delegate = self
                 passwordField.isSecureTextEntry = true
                 passwordField.placeholder = "Your personal secret"
+                passwordField.keyboardType = .asciiCapable
+                passwordField.textContentType = UITextContentType( rawValue: "passphrase" )
                 passwordField.returnKeyType = .continue
                 passwordField.leftView = self.leftItemView
                 passwordField.rightView = self.rightItemView
@@ -285,6 +290,12 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     }
 
     // MARK: --- UITextFieldDelegate ---
+
+    func textFieldDidEndEditing(_ textField: UITextField, reason: DidEndEditingReason) {
+        if textField == self.nameField {
+            self.nameField?.text = self.nameField?.text?.trimmingCharacters( in: .whitespacesAndNewlines )
+        }
+    }
 
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         true
