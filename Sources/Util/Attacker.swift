@@ -153,7 +153,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         }
 
         var previousCharacter: Int32 = 0
-        for passwordCharacter in string.utf8CString.map(Int32.init) {
+        for passwordCharacter in string.utf8CString.map( Int32.init ) {
             defer {
                 previousCharacter = passwordCharacter
             }
@@ -190,7 +190,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
     }
 
     static func entropy(permutations: Decimal) -> Int {
-        Int( truncating: permutations.log( base: 2 ) as NSNumber )
+        Int( truncating: permutations.log( base: 2 ).rounded( 0, .down ) as NSNumber )
     }
 
     func timeToCrack(permutations: Decimal, hash: Hash = .bcrypt10) -> TimeToCrack {

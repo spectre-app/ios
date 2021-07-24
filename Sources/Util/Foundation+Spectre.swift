@@ -105,6 +105,17 @@ extension Decimal {
 
         return 2 * final
     }
+
+    mutating func round(_ scale: Int, _ roundingMode: NSDecimalNumber.RoundingMode) {
+        var _self = self
+        NSDecimalRound( &self, &_self, scale, roundingMode )
+    }
+
+    func rounded(_ scale: Int, _ roundingMode: NSDecimalNumber.RoundingMode) -> Decimal {
+        var _self = self, result = Decimal()
+        NSDecimalRound( &result, &_self, scale, roundingMode )
+        return result
+    }
 }
 
 extension FileManager {
