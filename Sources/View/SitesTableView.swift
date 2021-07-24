@@ -403,7 +403,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         private let backgroundImage = BackgroundView( mode: .clear )
         private let maskButton      = EffectButton( track: .subject( "sites.site", action: "mask" ),
-                                                    image: .icon( "" ), border: 0, background: false )
+                                                    image: .icon( "" ), border: 0, background: false )
         private let purposeButton   = EffectButton( track: .subject( "sites.site", action: "purpose" ),
                                                     image: .icon( "🔑" ), border: 0, background: false )
         private let newButton       = EffectButton( track: .subject( "sites.site", action: "add" ),
@@ -709,7 +709,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 self.nameLabel.attributedText = nil
             }
 
-            self.maskButton.image = self.unmasked ? .icon( "👁", invert: true ): .icon( "", invert: true )
+            self.maskButton.image = .icon( self.unmasked ? "👁" : "", invert: true )
             if !InAppFeature.premium.isEnabled {
                 self.purpose = .authentication
             }

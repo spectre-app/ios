@@ -40,7 +40,7 @@ func =><E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, attribut
 }
 
 private var cachedPropertyPaths = NSCache<Identity, AnyPropertyPath>()
-private var activePropertyPaths = [ Identity: WeakBox<AnyPropertyPath>]()
+private var activePropertyPaths = [ Identity: WeakBox<AnyPropertyPath> ]()
 
 private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, identity members: AnyObject?...)
                 -> PropertyPath<E, V> {
@@ -201,11 +201,18 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
             let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
 
             if let value = value {
-                if let secondaryColor = value as? UIColor, attribute == .strokeColor {
+                if attribute == .foregroundColor, let primaryColor = value as? UIColor {
+                    string.enumerateAttribute( .foregroundColor, in: NSRange( location: 0, length: string.length ) ) { value, range, stop in
+                        if let value = value as? UIColor {
+                            string.addAttribute( .foregroundColor, value: primaryColor.with( alpha: value.alpha ), range: range )
+                        }
+                    }
+                }
+                else if attribute == .strokeColor, let secondaryColor = value as? UIColor {
                     string.enumerateAttribute( .strokeColor, in: NSRange( location: 0, length: string.length ) ) { value, range, stop in
-                        if value != nil,
+                        if let value = value as? UIColor,
                            (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
-                            string.addAttribute( .foregroundColor, value: secondaryColor, range: range )
+                            string.addAttribute( .foregroundColor, value: secondaryColor.with( alpha: value.alpha ), range: range )
                         }
                     }
                 }

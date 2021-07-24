@@ -196,7 +196,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class UsageFeaturesItem: Item<User> {
         init() {
             super.init( subitems: [
-                ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords", icon: { _ in .icon( "" ) },
+                ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords",
+                                  icon: { .icon( $0.maskPasswords ? "" : "👁" ) },
                                   value: { $0.maskPasswords }, update: { $0.model?.maskPasswords = $1 }, caption: { _ in
                     """
                     Do not reveal passwords on screen.

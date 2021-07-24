@@ -12,8 +12,8 @@
 
 import Foundation
 
-public enum IconStyle {
-    case brands, duotone, solid, light, regular
+public enum IconStyle: CaseIterable {
+    case duotone, brands, regular, solid, light
 
     var fontName: String {
         switch self {
@@ -40,35 +40,36 @@ public enum IconStyle {
 }
 
 extension NSAttributedString {
-    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, invert: Bool = false) -> NSAttributedString? {
-        guard let icon = icon
+    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false) -> NSAttributedString? {
+        guard let icon = icon, let style = style ?? {
+            let glyphs = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
+            defer {
+                glyphs.deinitialize( count: icon.utf16.count )
+            }
+            return IconStyle.allCases.first( where: {
+                CTFontGetGlyphsForCharacters( $0.font() as CTFont, [ UniChar ]( icon.utf16 ), glyphs, icon.utf16.count )
+            } )
+        }()
         else { return nil }
 
+        let font           = style.font( withSize: size )
         let attributedIcon = NSMutableAttributedString()
-        let duotoneFont    = IconStyle.duotone.font( withSize: size )
-        let duotoneGlyphs  = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
-        defer {
-            duotoneGlyphs.deinitialize( count: icon.utf16.count )
-        }
-
-        if let icon = icon.unicodeScalars.first, CTFontGetGlyphsForCharacters(
-                duotoneFont as CTFont, [ UniChar ]( icon.utf16 ), duotoneGlyphs, icon.utf16.count ) {
+        if case .duotone = style, let icon = icon.unicodeScalars.first {
             let tone1 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe01 ) )! ] ) )
             let tone2 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe02 ) )! ] ) )
             attributedIcon.append( NSAttributedString( string: tone2, attributes: [
                 NSAttributedString.Key.kern: -1000,
-                NSAttributedString.Key.font: duotoneFont,
+                NSAttributedString.Key.font: font,
                 NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
             ] ) )
             attributedIcon.append( NSAttributedString( string: tone1, attributes: [
-                NSAttributedString.Key.font: duotoneFont,
+                NSAttributedString.Key.font: font,
                 NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
             ] ) )
         }
         else {
-            // Icon is not a duotone, try brands.
             attributedIcon.append( NSAttributedString( string: icon, attributes: [
-                NSAttributedString.Key.font: IconStyle.brands.font( withSize: size ),
+                NSAttributedString.Key.font: font,
                 NSAttributedString.Key.foregroundColor: UIColor.black,
             ] ) )
         }
@@ -78,8 +79,8 @@ extension NSAttributedString {
 }
 
 extension UIImage {
-    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, invert: Bool = false) -> UIImage? {
-        .icon( NSAttributedString.icon( icon, withSize: size, invert: invert ) )
+    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false) -> UIImage? {
+        .icon( NSAttributedString.icon( icon, withSize: size, style: style, invert: invert ) )
     }
 
     public static func icon(_ icon: NSAttributedString?) -> UIImage? {
