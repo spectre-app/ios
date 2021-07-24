@@ -250,7 +250,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             @unknown default:
                 return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
                                          type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
         }
     }
 
@@ -276,7 +276,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             @unknown default:
                 return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
                                          type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
         }
     }
 }

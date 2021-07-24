@@ -26,7 +26,7 @@ public func trp(file: String = #file, line: Int32 = #line, function: String = #f
     else { return false }
 
     let logged = log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
-    print( "<breakpoint>" )
+    print( "<SIGTRAP>" )
     return logged
 }
 

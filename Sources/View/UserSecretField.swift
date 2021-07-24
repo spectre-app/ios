@@ -74,7 +74,7 @@ extension UIAlertController {
         } )
         alertController.addAction( UIAlertAction( title: action, style: .default ) { _ in
             if !secretField.try() {
-                mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+                mperror( title: "Couldn't import user", message: "Personal secret cannot be left empty.", in: viewController.view )
 
                 event?.end(
                         [ "result": "!userSecret",

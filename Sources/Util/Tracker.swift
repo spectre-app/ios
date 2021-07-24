@@ -62,7 +62,8 @@ class Tracker: AppConfigObserver {
                     AppConfig.shared.notificationsDecided = true
 
                     if let error = error {
-                        wrn( "Notification authorization error: %@", error )
+                        wrn( "Notification authorization error. [>PII]" )
+                        pii( "[>] %@", error )
                     }
                     if granted {
                         if self.hasCountlyStarted {
@@ -261,7 +262,7 @@ class Tracker: AppConfigObserver {
         SecItemDelete( query as CFDictionary )
         status = SecItemAdd( query.merging( attributes ).merging( [ kSecValueData: uuidData ] ) as CFDictionary, nil )
         if status != errSecSuccess {
-            mperror( title: "Couldn't save \(named) identifier.", error: status )
+            mperror( title: "Couldn't save \(named) identifier", error: status )
         }
 
         return uuid

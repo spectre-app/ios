@@ -118,7 +118,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if components.path == "import" {
                 guard let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 )
                 else {
-                    wrn( "Import URL missing data parameter: %@", url )
+                    wrn( "Import URL missing data parameter. [>PII]" )
+                    pii( "[>] %@", url )
                     return false
                 }
 
@@ -134,13 +135,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             else if components.path == "web" {
                 guard components.verifySignature()
                 else {
-                    wrn( "Untrusted: %@", url )
+                    wrn( "Untrusted. [>PII]" )
+                    pii( "[>] %@", url )
                     return false
                 }
                 let openString = components.queryItems?.first( where: { $0.name == "url" } )?.value ?? "https://spectre.app"
                 guard let openURL = URL( string: openString )
                 else {
-                    wrn( "Cannot open malformed URL: %@", openString )
+                    wrn( "Cannot open malformed URL. [>PII]" )
+                    pii( "[>] %@", openString )
                     return false
                 }
 
@@ -164,7 +167,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             else if components.path == "store" {
                 guard components.verifySignature()
                 else {
-                    wrn( "Untrusted: %@", url )
+                    wrn( "Untrusted. [>PII]" )
+                    pii( "[>] %@", url )
                     return false
                 }
 
@@ -177,7 +181,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             else if components.path == "update" {
                 guard components.verifySignature()
                 else {
-                    wrn( "Untrusted: %@", url )
+                    wrn( "Untrusted. [>PII]" )
+                    pii( "[>] %@", url )
                     return false
                 }
 
@@ -299,17 +304,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return true
             }
 
-            wrn( "Import UTI not supported: %@: %@", url, utis )
+            wrn( "Import UTI not supported. [>PII]" )
+            pii( "[>] %@: %@", url, utis )
         }
         else {
-            wrn( "Open URL not supported: %@", url )
+            wrn( "Open URL not supported. [>PII]" )
+            pii( "[>] %@", url )
         }
 
         return false
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        wrn( "Couldn't register for remote notifications. [>TRC]" )
+        wrn( "Couldn't register for remote notifications. [>PII]" )
         pii( "[>] %@", error )
     }
 }

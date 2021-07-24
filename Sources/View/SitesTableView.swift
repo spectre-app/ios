@@ -748,7 +748,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     self.resultLabel.text = try $0.get()
                 }
                 catch {
-                    mperror( title: "Couldn't update site cell.", error: error )
+                    mperror( title: "Couldn't update site cell", error: error )
                 }
             }
         }

@@ -320,7 +320,7 @@ extension URLSession {
                 promise.finish( .success( (data, response) ) )
             }
             else {
-                promise.finish( .failure( AppError.internal( cause: "Missing error, data or response to URL request.", details: request ) ) )
+                promise.finish( .failure( AppError.internal( cause: "Missing error, data or response to URL request", details: request ) ) )
             }
         }.resume()
         return promise

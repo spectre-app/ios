@@ -160,14 +160,15 @@ class SitePreview: Equatable {
                 linkPreview.preview( "https://\(url)", onSuccess: {
                     self.extractImage( response: $0, into: promise )
                 }, onError: { error in
-                    wrn( "[preview error] %@: %@", self.url, error )
+                    wrn( "[preview error] [>PII]" )
+                    pii( "[>] %@: %@", self.url, error )
 
                     promise.finish( .failure( error ) )
                 } )
             } )
         }
         else {
-            promise.finish( .failure( AppError.state( title: "App is in offline mode." ) ) )
+            promise.finish( .failure( AppError.state( title: "App is in offline mode" ) ) )
         }
 
         return promise
@@ -177,7 +178,7 @@ class SitePreview: Equatable {
         guard let session = URLSession.optional.get()
         else {
             //dbg( "[preview unavailable] %@: %@", self.url, response )
-            promise.finish( .failure( AppError.state( title: "App is in offline mode." ) ) )
+            promise.finish( .failure( AppError.state( title: "App is in offline mode" ) ) )
             return
         }
         // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
@@ -187,8 +188,7 @@ class SitePreview: Equatable {
                               .reordered( last: { $0.pathExtension == "gif" } ).first
         else {
             //dbg( "[preview missing] %@: %@", self.url, response )
-            promise.finish( .failure( AppError.issue(
-                    title: "No candidate images on site.", details: String( describing: response ) ) ) )
+            promise.finish( .failure( AppError.issue( title: "No candidate images on site", details: String( describing: response ) ) ) )
             return
         }
 

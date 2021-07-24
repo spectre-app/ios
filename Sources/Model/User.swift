@@ -211,7 +211,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                    FileManager.default.fileExists( atPath: origin.path ) {
                     do { try FileManager.default.removeItem( at: origin ) }
                     catch {
-                        mperror( title: "Migration issue", message: "Cannot delete obsolete origin document",
+                        mperror( title: "Migration issue", message: "Obsolete origin document could not be deleted.",
                                  details: origin.lastPathComponent, error: error )
                     }
                 }
@@ -262,13 +262,13 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             defer { authKey.deallocate() }
 
             guard spectre_id_valid( [ authKey.pointee.keyID ] )
-            else { throw AppError.internal( cause: "Could not determine key ID for authentication key.", details: self ) }
+            else { throw AppError.internal( cause: "Could not determine key ID for authentication key", details: self ) }
 
             if !spectre_id_valid( &self.userKeyID ) {
                 self.userKeyID = authKey.pointee.keyID
             }
             else if !spectre_id_equals( &self.userKeyID, [ authKey.pointee.keyID ] ) {
-                throw AppError.state( title: "Incorrect User Key", details: self )
+                throw AppError.state( title: "Incorrect user key", details: self )
             }
 
             return self
@@ -406,7 +406,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             @unknown default:
                 return SpectreOperation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
                                          type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
         }
     }
 
@@ -432,7 +432,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             @unknown default:
                 return SpectreOperation( siteName: name ?? self.userName, counter: counter ?? .initial, purpose: keyPurpose,
                                          type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose.", details: keyPurpose ) ) ) )
+                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
         }
     }
 
@@ -445,10 +445,10 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
 
             guard let result = String.valid(
                     spectre_site_result( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
-            else { throw AppError.internal( cause: "Cannot calculate result.", details: self ) }
+            else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
 
             return result
-        } ?? Promise( .failure( AppError.state( title: "User is not authenticated." ) ) ) )
+        } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
     }
 
     private func spectre_state(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
@@ -460,10 +460,10 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
 
             guard let result = String.valid(
                     spectre_site_state( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
-            else { throw AppError.internal( cause: "Cannot calculate result.", details: self ) }
+            else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
 
             return result
-        } ?? Promise( .failure( AppError.state( title: "User is not authenticated." ) ) ) )
+        } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
     }
 
     // MARK: --- Types ---

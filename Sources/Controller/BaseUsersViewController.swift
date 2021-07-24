@@ -115,7 +115,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         if let selectedCell = self.usersCarousel.cellForItem( at: indexPath ) as? UserCell {
             selectedCell.userEvent = self.userEvent
             selectedCell.attemptBiometrics().failure { error in
-                inf( "Skipping biometrics: %@", error )
+                inf( "Skipping biometrics. [>PII]" )
+                pii( "[>] %@", error )
             }
         }
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = true }
@@ -290,7 +291,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.attemptBiometrics().failure { error in
-                    err( "Failed biometrics: %@", error )
+                    err( "Failed biometrics. [>PII]" )
+                    pii( "[>] %@", error )
                 }
             }
 
@@ -329,7 +331,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                               "entropy": Attacker.entropy( string: self.secretField.text ) ?? 0,
                               "error": error,
                             ] )
-                    mperror( title: "Couldn't unlock user", message: "User authentication failed", error: error )
+                    mperror( title: "Couldn't unlock user", error: error )
                 }
             }
             self.secretField.action( for: .editingChanged ) { [unowned self] in
@@ -475,12 +477,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         func attemptBiometrics() -> Promise<User> {
             guard InAppFeature.premium.isEnabled
-            else { return Promise( .failure( AppError.state( title: "Biometrics not available." ) ) ) }
+            else { return Promise( .failure( AppError.state( title: "Biometrics not available" ) ) ) }
             guard let userFile = self.userFile, userFile.biometricLock
-            else { return Promise( .failure( AppError.state( title: "Biometrics not enabled.", details: self.userFile ) ) ) }
+            else { return Promise( .failure( AppError.state( title: "Biometrics not enabled", details: self.userFile ) ) ) }
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.isKeyPresent( for: userFile.algorithm )
-            else { return Promise( .failure( AppError.state( title: "Biometrics key not present." ) ) ) }
+            else { return Promise( .failure( AppError.state( title: "Biometrics key not present" ) ) ) }
 
             return keychainKeyFactory.unlock().promising {
                 userFile.authenticate( using: $0 )
@@ -506,7 +508,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
                     switch error {
                         case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
-                            wrn( "Biometrics cancelled: %@", error )
+                            wrn( "Biometrics cancelled. [>PII]" )
+                            pii( "[>] %@", error )
                         default:
                             mperror( title: "Couldn't unlock user", error: error )
                     }

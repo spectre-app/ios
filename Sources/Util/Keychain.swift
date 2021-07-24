@@ -19,7 +19,7 @@ public class Keychain {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
                 kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error ), error == nil
-        else { throw AppError.issue( error?.takeRetainedValue() as Error?, title: "Keychain Unavailable", details: "Keychain access control could not be created." ) }
+        else { throw AppError.issue( error?.takeRetainedValue() as Error?, title: "Keychain unavailable", details: "Keychain access control could not be created." ) }
 
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
@@ -37,7 +37,7 @@ public class Keychain {
         if let context = context {
             var error: NSError?
             guard context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: &error ), error == nil
-            else { throw AppError.issue( error, title: "Biometrics Unavailable", details: "Biometrics authentication is not available at this time." ) }
+            else { throw AppError.issue( error, title: "Biometrics unavailable", details: "Biometrics authentication is not available at this time." ) }
 
             query[kSecUseAuthenticationContext] = context
         }
@@ -72,7 +72,7 @@ public class Keychain {
 
             let status = SecItemDelete( query as CFDictionary )
             guard status == errSecSuccess || status == errSecItemNotFound
-            else { throw AppError.issue( status, title: "Biometrics Key Not Deleted", details: userName ) }
+            else { throw AppError.issue( status, title: "Biometrics key not deleted", details: userName ) }
         }
     }
 
@@ -90,10 +90,10 @@ public class Keychain {
             var result: CFTypeRef?
             let status = SecItemCopyMatching( query as CFDictionary, &result )
             guard status == errSecSuccess
-            else { throw AppError.issue( status, title: "Biometrics Key Denied", details: userName ) }
+            else { throw AppError.issue( status, title: "Biometrics key denied", details: userName ) }
 
             guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
-            else { throw AppError.internal( cause: "Biometrics Key Not Valid", details: userName ) }
+            else { throw AppError.internal( cause: "Biometrics key not valid", details: userName ) }
 
             let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
             data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: SpectreUserKey.self ) ) }
@@ -122,7 +122,7 @@ public class Keychain {
                 status = SecItemAdd( query.merging( attributes, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
             }
             guard status == errSecSuccess
-            else { throw AppError.issue( status, title: "Biometrics Key Not Saved", details: userName ) }
+            else { throw AppError.issue( status, title: "Biometrics key not saved", details: userName ) }
         }
     }
 }

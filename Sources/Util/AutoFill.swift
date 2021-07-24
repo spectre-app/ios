@@ -35,7 +35,7 @@ final class AutoFill {
                     if !expiredCredentials.isEmpty {
                         ASCredentialIdentityStore.shared.removeCredentialIdentities( expiredCredentials ) { success, error in
                             if !success || error != nil {
-                                mperror( title: "Cannot purge autofill credentials.", details: expiredCredentials, error: error )
+                                mperror( title: "Cannot purge autofill credentials", details: expiredCredentials, error: error )
                             }
                         }
                     }
@@ -44,7 +44,7 @@ final class AutoFill {
                     if !insertedCredentials.isEmpty {
                         ASCredentialIdentityStore.shared.saveCredentialIdentities( insertedCredentials ) { success, error in
                             if !success || error != nil {
-                                mperror( title: "Cannot save autofill credentials.", details: insertedCredentials, error: error )
+                                mperror( title: "Cannot save autofill credentials", details: insertedCredentials, error: error )
                             }
                         }
                     }

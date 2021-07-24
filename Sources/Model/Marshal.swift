@@ -30,14 +30,14 @@ class Marshal: Observable, Updatable {
 
     public func delete(userFile: UserFile) throws {
         guard let userURL = userFile.origin
-        else { throw AppError.state( title: "No User Document", details: userFile ) }
+        else { throw AppError.state( title: "No user document", details: userFile ) }
 
         do {
             try FileManager.default.removeItem( at: userURL )
             self.userFiles.removeAll { $0 == userFile }
         }
         catch {
-            throw AppError.issue( error, title: "Cannot Delete User Document", details: userURL.lastPathComponent )
+            throw AppError.issue( error, title: "Cannot delete user document", details: userURL.lastPathComponent )
         }
     }
 
@@ -46,7 +46,7 @@ class Marshal: Observable, Updatable {
         let format = user.file.flatMap { $0.pointee.info?.pointee.format ?? .default } ?? .none
         guard let userURL = user.origin.flatMap( { format.is( url: $0 ) ? $0: nil } ) ?? self.createURL( for: user, format: format )
         else {
-            return Promise( .failure( AppError.internal( cause: "No path to marshal user.", details: user ) ) )
+            return Promise( .failure( AppError.internal( cause: "No path to marshal user", details: user ) ) )
         }
 
         return self.save( user: user, to: userURL, format: format, redacted: redacted )
@@ -55,7 +55,7 @@ class Marshal: Observable, Updatable {
     private func save(user: User, in directory: URL?, format: SpectreFormat, redacted: Bool) -> Promise<URL> {
         guard let userURL = self.createURL( for: user, in: directory, format: format )
         else {
-            return Promise( .failure( AppError.internal( cause: "No path to marshal user.", details: user ) ) )
+            return Promise( .failure( AppError.internal( cause: "No path to marshal user", details: user ) ) )
         }
 
         return self.save( user: user, to: userURL, format: format, redacted: redacted )
@@ -68,7 +68,7 @@ class Marshal: Observable, Updatable {
             guard !userURL.hasDirectoryPath
             else {
                 saveEvent.end( [ "result": "!dir" ] )
-                throw AppError.internal( cause: "Cannot save to a directory URL.", details: userURL )
+                throw AppError.internal( cause: "Cannot save to a directory URL", details: userURL )
             }
 
             do {
@@ -79,7 +79,7 @@ class Marshal: Observable, Updatable {
             }
             catch {
                 saveEvent.end( [ "result": "!path" ] )
-                throw AppError.issue( error, title: "Cannot Create Document Path", details: userURL )
+                throw AppError.issue( error, title: "Cannot create document path", details: userURL )
             }
 
             return self.export( user: user, format: format, redacted: redacted ).thenPromise { result in
@@ -91,7 +91,7 @@ class Marshal: Observable, Updatable {
                 NSFileCoordinator().coordinate( writingItemAt: userURL, error: &coordinateError ) { userURL in
                     let securityScoped = userURL.startAccessingSecurityScopedResource()
                     if !FileManager.default.createFile( atPath: userURL.path, contents: exportData ) {
-                        saveError = AppError.internal( cause: "Couldn't create file.", details: userURL )
+                        saveError = AppError.internal( cause: "Couldn't create file", details: userURL )
                     }
                     if securityScoped {
                         userURL.stopAccessingSecurityScopedResource()
@@ -105,11 +105,12 @@ class Marshal: Observable, Updatable {
                 if user.sharing {
                     if let sharingURL = self.createURL( for: user, in: FileManager.appDocuments, format: format ) {
                         if !FileManager.default.createFile( atPath: sharingURL.path, contents: exportData ) {
-                            wrn( "Issue sharing user: %@. Couldn't create user file: %@.", user, sharingURL )
+                            wrn( "Issue sharing user. Couldn't create user file. [>PII]" )
+                            pii( "[>] %@", sharingURL )
                         }
                     }
                     else {
-                        wrn( "Issue sharing user: %@. No application document path available.", user )
+                        wrn( "Issue sharing user. No application document path available." )
                     }
                 }
 
@@ -126,7 +127,7 @@ class Marshal: Observable, Updatable {
             guard let keyFactory = user.userKeyFactory
             else {
                 exportEvent.end( [ "result": "!keyFactory" ] )
-                throw AppError.state( title: "Not Authenticated", details: user )
+                throw AppError.state( title: "Not authenticated", details: user )
             }
 
             return keyFactory.provide()
@@ -134,7 +135,7 @@ class Marshal: Observable, Updatable {
             guard let marshalledUser = spectre_marshal_user( user.userName, keyProvider, user.algorithm )
             else {
                 exportEvent.end( [ "result": "!marshal_user" ] )
-                throw AppError.internal( cause: "Couldn't marshal user.", details: user )
+                throw AppError.internal( cause: "Couldn't marshal user", details: user )
             }
 
             marshalledUser.pointee.redacted = redacted
@@ -150,7 +151,7 @@ class Marshal: Observable, Updatable {
                 guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
                 else {
                     exportEvent.end( [ "result": "!marshal_site" ] )
-                    throw AppError.internal( cause: "Couldn't marshal site.", details: [ user, site ] )
+                    throw AppError.internal( cause: "Couldn't marshal site", details: [ user, site ] )
                 }
 
                 marshalledSite.pointee.resultState = spectre_strdup( site.resultState )
@@ -164,7 +165,7 @@ class Marshal: Observable, Updatable {
                     guard let marshalledQuestion = spectre_marshal_question( marshalledSite, question.keyword )
                     else {
                         exportEvent.end( [ "result": "!marshal_question" ] )
-                        throw AppError.internal( cause: "Couldn't marshal question.", details: [ user, site, question ] )
+                        throw AppError.internal( cause: "Couldn't marshal question", details: [ user, site, question ] )
                     }
 
                     marshalledQuestion.pointee.type = question.resultType
@@ -180,7 +181,7 @@ class Marshal: Observable, Updatable {
 
             exportEvent.end( [ "result": "!marshal_write" ] )
             throw AppError.marshal( user.file?.pointee.error ?? SpectreMarshalError( type: .errorInternal, message: nil ),
-                                    title: "Issue Writing User", details: user )
+                                    title: "Issue writing user", details: user )
         }
     }
 
@@ -194,7 +195,7 @@ class Marshal: Observable, Updatable {
             guard let importingURL = self.createURL( for: importingFile.userName, format: importingFile.format )
             else {
                 importEvent.end( [ "result": "!url" ] )
-                throw AppError.issue( title: "User Not Savable", details: importingFile )
+                throw AppError.issue( title: "User not savable", details: importingFile )
             }
 
             if let existingFile = try UserFile( origin: importingURL ) {
@@ -249,7 +250,7 @@ class Marshal: Observable, Updatable {
                     importingFile.authenticate( using: keyFactory )
                 } )
                 else {
-                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+                    mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.", in: viewController.view )
                     replaceEvent.end( [ "result": "!userSecret" ] )
                     viewController.present( alertController, animated: true )
                     return
@@ -267,7 +268,8 @@ class Marshal: Observable, Updatable {
                             if FileManager.default.fileExists( atPath: existingURL.path ) {
                                 do { try FileManager.default.removeItem( at: existingURL ) }
                                 catch {
-                                    wrn( "Couldn't delete existing document when importing new one: %@: %@", existingURL, error )
+                                    wrn( "Couldn't delete existing document when importing new one. [>PII]" )
+                                    pii( "[>] %@: %@", existingURL, error )
                                 }
                             }
 
@@ -279,7 +281,7 @@ class Marshal: Observable, Updatable {
                         }
                     }
                     catch {
-                        mperror( title: "Couldn't import user", message: "User authentication failed", error: error, in: viewController.view )
+                        mperror( title: "Couldn't import user", message: "User could not be unlocked.", error: error, in: viewController.view )
                         replaceEvent.end( [ "result": "!userKey" ] )
                         viewController.present( alertController, animated: true )
                     }
@@ -295,7 +297,7 @@ class Marshal: Observable, Updatable {
                              try? existingFile.authenticate( using: keyFactory ).await()) ) )
                 } )
                 else {
-                    mperror( title: "Couldn't import user", message: "Missing personal secret", in: viewController.view )
+                    mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.", in: viewController.view )
                     mergeEvent.end( [ "result": "!userSecret" ] )
                     viewController.present( alertController, animated: true )
                     return
@@ -342,13 +344,13 @@ class Marshal: Observable, Updatable {
                                              .promise { _ in existingFile }.finishes( promise )
                         }
                         else {
-                            mperror( title: "Couldn't import user", message: "User authentication failed", in: viewController.view )
+                            mperror( title: "Couldn't import user", message: "Couldn't unlock the user.", in: viewController.view )
                             mergeEvent.end( [ "result": "!userKey" ] )
                             viewController.present( alertController, animated: true )
                         }
                     }
                     catch {
-                        promise.finish( .failure( AppError.internal( cause: "No known path for promise to fail." ) ) )
+                        promise.finish( .failure( AppError.internal( cause: "No known path for promise to fail" ) ) )
                     }
                 }
             } )
@@ -443,7 +445,7 @@ class Marshal: Observable, Updatable {
 
         return DispatchQueue.api.promise {
             guard !documentURL.hasDirectoryPath
-            else { throw AppError.internal( cause: "Cannot save to a directory URL.", details: documentURL ) }
+            else { throw AppError.internal( cause: "Cannot save to a directory URL", details: documentURL ) }
             do {
                 let documentDirectory = documentURL.deletingLastPathComponent()
                 if documentDirectory.hasDirectoryPath {
@@ -452,12 +454,12 @@ class Marshal: Observable, Updatable {
             }
             catch {
                 importEvent.end( [ "result": "!createPath" ] )
-                throw AppError.issue( error, title: "Cannot Create Document Path", details: documentURL )
+                throw AppError.issue( error, title: "Cannot create document path", details: documentURL )
             }
 
             if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
                 importEvent.end( [ "result": "!createFile" ] )
-                throw AppError.issue( title: "Cannot Write User Document", details: documentURL )
+                throw AppError.issue( title: "Cannot write user document", details: documentURL )
             }
             importingFile.origin = documentURL
 
@@ -515,7 +517,7 @@ class Marshal: Observable, Updatable {
             return try self.userDocuments().compactMap { try UserFile( origin: $0 ) }
         }
         catch {
-            mperror( title: "Couldn't read user documents.", error: error )
+            mperror( title: "Couldn't read user documents", error: error )
             return []
         }
     }
@@ -631,10 +633,10 @@ class Marshal: Observable, Updatable {
             else { return nil }
 
             guard let document = String( data: documentData, encoding: .utf8 )
-            else { throw AppError.issue( title: "Cannot Read User Document", details: origin ) }
+            else { throw AppError.issue( title: "Cannot read user document", details: origin ) }
 
             guard let file = spectre_marshal_read( nil, document )
-            else { throw AppError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
+            else { throw AppError.internal( cause: "Couldn't allocate for unmarshalling", details: origin ) }
             return file
         }
 
@@ -647,19 +649,19 @@ class Marshal: Observable, Updatable {
 
         convenience init(data: Data, origin: URL? = nil) throws {
             guard let document = String( data: data, encoding: .utf8 )
-            else { throw AppError.issue( title: "Cannot Read User Document", details: origin ) }
+            else { throw AppError.issue( title: "Cannot read user document", details: origin ) }
 
             guard let file = spectre_marshal_read( nil, document )
-            else { throw AppError.internal( cause: "Couldn't allocate for unmarshalling.", details: origin ) }
+            else { throw AppError.internal( cause: "Couldn't allocate for unmarshalling", details: origin ) }
 
             try self.init( file: file, origin: origin )
         }
 
         init(file: UnsafeMutablePointer<SpectreMarshalledFile>, origin: URL? = nil) throws {
             guard file.pointee.error.type == .success
-            else { throw AppError.marshal( file.pointee.error, title: "Cannot Load User", details: origin ) }
+            else { throw AppError.marshal( file.pointee.error, title: "Cannot load user", details: origin ) }
             guard let info = file.pointee.info?.pointee, info.format != .none, let userName = String.valid( info.userName )
-            else { throw AppError.state( title: "Corrupted User Document", details: origin ) }
+            else { throw AppError.state( title: "Corrupted user document", details: origin ) }
 
             self.origin = origin
             self.file = file
@@ -698,7 +700,7 @@ class Marshal: Observable, Updatable {
 
                 // Authenticate against the file with the given keyFactory.
                 guard let marshalledUser = spectre_marshal_auth( self.file, $0 )?.pointee, self.file.pointee.error.type == .success
-                else { throw AppError.marshal( self.file.pointee.error, title: "Issue Authenticating User", details: self.userName ) }
+                else { throw AppError.marshal( self.file.pointee.error, title: "Issue authenticating user", details: self.userName ) }
 
                 // Yield a fully authenticated user.
                 return User(

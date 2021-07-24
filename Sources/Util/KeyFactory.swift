@@ -96,7 +96,7 @@ public class KeyFactory {
     }
 
     fileprivate func createKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
-        Promise( .failure( AppError.internal( cause: "This key factory does not support key creation." ) ) )
+        Promise( .failure( AppError.internal( cause: "This key factory does not support key creation" ) ) )
     }
 }
 
@@ -127,7 +127,7 @@ public class SecretKeyFactory: KeyFactory {
     fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
         DispatchQueue.api.promise {
             guard let userKey = spectre_user_key( self.userName, self.userSecret, algorithm )
-            else { throw AppError.internal( cause: "Couldn't allocate a user key." ) }
+            else { throw AppError.internal( cause: "Couldn't allocate a user key" ) }
 
             return userKey
         }
@@ -139,7 +139,8 @@ public class KeychainKeyFactory: KeyFactory {
         var error: NSError?
         defer {
             if let error = error {
-                wrn( "Biometrics unavailable: %@", error )
+                wrn( "Biometrics unavailable. [>PII]" )
+                pii( "[>] %@", error )
             }
         }
 
@@ -241,7 +242,7 @@ public class KeychainKeyFactory: KeyFactory {
                 promise.finish( .failure( error ) )
             }
             else if !result {
-                promise.finish( .failure( AppError.internal( cause: "Biometrics authentication denied.", details: self.userName ) ) )
+                promise.finish( .failure( AppError.internal( cause: "Biometrics authentication denied", details: self.userName ) ) )
             }
             else {
                 promise.finish( .success( self ) )
