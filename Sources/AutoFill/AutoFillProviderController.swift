@@ -38,6 +38,12 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         AutoFillModel.shared.context = AutoFillModel.Context()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        Tracker.shared.appeared()
+    }
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange( previousTraitCollection )
 
