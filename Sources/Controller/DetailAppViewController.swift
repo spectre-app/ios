@@ -48,6 +48,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
           Item<AppConfig>( subitems: [
               ThemeItem(),
+              LogoItem(),
               ColorfulSitesItem(),
               ManageSubscriptionItem(),
           ], axis: .vertical ),
@@ -233,6 +234,46 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                 // - Layout
                 LayoutConfiguration( view: self.iconView )
                         .constrain( as: .center ).activate()
+            }
+        }
+    }
+
+    class LogoItem: PickerItem<AppConfig, AppIcon, LogoItem.Cell> {
+        init() {
+            super.init( track: .subject( "app", action: "theme" ),
+                        title: "Application Logos",
+                        values: { _ in AppIcon.allCases }, value: { _ in .current }, update: { $1.activate() },
+                        caption: { _ in "Pick your favourite home screen icon for \(productName)." } )
+        }
+
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: AppIcon) {
+            cell.logo = value
+        }
+
+        class Cell: EffectCell {
+            let logoView = UIImageView()
+            var logo: AppIcon = AppIcon.primary {
+                didSet {
+                    DispatchQueue.main.perform {
+                        self.logoView.image = self.logo.image
+                    }
+                }
+            }
+
+            required init?(coder aDecoder: NSCoder) {
+                fatalError( "init(coder:) is not supported for this class" )
+            }
+
+            override init(frame: CGRect) {
+                super.init( frame: frame )
+
+                // - Hierarchy
+                self.effectView.addContentView( self.logoView )
+
+                // - Layout
+                LayoutConfiguration( view: self.logoView )
+                        .compressionResistance( horizontal: .defaultLow, vertical: .defaultLow )
+                        .constrain( as: .box ).activate()
             }
         }
     }

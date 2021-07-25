@@ -19,6 +19,7 @@
 		93D39139805FC516B6C2C181 /* EffectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39564D6408073D59CDB6A /* EffectButton.swift */; };
 		93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D390CB091CCF46AF6EAB4C /* AutoFill.swift */; };
 		93D391E2A56BA0C4D8E05D25 /* DetailUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394B019A4203EF763DBEA /* DetailUserViewController.swift */; };
+		93D391EEF73AB6E099886CBE /* InnerShadowLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B9FF1B86CB5A5629BC0 /* InnerShadowLayer.swift */; };
 		93D392050A549F9463E51472 /* SitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398124AA304872DCE8C26 /* SitePreviewController.swift */; };
 		93D39216BF04B39B4E90B8D6 /* Boxes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393E2C339F220532F1D53 /* Boxes.swift */; };
 		93D39216C0E8F79F5F06734B /* TipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FFBAB0E1072779FE7D2 /* TipsView.swift */; };
@@ -80,6 +81,7 @@
 		93D39A467E6B7BB3B646E004 /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* Tracker.swift */; };
 		93D39AA18A00A587610444F4 /* EffectToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* EffectToggleButton.swift */; };
 		93D39AA2456367CDF6A7A296 /* Question.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* Question.swift */; };
+		93D39AAABBF097F82F8C1BB1 /* InnerShadowLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B9FF1B86CB5A5629BC0 /* InnerShadowLayer.swift */; };
 		93D39AB0E8841E744F4B6F4C /* EffectCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39865ECFD34CF3ADF930D /* EffectCell.swift */; };
 		93D39AC3658384147B2361C9 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39508BCB9FBB697699194 /* Text.swift */; };
 		93D39ACE4C36246E730B0539 /* Resources.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3944D27B033E791F675BB /* Resources.swift */; };
@@ -383,6 +385,7 @@
 		93D39B35F97CEFC707FD6D48 /* Secrets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		93D39B6403FE258E526E5E85 /* UIView+Spectre.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Spectre.m"; sourceTree = "<group>"; };
 		93D39B651DB0789891C67639 /* DialogMasterPasswordViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DialogMasterPasswordViewController.swift; sourceTree = "<group>"; };
+		93D39B9FF1B86CB5A5629BC0 /* InnerShadowLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InnerShadowLayer.swift; sourceTree = "<group>"; };
 		93D39BAACC08C85F91D1C5C2 /* Graph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainUsersViewController.swift; sourceTree = "<group>"; };
 		93D39C3FA9FA2CA5B234741E /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
@@ -617,6 +620,7 @@
 				93D3931E2B7B432862570208 /* UserSecretField.swift */,
 				93D39FFBAB0E1072779FE7D2 /* TipsView.swift */,
 				93D39169D757760D11F5D3E4 /* CarouselView.swift */,
+				93D39B9FF1B86CB5A5629BC0 /* InnerShadowLayer.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1409,6 +1413,7 @@
 				93D3963FF4A58C3753DC80D1 /* Resources.swift in Sources */,
 				93D3907BEF0B169A0A4BCB8C /* AutoFillCredentialViewController.swift in Sources */,
 				93D39992F33572F1E0D540C2 /* AutoFillBaseUsersViewController.swift in Sources */,
+				93D39AAABBF097F82F8C1BB1 /* InnerShadowLayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1514,6 +1519,7 @@
 				93D39AC3658384147B2361C9 /* Text.swift in Sources */,
 				93D39F719CD8B096D7F68E64 /* CarouselView.swift in Sources */,
 				93D39ACE4C36246E730B0539 /* Resources.swift in Sources */,
+				93D391EEF73AB6E099886CBE /* InnerShadowLayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1554,6 +1560,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = tint;
 				ASSETCATALOG_COMPILER_OPTIMIZATION = time;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = panel;
 				ASSETCATALOG_WARNINGS = YES;
 				CLANG_ANALYZER_DEADCODE_DEADSTORES = YES;
 				CLANG_ANALYZER_DIVIDE_BY_ZERO = YES;
@@ -1732,7 +1739,8 @@
 		DA09744A1E95703B00F0BFE8 /* Public */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -1876,6 +1884,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = tint;
 				ASSETCATALOG_COMPILER_OPTIMIZATION = time;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = panel;
 				ASSETCATALOG_WARNINGS = YES;
 				CLANG_ANALYZER_DEADCODE_DEADSTORES = YES;
 				CLANG_ANALYZER_DIVIDE_BY_ZERO = YES;
@@ -2059,6 +2068,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = tint;
 				ASSETCATALOG_COMPILER_OPTIMIZATION = time;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = panel;
 				ASSETCATALOG_WARNINGS = YES;
 				CLANG_ANALYZER_DEADCODE_DEADSTORES = YES;
 				CLANG_ANALYZER_DIVIDE_BY_ZERO = YES;
@@ -2236,7 +2246,8 @@
 		DA5BFA6E147E415C00F98B1E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -2272,7 +2283,8 @@
 		DA5BFA6F147E415C00F98B1E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;

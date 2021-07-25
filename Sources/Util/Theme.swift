@@ -349,6 +349,36 @@ struct ThemePattern {
     let pale: UIColor?
 }
 
+public enum AppIcon: String, CaseIterable {
+    case iconLight = "Light Icon", logoLight = "Light Logo", iconDark = "Dark Icon", logoDark = "Dark Logo"
+
+    static let primary = AppIcon.iconLight
+    static var current: AppIcon {
+        #if TARGET_APP
+        allCases.first( where: { $0.rawValue == UIApplication.shared.alternateIconName } ) ?? .primary
+        #else
+        AppConfig.shared.appIcon
+        #endif
+    }
+
+    var image: UIImage? {
+        UIImage( named: self.rawValue + " Image" )
+    }
+
+    #if TARGET_APP
+    func activate() {
+        UIApplication.shared.setAlternateIconName( self == .primary ? nil: self.rawValue ) { error in
+            if let error = error {
+                mperror( title: "Couldn't change app icon.", error: error )
+            }
+            else {
+                AppConfig.shared.appIcon = self
+            }
+        }
+    }
+    #endif
+}
+
 extension UIFont {
     static func custom(family: String, weight: UIFont.Weight, asTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
         self.custom( family: family, weight: weight, asFontStyle: UIFontDescriptor.preferredFontDescriptor( withTextStyle: textStyle ) )
@@ -528,12 +558,12 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.body.set( UIColor.darkText )
         self.color.secondary.set( UIColor.darkGray.with( alpha: .long ) )
         self.color.placeholder.set( UIColor.darkGray.with( alpha: .short ) )
-        self.color.backdrop.set( UIColor.groupTableViewBackground )
-        self.color.panel.set( UIColor.white )
+        self.color.backdrop.set( UIColor.white )
+        self.color.panel.set( UIColor.groupTableViewBackground )
         self.color.shade.set( UIColor.lightText )
-        self.color.shadow.set( UIColor.gray.with( alpha: .off ) )
+        self.color.shadow.set( UIColor.white.with( alpha: .long ) )
         self.color.mute.set( UIColor.darkGray.with( alpha: .short * .short ) )
-        self.color.selection.set( UIColor.gray.with( alpha: .short ) )
+        self.color.selection.set( .hex( "41A0A0" )?.with( alpha: .short ) )
         self.color.tint.set( .hex( "41A0A0" ) )
 
         if #available( iOS 13, * ) {
@@ -544,10 +574,8 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( UIColor.systemBackground )
             self.color.panel.set( UIColor.secondarySystemBackground )
             self.color.shade.set( UIColor.systemFill )
-            self.color.shadow.set( UIColor.secondarySystemFill.with( alpha: .off ) )
+            self.color.shadow.set( UIColor.systemBackground.with( alpha: .long ) )
             self.color.mute.set( UIColor.separator )
-            self.color.selection.set( UIColor.tertiarySystemFill )
-            self.color.tint.set( .hex( "41A0A0" ) )
         }
 
         Theme.byPath[""] = self
@@ -573,7 +601,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.backdrop.set( light: pattern.pale, dark: pattern.dark )
             self.color.panel.set( light: pattern.dawn, dark: pattern.dusk )
             self.color.shade.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
-            self.color.shadow.set( light: pattern.flat?.with( alpha: .off ), dark: pattern.flat?.with( alpha: .off ) )
+            self.color.shadow.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
             self.color.mute.set( light: pattern.dusk?.with( alpha: .short * .short ), dark: pattern.dawn?.with( alpha: .short * .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
             self.color.tint.set( light: pattern.flat, dark: pattern.flat )

@@ -75,6 +75,19 @@ public class AppConfig: Observable {
             }
         }
     }
+    public var appIcon: AppIcon {
+        get {
+            UserDefaults.shared.string( forKey: #function ).flatMap { appIcon in
+                AppIcon.allCases.first { $0.rawValue == appIcon }
+            } ?? AppIcon.primary
+        }
+        set {
+            if newValue != self.appIcon {
+                UserDefaults.shared.set( newValue.rawValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.appIcon ) }
+            }
+        }
+    }
     public var theme: String {
         get {
             (InAppFeature.premium.isEnabled ? UserDefaults.shared.string( forKey: #function ): nil)

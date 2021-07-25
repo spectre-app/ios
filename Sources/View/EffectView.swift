@@ -79,20 +79,23 @@ class EffectView: UIView, ThemeObserver {
             }
         }
     }
+    var contentView: UIView {
+        self.vibrancyEffectView.contentView
+    }
     override var layoutMargins:   UIEdgeInsets {
         get {
-            self.vibrancyEffectView.contentView.layoutMargins
+            self.contentView.layoutMargins
         }
         set {
-            self.vibrancyEffectView.contentView.layoutMargins = newValue
+            self.contentView.layoutMargins = newValue
         }
     }
     override var backgroundColor: UIColor? {
         get {
-            self.vibrancyEffectView.contentView.backgroundColor
+            self.contentView.backgroundColor
         }
         set {
-            self.vibrancyEffectView.contentView.backgroundColor = newValue
+            self.contentView.backgroundColor = newValue
         }
     }
 
@@ -119,6 +122,7 @@ class EffectView: UIView, ThemeObserver {
     }
     private lazy var blurEffectView     = UIVisualEffectView( effect: self.blurEffect )
     private lazy var vibrancyEffectView = UIVisualEffectView( effect: self.vibrancyEffect )
+    private let innerShadowLayer = InnerShadowLayer()
 
     init(border: CGFloat = 1, background: Bool = true, circular: Bool = false, rounding: CGFloat = 20, dims: Bool = false) {
         self.borderWidth = border
@@ -132,18 +136,19 @@ class EffectView: UIView, ThemeObserver {
         // - View
         self => \.borderColor => Theme.current.color.mute
 
-        self.blurEffectView.layer.masksToBounds = true
-        self.blurEffectView.layer.shadowRadius = 0
-        self.blurEffectView.layer.shadowOpacity = .short
-        self.blurEffectView.layer => \.shadowColor => Theme.current.color.shadow
-        self.blurEffectView.layer.shadowOffset = CGSize( width: 0, height: 1 )
+        self.layer.masksToBounds = true
+        self.layer.shadowRadius = 0
+        self.layer.shadowOpacity = .short
+        self.layer => \.shadowColor => Theme.current.color.shadow
+        self.layer.shadowOffset = CGSize( width: 0, height: 1 )
 
-        self.vibrancyEffectView.contentView.insetsLayoutMarginsFromSafeArea = false
+        self.contentView.insetsLayoutMarginsFromSafeArea = false
         self.update()
 
         // - Hierarchy
         self.blurEffectView.contentView.addSubview( self.vibrancyEffectView )
         self.addSubview( self.blurEffectView )
+        self.layer.addSublayer( self.innerShadowLayer )
 
         // - Layout
         LayoutConfiguration( view: self.vibrancyEffectView )
@@ -178,8 +183,14 @@ class EffectView: UIView, ThemeObserver {
         }
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        self.innerShadowLayer.frame = self.innerShadowLayer.superlayer?.bounds ?? .zero
+    }
+
     func addContentView(_ view: UIView) {
-        self.vibrancyEffectView.contentView.addSubview( view )
+        self.contentView.addSubview( view )
     }
 
     // MARK: --- ThemeObserver ---
@@ -193,6 +204,7 @@ class EffectView: UIView, ThemeObserver {
     private func update() {
         DispatchQueue.main.perform {
             if self.isBackground {
+                self.innerShadowLayer.opacity = .on
                 self.blurEffect = UIBlurEffect( style: {
                     if #available( iOS 13, * ) {
                         return self.isDimmed ? .systemUltraThinMaterial: .systemThinMaterial
@@ -203,16 +215,18 @@ class EffectView: UIView, ThemeObserver {
                 }() )
             }
             else {
+                self.innerShadowLayer.opacity = .off
                 self.blurEffect = nil
             }
 
             if #available( iOS 13.0, * ) {
-                self.blurEffectView.layer.cornerCurve = self.isCircular ? .circular: .continuous
+                self.layer.cornerCurve = self.isCircular ? .circular: .continuous
             }
-            self.blurEffectView.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
-            self.blurEffectView.layer.borderWidth = self.borderWidth
-            self.blurEffectView.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor: Theme.current.color.body.get())?.cgColor
+            self.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
+            self.layer.borderWidth = self.borderWidth
+            self.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor: Theme.current.color.body.get())?.cgColor
             self.blurEffectView.alpha = self.isDimmed ? .long: .on
+            self.innerShadowLayer.cornerRadius = self.layer.cornerRadius
         }
     }
 }

@@ -38,7 +38,7 @@ class DialogViewController: BaseViewController {
         super.viewDidLoad()
 
         self.backgroundView.mode = .panel
-        self.backgroundView.image = UIImage( named: "logo" )
+        self.backgroundView.image = AppIcon.current.image
 
         self.titleLabel => \.font => Theme.current.font.title1
         self.titleLabel.numberOfLines = 0

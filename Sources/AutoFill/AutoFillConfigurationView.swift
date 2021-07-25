@@ -20,7 +20,7 @@ class AutoFillConfigurationView: UIScrollView {
     let step2Title    = UILabel()
     let step3Title    = UILabel()
     let settingsImage = ImageView( image: UIImage( named: "autofill-disable-others" ) )
-    let appImage      = EffectButton( image: UIImage( named: "icon" ), background: false, square: true, circular: false, rounding: 22 )
+    let appImage      = EffectButton( image: AppIcon.current.image, background: false, square: true, circular: false, rounding: 22 )
     let avatarImage   = EffectButton( image: UIImage( named: "avatar-0" ), border: 0, background: false, square: true, circular: false )
     let userImage     = EffectButton( title: "RLM" )
     let autofillImage = EffectToggleButton( action: { _ in nil } )
