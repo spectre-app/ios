@@ -44,7 +44,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
             } )
         }
         self.sitesTableView.proposedSite = allServiceIdentifiers.first.flatMap {
-            (URL( string: $0.identifier )?.host ?? $0.identifier).topPrivateDomain()
+            (URL( string: $0.identifier )?.host ?? $0.identifier).domainName( .topPrivate )
         }
         self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: nil, appearance: [ .cell ], action: { _, _, _ in } ),

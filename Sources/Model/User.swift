@@ -369,12 +369,11 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     }
     var credentials: [AutoFill.Credential]? {
         self.autofill ? self.sites.flatMap { site -> [AutoFill.Credential] in
-            var siteHosts = Set<String>( [ site.siteName, site.siteName.topPrivateDomain() ] )
-            if let urlComponents = site.url.flatMap( URL.init ).flatMap( { URLComponents( url: $0, resolvingAgainstBaseURL: false ) } ),
-               let urlHost = urlComponents.host {
-                siteHosts.formUnion( [ urlHost, urlHost.topPrivateDomain() ] )
+            var siteNames = Set<String>( [ site.siteName, site.siteName.domainName( .host ), site.siteName.domainName( .topPrivate ) ] )
+            if let url = site.url {
+                siteNames.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
             }
-            return siteHosts.map { AutoFill.Credential( supplier: self, name: $0 ) }
+            return siteNames.map { AutoFill.Credential( supplier: self, siteName: $0 ) }
         }: nil
     }
 

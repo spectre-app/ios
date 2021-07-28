@@ -822,7 +822,7 @@ class Marshal: Observable, Updatable {
             else { return nil }
 
             return self.file.spectre_find( path: "sites" )?.compactMap {
-                String.valid( $0.obj_key ).flatMap { AutoFill.Credential( supplier: self, name: $0 ) }
+                String.valid( $0.obj_key ).flatMap { AutoFill.Credential( supplier: self, siteName: $0 ) }
             }
         }
     }

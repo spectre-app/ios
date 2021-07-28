@@ -92,9 +92,9 @@ final class AutoFill {
             "<Credential: \(self.userName) :: \(self.siteName)>"
         }
 
-        init(supplier: CredentialSupplier, name: String) {
+        init(supplier: CredentialSupplier, siteName: String) {
             self.userName = supplier.credentialOwner
-            self.siteName = name
+            self.siteName = siteName
         }
 
         init?(dictionary: [String: String]?) {

@@ -175,6 +175,10 @@ extension Result {
     }
 }
 
+public enum DomainNameType {
+    case host, topPrivate
+}
+
 extension String {
     /** Create a String from a signed c-string of valid UTF8 bytes. */
     static func valid(_ pointer: UnsafePointer<CSignedChar>?, consume: Bool = false) -> String? {
@@ -246,13 +250,18 @@ extension String {
         return self
     }
 
-    public func topPrivateDomain() -> String {
-        guard let publicSuffixes = publicSuffixes
-        else { return self }
+    public func domainName(_ mode: DomainNameType = .host) -> String {
+        let hostname = self.replacingOccurrences( of: "^[^/]*://", with: "", options: .regularExpression )
+                           .replacingOccurrences( of: "/.*$", with: "", options: .regularExpression )
+                           .replacingOccurrences( of: "^[^:]*:", with: "", options: .regularExpression )
+                           .replacingOccurrences( of: "^[^@]*@", with: "", options: .regularExpression )
+
+        guard mode == .topPrivate, let publicSuffixes = publicSuffixes
+        else { return hostname }
 
         for publicSuffix in publicSuffixes {
-            if self.hasSuffix( ".\(publicSuffix)" ) {
-                var privateDomain = self.prefix( upTo: self.index( self.endIndex, offsetBy: -publicSuffix.count - 1 ) )
+            if hostname.hasSuffix( ".\(publicSuffix)" ) {
+                var privateDomain = hostname.prefix( upTo: hostname.index( hostname.endIndex, offsetBy: -publicSuffix.count - 1 ) )
                 if let lastDot = privateDomain.lastIndex( of: "." ) {
                     privateDomain = privateDomain.suffix( from: privateDomain.index( after: lastDot ) )
                 }
@@ -260,7 +269,7 @@ extension String {
             }
         }
 
-        return self
+        return hostname
     }
 
     public var lastPathComponent: String {

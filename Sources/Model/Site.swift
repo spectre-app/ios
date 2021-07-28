@@ -20,7 +20,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         didSet {
             if oldValue != self.siteName {
                 self.dirty = true
-                self.preview = SitePreview.for( self.siteName )
+                self.preview = SitePreview.for( self.siteName, withURL: self.url )
                 self.observers.notify { $0.didChange( site: self, at: \Site.siteName ) }
             }
         }
@@ -78,6 +78,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     public var url: String? {
         didSet {
             if oldValue != self.url {
+                self.preview.url = self.url
                 self.dirty = true
                 self.observers.notify { $0.didChange( site: self, at: \Site.url ) }
             }
@@ -99,7 +100,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             }
         }
     }
-    public lazy var preview: SitePreview = SitePreview.for( self.siteName ) {
+    public lazy var preview: SitePreview = SitePreview.for( self.siteName, withURL: self.url ) {
         didSet {
             if oldValue != self.preview {
                 self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }

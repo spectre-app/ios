@@ -11,7 +11,7 @@
         }
       },
       {
-        "package": "countly-sdk-ios",
+        "package": "Countly",
         "repositoryURL": "https://github.com/lhunath/countly-sdk-ios",
         "state": {
           "branch": "extension-availability",
@@ -20,7 +20,7 @@
         }
       },
       {
-        "package": "freshchat-ios",
+        "package": "FreshchatSDK",
         "repositoryURL": "https://github.com/freshworks/freshchat-ios",
         "state": {
           "branch": "spm-beta",
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/stacksift/Impact",
         "state": {
           "branch": null,
-          "revision": "307b11b7d539113a173cf734388a4867df8c65f9",
-          "version": "0.3.8"
+          "revision": "af1ccb6b707373ef69cfad51f635c7d85e526a34",
+          "version": "0.4.0"
         }
       },
       {
@@ -47,7 +47,7 @@
         }
       },
       {
-        "package": "SDK",
+        "package": "Stacksift",
         "repositoryURL": "https://github.com/stacksift/SDK",
         "state": {
           "branch": null,
@@ -56,7 +56,7 @@
         }
       },
       {
-        "package": "sentry-cocoa",
+        "package": "Sentry",
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/LeonardoCardoso/SwiftLinkPreview",
         "state": {
           "branch": null,
-          "revision": "19547f9b48fe8c61578432656438768cc94ec50f",
-          "version": "3.3.0"
+          "revision": "3eb30b1832a9cf0eaeec3e2cf6cfc0ed18ef763f",
+          "version": "3.4.0"
         }
       },
       {

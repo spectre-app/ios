@@ -22,7 +22,20 @@ class SitePreview: Equatable {
 
     // MARK: --- Life ---
 
-    var url:   String
+    var name:  String {
+        didSet {
+            #if TARGET_APP
+            self.update()
+            #endif
+        }
+    }
+    var url:   String? {
+        didSet {
+            #if TARGET_APP
+            self.update()
+            #endif
+        }
+    }
     var data:  PreviewData
     var image: UIImage? {
         self.data.image
@@ -31,22 +44,21 @@ class SitePreview: Equatable {
         self.data.color?.uiColor
     }
 
-    static func `for`(_ siteName: String) -> SitePreview {
-        let siteURL = self.url( for: siteName )
+    static func `for`(_ siteName: String, withURL url: String?) -> SitePreview {
+        let previewName = siteName.domainName( .host )
 
         // If a cached preview is known, use it.
-        if let preview = self.semaphore.sync( execute: {
-            self.previews.object( forKey: siteURL as NSString )
+        if let preview = self.semaphore.await( execute: {
+            self.previews.object( forKey: previewName as NSString )
         } ) {
             return preview
         }
 
         // If a preview exists on disk, use it.
         do {
-            if let previewURL = FileManager.groupCaches?.appendingPathComponent( "preview-\(siteURL)" ).appendingPathExtension( "json" ),
-               FileManager.default.fileExists( atPath: previewURL.path ) {
-                return SitePreview( url: siteURL, data:
-                try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewURL ) ) )
+            if let previewFile = SitePreview.previewFile( for: previewName ), FileManager.default.fileExists( atPath: previewFile.path ) {
+                return SitePreview( name: previewName, url: url, data:
+                try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewFile ) ) )
             }
         }
         catch {
@@ -54,15 +66,17 @@ class SitePreview: Equatable {
         }
 
         // Create & cache a stub preview based on the site name.
-        return SitePreview( url: siteURL, data: PreviewData( color: ColorData( uiColor: siteURL.color() ) ) )
+        return SitePreview( name: previewName, url: url, data:
+        PreviewData( color: ColorData( uiColor: previewName.color() ), siteName: previewName, siteURL: url ) )
     }
 
-    private init(url: String, data: PreviewData) {
+    private init(name: String, url: String?, data: PreviewData) {
+        self.name = name
         self.url = url
         self.data = data
 
         SitePreview.semaphore.await {
-            SitePreview.previews.setObject( self, forKey: url as NSString, cost: self.data.imageData?.count ?? 0 )
+            SitePreview.previews.setObject( self, forKey: name as NSString, cost: self.data.imageData?.count ?? 0 )
         }
     }
 
@@ -74,8 +88,8 @@ class SitePreview: Equatable {
 
     // MARK: --- Private ---
 
-    private static func url(for siteName: String) -> String {
-        siteName.replacingOccurrences( of: "/", with: "::" ).replacingOccurrences( of: ".*@", with: "", options: .regularExpression )
+    private static func previewFile(for previewName: String) -> URL? {
+        FileManager.groupCaches?.appendingPathComponent( "preview-\(previewName)" ).appendingPathExtension( "json" )
     }
 
     #if TARGET_APP
@@ -90,57 +104,78 @@ class SitePreview: Equatable {
 
     private var updating: Promise<Bool>?
 
+    @discardableResult
     func update() -> Promise<Bool> {
-        // If an update is already promised, reuse it.
-        if let promise = self.updating {
-            return promise
-        }
-
-        // If a preview exists with a known image < 30 days old, don't refresh it yet.
-        if let date = self.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
-            //dbg( "[preview cached] %@: %d", self.url, self.data.imageData?.count ?? 0 )
-            return Promise( .success( false ) )
-        }
-
-        let promise = Promise<Bool>()
-        self.updating = promise
-
-        // Resolve candidate image URLs for the site.
-        // If the site URL is not a pure domain, install a fallback resolver for the site domain.
-        var resolution = self.loadImage( for: self.url )
-        if let siteDomain = self.url[#"^[^/]*\.([^/]+\.[^/]+)(/.*)?$"#].first?[1] {
-            resolution = resolution.or( self.loadImage( for: String( siteDomain ) ) )
-        }
-
-        // Successful image resolution updates the preview, cache cost and persists the change to disk.
-        resolution.promise { imageData in
-            //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
-
-            self.data.imageDate = Date()
-            self.data.imageData = imageData
-
-            SitePreview.semaphore.sync {
-                SitePreview.previews.setObject( self, forKey: self.url as NSString, cost: self.data.imageData?.count ?? 0 )
+        SitePreview.semaphore.await {
+            // If an update is already promised, reuse it.
+            if let promise = self.updating {
+                return promise
             }
 
-            if let previewURL = FileManager.groupCaches?.appendingPathComponent( "preview-\(self.url)" ).appendingPathExtension( "json" ) {
-                try JSONEncoder().encode( self.data ).write( to: previewURL )
+            // If a preview exists with identical metadata and a known image < 30 days old, don't refresh it yet.
+            if self.name == self.data.siteName, self.url == self.data.imageURL,
+               let date = self.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
+                //dbg( "[preview cached] %@: %d", self.url, self.data.imageData?.count ?? 0 )
+                return Promise( .success( false ) )
             }
 
-            self.updating = nil
-            return true
-        }.finishes( promise )
+            // Resolve candidate image URLs for the site.
+            // If the site URL is not a pure domain, install a fallback resolver for the site domain.
+            var siteCandidates = Set<String>( [ self.name, self.name.domainName( .host ), self.name.domainName( .topPrivate ) ] )
+            if let url = self.url?.nonEmpty {
+                siteCandidates.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
+            }
+            siteCandidates = Set( siteCandidates.map { "https://\($0.replacingOccurrences( of: "^[^/]*://", with: "", options: .regularExpression ))" } )
 
-        return promise
+            let updating: Promise<Bool> =
+                    siteCandidates.map { self.preview( forURL: $0 ) }.flatten().promising {
+                        self.bestImage( fromPreviews: $0.compactMap( { try? $0.get() } ) )
+                    }.thenPromise {
+                        do {
+                            let result = try $0.get()
+                            //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
+                            self.data.imageURL = result.response.url?.absoluteString
+                            self.data.imageData = result.data
+                            self.data.imageDate = Date()
+                        }
+                        catch {
+                            //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
+                            self.data.imageURL = nil
+                            self.data.imageData = nil
+                            self.data.imageDate = Date()
+                            wrn( "[preview error] [>PII]" )
+                            pii( "[>] %@: %@", self.url, error )
+                        }
+
+                        SitePreview.semaphore.await {
+                            SitePreview.previews.setObject( self, forKey: self.name as NSString, cost: self.data.imageData?.count ?? 0 )
+                        }
+
+                        if let previewFile = SitePreview.previewFile( for: self.name ) {
+                            try JSONEncoder().encode( self.data ).write( to: previewFile )
+                        }
+
+                        return true
+                    }
+            self.updating = updating.finally( on: SitePreview.semaphore ) {
+                self.updating = nil
+            }
+
+            return updating
+        }
     }
 
-    private static func byImageSize<S: Sequence>(_ urls: S) -> [URL] where S.Element == String? {
-        urls.compactMap { self.validURL( $0 ) }
-            .compactMap { URLSession.optional.get()?.promise( with: URLRequest( method: .head, url: $0 ) ) }
-            .compactMap { promise -> URLResponse? in (try? promise.await())?.response }
-            .filter { $0.mimeType?.contains( "image/" ) ?? false }
-            .sorted { $0.expectedContentLength > $1.expectedContentLength }
-            .compactMap { $0.url }
+    private static func byImageSize(_ urls: [String?]) -> Promise<[URL]> {
+        // Perform a HEAD request for each candidate URL
+        urls.compactMap { self.validURL( $0 ) }.compactMap {
+            URLSession.optional.get()?.promise( with: URLRequest( method: .head, url: $0 ) ).promise { $0.1 }
+        }.flatten().promise {
+            // Return all URLs that resulted in image responses, sorted by content length.
+            $0.compactMap { try? $0.get() }
+              .filter { $0.mimeType?.contains( "image/" ) ?? false }
+              .sorted { $0.expectedContentLength > $1.expectedContentLength }
+              .compactMap { $0.url }
+        }
     }
 
     private static func validURL(_ string: String?) -> URL? {
@@ -150,21 +185,14 @@ class SitePreview: Equatable {
         return URL( string: string )
     }
 
-    private func loadImage(for url: String) -> Promise<Data> {
-        let promise = Promise<Data>()
+    private func preview(forURL url: String) -> Promise<Response> {
+        let promise = Promise<Response>()
 
         if let linkPreview = SitePreview.linkPreview.get() {
             linkPreview.preview( url, onSuccess: {
-                self.extractImage( response: $0, into: promise )
+                promise.finish( .success( $0 ) )
             }, onError: { error in
-                linkPreview.preview( "https://\(url)", onSuccess: {
-                    self.extractImage( response: $0, into: promise )
-                }, onError: { error in
-                    wrn( "[preview error] [>PII]" )
-                    pii( "[>] %@: %@", self.url, error )
-
-                    promise.finish( .failure( error ) )
-                } )
+                promise.finish( .failure( error ) )
             } )
         }
         else {
@@ -174,33 +202,38 @@ class SitePreview: Equatable {
         return promise
     }
 
-    private func extractImage(response: Response, into promise: Promise<Data>) {
+    private func bestImage(fromPreviews previews: [Response]) -> Promise<(data: Data, response: URLResponse)> {
         guard let session = URLSession.optional.get()
         else {
             //dbg( "[preview unavailable] %@: %@", self.url, response )
-            promise.finish( .failure( AppError.state( title: "App is in offline mode" ) ) )
-            return
+            return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) )
         }
         // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
-        guard let imageURL = [ response.image, response.icon ]
-                .compactMap( { SitePreview.validURL( $0 ) } ).filter( { $0.pathExtension == "svg" } ).first
-                ?? SitePreview.byImageSize( [ response.image, response.icon ] + (response.images ?? []) )
-                              .reordered( last: { $0.pathExtension == "gif" } ).first
+        let imageURL: Promise<URL?>
+        if let svgImageURL = previews.flatMap( { [ $0.image, $0.icon ] } ).compactMap( { SitePreview.validURL( $0 ) } )
+                                     .filter( { $0.pathExtension == "svg" } ).first {
+            imageURL = Promise( .success( svgImageURL ) )
+        }
         else {
-            //dbg( "[preview missing] %@: %@", self.url, response )
-            promise.finish( .failure( AppError.issue( title: "No candidate images on site", details: String( describing: response ) ) ) )
-            return
+            imageURL = SitePreview.byImageSize( previews.flatMap( { [ $0.image, $0.icon ] + ($0.images ?? []) } ) )
+                                  .promise( { $0.reordered( last: { $0.pathExtension == "gif" } ).first } )
         }
 
         // Fetch the image's data.
-        self.data.imageURL = imageURL.absoluteString
-        session.promise( with: URLRequest( url: imageURL ) ).promise { $0.0 }.finishes( promise )
+        return imageURL.promising {
+            guard let imageURL = $0
+            else { throw AppError.issue( title: "No candidate images on site", details: String( describing: previews ) ) }
+
+            return session.promise( with: URLRequest( url: imageURL ) )
+        }
     }
     #endif
 }
 
 struct PreviewData: Codable, Equatable {
     var color:     ColorData?
+    var siteName:  String
+    var siteURL:   String?
     var imageURL:  String?
     var imageDate: Date?
     var imageData: Data? {

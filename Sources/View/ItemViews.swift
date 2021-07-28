@@ -667,6 +667,12 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
         self.update != nil
     }
 
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        if let text = textField.text {
+            self.update?( self, text )
+        }
+    }
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.endEditing( false )
         return true
@@ -688,11 +694,6 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.delegate = self.fieldItem
             self.valueField => \.textColor => Theme.current.color.body
             self.valueField.textAlignment = .center
-            self.valueField.action( for: .editingChanged ) { [unowned self] in
-                if let text = self.valueField.text, let fieldItem = self.fieldItem {
-                    fieldItem.update?( fieldItem, text )
-                }
-            }
         }
 
         override func doUpdate() {
