@@ -15,7 +15,7 @@ import AuthenticationServices
 final class AutoFill {
     public static let shared = AutoFill()
 
-    private let queue = DispatchQueue( label: "\(productName): AutoFill", qos: .utility )
+    private let semaphore = DispatchQueue( label: "\(productName): AutoFill", qos: .utility )
     private var credentials: Set<Credential> {
         didSet {
             guard oldValue != self.credentials
@@ -30,7 +30,7 @@ final class AutoFill {
                     return
                 }
 
-                self.queue.sync { [unowned self] in
+                self.semaphore.await { [unowned self] in
                     let expiredCredentials = oldValue.subtracting( self.credentials ).map { $0.identity() }
                     if !expiredCredentials.isEmpty {
                         ASCredentialIdentityStore.shared.removeCredentialIdentities( expiredCredentials ) { success, error in
@@ -72,7 +72,7 @@ final class AutoFill {
     }
 
     public func update(for supplier: CredentialSupplier) {
-        self.queue.sync { [unowned self] in
+        self.semaphore.await { [unowned self] in
             var otherCredentials = self.credentials.filter { !$0.isSupplied( by: supplier ) }
             if let suppliedCredentials = supplier.credentials {
                 otherCredentials.formUnion( suppliedCredentials )

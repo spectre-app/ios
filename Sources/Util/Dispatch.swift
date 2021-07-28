@@ -136,35 +136,13 @@ extension DispatchQueue {
 }
 
 public class Promise<V> {
-    private var result: Result<V, Error>?
-    private var targets   = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void) ]()
-    private let semaphore = DispatchQueue( label: "Promise" )
+    private var     result: Result<V, Error>?
+    private var     targets   = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void) ]()
+    fileprivate let semaphore = DispatchQueue( label: "Promise" )
 
     public init(_ result: Result<V, Error>? = nil) {
         if let result = result {
             self.finish( result )
-        }
-    }
-
-    public convenience init(reducing promises: [Promise<V>], from value: V, _ partialResult: @escaping (V, V) throws -> V = { a, b in a }) {
-        if promises.isEmpty {
-            self.init( .success( value ) )
-        }
-        else {
-            self.init()
-
-            var results = [ Result<V, Error>? ]( repeating: nil, count: promises.count )
-            for (p, promise) in promises.enumerated() {
-                promise.then {
-                    results[p] = $0
-
-                    if !results.contains( where: { $0 == nil } ) {
-                        do { self.finish( .success( try results.compactMap( { try $0?.get() } ).reduce( value, partialResult ) ) ) }
-                        catch { self.finish( .failure( error ) ) }
-                        // TODO: handle Interruption.postponed?
-                    }
-                }
-            }
         }
     }
 
@@ -186,7 +164,7 @@ public class Promise<V> {
     /** Submit the promised result, completing the promise for all that are awaiting it. */
     @discardableResult
     public func finish(_ result: Result<V, Error>, maybe: Bool = false) -> Self {
-        self.semaphore.sync { () -> [(queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void)] in
+        self.semaphore.await { () -> [(queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void)] in
             if maybe && self.result != nil {
                 return []
             }
@@ -235,7 +213,7 @@ public class Promise<V> {
     /** When this promise is finished, consume its result with the given block. */
     @discardableResult
     public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void) -> Self {
-        self.semaphore.sync {
+        self.semaphore.await {
             if let result = self.result {
                 if queue?.isActive ?? true {
                     consumer( result )
@@ -343,7 +321,7 @@ public class Promise<V> {
     public func await() throws -> V {
         // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         let group = DispatchGroup()
-        self.semaphore.sync {
+        self.semaphore.await {
             if self.result == nil {
                 group.enter()
                 self.targets.append( (queue: nil, consumer: { _ in group.leave() }) )
@@ -351,11 +329,31 @@ public class Promise<V> {
         }
         group.wait()
 
-        return try self.semaphore.sync { try self.result!.get() }
+        return try self.semaphore.await { try self.result!.get() }
     }
 
     enum Interruption: Error {
         case cancelled, invalidated, rejected, postponed
+    }
+}
+
+extension Collection {
+    func flatten<V>() -> Promise<[Result<V, Error>]> where Self.Element == Promise<V> {
+        let promise = Promise<[Result<V, Error>]>()
+        var results = [ Result<V, Error>? ]( repeating: nil, count: self.count )
+        for (p, _promise) in self.enumerated() {
+            _promise.then { result in
+                promise.semaphore.await {
+                    results[p] = result
+
+                    if !results.contains( where: { $0 == nil } ) {
+                        promise.finish( .success( results.compactMap { $0 }.reduce( [], { $0 + [ $1 ] } ) ) )
+                    }
+                }
+            }
+        }
+
+        return promise
     }
 }
 

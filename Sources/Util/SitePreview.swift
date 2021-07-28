@@ -61,7 +61,7 @@ class SitePreview: Equatable {
         self.url = url
         self.data = data
 
-        SitePreview.semaphore.sync {
+        SitePreview.semaphore.await {
             SitePreview.previews.setObject( self, forKey: url as NSString, cost: self.data.imageData?.count ?? 0 )
         }
     }

@@ -141,7 +141,7 @@ class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableView
     private func update(_ toElementsBySection: [[E]], selected selectElements: [E]? = nil, selecting selectPaths: [IndexPath]? = nil,
                         reload reloadAll: Bool = false, reloaded reloadElements: [E]? = nil, reloading reloadPaths: [IndexPath]? = nil,
                         animated: Bool = UIView.areAnimationsEnabled, completion: ((Bool) -> ())? = nil, elementsMatch: @escaping (E, E) -> Bool) {
-        self.queue.sync {
+        self.queue.await {
             //dbg( "%@: wait", self.semaphore )
             self.semaphore.wait()
             //dbg( "%@: enter", self.semaphore )
