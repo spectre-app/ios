@@ -83,7 +83,7 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
                     else { return Int( bitPattern: nil ) }
 
                     if let error = arg as? Error {
-                        return error.fullDescription
+                        return error.detailsDescription
                     }
 
                     return arg as? CVarArg ?? String( reflecting: arg )

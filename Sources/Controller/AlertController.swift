@@ -215,9 +215,11 @@ class AlertController {
 
 public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil, in view: UIView? = nil,
                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
-    let message = message?.description ?? error?.localizedDescription
-    let details = [ details?.description, error?.fullDescription ]
-            .compactMap( { $0 } ).joined( separator: "\n\n" )
+    let error   = error?.details
+    let message = message?.description ?? error?.description
+    let details = [ details?.description, error?.failure != message ? error?.failure: nil, error?.suggestion,
+                    error?.underlying.joined( separator: "\n" ) ]
+            .compactMap( { $0 } ).joined( separator: "\n" )
 
     AlertController( title: title, message: message, details: details, level: .error )
             .show( in: view, file: file, line: line, function: function, dso: dso )

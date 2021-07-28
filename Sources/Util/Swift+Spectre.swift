@@ -89,22 +89,34 @@ extension Dictionary {
 }
 
 extension Error {
-    var fullDescription: String {
+    var details: (description: String, failure: String?, suggestion: String?, underlying: [String]) {
+        let error    = self as NSError
+        let provider = NSError.userInfoValueProvider( forDomain: error.domain )
+        let resolver: (String) -> Any? = { error.userInfo[$0] ?? provider?( self, $0 ) }
+
         var underlyingErrors = [ NSError ]()
-        if let underlyingError = (self as NSError).userInfo[NSUnderlyingErrorKey] as? NSError {
+        if #available( iOS 14.5, * ) {
+            underlyingErrors.append( contentsOf: error.underlyingErrors.map { $0 as NSError } )
+        }
+        else if let underlyingError = resolver( NSUnderlyingErrorKey ) as? NSError {
             underlyingErrors.append( underlyingError )
         }
-        if #available( iOS 14.5, * ),
-           let multipleUnderlyingError = (self as NSError).userInfo[NSMultipleUnderlyingErrorsKey] as? [NSError] {
-            underlyingErrors.append( contentsOf: multipleUnderlyingError )
-        }
 
-        return [
-            self.localizedDescription,
-            (self as NSError).localizedFailureReason.flatMap { "Reason: \($0)" },
-            (self as NSError).localizedRecoverySuggestion.flatMap { "Suggestion: \($0)" },
-            underlyingErrors.compactMap { $0.fullDescription }.joined( separator: "\n\n" ).nonEmpty.flatMap { "Underlying:\n\($0)" },
-        ].compactMap( { $0 } ).joined( separator: "\n" )
+        return (description: resolver( NSLocalizedDescriptionKey ) as? String ?? self.localizedDescription,
+                failure: [ resolver( NSLocalizedFailureErrorKey ) as? String, error.localizedFailureReason ]
+                        .compactMap( { $0 } ).joined( separator: " " ).nonEmpty,
+                suggestion: error.localizedRecoverySuggestion,
+                underlying: underlyingErrors.compactMap { $0.detailsDescription })
+    }
+
+    var detailsDescription: String {
+        let details = self.details
+        return [ details.description,
+                 details.failure.flatMap { "Failure: \($0)" },
+                 details.suggestion.flatMap { "Suggestion: \($0)" },
+                 details.underlying.joined( separator: "\n\n" ).nonEmpty
+                         .flatMap { "Underlying:\n  - \($0.replacingOccurrences( of: "\n", with: "    " ))" }
+        ].compactMap { $0 }.joined( separator: "\n" )
     }
 }
 
