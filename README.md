@@ -60,7 +60,6 @@ The source is broken down into several components:
 These instructions are for the Apple iOS application.
 
 1. Make sure you have all submodules checked out.
-2. Install CocoaPods dependencies: `pod install`.
-3. Export application icons into `design/icon`.
-4. Open `Spectre.xcworkspace` in Xcode.
-5. Build & Run.
+2. Export application icons into `design/icon`.
+3. Open `Spectre.xcworkspace` in Xcode.
+4. Build & Run.
