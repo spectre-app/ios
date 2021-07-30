@@ -69,7 +69,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             }
 
             if Freshchat.sharedInstance().config.appKey.nonEmpty == nil,
-               let freshchatApp = freshchatApp.b64Decrypt(), let freshchatKey = freshchatKey.b64Decrypt() {
+               let freshchatApp = secrets.freshchat.app.b64Decrypt(), let freshchatKey = secrets.freshchat.key.b64Decrypt() {
                 let freshchatConfig = FreshchatConfig( appID: freshchatApp, andAppKey: freshchatKey )
                 freshchatConfig.domain = "msdk.eu.freshchat.com"
                 Freshchat.sharedInstance().initWith( freshchatConfig )

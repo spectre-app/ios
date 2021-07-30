@@ -12,13 +12,45 @@
 
 import Foundation
 
-// printf <secret> | openssl enc -[ed] -aes-128-cbc -a -A -K <appSecret> -iv 0
-let appSecret    = ""
-let appSalt      = ""
-let mpwSalt      = ""
-let sentryDSN    = ""
-let countlyKey   = ""
-let countlySalt  = ""
-let freshchatApp = ""
-let freshchatKey = ""
-let stacksiftKey = ""
+// printf <secret> | openssl enc -[ed] -aes-128-cbc -a -A -K <app.secret> -iv 0
+let secrets = (
+        app: (
+                secret: "",
+                salt: "",
+                _: ()
+        ),
+        mpw: (
+                salt: "",
+                _: ()
+        ),
+        sentry: (
+                dsn: "",
+                _: ()
+        ),
+        countly: (
+                development: (
+                        key: "",
+                        salt: "",
+                        _: ()
+                ),
+                pilot: (
+                        key: "",
+                        salt: "",
+                        _: ()
+                ),
+                public: (
+                        key: "",
+                        salt: "",
+                        _: ()
+                )
+        ),
+        freshchat: (
+                app: "",
+                key: "",
+                _: ()
+        ),
+        stacksift: (
+                key: "",
+                _: ()
+        )
+)

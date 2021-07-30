@@ -682,7 +682,7 @@ class Marshal: Observable, Updatable {
                               "com.lyndir.masterpassword.products.generateanswers",
                               "com.lyndir.masterpassword.products.touchid" ] {
                 if let proof: String = self.file.spectre_get( path: "user", "_ext_mpw", purchase ),
-                   let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: mpwSalt.b64Decrypt() )?.hex().prefix( 16 ),
+                   let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: secrets.mpw.salt.b64Decrypt() )?.hex().prefix( 16 ),
                    proof == purchaseDigest {
                     self.isMasterPasswordCustomer = true
                 }

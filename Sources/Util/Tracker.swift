@@ -322,7 +322,9 @@ class Tracker: AppConfigObserver {
         else { return }
 
         if !appConfig.offline && !self.hasCountlyStarted {
-            if let countlyKey = countlyKey.b64Decrypt(), let countlySalt = countlySalt.b64Decrypt() {
+            let countly = AppConfig.shared.isDebug ? secrets.countly.development:
+                    AppConfig.shared.isPublic ? secrets.countly.public: secrets.countly.pilot
+            if let countlyKey = countly.key.b64Decrypt(), let countlySalt = countly.salt.b64Decrypt() {
                 let countlyConfig = CountlyConfig()
                 countlyConfig.host = "https://countly.spectre.app"
                 countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
@@ -363,7 +365,7 @@ class Tracker: AppConfigObserver {
         }
 
         if appConfig.diagnostics && !appConfig.offline {
-            if !self.hasSentryStarted, let dsn = sentryDSN.b64Decrypt() {
+            if !self.hasSentryStarted, let dsn = secrets.sentry.dsn.b64Decrypt() {
                 // FIXME: Sentry crash reports break with the Address and Behaviour Sanitizer enabled.
                 // https://github.com/getsentry/sentry-cocoa/issues/369
                 SentrySDK.start {
@@ -376,7 +378,7 @@ class Tracker: AppConfigObserver {
                 self.hasSentryStarted = true
             }
             #if DEBUG
-            if !self.hasStacksiftStarted, let apiKey = stacksiftKey.b64Decrypt() {
+            if !self.hasStacksiftStarted, let apiKey = secrets.stacksift.key.b64Decrypt() {
                 Stacksift.shared.installIdentifier = self.identifierForDevice
                 Stacksift.start( APIKey: apiKey, monitor: .metricKitOnly )
                 self.hasStacksiftStarted = true

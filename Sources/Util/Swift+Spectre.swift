@@ -303,7 +303,7 @@ extension String {
         guard secretLength > 0
         else { return nil }
 
-        guard let key = spectre_unhex( appSecret, &keyLength )
+        guard let key = spectre_unhex( secrets.app.secret, &keyLength )
         else { return nil }
         defer { key.deallocate() }
 
@@ -323,7 +323,7 @@ extension String {
 
 extension UnsafeBufferPointer where Element == UInt8 {
     func digest(salt: String? = nil) -> Data? {
-        guard let salt = salt ?? appSalt.b64Decrypt()
+        guard let salt = salt ?? secrets.app.salt.b64Decrypt()
         else { return nil }
 
         var digest = [ UInt8 ]( repeating: 0, count: 32 )
