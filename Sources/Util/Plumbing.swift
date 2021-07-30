@@ -70,6 +70,12 @@ dynamic func property(of object: Any, withValue value: AnyObject) -> String? {
     return nil
 }
 
+private let RTLD_DEFAULT = UnsafeMutableRawPointer( bitPattern: -2 )
+
+func load<T>(_ name: String) -> T? {
+    unsafeBitCast( dlsym( RTLD_DEFAULT, name ), to: T?.self )
+}
+
 extension NSObject {
     dynamic var identityDescription: String {
         var description      = ""

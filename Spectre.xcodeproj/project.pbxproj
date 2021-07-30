@@ -23,6 +23,7 @@
 		93D392050A549F9463E51472 /* SitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398124AA304872DCE8C26 /* SitePreviewController.swift */; };
 		93D39216BF04B39B4E90B8D6 /* Boxes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393E2C339F220532F1D53 /* Boxes.swift */; };
 		93D39216C0E8F79F5F06734B /* TipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FFBAB0E1072779FE7D2 /* TipsView.swift */; };
+		93D3923A080784DFE3AF463E /* UIKit+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39678996DB28C71E799DC /* UIKit+SVG.swift */; };
 		93D392506D66E48D27338086 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D397326B833076646FF697 /* DataSource.swift */; };
 		93D3926DF01B6A4F1AB57DF8 /* AlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3952343848B72D4CC0D4A /* AlertController.swift */; };
 		93D39284CA724E394A9E91FD /* Plumbing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398D4B9F2323DC419DC82 /* Plumbing.swift */; };
@@ -88,6 +89,7 @@
 		93D39AD3EE3877767AC30ECE /* AutoFillConfigurationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F482ED58056C88FAA6 /* AutoFillConfigurationViewController.swift */; };
 		93D39B0F44709C2D285A04D1 /* Foundation+Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39326375ED0DDA441ADC2 /* Foundation+Spectre.swift */; };
 		93D39B58BB6046893F274C8D /* DetailAppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3982288CE686F671A3201 /* DetailAppViewController.swift */; };
+		93D39B8F8BF7332B92508EF5 /* UIKit+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39678996DB28C71E799DC /* UIKit+SVG.swift */; };
 		93D39BBE1211113524BCBF9D /* EffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* EffectView.swift */; };
 		93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
 		93D39BED3DFB61513B0D015D /* MainUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */; };
@@ -198,7 +200,6 @@
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
 		DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4A0C20201531BA004E2CE5 /* AppDelegate.swift */; };
 		DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */; };
-		DA5DAE7526A3BBA100D9EC22 /* Macaw in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7426A3BBA100D9EC22 /* Macaw */; };
 		DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */; };
 		DA5DAE7926A3BBA100D9EC22 /* Stacksift in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7826A3BBA100D9EC22 /* Stacksift */; };
 		DA5DAE7C26A623A800D9EC22 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7B26A623A800D9EC22 /* Countly */; };
@@ -206,7 +207,6 @@
 		DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7F26A623F000D9EC22 /* Sentry */; };
 		DA5DAE8226A623F500D9EC22 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8126A623F500D9EC22 /* Countly */; };
 		DA5DAE8426A623FC00D9EC22 /* Stacksift in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8326A623FC00D9EC22 /* Stacksift */; };
-		DA5DAE8626A6244200D9EC22 /* Macaw in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8526A6244200D9EC22 /* Macaw */; };
 		DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */; };
 		DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */; };
 		DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6B24E04F2E00E61D3F /* SourceCodePro-Regular.otf */; };
@@ -349,6 +349,7 @@
 		93D39613B68BCF56DD931C91 /* MarginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MarginView.swift; sourceTree = "<group>"; };
 		93D39647B07609C89AA66767 /* UIKit+Spectre.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIKit+Spectre.swift"; sourceTree = "<group>"; };
 		93D39651387222CBD2F9CCE0 /* Period.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Period.swift; sourceTree = "<group>"; };
+		93D39678996DB28C71E799DC /* UIKit+SVG.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIKit+SVG.swift"; sourceTree = "<group>"; };
 		93D3969393A3A46BD27D7078 /* spectre-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm.c"; sourceTree = "<group>"; };
 		93D396C311C3725870343EE0 /* spectre-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-util.c"; sourceTree = "<group>"; };
 		93D396E496C23EC3C008D6F7 /* UIView+Spectre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Spectre.h"; sourceTree = "<group>"; };
@@ -551,7 +552,6 @@
 			files = (
 				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
 				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
-				DA5DAE8626A6244200D9EC22 /* Macaw in Frameworks */,
 				DA5DAE8226A623F500D9EC22 /* Countly in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */,
@@ -566,7 +566,6 @@
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
 				DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */,
 				DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */,
-				DA5DAE7526A3BBA100D9EC22 /* Macaw in Frameworks */,
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */,
@@ -666,6 +665,7 @@
 				93D393E2C339F220532F1D53 /* Boxes.swift */,
 				93D39508BCB9FBB697699194 /* Text.swift */,
 				93D3944D27B033E791F675BB /* Resources.swift */,
+				93D39678996DB28C71E799DC /* UIKit+SVG.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1053,7 +1053,6 @@
 				DA5DAE7F26A623F000D9EC22 /* Sentry */,
 				DA5DAE8126A623F500D9EC22 /* Countly */,
 				DA5DAE8326A623FC00D9EC22 /* Stacksift */,
-				DA5DAE8526A6244200D9EC22 /* Macaw */,
 			);
 			productName = "Spectre-AutoFill";
 			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */;
@@ -1079,7 +1078,6 @@
 			name = Spectre;
 			packageProductDependencies = (
 				DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */,
-				DA5DAE7426A3BBA100D9EC22 /* Macaw */,
 				DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */,
 				DA5DAE7826A3BBA100D9EC22 /* Stacksift */,
 				DA5DAE7B26A623A800D9EC22 /* Countly */,
@@ -1230,7 +1228,6 @@
 			mainGroup = DA5BFA39147E415C00F98B1E;
 			packageReferences = (
 				DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */,
-				DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */,
 				DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */,
 				DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */,
@@ -1414,6 +1411,7 @@
 				93D3907BEF0B169A0A4BCB8C /* AutoFillCredentialViewController.swift in Sources */,
 				93D39992F33572F1E0D540C2 /* AutoFillBaseUsersViewController.swift in Sources */,
 				93D39AAABBF097F82F8C1BB1 /* InnerShadowLayer.swift in Sources */,
+				93D39B8F8BF7332B92508EF5 /* UIKit+SVG.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1520,6 +1518,7 @@
 				93D39F719CD8B096D7F68E64 /* CarouselView.swift in Sources */,
 				93D39ACE4C36246E730B0539 /* Resources.swift in Sources */,
 				93D391EEF73AB6E099886CBE /* InnerShadowLayer.swift in Sources */,
+				93D3923A080784DFE3AF463E /* UIKit+SVG.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2513,14 +2512,6 @@
 				minimumVersion = 3.0.0;
 			};
 		};
-		DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/exyte/Macaw";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.7;
-			};
-		};
 		DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tikhop/TPInAppReceipt";
@@ -2552,11 +2543,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */;
 			productName = SwiftLinkPreview;
-		};
-		DA5DAE7426A3BBA100D9EC22 /* Macaw */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */;
-			productName = Macaw;
 		};
 		DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -2592,11 +2578,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */;
 			productName = Stacksift;
-		};
-		DA5DAE8526A6244200D9EC22 /* Macaw */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DAF2918A2698B409004A16A7 /* XCRemoteSwiftPackageReference "Macaw" */;
-			productName = Macaw;
 		};
 		DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */ = {
 			isa = XCSwiftPackageProductDependency;
