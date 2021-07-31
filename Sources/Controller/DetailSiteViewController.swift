@@ -196,7 +196,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         } )
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
         }
 
         override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
@@ -234,7 +234,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                             }
                         } )
 
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .reveals ) )
         }
 
         override func createItemView() -> FieldItemView {
@@ -343,7 +343,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             self.deletable = true
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Question) {

@@ -1,37 +1,189 @@
+# vim: set filetype=ruby:
+
 opt_out_usage
 update_fastlane
 skip_docs
 
+def system_silenced(cmd)
+  Thread.new do
+    out_sink, err_sink = Tempfile.new('stdout'), Tempfile.new('stderr')
+    result = system( cmd, :out => out_sink, :err => err_sink )
+
+    out_sink.rewind; out = out_sink.read
+    err_sink.rewind; err = err_sink.read
+    proc do
+      $stdout.write out
+      $stderr.write err
+      result
+    end
+
+  ensure
+    out_sink.close; out_sink.unlink
+    err_sink.close; err_sink.unlink
+  end
+end
+
+def system_silencing(cmd)
+  Thread.new do
+    out_orig, out_sink = $stdout.dup, Tempfile.new('stdout')
+    err_orig, err_sink = $stderr.dup, Tempfile.new('stderr')
+    $stdout.reopen out_sink
+    $stderr.reopen err_sink
+    system( cmd, :out => out_orig, :err => err_orig )
+
+  ensure
+    $stdout.reopen out_orig; out_sink.rewind; $stdout.write out_sink.read; out_sink.close; out_sink.unlink
+    $stderr.reopen err_orig; err_sink.rewind; $stderr.write err_sink.read; err_sink.close; err_sink.unlink
+  end
+end
+
 platform :ios do
   desc "Build an application archive"
-  lane :archive do
-    ensure_no_debug_code(text: "<<<<<<|WIP:", exclude_dirs: [".git", "fastlane"])
-    #verify_xcode
-    swiftlint
 
-    build_app(scheme: "Spectre-iOS", include_symbols: true, include_bitcode: true, export_method: "ad-hoc" )
-    verify_build
+  lane :dev do
   end
 
   desc "Build an application archive and send it to TestFlight"
   lane :beta do
+    # Ensure the source code is in a valid state before building.
     ensure_git_status_clean
-    ensure_git_branch(branch: "^stream/(alpha|beta|probe)$")
+    ensure_git_branch(
+      branch: "^stream/(alpha|beta|probe)$",
+    )
+    ensure_no_debug_code(
+      text: "<<<<<<|WIP:",
+      exclude_dirs: [ ".git", "fastlane" ],
+    )
+    verify_xcode_thread = system_silenced( 'fastlane run verify_xcode' )
 
-    archive
-    install_on_device(skip_wifi: true)
-    prompt(boolean: true, text: "Please test the app on your device. Is everything alright?") # TODO: check
-    upload_to_testflight
-    download_dsyms
-    sentry_upload_dsym #(include_sources: true)
+    # Prepare product release notes.
+    git_branch
+    stream = git_branch.split( "/" )[-1]
+    header = "Spectre iOS v" + get_version_number( target: "Spectre" ) + ", build " + get_build_number + " (" + stream + ")"
+    changes = changelog_from_git_commits(
+      between: [ last_git_tag( pattern: "build/*-" + stream ), "HEAD" ],
+      merge_commit_filtering: "exclude_merges",
+      pretty: " - %w(0,0,3)%s%n%b",
+    )
+    notes = File.exist?( "notes.md" ) ? File.open( "notes.md", "r" ) do |file|
+      if file.read.include? header and file.read.include? changes
+        File.absolute_path( file.path )
+      end
+    end : false
+    if not notes
+      notes = File.open( "notes.md", "w" ) do |file|
+        file.puts header
+        file.puts ""
+        file.puts "ADDED"
+        file.puts "-----"
+        file.puts ""
+        file.puts "- "
+        file.puts ""
+        file.puts "UPDATED"
+        file.puts "-------"
+        file.puts ""
+        file.puts "- "
+        file.puts ""
+        file.puts "FIXED"
+        file.puts "-----"
+        file.puts ""
+        file.puts "- "
+        file.puts ""
+        file.puts "CHANGELOG"
+        file.puts "---------"
+        file.puts ""
+        file.puts changes
+        File.absolute_path( file.path )
+      end
+    end
+    notes_thread = system_silencing( '"$EDITOR" ' + Shellwords.escape( notes ) )
 
-    build = get_build_number().split(".").map(&:to_i)
-    build[-1] += 1
-    increment_build_number(build_number: build.join("."), skip_info_plist: true)
-    reset_git_repo(files: [ "Sources/Info.plist", "Sources/AutoFill/Info.plist" ])
-  end
+    # Build and verify the product.
+    build_app(
+      scheme: "Spectre-iOS",
+      configuration: stream == "public" ? "Public" : "Pilot",
+      buildlog_path: "fastlane",
+      skip_package_ipa: true,
+    )
+    build_app(
+      scheme: "Spectre-iOS",
+      configuration: stream == "public" ? "Public" : "Pilot",
+      buildlog_path: "fastlane",
+      export_method: "ad-hoc",
+      export_options: {
+        provisioningProfiles: {
+          "app.spectre" => "Spectre Ad Hoc",
+          "app.spectre.autofill" => "Spectre AutoFill Ad Hoc",
+        },
+      },
+      skip_build_archive: true,
+      skip_package_dependencies_resolution: true,
+      archive_path: lane_context[SharedValues::XCODEBUILD_ARCHIVE],
+    )
+    swiftlint(
+      mode: "analyze",
+      compiler_log_path: "fastlane/Spectre-Spectre-iOS.log",
+      raise_if_swiftlint_error: true,
+    )
+    verify_build
+    install_on_device(
+      skip_wifi: true,
+    )
 
-  lane :release do
-    #precheck
+    # Complete and collect release notes from asynchronous process.
+    notes_thread.join
+    notes = File.read( notes )
+
+    # Pause until user has tested build on device and confirmed it is healthy.
+    if UI.interactive?
+        if !UI.confirm "Please test the app on your device. Is everything alright?"
+            UI.abort_with_message! "Build issue reported by user. Please fix the issue and retry the lane. Aborting!"
+        end
+    end
+
+    # Distribute the product.
+    build_app(
+      scheme: "Spectre-iOS",
+      configuration: stream == "public" ? "Public" : "Pilot",
+      buildlog_path: "fastlane",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "app.spectre" => "Spectre App Store",
+          "app.spectre.autofill" => "Spectre AutoFill App Store",
+        },
+      },
+      skip_build_archive: true,
+      skip_package_dependencies_resolution: true,
+      archive_path: lane_context[SharedValues::XCODEBUILD_ARCHIVE],
+    )
+    upload_to_testflight(
+      changelog: notes,
+      #distribute_external: true,
+      #groups: alpha/beta,
+    )
+    add_git_tag(
+      grouping: "build",
+      includes_lane: false,
+      postfix: "-" + stream,
+      sign: true,
+      message: notes,
+    )
+    download_dsyms(
+      wait_for_dsym_processing: true,
+    )
+    sentry_upload_dif(
+      include_sources: true,
+    )
+
+    # Advance the source state beyond the released product.
+    increment_build_number(
+      skip_info_plist: true,
+    )
+
+    # Complete and verify Xcode verification from asynchronous process.
+    UI.message "Xcode verification..."
+    verify_xcode_thread.join.call or
+      UI.abort_with_message! "Xcode couldn't be verified. DO NOT SHIP THIS BUILD!"
   end
 end

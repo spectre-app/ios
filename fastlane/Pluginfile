@@ -1,0 +1,2 @@
+# Sentry
+gem 'fastlane-plugin-sentry'

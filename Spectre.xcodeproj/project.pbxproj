@@ -1696,8 +1696,9 @@
 				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
+				CODE_SIGN_STYLE = Manual;
 				COMPRESS_PNG_FILES = YES;
-				CURRENT_PROJECT_VERSION = 3.0.1.23;
+				CURRENT_PROJECT_VERSION = 26;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCREMENTAL_DISTILL = NO;
@@ -1712,9 +1713,8 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Sources/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"RELEASE=1",
-					"NS_BLOCK_ASSERTIONS=1",
 					"PUBLIC=1",
+					"NS_BLOCK_ASSERTIONS=1",
 					"SPECTRE_JSON=1",
 					"SPECTRE_SODIUM=1",
 					"SPECTRE_CPERCIVA=0",
@@ -1757,6 +1757,10 @@
 				IBSC_WARNINGS = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LLVM_LTO = YES;
 				MARKETING_VERSION = 3.0;
 				MTL_FAST_MATH = YES;
@@ -1766,7 +1770,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRIP_PNG_TEXT = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "RELEASE PUBLIC";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = PUBLIC;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_ENFORCE_EXCLUSIVE_ACCESS = on;
@@ -1789,9 +1793,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1803,30 +1804,22 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
-				PRODUCT_NAME = Spectre;
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
 			name = Public;
 		};
-		DA0E5538250D6F7F002B3AB1 /* Debug */ = {
+		DA0E5538250D6F7F002B3AB1 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1838,30 +1831,21 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
-				PRODUCT_NAME = "Spectre AutoFill";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
-			name = Debug;
+			name = Development;
 		};
-		DA0E5539250D6F7F002B3AB1 /* Release */ = {
+		DA0E5539250D6F7F002B3AB1 /* Pilot */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1873,30 +1857,21 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
-				PRODUCT_NAME = "Spectre AutoFill";
-				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Ad Hoc";
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
-			name = Release;
+			name = Pilot;
 		};
 		DA0E553A250D6F7F002B3AB1 /* Public */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1908,24 +1883,18 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
-				PRODUCT_NAME = "Spectre AutoFill";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
 			};
 			name = Public;
 		};
-		DA5BFA6B147E415C00F98B1E /* Debug */ = {
+		DA5BFA6B147E415C00F98B1E /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -2020,8 +1989,9 @@
 				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
+				CODE_SIGN_STYLE = Manual;
 				COMPRESS_PNG_FILES = YES;
-				CURRENT_PROJECT_VERSION = 3.0.1.23;
+				CURRENT_PROJECT_VERSION = 26;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2038,6 +2008,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Sources/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"PRIVATE=1",
 					"DEBUG=1",
 					"SPECTRE_JSON=1",
 					"SPECTRE_SODIUM=1",
@@ -2081,6 +2052,10 @@
 				IBSC_WARNINGS = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LLVM_LTO = YES_THIN;
 				MARKETING_VERSION = 3.0;
 				MTL_FAST_MATH = YES;
@@ -2091,7 +2066,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRIP_PNG_TEXT = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PRIVATE DEBUG";
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_ENFORCE_EXCLUSIVE_ACCESS = on;
@@ -2107,9 +2082,9 @@
 				VALIDATE_WORKSPACE = NO;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
-			name = Debug;
+			name = Development;
 		};
-		DA5BFA6C147E415C00F98B1E /* Release */ = {
+		DA5BFA6C147E415C00F98B1E /* Pilot */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -2204,8 +2179,9 @@
 				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
+				CODE_SIGN_STYLE = Manual;
 				COMPRESS_PNG_FILES = YES;
-				CURRENT_PROJECT_VERSION = 3.0.1.23;
+				CURRENT_PROJECT_VERSION = 26;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCREMENTAL_DISTILL = NO;
@@ -2220,7 +2196,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Sources/Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"RELEASE=1",
+					"PILOT=1",
 					"NS_BLOCK_ASSERTIONS=1",
 					"SPECTRE_JSON=1",
 					"SPECTRE_SODIUM=1",
@@ -2264,6 +2240,10 @@
 				IBSC_WARNINGS = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LLVM_LTO = YES;
 				MARKETING_VERSION = 3.0;
 				MTL_FAST_MATH = YES;
@@ -2273,7 +2253,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRIP_PNG_TEXT = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = RELEASE;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = PILOT;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_ENFORCE_EXCLUSIVE_ACCESS = on;
@@ -2288,54 +2268,14 @@
 				VALIDATE_WORKSPACE = YES_ERROR;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
-			name = Release;
+			name = Pilot;
 		};
-		DA5BFA6E147E415C00F98B1E /* Debug */ = {
+		DA5BFA6E147E415C00F98B1E /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HL3Q45LX9N;
-				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"TARGET_APP=1",
-				);
-				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = Sources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
-					"$(inherited)",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
-				PRODUCT_NAME = Spectre;
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
-			};
-			name = Debug;
-		};
-		DA5BFA6F147E415C00F98B1E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -2357,21 +2297,50 @@
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
-			name = Release;
+			name = Development;
 		};
-		DAB6244D26C82C2C00ABD4F5 /* Debug */ = {
+		DA5BFA6F147E415C00F98B1E /* Pilot */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"TARGET_APP=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = Sources/Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
+			};
+			name = Pilot;
+		};
+		DAB6244D26C82C2C00ABD4F5 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PATH = "$(inherited):/usr/local/bin";
 			};
-			name = Debug;
+			name = Development;
 		};
-		DAB6244E26C82C2C00ABD4F5 /* Release */ = {
+		DAB6244E26C82C2C00ABD4F5 /* Pilot */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PATH = "$(inherited):/usr/local/bin";
 			};
-			name = Release;
+			name = Pilot;
 		};
 		DAB6244F26C82C2C00ABD4F5 /* Public */ = {
 			isa = XCBuildConfiguration;
@@ -2380,7 +2349,7 @@
 			};
 			name = Public;
 		};
-		DAB7AE3E1F3D464A00C856B1 /* Debug */ = {
+		DAB7AE3E1F3D464A00C856B1 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
@@ -2402,9 +2371,9 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
-			name = Debug;
+			name = Development;
 		};
-		DAB7AE3F1F3D464A00C856B1 /* Release */ = {
+		DAB7AE3F1F3D464A00C856B1 /* Pilot */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
@@ -2419,7 +2388,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
-			name = Release;
+			name = Pilot;
 		};
 		DAB7AE401F3D464A00C856B1 /* Public */ = {
 			isa = XCBuildConfiguration;
@@ -2438,7 +2407,7 @@
 			};
 			name = Public;
 		};
-		DAB7AE491F3D468300C856B1 /* Debug */ = {
+		DAB7AE491F3D468300C856B1 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
@@ -2460,9 +2429,9 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
-			name = Debug;
+			name = Development;
 		};
-		DAB7AE4A1F3D468300C856B1 /* Release */ = {
+		DAB7AE4A1F3D468300C856B1 /* Pilot */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
@@ -2477,7 +2446,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
-			name = Release;
+			name = Pilot;
 		};
 		DAB7AE4B1F3D468300C856B1 /* Public */ = {
 			isa = XCBuildConfiguration;
@@ -2502,62 +2471,62 @@
 		DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DA0E5538250D6F7F002B3AB1 /* Debug */,
-				DA0E5539250D6F7F002B3AB1 /* Release */,
+				DA0E5538250D6F7F002B3AB1 /* Development */,
+				DA0E5539250D6F7F002B3AB1 /* Pilot */,
 				DA0E553A250D6F7F002B3AB1 /* Public */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Development;
 		};
 		DA5BFA3E147E415C00F98B1E /* Build configuration list for PBXProject "Spectre" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DA5BFA6B147E415C00F98B1E /* Debug */,
-				DA5BFA6C147E415C00F98B1E /* Release */,
+				DA5BFA6B147E415C00F98B1E /* Development */,
+				DA5BFA6C147E415C00F98B1E /* Pilot */,
 				DA0974491E95703B00F0BFE8 /* Public */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Development;
 		};
 		DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DA5BFA6E147E415C00F98B1E /* Debug */,
-				DA5BFA6F147E415C00F98B1E /* Release */,
+				DA5BFA6E147E415C00F98B1E /* Development */,
+				DA5BFA6F147E415C00F98B1E /* Pilot */,
 				DA09744A1E95703B00F0BFE8 /* Public */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Development;
 		};
 		DAB6245026C82C2C00ABD4F5 /* Build configuration list for PBXLegacyTarget "swiftlint" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DAB6244D26C82C2C00ABD4F5 /* Debug */,
-				DAB6244E26C82C2C00ABD4F5 /* Release */,
+				DAB6244D26C82C2C00ABD4F5 /* Development */,
+				DAB6244E26C82C2C00ABD4F5 /* Pilot */,
 				DAB6244F26C82C2C00ABD4F5 /* Public */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Development;
 		};
 		DAB7AE411F3D464A00C856B1 /* Build configuration list for PBXLegacyTarget "libjson-c-ios" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DAB7AE3E1F3D464A00C856B1 /* Debug */,
-				DAB7AE3F1F3D464A00C856B1 /* Release */,
+				DAB7AE3E1F3D464A00C856B1 /* Development */,
+				DAB7AE3F1F3D464A00C856B1 /* Pilot */,
 				DAB7AE401F3D464A00C856B1 /* Public */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Development;
 		};
 		DAB7AE481F3D468300C856B1 /* Build configuration list for PBXLegacyTarget "libsodium-ios" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DAB7AE491F3D468300C856B1 /* Debug */,
-				DAB7AE4A1F3D468300C856B1 /* Release */,
+				DAB7AE491F3D468300C856B1 /* Development */,
+				DAB7AE4A1F3D468300C856B1 /* Pilot */,
 				DAB7AE4B1F3D468300C856B1 /* Public */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Development;
 		};
 /* End XCConfigurationList section */
 

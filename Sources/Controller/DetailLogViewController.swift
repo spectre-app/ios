@@ -76,10 +76,10 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                 Freshchat.sharedInstance().initWith( freshchatConfig )
             }
 
-            self.addBehaviour( ConditionalBehaviour( mode: .hides ) { _ in Freshchat.sharedInstance().config.appKey.nonEmpty == nil } )
+            self.addBehaviour( ConditionalBehaviour( effect: .hides ) { _ in Freshchat.sharedInstance().config.appKey.nonEmpty == nil } )
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
-            self.addBehaviour( ConditionalBehaviour( mode: .enables ) { _ in !AppConfig.shared.offline } )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
+            self.addBehaviour( ConditionalBehaviour( effect: .enables ) { _ in !AppConfig.shared.offline } )
         }
     }
 
@@ -96,7 +96,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             Tracker.shared.crash()
                         } )
 
-            self.addBehaviour( RequiresDebug( mode: .reveals ) )
+            self.addBehaviour( IfDebug( effect: .reveals ) )
         }
     }
 

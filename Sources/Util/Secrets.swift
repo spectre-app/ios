@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-01-02.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,10 +8,11 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
+// swiftlint:disable line_length
 // printf <secret> | openssl enc -[ed] -aes-128-cbc -a -A -K <app.secret> -iv 0
 let secrets = (
         app: (
@@ -28,7 +29,7 @@ let secrets = (
                 _: ()
         ),
         countly: (
-                development: (
+                private: (
                         key: "",
                         salt: "",
                         _: ()

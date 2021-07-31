@@ -116,7 +116,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                 """
             } )
 
-            self.addBehaviour( ConditionalBehaviour( mode: .enables ) { !$0.offline } )
+            self.addBehaviour( ConditionalBehaviour( effect: .enables ) { !$0.offline } )
         }
     }
 
@@ -166,7 +166,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             } )
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
         }
     }
 
@@ -198,7 +198,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                         caption: { _ in "\(Theme.current)" } )
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Theme) {

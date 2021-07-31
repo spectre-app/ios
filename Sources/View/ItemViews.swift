@@ -363,9 +363,9 @@ class BlockTapBehaviour<M>: TapBehaviour<M> {
 /// An item is hidden if any one behaviour is hidden.
 /// An item is disabled if any one behaviour is not enabled.
 class ConditionalBehaviour<M>: Behaviour<M> {
-    init(mode: Effect, condition: @escaping (M) -> Bool) {
+    init(effect: Effect, condition: @escaping (M) -> Bool) {
         super.init( hidden: { model in
-            switch mode {
+            switch effect {
                 case .enables:
                     return false
                 case .reveals:
@@ -374,7 +374,7 @@ class ConditionalBehaviour<M>: Behaviour<M> {
                     return condition( model )
             }
         }, enabled: { model in
-            switch mode {
+            switch effect {
                 case .enables:
                     return condition( model )
                 case .reveals:
@@ -392,15 +392,15 @@ class ConditionalBehaviour<M>: Behaviour<M> {
     }
 }
 
-class RequiresDebug<M>: ConditionalBehaviour<M> {
-    init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in AppConfig.shared.isDebug } )
+class IfDebug<M>: ConditionalBehaviour<M> {
+    init(effect: Effect) {
+        super.init( effect: effect, condition: { _ in AppConfig.shared.isDebug } )
     }
 }
 
-class RequiresPrivate<M>: ConditionalBehaviour<M> {
-    init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in !AppConfig.shared.isPublic } )
+class IfConfiguration<M>: ConditionalBehaviour<M> {
+    init(_ configuration: AppConfiguration, effect: Effect) {
+        super.init( effect: effect, condition: { _ in AppConfig.shared.configuration == configuration } )
     }
 }
 

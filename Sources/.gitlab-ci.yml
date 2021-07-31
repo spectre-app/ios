@@ -11,7 +11,7 @@ build_project:
     - "( cd ./platform-independent/c/cli && ./clean && targets=all ./build && ./mpw-tests && ./mpw-cli-tests )"
     - "( ./gradlew --stacktrace --info clean test )"
     - "( cd ./platform-darwin && pod install )"
-    - "( xcodebuild -workspace Spectre.xcworkspace -configuration 'Release' -scheme 'Spectre-iOS' -sdk iphonesimulator clean build )"
+    - "( xcodebuild -workspace Spectre.xcworkspace -configuration 'Pilot' -scheme 'Spectre-iOS' -sdk iphonesimulator clean build )"
   tags:
     - brew
     - java

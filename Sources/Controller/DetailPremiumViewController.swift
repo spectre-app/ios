@@ -38,8 +38,8 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
 
 class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
 
-    init(mode: Effect) {
-        super.init( mode: mode, condition: { _ in InAppFeature.premium.isEnabled } )
+    init(effect: Effect) {
+        super.init( effect: effect, condition: { _ in InAppFeature.premium.isEnabled } )
     }
 
     override func didInstall(into item: Item<M>) {
@@ -129,7 +129,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
           SeparatorItem( subitems: [
               EnablePremiumItem(),
               EnableStoreItem(),
-          ] ).addBehaviour( RequiresPrivate( mode: .reveals ) ),
+          ] ).addBehaviour( IfConfiguration( .public, effect: .hides ) ),
         ]
     }
 
@@ -173,8 +173,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         init() {
             super.init( title: "Enroll", values: { AppStore.shared.products( forSubscription: .premium ) } )
 
-            self.addBehaviour( ConditionalBehaviour( mode: .reveals ) { _ in AppStore.shared.canBuyProducts } )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
+            self.addBehaviour( ConditionalBehaviour( effect: .reveals ) { _ in AppStore.shared.canBuyProducts } )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .hides ) )
 
             self.animated = false
         }
@@ -261,8 +261,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                             """
                         } )
 
-            self.addBehaviour( ConditionalBehaviour( mode: .hides ) { _ in AppStore.shared.canBuyProducts } )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .hides ) )
+            self.addBehaviour( ConditionalBehaviour( effect: .hides ) { _ in AppStore.shared.canBuyProducts } )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .hides ) )
         }
     }
 
@@ -275,7 +275,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                             """
                         } )
 
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .reveals ) )
         }
     }
 

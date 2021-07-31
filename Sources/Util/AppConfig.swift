@@ -17,9 +17,9 @@ public class AppConfig: Observable {
 
     public let observers = Observers<AppConfigObserver>()
 
-    public var isApp    = false
-    public var isDebug  = false
-    public var isPublic = false
+    public var isApp         = false
+    public var isDebug       = false
+    public var configuration = AppConfiguration.private
     public var runCount: Int {
         get {
             UserDefaults.shared.integer( forKey: #function )
@@ -64,6 +64,7 @@ public class AppConfig: Observable {
             }
         }
     }
+    #if !PUBLIC
     public var sandboxStore: Bool {
         get {
             UserDefaults.shared.bool( forKey: #function )
@@ -75,6 +76,7 @@ public class AppConfig: Observable {
             }
         }
     }
+    #endif
     public var appIcon: AppIcon {
         get {
             UserDefaults.shared.string( forKey: #function ).flatMap { appIcon in
@@ -154,13 +156,23 @@ public class AppConfig: Observable {
         #if DEBUG
         self.isDebug = true
         #endif
-        #if PUBLIC
-        self.isPublic = true
+        #if PRIVATE
+        self.configuration = .private
+        #elseif PILOT
+        self.configuration = .pilot
+        #elseif PUBLIC
+        self.configuration = .public
+        #else
+        #error( "Build should define a configuration, either PRIVATE, PILOT or PUBLIC." )
         #endif
         self.runCount += 1
 
         Theme.current.parent = Theme.with( path: self.theme ) ?? .default
     }
+}
+
+public enum AppConfiguration {
+    case `private`, pilot, `public`
 }
 
 public protocol AppConfigObserver {

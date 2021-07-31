@@ -114,7 +114,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                             }
                         } )
 
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .reveals ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .reveals ) )
         }
 
         override func createItemView() -> FieldItemView {
@@ -168,7 +168,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         } )
 
             self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Attacker?) {
@@ -217,7 +217,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 } )
                         // TODO: Enable toggle if premium is off but biometric key is set to allow clearing it?
                         .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
+                        .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
             ] )
         }
     }
@@ -237,7 +237,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                             }
                         } ) )
                         .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
+                        .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
                 ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "" ) },
                                   value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """

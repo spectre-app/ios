@@ -60,7 +60,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                     value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
                                 .addBehaviour( PremiumTapBehaviour() )
-                                .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
+                                .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
                     ], axis: .vertical ),
 
                     // Step 2
@@ -104,7 +104,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                           value: { $0.autofill }, update: { $0.model?.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                                 .addBehaviour( PremiumTapBehaviour() )
-                                .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
+                                .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
                     ], axis: .vertical ),
                 ]
             } ),

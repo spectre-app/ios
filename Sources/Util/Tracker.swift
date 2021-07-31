@@ -333,9 +333,10 @@ class Tracker: AppConfigObserver {
         else { return }
 
         if !appConfig.offline && !self.hasCountlyStarted {
-            let countly = AppConfig.shared.isDebug ? secrets.countly.development:
-                    AppConfig.shared.isPublic ? secrets.countly.public: secrets.countly.pilot
-            if let countlyKey = countly.key.b64Decrypt(), let countlySalt = countly.salt.b64Decrypt() {
+            if let countly = [
+                .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
+            ][AppConfig.shared.configuration],
+               let countlyKey = countly.key.b64Decrypt(), let countlySalt = countly.salt.b64Decrypt() {
                 let countlyConfig = CountlyConfig()
                 countlyConfig.host = "https://countly.spectre.app"
                 countlyConfig.urlSessionConfiguration = URLSession.optionalConfiguration()
@@ -346,9 +347,9 @@ class Tracker: AppConfigObserver {
                 countlyConfig.deviceID = self.identifierForOwner
                 countlyConfig.features = [ CLYFeature.pushNotifications ]
                 countlyConfig.enablePerformanceMonitoring = true
-                #if !PUBLIC
-                countlyConfig.pushTestMode = AppConfig.shared.isDebug ? .development: .testFlightOrAdHoc
-                #endif
+                countlyConfig.pushTestMode = [
+                    .private: .development, .pilot: .testFlightOrAdHoc, .public: nil,
+                ][AppConfig.shared.configuration] ?? .development
                 Countly.sharedInstance().start( with: countlyConfig )
                 self.hasCountlyStarted = true
 
@@ -381,20 +382,18 @@ class Tracker: AppConfigObserver {
                 // https://github.com/getsentry/sentry-cocoa/issues/369
                 SentrySDK.start {
                     $0.dsn = dsn
-                    $0.environment = AppConfig.shared.isDebug ? "Development": AppConfig.shared.isPublic ? "Public": "Private"
+                    $0.environment = [ .private: "Private", .pilot: "Pilot", .public: "Public" ][AppConfig.shared.configuration]
                 }
                 SentrySDK.configureScope {
                     $0.setTags( self.identifiers )
                 }
                 self.hasSentryStarted = true
             }
-            #if DEBUG
             if !self.hasStacksiftStarted, let apiKey = secrets.stacksift.key.b64Decrypt() {
                 Stacksift.shared.installIdentifier = self.identifierForDevice
                 Stacksift.start( APIKey: apiKey, monitor: .metricKitOnly )
                 self.hasStacksiftStarted = true
             }
-            #endif
         }
         else {
             SentrySDK.close()
