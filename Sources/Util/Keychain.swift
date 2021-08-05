@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-10-03.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import LocalAuthentication
@@ -19,7 +19,8 @@ public class Keychain {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
                 kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error ), error == nil
-        else { throw AppError.issue( error?.takeRetainedValue() as Error?, title: "Keychain unavailable", details: "Keychain access control could not be created." ) }
+        else { throw AppError.issue( error?.takeRetainedValue() as Error?, title: "Keychain unavailable",
+                                     details: "Keychain access control could not be created." ) }
 
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
@@ -37,7 +38,8 @@ public class Keychain {
         if let context = context {
             var error: NSError?
             guard context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: &error ), error == nil
-            else { throw AppError.issue( error, title: "Biometrics unavailable", details: "Biometrics authentication is not available at this time." ) }
+            else { throw AppError.issue( error, title: "Biometrics unavailable",
+                                         details: "Biometrics authentication is not available at this time." ) }
 
             query[kSecUseAuthenticationContext] = context
         }

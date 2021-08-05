@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-05.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,14 +8,14 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import Countly
 
 class DetailLogViewController: ItemsViewController<DetailLogViewController.Model>, ModelObserver {
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -44,13 +44,13 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
         ]
     }
 
-    // MARK: --- ModelObserver ---
+    // MARK: - ModelObserver
 
     func didChange(model: Model) {
         self.setNeedsUpdate()
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class FeedbackItem: ButtonItem<Model> {
         init() {
@@ -60,13 +60,14 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             """
                             We're here to help.  You can also reach us at:\nsupport@spectre.app
                             """
-                        } ) {
-                if let viewController = $0.viewController {
-                    let options = ConversationOptions()
-                    options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
-                    Freshchat.sharedInstance().showConversations( viewController, with: options )
-                }
-            }
+                        },
+                        action: {
+                            if let viewController = $0.viewController {
+                                let options = ConversationOptions()
+                                options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
+                                Freshchat.sharedInstance().showConversations( viewController, with: options )
+                            }
+                        } )
 
             if Freshchat.sharedInstance().config.appKey.nonEmpty == nil,
                let freshchatApp = secrets.freshchat.app.b64Decrypt(), let freshchatKey = secrets.freshchat.key.b64Decrypt() {
@@ -90,9 +91,10 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                             """
                             Terminate the app with a crash, triggering a crash report on the next launch.
                             """
-                        } ) { _ in
-                Tracker.shared.crash()
-            }
+                        },
+                        action: { _ in
+                            Tracker.shared.crash()
+                        } )
 
             self.addBehaviour( RequiresDebug( mode: .reveals ) )
         }
@@ -126,7 +128,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
 
             private let titleLabel = UILabel()
 
-            // MARK: --- Life ---
+            // MARK: - Life
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
@@ -177,16 +179,14 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                 }
             }, subitems: [
                 ButtonItem( track: .subject( "logbook", action: "copy" ), value: { _ in (label: "Copy Logs", image: nil) }, action: {
-                    UIPasteboard.general.setItems(
-                            [ [ UIPasteboard.typeAutomatic:
-                            LogSink.shared.enumerate( level: $0.model?.logbookLevel ?? .info ).reduce( "" ) { logs, record in
-                                logs + "[\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)] " +
-                                        record.message + "\n"
-                            } ] ],
-                            options: [
-                                UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
-                            ] )
-                } )
+                    let logs = LogSink.shared.enumerate( level: $0.model?.logbookLevel ?? .info ).reduce( "" ) { logs, log in
+                        "\(logs)[\(dateFormatter.string( from: log.occurrence )) \(log.level) | \(log.source)] \(log.message)\n"
+                    }
+
+                    UIPasteboard.general.setItemProviders(
+                            [ NSItemProvider( item: logs as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
+                            localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
+                } ),
             ] )
         }
     }
@@ -196,12 +196,10 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             super.init( title: "Device Identifier",
                         caption: { _ in "\(Tracker.shared.identifierForDevice)" } )
 
-            self.addBehaviour( BlockTapBehaviour() { _ in
-                UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: Tracker.shared.identifierForDevice ] ],
-                        options: [
-                            UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
-                        ] )
+            self.addBehaviour( BlockTapBehaviour { _ in
+                UIPasteboard.general.setItemProviders(
+                        [ NSItemProvider( item: Tracker.shared.identifierForDevice as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
+                        localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
             } )
         }
     }
@@ -211,12 +209,10 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             super.init( title: "Owner Identifier",
                         caption: { _ in "\(Tracker.shared.identifierForOwner)" } )
 
-            self.addBehaviour( BlockTapBehaviour() { _ in
-                UIPasteboard.general.setItems(
-                        [ [ UIPasteboard.typeAutomatic: Tracker.shared.identifierForOwner ] ],
-                        options: [
-                            UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
-                        ] )
+            self.addBehaviour( BlockTapBehaviour { _ in
+                UIPasteboard.general.setItemProviders(
+                        [ NSItemProvider( item: Tracker.shared.identifierForOwner as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
+                        localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
             } )
         }
     }

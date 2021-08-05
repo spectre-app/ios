@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-06-28.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -25,7 +25,7 @@ class BaseUserViewController: BaseViewController, UserObserver {
 
     private var backgroundTime: Date?
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -73,13 +73,13 @@ class BaseUserViewController: BaseViewController, UserObserver {
         self.backgroundTime = nil
     }
 
-    // MARK: --- UserObserver ---
+    // MARK: - UserObserver
 
     func didLogout(user: User) {
         self.validate()
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     private func validate() {
         if self.user?.userKeyFactory == nil {

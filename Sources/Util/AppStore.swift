@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-18.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import StoreKit
 import TPInAppReceipt
@@ -147,7 +147,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         SKPaymentQueue.default().restoreCompletedTransactions()
     }
 
-    func isUpToDate(appleID: Int? = nil, buildVersion: String? = nil) -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
+    func isUpToDate(appleID: Int? = nil, buildVersion: String? = nil)
+                    -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
         guard let urlSession = URLSession.required.get()
         else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
 
@@ -162,10 +163,11 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         else { return Promise( .failure( AppError.internal( cause: "Couldn't resolve store URL", details: searchURLString ) ) ) }
 
         return urlSession.promise( with: URLRequest( url: searchURL ) ).promise {
-            if let error = (try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any])?["errorMessage"] as? String {
+            let json = try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any]
+            if let error = json?["errorMessage"] as? String {
                 throw AppError.issue( title: "iTunes store lookup issue", details: error )
             }
-            guard let metadata = (((try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any])?["results"] as? [Any])?.first as? [String: Any])
+            guard let metadata = ((json?["results"] as? [Any])?.first as? [String: Any])
             else { throw AppError.state( title: "Missing iTunes application metadata" ) }
             guard let storeVersion = metadata["version"] as? String
             else { throw AppError.state( title: "Missing version in iTunes metadata" ) }
@@ -202,18 +204,20 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     func presentStore(appleID: Int? = nil, in viewController: UIViewController) {
         let storeController = SKStoreProductViewController()
         storeController.delegate = self
-        storeController.loadProduct( withParameters: [ SKStoreProductParameterITunesItemIdentifier: appleID ?? productAppleID ] ) { success, error in
+        storeController.loadProduct( withParameters: [
+            SKStoreProductParameterITunesItemIdentifier: appleID ?? productAppleID,
+        ] ) { success, error in
             if !success || error != nil {
                 wrn( "Couldn't load store controller. [>PII]" )
-                pii( "[>] %@", error )
+                pii( "[>] Error: %@", error )
             }
         }
         viewController.present( storeController, animated: true )
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
-    private let countryCode3to2
+    private let countryCode3to2 // swiftlint:disable:next line_length
             = [ "AFG": "AF", "ALB": "AL", "DZA": "DZ", "AND": "AD", "AGO": "AO", "AIA": "AI", "ATG": "AG", "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "AZE": "AZ", "BHS": "BS", "BHR": "BH", "BGD": "BD", "BRB": "BB", "BLR": "BY", "BEL": "BE", "BLZ": "BZ", "BEN": "BJ", "BMU": "BM", "BTN": "BT", "BOL": "BO", "BIH": "BA", "BWA": "BW", "BRA": "BR", "BRN": "BN", "BGR": "BG", "BFA": "BF", "KHM": "KH", "CMR": "CM", "CAN": "CA", "CPV": "CV", "CYM": "KY", "CAF": "CF", "TCD": "TD", "CHL": "CL", "CHN": "CN", "COL": "CO", "COG": "CG", "COD": "CD", "CRI": "CR", "CIV": "CI", "HRV": "HR", "CYP": "CY", "CZE": "CZ", "DNK": "DK", "DMA": "DM", "DOM": "DO", "ECU": "EC", "EGY": "EG", "SLV": "SV", "EST": "EE", "ETH": "ET", "FJI": "FJ", "FIN": "FI", "FRA": "FR", "GAB": "GA", "GMB": "GM", "GEO": "GE", "DEU": "DE", "GHA": "GH", "GRC": "GR", "GRD": "GD", "GTM": "GT", "GIN": "GN", "GNB": "GW", "GUY": "GY", "HND": "HN", "HKG": "HK", "HUN": "HU", "ISL": "IS", "IND": "IN", "IDN": "ID", "IRQ": "IQ", "IRL": "IE", "ISR": "IL", "ITA": "IT", "JAM": "JM", "JPN": "JP", "JOR": "JO", "KAZ": "KZ", "KEN": "KE", "KOR": "KR", "KWT": "KW", "KGZ": "KG", "LAO": "LA", "LVA": "LV", "LBN": "LB", "LBR": "LR", "LBY": "LY", "LIE": "LI", "LTU": "LT", "LUX": "LU", "MAC": "MO", "MKD": "MK", "MDG": "MG", "MWI": "MW", "MYS": "MY", "MDV": "MV", "MLI": "ML", "MLT": "MT", "MRT": "MR", "MUS": "MU", "MEX": "MX", "FSM": "FM", "MDA": "MD", "MCO": "MC", "MNG": "MN", "MNE": "ME", "MSR": "MS", "MAR": "MA", "MOZ": "MZ", "MMR": "MM", "NAM": "NA", "NRU": "NR", "NPL": "NP", "NLD": "NL", "NZL": "NZ", "NIC": "NI", "NER": "NE", "NGA": "NG", "NOR": "NO", "OMN": "OM", "PAK": "PK", "PLW": "PW", "PSE": "PS", "PAN": "PA", "PNG": "PG", "PRY": "PY", "PER": "PE", "PHL": "PH", "POL": "PL", "PRT": "PT", "QAT": "QA", "ROU": "RO", "RUS": "RU", "RWA": "RW", "KNA": "KN", "LCA": "LC", "VCT": "VC", "WSM": "WS", "STP": "ST", "SAU": "SA", "SEN": "SN", "SRB": "RS", "SYC": "SC", "SLE": "SL", "SGP": "SG", "SVK": "SK", "SVN": "SI", "SLB": "SB", "ZAF": "ZA", "ESP": "ES", "LKA": "LK", "SUR": "SR", "SWZ": "SZ", "SWE": "SE", "CHE": "CH", "TWN": "TW", "TJK": "TJ", "TZA": "TZ", "THA": "TH", "TON": "TO", "TTO": "TT", "TUN": "TN", "TUR": "TR", "TKM": "TM", "TCA": "TC", "UGA": "UG", "UKR": "UA", "ARE": "AE", "GBR": "GB", "USA": "US", "URY": "UY", "UZB": "UZ", "VUT": "VU", "VEN": "VE", "VNM": "VN", "VGB": "VG", "YEM": "YE", "ZMB": "ZM", "ZWE": "ZW" ]
 
     func products(forSubscription subscription: InAppSubscription, onlyPublic: Bool = true) -> [SKProduct] {
@@ -253,7 +257,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             }
             catch {
                 wrn( "App Store receipt unavailable. [>PII]" )
-                pii( "[>] %@", error )
+                pii( "[>] Error: %@", error )
                 self.receipt = nil
             }
 
@@ -302,13 +306,13 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         }
     }
 
-    // MARK: --- SKStoreProductViewControllerDelegate ---
+    // MARK: - SKStoreProductViewControllerDelegate
 
     func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
         viewController.dismiss( animated: true )
     }
 
-    // MARK: --- SKPaymentTransactionObserver ---
+    // MARK: - SKPaymentTransactionObserver
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
@@ -328,7 +332,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                             if !receipt.purchases.contains( where: { $0.originalTransactionIdentifier == originalIdentifier } ) {
                                 mperror( title: "App Store transaction missing", message:
                                 "Ensure you are online and try logging out and back into your Apple ID from Settings.",
-                                         error: AppError.state( title: "Transaction is missing from receipt", details: originalIdentifier ) )
+                                         error: AppError.state( title: "Transaction is missing from receipt",
+                                                                details: originalIdentifier ) )
                             }
 
                             queue.finishTransaction( transaction )
@@ -352,7 +357,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         }
     }
 
-    // MARK: --- SKProductsRequestDelegate ---
+    // MARK: - SKProductsRequestDelegate
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         if !response.invalidProductIdentifiers.isEmpty {
@@ -362,7 +367,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         self.products = response.products
     }
 
-    // MARK: --- SKRequestDelegate ---
+    // MARK: - SKRequestDelegate
 
     func requestDidFinish(_ request: SKRequest) {
         self.updatePromise?.finish( .success( true ) )

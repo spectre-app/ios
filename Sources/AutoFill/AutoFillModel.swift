@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-10-08.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 import AuthenticationServices
@@ -34,7 +34,7 @@ class AutoFillModel: MarshalObserver {
         self.cachedUsers.insert( user.userName )
     }
 
-    // MARK: --- MarshalObserver ---
+    // MARK: - MarshalObserver
 
     func didChange(userFiles: [Marshal.UserFile]) {
         // Purge cached users that have: changed, disappeared, or have disabled autofill.
@@ -50,10 +50,10 @@ class AutoFillModel: MarshalObserver {
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     struct Context {
-        var serviceIdentifiers: [ASCredentialServiceIdentifier]? = nil
-        var credentialIdentity: ASPasswordCredentialIdentity?    = nil
+        var serviceIdentifiers: [ASCredentialServiceIdentifier]?
+        var credentialIdentity: ASPasswordCredentialIdentity?
     }
 }

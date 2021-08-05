@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,14 +8,14 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import AuthenticationServices
 
 class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
 
-    // MARK: --- MarshalObserver ---
+    // MARK: - MarshalObserver
 
     override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ [ userFiles.first( where: { $0.autofill && $0.userName == AutoFillModel.shared.context.credentialIdentity?.user } ) ] ]
@@ -29,7 +29,7 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     override func login(user: User) {
         super.login( user: user )
@@ -42,8 +42,8 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
 
         guard   let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
         else {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError(
-                    .credentialIdentityNotFound, "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) )
+            self.extensionContext?.cancelRequest( withError: ASExtensionError( .credentialIdentityNotFound, "" +
+                    "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) )
             return
         }
 

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-18.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -41,7 +41,7 @@ class ConstraintResolver: CustomDebugStringConvertible {
         while let holder_ = holder {
             for constraint in holder_.constraints
                 where (constraint.firstItem === item || constraint.secondItem === item) &&
-                        (axis == nil || constraint.firstAttribute.on( axis: axis! ) || constraint.secondAttribute.on( axis: axis! )) {
+                      (axis == nil || constraint.firstAttribute.on( axis: axis! ) || constraint.secondAttribute.on( axis: axis! )) {
                 constraints.insert( HashableConstraint( constraint: constraint ) )
             }
             holder = holder_.superview
@@ -115,10 +115,10 @@ class ConstraintResolver: CustomDebugStringConvertible {
         func siblings() -> Set<Edge> {
             switch self {
                 case .top, .centerV, .bottom:
-                    return Set( arrayLiteral: .top, .centerV, .bottom ).subtracting( [ self ] )
+                    return Set( [ .top, .centerV, .bottom ] ).subtracting( [ self ] )
 
                 case .leading, .centerH, .trailing:
-                    return Set( arrayLiteral: .leading, .centerH, .trailing ).subtracting( [ self ] )
+                    return Set( [ .leading, .centerH, .trailing ] ).subtracting( [ self ] )
             }
         }
 
@@ -173,13 +173,13 @@ class HashableConstraint: Hashable {
         // hasher.combine( self.constraint.isActive )
     }
 
-    static func ==(lhs: HashableConstraint, rhs: HashableConstraint) -> Bool {
+    static func == (lhs: HashableConstraint, rhs: HashableConstraint) -> Bool {
         lhs === rhs || lhs.constraint === rhs.constraint || lhs.constraint == rhs.constraint || (
-                lhs.constraint.firstItem === rhs.constraint.firstItem && lhs.constraint.firstAttribute == rhs.constraint.firstAttribute
-                        && lhs.constraint.secondItem === rhs.constraint.secondItem && lhs.constraint.secondAttribute == rhs.constraint.secondAttribute
-                        && lhs.constraint.multiplier == rhs.constraint.multiplier && lhs.constraint.constant == rhs.constraint.constant
-                        && lhs.constraint.relation == rhs.constraint.relation && lhs.constraint.priority == rhs.constraint.priority
-                        && lhs.constraint.identifier == rhs.constraint.identifier //&& lhs.constraint.isActive == rhs.constraint.isActive
+                lhs.constraint.secondItem === rhs.constraint.secondItem && lhs.constraint.secondAttribute == rhs.constraint.secondAttribute
+                && lhs.constraint.firstItem === rhs.constraint.firstItem && lhs.constraint.firstAttribute == rhs.constraint.firstAttribute
+                && lhs.constraint.multiplier == rhs.constraint.multiplier && lhs.constraint.constant == rhs.constraint.constant
+                && lhs.constraint.relation == rhs.constraint.relation && lhs.constraint.priority == rhs.constraint.priority
+                && lhs.constraint.identifier == rhs.constraint.identifier //&& lhs.constraint.isActive == rhs.constraint.isActive
         )
     }
 }
@@ -218,13 +218,16 @@ public extension NSLayoutConstraint {
         }
 
         if let firstItem = firstItem, let secondItem = secondItem {
-            return String( repeating: "+", count: depth ) + "[ \(firstItem) ] \(self.relation) [ \(secondItem) ]\(modifier)\(priority): (\(self.description))"
+            return String( repeating: "+", count: depth ) +
+                   "[ \(firstItem) ] \(self.relation) [ \(secondItem) ]\(modifier)\(priority): (\(self.description))"
         }
         else if let firstItem = firstItem {
-            return String( repeating: "+", count: depth ) + "[ \(firstItem) ] \(self.relation)\(modifier)\(priority): (\(self.description))"
+            return String( repeating: "+", count: depth ) +
+                   "[ \(firstItem) ] \(self.relation)\(modifier)\(priority): (\(self.description))"
         }
         else if let secondItem = secondItem {
-            return String( repeating: "+", count: depth ) + "[ \(secondItem) ] \(self.relation)\(modifier)\(priority): (\(self.description))"
+            return String( repeating: "+", count: depth ) +
+                   "[ \(secondItem) ] \(self.relation)\(modifier)\(priority): (\(self.description))"
         }
 
         return "[ no items ]: (\(self.description))"
@@ -232,7 +235,7 @@ public extension NSLayoutConstraint {
 
     var holder: UIView? {
         var view = (self.firstItem as? UIView) ?? (self.firstItem as? UILayoutGuide)?.owningView ??
-                (self.secondItem as? UIView) ?? (self.secondItem as? UILayoutGuide)?.owningView
+                   (self.secondItem as? UIView) ?? (self.secondItem as? UILayoutGuide)?.owningView
         while let view_ = view {
             if view_.constraints.contains( self ) {
                 return view_

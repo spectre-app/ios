@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-10-15.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,14 +8,14 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 import UIKit
 
 class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConfigObserver {
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func loadItems() -> [Item<Site>] {
         [ PasswordCounterItem(), SeparatorItem(),
@@ -23,7 +23,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
           LoginTypeItem(), SeparatorItem(),
           SecurityAnswerItem(), SeparatorItem(),
           URLItem(), SeparatorItem(),
-          InfoItem() ]
+          InfoItem(),
+        ]
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -55,13 +56,13 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
         super.doUpdate()
     }
 
-    // MARK: --- SiteObserver ---
+    // MARK: - SiteObserver
 
     func didChange(site: Site, at change: PartialKeyPath<Site>) {
         self.setNeedsUpdate()
     }
 
-    // MARK: --- AppConfigObserver ---
+    // MARK: - AppConfigObserver
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         if change == \AppConfig.colorfulSites {
@@ -69,7 +70,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class PasswordCounterItem: StepperItem<Site, SpectreCounter> {
         init() {
@@ -270,6 +271,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
     }
 
     class SecurityAnswerItem: ListItem<Site, Question, SecurityAnswerItem.Cell> {
+        // swiftlint:disable:next function_body_length
         init() {
             super.init( title: "Security Answers 🅿︎",
                         values: {
@@ -320,15 +322,17 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                                                 } )
                                                 item.viewController?.present( helpController, animated: true )
                                             } )
-                                            alertController.addAction( UIAlertAction( title: "Add", style: .default ) { [weak item, weak alertController] _ in
-                                                guard let site = item?.model, let keyword = alertController?.textFields?.first?.text?.nonEmpty
+                                            alertController.addAction( UIAlertAction( title: "Add", style: .default ) {
+                                                [weak item, weak alertController] _ in
+                                                guard let site = item?.model,
+                                                      let keyword = alertController?.textFields?.first?.text?.nonEmpty
                                                 else { return }
 
                                                 trc( "Adding security question <%@> for: %@", keyword, site )
                                                 site.questions.append( Question( site: site, keyword: keyword ) )
                                             } )
                                             item.viewController?.present( alertController, animated: true )
-                                        } )
+                                        } ),
                         ],
                         caption: { _ in
                             """
@@ -356,8 +360,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             private let keywordLabel = UILabel()
             private let resultLabel  = UILabel()
             private lazy var copyButton = EffectButton(
-                    track: .subject( "site.question", action: "copy", [ "words": self.question?.keyword.split( separator: " " ).count ?? 0 ] ),
-                    title: "copy" )
+                    track: .subject( "site.question", action: "copy", [
+                        "words": self.question?.keyword.split( separator: " " ).count ?? 0,
+                    ] ), title: "copy" )
 
             weak var question: Question? {
                 didSet {
@@ -373,7 +378,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                 }
             }
 
-            // MARK: --- Life ---
+            // MARK: - Life
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )

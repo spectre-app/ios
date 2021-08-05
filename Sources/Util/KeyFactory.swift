@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-10-10.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import LocalAuthentication
@@ -32,7 +32,7 @@ public class KeyFactory {
     private var userKeysCache = [ SpectreAlgorithm: UnsafePointer<SpectreUserKey> ]()
     public let  userName: String
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init(userName: String) {
         self.userName = userName
@@ -42,7 +42,7 @@ public class KeyFactory {
         self.invalidate()
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     public func provide() -> Promise<SpectreKeyProvider> {
         keyQueue.promise {
@@ -75,7 +75,7 @@ public class KeyFactory {
         }
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     private func getKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
         keyQueue.promising {
@@ -103,26 +103,27 @@ public class KeyFactory {
 public class SecretKeyFactory: KeyFactory {
     private let userSecret: String
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     public init(userName: String, userSecret: String) {
         self.userSecret = userSecret
         super.init( userName: userName )
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     public var identicon: SpectreIdenticon {
         spectre_identicon( self.userName, self.userSecret )
     }
 
     public func toKeychain() -> Promise<KeychainKeyFactory> {
-        KeychainKeyFactory( userName: self.userName ).unlock().promising {
-            $0.saveKeys( SpectreAlgorithm.allCases.map { self.newKey( for: $0 ) } )
+        KeychainKeyFactory( userName: self.userName ).unlock().promising { keychainKeyFactory in
+            keychainKeyFactory.saveKeys( SpectreAlgorithm.allCases.map { self.newKey( for: $0 ) } )
+                              .promise { _ in keychainKeyFactory }
         }
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
         DispatchQueue.api.promise {
@@ -140,7 +141,7 @@ public class KeychainKeyFactory: KeyFactory {
         defer {
             if let error = error {
                 wrn( "Biometrics unavailable. [>PII]" )
-                pii( "[>] %@", error )
+                pii( "[>] Error: %@", error )
             }
         }
 
@@ -202,13 +203,13 @@ public class KeychainKeyFactory: KeyFactory {
         return context
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     public override init(userName: String) {
         super.init( userName: userName )
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     public func isKeyPresent(for algorithm: SpectreAlgorithm) -> Bool {
         Keychain.keyStatus( for: self.userName, algorithm: algorithm, context: self.context ).present
@@ -226,7 +227,7 @@ public class KeychainKeyFactory: KeyFactory {
         self.invalidate()
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     public override func invalidate() {
         keyQueue.await { self._context?.invalidate() }
@@ -237,7 +238,8 @@ public class KeychainKeyFactory: KeyFactory {
     public func unlock() -> Promise<KeychainKeyFactory> {
         let promise = Promise<KeychainKeyFactory>()
 
-        self.context.evaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.userName)" ) { result, error in
+        self.context.evaluatePolicy(
+                .deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlocking \(self.userName)" ) { result, error in
             if let error = error {
                 promise.finish( .failure( error ) )
             }
@@ -252,26 +254,23 @@ public class KeychainKeyFactory: KeyFactory {
         return promise
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     fileprivate override func createKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
         Keychain.loadKey( for: self.userName, algorithm: algorithm, context: self.context )
     }
 
-    fileprivate func saveKeys(_ keys: [Promise<UnsafePointer<SpectreUserKey>>]) -> Promise<KeychainKeyFactory> {
+    fileprivate func saveKeys(_ keys: [Promise<UnsafePointer<SpectreUserKey>>]) -> Promise<[Result<Void, Error>]> {
         keyQueue.promising {
-            keys.reduce( Promise( .success( () ) ) ) {
-                $0.and(
-                        $1.success( self.cacheKey )
-                          .promising {
-                              Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
-                          }
-                )
-            }.promise { self }
+            keys.map {
+                $0.success( self.cacheKey ).promising {
+                    Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
+                }
+            }.flatten()
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     public enum Factor: CustomStringConvertible {
         case biometricTouch, biometricFace, biometricNone

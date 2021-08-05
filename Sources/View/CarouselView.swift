@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-04.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -41,14 +41,14 @@ class CarouselView: UICollectionView {
         }
     }
 
-    // MARK: --- State ---
+    // MARK: - State
 
     override var intrinsicContentSize: CGSize {
         CGSize( width: UIView.noIntrinsicMetric,
                 height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init() {
         super.init( frame: .zero, collectionViewLayout: Layout() )
@@ -69,7 +69,7 @@ class CarouselView: UICollectionView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     internal class Layout: UICollectionViewLayout {
         var count       = 0
@@ -121,8 +121,8 @@ class CarouselView: UICollectionView {
             }
 
             // Create new attributes.
-            for i in 0..<self.count {
-                let indexPath = IndexPath( item: i, section: 0 )
+            for item in 0..<self.count {
+                let indexPath = IndexPath( item: item, section: 0 )
 
                 if !self.attributes.keys.contains( indexPath ) {
                     self.attributes[indexPath] = using( UICollectionViewLayoutAttributes( forCellWith: indexPath ) ) {

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-08-02.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -79,7 +79,7 @@ class EmitterView: UIView, CAAnimationDelegate {
                             CGPoint( x: rect.midX, y: 0 ),
                             CGPoint( x: rect.maxX, y: rect.maxY ),
                             CGPoint( x: rect.minX, y: rect.maxY ),
-                            CGPoint( x: rect.midX, y: 0 )
+                            CGPoint( x: rect.midX, y: 0 ),
                         ] )
                         return path
                     case .square:
@@ -126,11 +126,9 @@ class EmitterView: UIView, CAAnimationDelegate {
 
         func image(of string: String, with font: UIFont = UIFont.systemFont( ofSize: 16.0 )) -> UIImage? {
 
-            let string                                    = NSString( string: string )
-            let attributes: [NSAttributedString.Key: Any] = [
-                .font: font
-            ]
-            let size                                      = string.size( withAttributes: attributes )
+            let string     = NSString( string: string )
+            let attributes = [ .font: font ] as [NSAttributedString.Key: Any]
+            let size       = string.size( withAttributes: attributes )
 
             return UIGraphicsImageRenderer( size: size ).image { _ in
                 string.draw( at: .zero, withAttributes: attributes )

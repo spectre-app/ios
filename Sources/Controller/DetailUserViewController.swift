@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-10-15.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,14 +8,14 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 import UIKit
 
 class DetailUserViewController: ItemsViewController<User>, UserObserver {
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func loadItems() -> [Item<User>] {
         [ IdenticonItem(), AvatarItem(), ActionsItem(), SeparatorItem(),
@@ -46,13 +46,13 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         self.model.observers.unregister( observer: self )
     }
 
-    // MARK: --- UserObserver ---
+    // MARK: - UserObserver
 
     func didChange(user: User, at change: PartialKeyPath<User>) {
         self.setNeedsUpdate()
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class IdenticonItem: LabelItem<User> {
         init() {
@@ -85,7 +85,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         subitems: [ LoginResultItem() ],
                         caption: { _ in
                             """
-                            The login name used for sites that do not have a site‑specific login name. 
+                            The login name used for sites that do not have a site‑specific login name.
                             """
                         } )
         }
@@ -180,7 +180,10 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 didSet {
                     DispatchQueue.main.perform {
                         if let attacker = self.attacker {
-                            self.name = "\(number: attacker.fixed_budget + attacker.monthly_budget * 12, decimals: 0...0, locale: .C, .currency, .abbreviated)"
+                            self.name = """
+                                        \(number: attacker.fixed_budget + attacker.monthly_budget * 12,
+                                                decimals: 0...0, locale: .C, .currency, .abbreviated)
+                                        """
                             self.class = "\(attacker)"
                         }
                         else {
@@ -197,7 +200,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( subitems: [
                 ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords",
-                                  icon: { .icon( $0.maskPasswords ? "" : "👁" ) },
+                                  icon: { .icon( $0.maskPasswords ? "": "👁" ) },
                                   value: { $0.maskPasswords }, update: { $0.model?.maskPasswords = $1 }, caption: { _ in
                     """
                     Do not reveal passwords on screen.
@@ -228,11 +231,11 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     Auto-fill your site passwords from other apps.
                     """
                 } )
-                        .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) } ) {
+                        .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) }, {
                             if let user = $0.model {
                                 $0.viewController?.show( IntroAutoFillViewController( model: user ), sender: $0.view )
                             }
-                        } )
+                        } ) )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
                 ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "" ) },
@@ -240,7 +243,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     """
                     Allow other apps to see and backup your user through On My iPhone.
                     """
-                } )
+                } ),
             ] )
         }
     }
@@ -308,11 +311,13 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 alertController.popoverPresentationController?.sourceRect = item.view.bounds
                 if user.algorithm < .last {
                     let upgrade = user.algorithm.advanced( by: 1 )
-                    alertController.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
+                    alertController.addAction( UIAlertAction(
+                            title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: upgrade ).or(
                                     UIAlertController.authenticate(
-                                            userName: user.userName, title: "Upgrade", message: "Your personal secret is required to perform the upgrade.",
-                                            in: viewController, action: "Authenticate", authenticator: { $0.newKey( for: upgrade ) } ) )
+                                            userName: user.userName, title: "Upgrade",
+                                            message: "Your personal secret is required to perform the upgrade.",
+                                            action: "Authenticate", in: viewController ) { $0.newKey( for: upgrade ) } )
                             .success { upgradedKey in
                                 defer { upgradedKey.deallocate() }
                                 user.algorithm = upgradedKey.pointee.algorithm
@@ -322,11 +327,13 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 }
                 if user.algorithm > .first {
                     let downgrade = user.algorithm.advanced( by: -1 )
-                    alertController.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
+                    alertController.addAction( UIAlertAction(
+                            title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: downgrade ).or(
                                     UIAlertController.authenticate(
-                                            userName: user.userName, title: "Downgrade", message: "Your personal secret is required to perform the downgrade.",
-                                            in: viewController, action: "Authenticate", authenticator: { $0.newKey( for: downgrade ) } ) )
+                                            userName: user.userName, title: "Downgrade",
+                                            message: "Your personal secret is required to perform the downgrade.",
+                                            action: "Authenticate", in: viewController ) { $0.newKey( for: downgrade ) } )
                             .success { downgradedKey in
                                 defer { downgradedKey.deallocate() }
                                 user.algorithm = downgradedKey.pointee.algorithm
@@ -359,14 +366,12 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             super.init( title: "Private User Identifier",
                         caption: { (try? $0.authenticatedIdentifier.await()).flatMap { "\($0)" } } )
 
-            self.addBehaviour( BlockTapBehaviour() {
+            self.addBehaviour( BlockTapBehaviour {
                 _ = $0.model.flatMap {
                     $0.userKeyFactory?.authenticatedIdentifier( for: $0.algorithm ).promise {
-                        UIPasteboard.general.setItems(
-                                [ [ UIPasteboard.typeAutomatic: $0 ?? "" ] ],
-                                options: [
-                                    UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff
-                                ] )
+                        UIPasteboard.general.setItemProviders(
+                                [ NSItemProvider( item: $0 as NSString?, typeIdentifier: UIPasteboard.typeAutomatic ) ],
+                                localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
                     }
                 }
             } )

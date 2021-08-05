@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-11.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -81,7 +81,8 @@ extension Decimal {
         for i in stride( from: 3, through: 93, by: 2 ) {
             currentConstantValue *= seriesConstant
 
-            // For some reason, underflow never triggers an error on NSDecimalMultiply, so you need to check for when values get too small and abort convergence manually at that point
+            // For some reason, underflow never triggers an error on NSDecimalMultiply,
+            // so you need to check for when values get too small and abort convergence manually at that point
             var rounded: Decimal = 0
             NSDecimalRound( &rounded, &currentConstantValue, 80, .bankers )
             if rounded == 0 {
@@ -131,7 +132,7 @@ extension Locale {
 }
 
 extension NSAttributedString {
-    public static func +(lhs: NSAttributedString, rhs: NSAttributedString) -> NSAttributedString {
+    public static func + (lhs: NSAttributedString, rhs: NSAttributedString) -> NSAttributedString {
         let attributedString = lhs as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: lhs )
         attributedString.append( rhs )
         return attributedString
@@ -151,12 +152,6 @@ extension NSAttributedString {
         }
 
         return NSAttributedString( string: string, attributes: mergedAttributes )
-    }
-}
-
-extension NSOrderedSet {
-    func seq<E>(_ type: E.Type) -> [E] {
-        self.array as! [E]
     }
 }
 
@@ -280,7 +275,9 @@ extension URLSession {
         configuration.httpCookieAcceptPolicy = .never
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
-            "User-Agent": "\(productName)/\(productVersion) (\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) Mozilla/5.0 AppleWebKit/605.1.15"
+            "User-Agent": "\(productName)/\(productVersion) " +
+                          "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
+                          "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .responsiveData
@@ -296,7 +293,9 @@ extension URLSession {
         configuration.httpCookieAcceptPolicy = .never
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
-            "User-Agent": "\(productName)/\(productVersion) (\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) Mozilla/5.0 AppleWebKit/605.1.15"
+            "User-Agent": "\(productName)/\(productVersion) " +
+                          "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
+                          "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .background

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-12.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import AuthenticationServices
 import LocalAuthentication
@@ -88,7 +88,8 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             AutoFillModel.shared.cacheUser( user )
 
             guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
-            else { throw ASExtensionError( .credentialIdentityNotFound, "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) }
+            else { throw ASExtensionError( .credentialIdentityNotFound, "" +
+                    "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) }
 
             return site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).promise {
                 ASPasswordCredential( user: $0.0, password: $0.1 )

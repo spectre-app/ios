@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-25.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -140,7 +140,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init(user: User, siteName: String, algorithm: SpectreAlgorithm? = nil, counter: SpectreCounter? = nil,
          resultType: SpectreResultType? = nil, resultState: String? = nil,
@@ -172,13 +172,13 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         hasher.combine( self.siteName )
     }
 
-    static func ==(lhs: Site, rhs: Site) -> Bool {
+    static func == (lhs: Site, rhs: Site) -> Bool {
         lhs.siteName == rhs.siteName
     }
 
     // MARK: Comparable
 
-    public static func <(lhs: Site, rhs: Site) -> Bool {
+    public static func < (lhs: Site, rhs: Site) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
             return lhs.lastUsed > rhs.lastUsed
         }
@@ -186,7 +186,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         return lhs.siteName > rhs.siteName
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     public func use() {
         self.lastUsed = Date()
@@ -214,7 +214,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         return site
     }
 
-    // MARK: --- SiteObserver ---
+    // MARK: - SiteObserver
 
     func didChange(site: Site, at change: PartialKeyPath<Site>) {
         if change == \Site.url {
@@ -222,29 +222,34 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    // MARK: --- QuestionObserver ---
+    // MARK: - QuestionObserver
 
     func didChange(question: Question) {
     }
 
-    // MARK: --- Operand ---
+    // MARK: - Operand
 
-    public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    public func result(for name: String? = nil, counter: SpectreCounter? = nil,
+                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil,
+                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
                     -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
-                return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter,
+                                         keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
                                          algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
-                return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.result( for: name ?? self.siteName, counter: counter,
+                                         keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
                                          algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
-                return self.user.result( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.result( for: name ?? self.siteName, counter: counter,
+                                         keyPurpose: keyPurpose, keyContext: keyContext,
                                          resultType: resultType ?? .templatePhrase, resultParam: resultParam,
                                          algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
@@ -255,22 +260,27 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    public func state(for name: String? = nil, counter: SpectreCounter? = nil,
+                      keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                      resultType: SpectreResultType? = nil, resultParam: String,
+                      algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
                     -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
-                return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter,
+                                        keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? self.resultType, resultParam: resultParam,
                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
-                return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.state( for: name ?? self.siteName, counter: counter,
+                                        keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? self.loginType, resultParam: resultParam,
                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
-                return self.user.state( for: name ?? self.siteName, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.user.state( for: name ?? self.siteName, counter: counter,
+                                        keyPurpose: keyPurpose, keyContext: keyContext,
                                         resultType: resultType ?? .templatePhrase, resultParam: resultParam,
                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 

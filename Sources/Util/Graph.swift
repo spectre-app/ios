@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-18.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -63,7 +63,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
             where S.Element == Link<E> {
 
         // Test the root.
-        if (found( root )) {
+        if found( root ) {
             //dbg( "found root: %@", root )
             return Path( target: root, cost: 0 )
         }
@@ -75,7 +75,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
         testedNodes.insert( root )
 
         // Search breath-first.
-        while (!testPaths.isEmpty) {
+        while !testPaths.isEmpty {
             let testPath = testPaths.removeFirst()
 
             // Check each neighbour.
@@ -100,7 +100,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
 
                 // Did we find the target?
                 let neighbourPath = Path( parent: testPath, target: neighbour, cost: neighbourCost )
-                if (found( neighbour )) {
+                if found( neighbour ) {
                     //dbg( "found neighbour at cost %f: %@", neighbourCost, neighbour )
                     return neighbourPath
                 }
@@ -143,7 +143,7 @@ class Graph<E: Hashable>: CustomStringConvertible {
             hasher.combine( to )
         }
 
-        public static func ==(lhs: Link<E>, rhs: Link<E>) -> Bool {
+        public static func == (lhs: Link<E>, rhs: Link<E>) -> Bool {
             lhs.from == rhs.from && lhs.to == rhs.to
         }
     }

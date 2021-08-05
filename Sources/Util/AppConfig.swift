@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-11-04.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -140,7 +140,7 @@ public class AppConfig: Observable {
         }
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init() {
         UserDefaults.shared.register( defaults: [

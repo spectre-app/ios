@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-05.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -52,7 +52,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
     private var scrollableContentConfiguration: LayoutConfiguration<UIView>!
     private var contentSizeObservation:         NSKeyValueObservation?
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override var next: UIResponder? {
         self.parent?.view.superview
@@ -77,11 +77,13 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
 
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { [unowned self] _, _ in
             // Inset top to push content to the bottom of the host.
-            self.scrollView.contentInset.top = max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height )
+            self.scrollView.contentInset.top =
+                    max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height )
 
             // Inset bottom to ensure content is large enough to enable scrolling.
-            self.scrollView.contentInset.bottom = max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height
-                    - self.scrollView.adjustedContentInset.top - self.scrollView.adjustedContentInset.bottom + 1 )
+            self.scrollView.contentInset.bottom =
+                    max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height
+                            - self.scrollView.adjustedContentInset.top - self.scrollView.adjustedContentInset.bottom + 1 )
         }
 
         // - Hierarchy
@@ -134,7 +136,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
     }
     #endif
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     override func show(_ vc: UIViewController, sender: Any?) {
         self.hide {
@@ -151,13 +153,13 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     LayoutConfiguration( view: activeController.view )
                             .constrain( as: .box, margin: true ).activate()
                     self.view.isHidden = false
-                    KeyboardMonitor.shared.notify( self )
+                    KeyboardMonitor.shared.didChange( self )
                 }
                 UIView.animate( withDuration: .short, animations: {
                     self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
                     activeController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()
-                }, completion: { finished in
+                }, completion: { _ in
                     activeController.endAppearanceTransition()
                     activeController.didMove( toParent: self )
                 } )
@@ -175,7 +177,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
                     self.popupConfiguration.deactivate()
                     self.closeButton.alpha = .off
-                }, completion: { finished in
+                }, completion: { _ in
                     detailsController.viewIfLoaded?.removeFromSuperview()
                     detailsController.endAppearanceTransition()
                     detailsController.removeFromParent()
@@ -197,16 +199,19 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         }
     }
 
-    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
+                            curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         if !self.scrollView.isScrollEnabled {
             self.additionalSafeAreaInsets = .zero
             return
         }
 
-        super.didChange( keyboard: keyboard, showing: showing, changing: changing, fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, curve: curve, duration: duration )
+        super.didChange( keyboard: keyboard, showing: showing, changing: changing,
+                         fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame,
+                         curve: curve, duration: duration )
     }
 
-    // MARK: --- UIGestureRecognizerDelegate ---
+    // MARK: - UIGestureRecognizerDelegate
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         // detailRecognizer shouldn't trigger on subviews
@@ -217,9 +222,10 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         return true
     }
 
-    // MARK: --- UIScrollViewDelegate ---
+    // MARK: - UIScrollViewDelegate
 
-    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint,
+                                   targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         if scrollView == self.scrollView, scrollView.adjustedContentInset.top + scrollView.contentOffset.y < -44 {
             self.hide()
         }

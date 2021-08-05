@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-25.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -51,7 +51,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
         }
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init(site: Site, keyword: String, resultType: SpectreResultType? = nil, resultState: String? = nil) {
         self.site = site
@@ -60,7 +60,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
         self.resultState = resultState
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     func copy(to site: Site) -> Question {
         Question( site: site, keyword: self.keyword, resultType: self.resultType, resultState: self.resultState )
@@ -72,39 +72,47 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
         hasher.combine( self.keyword )
     }
 
-    static func ==(lhs: Question, rhs: Question) -> Bool {
+    static func == (lhs: Question, rhs: Question) -> Bool {
         lhs.keyword == rhs.keyword
     }
 
     // MARK: Comparable
 
-    public static func <(lhs: Question, rhs: Question) -> Bool {
+    public static func < (lhs: Question, rhs: Question) -> Bool {
         lhs.keyword > rhs.keyword
     }
 
-    // MARK: --- QuestionObserver ---
+    // MARK: - QuestionObserver
 
     func didChange(question: Question) {
     }
 
-    // MARK: --- Operand ---
+    // MARK: - Operand
 
     func use() {
         self.site.use()
     }
 
-    public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    public func result(for name: String? = nil, counter: SpectreCounter? = nil,
+                       keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil,
+                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
                     -> SpectreOperation {
-        self.site.result( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                          resultType: resultType, resultParam: resultParam ?? self.resultState, algorithm: algorithm, operand: operand ?? self )
+        self.site.result( for: name, counter: counter,
+                          keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                          resultType: resultType, resultParam: resultParam ?? self.resultState,
+                          algorithm: algorithm, operand: operand ?? self )
     }
 
-    public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    public func state(for name: String? = nil, counter: SpectreCounter? = nil,
+                      keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
+                      resultType: SpectreResultType? = nil, resultParam: String,
+                      algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
                     -> SpectreOperation {
-        self.site.state( for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
-                         resultType: resultType, resultParam: resultParam, algorithm: algorithm, operand: operand ?? self )
+        self.site.state( for: name, counter: counter,
+                         keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
+                         resultType: resultType, resultParam: resultParam,
+                         algorithm: algorithm, operand: operand ?? self )
     }
 }
 

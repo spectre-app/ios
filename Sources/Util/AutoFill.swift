@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-20.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import AuthenticationServices
 
@@ -82,7 +82,7 @@ final class AutoFill {
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class Credential: Hashable, CustomDebugStringConvertible {
         let userName: String
@@ -121,14 +121,14 @@ final class AutoFill {
             ]
         }
 
-        // MARK: --- Hashable ---
+        // MARK: - Hashable
 
         func hash(into hasher: inout Hasher) {
             hasher.combine( self.userName )
             hasher.combine( self.siteName )
         }
 
-        static func ==(lhs: Credential, rhs: Credential) -> Bool {
+        static func == (lhs: Credential, rhs: Credential) -> Bool {
             lhs.userName == rhs.userName && lhs.siteName == rhs.siteName
         }
     }

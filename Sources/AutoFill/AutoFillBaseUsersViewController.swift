@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,18 +8,18 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import AuthenticationServices
 
 class AutoFillBaseUsersViewController: BaseUsersViewController {
-    lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ),
-                                                 image: .icon( "×", style: .regular ), border: 0, background: false, square: true ) { [unowned self] _, _ in
+    lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ), image: .icon( "×", style: .regular ),
+                                         border: 0, background: false, square: true ) { [unowned self] _, _ in
         self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,18 +41,18 @@ class AutoFillBaseUsersViewController: BaseUsersViewController {
         if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
             self.usersCarousel.requestSelection( at: self.usersSource.indexPath( where: { $0?.userName == userName } ) )
         }
-        else if self.usersSource.count() == 1, let only = self.usersSource.elements().first( where: { _ in true } )?.indexPath {
+        else if self.usersSource.count() == 1, let only = self.usersSource.enumerated().first( where: { _ in true } )?.indexPath {
             self.usersCarousel.requestSelection( at: only )
         }
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.filter( { $0.autofill } ).sorted() ]
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     override func login(user: User) {
         super.login( user: user )

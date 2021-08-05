@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-11.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,12 +8,12 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Swift
 
 extension Array {
-    static func joined<E: Equatable>(separator: E? = nil, _ elements: [E]?...) -> Array<E> {
+    static func joined<E: Equatable>(separator: E? = nil, _ elements: [E]?...) -> [E] {
         if let separator = separator {
             return [ E ]( elements.compactMap( { $0 } ).joined( separator: [ separator ] ) )
         }
@@ -22,7 +22,7 @@ extension Array {
         }
     }
 
-    static func joined<E: Equatable>(separator: [E?]? = nil, _ elements: [E?]?...) -> Array<E?> {
+    static func joined<E: Equatable>(separator: [E?]? = nil, _ elements: [E?]?...) -> [E?] {
         if let separator = separator {
             return [ E? ]( elements.compactMap( { $0 } ).joined( separator: separator ) )
         }
@@ -111,11 +111,12 @@ extension Error {
 
     var detailsDescription: String {
         let details = self.details
-        return [ details.description,
-                 details.failure.flatMap { "Failure: \($0)" },
-                 details.suggestion.flatMap { "Suggestion: \($0)" },
-                 details.underlying.joined( separator: "\n\n" ).nonEmpty
-                         .flatMap { "Underlying:\n  - \($0.replacingOccurrences( of: "\n", with: "    " ))" }
+        return [
+            details.description,
+            details.failure.flatMap { "Failure: \($0)" },
+            details.suggestion.flatMap { "Suggestion: \($0)" },
+            details.underlying.joined( separator: "\n\n" ).nonEmpty
+                    .flatMap { "Underlying:\n  - \($0.replacingOccurrences( of: "\n", with: "    " ))" },
         ].compactMap { $0 }.joined( separator: "\n" )
     }
 }
@@ -151,8 +152,8 @@ extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {
         self.rawValue.distance( to: other.rawValue )
     }
 
-    public func advanced(by n: RawValue.Stride) -> Self {
-        Self( rawValue: self.rawValue.advanced( by: n ) )!
+    public func advanced(by stride: RawValue.Stride) -> Self {
+        Self( rawValue: self.rawValue.advanced( by: stride ) )!
     }
 }
 
@@ -232,18 +233,16 @@ extension String {
     }
 
     subscript(_ pattern: String) -> [[Substring?]] {
-        get {
-            do {
-                let regex = try NSRegularExpression( pattern: pattern )
-                return regex.matches( in: self, range: NSMakeRange( 0, self.count ) ).map { match in
-                    (0..<match.numberOfRanges).map { group in
-                        Range( match.range( at: group ), in: self ).flatMap { self[$0] }
-                    }
+        do {
+            let regex = try NSRegularExpression( pattern: pattern )
+            return regex.matches( in: self, range: NSRange( location: 0, length: self.count ) ).map { match in
+                (0..<match.numberOfRanges).map { group in
+                    Range( match.range( at: group ), in: self ).flatMap { self[$0] }
                 }
             }
-            catch {
-                return [ [] ]
-            }
+        }
+        catch {
+            return [ [] ]
         }
     }
 
@@ -292,9 +291,9 @@ extension String {
         guard let digest = self.digest()
         else { return nil }
 
-        let hue        = CGFloat( ratio( of: digest[0], from: 0, to: 1 ) )
-        let saturation = CGFloat( ratio( of: digest[1], from: 0.3, to: 1 ) )
-        let brightness = CGFloat( ratio( of: digest[2], from: 0.5, to: 0.7 ) )
+        let hue        = CGFloat( scale( int: digest[0], into: 0..<1 ) )
+        let saturation = CGFloat( scale( int: digest[1], into: 0.3..<1 ) )
+        let brightness = CGFloat( scale( int: digest[2], into: 0.5..<0.7 ) )
         return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: .on )
     }
 
@@ -353,15 +352,20 @@ extension String.StringInterpolation {
         self.appendLiteral( value.appending( String( repeating: " ", count: max( 0, length - value.count ) ) ) )
     }
 
-    mutating func appendInterpolation(number value: CGFloat, as format: String? = nil, decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
-        self.appendInterpolation( number: Double( value ), as: format, decimals: decimals, locale: locale, options.reduce( [] ) { $0.union( $1 ) } )
+    mutating func appendInterpolation(number value: CGFloat, as format: String? = nil,
+                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+        self.appendInterpolation( number: Double( value ), as: format,
+                                  decimals: decimals, locale: locale, options.reduce( [] ) { $0.union( $1 ) } )
     }
 
-    mutating func appendInterpolation(number value: Double, as format: String? = nil, decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
-        self.appendInterpolation( number: Decimal( value ), as: format, decimals: decimals, locale: locale, options.reduce( [] ) { $0.union( $1 ) } )
+    mutating func appendInterpolation(number value: Double, as format: String? = nil,
+                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+        self.appendInterpolation( number: Decimal( value ), as: format,
+                                  decimals: decimals, locale: locale, options.reduce( [] ) { $0.union( $1 ) } )
     }
 
-    mutating func appendInterpolation(number value: Decimal, as format: String? = nil, decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+    mutating func appendInterpolation(number value: Decimal, as format: String? = nil,
+                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
         let formatter = NumberFormatter()
         if let format = format {
             formatter.positiveFormat = format
@@ -420,14 +424,19 @@ extension String.StringInterpolation {
         static let signed      = NumberOptions( rawValue: 1 << 2 )
     }
 
-    mutating func appendInterpolation(measurement: Measurement<Unit>, options: MeasurementFormatter.UnitOptions = .naturalScale, style: Formatter.UnitStyle = .short) {
+    mutating func appendInterpolation(measurement: Measurement<Unit>,
+                                      options: MeasurementFormatter.UnitOptions = .naturalScale,
+                                      style: Formatter.UnitStyle = .short) {
         let formatter = MeasurementFormatter()
         formatter.unitOptions = options
         formatter.unitStyle = style
         self.appendLiteral( formatter.string( from: measurement ) )
     }
 
-    mutating func appendInterpolation(measurement value: Decimal, _ unit: Unit, options: MeasurementFormatter.UnitOptions = [ .providedUnit, .naturalScale ], style: Formatter.UnitStyle = .short) {
-        self.appendInterpolation( measurement: Measurement( value: (value as NSDecimalNumber).doubleValue, unit: unit ), options: options, style: style )
+    mutating func appendInterpolation(measurement value: Decimal, _ unit: Unit,
+                                      options: MeasurementFormatter.UnitOptions = [ .providedUnit, .naturalScale ],
+                                      style: Formatter.UnitStyle = .short) {
+        self.appendInterpolation( measurement: Measurement( value: (value as NSDecimalNumber).doubleValue, unit: unit ),
+                                  options: options, style: style )
     }
 }

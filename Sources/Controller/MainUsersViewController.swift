@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import LocalAuthentication
@@ -53,14 +53,16 @@ class MainUsersViewController: BaseUsersViewController {
                                                title: "Update Available", background: false ) { [unowned self] _, _ in
         AppStore.shared.presentStore( in: self )
     }
+    // swiftlint:disable inclusive_language
     private lazy var appMigrate = EffectButton( track: .subject( "users", action: "masterPassword" ),
                                                 title: "Migrate from Master Password", background: false ) { [unowned self] _, _ in
         if let masterPasswordURL = URL( string: "masterpassword:" ) {
             UIApplication.shared.open( masterPasswordURL )
         }
     }
+    // swiftlint:enable inclusive_language
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,19 +76,20 @@ class MainUsersViewController: BaseUsersViewController {
         self.actionStack.addArrangedSubview( self.appMigrate )
 
         self.appToolbar.axis = .horizontal
-        self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ),
-                                                          image: .icon( "" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
+        self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ), image: .icon( "" ),
+                                                          border: 0, background: false, square: true ) { [unowned self] _, _ in
             self.detailsHost.show( DetailAppViewController(), sender: self )
         } )
-        self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users", action: "user" ),
-                                                         image: .icon( "🕵" ), border: 0, background: false, square: true ) { [unowned self] _, incognitoButton in
+        self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users", action: "user" ), image: .icon( "🕵" ),
+                                                         border: 0, background: false, square: true ) { [unowned self] _, incognitoButton in
             guard let incognitoButton = incognitoButton as? TimedButton
             else { return }
 
             UIAlertController.authenticate(
-                                     title: "Incognito Login", message: "While in incognito mode, no user information is kept on the device",
-                                     in: self, track: .subject( "users.user", action: "auth" ),
-                                     action: "Log In", authenticator: { User( userName: $0.userName, file: nil ).login( using: $0 ) } )
+                                     title: "Incognito Login",
+                                     message: "While in incognito mode, no user information is kept on the device",
+                                     action: "Log In", in: self, track: .subject( "users.user", action: "auth" ),
+                                     authenticator: { User( userName: $0.userName, file: nil ).login( using: $0 ) } )
                              .then( on: .main ) {
                                  incognitoButton.timing?.end(
                                          [ "result": $0.name,
@@ -107,8 +110,8 @@ class MainUsersViewController: BaseUsersViewController {
                                  }
                              }
         } )
-        self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ),
-                                                          image: .icon( "🗪" ), border: 0, background: false, square: true ) { [unowned self] _, _ in
+        self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ), image: .icon( "🗪" ),
+                                                          border: 0, background: false, square: true ) { [unowned self] _, _ in
             if let url = URL( string: "https://chat.spectre.app" ) {
                 self.present( SFSafariViewController( url: url ), animated: true )
             }
@@ -155,12 +158,12 @@ class MainUsersViewController: BaseUsersViewController {
             }
             catch {
                 wrn( "Application update check failed. [>PII]" )
-                pii( "[>] %@", error )
+                pii( "[>] Error: %@", error )
             }
         }
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.sorted() + [ nil ] ]
@@ -172,7 +175,7 @@ class MainUsersViewController: BaseUsersViewController {
         self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
     }
 
-    // MARK: --- MarshalObserver ---
+    // MARK: - MarshalObserver
 
     override func didChange(userFiles: [Marshal.UserFile]) {
         super.didChange( userFiles: userFiles )
@@ -183,7 +186,7 @@ class MainUsersViewController: BaseUsersViewController {
         }
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     private func doDelete(userFile: Marshal.UserFile) {
         let alertController = UIAlertController( title: "Delete User?", message:
@@ -191,7 +194,7 @@ class MainUsersViewController: BaseUsersViewController {
         This will delete the user and all of its recorded state:
         \(userFile)
 
-        Note: You can re-create the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
+        Note: You can recreate the user at any time and add back your sites to fully regenerate their stateless passwords and other content.
         When re-creating the user, make sure to use the exact same name and personal secret.
         The user's identicon (\(userFile.identicon.text() ?? "-")) is a good manual check that you got this right.
         """, preferredStyle: .alert )

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-05.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import Countly
@@ -17,7 +17,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
     private var didBecomeActiveObserver: NSObjectProtocol?
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -84,19 +84,19 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
         self.didBecomeActiveObserver.flatMap { NotificationCenter.default.removeObserver( $0 ) }
     }
 
-    // MARK: --- AppConfigObserver ---
+    // MARK: - AppConfigObserver
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         self.setNeedsUpdate()
     }
 
-    // MARK: --- TrackerObserver ---
+    // MARK: - TrackerObserver
 
     func didChange(tracker: Tracker) {
         self.setNeedsUpdate()
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class VersionItem: LabelItem<AppConfig> {
         init() {
@@ -161,7 +161,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                 $0.model?.allowHandoff = $1
             }, caption: { _ in
                 """
-                Allow sharing of copied values through Apple's Universal Clipboard. 
+                Allow sharing of copied values through Apple's Universal Clipboard.
                 """
             } )
 

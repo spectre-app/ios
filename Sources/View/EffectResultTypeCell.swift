@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-03-31.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -65,7 +65,7 @@ class EffectClassifiedCell: EffectCell, Updatable {
                 .activate()
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     lazy var updateTask = DispatchTask.update( self ) { [weak self] in
         guard let self = self

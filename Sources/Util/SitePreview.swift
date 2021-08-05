@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-09-17.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 #if TARGET_APP
@@ -20,7 +20,7 @@ class SitePreview: Equatable {
     private static var previews  = NSCache<NSString, SitePreview>()
     private static let semaphore = DispatchQueue( label: "SitePreview" )
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     var name:  String {
         didSet {
@@ -80,13 +80,13 @@ class SitePreview: Equatable {
         }
     }
 
-    // MARK: --- Equatable ---
+    // MARK: - Equatable
 
-    static func ==(lhs: SitePreview, rhs: SitePreview) -> Bool {
+    static func == (lhs: SitePreview, rhs: SitePreview) -> Bool {
         lhs.data == rhs.data
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     private static func previewFile(for previewName: String) -> URL? {
         FileManager.groupCaches?.appendingPathComponent( "preview-\(previewName)" ).appendingPathExtension( "json" )
@@ -95,10 +95,11 @@ class SitePreview: Equatable {
     #if TARGET_APP
     private static let linkPreview = LazyBox {
         URLSession.optional.get().flatMap {
-            SwiftLinkPreview( session: $0,
-                              workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background, attributes: [ .concurrent ] ),
-                              responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background, attributes: [ .concurrent ] ),
-                              cache: InMemoryCache() )
+            SwiftLinkPreview(
+                    session: $0,
+                    workQueue: DispatchQueue( label: "\(productName): Link Preview", qos: .background, attributes: [ .concurrent ] ),
+                    responseQueue: DispatchQueue( label: "\(productName): Link Response", qos: .background, attributes: [ .concurrent ] ),
+                    cache: InMemoryCache() )
         }
     }
 
@@ -121,14 +122,16 @@ class SitePreview: Equatable {
 
             // Resolve candidate image URLs for the site.
             // If the site URL is not a pure domain, install a fallback resolver for the site domain.
-            var siteCandidates = Set<String>( [ self.name, self.name.domainName( .host ), self.name.domainName( .topPrivate ) ] )
+            var candidates = Set<String>( [ self.name, self.name.domainName( .host ), self.name.domainName( .topPrivate ) ] )
             if let url = self.url?.nonEmpty {
-                siteCandidates.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
+                candidates.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
             }
-            siteCandidates = Set( siteCandidates.map { "https://\($0.replacingOccurrences( of: "^[^/]*://", with: "", options: .regularExpression ))" } )
+            candidates = Set( candidates.map {
+                "https://\($0.replacingOccurrences( of: "^[^:/]*:", with: "", options: .regularExpression ))"
+            } )
 
             let updating: Promise<Bool> =
-                    siteCandidates.map { self.preview( forURL: $0 ) }.flatten().promising {
+                    candidates.map { self.preview( forURL: $0 ) }.flatten().promising {
                         self.bestImage( fromPreviews: $0.compactMap( { try? $0.get() } ) )
                     }.thenPromise {
                         do {
@@ -144,7 +147,7 @@ class SitePreview: Equatable {
                             self.data.imageData = nil
                             self.data.imageDate = Date()
                             wrn( "[preview error] [>PII]" )
-                            pii( "[>] %@: %@", self.url, error )
+                            pii( "[>] URL: %@, Error: %@", self.url, error )
                         }
 
                         SitePreview.semaphore.await {
@@ -307,13 +310,13 @@ struct ColorData: Codable, Equatable, Hashable {
         let min = Int( Swift.min( self.red, self.green, self.blue ) )
         let max = Int( Swift.max( self.red, self.green, self.blue ) )
 
-        if (max == 0) {
+        if max == 0 {
             return 0
         }
-        else if (max == self.red) {
+        else if max == self.red {
             return 0 + 43 * (Int( self.green ) - Int( self.blue )) / (max - min)
         }
-        else if (max == self.green) {
+        else if max == self.green {
             return 85 + 43 * (Int( self.blue ) - Int( self.red )) / (max - min)
         }
         else {

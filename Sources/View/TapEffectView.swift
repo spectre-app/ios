@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-04-27.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -61,7 +61,7 @@ class TapEffectView: UIView {
         UIView.animate( withDuration: .long, animations: {
             self.flareView.transform = CGAffineTransform( scaleX: 4, y: 4 )
             self.alpha = .off
-        }, completion: { finished in
+        }, completion: { _ in
             self.removeFromSuperview()
         } )
 

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-07-31.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -40,7 +40,8 @@ public enum IconStyle: CaseIterable {
 }
 
 extension NSAttributedString {
-    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false) -> NSAttributedString? {
+    public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false)
+                    -> NSAttributedString? {
         guard let icon = icon, let style = style ?? {
             let glyphs = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
             defer {

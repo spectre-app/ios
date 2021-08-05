@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-04.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -21,7 +21,7 @@ class PagerView: UIView, UICollectionViewDelegate {
     private lazy var source        = PagerSource( collectionView: self.collectionView, sectionsOfElements: [ self.pages ] )
     private lazy var indicatorView = PagerIndicator( pagerView: self )
 
-    // MARK: --- State ---
+    // MARK: - State
 
     var pageIndicator = true
 
@@ -42,7 +42,7 @@ class PagerView: UIView, UICollectionViewDelegate {
         }
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     public required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -74,25 +74,25 @@ class PagerView: UIView, UICollectionViewDelegate {
                 .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
-    // MARK: --- UICollectionViewDelegate ---
+    // MARK: - UICollectionViewDelegate
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         self.page = Int( CGFloat( self.pages.count - 1 ) * scrollView.contentOffset.x /
                                  (scrollView.contentSize.width - scrollView.bounds.width) )
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     internal class PagerCollectionView: UICollectionView {
 
-        // MARK: --- State ---
+        // MARK: - State
 
         override var intrinsicContentSize: CGSize {
             CGSize( width: UIView.noIntrinsicMetric,
                     height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
         }
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -114,13 +114,13 @@ class PagerView: UIView, UICollectionViewDelegate {
             }
         }
 
-        // MARK: --- State ---
+        // MARK: - State
 
         open override var collectionViewContentSize: CGSize {
             self.contentSize
         }
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
         override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
             super.invalidateLayout( with: context )
@@ -155,11 +155,13 @@ class PagerView: UIView, UICollectionViewDelegate {
                                        height: self.attributes.values.reduce( 1 ) { max( $0, $1.frame.maxY ) } )
         }
 
-        override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect)
+                        -> Bool {
             newBounds.size.width != self.pageSize.width
         }
 
-        override func invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
+        override func invalidationContext(forBoundsChange newBounds: CGRect)
+                        -> UICollectionViewLayoutInvalidationContext {
             using( super.invalidationContext( forBoundsChange: newBounds ) ) {
                 $0.invalidateItems( at: Array( self.attributes.keys ) )
                 self.pageSize.width = newBounds.size.width
@@ -167,38 +169,46 @@ class PagerView: UIView, UICollectionViewDelegate {
         }
 
         open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
-                                                  withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+                                                  withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
+                        -> Bool {
             originalAttributes.size.height != preferredAttributes.size.height
         }
 
-        override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutInvalidationContext {
+        override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
+                                          withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
+                        -> UICollectionViewLayoutInvalidationContext {
             self.attributes[originalAttributes.indexPath]?.size.height = preferredAttributes.size.height
 
-            return using( super.invalidationContext( forPreferredLayoutAttributes: preferredAttributes, withOriginalAttributes: originalAttributes ) ) {
+            return using( super.invalidationContext( forPreferredLayoutAttributes: preferredAttributes,
+                                                     withOriginalAttributes: originalAttributes ) ) {
                 $0.invalidateItems( at: [ originalAttributes.indexPath ] )
             }
         }
 
-        open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        open override func layoutAttributesForElements(in rect: CGRect)
+                        -> [UICollectionViewLayoutAttributes]? {
             self.attributes.values.filter( { rect.intersects( $0.frame ) } ).compactMap { self.effectiveLayoutAttributes( for: $0 ) }
         }
 
-        open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        open override func layoutAttributesForItem(at indexPath: IndexPath)
+                        -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[indexPath] )
         }
 
-        open override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        open override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath)
+                        -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[itemIndexPath] )
         }
 
-        // MARK: --- Private ---
+        // MARK: - Private
 
-        private func effectiveLayoutAttributes(for attributes: UICollectionViewLayoutAttributes?) -> UICollectionViewLayoutAttributes? {
+        private func effectiveLayoutAttributes(for attributes: UICollectionViewLayoutAttributes?)
+                        -> UICollectionViewLayoutAttributes? {
             guard var attributes = attributes
             else { return nil }
 
             if attributes.size.height == 0 {
-                attributes = attributes.copy() as! UICollectionViewLayoutAttributes
+                attributes = attributes.copy() as! UICollectionViewLayoutAttributes // swiftlint:disable:this force_cast
                 attributes.size.height = self.pageSize.height
             }
 
@@ -207,7 +217,8 @@ class PagerView: UIView, UICollectionViewDelegate {
     }
 
     internal class PagerSource: DataSource<UIView> {
-        override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath)
+                        -> UICollectionViewCell {
             using( PagerCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
                 $0.collectionView = collectionView
                 $0.pageView = self.element( at: indexPath )
@@ -255,7 +266,9 @@ class PagerView: UIView, UICollectionViewDelegate {
             }
         }
 
-        override func systemLayoutSizeFitting(_ targetSize: CGSize, withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority) -> CGSize {
+        override func systemLayoutSizeFitting(
+                _ targetSize: CGSize, withHorizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority)
+                        -> CGSize {
             super.systemLayoutSizeFitting(
                     targetSize,
                     withHorizontalFittingPriority: .required,

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-04-08.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -25,30 +25,12 @@ func using<V>(_ value: V, _ initializer: (V) -> Void) -> V {
     return value
 }
 
-func map<F, T>(_ from: F, _ map: [F: T]) -> T? {
-    map[from]
+func scale(int value: UInt8, into: Range<Double>) -> Double {
+    scale( value: Double( value ), from: 0..<Double( UInt8.max ), into: into )
 }
 
-func cached<F: Hashable, T>(_ block: @escaping (F) -> T) -> (F) -> T {
-    var cache = [ F: T ]()
-
-    return { f in
-        if let cached = cache[f] {
-            return cached
-        }
-
-        let missed = block( f )
-        cache[f] = missed
-        return missed
-    }
-}
-
-func always<F, T>(_ value: T) -> (F) -> T {
-    { _ in value }
-}
-
-func ratio(of value: UInt8, from: Double, to: Double) -> Double {
-    from + (to - from) * (Double( value ) / Double( UInt8.max ))
+func scale(value: Double, from: Range<Double>, into: Range<Double>) -> Double {
+    into.lowerBound + (into.upperBound - into.lowerBound) * ((value - from.lowerBound) / (from.upperBound - from.lowerBound))
 }
 
 // Map a 0-max value such that it mirrors around a center point.

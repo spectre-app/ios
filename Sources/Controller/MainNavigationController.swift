@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -16,7 +16,7 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
     private let backgroundView = BackgroundView( mode: .backdrop )
     private let transition     = NavigationTransition()
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,17 +44,20 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
         Theme.current.updateTask.request( now: true, await: true )
     }
 
-    // MARK: --- UINavigationControllerDelegate ---
+    // MARK: - UINavigationControllerDelegate
 
-    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+    func navigationController(_ navigationController: UINavigationController,
+                              willShow viewController: UIViewController, animated: Bool) {
         viewController.viewIfLoaded?.alpha = .off
     }
 
-    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+    func navigationController(_ navigationController: UINavigationController,
+                              didShow viewController: UIViewController, animated: Bool) {
         viewController.viewIfLoaded?.alpha = .on
     }
 
-    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation,
+    func navigationController(_ navigationController: UINavigationController,
+                              animationControllerFor operation: UINavigationController.Operation,
                               from fromVC: UIViewController, to toVC: UIViewController)
                     -> UIViewControllerAnimatedTransitioning? {
         self.transition
@@ -62,7 +65,7 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
 
     class NavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
         func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
             .long
@@ -82,14 +85,16 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
                 toView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
                 transitionContext.containerView.addSubview( toView )
 
-                UIView.animate( withDuration: .seconds( 1 ), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
+                UIView.animate( withDuration: .seconds( 1 ), delay: .immediate,
+                                usingSpringWithDamping: .long, initialSpringVelocity: .off,
                                 options: .curveEaseOut, animations: {
                     fromView.transform = CGAffineTransform( scaleX: 1 / 1000, y: 1 / 1000 )
                     fromView.alpha = .off
-                }, completion: { finished in
+                }, completion: { _ in
                     fromView.transform = .identity
                 } )
-                UIView.animate( withDuration: .seconds( 1.5 ), delay: .immediate, usingSpringWithDamping: .long, initialSpringVelocity: .off,
+                UIView.animate( withDuration: .seconds( 1.5 ), delay: .immediate,
+                                usingSpringWithDamping: .long, initialSpringVelocity: .off,
                                 options: .curveEaseOut, animations: {
                     toView.alpha = .on
                     toView.transform = .identity

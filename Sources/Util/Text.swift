@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2021-03-06.
 // Copyright (c) 2021 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -19,7 +19,7 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
 
     let attributedString: NSAttributedString
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init(_ attributedString: NSAttributedString) {
         self.attributedString = attributedString
@@ -37,7 +37,7 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
         self.attributedString = NSAttributedString( attributedString: stringInterpolation.attributedString )
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     func attributedString(for label: UILabel) -> NSAttributedString {
         self.attributedString( textColor: label.textColor, textSize: label.font.pointSize )
@@ -53,7 +53,8 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
 
     func attributedString(textColor: UIColor? = nil, textSize: CGFloat? = nil) -> NSAttributedString {
         let attributedString = NSMutableAttributedString( attributedString: self.attributedString )
-        attributedString.enumerateAttributes( in: NSRange( location: 0, length: attributedString.length ) ) { attributes, range, stop in
+        attributedString.enumerateAttributes(
+                in: NSRange( location: 0, length: attributedString.length ) ) { attributes, range, _ in
             var fixedAttributes = attributes, fixed = false
             if let font = attributes[.font] as? UIFont, let textSize = textSize,
                font.pointSize != textSize {
@@ -73,7 +74,7 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
         return NSAttributedString( attributedString: attributedString )
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     struct StringInterpolation: StringInterpolationProtocol {
         var attributedString: NSMutableAttributedString

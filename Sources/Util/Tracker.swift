@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-11-14.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 import Stacksift
@@ -43,7 +43,7 @@ class Tracker: AppConfigObserver {
         UIApplication.shared.isRegisteredForRemoteNotifications
     }
 
-    func enableNotifications(consented: Bool = true, completion: @escaping (Bool) -> () = { _ in }) {
+    func enableNotifications(consented: Bool = true, completion: @escaping (Bool) -> Void = { _ in }) {
         UNUserNotificationCenter.current().getNotificationSettings {
             if $0.authorizationStatus == .authorized {
                 DispatchQueue.main.perform {
@@ -63,7 +63,7 @@ class Tracker: AppConfigObserver {
 
                     if let error = error {
                         wrn( "Notification authorization error. [>PII]" )
-                        pii( "[>] %@", error )
+                        pii( "[>] Error: %@", error )
                     }
                     if granted {
                         if self.hasCountlyStarted {
@@ -128,12 +128,15 @@ class Tracker: AppConfigObserver {
             guard let logEvent = logPointer?.pointee, logEvent.level <= .info
             else { return false }
 
-            let level: SentryLevel = map( logEvent.level, [
-                .trace: .debug, .debug: .debug, .info: .info, .warning: .warning, .error: .error, .fatal: .fatal ] ) ?? .debug
-            let tags               =
-                    [ "src.file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
-                      "src.line": "\(logEvent.line)",
-                      "src.func": String.valid( logEvent.function ) ?? "-" ]
+            let level: SentryLevel = [
+                .trace: .debug, .debug: .debug, .info: .info,
+                .warning: .warning, .error: .error, .fatal: .fatal,
+            ][logEvent.level] ?? .debug
+            let tags               = [
+                "src.file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
+                "src.line": "\(logEvent.line)",
+                "src.func": String.valid( logEvent.function ) ?? "-",
+            ]
 
             if logEvent.level <= .error {
                 let event = Event( level: level )
@@ -160,12 +163,18 @@ class Tracker: AppConfigObserver {
 
         #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "app", action: "startup", [ "app.version": productVersion, "app.build": productBuild,
-                                                                 "app.run": AppConfig.shared.runCount ].merging( self.identifiers ) ) )
+                    track: .subject( "app", action: "startup", [
+                        "app.version": productVersion,
+                        "app.build": productBuild,
+                        "app.run": AppConfig.shared.runCount,
+                    ].merging( self.identifiers ) ) )
         #elseif TARGET_AUTOFILL
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "autofill", action: "startup", [ "app.version": productVersion, "app.build": productBuild,
-                                                                      "app.run": AppConfig.shared.runCount ].merging( self.identifiers ) ) )
+                    track: .subject( "autofill", action: "startup", [
+                        "app.version": productVersion,
+                        "app.build": productBuild,
+                        "app.run": AppConfig.shared.runCount,
+                    ].merging( self.identifiers ) ) )
         #endif
     }
 
@@ -241,7 +250,7 @@ class Tracker: AppConfigObserver {
         Stacksift.testCrash()
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     private func identifier(for named: String, attributes: [CFString: Any] = [:]) -> UUID {
         let query: [CFString: Any] = [
@@ -307,11 +316,13 @@ class Tracker: AppConfigObserver {
         if self.hasCountlyStarted {
             Countly.sharedInstance().recordEvent(
                     name, segmentation: eventParameters.mapValues { String( reflecting: $0 ) },
-                    count: eventParameters["event.count"] as? UInt ?? 1, sum: eventParameters["event.sum"] as? Double ?? 0, duration: duration )
+                    count: eventParameters["event.count"] as? UInt ?? 1,
+                    sum: eventParameters["event.sum"] as? Double ?? 0,
+                    duration: duration )
         }
     }
 
-    // MARK: --- AppConfigObserver ---
+    // MARK: - AppConfigObserver
 
     // FIXME: We should use Countly.sharedInstance().hasStarted instead but it's not exposed yet.
     // https://support.count.ly/hc/en-us/community/posts/900002422786-Stopping-Countly
@@ -355,12 +366,12 @@ class Tracker: AppConfigObserver {
                 Countly.sharedInstance().cancelConsentForAllFeatures()
             }
             else if appConfig.diagnostics {
-                Countly.sharedInstance().giveConsent( forFeatures: [
-                    .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+                Countly.sharedInstance().giveConsent(
+                        forFeatures: [ .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
             }
             else {
-                Countly.sharedInstance().cancelConsent( forFeatures: [
-                    .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+                Countly.sharedInstance().cancelConsent(
+                        forFeatures: [ .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
             }
         }
 

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-09-16.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -52,7 +52,7 @@ class EffectButton: EffectView {
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
                                                                      .with( priority: .defaultHigh + 2 )
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -67,8 +67,8 @@ class EffectButton: EffectView {
     }
 
     init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
-         border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = false, rounding: CGFloat = 12, dims: Bool = false,
-         action: ((UIEvent, EffectButton) -> Void)? = nil) {
+         border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = false, rounding: CGFloat = 12,
+         dims: Bool = false, action: ((UIEvent, EffectButton) -> Void)? = nil) {
         self.tracking = track
         self.action = action
         super.init( border: border, background: background, circular: circular, rounding: rounding, dims: dims )

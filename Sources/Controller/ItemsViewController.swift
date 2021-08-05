@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-10-15.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 import UIKit
@@ -31,13 +31,13 @@ class ItemsViewController<M>: BaseViewController {
     private let itemsView   = UIStackView()
     private lazy var items = self.loadItems()
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     func loadItems() -> [Item<M>] {
         []
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -77,7 +77,8 @@ class ItemsViewController<M>: BaseViewController {
 
         // - Layout
         LayoutConfiguration( view: self.imageSpacer )
-                .constrain { $1.heightAnchor.constraint( equalTo: self.backgroundView.imageView.heightAnchor, multiplier: .long, constant: -40 ) }
+                .constrain { $1.heightAnchor.constraint( equalTo: self.backgroundView.imageView.heightAnchor,
+                                                         multiplier: .long, constant: -40 ) }
                 .activate()
         LayoutConfiguration( view: self.itemsView )
                 .constrain( as: .box, margin: true )
@@ -107,7 +108,7 @@ class ItemsViewController<M>: BaseViewController {
         }
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     override func doUpdate() {
         super.doUpdate()

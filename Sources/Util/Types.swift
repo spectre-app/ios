@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-11.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -82,7 +82,7 @@ extension SpectreCounter: Strideable, CustomStringConvertible {
 }
 
 extension SpectreIdenticon: Equatable {
-    public static func ==(lhs: SpectreIdenticon, rhs: SpectreIdenticon) -> Bool {
+    public static func == (lhs: SpectreIdenticon, rhs: SpectreIdenticon) -> Bool {
         lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
                 lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
@@ -97,11 +97,12 @@ extension SpectreIdenticon: Equatable {
     }
 
     public func text() -> String? {
-        self.isUnset ? nil:
-                [ String( cString: self.leftArm ),
-                  String( cString: self.body ),
-                  String( cString: self.rightArm ),
-                  String( cString: self.accessory ) ].joined()
+        self.isUnset ? nil: [
+            String( cString: self.leftArm ),
+            String( cString: self.body ),
+            String( cString: self.rightArm ),
+            String( cString: self.accessory ),
+        ].joined()
     }
 
     public func attributedText() -> NSAttributedString? {
@@ -122,7 +123,7 @@ extension SpectreIdenticon: Equatable {
 }
 
 extension SpectreKeyID: Hashable, CustomStringConvertible {
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, lhs.elementsEqual ) } )
     }
 
@@ -218,7 +219,7 @@ extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
 
     public func `is`(url: URL) -> Bool {
         var count      = 0
-        let extensions = UnsafeBufferPointer( start: spectre_format_extensions( self, &count ), count: count );
+        let extensions = UnsafeBufferPointer( start: spectre_format_extensions( self, &count ), count: count )
         defer {
             extensions.deallocate()
         }
@@ -253,12 +254,12 @@ extension SpectreResultType: CustomStringConvertible, CaseIterable {
         self == .none ? nil: self
     }
 
-    func `in`(class c: SpectreResultClass) -> Bool {
-        self.rawValue & UInt32( c.rawValue ) == UInt32( c.rawValue )
+    func `in`(class: SpectreResultClass) -> Bool {
+        self.rawValue & UInt32( `class`.rawValue ) == UInt32( `class`.rawValue )
     }
 
-    func has(feature f: SpectreResultFeature) -> Bool {
-        self.rawValue & UInt32( f.rawValue ) == UInt32( f.rawValue )
+    func has(feature: SpectreResultFeature) -> Bool {
+        self.rawValue & UInt32( feature.rawValue ) == UInt32( feature.rawValue )
     }
 }
 

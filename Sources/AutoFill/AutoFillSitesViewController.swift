@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,14 +8,14 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import AuthenticationServices
 
 class AutoFillSitesViewController: BaseSitesViewController {
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,7 +49,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
         self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: nil, appearance: [ .cell ], action: { _, _, _ in } ),
             .init( tracking: .subject( "sites.site", action: "fill" ),
-                   title: "Fill", icon: .icon( "" ), appearance: [ .cell, .menu ] ) { [unowned self] site, purpose, appearance in
+                   title: "Fill", icon: .icon( "" ), appearance: [ .cell, .menu ] ) { [unowned self] site, _, appearance in
                 switch appearance {
                     case .cell:
                         self.completeRequest( site: site, trackingFrom: "site>cell" )
@@ -64,7 +64,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
         ]
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     func completeRequest(site: Site, trackingFrom: String) {
         guard let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext
@@ -92,12 +92,12 @@ class AutoFillSitesViewController: BaseSitesViewController {
             }
             catch {
                 mperror( title: "Couldn't compute site result", error: error )
-                event.end(
-                        [ "result": $0.name,
-                          "from": trackingFrom,
-                          "action": "fill",
-                          "error": error.localizedDescription
-                        ] )
+                event.end( [
+                               "result": $0.name,
+                               "from": trackingFrom,
+                               "action": "fill",
+                               "error": error.localizedDescription,
+                           ] )
             }
         }
     }

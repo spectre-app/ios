@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-04.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,11 +8,12 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
-class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, UserObserver, SiteObserver, CredentialSupplier {
+class User: Hashable, Comparable, CustomStringConvertible, Persisting, CredentialSupplier, SpectreOperand,
+            Observable, UserObserver, SiteObserver {
     public let observers = Observers<UserObserver>()
 
     public var algorithm: SpectreAlgorithm {
@@ -223,7 +224,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         } ).await()
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init(algorithm: SpectreAlgorithm? = nil, avatar: Avatar = .avatar_0, userName: String,
          identicon: SpectreIdenticon = SpectreIdenticonUnset, userKeyID: SpectreKeyID = SpectreKeyIDUnset,
@@ -307,13 +308,13 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         hasher.combine( self.userName )
     }
 
-    static func ==(lhs: User, rhs: User) -> Bool {
+    static func == (lhs: User, rhs: User) -> Bool {
         lhs.userName == rhs.userName
     }
 
     // MARK: Comparable
 
-    static func <(lhs: User, rhs: User) -> Bool {
+    static func < (lhs: User, rhs: User) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
             return lhs.lastUsed > rhs.lastUsed
         }
@@ -321,7 +322,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         return lhs.userName > rhs.userName
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     private func tryKeyFactoryMigration() {
         guard InAppFeature.premium.isEnabled
@@ -341,7 +342,7 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    // MARK: --- UserObserver ---
+    // MARK: - UserObserver
 
     func didLogin(user: User) {
         Tracker.shared.login( user: self )
@@ -357,12 +358,12 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    // MARK: --- SiteObserver ---
+    // MARK: - SiteObserver
 
     func didChange(site: Site, at change: PartialKeyPath<Site>) {
     }
 
-    // MARK: --- CredentialSupplier ---
+    // MARK: - CredentialSupplier
 
     var credentialOwner: String {
         self.userName
@@ -377,28 +378,33 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }: nil
     }
 
-    // MARK: --- Operand ---
+    // MARK: - Operand
 
     public func use() {
         self.lastUsed = Date()
     }
 
-    public func result(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    public func result(for name: String? = nil, counter: SpectreCounter? = nil,
+                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                       resultType: SpectreResultType? = nil, resultParam: String? = nil,
+                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
                     -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
-                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial,
+                                            keyPurpose: keyPurpose, keyContext: keyContext,
                                             resultType: resultType ?? self.defaultType, resultParam: resultParam,
                                             algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
-                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial,
+                                            keyPurpose: keyPurpose, keyContext: keyContext,
                                             resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
                                             algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
-                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial,
+                                            keyPurpose: keyPurpose, keyContext: keyContext,
                                             resultType: resultType ?? .templatePhrase, resultParam: resultParam,
                                             algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
@@ -409,22 +415,27 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    public func state(for name: String? = nil, counter: SpectreCounter? = nil, keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String, algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    public func state(for name: String? = nil, counter: SpectreCounter? = nil,
+                      keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+                      resultType: SpectreResultType? = nil, resultParam: String,
+                      algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
                     -> SpectreOperation {
         switch keyPurpose {
             case .authentication:
-                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial,
+                                           keyPurpose: keyPurpose, keyContext: keyContext,
                                            resultType: resultType ?? self.defaultType, resultParam: resultParam,
                                            algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .identification:
-                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial,
+                                           keyPurpose: keyPurpose, keyContext: keyContext,
                                            resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
                                            algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             case .recovery:
-                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial, keyPurpose: keyPurpose, keyContext: keyContext,
+                return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial,
+                                           keyPurpose: keyPurpose, keyContext: keyContext,
                                            resultType: resultType ?? .templatePhrase, resultParam: resultParam,
                                            algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
@@ -435,37 +446,45 @@ class User: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    private func spectre_result(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                                resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: SpectreOperand)
+    private func spectre_result(for name: String, counter: SpectreCounter,
+                                keyPurpose: SpectreKeyPurpose, keyContext: String?,
+                                resultType: SpectreResultType, resultParam: String?,
+                                algorithm: SpectreAlgorithm, operand: SpectreOperand)
                     -> SpectreOperation {
-        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
-        self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
-            defer { userKey.deallocate() }
+        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose,
+                          type: resultType, algorithm: algorithm, operand: operand,
+                          token: self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
+                              defer { userKey.deallocate() }
 
-            guard let result = String.valid(
-                    spectre_site_result( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
-            else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
+                              guard let result = String.valid(
+                                      spectre_site_result( userKey, name, resultType, resultParam,
+                                                           counter, keyPurpose, keyContext ), consume: true )
+                              else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
 
-            return result
-        } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
+                              return result
+                          } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
     }
 
-    private func spectre_state(for name: String, counter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                               resultType: SpectreResultType, resultParam: String?, algorithm: SpectreAlgorithm, operand: SpectreOperand)
+    private func spectre_state(for name: String, counter: SpectreCounter,
+                               keyPurpose: SpectreKeyPurpose, keyContext: String?,
+                               resultType: SpectreResultType, resultParam: String?,
+                               algorithm: SpectreAlgorithm, operand: SpectreOperand)
                     -> SpectreOperation {
-        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose, type: resultType, algorithm: algorithm, operand: operand, token:
-        self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
-            defer { userKey.deallocate() }
+        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose,
+                          type: resultType, algorithm: algorithm, operand: operand,
+                          token: self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
+                              defer { userKey.deallocate() }
 
-            guard let result = String.valid(
-                    spectre_site_state( userKey, name, resultType, resultParam, counter, keyPurpose, keyContext ), consume: true )
-            else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
+                              guard let result = String.valid(
+                                      spectre_site_state( userKey, name, resultType, resultParam,
+                                                          counter, keyPurpose, keyContext ), consume: true )
+                              else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
 
-            return result
-        } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
+                              return result
+                          } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     enum Avatar: UInt32, CaseIterable, CustomStringConvertible {
         case avatar_0, avatar_1, avatar_2, avatar_3, avatar_4, avatar_5, avatar_6, avatar_7, avatar_8, avatar_9,

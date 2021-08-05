@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-05-11.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,10 +8,11 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
+// swiftlint:disable:next type_body_length
 class Marshal: Observable, Updatable {
     public static let shared = Marshal()
 
@@ -26,7 +27,7 @@ class Marshal: Observable, Updatable {
 
     private let marshalQueue = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     public func delete(userFile: UserFile) throws {
         guard let userURL = userFile.origin
@@ -106,7 +107,7 @@ class Marshal: Observable, Updatable {
                     if let sharingURL = self.createURL( for: user, in: FileManager.appDocuments, format: format ) {
                         if !FileManager.default.createFile( atPath: sharingURL.path, contents: exportData ) {
                             wrn( "Issue sharing user. Couldn't create user file. [>PII]" )
-                            pii( "[>] %@", sharingURL )
+                            pii( "[>] URL: %@", sharingURL )
                         }
                     }
                     else {
@@ -148,7 +149,8 @@ class Marshal: Observable, Updatable {
             marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
             for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
-                guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+                guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType,
+                                                                 site.counter, site.algorithm )
                 else {
                     exportEvent.end( [ "result": "!marshal_site" ] )
                     throw AppError.internal( cause: "Couldn't marshal site", details: [ user, site ] )
@@ -217,8 +219,9 @@ class Marshal: Observable, Updatable {
     }
     #endif
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
+    // swiftlint:disable:next function_body_length
     private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile, viewController: UIViewController)
                     -> Promise<UserFile> {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-file" ) )
@@ -250,7 +253,8 @@ class Marshal: Observable, Updatable {
                     importingFile.authenticate( using: keyFactory )
                 } )
                 else {
-                    mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.", in: viewController.view )
+                    mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.",
+                             in: viewController.view )
                     replaceEvent.end( [ "result": "!userSecret" ] )
                     viewController.present( alertController, animated: true )
                     return
@@ -262,14 +266,14 @@ class Marshal: Observable, Updatable {
                     spinner.dismiss()
 
                     do {
-                        let _ = try result.get()
+                        _ = try result.get()
 
                         if let existingURL = existingFile.origin {
                             if FileManager.default.fileExists( atPath: existingURL.path ) {
                                 do { try FileManager.default.removeItem( at: existingURL ) }
                                 catch {
                                     wrn( "Couldn't delete existing document when importing new one. [>PII]" )
-                                    pii( "[>] %@: %@", existingURL, error )
+                                    pii( "[>] URL: %@, Error: %@", existingURL, error )
                                 }
                             }
 
@@ -277,11 +281,12 @@ class Marshal: Observable, Updatable {
                                 .finishes( promise )
                         }
                         else {
-                            promise.finish( .failure( AppError.internal( cause: "Destination user has no document", details: existingFile ) ) )
+                            promise.finish( .failure( AppError.internal( cause: "Target user has no document", details: existingFile ) ) )
                         }
                     }
                     catch {
-                        mperror( title: "Couldn't import user", message: "User could not be unlocked.", error: error, in: viewController.view )
+                        mperror( title: "Couldn't import user", message: "User could not be unlocked.",
+                                 error: error, in: viewController.view )
                         replaceEvent.end( [ "result": "!userKey" ] )
                         viewController.present( alertController, animated: true )
                     }
@@ -297,7 +302,8 @@ class Marshal: Observable, Updatable {
                              try? existingFile.authenticate( using: keyFactory ).await()) ) )
                 } )
                 else {
-                    mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.", in: viewController.view )
+                    mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.",
+                             in: viewController.view )
                     mergeEvent.end( [ "result": "!userSecret" ] )
                     viewController.present( alertController, animated: true )
                     return
@@ -323,8 +329,8 @@ class Marshal: Observable, Updatable {
                                              To continue merging, also provide the existing user's personal secret.
 
                                              Replacing will delete the existing user and replace it with the imported user.
-                                             """, in: viewController, track: .subject( "import.to-file.merge", action: "unlockUser" ),
-                                                            action: "Unlock" )
+                                             """, action: "Unlock", in: viewController,
+                                                            track: .subject( "import.to-file.merge", action: "unlockUser" ) )
                                              .promising { existingUser in
                                                  self.import( from: importedUser, into: existingUser, viewController: viewController )
                                              }
@@ -336,8 +342,8 @@ class Marshal: Observable, Updatable {
                                              The import user is locked with a different personal secret.
 
                                              The continue merging, also provide the imported user's personal secret.
-                                             """, in: viewController, track: .subject( "import.to-file.merge", action: "unlockImport" ),
-                                                            action: "Unlock" )
+                                             """, action: "Unlock", in: viewController,
+                                                            track: .subject( "import.to-file.merge", action: "unlockImport" ) )
                                              .promising { importingUser in
                                                  self.import( from: importingUser, into: existedUser, viewController: viewController )
                                              }
@@ -449,7 +455,8 @@ class Marshal: Observable, Updatable {
             do {
                 let documentDirectory = documentURL.deletingLastPathComponent()
                 if documentDirectory.hasDirectoryPath {
-                    try FileManager.default.createDirectory( at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
+                    try FileManager.default.createDirectory(
+                            at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
                 }
             }
             catch {
@@ -502,7 +509,7 @@ class Marshal: Observable, Updatable {
                         .appendingPathExtension( formatExtension )
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     lazy var updateTask: DispatchTask<[UserFile]> = DispatchTask.update( self, queue: self.marshalQueue ) { [weak self] in
         guard let self = self
@@ -522,7 +529,7 @@ class Marshal: Observable, Updatable {
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class ActivityItem: NSObject, UIActivityItemSource {
         let user:     User
@@ -555,11 +562,16 @@ class Marshal: Observable, Updatable {
             }
         }
 
-        func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        // MARK: - UIActivityItemSource
+
+        func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController)
+                        -> Any {
             self.user.description
         }
 
-        func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+        func activityViewController(_ activityViewController: UIActivityViewController,
+                                    itemForActivityType activityType: UIActivity.ActivityType?)
+                        -> Any? {
             do {
                 // FIXME: possible deadlock if await needs main thread?
                 let exportFile = try Marshal.shared.save( user: self.user, in: URL( fileURLWithPath: NSTemporaryDirectory() ),
@@ -573,19 +585,27 @@ class Marshal: Observable, Updatable {
             }
         }
 
-        func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
+        func activityViewController(_ activityViewController: UIActivityViewController,
+                                    dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?)
+                        -> String {
             self.format.uti ?? ""
         }
 
-        func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+        func activityViewController(_ activityViewController: UIActivityViewController,
+                                    subjectForActivityType activityType: UIActivity.ActivityType?)
+                        -> String {
             "\(productName) Export: \(self.user.userName)"
         }
 
-        func activityViewController(_ activityViewController: UIActivityViewController, thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize) -> UIImage? {
+        func activityViewController(_ activityViewController: UIActivityViewController,
+                                    thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize)
+                        -> UIImage? {
             self.user.avatar.image
         }
 
-        func activityViewController(_ activityViewController: UIActivityViewController, completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?, activityError error: Swift.Error?) {
+        func activityViewController(_ activityViewController: UIActivityViewController,
+                                    completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?,
+                                    activityError error: Swift.Error?) {
             self.cleanup.removeAll {
                 nil != (try? FileManager.default.removeItem( at: $0 ))
             }
@@ -617,7 +637,7 @@ class Marshal: Observable, Updatable {
         public var id: String {
             self.userName
         }
-        public var isMasterPasswordCustomer = false
+        public var isMasterPasswordCustomer = false // swiftlint:disable:this inclusive_language
 
         static func load(origin: URL) throws -> UnsafeMutablePointer<SpectreMarshalledFile>? {
             var error:      NSError?
@@ -678,9 +698,11 @@ class Marshal: Observable, Updatable {
             self.biometricLock = file.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
             self.autofill = file.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
 
-            for purchase in [ "com.lyndir.masterpassword.products.generatelogins",
-                              "com.lyndir.masterpassword.products.generateanswers",
-                              "com.lyndir.masterpassword.products.touchid" ] {
+            for purchase in [
+                "com.lyndir.masterpassword.products.generatelogins",
+                "com.lyndir.masterpassword.products.generateanswers",
+                "com.lyndir.masterpassword.products.touchid",
+            ] {
                 if let proof: String = self.file.spectre_get( path: "user", "_ext_mpw", purchase ),
                    let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: secrets.mpw.salt.b64Decrypt() )?.hex().prefix( 16 ),
                    proof == purchaseDigest {
@@ -716,8 +738,8 @@ class Marshal: Observable, Updatable {
                         origin: self.origin, file: self.file
                 ) { user in
 
-                    for s in 0..<marshalledUser.sites_count {
-                        let marshalledSite = (marshalledUser.sites + s).pointee
+                    for marshalledSite in
+                        UnsafeBufferPointer( start: marshalledUser.sites, count: marshalledUser.sites_count ) {
                         if let siteName = String.valid( marshalledSite.siteName ) {
                             user.sites.append( Site(
                                     user: user,
@@ -733,8 +755,8 @@ class Marshal: Observable, Updatable {
                                     lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
                             ) { site in
 
-                                for q in 0..<marshalledSite.questions_count {
-                                    let marshalledQuestion = (marshalledSite.questions + q).pointee
+                                for marshalledQuestion in
+                                    UnsafeBufferPointer( start: marshalledSite.questions, count: marshalledSite.questions_count ) {
                                     if let keyword = String.valid( marshalledQuestion.keyword ) {
                                         site.questions.append( Question(
                                                 site: site,
@@ -751,7 +773,7 @@ class Marshal: Observable, Updatable {
             }
         }
 
-        // MARK: --- Hashable ---
+        // MARK: - Hashable
 
         func hash(into hasher: inout Hasher) {
             hasher.combine( self.origin )
@@ -769,31 +791,31 @@ class Marshal: Observable, Updatable {
             hasher.combine( self.autofill )
         }
 
-        static func ==(lhs: UserFile, rhs: UserFile) -> Bool {
+        static func == (lhs: UserFile, rhs: UserFile) -> Bool {
             lhs.origin == rhs.origin && lhs.format == rhs.format && lhs.exportDate == rhs.exportDate && lhs.redacted == rhs.redacted &&
                     lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
                     lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
                     lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
         }
 
-        static func !=(lhs: UserFile, rhs: UserFile) -> Bool {
+        static func != (lhs: UserFile, rhs: UserFile) -> Bool {
             !(lhs == rhs)
         }
 
-        static func ==(lhs: User, rhs: UserFile) -> Bool {
+        static func == (lhs: User, rhs: UserFile) -> Bool {
             lhs.origin == rhs.origin && lhs.exportDate == rhs.exportDate &&
                     lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
                     lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
                     lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
         }
 
-        static func !=(lhs: User, rhs: UserFile) -> Bool {
+        static func != (lhs: User, rhs: UserFile) -> Bool {
             !(lhs == rhs)
         }
 
-        // MARK: --- Comparable ---
+        // MARK: - Comparable
 
-        static func <(lhs: UserFile, rhs: UserFile) -> Bool {
+        static func < (lhs: UserFile, rhs: UserFile) -> Bool {
             if lhs.lastUsed != rhs.lastUsed {
                 return lhs.lastUsed > rhs.lastUsed
             }
@@ -801,7 +823,7 @@ class Marshal: Observable, Updatable {
             return lhs.userName > rhs.userName
         }
 
-        // MARK: --- CustomStringConvertible ---
+        // MARK: - CustomStringConvertible
 
         var description: String {
             if let identicon = self.identicon.encoded() {
@@ -812,7 +834,7 @@ class Marshal: Observable, Updatable {
             }
         }
 
-        // MARK: --- CredentialSupplier ---
+        // MARK: - CredentialSupplier
 
         var credentialOwner: String {
             self.userName

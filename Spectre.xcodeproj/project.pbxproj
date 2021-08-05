@@ -79,6 +79,7 @@
 		93D3999D2A6B1A7E4705E376 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393F8D17BB4283C64AC37 /* Types.swift */; };
 		93D399FB0C4228E18FDFAC9F /* PickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391A0FB6EB085237A8BF3 /* PickerView.swift */; };
 		93D39A2954B245FC0D925312 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F718C1C38C46D9D5078 /* Site.swift */; };
+		93D39A40794F195269B9459F /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F0632093A9E2EFB2538 /* Action.swift */; };
 		93D39A467E6B7BB3B646E004 /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3917402B9BC4575713560 /* Tracker.swift */; };
 		93D39AA18A00A587610444F4 /* EffectToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D391193A2AED1BCDD3B83D /* EffectToggleButton.swift */; };
 		93D39AA2456367CDF6A7A296 /* Question.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3919570F5FA9F5A3C0F63 /* Question.swift */; };
@@ -128,7 +129,7 @@
 		DA0E556D251022EB002B3AB1 /* spectre-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* spectre-marshal-util.c */; };
 		DA0E556E251022EB002B3AB1 /* spectre-algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D3969393A3A46BD27D7078 /* spectre-algorithm.c */; };
 		DA0E556F251022EB002B3AB1 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
-		DA0E557025102B3A002B3AB1 /* Spectre AutoFill.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DA0E557025102B3A002B3AB1 /* Spectre-AutoFill.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
 		DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DA0E557F251063BF002B3AB1 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* Utilities.swift */; };
@@ -270,6 +271,20 @@
 			remoteGlobalIDString = DAB7AE471F3D468300C856B1;
 			remoteInfo = "libsodium-ios";
 		};
+		DAB6245126C82CFE00ABD4F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DAB6244C26C82C2C00ABD4F5;
+			remoteInfo = swiftlint;
+		};
+		DAB6245326C82D0600ABD4F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DAB6244C26C82C2C00ABD4F5;
+			remoteInfo = swiftlint;
+		};
 		DAB7AE4D1F3D618700C856B1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DA5BFA3B147E415C00F98B1E /* Project object */;
@@ -293,7 +308,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				DA0E557025102B3A002B3AB1 /* Spectre AutoFill.appex in Embed App Extensions */,
+				DA0E557025102B3A002B3AB1 /* Spectre-AutoFill.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -405,13 +420,14 @@
 		93D39E1D19BCA02E43657384 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		93D39E4EBBF1CB8FC90528B7 /* MainNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainNavigationController.swift; sourceTree = "<group>"; };
 		93D39E70A7274BA100D5735C /* AppStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		93D39F0632093A9E2EFB2538 /* Action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
 		93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DialogSiteChangedViewController.swift; sourceTree = "<group>"; };
 		93D39F096A8C3E51C4DC2CDC /* PagerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PagerView.swift; sourceTree = "<group>"; };
 		93D39F718C1C38C46D9D5078 /* Site.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
 		93D39FA96542FB5CD60278E4 /* AvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarCell.swift; sourceTree = "<group>"; };
 		93D39FFBAB0E1072779FE7D2 /* TipsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TipsView.swift; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre-AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0E5532250D6F7F002B3AB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AutoFill.entitlements; sourceTree = "<group>"; };
 		DA2C3D621BD96126001137B3 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
@@ -666,6 +682,7 @@
 				93D39508BCB9FBB697699194 /* Text.swift */,
 				93D3944D27B033E791F675BB /* Resources.swift */,
 				93D39678996DB28C71E799DC /* UIKit+SVG.swift */,
+				93D39F0632093A9E2EFB2538 /* Action.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -759,7 +776,7 @@
 			isa = PBXGroup;
 			children = (
 				DA5BFA44147E415C00F98B1E /* Spectre.app */,
-				DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */,
+				DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1003,6 +1020,20 @@
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
+		DAB6244C26C82C2C00ABD4F5 /* swiftlint */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "swiftlint $(SRCROOT)/Sources";
+			buildConfigurationList = DAB6245026C82C2C00ABD4F5 /* Build configuration list for PBXLegacyTarget "swiftlint" */;
+			buildPhases = (
+			);
+			buildToolPath = env;
+			buildWorkingDirectory = "";
+			dependencies = (
+			);
+			name = swiftlint;
+			passBuildSettingsInEnvironment = 0;
+			productName = Swiftlint;
+		};
 		DAB7AE3D1F3D464A00C856B1 /* libjson-c-ios */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION)";
@@ -1045,6 +1076,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				DAB6245426C82D0600ABD4F5 /* PBXTargetDependency */,
 				DA0E557A251052D1002B3AB1 /* PBXTargetDependency */,
 				DA0E557C251052D4002B3AB1 /* PBXTargetDependency */,
 			);
@@ -1055,7 +1087,7 @@
 				DA5DAE8326A623FC00D9EC22 /* Stacksift */,
 			);
 			productName = "Spectre-AutoFill";
-			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre AutoFill.appex */;
+			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		DA5BFA43147E415C00F98B1E /* Spectre */ = {
@@ -1071,6 +1103,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				DAB6245226C82CFE00ABD4F5 /* PBXTargetDependency */,
 				DAB7AE501F3D618700C856B1 /* PBXTargetDependency */,
 				DAB7AE4E1F3D618700C856B1 /* PBXTargetDependency */,
 				DA0E557625105196002B3AB1 /* PBXTargetDependency */,
@@ -1119,6 +1152,9 @@
 								enabled = 0;
 							};
 						};
+					};
+					DAB6244C26C82C2C00ABD4F5 = {
+						CreatedOnToolsVersion = 13.0;
 					};
 					DAB7AE3D1F3D464A00C856B1 = {
 						CreatedOnToolsVersion = 8.3.3;
@@ -1239,9 +1275,10 @@
 			projectRoot = "";
 			targets = (
 				DA5BFA43147E415C00F98B1E /* Spectre */,
+				DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill */,
 				DAB7AE3D1F3D464A00C856B1 /* libjson-c-ios */,
 				DAB7AE471F3D468300C856B1 /* libsodium-ios */,
-				DA0E5529250D6F7F002B3AB1 /* Spectre-AutoFill */,
+				DAB6244C26C82C2C00ABD4F5 /* swiftlint */,
 			);
 		};
 /* End PBXProject section */
@@ -1519,6 +1556,7 @@
 				93D39ACE4C36246E730B0539 /* Resources.swift in Sources */,
 				93D391EEF73AB6E099886CBE /* InnerShadowLayer.swift in Sources */,
 				93D3923A080784DFE3AF463E /* UIKit+SVG.swift in Sources */,
+				93D39A40794F195269B9459F /* Action.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1539,6 +1577,16 @@
 			isa = PBXTargetDependency;
 			target = DAB7AE471F3D468300C856B1 /* libsodium-ios */;
 			targetProxy = DA0E557B251052D4002B3AB1 /* PBXContainerItemProxy */;
+		};
+		DAB6245226C82CFE00ABD4F5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DAB6244C26C82C2C00ABD4F5 /* swiftlint */;
+			targetProxy = DAB6245126C82CFE00ABD4F5 /* PBXContainerItemProxy */;
+		};
+		DAB6245426C82D0600ABD4F5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DAB6244C26C82C2C00ABD4F5 /* swiftlint */;
+			targetProxy = DAB6245326C82D0600ABD4F5 /* PBXContainerItemProxy */;
 		};
 		DAB7AE4E1F3D618700C856B1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2299,22 +2347,38 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
-				PRODUCT_NAME = Spectre;
-				PROVISIONING_PROFILE_SPECIFIER = "Spectre Ad Hoc";
+				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
 			};
 			name = Release;
+		};
+		DAB6244D26C82C2C00ABD4F5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$(inherited):/usr/local/bin";
+			};
+			name = Debug;
+		};
+		DAB6244E26C82C2C00ABD4F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$(inherited):/usr/local/bin";
+			};
+			name = Release;
+		};
+		DAB6244F26C82C2C00ABD4F5 /* Public */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PATH = "$(inherited):/usr/local/bin";
+			};
+			name = Public;
 		};
 		DAB7AE3E1F3D464A00C856B1 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2461,6 +2525,16 @@
 				DA5BFA6E147E415C00F98B1E /* Debug */,
 				DA5BFA6F147E415C00F98B1E /* Release */,
 				DA09744A1E95703B00F0BFE8 /* Public */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DAB6245026C82C2C00ABD4F5 /* Build configuration list for PBXLegacyTarget "swiftlint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DAB6244D26C82C2C00ABD4F5 /* Debug */,
+				DAB6244E26C82C2C00ABD4F5 /* Release */,
+				DAB6244F26C82C2C00ABD4F5 /* Public */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-18.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import StoreKit
@@ -16,7 +16,7 @@ import StoreKit
 enum InAppFeature: String, CaseIterable {
     static let observers = Observers<InAppFeatureObserver>()
 
-    case premium = "premium"
+    case premium
 
     var isEnabled: Bool {
         UserDefaults.shared.bool( forKey: self.rawValue )
@@ -39,7 +39,7 @@ enum InAppSubscription: String, CaseIterable {
 enum InAppProduct: String, CaseIterable {
     case premiumAnnual         = "app.spectre.premium.annual"
     case premiumMonthly        = "app.spectre.premium.monthly"
-    case premiumMasterPassword = "app.spectre.premium.masterpassword"
+    case premiumMasterPassword = "app.spectre.premium.masterpassword" // swiftlint:disable:this inclusive_language
 
     static func find(_ productIdentifier: String) -> InAppProduct? {
         self.allCases.first( where: { $0.productIdentifier == productIdentifier } )
@@ -50,14 +50,14 @@ enum InAppProduct: String, CaseIterable {
     }
     var isPublic:          Bool {
         [ InAppProduct.premiumAnnual,
-          InAppProduct.premiumMonthly ].contains( self )
+          InAppProduct.premiumMonthly,
+        ].contains( self )
     }
     var features:          [InAppFeature] {
-        map( self, [
-            .premiumAnnual: [ .premium ],
-            .premiumMonthly: [ .premium ],
-            .premiumMasterPassword: [ .premium ],
-        ] ) ?? []
+        [ .premiumAnnual: [ .premium ],
+          .premiumMonthly: [ .premium ],
+          .premiumMasterPassword: [ .premium ],
+        ][self] ?? []
     }
 }
 

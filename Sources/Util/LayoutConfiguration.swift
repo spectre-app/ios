@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-11-09.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -173,7 +173,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Add child configurations that triggers when this configuration's activation changes.
-    @discardableResult func apply(_ configurations: (LayoutConfiguration<T>, LayoutConfiguration<T>) -> Void) -> Self {
+    @discardableResult
+    func apply(_ configurations: (LayoutConfiguration<T>, LayoutConfiguration<T>) -> Void) -> Self {
         let active   = LayoutConfiguration( target: self.target )
         let inactive = LayoutConfiguration( target: self.target )
         configurations( active, inactive )
@@ -184,7 +185,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Add a child configuration that triggers when this configuration is activated or deactivated.
-    @discardableResult func apply(_ configuration: AnyLayoutConfiguration, active: Bool = true) -> Self {
+    @discardableResult
+    func apply(_ configuration: AnyLayoutConfiguration, active: Bool = true) -> Self {
         if active {
             self.activeConfigurations.append( configuration )
             configuration.isActive = self.isActive
@@ -200,15 +202,18 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 /** Activate this constraint when the configuration becomes active
  * @param constrainer \c $0 owningView \c $1 target
  */
-    @discardableResult func constrain(_ constraint: NSLayoutConstraint) -> Self {
+    @discardableResult
+    func constrain(_ constraint: NSLayoutConstraint) -> Self {
         self.constrain { _, _ in constraint }
     }
 
-    @discardableResult func constrain(_ constrainer: @escaping (UIView, LayoutTarget<T>) -> NSLayoutConstraint) -> Self {
+    @discardableResult
+    func constrain(_ constrainer: @escaping (UIView, LayoutTarget<T>) -> NSLayoutConstraint) -> Self {
         self.constrainAll { [ constrainer( $0, $1 ) ] }
     }
 
-    @discardableResult func constrainAll(_ constrainers: @escaping (UIView, LayoutTarget<T>) -> [NSLayoutConstraint]) -> Self {
+    @discardableResult
+    func constrainAll(_ constrainers: @escaping (UIView, LayoutTarget<T>) -> [NSLayoutConstraint]) -> Self {
         self.constrainers.append( constrainers )
         if self.isActive {
             self.activate( constrainers: constrainers )
@@ -216,15 +221,19 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         return self
     }
 
-    @discardableResult func constrain(as anchors: Anchor, to guide: UILayoutGuide) -> Self {
+    @discardableResult
+    func constrain(as anchors: Anchor, to guide: UILayoutGuide) -> Self {
         self.constrain( as: anchors, toGuide: guide, toView: nil, margin: false )
     }
 
-    @discardableResult func constrain(as anchors: Anchor, to view: UIView? = nil, margin: Bool = false) -> Self {
+    @discardableResult
+    func constrain(as anchors: Anchor, to view: UIView? = nil, margin: Bool = false) -> Self {
         self.constrain( as: anchors, toGuide: nil, toView: view, margin: margin )
     }
 
-    @discardableResult private func constrain(as toAnchors: Anchor, toGuide guide: UILayoutGuide?, toView view: UIView?, margin: Bool) -> Self {
+    @discardableResult
+    // swiftlint:disable:next function_body_length
+    private func constrain(as toAnchors: Anchor, toGuide guide: UILayoutGuide?, toView view: UIView?, margin: Bool) -> Self {
         let allAnchors: [Anchor] = [ .top, .leading, .trailing, .bottom, .left, .right, .width, .height, .centerH, .centerV ]
         return self.constrainAll { superview, target in
             allAnchors.filter { toAnchors.contains( $0 ) }.flatMap { anchor -> [NSLayoutConstraint] in
@@ -334,36 +343,41 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Activate this constraint when the configuration becomes active.
-    @discardableResult func compressionResistanceRequired() -> Self {
+    @discardableResult
+    func compressionResistanceRequired() -> Self {
         self.compressionResistance( horizontal: .required, vertical: .required )
     }
 
-    @discardableResult func compressionResistance(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 )) -> Self {
+    @discardableResult
+    func compressionResistance(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 ))
+                    -> Self {
         guard let targetView = self.target.view
-        else { preconditionFailure( "compressionResistance is only supported for view-based LayoutConfigurations" ) }
+        else { preconditionFailure( "compression resistance is only supported for view-based LayoutConfigurations" ) }
 
         if horizontal.rawValue >= 0 {
-            self.activeProperties["compressionResistance.horizontal"] = horizontal
+            self.activeProperties["compression.horizontal"] = horizontal
             if self.activated {
-                self.inactiveProperties["compressionResistance.horizontal"] = targetView.contentCompressionResistancePriority( for: .horizontal )
+                self.inactiveProperties["compression.horizontal"] = targetView.contentCompressionResistancePriority( for: .horizontal )
                 targetView.setContentCompressionResistancePriority( horizontal, for: .horizontal )
             }
         }
         if vertical.rawValue >= 0 {
-            self.activeProperties["compressionResistance.vertical"] = vertical
+            self.activeProperties["compression.vertical"] = vertical
             if self.activated {
-                self.inactiveProperties["compressionResistance.vertical"] = targetView.contentCompressionResistancePriority( for: .vertical )
+                self.inactiveProperties["compression.vertical"] = targetView.contentCompressionResistancePriority( for: .vertical )
                 targetView.setContentCompressionResistancePriority( vertical, for: .vertical )
             }
         }
         return self
     }
 
-    @discardableResult func huggingRequired() -> Self {
+    @discardableResult
+    func huggingRequired() -> Self {
         self.hugging( horizontal: .required, vertical: .required )
     }
 
-    @discardableResult func hugging(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 )) -> Self {
+    @discardableResult
+    func hugging(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 )) -> Self {
         guard let targetView = self.target.view
         else { preconditionFailure( "hugging is only supported for view-based LayoutConfigurations" ) }
 
@@ -385,7 +399,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Mark the view as needing an refresh after toggling the configuration.
-    @discardableResult func needs(_ refresh: Refresh) -> Self {
+    @discardableResult
+    func needs(_ refresh: Refresh) -> Self {
         guard let targetView = self.target.view
         else { preconditionFailure( "\(refresh) is only supported for view-based LayoutConfigurations" ) }
 
@@ -398,7 +413,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Run this action when the configuration becomes active.
-    @discardableResult func didSet(_ action: @escaping (T, Bool) -> ()) -> Self {
+    @discardableResult
+    func didSet(_ action: @escaping (T, Bool) -> Void) -> Self {
         guard let targetView = self.target.view
         else { preconditionFailure( "didSet is only supported for view-based LayoutConfigurations" ) }
 
@@ -408,7 +424,8 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Request that this configuration's target become the first responder when it activates, and resigns when it deactivates.
-    @discardableResult func activeResponder() -> Self {
+    @discardableResult
+    func activeResponder() -> Self {
         self.didSet {
             if $1 {
                 $0.becomeFirstResponder()
@@ -420,7 +437,9 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     //! Set a given value for the target at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.
-    @discardableResult func set<V: Equatable>(_ value: @escaping @autoclosure () -> V, keyPath: ReferenceWritableKeyPath<T, V>, reverses: Bool = false) -> Self {
+    @discardableResult
+    func set<V: Equatable>(_ value: @escaping @autoclosure () -> V, keyPath: ReferenceWritableKeyPath<T, V>, reverses: Bool = false)
+                    -> Self {
         let property = Property( value: value, keyPath: keyPath, reversable: reverses )
         if self.isActive {
             property.update( self.target.view )
@@ -460,16 +479,16 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 $0.deactivate( animationDuration: -1, parent: self )
             }
 
-            if let newPriority = self.activeProperties["compressionResistance.horizontal"] as? UILayoutPriority,
+            if let newPriority = self.activeProperties["compression.horizontal"] as? UILayoutPriority,
                let oldPriority = targetView?.contentCompressionResistancePriority( for: .horizontal ),
                newPriority != oldPriority {
-                self.inactiveProperties["compressionResistance.horizontal"] = oldPriority
+                self.inactiveProperties["compression.horizontal"] = oldPriority
                 targetView?.setContentCompressionResistancePriority( newPriority, for: .horizontal )
             }
-            if let newPriority = self.activeProperties["compressionResistance.vertical"] as? UILayoutPriority,
+            if let newPriority = self.activeProperties["compression.vertical"] as? UILayoutPriority,
                let oldPriority = targetView?.contentCompressionResistancePriority( for: .vertical ),
                newPriority != oldPriority {
-                self.inactiveProperties["compressionResistance.vertical"] = oldPriority
+                self.inactiveProperties["compression.vertical"] = oldPriority
                 targetView?.setContentCompressionResistancePriority( newPriority, for: .vertical )
             }
             if let newPriority = self.activeProperties["hugging.horizontal"] as? UILayoutPriority,
@@ -553,11 +572,11 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 $0.deactivate( animationDuration: -1, parent: self )
             }
 
-            if let newPriority = self.inactiveProperties["compressionResistance.horizontal"] as? UILayoutPriority,
+            if let newPriority = self.inactiveProperties["compression.horizontal"] as? UILayoutPriority,
                newPriority != targetView?.contentCompressionResistancePriority( for: .horizontal ) {
                 targetView?.setContentCompressionResistancePriority( newPriority, for: .horizontal )
             }
-            if let newPriority = self.inactiveProperties["compressionResistance.vertical"] as? UILayoutPriority,
+            if let newPriority = self.inactiveProperties["compression.vertical"] as? UILayoutPriority,
                newPriority != targetView?.contentCompressionResistancePriority( for: .vertical ) {
                 targetView?.setContentCompressionResistancePriority( newPriority, for: .vertical )
             }
@@ -606,13 +625,13 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         }
     }
 
-    // MARK: --- ThemeObserver ---
+    // MARK: - ThemeObserver
 
     func didChange(theme: Theme) {
         self.properties.forEach { $0.update( self.target.view ) }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     public enum Refresh {
         //! Request a redraw. Useful if it affects custom draw code.

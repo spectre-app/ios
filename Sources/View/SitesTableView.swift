@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-25.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,11 +8,12 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import AVKit
 
+// swiftlint:disable:next type_body_length
 class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable {
     public var user:            User? {
         willSet {
@@ -45,7 +46,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     private lazy var sitesDataSource = SitesSource( view: self )
 
-    // MARK: --- State ---
+    // MARK: - State
 
     override var contentSize:          CGSize {
         didSet {
@@ -56,7 +57,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         CGSize( width: UIView.noIntrinsicMetric, height: max( 1, self.contentSize.height ) )
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init() {
         super.init( frame: .zero, style: .plain )
@@ -84,7 +85,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         super.didMoveToWindow()
     }
 
-    // MARK: --- Internal ---
+    // MARK: - Internal
 
     var updatesRejected: Bool {
         // Updates prior to attachment may result in an incorrect initial content offset.
@@ -147,7 +148,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.sitesDataSource.update( elementsBySection, selected: self.sitesDataSource.selectedItem.flatMap { [ $0 ] } )
     }
 
-    // MARK: --- UITableViewDelegate ---
+    // MARK: - UITableViewDelegate
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as? CellAppearance)?.willDisplay()
@@ -160,16 +161,17 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     private var previewEvents = [ IndexPath: Tracker.TimedEvent ]()
 
     @available( iOS 13, * )
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint)
+                    -> UIContextMenuConfiguration? {
         (self.sitesDataSource.element( at: indexPath )?.site).flatMap { site in
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in SitePreviewController( site: site ) },
-                    actionProvider: { [unowned self] _, configuration in
+                    actionProvider: { [unowned self] _, _ in
                         UIMenu( title: site.siteName, children: [
                             UIAction( title: "Delete", image: .icon( "" ),
-                                      identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { action in
+                                      identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { _ in
                                 site.user.sites.removeAll { $0 === site }
-                            }
+                            },
                         ] + self.siteActions.filter { siteAction in
                             siteAction.appearance.contains( .menu )
                                     && (InAppFeature.premium.isEnabled || !siteAction.appearance.contains( .premium ))
@@ -178,7 +180,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                                 if let tracking = siteAction.tracking {
                                     self.previewEvents[indexPath]?.end( [ "action": tracking.action ] )
                                     Tracker.shared.event( track: tracking.with( parameters: [
-                                        "appearance": "menu"
+                                        "appearance": "menu",
                                     ] ) )
                                 }
 
@@ -190,7 +192,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     }
 
     @available( iOS 13, * )
-    func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+    func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration)
+                    -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
@@ -202,7 +205,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     }
 
     @available( iOS 13, * )
-    func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+    func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration)
+                    -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
@@ -221,7 +225,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.sitesDataSource.selectedItem = self.sitesDataSource.element( at: self.indexPathForSelectedRow )
     }
 
-    // MARK: --- UserObserver ---
+    // MARK: - UserObserver
 
     func didLogin(user: User) {
         self.updateTask.request()
@@ -239,7 +243,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.updateTask.request()
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class SiteItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
         class func filtered(_ sites: [Site], query: String, preferred: ((Site) -> Bool)?) -> [SiteItem] {
@@ -283,7 +287,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
                 // Consume query and key characters until one of them runs out, recording any matches against the result's key.
                 var q = self.query.startIndex, k = key.startIndex, n = k
-                while ((q < self.query.endIndex) && (k < key.endIndex)) {
+                while (q < self.query.endIndex) && (k < key.endIndex) {
                     n = key.index( after: k )
 
                     if self.query[q] == key[k] {
@@ -322,11 +326,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             hasher.combine( self.site )
         }
 
-        static func ==(lhs: SiteItem, rhs: SiteItem) -> Bool {
+        static func == (lhs: SiteItem, rhs: SiteItem) -> Bool {
             lhs.subtitle == rhs.subtitle && lhs.site === rhs.site
         }
 
-        static func <(lhs: SiteItem, rhs: SiteItem) -> Bool {
+        static func < (lhs: SiteItem, rhs: SiteItem) -> Bool {
             lhs.site < rhs.site
         }
     }
@@ -344,8 +348,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             !(self.element( at: indexPath )?.site.isNew ?? true)
         }
 
-        override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-            if let site = self.element( at: indexPath )?.site, editingStyle == .delete {
+        override func tableView(_ tableView: UITableView, commit: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+            if let site = self.element( at: indexPath )?.site, commit == .delete {
                 Tracker.shared.event( track: .subject( "sites.site", action: "delete" ) )
 
                 site.user.sites.removeAll { $0 === site }
@@ -420,12 +424,13 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         private var selectionConfiguration: LayoutConfiguration<SiteCell>!
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
         }
 
+        // swiftlint:disable:next function_body_length
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
             super.init( style: style, reuseIdentifier: reuseIdentifier )
 
@@ -495,7 +500,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     if let tracking = siteAction.tracking {
                         Tracker.shared.event( track: tracking.with( parameters: [
                             "purpose": self.purpose,
-                            "appearance": "mode"
+                            "appearance": "mode",
                         ] ) )
                     }
                     siteAction.action( site, self.purpose, .mode )
@@ -559,13 +564,13 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     .activate()
 
             self.selectionConfiguration = LayoutConfiguration( view: self )
-                    .apply( LayoutConfiguration( view: self.contentStack ) { active, inactive in
+                    .apply( LayoutConfiguration( view: self.contentStack ) { active, _ in
                         active.constrain {
                             $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
                                            .with( priority: .defaultHigh + 10 )
                         }
                     } )
-                    .apply( LayoutConfiguration( view: self.separatorView ) { active, inactive in
+                    .apply( LayoutConfiguration( view: self.separatorView ) { active, _ in
                         active.constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                         active.constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     } )
@@ -639,25 +644,25 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
         }
 
-        // MARK: --- UserObserver ---
+        // MARK: - UserObserver
 
         func didChange(user: User, at change: PartialKeyPath<User>) {
             self.updateTask.request()
         }
 
-        // MARK: --- SiteObserver ---
+        // MARK: - SiteObserver
 
         func didChange(site: Site, at change: PartialKeyPath<Site>) {
             self.updateTask.request()
         }
 
-        // MARK: --- AppConfigObserver ---
+        // MARK: - AppConfigObserver
 
         func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
             self.updateTask.request()
         }
 
-        // MARK: --- InAppFeatureObserver ---
+        // MARK: - InAppFeatureObserver
 
         func didChange(feature: InAppFeature) {
             guard case .premium = feature
@@ -666,7 +671,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.updateTask.request()
         }
 
-        // MARK: --- Private ---
+        // MARK: - Private
 
         lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
             guard let self = self
@@ -709,7 +714,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 self.nameLabel.attributedText = nil
             }
 
-            self.maskButton.image = .icon( self.unmasked ? "👁" : "", invert: true )
+            self.maskButton.image = .icon( self.unmasked ? "👁": "", invert: true )
             if !InAppFeature.premium.isEnabled {
                 self.purpose = .authentication
             }
@@ -737,7 +742,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on: .off
             self.selectionConfiguration.isActive = self.isSelected
 
-            self.resultLabel.isSecureTextEntry = (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
+            self.resultLabel.isSecureTextEntry =
+                    (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
             self.resultLabel.isUserInteractionEnabled = !self.resultLabel.isSecureTextEntry
             self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on: .off
 
@@ -763,7 +769,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             result?.site.siteName == "liefste"
         }
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
@@ -814,7 +820,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 .shape( .triangle, Theme.current.color.shadow.get() ),
                 .emoji( "🎈" ),
                 .emoji( "❤️" ),
-                .emoji( "🎉" )
+                .emoji( "🎉" ),
             ], for: 8 )
             self.emitterView.emit( with: [
                 .emoji( "❤️" ),

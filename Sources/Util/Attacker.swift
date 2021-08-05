@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-11-01.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -72,7 +72,8 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         }
     }
     var localizedDescription: String {
-        "\(number: self.scale, as: "0.#") x \(number: Rig.gtx1080ti.attempts_per_second( for: .bcrypt10 ), .abbreviated)/s (~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) HW + $\(number: self.monthly_budget, .currency, .abbreviated)/m)"
+        "\(number: self.scale, as: "0.#") x \(number: Rig.gtx1080ti.attempts_per_second( for: .bcrypt10 ), .abbreviated)/s " +
+                "(~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) + \(number: self.monthly_budget, .currency, .abbreviated)/m)"
     }
     var rig:                  Rig {
         .gtx1080ti
@@ -109,14 +110,13 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         guard type.in( class: .template )
         else { return nil }
 
-        var count = 0
-        guard let templates = spectre_type_templates( type, &count )
-        else { return nil }
+        var count     = 0
+        let templates = UnsafeBufferPointer( start: spectre_type_templates( type, &count ), count: count )
         defer { templates.deallocate() }
 
         var typePermutations = Decimal( 0 )
-        for t in 0..<count {
-            guard let template = templates[t]
+        for template in templates {
+            guard let template = template
             else { continue }
 
             var templatePermutations = Decimal( 1 )
@@ -212,6 +212,7 @@ struct TimeToCrack: CustomStringConvertible {
     var period:       Period
 
     var description: String {
+        // swiftlint:disable:next identifier_name
         let Wh   = (self.attacker.scale * self.attacker.rig.cost_watt) * self.period.seconds / 3600
         let cost = (self.attacker.scale * self.attacker.rig.cost_fixed) + self.attacker.rig.cost_per_kwh * Wh / 1000
         if self.period.seconds < 2 {
@@ -222,6 +223,8 @@ struct TimeToCrack: CustomStringConvertible {
         if case Period.universes = normalizedPeriod {
             return normalizedPeriod.localizedDescription
         }
-        return "~\(normalizedPeriod.localizedDescription) & ~\(number: cost, locale: .C, .currency, .abbreviated), ~\(number: Wh, .abbreviated)Wh"
+        return "~\(normalizedPeriod.localizedDescription) & " +
+                "~\(number: cost, locale: .C, .currency, .abbreviated), " +
+                "~\(number: Wh, .abbreviated)Wh"
     }
 }

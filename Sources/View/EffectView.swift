@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-10-12.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -157,7 +157,8 @@ class EffectView: UIView, ThemeObserver {
                 .constrain( as: .box ).activate()
     }
 
-    convenience init(content: UIView, border: CGFloat = 1, background: Bool = true, circular: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
+    convenience init(content: UIView, border: CGFloat = 1, background: Bool = true,
+                     circular: Bool = false, rounding: CGFloat = 4, dims: Bool = false) {
         self.init( border: border, background: background, circular: circular, rounding: rounding, dims: false )
 
         // - View
@@ -193,13 +194,13 @@ class EffectView: UIView, ThemeObserver {
         self.contentView.addSubview( view )
     }
 
-    // MARK: --- ThemeObserver ---
+    // MARK: - ThemeObserver
 
     func didChange(theme: Theme) {
         self.setNeedsDisplay()
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     private func update() {
         DispatchQueue.main.perform {
@@ -224,7 +225,8 @@ class EffectView: UIView, ThemeObserver {
             }
             self.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
             self.layer.borderWidth = self.borderWidth
-            self.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor: Theme.current.color.body.get())?.cgColor
+            self.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor:
+                                              Theme.current.color.body.get())?.cgColor
             self.blurEffectView.alpha = self.isDimmed ? .long: .on
             self.innerShadowLayer.cornerRadius = self.layer.cornerRadius
         }

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-14.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -38,7 +38,8 @@ extension DispatchTask {
                           group: DispatchGroup? = nil, qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [],
                           animated: Bool = false, update: @escaping () -> V)
                     -> DispatchTask<V> where U: Updatable, U.V == V {
-        DispatchTask( named: "Update: \(type( of: updatable ))", queue: queue, deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
+        DispatchTask( named: "Update: \(type( of: updatable ))", queue: queue,
+                      deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
             guard let updatable = updatable
             else { throw Promise<V>.Interruption.invalidated }
 

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-04-26.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,11 +8,12 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import SafariServices
 
+// swiftlint:disable file_length
 class AnyItem: NSObject, Updatable {
     let title: Text?
 
@@ -76,7 +77,7 @@ class Item<M>: AnyItem {
         return self
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     override func doUpdate() {
         super.doUpdate()
@@ -86,7 +87,7 @@ class Item<M>: AnyItem {
         self.subitems.forEach { $0.updateTask.request( now: true ) }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     enum SubItemMode {
         case inline, pager
@@ -175,7 +176,7 @@ class Item<M>: AnyItem {
             self.item?.subitems.forEach { $0.view.didLoad() }
         }
 
-        // MARK: --- Updatable ---
+        // MARK: - Updatable
 
         func doUpdate() {
             guard let item = self.item
@@ -337,9 +338,9 @@ class TapBehaviour<M>: Behaviour<M> {
 
 class BlockTapBehaviour<M>: TapBehaviour<M> {
     let enabled: (Item<M>) -> Bool
-    let tapped:  (Item<M>) -> ()
+    let tapped:  (Item<M>) -> Void
 
-    init(enabled: @escaping (Item<M>) -> Bool = { _ in true }, _ tapped: @escaping (Item<M>) -> ()) {
+    init(enabled: @escaping (Item<M>) -> Bool = { _ in true }, _ tapped: @escaping (Item<M>) -> Void) {
         self.enabled = enabled
         self.tapped = tapped
 
@@ -527,7 +528,7 @@ class ToggleItem<M>: ValueItem<M, Bool> {
     init(track: Tracking, title: Text? = nil,
          icon: @escaping (M) -> UIImage?,
          value: @escaping (M) -> Bool,
-         update: ((Item<M>, Bool) -> ())? = nil,
+         update: ((Item<M>, Bool) -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> Text? = { _ in nil }) {
         self.tracking = track
@@ -576,7 +577,7 @@ class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
          value: @escaping (M) -> (label: Text?, image: UIImage?),
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> Text? = { _ in nil },
-         action: @escaping (ButtonItem<M>) -> () = { _ in }) {
+         action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
         self.tracking = track
         self.action = action
 
@@ -650,7 +651,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
 
     init(title: Text? = nil, placeholder: String?,
          value: @escaping (M) -> String? = { _ in nil },
-         update: ((Item<M>, String) -> ())? = nil,
+         update: ((Item<M>, String) -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> Text? = { _ in nil }) {
         self.placeholder = placeholder
@@ -780,7 +781,7 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
 
     init(title: Text? = nil,
          value: @escaping (M) -> V? = { _ in nil },
-         update: ((Item<M>, V) -> ())? = nil,
+         update: ((Item<M>, V) -> Void)? = nil,
          step: V.Stride, min: V, max: V,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> Text? = { _ in nil }) {
@@ -861,7 +862,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     init(track: Tracking? = nil, title: Text? = nil,
          values: @escaping (M) -> [V?],
          value: @escaping (M) -> V,
-         update: ((Item<M>, V) -> ())? = nil,
+         update: ((Item<M>, V) -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> Text? = { _ in nil }) {
         self.tracking = track
@@ -918,7 +919,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
             self.updateDataSource()
         }
 
-        // MARK: --- UICollectionViewDelegate ---
+        // MARK: - UICollectionViewDelegate
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             if let value = self.dataSource.element( at: indexPath ), let pickerItem = self.pickerItem {
@@ -1049,9 +1050,9 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             }
         }
 
-        // MARK: --- UITableViewDelegate ---
+        // MARK: - UITableViewDelegate
 
-        // MARK: --- Types ---
+        // MARK: - Types
 
         class ListSource: DataSource<V> {
             unowned var view: ListItemView
@@ -1071,8 +1072,8 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
                 self.view.listItem?.deletable ?? false
             }
 
-            override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-                if editingStyle == .delete, self.view.listItem?.deletable ?? false, let value = self.element( at: indexPath ) {
+            override func tableView(_ tableView: UITableView, commit: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+                if commit == .delete, self.view.listItem?.deletable ?? false, let value = self.element( at: indexPath ) {
                     self.view.listItem?.delete( indexPath: indexPath, value: value )
                 }
             }
@@ -1080,7 +1081,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
 
         class TableView: UITableView {
 
-            // MARK: --- State ---
+            // MARK: - State
 
             override var bounds:               CGRect {
                 didSet {
@@ -1104,7 +1105,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
                 CGSize( width: UIView.noIntrinsicMetric, height: max( 1, self.contentSize.height ) )
             }
 
-            // MARK: --- Life ---
+            // MARK: - Life
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )
@@ -1143,7 +1144,7 @@ class LinksItem<M>: ListItem<M, LinksItem.Link, LinksItem.Cell> {
 
         private let button = UIButton()
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )

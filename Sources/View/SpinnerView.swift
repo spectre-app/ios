@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-04.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -34,7 +34,7 @@ public class SpinnerView: UICollectionView {
         }
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     public init() {
         super.init( frame: .zero, collectionViewLayout: Layout() )
@@ -55,7 +55,7 @@ public class SpinnerView: UICollectionView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     internal class Layout: UICollectionViewLayout {
         var count      = 0
@@ -102,8 +102,8 @@ public class SpinnerView: UICollectionView {
             }
 
             // Create new attributes.
-            for i in 0..<self.count {
-                let indexPath = IndexPath( item: i, section: 0 )
+            for item in 0..<self.count {
+                let indexPath = IndexPath( item: item, section: 0 )
 
                 if !self.attributes.keys.contains( indexPath ) {
                     self.attributes[indexPath] = using( UICollectionViewLayoutAttributes( forCellWith: indexPath ) ) {

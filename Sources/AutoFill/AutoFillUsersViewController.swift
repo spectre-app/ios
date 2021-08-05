@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import AuthenticationServices
@@ -16,7 +16,7 @@ import AuthenticationServices
 class AutoFillUsersViewController: AutoFillBaseUsersViewController {
     private let configurationView = AutoFillConfigurationView( fromSettings: false )
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,7 +30,7 @@ class AutoFillUsersViewController: AutoFillBaseUsersViewController {
                 .constrain( as: .box ).activate()
     }
 
-    // MARK: --- MarshalObserver ---
+    // MARK: - MarshalObserver
 
     override func didChange(userFiles: [Marshal.UserFile]) {
         super.didChange( userFiles: userFiles )
@@ -40,7 +40,7 @@ class AutoFillUsersViewController: AutoFillBaseUsersViewController {
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     override func login(user: User) {
         super.login( user: user )

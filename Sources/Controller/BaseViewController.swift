@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-10-30.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import SafariServices
@@ -46,7 +46,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
 
     private var notificationObservers = [ NSObjectProtocol ]()
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -84,13 +84,17 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
         self.keyboardLayoutGuide.didAppear( observer: self )
         self.notificationObservers = [
             NotificationCenter.default.addObserver(
-                    forName: UIApplication.willResignActiveNotification, object: nil, queue: .main ) { [weak self] _ in self?.willResignActive() },
+                    forName: UIApplication.willResignActiveNotification, object: nil, queue: .main
+            ) { [weak self] _ in self?.willResignActive() },
             NotificationCenter.default.addObserver(
-                    forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main ) { [weak self] _ in self?.didEnterBackground() },
+                    forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main
+            ) { [weak self] _ in self?.didEnterBackground() },
             NotificationCenter.default.addObserver(
-                    forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main ) { [weak self] _ in self?.willEnterForeground() },
+                    forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main
+            ) { [weak self] _ in self?.willEnterForeground() },
             NotificationCenter.default.addObserver(
-                    forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main ) { [weak self] _ in self?.didBecomeActive() },
+                    forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main
+            ) { [weak self] _ in self?.didBecomeActive() },
         ]
 
         self.willEnterForeground()
@@ -125,20 +129,22 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
     func didBecomeActive() {
     }
 
-    // MARK: --- KeyboardMonitorObserver ---
+    // MARK: - KeyboardMonitorObserver
 
     var changingScrollViews = [ UIScrollView ]()
 
-    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
-        if let _ = self.view.findSuperview( ofType: UIScrollView.self, where: { $0.isScrollEnabled } ) {
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool,
+                   fromScreenFrame: CGRect, toScreenFrame: CGRect,
+                   curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+        if nil != self.view.findSuperview( ofType: UIScrollView.self, where: { $0.isScrollEnabled } ) {
             self.additionalSafeAreaInsets = .zero
 
             // When inside a scrolling container, need to temporarily disable all inner scrolling.
             // This is necessary to allow correct keyboard inset adjustment of the outer scroller when first responder is inside an inner scroller.
             if changing {
-                self.view.enumerateSubviews( ofType: UIScrollView.self, where: { $0.isScrollEnabled } ) { v in
-                    self.changingScrollViews.append( v )
-                    v.isScrollEnabled = false
+                self.view.enumerateSubviews( ofType: UIScrollView.self ) { $0.isScrollEnabled } execute: { view in
+                    self.changingScrollViews.append( view )
+                    view.isScrollEnabled = false
                 }
             }
             else {
@@ -148,10 +154,11 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
             return
         }
 
-        self.additionalSafeAreaInsets = max( .zero, self.keyboardLayoutGuide.keyboardInsets - (self.view.safeAreaInsets - self.additionalSafeAreaInsets) )
+        self.additionalSafeAreaInsets =
+                max( .zero, self.keyboardLayoutGuide.keyboardInsets - (self.view.safeAreaInsets - self.additionalSafeAreaInsets) )
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     func setNeedsUpdate() {
         self.updateTask.request()

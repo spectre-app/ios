@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-11-09.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -65,10 +65,12 @@ extension UIView: Describable {
             description = identifier
         }
         else if let owner = owner {
-            description = short ? owner.property: "\(owner.property)::\(_describe( Self.self, short: true ))@\(_describe( type( of: owner.owner ), short: true ))"
+            description = short ? owner.property:
+                    "\(owner.property)::\(_describe( Self.self, short: true ))@\(_describe( type( of: owner.owner ), short: true ))"
         }
         else if let index = self.superview?.subviews.firstIndex( of: self ) {
-            description = short ? "[\(index)]": "[\(index)]\(_describe( Self.self ))"
+            description = short ? "[\(index)]":
+                    "[\(index)]\(_describe( Self.self ))"
         }
         else {
             description = _describe( Self.self )

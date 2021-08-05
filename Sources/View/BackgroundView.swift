@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-08-08.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -90,7 +90,7 @@ class BackgroundView: UIView, ThemeObserver {
     }
     private var imageViewObservation: NSKeyValueObservation?
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init(mode: Mode = .panel) {
         super.init( frame: .zero )
@@ -103,7 +103,7 @@ class BackgroundView: UIView, ThemeObserver {
         self.imageMask.colors = [
             UIColor.black.with( alpha: .short * .short ).cgColor,
             UIColor.black.with( alpha: .short * .short ).cgColor,
-            UIColor.black.with( alpha: .off ).cgColor
+            UIColor.black.with( alpha: .off ).cgColor,
         ]
         self.imageViewObservation = self.imageView.observe( \.bounds ) { [unowned self] _, _ in
             self.imageMask.frame = self.imageView.bounds
@@ -167,7 +167,7 @@ class BackgroundView: UIView, ThemeObserver {
         }
     }
 
-    // MARK: --- ThemeObserver ---
+    // MARK: - ThemeObserver
 
     func didChange(theme: Theme) {
         if case .gradient = self.mode {
@@ -180,7 +180,7 @@ class BackgroundView: UIView, ThemeObserver {
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     enum Mode {
         case clear, gradient, backdrop, panel, tint, custom(color: () -> UIColor?)

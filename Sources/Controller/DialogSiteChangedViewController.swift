@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-05.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -17,7 +17,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
     private let oldSite: Site
     private let newSite: Site
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -64,6 +64,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
         self.backgroundView.imageColor = AppConfig.shared.colorfulSites ? self.newSite.preview.color: nil
     }
 
+    // swiftlint:disable:next function_body_length
     override func populate(stackView: UIStackView) {
         super.populate( stackView: stackView )
 
@@ -163,7 +164,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
         }
     }
 
-    // MARK: --- AppConfigObserver ---
+    // MARK: - AppConfigObserver
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         self.setNeedsUpdate()

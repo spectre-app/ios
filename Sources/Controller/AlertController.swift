@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-09-22.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,12 +8,12 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
 extension AlertController {
-    static func showChange(to site: Site, in viewController: UIViewController, by operation: () throws -> ()) rethrows {
+    static func showChange(to site: Site, in viewController: UIViewController, by operation: () throws -> Void) rethrows {
         let oldSite = site.copy()
         try operation()
 
@@ -70,7 +70,7 @@ class AlertController {
         self.detailLabel.isHidden = !isActive
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     private lazy var title   = self.titleFactory()
     private lazy var message = self.messageFactory()
@@ -92,7 +92,7 @@ class AlertController {
         self.level = level
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     @discardableResult
     public func show(in host: @escaping @autoclosure () -> UIView? = nil, dismissAutomatically: Bool = true,
@@ -123,7 +123,7 @@ class AlertController {
                     .activate()
             self.appearanceConfiguration.deactivate()
             self.activationConfiguration.deactivate()
-            UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { finished in
+            UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { _ in
                 if dismissAutomatically {
                     self.dismissTask.request()
                 }
@@ -138,7 +138,7 @@ class AlertController {
         guard let self = self, let view = self.view, view.superview != nil
         else { return }
 
-        UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { finished in
+        UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { _ in
             view.removeFromSuperview()
         } )
     }
@@ -155,7 +155,7 @@ class AlertController {
         }
     }
 
-    // MARK: --- Private ---
+    // MARK: - Private
 
     private func loadView() -> UIView {
         let content = self.contentFactory()
@@ -164,7 +164,7 @@ class AlertController {
         }
 
         let contentStack = UIStackView( arrangedSubviews: [
-            self.expandChevron, self.titleLabel, self.messageLabel, content, self.detailLabel
+            self.expandChevron, self.titleLabel, self.messageLabel, content, self.detailLabel,
         ].compactMap { $0 } )
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.axis = .vertical
@@ -213,12 +213,13 @@ class AlertController {
     }
 }
 
-public func mperror(title: String, message: CustomStringConvertible? = nil, details: CustomStringConvertible? = nil, error: Error? = nil, in view: UIView? = nil,
+public func mperror(title: String, message: CustomStringConvertible? = nil,
+                    details: CustomStringConvertible? = nil, error: Error? = nil, in view: UIView? = nil,
                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
     let error   = error?.details
     let message = message?.description ?? error?.description
     let details = [ details?.description, error?.failure != message ? error?.failure: nil, error?.suggestion,
-                    error?.underlying.joined( separator: "\n" ) ]
+                    error?.underlying.joined( separator: "\n" ), ]
             .compactMap( { $0 } ).joined( separator: "\n" )
 
     AlertController( title: title, message: message, details: details, level: .error )

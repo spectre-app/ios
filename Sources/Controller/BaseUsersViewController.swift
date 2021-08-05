@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import LocalAuthentication
@@ -27,7 +27,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     internal let detailsHost   = DetailHostController()
     internal var userActions   = [ UserAction ]()
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override var next: UIResponder? {
         self.detailsHost
@@ -79,13 +79,14 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         super.viewWillDisappear( animated )
     }
 
-    // MARK: --- KeyboardLayoutObserver ---
+    // MARK: - KeyboardLayoutObserver
 
-    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect, curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
+                            curve: UIView.AnimationCurve?, duration: TimeInterval?) {
         // Don't adjust the safe area. Keyboard is handled explicitly.
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
         [ userFiles.sorted() ]
@@ -95,7 +96,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         self.usersCarousel.selectedItem = nil
     }
 
-    // MARK: --- UICollectionViewDelegate ---
+    // MARK: - UICollectionViewDelegate
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.usersCarousel.selectedItem = nil
@@ -116,7 +117,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             selectedCell.userEvent = self.userEvent
             selectedCell.attemptBiometrics().failure { error in
                 inf( "Skipping biometrics. [>PII]" )
-                pii( "[>] %@", error )
+                pii( "[>] Error: %@", error )
             }
         }
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = true }
@@ -130,7 +131,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = false }
     }
 
-    // MARK: --- MarshalObserver ---
+    // MARK: - MarshalObserver
 
     func didChange(userFiles: [Marshal.UserFile]) {
         let sections = self.sections( for: userFiles )
@@ -144,7 +145,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class UsersSource: DataSource<Marshal.UserFile?> {
         unowned let viewController: BaseUsersViewController
@@ -258,8 +259,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
                                                         image: .icon( "" ), border: 0, background: false )
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
+        // swiftlint:disable:next function_body_length
         override init(frame: CGRect) {
             super.init( frame: CGRect() )
 
@@ -292,7 +294,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.attemptBiometrics().failure { error in
                     err( "Failed biometrics. [>PII]" )
-                    pii( "[>] %@", error )
+                    pii( "[>] Error: %@", error )
                 }
             }
 
@@ -464,7 +466,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
 
-        // MARK: --- InAppFeatureObserver ---
+        // MARK: - InAppFeatureObserver
 
         func didChange(feature: InAppFeature) {
             guard case .premium = feature
@@ -473,7 +475,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.updateTask.request()
         }
 
-        // MARK: --- Private ---
+        // MARK: - Private
 
         func attemptBiometrics() -> Promise<User> {
             guard InAppFeature.premium.isEnabled
@@ -509,7 +511,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     switch error {
                         case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
                             wrn( "Biometrics cancelled. [>PII]" )
-                            pii( "[>] %@", error )
+                            pii( "[>] Error: %@", error )
                         default:
                             mperror( title: "Couldn't unlock user", error: error )
                     }
@@ -517,7 +519,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
 
-        // MARK: --- Updatable ---
+        // MARK: - Updatable
 
         lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
             guard let self = self

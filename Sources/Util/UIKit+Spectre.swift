@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-11.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import SafariServices
@@ -85,41 +85,57 @@ extension CGRect {
     }
 }
 
+public func max(_ lhs: CGPoint, _ rhs: CGPoint) -> CGPoint {
+    CGPoint( x: Swift.max( lhs.x, rhs.x ), y: Swift.max( lhs.y, rhs.y ) )
+}
+
+public func min(_ lhs: CGPoint, _ rhs: CGPoint) -> CGPoint {
+    CGPoint( x: Swift.min( lhs.x, rhs.x ), y: Swift.min( lhs.y, rhs.y ) )
+}
+
 extension CGPoint {
-    public static func +(lhs: CGPoint, rhs: CGPoint) -> CGPoint {
+    public static func + (lhs: CGPoint, rhs: CGPoint) -> CGPoint {
         CGPoint( x: lhs.x + rhs.x, y: lhs.y + rhs.y )
     }
 
-    public static func -(lhs: CGPoint, rhs: CGPoint) -> CGPoint {
+    public static func - (lhs: CGPoint, rhs: CGPoint) -> CGPoint {
         CGPoint( x: lhs.x - rhs.x, y: lhs.y - rhs.y )
     }
 
-    public static func +=(lhs: inout CGPoint, rhs: CGPoint) {
+    public static func += (lhs: inout CGPoint, rhs: CGPoint) {
         lhs.x += rhs.x
         lhs.y += rhs.y
     }
 
-    public static func -=(lhs: inout CGPoint, rhs: CGPoint) {
+    public static func -= (lhs: inout CGPoint, rhs: CGPoint) {
         lhs.x -= rhs.x
         lhs.y -= rhs.y
     }
 }
 
+public func max(_ lhs: CGSize, _ rhs: CGSize) -> CGSize {
+    CGSize( width: Swift.max( lhs.width, rhs.width ), height: Swift.max( lhs.height, rhs.height ) )
+}
+
+public func min(_ lhs: CGSize, _ rhs: CGSize) -> CGSize {
+    CGSize( width: Swift.min( lhs.width, rhs.width ), height: Swift.min( lhs.height, rhs.height ) )
+}
+
 extension CGSize {
-    public static func +(lhs: CGSize, rhs: CGSize) -> CGSize {
+    public static func + (lhs: CGSize, rhs: CGSize) -> CGSize {
         CGSize( width: lhs.width + rhs.width, height: lhs.height + rhs.height )
     }
 
-    public static func -(lhs: CGSize, rhs: CGSize) -> CGSize {
+    public static func - (lhs: CGSize, rhs: CGSize) -> CGSize {
         CGSize( width: lhs.width - rhs.width, height: lhs.height - rhs.height )
     }
 
-    public static func +=(lhs: inout CGSize, rhs: CGSize) {
+    public static func += (lhs: inout CGSize, rhs: CGSize) {
         lhs.width += rhs.width
         lhs.height += rhs.height
     }
 
-    public static func -=(lhs: inout CGSize, rhs: CGSize) {
+    public static func -= (lhs: inout CGSize, rhs: CGSize) {
         lhs.width -= rhs.width
         lhs.height -= rhs.height
     }
@@ -173,28 +189,28 @@ extension UIEdgeInsets {
         UIEdgeInsets( top: inset, left: 0, bottom: inset, right: 0 )
     }
 
-    prefix public static func -(a: UIEdgeInsets) -> UIEdgeInsets {
-        UIEdgeInsets( top: -a.top, left: -a.left, bottom: -a.bottom, right: -a.right )
+    prefix public static func - (insets: UIEdgeInsets) -> UIEdgeInsets {
+        UIEdgeInsets( top: -insets.top, left: -insets.left, bottom: -insets.bottom, right: -insets.right )
     }
 
-    public static func +(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+    public static func + (lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
         UIEdgeInsets( top: lhs.top + rhs.top, left: lhs.left + rhs.left,
                       bottom: lhs.bottom + rhs.bottom, right: lhs.right + rhs.right )
     }
 
-    public static func -(lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
+    public static func - (lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
         UIEdgeInsets( top: lhs.top - rhs.top, left: lhs.left - rhs.left,
                       bottom: lhs.bottom - rhs.bottom, right: lhs.right - rhs.right )
     }
 
-    public static func +=(lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
+    public static func += (lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
         lhs.top += rhs.top
         lhs.left += rhs.left
         lhs.bottom += rhs.bottom
         lhs.right += rhs.right
     }
 
-    public static func -=(lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
+    public static func -= (lhs: inout UIEdgeInsets, rhs: UIEdgeInsets) {
         lhs.top -= rhs.top
         lhs.left -= rhs.left
         lhs.bottom -= rhs.bottom
@@ -211,22 +227,18 @@ extension UIEdgeInsets {
         CGSize( width: self.width, height: self.height )
     }
 
-    init(in boundingRect: CGRect, subtracting subtractRect: CGRect) {
-        if !boundingRect.intersects( subtractRect ) {
+    init(in bounds: CGRect, removing remove: CGRect) {
+        if !bounds.intersects( remove ) {
             self = .zero
         }
         else {
-            let boundingTopLeft     = boundingRect.topLeft
-            let boundingBottomRight = boundingRect.bottomRight
-            let subtractTopLeft     = subtractRect.topLeft
-            let subtractBottomRight = subtractRect.bottomRight
-            let topLeftInset        = subtractBottomRight - boundingTopLeft
-            let bottomRightInset    = boundingBottomRight - subtractTopLeft
+            let topLeftInset     = max( .zero, remove.bottomRight - bounds.topLeft )
+            let bottomRightInset = max( .zero, bounds.bottomRight - remove.topLeft )
 
-            let top    = subtractTopLeft.y <= boundingTopLeft.y && subtractBottomRight.y < boundingBottomRight.y ? max( 0, topLeftInset.y ): 0
-            let left   = subtractTopLeft.x <= boundingTopLeft.x && subtractBottomRight.x < boundingBottomRight.x ? max( 0, topLeftInset.x ): 0
-            let bottom = subtractTopLeft.y > boundingTopLeft.y && subtractBottomRight.y >= boundingBottomRight.y ? max( 0, bottomRightInset.y ): 0
-            let right  = subtractTopLeft.x > boundingTopLeft.x && subtractBottomRight.x >= boundingBottomRight.x ? max( 0, bottomRightInset.x ): 0
+            let top    = remove.topLeft.y <= bounds.topLeft.y && remove.bottomRight.y < bounds.bottomRight.y ? topLeftInset.y: 0
+            let left   = remove.topLeft.x <= bounds.topLeft.x && remove.bottomRight.x < bounds.bottomRight.x ? topLeftInset.x: 0
+            let bottom = remove.topLeft.y > bounds.topLeft.y && remove.bottomRight.y >= bounds.bottomRight.y ? bottomRightInset.y: 0
+            let right  = remove.topLeft.x > bounds.topLeft.x && remove.bottomRight.x >= bounds.bottomRight.x ? bottomRightInset.x: 0
 
             self.init( top: top, left: left, bottom: bottom, right: right )
         }
@@ -272,16 +284,13 @@ extension UICollectionView {
     public func requestSelection(item: Int?, inSection section: Int = 0,
                                  animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
                     -> Bool {
-        if let item = item {
-            return self.requestSelection( at: IndexPath( item: item, section: section ), animated: animated, scrollPosition: scrollPosition )
-        }
-        else {
-            return self.requestSelection( at: nil, animated: animated, scrollPosition: scrollPosition )
-        }
+        self.requestSelection( at: item.flatMap { IndexPath( item: $0, section: section ) },
+                               animated: animated, scrollPosition: scrollPosition )
     }
 
     @discardableResult
-    public func requestSelection(at selectPath: IndexPath?, animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
+    public func requestSelection(at selectPath: IndexPath?,
+                                 animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
                     -> Bool {
         guard !self.bounds.isEmpty
         else { return false }
@@ -319,13 +328,17 @@ extension UICollectionView {
 
 extension UICollectionReusableView {
     static func dequeue(from collectionView: UICollectionView, kind: String, indexPath: IndexPath) -> Self {
-        collectionView.dequeueReusableSupplementaryView( ofKind: kind, withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! Self
+        collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind, withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! Self
+        // swiftlint:disable:previous force_cast
     }
 }
 
 extension UICollectionViewCell {
     static func dequeue(from collectionView: UICollectionView, indexPath: IndexPath) -> Self {
-        collectionView.dequeueReusableCell( withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! Self
+        collectionView.dequeueReusableCell(
+                withReuseIdentifier: NSStringFromClass( self ), for: indexPath ) as! Self
+        // swiftlint:disable:previous force_cast
     }
 }
 
@@ -349,7 +362,7 @@ extension UIContextMenuConfiguration {
 }
 
 @available( iOS 13, * )
-fileprivate struct PreviewProvider {
+private struct PreviewProvider {
     let provider:      ((UIContextMenuConfiguration) -> UIViewController?)?
     var configuration: UIContextMenuConfiguration?
 
@@ -359,7 +372,7 @@ fileprivate struct PreviewProvider {
 }
 
 @available( iOS 13, * )
-fileprivate struct ActionProvider {
+private struct ActionProvider {
     let provider:      (([UIMenuElement], UIContextMenuConfiguration) -> UIMenu?)?
     var configuration: UIContextMenuConfiguration?
 
@@ -383,18 +396,18 @@ extension UIControl {
     }
 
     func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) {
-        self.action( for: controlEvents, UIControlHandler( { control, event in action() } ) )
+        self.action( for: controlEvents, UIControlHandler( { _, _ in action() } ) )
     }
 
     func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) {
-        self.action( for: controlEvents, UIControlHandler( { control, event in action( event ) } ) )
+        self.action( for: controlEvents, UIControlHandler( { _, event in action( event ) } ) )
     }
 
-    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent, UIControl?) -> Void) -> Void {
+    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent, UIControl?) -> Void) {
         self.action( for: controlEvents, UIControlHandler( { control, event in action( event, control ) } ) )
     }
 
-    func action(for controlEvents: UIControl.Event, _ handler: UIControlHandler) -> Void {
+    func action(for controlEvents: UIControl.Event, _ handler: UIControlHandler) {
         self.actionHandlers.append( handler )
         self.addTarget( handler, action: #selector( UIControlHandler.action ), for: controlEvents )
     }
@@ -403,7 +416,7 @@ extension UIControl {
 class UIControlHandler: NSObject {
     private let actionHandler: (UIControl?, UIEvent) -> Void
 
-    public init(_ eventHandler: @escaping (UIControl?, UIEvent) -> ()) {
+    public init(_ eventHandler: @escaping (UIControl?, UIEvent) -> Void) {
         self.actionHandler = eventHandler
     }
 
@@ -419,36 +432,36 @@ extension UIColor {
     class func hex(_ hex: String, alpha: CGFloat = .on) -> UIColor? {
         var hexSanitized = hex.trimmingCharacters( in: .whitespacesAndNewlines )
         hexSanitized = hexSanitized.replacingOccurrences( of: "#", with: "" )
-        var rgb: UInt32  = 0
-        var r:   CGFloat = 0.0
-        var g:   CGFloat = 0.0
-        var b:   CGFloat = 0.0
-        var a:   CGFloat = alpha
+        var rgb:   UInt32  = 0
+        var red:   CGFloat = 0.0
+        var green: CGFloat = 0.0
+        var blue:  CGFloat = 0.0
+        var alpha: CGFloat = alpha
         guard Scanner( string: hexSanitized ).scanHexInt32( &rgb )
         else { return nil }
         if hexSanitized.count == 6 {
-            r = CGFloat( (rgb & 0xFF0000) >> 16 ) / 255.0
-            g = CGFloat( (rgb & 0x00FF00) >> 8 ) / 255.0
-            b = CGFloat( rgb & 0x0000FF ) / 255.0
+            red = CGFloat( (rgb & 0xFF0000) >> 16 ) / 255.0
+            green = CGFloat( (rgb & 0x00FF00) >> 8 ) / 255.0
+            blue = CGFloat( rgb & 0x0000FF ) / 255.0
         }
         else if hexSanitized.count == 8 {
-            r = CGFloat( (rgb & 0xFF000000) >> 24 ) / 255.0
-            g = CGFloat( (rgb & 0x00FF0000) >> 16 ) / 255.0
-            b = CGFloat( (rgb & 0x0000FF00) >> 8 ) / 255.0
-            a *= CGFloat( rgb & 0x000000FF ) / 255.0
+            red = CGFloat( (rgb & 0xFF000000) >> 24 ) / 255.0
+            green = CGFloat( (rgb & 0x00FF0000) >> 16 ) / 255.0
+            blue = CGFloat( (rgb & 0x0000FF00) >> 8 ) / 255.0
+            alpha *= CGFloat( rgb & 0x000000FF ) / 255.0
         }
         else {
             return nil
         }
 
-        return UIColor( red: r, green: g, blue: b, alpha: a )
+        return UIColor( red: red, green: green, blue: blue, alpha: alpha )
     }
 
     var hex: String {
-        var r = CGFloat( 0 ), g = CGFloat( 0 ), b = CGFloat( 0 ), a = CGFloat( 0 )
-        self.getRed( &r, green: &g, blue: &b, alpha: &a )
+        var red = CGFloat( 0 ), green = CGFloat( 0 ), blue = CGFloat( 0 ), alpha = CGFloat( 0 )
+        self.getRed( &red, green: &green, blue: &blue, alpha: &alpha )
 
-        return String( format: "%0.2lX%0.2lX%0.2lX,%0.2lX", Int( r * 255 ), Int( g * 255 ), Int( b * 255 ), Int( a * 255 ) )
+        return String( format: "%0.2lX%0.2lX%0.2lX,%0.2lX", Int( red * 255 ), Int( green * 255 ), Int( blue * 255 ), Int( alpha * 255 ) )
     }
 
     // Determine how common a color is in a list of colors.
@@ -545,16 +558,16 @@ extension UIFont {
 }
 
 extension UIGestureRecognizer {
-    convenience init(_ block: @escaping (Self) -> ()) {
+    convenience init(_ block: @escaping (Self) -> Void) {
         let receiver = Receiver( action: block )
         self.init( target: receiver, action: #selector( receiver.handle ) )
         objc_setAssociatedObject( self, #function, receiver, .OBJC_ASSOCIATION_RETAIN )
     }
 
     class Receiver<R: UIGestureRecognizer> {
-        let action: (R) -> ()
+        let action: (R) -> Void
 
-        init(action: @escaping (R) -> ()) {
+        init(action: @escaping (R) -> Void) {
             self.action = action
         }
 
@@ -607,8 +620,10 @@ extension UITableView {
 }
 
 extension UITableViewCell {
-    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> ())? = nil) -> C {
-        let cell = tableView.dequeueReusableCell( withIdentifier: NSStringFromClass( self ), for: indexPath ) as! C
+    static func dequeue<C: UITableViewCell>(from tableView: UITableView, indexPath: IndexPath, _ initializer: ((C) -> Void)? = nil) -> C {
+        let cell = tableView.dequeueReusableCell(
+                withIdentifier: NSStringFromClass( self ), for: indexPath ) as! C
+        // swiftlint:disable:previous force_cast
 
         if let initialize = initializer {
             UIView.performWithoutAnimation {
@@ -644,7 +659,7 @@ extension UIView {
         return nil
     }
 
-    public func enumerateSubviews<V: UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil, execute: (V) -> ()) {
+    public func enumerateSubviews<V: UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil, execute: (V) -> Void) {
         for subview in self.subviews {
             if let subview = subview as? V, filter?( subview ) ?? true {
                 execute( subview )

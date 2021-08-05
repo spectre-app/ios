@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-11-07.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 import os
@@ -119,8 +119,8 @@ extension SpectreLogLevel: Strideable, CaseIterable, CustomStringConvertible {
         other.rawValue - self.rawValue
     }
 
-    public func advanced(by n: Int32) -> SpectreLogLevel {
-        SpectreLogLevel( rawValue: self.rawValue + n )!
+    public func advanced(by stride: Int32) -> SpectreLogLevel {
+        SpectreLogLevel( rawValue: self.rawValue + stride )!
     }
 
     public var description: String {
@@ -222,7 +222,7 @@ public class LogSink: AppConfigObserver {
         return true
     }
 
-    // MARK: --- AppConfigObserver ---
+    // MARK: - AppConfigObserver
 
     public func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         self.level = appConfig.isDebug ? .debug: appConfig.diagnostics ? .info: .warning
@@ -243,14 +243,13 @@ struct LogRecord: Comparable {
         "\(self.fileName):\(self.line)"
     }
 
-    public static func <(lhs: LogRecord, rhs: LogRecord) -> Bool {
+    public static func < (lhs: LogRecord, rhs: LogRecord) -> Bool {
         lhs.occurrence < rhs.occurrence
     }
 
-    public static func ==(lhs: LogRecord, rhs: LogRecord) -> Bool {
+    public static func == (lhs: LogRecord, rhs: LogRecord) -> Bool {
         lhs.occurrence == rhs.occurrence && lhs.level == rhs.level &&
                 lhs.file == rhs.file && lhs.line == rhs.line && lhs.function == rhs.function &&
                 lhs.message == rhs.message
     }
 }
-

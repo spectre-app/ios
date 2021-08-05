@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-09-16.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,14 +8,14 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
 class SitePreviewController: UIViewController, SiteObserver {
     private let siteButton = UIButton( type: .custom )
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     init(site: Site) {
         super.init( nibName: nil, bundle: nil )
@@ -48,7 +48,7 @@ class SitePreviewController: UIViewController, SiteObserver {
                 .activate()
     }
 
-    // MARK: --- SiteObserver ---
+    // MARK: - SiteObserver
 
     func didChange(site: Site, at change: PartialKeyPath<Site>) {
         guard change == \Site.preview || change == \Site.siteName

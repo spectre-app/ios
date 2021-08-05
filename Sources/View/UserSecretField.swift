@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-06-29.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,25 +8,27 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
 extension UIAlertController {
-    static func authenticate(userFile: Marshal.UserFile, title: String, message: String? = nil, in viewController: UIViewController,
-                             track: Tracking? = nil, action: String, retryOnError: Bool = true) -> Promise<User> {
-        self.authenticate( userName: userFile.userName, identicon: userFile.identicon, title: title, message: message, in: viewController,
-                           track: track, action: action, retryOnError: retryOnError ) {
+    static func authenticate(userFile: Marshal.UserFile, title: String, message: String? = nil, action: String, retryOnError: Bool = true,
+                             in viewController: UIViewController, track: Tracking? = nil) -> Promise<User> {
+        self.authenticate( userName: userFile.userName, identicon: userFile.identicon,
+                           title: title, message: message, action: action, retryOnError: retryOnError,
+                           in: viewController, track: track ) {
             userFile.authenticate( using: $0 )
         }
     }
 
     static func authenticate<U>(userName: String? = nil, identicon: SpectreIdenticon = SpectreIdenticonUnset,
-                                title: String, message: String? = nil, in viewController: UIViewController,
-                                track: Tracking? = nil, action: String, retryOnError: Bool = true,
+                                title: String, message: String? = nil, action: String, retryOnError: Bool = true,
+                                in viewController: UIViewController, track: Tracking? = nil,
                                 authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>) -> Promise<U> {
         let promise         = Promise<U>()
-        let spinner         = AlertController( title: "Unlocking", message: userName, content: UIActivityIndicatorView( style: .whiteLarge ) )
+        let spinner         = AlertController( title: "Unlocking", message: userName,
+                                               content: UIActivityIndicatorView( style: .whiteLarge ) )
         let alertController = UIAlertController( title: title, message: message, preferredStyle: .alert )
         var event = track.flatMap { Tracker.shared.begin( track: $0 ) }
 
@@ -149,7 +151,8 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 self.leftItemView.frame.size = self.leftItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize )
                 self.rightItemView.frame.size = self.rightItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize )
 
-                NotificationCenter.default.addObserver( forName: UITextField.textDidChangeNotification, object: passwordField, queue: nil ) { notification in
+                NotificationCenter.default.addObserver(
+                        forName: UITextField.textDidChangeNotification, object: passwordField, queue: nil ) { _ in
                     self.setNeedsIdenticon()
                 }
             }
@@ -170,7 +173,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     private lazy var leftMinimumWidth  = self.leftItemView.widthAnchor.constraint( equalToConstant: 0 ).with( priority: .defaultLow )
     private lazy var rightMinimumWidth = self.rightItemView.widthAnchor.constraint( equalToConstant: 0 ).with( priority: .defaultLow )
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -215,7 +218,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         }
     }
 
-    // MARK: --- Interface ---
+    // MARK: - Interface
 
     public func setNeedsIdenticon() {
         DispatchQueue.main.perform {
@@ -265,7 +268,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         }
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     lazy var updateTask = DispatchTask.update( self, deadline: .now() + .seconds( .random( in: (.short)..<(.long) ) ) ) { [weak self] in
         guard let self = self
@@ -289,7 +292,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         }
     }
 
-    // MARK: --- UITextFieldDelegate ---
+    // MARK: - UITextFieldDelegate
 
     func textFieldDidEndEditing(_ textField: UITextField, reason: DidEndEditingReason) {
         if textField == self.nameField {

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-01-21.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import CoreServices
@@ -21,9 +21,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     lazy var window: UIWindow? = UIWindow()
 
-    // MARK: --- UIApplicationDelegate ---
+    // MARK: - UIApplicationDelegate
 
-    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
+                    -> Bool {
         // Require encrypted DNS.  Note: WebKit (eg. WKWebView/SFSafariViewController) ignores this.
         if #available( iOS 14.0, * ) {
             if let dohURL = URL( string: "https://cloudflare-dns.com/dns-query" ) {
@@ -48,7 +49,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
+                    -> Bool {
         OperationQueue.main.addOperation {
             self.launchDecisions()
         }
@@ -59,7 +61,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    func launchDecisions(completion: @escaping () -> () = {}) {
+    func launchDecisions(completion: @escaping () -> Void = {}) {
         guard let window = self.window
         else { return }
 
@@ -112,204 +114,97 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         else { return false }
         let navigationController = viewController as? UINavigationController ?? viewController.navigationController
 
-        if let components = URLComponents( url: url, resolvingAgainstBaseURL: false ),
-           components.scheme == "spectre" {
-            // spectre:import?data=<export>
-            if components.path == "import" {
-                guard let data = components.queryItems?.first( where: { $0.name == "data" } )?.value?.data( using: .utf8 )
-                else {
-                    wrn( "Import URL missing data parameter. [>PII]" )
-                    pii( "[>] %@", url )
-                    return false
-                }
-
-                Marshal.shared.import( data: data, viewController: viewController ).then {
-                    if case .failure(let error) = $0 {
-                        mperror( title: "Couldn't import user", error: error )
-                    }
-                }
-                return true
-            }
-
-            // spectre:web?url=<url>
-            else if components.path == "web" {
-                guard components.verifySignature()
-                else {
-                    wrn( "Untrusted. [>PII]" )
-                    pii( "[>] %@", url )
-                    return false
-                }
-                let openString = components.queryItems?.first( where: { $0.name == "url" } )?.value ?? "https://spectre.app"
-                guard let openURL = URL( string: openString )
-                else {
-                    wrn( "Cannot open malformed URL. [>PII]" )
-                    pii( "[>] %@", openString )
-                    return false
-                }
-
-                viewController.present( SFSafariViewController( url: openURL ), animated: true )
-                return true
-            }
-
-            // spectre:review
-            else if components.path == "review" {
-                guard components.verifySignature()
-                else {
-                    wrn( "Untrusted: %@", url )
-                    return false
-                }
-
-                SKStoreReviewController.requestReview()
-                return true
-            }
-
-            // spectre:store[?id=<appleid>]
-            else if components.path == "store" {
-                guard components.verifySignature()
-                else {
-                    wrn( "Untrusted. [>PII]" )
-                    pii( "[>] %@", url )
-                    return false
-                }
-
-                let id = (components.queryItems?.first( where: { $0.name == "id" } )?.value as NSString?)?.integerValue
-                AppStore.shared.presentStore( appleID: id, in: viewController )
-                return true
-            }
-
-            // spectre:update[?id=<appleid>[&build=<version>]]
-            else if components.path == "update" {
-                guard components.verifySignature()
-                else {
-                    wrn( "Untrusted. [>PII]" )
-                    pii( "[>] %@", url )
-                    return false
-                }
-
-                let id = (components.queryItems?.first( where: { $0.name == "id" } )?.value as NSString?)?.integerValue
-                let build = components.queryItems?.first( where: { $0.name == "build" } )?.value
-                AppStore.shared.isUpToDate( appleID: id, buildVersion: build ).then {
-                    do {
-                        let result = try $0.get()
-                        if result.upToDate {
-                            AlertController( title: "Your \(productName) app is up-to-date!", message: result.buildVersion,
-                                             details: "build[\(result.buildVersion)] > store[\(result.storeVersion)]" )
-                                    .show()
-                        }
-                        else {
-                            inf( "%@ is outdated: build[%@] < store[%@]", productName, result.buildVersion, result.storeVersion )
-                            AppStore.shared.presentStore( in: viewController )
-                        }
-                    }
-                    catch {
-                        mperror( title: "Couldn't check for updates", error: error )
-                    }
-                }
-                return true
-            }
+        // spectre:action
+        if Action.open( url: url, in: viewController ) {
+            return true
         }
 
         // file share
         else if let utisValue = UTTypeCreateAllIdentifiersForTag(
                 kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
-                let utis = utisValue as? Array<String?> {
-            for format in SpectreFormat.allCases
-                where utis.contains( format.uti ) {
+                let utis = utisValue as? [String?] {
+            if let format = SpectreFormat.allCases.first( where: { utis.contains( $0.uti ) } ) {
+                let securityScoped = url.startAccessingSecurityScopedResource()
+                let promise = Promise<Marshal.UserFile>()
+                        .failure {
+                            if let error = $0 as? AppError, case AppError.cancelled = error {
+                                return
+                            }
+                            mperror( title: "Couldn't import user", error: $0 )
+                        }
+                        .success {
+                            guard $0.format == format
+                            else {
+                                wrn( "Imported user format: %@, doesn't match format: %@. [>PII]", $0.format, format )
+                                pii( "[>] URL: %@, UTIs: %@", url, utis )
+                                return
+                            }
+                        }
+                        .finally {
+                            if securityScoped {
+                                url.stopAccessingSecurityScopedResource()
+                            }
+                        }
+
                 var error: NSError?
                 NSFileCoordinator().coordinate( readingItemAt: url, error: &error ) { url in
+                    guard let importData = FileManager.default.contents( atPath: url.path )
+                    else {
+                        promise.finish( .failure( AppError.state( title: "Couldn't read import", details: url ) ) )
+                        return
+                    }
+
                     // Not In-Place: import the user from the file.
-                    if !((options[.openInPlace] as? Bool) ?? false) {
-                        guard let importData = FileManager.default.contents( atPath: url.path )
-                        else {
-                            mperror( title: "Couldn't read import", details: url )
-                            return
-                        }
-                        Marshal.shared.import( data: importData, viewController: viewController ).failure { error in
-                            mperror( title: "Couldn't import user", error: error )
-                        }
+                    guard (options[.openInPlace] as? Bool) ?? false, InAppFeature.premium.isEnabled
+                    else {
+                        Marshal.shared.import( data: importData, viewController: viewController ).finishes( promise )
                         return
                     }
 
                     // In-Place: allow choice between editing in-place or importing.
-                    let securityScoped = url.startAccessingSecurityScopedResource()
-                    guard let importData = FileManager.default.contents( atPath: url.path )
-                    else {
-                        mperror( title: "Couldn't read import", details: url )
-                        return
-                    }
-                    guard InAppFeature.premium.isEnabled
-                    else {
-                        inf( "In-place editing is not available at this time." )
-                        Marshal.shared.import( data: importData, viewController: viewController )
-                                      .failure { error in
-                                          mperror( title: "Couldn't import user", error: error )
-                                      }
-                                      .finally {
-                                          if securityScoped {
-                                              url.stopAccessingSecurityScopedResource()
-                                          }
-                                      }
-                        return
-                    }
-
                     do {
-                        let importFile      = try Marshal.UserFile( data: importData, origin: url )
-                        let alertController = UIAlertController( title: importFile.userName, message:
-                        """
-                        Import this user into Spectre or sign-in from its current location?
-                        """, preferredStyle: .alert )
-                        alertController.addAction( UIAlertAction( title: "Import", style: .default ) { _ in
-                            Marshal.shared.import( data: importData, viewController: viewController )
-                                          .failure { error in
-                                              mperror( title: "Couldn't import user", error: error )
-                                          }
-                                          .finally {
-                                              if securityScoped {
-                                                  url.stopAccessingSecurityScopedResource()
-                                              }
-                                          }
-                        } )
-                        alertController.addAction( UIAlertAction( title: "Sign In (In-Place)", style: .default ) { _ in
-                            UIAlertController.authenticate( userFile: importFile, title: importFile.userName, in: viewController, action: "Log In" )
-                                             .success {
-                                                 navigationController?.pushViewController(
-                                                         MainSitesViewController( user: $0 ), animated: true )
-                                             }
-                                             .failure { error in
-                                                 mperror( title: "Couldn't unlock user", error: error )
-                                             }
-                                             .finally {
-                                                 if securityScoped {
-                                                     url.stopAccessingSecurityScopedResource()
+                        let importFile = try Marshal.UserFile( data: importData, origin: url )
+
+                        DispatchQueue.main.perform {
+                            let alertController = UIAlertController( title: importFile.userName, message:
+                            """
+                            Import this user into Spectre or sign-in from its current location?
+                            """, preferredStyle: .alert )
+                            alertController.addAction( UIAlertAction( title: "Import", style: .default ) { _ in
+                                Marshal.shared.import( data: importData, viewController: viewController ).finishes( promise )
+                            } )
+                            alertController.addAction( UIAlertAction( title: "Sign In (In-Place)", style: .default ) { _ in
+                                UIAlertController.authenticate( userFile: importFile, title: importFile.userName,
+                                                                action: "Log In", in: viewController )
+                                                 .success( on: .main ) {
+                                                     navigationController?.pushViewController(
+                                                             MainSitesViewController( user: $0 ), animated: true )
                                                  }
-                                             }
-                        } )
-                        alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                            if securityScoped {
-                                url.stopAccessingSecurityScopedResource()
-                            }
-                        } )
-                        viewController.present( alertController, animated: true )
+                                                 .promise { _ in importFile }
+                                                 .finishes( promise )
+                            } )
+                            alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                                promise.finish( .failure( AppError.cancelled ) )
+                            } )
+                            viewController.present( alertController, animated: true )
+                        }
                     }
                     catch {
-                        mperror( title: "Couldn't open import", error: error )
-                        if securityScoped {
-                            url.stopAccessingSecurityScopedResource()
-                        }
+                        promise.finish( .failure( error ) )
                     }
                 }
                 if let error = error {
-                    mperror( title: "Couldn't access import", error: error )
+                    promise.finish( .failure( error ) )
                 }
                 return true
             }
 
             wrn( "Import UTI not supported. [>PII]" )
-            pii( "[>] %@: %@", url, utis )
+            pii( "[>] URL: %@, UTIs: %@", url, utis )
         }
         else {
             wrn( "Open URL not supported. [>PII]" )
-            pii( "[>] %@", url )
+            pii( "[>] URL: %@", url )
         }
 
         return false
@@ -317,6 +212,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         wrn( "Couldn't register for remote notifications. [>PII]" )
-        pii( "[>] %@", error )
+        pii( "[>] Error: %@", error )
     }
 }

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-06-07.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -20,19 +20,19 @@ infix operator =>: MultiplicationPrecedence
 
 // Level 1: Obtain a property path to object O's key path K.
 
-func =><E: NSObject, V>(target: E, keyPath: KeyPath<E, V>)
+func => <E: NSObject, V>(target: E, keyPath: KeyPath<E, V>)
                 -> PropertyPath<E, V> {
     find( propertyPath: PropertyPath( target: target, nonnullKeyPath: keyPath, nullableKeyPath: nil, attribute: nil ),
           identity: target, keyPath )
 }
 
-func =><E: NSObject, V>(target: E, keyPath: KeyPath<E, V?>)
+func => <E: NSObject, V>(target: E, keyPath: KeyPath<E, V?>)
                 -> PropertyPath<E, V> {
     find( propertyPath: PropertyPath( target: target, nonnullKeyPath: nil, nullableKeyPath: keyPath, attribute: nil ),
           identity: target, keyPath )
 }
 
-func =><E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, attribute: NSAttributedString.Key)
+func => <E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, attribute: NSAttributedString.Key)
                 -> PropertyPath<E, NSAttributedString> {
     find( propertyPath: PropertyPath( target: propertyPath.target!, nonnullKeyPath: propertyPath.nonnullKeyPath,
                                       nullableKeyPath: propertyPath.nullableKeyPath, attribute: attribute ),
@@ -69,14 +69,14 @@ private class Identity: Equatable, Hashable {
         self.members.hash( into: &hasher )
     }
 
-    static func ==(lhs: Identity, rhs: Identity) -> Bool {
+    static func == (lhs: Identity, rhs: Identity) -> Bool {
         lhs.members.elementsEqual( rhs.members )
     }
 }
 
 // Level 2: Bind the property path to a property P.
 
-func =><E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
+func => <E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
     if let property = property {
         propertyPath.bind( property: property )
     }
@@ -85,7 +85,7 @@ func =><E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
     }
 }
 
-func =><E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
+func => <E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
     if let property = property {
         propertyPath.bind( property: property )
     }
@@ -94,7 +94,7 @@ func =><E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?)
     }
 }
 
-func =><E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
+func => <E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
     if let property = property {
         propertyPath.bind( property: property )
     }
@@ -202,14 +202,14 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
 
             if let value = value {
                 if attribute == .foregroundColor, let primaryColor = value as? UIColor {
-                    string.enumerateAttribute( .foregroundColor, in: NSRange( location: 0, length: string.length ) ) { value, range, stop in
+                    string.enumerateAttribute( .foregroundColor, in: NSRange( location: 0, length: string.length ) ) { value, range, _ in
                         if let value = value as? UIColor {
                             string.addAttribute( .foregroundColor, value: primaryColor.with( alpha: value.alpha ), range: range )
                         }
                     }
                 }
                 else if attribute == .strokeColor, let secondaryColor = value as? UIColor {
-                    string.enumerateAttribute( .strokeColor, in: NSRange( location: 0, length: string.length ) ) { value, range, stop in
+                    string.enumerateAttribute( .strokeColor, in: NSRange( location: 0, length: string.length ) ) { value, range, _ in
                         if let value = value as? UIColor,
                            (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
                             string.addAttribute( .foregroundColor, value: secondaryColor.with( alpha: value.alpha ), range: range )
@@ -491,7 +491,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         let tint        = AppearanceProperty<UIColor>() //! Control accents
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     var parent: Theme? {
         didSet {
@@ -581,7 +581,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         Theme.byPath[""] = self
     }
 
-    private init(path: String, pattern: ThemePattern? = nil, mood: String? = nil, override: ((Theme) -> ())? = nil) {
+    private init(path: String, pattern: ThemePattern? = nil, mood: String? = nil, override: ((Theme) -> Void)? = nil) {
         self.mood = mood
 
         var parent: Theme?
@@ -648,7 +648,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         hasher.combine( self.path )
     }
 
-    static func ==(lhs: Theme, rhs: Theme) -> Bool {
+    static func == (lhs: Theme, rhs: Theme) -> Bool {
         lhs.path == rhs.path
     }
 }

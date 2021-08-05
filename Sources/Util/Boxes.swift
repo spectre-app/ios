@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-10-29.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -34,22 +34,22 @@ public class WeakBox<E>: Equatable, CustomDebugStringConvertible {
         self.value = value
     }
 
-    public static func ==(lhs: WeakBox<E>, rhs: WeakBox<E>) -> Bool {
+    public static func == (lhs: WeakBox<E>, rhs: WeakBox<E>) -> Bool {
         lhs._value === rhs._value
     }
 
-    public static func ==(lhs: WeakBox<E>, rhs: E) -> Bool {
+    public static func == (lhs: WeakBox<E>, rhs: E) -> Bool {
         lhs._value === rhs as AnyObject
     }
 
-    public static func ==(lhs: WeakBox<E>, rhs: WeakBox<E>) -> Bool where E: Equatable {
+    public static func == (lhs: WeakBox<E>, rhs: WeakBox<E>) -> Bool where E: Equatable {
         guard let lhs = lhs.value, let rhs = rhs.value
         else { return false }
 
         return lhs == rhs
     }
 
-    public static func ==(lhs: WeakBox<E>, rhs: E) -> Bool where E: Equatable {
+    public static func == (lhs: WeakBox<E>, rhs: E) -> Bool where E: Equatable {
         lhs.value == rhs
     }
 }
@@ -68,14 +68,14 @@ extension WeakBox: Hashable where E: Hashable {
 
 public class LazyBox<E> {
     private let valueFactory:  () -> E?
-    private let valueDisposal: (E) -> ()
+    private let valueDisposal: (E) -> Void
     private var value: E? {
         didSet {
             oldValue.flatMap { self.valueDisposal( $0 ) }
         }
     }
 
-    public init(_ valueFactory: @escaping () -> E?, unset valueDisposal: @escaping (E) -> () = { _ in }) {
+    public init(_ valueFactory: @escaping () -> E?, unset valueDisposal: @escaping (E) -> Void = { _ in }) {
         self.valueFactory = valueFactory
         self.valueDisposal = valueDisposal
     }

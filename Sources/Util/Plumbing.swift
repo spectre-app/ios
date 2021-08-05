@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-11-09.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,20 +8,20 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
 // The va_list C type is incompatible with CVaListPointer on x86_64.
 // FIXME: https://bugs.swift.org/browse/SR-13779
 #if arch( x86_64 )
-typealias va_list_c = va_list
+typealias va_list_c = va_list // swiftlint:disable:this type_name
 #else
-typealias va_list_c = CVaListPointer?
+typealias va_list_c = CVaListPointer? // swiftlint:disable:this type_name
 #endif
 
 dynamic func property(of object: Any, withValue value: AnyObject) -> String? {
-    var mirror: Mirror? = Mirror.init( reflecting: object )
+    var mirror: Mirror? = Mirror( reflecting: object )
     while let mirror_ = mirror {
         if let child = mirror_.children.first( where: { $0.value as AnyObject? === value } ) {
             if child.label == nil {
@@ -35,32 +35,26 @@ dynamic func property(of object: Any, withValue value: AnyObject) -> String? {
     }
 
     var type: AnyClass? = type( of: object ) as? AnyClass
-    while (type != nil) {
+    while type != nil {
         var count: UInt32 = 0
 
-//        if let properties = class_copyPropertyList( type, &count ) {
-//            defer { free( properties ) }
-//
-//            for p in 0..<Int( count ) {
-//                if let propertyName = String.valid( property_getName( properties[p] ) ),
-//                   let propertyValue = self.value( forKey: propertyName ) as AnyObject?,
-//                   value === propertyValue {
-//                    return propertyName
-//                }
-//            }
-//        }
+        //let properties = UnsafeBufferPointer( start: class_copyPropertyList( type, &count ), count: Int( count ) )
+        //defer { properties.deallocate() }
+        //for property in properties {
+        //    if let propertyName = String.valid( property_getName( property ) ),
+        //       let propertyValue = self.value( forKey: propertyName ) as AnyObject?,
+        //       value === propertyValue {
+        //        return propertyName
+        //    }
+        //}
 
-        if let ivars = class_copyIvarList( type, &count ) {
-            defer { free( ivars ) }
-
-            for i in 0..<Int( count ) {
-                let ivar = ivars[i]
-
-                if let encoding = ivar_getTypeEncoding( ivar ), encoding.pointee == 64,
-                   value === object_getIvar( object, ivar ) as AnyObject? {
-                    return String.valid( ivar_getName( ivar ) )?
-                                 .replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
-                }
+        let ivars = UnsafeBufferPointer( start: class_copyIvarList( type, &count ), count: Int( count ) )
+        defer { ivars.deallocate() }
+        for ivar in ivars {
+            if let encoding = ivar_getTypeEncoding( ivar ), encoding.pointee == 64,
+               value === object_getIvar( object, ivar ) as AnyObject? {
+                return String.valid( ivar_getName( ivar ) )?
+                             .replacingOccurrences( of: ".*_\\$_", with: "", options: .regularExpression )
             }
         }
 
@@ -83,12 +77,10 @@ extension NSObject {
         while let type = type_ {
             description += "\(type):\n"
             var count: UInt32 = 0
-            guard let ivars = class_copyIvarList( type, &count )
-            else { break }
-            defer { free( ivars ) }
+            let ivars         = UnsafeBufferPointer( start: class_copyIvarList( type, &count ), count: Int( count ) )
+            defer { ivars.deallocate() }
 
-            for i in 0..<Int( count ) {
-                let ivar = ivars[i]
+            for ivar in ivars {
                 if let iname = String.valid( ivar_getName( ivar ) ) {
                     let ival = String.valid( ivar_getTypeEncoding( ivar ) ) == "@" ? object_getIvar( self, ivar ) as AnyObject?: nil
                     description += " - \(iname): \(String( reflecting: ival ))\n"

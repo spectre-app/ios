@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-03-24.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -19,7 +19,7 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
 
     var isContentScrollable = true
 
-    // MARK: --- State ---
+    // MARK: - State
 
     override var user: User? {
         didSet {
@@ -27,7 +27,7 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
         }
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,7 +85,7 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
                         - 8 )
     }
 
-    // MARK: --- UITextFieldDelegate ---
+    // MARK: - UITextFieldDelegate
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()

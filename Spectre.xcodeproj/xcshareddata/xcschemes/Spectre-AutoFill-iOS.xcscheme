@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DA0E5529250D6F7F002B3AB1"
-               BuildableName = "Spectre AutoFill.appex"
+               BuildableName = "Spectre-AutoFill.appex"
                BlueprintName = "Spectre-AutoFill"
                ReferencedContainer = "container:Spectre.xcodeproj">
             </BuildableReference>
@@ -92,7 +92,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DA0E5529250D6F7F002B3AB1"
-            BuildableName = "Spectre AutoFill.appex"
+            BuildableName = "Spectre-AutoFill.appex"
             BlueprintName = "Spectre-AutoFill"
             ReferencedContainer = "container:Spectre.xcodeproj">
          </BuildableReference>

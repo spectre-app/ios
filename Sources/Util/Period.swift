@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-08-18.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,11 +8,11 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
-var age_of_the_universe : Decimal = 14_000_000_000.0 * 356 * 24 * 3600
+var age_of_the_universe: Decimal = 14_000_000_000.0 * 356 * 24 * 3600
 
 enum Period {
     case hours(_ hours: Decimal), seconds(_ seconds: Decimal), zero

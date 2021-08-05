@@ -1,0 +1,33 @@
+line_length:
+  warning: 140
+  ignores_comments: true
+  ignores_interpolated_strings: true
+colon:
+  flexible_right_spacing: true
+type_name:
+  allowed_symbols: "_"
+  min_length: 1
+identifier_name:
+  allowed_symbols: "_"
+  min_length: 1
+switch_case_alignment:
+  indented_cases: true
+function_parameter_count: 8
+file_length: 1000
+type_body_length: 400
+large_tuple: 4
+cyclomatic_complexity:
+  warning: 15
+  ignores_case_statements: true
+function_body_length: 60
+trailing_comma:
+  mandatory_comma: true
+nesting:
+  type_level: 2
+disabled_rules:
+  - statement_position
+  - closure_parameter_position
+  - comment_spacing
+  - closing_brace # https://github.com/realm/SwiftLint/issues/3686
+  - opening_brace # https://youtrack.jetbrains.com/issue/OC-21982
+  - inert_defer # https://github.com/realm/SwiftLint/issues/3687

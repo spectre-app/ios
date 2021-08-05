@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-05-10.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,12 +8,12 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
 extension DispatchTime {
-    static func -(lhs: DispatchTime, rhs: DispatchTime) -> TimeInterval {
+    static func - (lhs: DispatchTime, rhs: DispatchTime) -> TimeInterval {
         TimeInterval( lhs.uptimeNanoseconds - rhs.uptimeNanoseconds ) / TimeInterval( NSEC_PER_SEC )
     }
 }
@@ -42,7 +42,8 @@ extension DispatchQueue {
      *   - its label is in the current thread's active labels.
      *   - its label matches the current dispatch queue's label.
      */
-    public func perform(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+    public func perform(deadline: DispatchTime? = nil, group: DispatchGroup? = nil,
+                        qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                         await: Bool = false, execute work: @escaping @convention(block) () -> Void) {
         let deadNow = deadline.flatMap { $0 <= DispatchTime.now() } ?? true
 
@@ -71,7 +72,8 @@ extension DispatchQueue {
         }
     }
 
-    private func run(deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+    private func run(deadline: DispatchTime? = nil, group: DispatchGroup? = nil,
+                     qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
                      work: @escaping @convention(block) () -> Void) {
         if let deadline = deadline {
             Thread.sleep( forTimeInterval: deadline - .now() )
@@ -93,7 +95,8 @@ extension DispatchQueue {
     }
 
     /** Performs the work synchronously, returning the work's result. */
-    public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows -> T {
+    public func await<T>(flags: DispatchWorkItemFlags = [], execute work: () throws -> T) rethrows
+                    -> T {
         if self.isActive {
             // Already in the queue's thread.
             let threadOwnsLabel = self.threadLabels.insert( self.label ).inserted
@@ -114,19 +117,24 @@ extension DispatchQueue {
 
     /** Performs work that yields a result. */
     public func promise<V>(_ promise: Promise<V> = Promise<V>(),
-                           deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
-                           execute work: @escaping () throws -> V) -> Promise<V> {
+                           deadline: DispatchTime? = nil, group: DispatchGroup? = nil,
+                           qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                           execute work: @escaping () throws -> V)
+                    -> Promise<V> {
         self.promising( promise, deadline: deadline, flags: flags, execute: { Promise( .success( try work() ) ) } )
     }
 
     /** Performs work that yields a promise. The promise finishes the given promise. */
     public func promising<V>(_ promise: Promise<V> = Promise<V>(),
-                             deadline: DispatchTime? = nil, group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
-                             execute work: @escaping () throws -> Promise<V>) -> Promise<V> {
+                             deadline: DispatchTime? = nil, group: DispatchGroup? = nil,
+                             qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [],
+                             execute work: @escaping () throws -> Promise<V>)
+                    -> Promise<V> {
         self.perform( deadline: deadline, group: group, qos: qos, flags: flags ) {
             do { try work().finishes( promise ) }
             catch Promise<V>.Interruption.postponed {
-                let _ = self.promising( promise, deadline: .now() + .milliseconds( 300 ), group: group, qos: qos, flags: flags, execute: work )
+                _ = self.promising( promise, deadline: .now() + .milliseconds( 300 ),
+                                    group: group, qos: qos, flags: flags, execute: work )
             }
             catch { promise.finish( .failure( error ) ) }
         }
@@ -163,7 +171,8 @@ public class Promise<V> {
 
     /** Submit the promised result, completing the promise for all that are awaiting it. */
     @discardableResult
-    public func finish(_ result: Result<V, Error>, maybe: Bool = false) -> Self {
+    public func finish(_ result: Result<V, Error>, maybe: Bool = false)
+                    -> Self {
         self.semaphore.await { () -> [(queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void)] in
             if maybe && self.result != nil {
                 return []
@@ -186,7 +195,8 @@ public class Promise<V> {
 
     /** When this promise is finished, submit its result to another promise, thereby also finishing the other promise. */
     @discardableResult
-    public func finishes(_ promise: Promise<V>) -> Self {
+    public func finishes(_ promise: Promise<V>)
+                    -> Self {
         self.then { (result: Result<V, Error>) in
             promise.finish( result )
         }
@@ -194,25 +204,29 @@ public class Promise<V> {
 
     /** When this promise fails, run the given block. */
     @discardableResult
-    public func success(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) -> Void) -> Self {
+    public func success(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) -> Void)
+                    -> Self {
         self.then( on: queue ) { if case .success(let value) = $0 { consumer( value ) } }
     }
 
     /** When this promise fails, run the given block. */
     @discardableResult
-    public func failure(on queue: DispatchQueue? = nil, _ consumer: @escaping (Error) -> Void) -> Self {
+    public func failure(on queue: DispatchQueue? = nil, _ consumer: @escaping (Error) -> Void)
+                    -> Self {
         self.then( on: queue ) { if case .failure(let error) = $0 { consumer( error ) } }
     }
 
     /** When this promise is finished, regardless of the result, run the given block. */
     @discardableResult
-    public func finally(on queue: DispatchQueue? = nil, _ consumer: @escaping () -> Void) -> Self {
+    public func finally(on queue: DispatchQueue? = nil, _ consumer: @escaping () -> Void)
+                    -> Self {
         self.then( on: queue ) { _ in consumer() }
     }
 
     /** When this promise is finished, consume its result with the given block. */
     @discardableResult
-    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void) -> Self {
+    public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void)
+                    -> Self {
         self.semaphore.await {
             if let result = self.result {
                 if queue?.isActive ?? true {
@@ -230,7 +244,8 @@ public class Promise<V> {
     }
 
     /** When this promise is finished, transform its successful result with the given block, yielding a new promise for the block's result. */
-    public func promise<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> V2) -> Promise<V2> {
+    public func promise<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> V2)
+                    -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -243,7 +258,8 @@ public class Promise<V> {
     }
 
     /** When this promise is finished, consume its result with the given block.  Return a new promise for the block's result. */
-    public func thenPromise<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> V2) -> Promise<V2> {
+    public func thenPromise<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> V2)
+                    -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -256,7 +272,8 @@ public class Promise<V> {
     }
 
     /** When this promise is finished, transform its successful result with the given block, yielding a new promise for the block. */
-    public func promising<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> Promise<V2>) -> Promise<V2> {
+    public func promising<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) throws -> Promise<V2>)
+                    -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -269,7 +286,8 @@ public class Promise<V> {
     }
 
     /** When this promise is finished, transform its result with the given block, yielding a new promise for the block. */
-    public func thenPromising<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> Promise<V2>) -> Promise<V2> {
+    public func thenPromising<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) throws -> Promise<V2>)
+                    -> Promise<V2> {
         let promise = Promise<V2>()
 
         self.then( on: queue, {
@@ -282,7 +300,8 @@ public class Promise<V> {
     }
 
     /** Return a new promise that finishes with a successful result of this promise or falls back to the result of the given promise. */
-    public func or(_ other: @autoclosure @escaping () -> Promise<V>) -> Promise<V> {
+    public func or(_ other: @autoclosure @escaping () -> Promise<V>)
+                    -> Promise<V> {
         self.thenPromising {
             switch $0 {
                 case .success:
@@ -294,17 +313,20 @@ public class Promise<V> {
     }
 
     /** Return a new promise that finishes after both this and the given promise have finished. */
-    public func and(_ other: Promise<V>) -> Promise<V> where V == Void {
+    public func and(_ other: Promise<V>)
+                    -> Promise<V> where V == Void {
         self.promising { other }
     }
 
     /** Return a new promise that combines the result of this and the given promise. */
-    public func and<V2>(_ other: Promise<V2>) -> Promise<(V, V2)> {
+    public func and<V2>(_ other: Promise<V2>)
+                    -> Promise<(V, V2)> {
         and( other, reducing: { ($0, $1) } )
     }
 
     /** Return a new promise that combines the result of this and the given promise. */
-    public func and<V2, V3>(_ other: Promise<V2>, reducing: @escaping (V, V2) -> V3) -> Promise<V3> {
+    public func and<V2, V3>(_ other: Promise<V2>, reducing: @escaping (V, V2) -> V3)
+                    -> Promise<V3> {
         let promise = Promise<V3>()
 
         self.then { result1 in
@@ -318,7 +340,8 @@ public class Promise<V> {
     }
 
     /** Obtain the result of this promise if it has already been submitted, or block the current thread until it is. */
-    public func await() throws -> V {
+    public func await() throws
+                    -> V {
         // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         let group = DispatchGroup()
         self.semaphore.await {
@@ -338,7 +361,11 @@ public class Promise<V> {
 }
 
 extension Collection {
+    /// A promise that always succeeds, once all the promises in this collection have completed, with a new collection of all of their results, in the same order as their respective promises in this collection.
     func flatten<V>() -> Promise<[Result<V, Error>]> where Self.Element == Promise<V> {
+        guard !self.isEmpty
+        else { return Promise( .success( [] ) ) }
+
         let promise = Promise<[Result<V, Error>]>()
         var results = [ Result<V, Error>? ]( repeating: nil, count: self.count )
         for (p, _promise) in self.enumerated() {
@@ -391,7 +418,8 @@ public class DispatchTask<V> {
      * The task is removed from the request queue as soon as the work begins.
      */
     @discardableResult
-    public func request(now: Bool = false, await: Bool = false) -> Promise<V> {
+    public func request(now: Bool = false, await: Bool = false)
+                    -> Promise<V> {
         self.requestQueue.await {
             if now && !self.requestRunning {
                 self.cancel()
@@ -416,7 +444,7 @@ public class DispatchTask<V> {
                     let result = try self.work()
                     self.requestQueue.await {
                         self.requestRunning = false
-                        let _ = requestPromise.finish( .success( result ), maybe: true )
+                        _ = requestPromise.finish( .success( result ), maybe: true )
                     }
                 }
                 catch Promise<V>.Interruption.postponed {
@@ -427,7 +455,7 @@ public class DispatchTask<V> {
                 catch {
                     self.requestQueue.await {
                         self.requestRunning = false
-                        let _ = requestPromise.finish( .failure( error ), maybe: true )
+                        _ = requestPromise.finish( .failure( error ), maybe: true )
                     }
                 }
             }
@@ -438,7 +466,8 @@ public class DispatchTask<V> {
                 self.requestPromise = nil
             }
 
-            self.workQueue.perform( deadline: now ? nil: self.deadline(), group: self.group, qos: self.qos, flags: self.flags, await: `await` ) {
+            self.workQueue.perform( deadline: now ? nil: self.deadline(), group: self.group,
+                                    qos: self.qos, flags: self.flags, await: `await` ) {
                 requestItem.perform()
             }
 

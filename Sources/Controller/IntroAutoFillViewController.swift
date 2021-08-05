@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2018-10-15.
 // Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 import UIKit
@@ -25,7 +25,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
         }
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     override func loadItems() -> [Item<User>] {
         [ ImageItem( title: "AutoFill 🅿︎", value: { _ in .icon( "⌨", withSize: 64 ) },
@@ -60,7 +60,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                     value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
                                 .addBehaviour( PremiumTapBehaviour() )
-                                .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+                                .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
                     ], axis: .vertical ),
 
                     // Step 2
@@ -90,7 +90,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                         } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { [unowned self] _ in
                                     self.autoFillState?.isEnabled ?? false
-                                } )
+                                } ),
                     ], axis: .vertical ),
 
                     // Step 4
@@ -104,7 +104,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                           value: { $0.autofill }, update: { $0.model?.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                                 .addBehaviour( PremiumTapBehaviour() )
-                                .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) )
+                                .addBehaviour( PremiumConditionalBehaviour( mode: .enables ) ),
                     ], axis: .vertical ),
                 ]
             } ),
@@ -139,13 +139,13 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
         ASCredentialIdentityStore.shared.getState { self.autoFillState = $0 }
     }
 
-    // MARK: --- UserObserver ---
+    // MARK: - UserObserver
 
     func didChange(user: User, at change: PartialKeyPath<User>) {
         self.setNeedsUpdate()
     }
 
-    // MARK: --- SiteObserver ---
+    // MARK: - SiteObserver
 
     func siteDidChange(_ site: Site, at change: PartialKeyPath<Site>) {
         if change == \Site.preview {
@@ -153,7 +153,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
         }
     }
 
-    // MARK: --- Updatable ---
+    // MARK: - Updatable
 
     override func doUpdate() {
         super.doUpdate()
@@ -167,7 +167,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
         }
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class LoginTypeItem: PickerItem<User, SpectreResultType, EffectResultTypeCell> {
         init() {

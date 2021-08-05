@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2019-07-05.
 // Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 import StoreKit
@@ -26,7 +26,7 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
         super.doTapped( item: item )
     }
 
-    // MARK: --- InAppFeatureObserver ---
+    // MARK: - InAppFeatureObserver
 
     func didChange(feature: InAppFeature) {
         guard case .premium = feature
@@ -48,7 +48,7 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObser
         InAppFeature.observers.register( observer: self )
     }
 
-    // MARK: --- InAppFeatureObserver ---
+    // MARK: - InAppFeatureObserver
 
     func didChange(feature: InAppFeature) {
         guard case .premium = feature
@@ -60,7 +60,7 @@ class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObser
 
 class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver, InAppStoreObserver, InAppFeatureObserver {
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -133,7 +133,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         ]
     }
 
-    // MARK: --- AppConfigObserver ---
+    // MARK: - AppConfigObserver
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         if change == \AppConfig.sandboxStore {
@@ -141,13 +141,13 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         }
     }
 
-    // MARK: --- InAppStoreObserver ---
+    // MARK: - InAppStoreObserver
 
     func didChange(store: AppStore, products: [SKProduct]) {
         self.setNeedsUpdate()
     }
 
-    // MARK: --- InAppFeatureObserver ---
+    // MARK: - InAppFeatureObserver
 
     func didChange(feature: InAppFeature) {
         guard case .premium = feature
@@ -156,7 +156,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         self.setNeedsUpdate()
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     class HeaderItem: ImageItem<Void> {
         init() {
@@ -183,7 +183,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
             cell.product = value
         }
 
-        // MARK: --- Types ---
+        // MARK: - Types
 
         class Cell: UITableViewCell {
             private lazy var buyButton = EffectButton( track: .subject( "premium.subscription", action: "subscribe",
@@ -212,7 +212,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                 }
             }
 
-            // MARK: --- Life ---
+            // MARK: - Life
 
             required init?(coder aDecoder: NSCoder) {
                 fatalError( "init(coder:) is not supported for this class" )

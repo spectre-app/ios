@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2021-03-22.
 // Copyright (c) 2021 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
@@ -37,10 +37,7 @@ class AutoFillConfigurationView: UIScrollView {
         self.messageLabel => \.textColor => Theme.current.color.secondary
         self.messageLabel.numberOfLines = 0
         self.messageLabel.textAlignment = .center
-        self.messageLabel.text =
-                """
-                To begin, activate the AutoFill setting for the Spectre user you want to use.
-                """
+        self.messageLabel.text = "To begin, activate the AutoFill setting for the Spectre user you want to use."
 
         self.step1Title => \.font => Theme.current.font.headline
         self.step1Title.numberOfLines = 0
@@ -73,17 +70,19 @@ class AutoFillConfigurationView: UIScrollView {
             self.stackView.addArrangedSubview( MarginView( space: CGSize( width: 4, height: 4 ) ) )
         }
         self.stackView.addArrangedSubview( self.step2Title )
-        let step2Steps = UIStackView( arrangedSubviews: [ MarginView( for: self.appImage, anchor: .center ),
-                                                          MarginView( for: UIImageView( image: .icon( "" ) ), anchor: .center ),
-                                                          MarginView( for: self.avatarImage, anchor: .center ) ],
-                                      alignment: .center, distribution: .fillEqually, spacing: 8 )
+        let step2Steps = UIStackView( arrangedSubviews: [
+            MarginView( for: self.appImage, anchor: .center ),
+            MarginView( for: UIImageView( image: .icon( "" ) ), anchor: .center ),
+            MarginView( for: self.avatarImage, anchor: .center ),
+        ], alignment: .center, distribution: .fillEqually, spacing: 8 )
         self.stackView.addArrangedSubview( step2Steps )
         self.stackView.addArrangedSubview( MarginView( space: CGSize( width: 4, height: 4 ) ) )
         self.stackView.addArrangedSubview( self.step3Title )
-        let step3Steps = UIStackView( arrangedSubviews: [ MarginView( for: self.userImage, anchor: .center ),
-                                                          MarginView( for: UIImageView( image: .icon( "" ) ), anchor: .center ),
-                                                          MarginView( for: self.autofillImage, anchor: .center ) ],
-                                      alignment: .center, distribution: .fillEqually, spacing: 8 )
+        let step3Steps = UIStackView( arrangedSubviews: [
+            MarginView( for: self.userImage, anchor: .center ),
+            MarginView( for: UIImageView( image: .icon( "" ) ), anchor: .center ),
+            MarginView( for: self.autofillImage, anchor: .center ),
+        ], alignment: .center, distribution: .fillEqually, spacing: 8 )
         self.stackView.addArrangedSubview( step3Steps )
 
         // - Hierarchy

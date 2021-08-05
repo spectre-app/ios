@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-09-13.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,7 +8,7 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import Foundation
 
@@ -46,12 +46,9 @@ public struct SpectreOperation {
         return self.token.promise { token in
             Feedback.shared.play( .trigger )
 
-            UIPasteboard.general.setItems(
-                    [ [ UIPasteboard.typeAutomatic: token ] ],
-                    options: [
-                        UIPasteboard.OptionsKey.localOnly: !AppConfig.shared.allowHandoff,
-                        UIPasteboard.OptionsKey.expirationDate: Date( timeIntervalSinceNow: 3 * 60 )
-                    ] )
+            UIPasteboard.general.setItemProviders(
+                    [ NSItemProvider( item: token as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
+                    localOnly: !AppConfig.shared.allowHandoff, expirationDate: Date( timeIntervalSinceNow: 3 * 60 ) )
             self.operand.use()
 
             AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
@@ -84,7 +81,7 @@ public struct SpectreOperation {
                         [ "result": $0.name,
                           "from": trackingFrom,
                           "action": "copy",
-                          "error": error.localizedDescription
+                          "error": error.localizedDescription,
                         ] )
             }
         }

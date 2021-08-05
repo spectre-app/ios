@@ -7,7 +7,7 @@ platform :ios do
   lane :archive do
     ensure_no_debug_code(text: "<<<<<<|WIP:", exclude_dirs: [".git", "fastlane"])
     #verify_xcode
-    #swiftlint
+    swiftlint
 
     build_app(scheme: "Spectre-iOS", include_symbols: true, include_bitcode: true, export_method: "ad-hoc" )
     verify_build

@@ -1,4 +1,4 @@
-//==============================================================================
+// =============================================================================
 // Created by Maarten Billemont on 2020-11-02.
 // Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
@@ -8,21 +8,21 @@
 // See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
 //
 // Note: this grant does not include any rights for use of Spectre's trademarks.
-//==============================================================================
+// =============================================================================
 
 import UIKit
 
 class PickerView: UICollectionView {
     let layout = PickerLayout()
 
-    // MARK: --- State ---
+    // MARK: - State
 
     override var intrinsicContentSize: CGSize {
         CGSize( width: UIView.noIntrinsicMetric,
                 height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
     }
 
-    // MARK: --- Life ---
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
@@ -36,7 +36,7 @@ class PickerView: UICollectionView {
         self.insetsLayoutMarginsFromSafeArea = false
     }
 
-    // MARK: --- Types ---
+    // MARK: - Types
 
     internal class PickerLayout: UICollectionViewLayout {
         private let spacing     = CGFloat( 12 )
@@ -50,13 +50,13 @@ class PickerView: UICollectionView {
             }
         }
 
-        // MARK: --- State ---
+        // MARK: - State
 
         override var collectionViewContentSize: CGSize {
             self.contentSize
         }
 
-        // MARK: --- Life ---
+        // MARK: - Life
 
         override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
             super.invalidateLayout( with: context )
@@ -117,43 +117,53 @@ class PickerView: UICollectionView {
         }
 
         override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
-                                             withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+                                             withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
+                        -> Bool {
             originalAttributes.size != preferredAttributes.size
         }
 
-        override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutInvalidationContext {
+        override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
+                                          withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
+                        -> UICollectionViewLayoutInvalidationContext {
             self.attributes[originalAttributes.representedElementCategory]?[originalAttributes.indexPath]?.size = preferredAttributes.size
             if !self.initialSize.keys.contains( originalAttributes.representedElementCategory ) {
                 self.initialSize[originalAttributes.representedElementCategory] = preferredAttributes.size
             }
 
-            return super.invalidationContext( forPreferredLayoutAttributes: preferredAttributes, withOriginalAttributes: originalAttributes )
+            return super.invalidationContext( forPreferredLayoutAttributes: preferredAttributes,
+                                              withOriginalAttributes: originalAttributes )
         }
 
-        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        override func layoutAttributesForElements(in rect: CGRect)
+                        -> [UICollectionViewLayoutAttributes]? {
             self.attributes.values.flatMap( { $0.values } ).filter( { rect.intersects( $0.frame ) } )
                                   .compactMap { self.effectiveLayoutAttributes( for: $0 ) }
         }
 
-        override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func layoutAttributesForItem(at indexPath: IndexPath)
+                        -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[indexPath] )
         }
 
-        override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath)
+                        -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[itemIndexPath] )
         }
 
-        override func layoutAttributesForDecorationView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func layoutAttributesForDecorationView(ofKind elementKind: String, at indexPath: IndexPath)
+                        -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.decorationView]?[indexPath] )
         }
 
-        override func initialLayoutAttributesForAppearingDecorationElement(ofKind elementKind: String, at decorationIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        override func initialLayoutAttributesForAppearingDecorationElement(ofKind elementKind: String, at decorationIndexPath: IndexPath)
+                        -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.decorationView]?[decorationIndexPath] )
         }
 
-        // MARK: --- Private ---
+        // MARK: - Private
 
-        private func effectiveLayoutAttributes(for attributes: UICollectionViewLayoutAttributes?) -> UICollectionViewLayoutAttributes? {
+        private func effectiveLayoutAttributes(for attributes: UICollectionViewLayoutAttributes?)
+                        -> UICollectionViewLayoutAttributes? {
             guard let attributes = attributes
             else { return nil }
 
@@ -176,7 +186,9 @@ class PickerView: UICollectionView {
             self => \.backgroundColor => Theme.current.color.mute
         }
 
-        override func systemLayoutSizeFitting(_ targetSize: CGSize, withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority) -> CGSize {
+        override func systemLayoutSizeFitting(
+                _ targetSize: CGSize, withHorizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority)
+                        -> CGSize {
             CGSize( width: 1, height: targetSize.height )
         }
     }
