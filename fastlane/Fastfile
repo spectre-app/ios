@@ -131,7 +131,7 @@ platform :ios do
     )
 
     # Complete and collect release notes from asynchronous process.
-    notes_thread.join
+    notes_thread.value
     notes = File.read( notes )
 
     # Pause until user has tested build on device and confirmed it is healthy.
@@ -171,6 +171,7 @@ platform :ios do
     )
     download_dsyms(
       wait_for_dsym_processing: true,
+      build_number: lane_context[SharedValues::BUILD_NUMBER],
     )
     sentry_upload_dif(
       include_sources: true,
@@ -183,7 +184,7 @@ platform :ios do
 
     # Complete and verify Xcode verification from asynchronous process.
     UI.message "Xcode verification..."
-    verify_xcode_thread.join.call or
+    verify_xcode_thread.value.call or
       UI.abort_with_message! "Xcode couldn't be verified. DO NOT SHIP THIS BUILD!"
   end
 end
