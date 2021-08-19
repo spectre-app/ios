@@ -355,7 +355,7 @@ public enum AppIcon: String, CaseIterable {
     static let primary = AppIcon.iconLight
     static var current: AppIcon {
         #if TARGET_APP
-        allCases.first( where: { $0.rawValue == UIApplication.shared.alternateIconName } ) ?? .primary
+        self.allCases.first( where: { $0.rawValue == UIApplication.shared.alternateIconName } ) ?? .primary
         #else
         AppConfig.shared.appIcon
         #endif
@@ -367,12 +367,14 @@ public enum AppIcon: String, CaseIterable {
 
     #if TARGET_APP
     func activate() {
-        UIApplication.shared.setAlternateIconName( self == .primary ? nil: self.rawValue ) { error in
-            if let error = error {
-                mperror( title: "Couldn't change app icon.", error: error )
-            }
-            else {
-                AppConfig.shared.appIcon = self
+        DispatchQueue.main.perform {
+            UIApplication.shared.setAlternateIconName( self == .primary ? nil: self.rawValue ) { error in
+                if let error = error {
+                    mperror( title: "Couldn't change app icon.", error: error )
+                }
+                else {
+                    AppConfig.shared.appIcon = self
+                }
             }
         }
     }

@@ -244,6 +244,10 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                         title: "Application Logos",
                         values: { _ in AppIcon.allCases }, value: { _ in .current }, update: { $1.activate() },
                         caption: { _ in "Pick your favourite home screen icon for \(productName)." } )
+
+            self.addBehaviour( ConditionalBehaviour( effect: .reveals ) { _ in
+                UIApplication.shared.supportsAlternateIcons
+            } )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: AppIcon) {

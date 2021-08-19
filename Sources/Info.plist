@@ -55,8 +55,6 @@
 				<array>
 					<string>Dark Icon60x60</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Dark Icon</string>
 			</dict>
 			<key>Dark Logo</key>
 			<dict>
@@ -64,8 +62,6 @@
 				<array>
 					<string>Dark Logo60x60</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Dark Logo</string>
 			</dict>
 			<key>Light Icon</key>
 			<dict>
@@ -73,8 +69,6 @@
 				<array>
 					<string>Light Icon60x60</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Light Icon</string>
 			</dict>
 			<key>Light Logo</key>
 			<dict>
@@ -82,8 +76,6 @@
 				<array>
 					<string>Light Logo60x60</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Light Logo</string>
 			</dict>
 		</dict>
 		<key>CFBundlePrimaryIcon</key>
@@ -107,8 +99,6 @@
 					<string>Dark Icon60x60</string>
                                         <string>Dark Icon76x76</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Dark Icon</string>
 			</dict>
 			<key>Dark Logo</key>
 			<dict>
@@ -117,8 +107,6 @@
 					<string>Dark Logo60x60</string>
                                         <string>Dark Logo76x76</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Dark Logo</string>
 			</dict>
 			<key>Light Icon</key>
 			<dict>
@@ -127,8 +115,6 @@
 					<string>Light Icon60x60</string>
                                         <string>Light Icon76x76</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Light Icon</string>
 			</dict>
 			<key>Light Logo</key>
 			<dict>
@@ -137,8 +123,6 @@
 					<string>Light Logo60x60</string>
                                         <string>Light Logo76x76</string>
 				</array>
-				<key>CFBundleIconName</key>
-				<string>Light Logo</string>
 			</dict>
 		</dict>
 		<key>CFBundlePrimaryIcon</key>

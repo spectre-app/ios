@@ -118,6 +118,15 @@
 		93D39F719CD8B096D7F68E64 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169D757760D11F5D3E4 /* CarouselView.swift */; };
 		93D39FD2F39B2AFE27A88A97 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* Secrets.swift */; };
 		93D39FF336ACC2C451C5CFB2 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169D757760D11F5D3E4 /* CarouselView.swift */; };
+		DA07B1F926CE02A300AC5C1A /* Light Logo60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B1F126CE02A300AC5C1A /* Light Logo60x60@3x.png */; };
+		DA07B1FA26CE02A300AC5C1A /* Light Logo60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B1F226CE02A300AC5C1A /* Light Logo60x60@2x.png */; };
+		DA07B1FC26CE02A300AC5C1A /* Dark Logo60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B1F426CE02A300AC5C1A /* Dark Logo60x60@2x.png */; };
+		DA07B1FD26CE02A300AC5C1A /* Dark Icon60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B1F526CE02A300AC5C1A /* Dark Icon60x60@3x.png */; };
+		DA07B1FE26CE02A300AC5C1A /* Dark Logo60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B1F626CE02A300AC5C1A /* Dark Logo60x60@3x.png */; };
+		DA07B1FF26CE02A300AC5C1A /* Dark Icon60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B1F726CE02A300AC5C1A /* Dark Icon60x60@2x.png */; };
+		DA07B20A26CE90B100AC5C1A /* Dark Icon76x76.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B20726CE90B100AC5C1A /* Dark Icon76x76.png */; };
+		DA07B20B26CE90B100AC5C1A /* Light Logo76x76.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B20826CE90B100AC5C1A /* Light Logo76x76.png */; };
+		DA07B20C26CE90B100AC5C1A /* Dark Logo76x76.png in Resources */ = {isa = PBXBuildFile; fileRef = DA07B20926CE90B100AC5C1A /* Dark Logo76x76.png */; };
 		DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
 		DA0E5566251022EB002B3AB1 /* spectre-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */; };
 		DA0E5567251022EB002B3AB1 /* spectre-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* spectre-types.c */; };
@@ -427,6 +436,15 @@
 		93D39FA96542FB5CD60278E4 /* AvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarCell.swift; sourceTree = "<group>"; };
 		93D39FFBAB0E1072779FE7D2 /* TipsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TipsView.swift; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		DA07B1F126CE02A300AC5C1A /* Light Logo60x60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Light Logo60x60@3x.png"; sourceTree = "<group>"; };
+		DA07B1F226CE02A300AC5C1A /* Light Logo60x60@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Light Logo60x60@2x.png"; sourceTree = "<group>"; };
+		DA07B1F426CE02A300AC5C1A /* Dark Logo60x60@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Dark Logo60x60@2x.png"; sourceTree = "<group>"; };
+		DA07B1F526CE02A300AC5C1A /* Dark Icon60x60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Dark Icon60x60@3x.png"; sourceTree = "<group>"; };
+		DA07B1F626CE02A300AC5C1A /* Dark Logo60x60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Dark Logo60x60@3x.png"; sourceTree = "<group>"; };
+		DA07B1F726CE02A300AC5C1A /* Dark Icon60x60@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Dark Icon60x60@2x.png"; sourceTree = "<group>"; };
+		DA07B20726CE90B100AC5C1A /* Dark Icon76x76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Dark Icon76x76.png"; sourceTree = "<group>"; };
+		DA07B20826CE90B100AC5C1A /* Light Logo76x76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Light Logo76x76.png"; sourceTree = "<group>"; };
+		DA07B20926CE90B100AC5C1A /* Dark Logo76x76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Dark Logo76x76.png"; sourceTree = "<group>"; };
 		DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre-AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0E5532250D6F7F002B3AB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AutoFill.entitlements; sourceTree = "<group>"; };
@@ -1000,10 +1018,19 @@
 		DACA23B41705DF7D002C6C22 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				DA762FB324E04F5400E61D3F /* Assets.xcassets */,
 				DACA29701705E1A8002C6C22 /* Data */,
 				DA762F5624E04F2E00E61D3F /* Fonts */,
+				DA762FB324E04F5400E61D3F /* Assets.xcassets */,
 				DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */,
+				DA07B1F726CE02A300AC5C1A /* Dark Icon60x60@2x.png */,
+				DA07B1F526CE02A300AC5C1A /* Dark Icon60x60@3x.png */,
+				DA07B20726CE90B100AC5C1A /* Dark Icon76x76.png */,
+				DA07B1F426CE02A300AC5C1A /* Dark Logo60x60@2x.png */,
+				DA07B1F626CE02A300AC5C1A /* Dark Logo60x60@3x.png */,
+				DA07B20926CE90B100AC5C1A /* Dark Logo76x76.png */,
+				DA07B1F226CE02A300AC5C1A /* Light Logo60x60@2x.png */,
+				DA07B1F126CE02A300AC5C1A /* Light Logo60x60@3x.png */,
+				DA07B20826CE90B100AC5C1A /* Light Logo76x76.png */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -1307,19 +1334,28 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA07B1FA26CE02A300AC5C1A /* Light Logo60x60@2x.png in Resources */,
 				DA762FB624E0C58700E61D3F /* Poppins-VF.otf in Resources */,
+				DA07B20C26CE90B100AC5C1A /* Dark Logo76x76.png in Resources */,
 				DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */,
 				DAAEDE1925E1DF5500E78F79 /* Font Awesome 6 Duotone-Solid-900.otf in Resources */,
 				DA762FB124E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf in Resources */,
+				DA07B1FF26CE02A300AC5C1A /* Dark Icon60x60@2x.png in Resources */,
 				DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */,
 				DAAEDE1F25E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf in Resources */,
 				DAAEDE1D25E1DF5500E78F79 /* Font Awesome 6 Pro-Light-300.otf in Resources */,
+				DA07B1F926CE02A300AC5C1A /* Light Logo60x60@3x.png in Resources */,
 				DAAEDE1B25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
 				DA4563D7265623D600911BFF /* public-suffix-list.txt in Resources */,
 				DAAEDE1725E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */,
+				DA07B20B26CE90B100AC5C1A /* Light Logo76x76.png in Resources */,
 				DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */,
+				DA07B1FC26CE02A300AC5C1A /* Dark Logo60x60@2x.png in Resources */,
+				DA07B20A26CE90B100AC5C1A /* Dark Icon76x76.png in Resources */,
 				DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */,
 				DAAEDE2125E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */,
+				DA07B1FD26CE02A300AC5C1A /* Dark Icon60x60@3x.png in Resources */,
+				DA07B1FE26CE02A300AC5C1A /* Dark Logo60x60@3x.png in Resources */,
 				DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
