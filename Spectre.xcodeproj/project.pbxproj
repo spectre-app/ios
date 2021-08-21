@@ -92,6 +92,7 @@
 		93D39B58BB6046893F274C8D /* DetailAppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3982288CE686F671A3201 /* DetailAppViewController.swift */; };
 		93D39B8F8BF7332B92508EF5 /* UIKit+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39678996DB28C71E799DC /* UIKit+SVG.swift */; };
 		93D39BBE1211113524BCBF9D /* EffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39203C899BA783F02D3B5 /* EffectView.swift */; };
+		93D39BCA1775D5E6B5E179EC /* Migration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39C222BD60B2B12FD6993 /* Migration.swift */; };
 		93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39A6EC596E8AE5D8F8714 /* Debug.swift */; };
 		93D39BED3DFB61513B0D015D /* MainUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */; };
 		93D39C05281D4E4CB11F07AC /* SpectreOperand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* SpectreOperand.swift */; };
@@ -413,6 +414,7 @@
 		93D39B9FF1B86CB5A5629BC0 /* InnerShadowLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InnerShadowLayer.swift; sourceTree = "<group>"; };
 		93D39BAACC08C85F91D1C5C2 /* Graph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
 		93D39BEF8D21F9BC5C3A9F16 /* MainUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainUsersViewController.swift; sourceTree = "<group>"; };
+		93D39C222BD60B2B12FD6993 /* Migration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Migration.swift; sourceTree = "<group>"; };
 		93D39C3FA9FA2CA5B234741E /* AppConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		93D39C43561D9C1E06BD1CD7 /* AutoFillBaseUsersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoFillBaseUsersViewController.swift; sourceTree = "<group>"; };
 		93D39C870A4BDC6A404826C2 /* EffectResultTypeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectResultTypeCell.swift; sourceTree = "<group>"; };
@@ -701,6 +703,7 @@
 				93D3944D27B033E791F675BB /* Resources.swift */,
 				93D39678996DB28C71E799DC /* UIKit+SVG.swift */,
 				93D39F0632093A9E2EFB2538 /* Action.swift */,
+				93D39C222BD60B2B12FD6993 /* Migration.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1593,6 +1596,7 @@
 				93D391EEF73AB6E099886CBE /* InnerShadowLayer.swift in Sources */,
 				93D3923A080784DFE3AF463E /* UIKit+SVG.swift in Sources */,
 				93D39A40794F195269B9459F /* Action.swift in Sources */,
+				93D39BCA1775D5E6B5E179EC /* Migration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

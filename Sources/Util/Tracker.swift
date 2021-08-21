@@ -347,6 +347,7 @@ class Tracker: AppConfigObserver {
                 countlyConfig.deviceID = self.identifierForOwner
                 countlyConfig.features = [ CLYFeature.pushNotifications ]
                 countlyConfig.enablePerformanceMonitoring = true
+                //countlyConfig.enableDebug = true
                 countlyConfig.pushTestMode = [
                     .private: .development, .pilot: .testFlightOrAdHoc, .public: nil,
                 ][AppConfig.shared.configuration] ?? .development

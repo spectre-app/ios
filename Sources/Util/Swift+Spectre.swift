@@ -250,6 +250,39 @@ extension String {
         self.isEmpty ? nil: self
     }
 
+    public func isVersionOutdated(by other: String) -> Bool {
+        let selfComponents  = self.components( separatedBy: "." )
+        let otherComponents = other.components( separatedBy: "." )
+        for c in 0..<max( otherComponents.count, selfComponents.count ) {
+            if c < otherComponents.count && c < selfComponents.count {
+                let otherComponent = (otherComponents[c] as NSString).integerValue
+                let selfComponent  = (selfComponents[c] as NSString).integerValue
+                if otherComponent > selfComponent {
+                    // Other version component higher than this, this is outdated.
+                    return true
+                }
+                else if otherComponent < selfComponent {
+                    // Other version component lower than this, this is more recent.
+                    return false
+                }
+
+                // Components match, check next component.
+                continue
+            }
+            else if otherComponents.count > selfComponents.count {
+                // Other version has more components than this and prior components were identical, this outdated.
+                return true
+            }
+            else {
+                // Build version has more components than other and prior components were identical, this is more recent.
+                return false
+            }
+        }
+
+        // Both versions have identical components, this is up to date.
+        return false
+    }
+
     public func name(style: PersonNameComponentsFormatter.Style) -> String {
         let formatter = PersonNameComponentsFormatter()
         formatter.style = style
