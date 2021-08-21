@@ -172,32 +172,9 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             guard let storeVersion = metadata["version"] as? String
             else { throw AppError.state( title: "Missing version in iTunes metadata" ) }
 
-            let buildVersion    = buildVersion ?? productVersion
-            let buildComponents = buildVersion.components( separatedBy: "." )
-            let storeComponents = storeVersion.components( separatedBy: "." )
-            for c in 0..<max( storeComponents.count, buildComponents.count ) {
-                if c < storeComponents.count && c < buildComponents.count {
-                    let storeComponent = (storeComponents[c] as NSString).integerValue
-                    let buildComponent = (buildComponents[c] as NSString).integerValue
-                    if storeComponent > buildComponent {
-                        // Store version component higher than build, build is outdated.
-                        return (upToDate: false, buildVersion: buildVersion, storeVersion: storeVersion)
-                    }
-                    else if storeComponent < buildComponent {
-                        // Store version component lower than build, build is more recent.
-                        return (upToDate: true, buildVersion: buildVersion, storeVersion: storeVersion)
-                    }
-                }
-                else if storeComponents.count > buildComponents.count {
-                    // Store version has more components than build and prior components were identical, build outdated.
-                    return (upToDate: false, buildVersion: buildVersion, storeVersion: storeVersion)
-                }
-                else {
-                    return (upToDate: true, buildVersion: buildVersion, storeVersion: storeVersion)
-                }
-            }
-
-            return (upToDate: true, buildVersion: buildVersion, storeVersion: storeVersion)
+            let buildVersion = buildVersion ?? productVersion
+            return (upToDate: !buildVersion.isVersionOutdated( by: storeVersion ),
+                    buildVersion: buildVersion, storeVersion: storeVersion)
         }
     }
 
