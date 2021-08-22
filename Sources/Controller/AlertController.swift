@@ -12,6 +12,7 @@
 
 import UIKit
 
+#if TARGET_APP
 extension AlertController {
     static func showChange(to site: Site, in viewController: UIViewController, by operation: () throws -> Void) rethrows {
         let oldSite = site.copy()
@@ -49,6 +50,7 @@ extension AlertController {
         } ).show( in: viewController.view )
     }
 }
+#endif
 
 class AlertController {
     // The view owns the AlertController instead of the other way around since the controller's lifetime depends on the alert presence in the view.

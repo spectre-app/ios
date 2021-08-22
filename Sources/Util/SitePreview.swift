@@ -13,6 +13,7 @@
 import Foundation
 #if TARGET_APP
 import SwiftLinkPreview
+import UIKit
 #endif
 
 class SitePreview: Equatable {
@@ -37,9 +38,11 @@ class SitePreview: Equatable {
         }
     }
     var data:  PreviewData
+    #if TARGET_APP
     var image: UIImage? {
         self.data.image
     }
+    #endif
     var color: UIColor? {
         self.data.color?.uiColor
     }
@@ -56,7 +59,9 @@ class SitePreview: Equatable {
 
         // If a preview exists on disk, use it.
         do {
-            if let previewFile = SitePreview.previewFile( for: previewName ), FileManager.default.fileExists( atPath: previewFile.path ) {
+            if let previewFile = SitePreview.previewDataFile( for: previewName ),
+               FileManager.default.fileExists( atPath: previewFile.path ) {
+                UIPasteboard.general.string = try String( contentsOf: previewFile )
                 return SitePreview( name: previewName, url: url, data:
                 try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewFile ) ) )
             }
@@ -76,7 +81,7 @@ class SitePreview: Equatable {
         self.data = data
 
         SitePreview.semaphore.await {
-            SitePreview.previews.setObject( self, forKey: name as NSString, cost: self.data.imageData?.count ?? 0 )
+            SitePreview.previews.setObject( self, forKey: name as NSString, cost: self.data.imageSize )
         }
     }
 
@@ -88,8 +93,12 @@ class SitePreview: Equatable {
 
     // MARK: - Private
 
-    private static func previewFile(for previewName: String) -> URL? {
+    fileprivate static func previewDataFile(for previewName: String) -> URL? {
         FileManager.groupCaches?.appendingPathComponent( "preview-\(previewName)" ).appendingPathExtension( "json" )
+    }
+
+    fileprivate static func previewImageFile(for previewName: String) -> URL? {
+        FileManager.groupCaches?.appendingPathComponent( "preview-\(previewName)" ).appendingPathExtension( "image" )
     }
 
     #if TARGET_APP
@@ -114,9 +123,9 @@ class SitePreview: Equatable {
             }
 
             // If a preview exists with identical metadata and a known image < 30 days old, don't refresh it yet.
-            if self.name == self.data.siteName, self.url == self.data.imageURL,
+            if self.name == self.data.siteName, self.url == self.data.siteURL,
                let date = self.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
-                //dbg( "[preview cached] %@: %d", self.url, self.data.imageData?.count ?? 0 )
+                //dbg( "[preview cached] %@: %d", self.url, self.data.imageSize )
                 return Promise( .success( false ) )
             }
 
@@ -151,10 +160,10 @@ class SitePreview: Equatable {
                         }
 
                         SitePreview.semaphore.await {
-                            SitePreview.previews.setObject( self, forKey: self.name as NSString, cost: self.data.imageData?.count ?? 0 )
+                            SitePreview.previews.setObject( self, forKey: self.name as NSString, cost: self.data.imageSize )
                         }
 
-                        if let previewFile = SitePreview.previewFile( for: self.name ) {
+                        if let previewFile = SitePreview.previewDataFile( for: self.name ) {
                             try JSONEncoder().encode( self.data ).write( to: previewFile )
                         }
 
@@ -239,17 +248,20 @@ struct PreviewData: Codable, Equatable {
     var siteURL:   String?
     var imageURL:  String?
     var imageDate: Date?
-    var imageData: Data? {
+    var imageSize: Int = 0
+
+    #if TARGET_APP
+    lazy var image: UIImage? = UIImage.load( data: self.imageData )
+    lazy var imageData: Data? = SitePreview.previewImageFile( for: self.siteName ).flatMap { try? Data( contentsOf: $0 ) } {
         didSet {
-            guard oldValue != self.imageData
+            guard let imageData = self.imageData, oldValue != imageData
             else { return }
 
             // Load image pixels and convert the color space and pixel format to a known format.
-            self.image = UIImage.load( data: self.imageData )
+            self.image = UIImage.load( data: imageData )
             guard let cgImage = self.image?.cgImage,
                   let cgContext = CGContext( data: nil, width: Int( cgImage.width ), height: Int( cgImage.height ),
-                                             bitsPerComponent: 8, bytesPerRow: 0,
-                                             space: CGColorSpaceCreateDeviceRGB(),
+                                             bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
                                              bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue )
             else { return }
             cgContext.draw( cgImage, in: CGRect( x: 0, y: 0, width: cgImage.width, height: cgImage.height ) )
@@ -275,9 +287,17 @@ struct PreviewData: Codable, Equatable {
             if let color = sorted.first?.key {
                 self.color = color
             }
+
+            do {
+                try SitePreview.previewImageFile( for: self.siteName ).flatMap { try imageData.write( to: $0 ) }
+            }
+            catch {
+                wrn( "Couldn't save site preview image. [>PII]" )
+                pii( "[>] %@: error: %@", self.siteName, error )
+            }
         }
     }
-    lazy var image: UIImage? = UIImage.load( data: self.imageData )
+    #endif
 }
 
 struct ColorData: Codable, Equatable, Hashable {

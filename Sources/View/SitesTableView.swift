@@ -160,6 +160,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     private var previewEvents = [ IndexPath: Tracker.TimedEvent ]()
 
+    #if TARGET_APP
     @available( iOS 13, * )
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint)
                     -> UIContextMenuConfiguration? {
@@ -216,6 +217,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         parameters.backgroundColor = self.sitesDataSource.element( at: indexPath )?.site.preview.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
+    #endif
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.sitesDataSource.selectedItem = self.sitesDataSource.element( at: self.indexPathForSelectedRow )
@@ -689,6 +691,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 self.backgroundImage.imageColor = nil
             }
 
+            #if TARGET_APP
             if self.isSelected {
                 self.backgroundImage.alpha = .on
                 self.backgroundImage.image = self.site?.preview.image
@@ -702,6 +705,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     }
                 } )
             }
+            #else
+            self.backgroundImage.alpha = self.isSelected ? .on: .off
+            #endif
 
             let isNew = self.site?.isNew ?? false
             if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {

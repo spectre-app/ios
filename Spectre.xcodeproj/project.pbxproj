@@ -20,7 +20,6 @@
 		93D3918582CE0B4B775ACBFB /* AutoFill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D390CB091CCF46AF6EAB4C /* AutoFill.swift */; };
 		93D391E2A56BA0C4D8E05D25 /* DetailUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D394B019A4203EF763DBEA /* DetailUserViewController.swift */; };
 		93D391EEF73AB6E099886CBE /* InnerShadowLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B9FF1B86CB5A5629BC0 /* InnerShadowLayer.swift */; };
-		93D392050A549F9463E51472 /* SitePreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D398124AA304872DCE8C26 /* SitePreviewController.swift */; };
 		93D39216BF04B39B4E90B8D6 /* Boxes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D393E2C339F220532F1D53 /* Boxes.swift */; };
 		93D39216C0E8F79F5F06734B /* TipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39FFBAB0E1072779FE7D2 /* TipsView.swift */; };
 		93D3923A080784DFE3AF463E /* UIKit+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39678996DB28C71E799DC /* UIKit+SVG.swift */; };
@@ -225,7 +224,6 @@
 		DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
 		DA762FB624E0C58700E61D3F /* Poppins-VF.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB524E0C58700E61D3F /* Poppins-VF.otf */; };
 		DAA0EDFF25E5861B00533479 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
-		DAA0EE1825E93A2F00533479 /* DialogSiteChangedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39F07F476561A92814C4C /* DialogSiteChangedViewController.swift */; };
 		DAA0EE1B25E93A6100533479 /* DialogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39CCF90A49C099A05280B /* DialogViewController.swift */; };
 		DAA449D21EEC4B5800E7BDD5 /* spectre-marshal.c in Sources */ = {isa = PBXBuildFile; fileRef = DAA449D01EEC4B5800E7BDD5 /* spectre-marshal.c */; };
 		DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
@@ -1445,7 +1443,6 @@
 				DA0E55AA2510E9BB002B3AB1 /* ItemViews.swift in Sources */,
 				DA0E55BC2510E9BB002B3AB1 /* EffectResultTypeCell.swift in Sources */,
 				DA0E558D2510E985002B3AB1 /* Foundation+Spectre.swift in Sources */,
-				DAA0EE1825E93A2F00533479 /* DialogSiteChangedViewController.swift in Sources */,
 				DA0E55992510E985002B3AB1 /* Keychain.swift in Sources */,
 				DA0E556D251022EB002B3AB1 /* spectre-marshal-util.c in Sources */,
 				DA0E55902510E985002B3AB1 /* Tracker.swift in Sources */,
@@ -1477,7 +1474,6 @@
 				93D390276912B43B33158168 /* PagerView.swift in Sources */,
 				93D39C76D6160B82127FBBB2 /* PickerView.swift in Sources */,
 				93D39E1DCDEB5559EC7B3DE6 /* AlertController.swift in Sources */,
-				93D392050A549F9463E51472 /* SitePreviewController.swift in Sources */,
 				93D39216C0E8F79F5F06734B /* TipsView.swift in Sources */,
 				93D3910202AF273E8E318625 /* Text.swift in Sources */,
 				93D39FF336ACC2C451C5CFB2 /* CarouselView.swift in Sources */,
