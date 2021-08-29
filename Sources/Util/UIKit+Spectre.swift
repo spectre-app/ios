@@ -432,12 +432,12 @@ extension UIColor {
     class func hex(_ hex: String, alpha: CGFloat = .on) -> UIColor? {
         var hexSanitized = hex.trimmingCharacters( in: .whitespacesAndNewlines )
         hexSanitized = hexSanitized.replacingOccurrences( of: "#", with: "" )
-        var rgb:   UInt32  = 0
+        var rgb:   UInt64  = 0
         var red:   CGFloat = 0.0
         var green: CGFloat = 0.0
         var blue:  CGFloat = 0.0
         var alpha: CGFloat = alpha
-        guard Scanner( string: hexSanitized ).scanHexInt32( &rgb )
+        guard Scanner( string: hexSanitized ).scanHexInt64( &rgb )
         else { return nil }
         if hexSanitized.count == 6 {
             red = CGFloat( (rgb & 0xFF0000) >> 16 ) / 255.0

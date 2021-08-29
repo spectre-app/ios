@@ -25,7 +25,7 @@ class DialogViewController: BaseViewController {
     }
 
     var closeButton = EffectButton( track: .subject( "users", action: "cancel" ),
-                                    image: .icon( "×", style: .regular ), border: 0, background: false, square: true )
+                                    image: .icon( "xmark", style: .regular ), border: 0, background: false, square: true )
 
     private let scrollView   = UIScrollView()
     private let stackView    = UIStackView()

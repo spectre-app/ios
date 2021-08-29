@@ -109,7 +109,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class DiagnosticsItem: ToggleItem<AppConfig> {
         init() {
             super.init( track: .subject( "app", action: "diagnostics" ),
-                        title: "Diagnostics", icon: { _ in .icon( "" ) },
+                        title: "Diagnostics", icon: { _ in .icon( "briefcase-medical" ) },
                         value: { $0.diagnostics && !$0.offline }, update: { $0.model?.diagnostics = $1 }, caption: { _ in
                 """
                 Share anonymized issue information to enable quick resolution.
@@ -123,7 +123,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class NotificationsItem: ToggleItem<AppConfig> {
         init() {
             super.init( track: .subject( "app", action: "notifications" ),
-                        title: "Notifications", icon: { _ in .icon( "" ) },
+                        title: "Notifications", icon: { _ in .icon( "bell-exclamation" ) },
                         value: { _ in Tracker.shared.enabledNotifications() }, update: {
                 if $1 {
                     Tracker.shared.enableNotifications()
@@ -142,7 +142,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class ColorfulSitesItem: ToggleItem<AppConfig> {
         init() {
             super.init( track: .subject( "app", action: "themeSites" ),
-                        title: "Colorful Sites", icon: { _ in .icon( "🖌" ) },
+                        title: "Colorful Sites", icon: { _ in .icon( "paint-brush" ) },
                         value: { $0.colorfulSites }, update: {
                 $0.model?.colorfulSites = $1
             }, caption: { _ in
@@ -156,7 +156,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class HandoffItem: ToggleItem<AppConfig> {
         init() {
             super.init( track: .subject( "app", action: "handoff" ),
-                        title: "Handoff 🅿︎", icon: { _ in .icon( "" ) },
+                        title: "Handoff 🅿︎", icon: { _ in .icon( "copy" ) },
                         value: { $0.allowHandoff }, update: {
                 $0.model?.allowHandoff = $1
             }, caption: { _ in
@@ -173,7 +173,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class OfflineItem: ToggleItem<AppConfig> {
         init() {
             super.init( track: .subject( "app", action: "offline" ),
-                        title: "Offline Mode", icon: { _ in .icon( "" ) },
+                        title: "Offline Mode", icon: { _ in .icon( "wifi-slash" ) },
                         value: { $0.offline }, update: {
                 $0.model?.offline = $1
             }, caption: { _ in
@@ -206,7 +206,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
         }
 
         class Cell: EffectCell {
-            let iconView = UIImageView( image: .icon( "" ) )
+            let iconView = UIImageView( image: .icon( "brush" ) )
             override var isSelected: Bool {
                 didSet {
                     self.iconView.isHidden = !self.isSelected

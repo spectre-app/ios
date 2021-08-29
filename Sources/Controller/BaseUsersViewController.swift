@@ -257,7 +257,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private lazy var avatarButton    = EffectButton( track: .subject( "users.user", action: "avatar" ),
                                                          border: 0, background: false, circular: false )
         private lazy var biometricButton = TimedButton( track: .subject( "users.user", action: "auth" ),
-                                                        image: .icon( "" ), border: 0, background: false )
+                                                        image: .icon( "fingerprint" ), border: 0, background: false )
 
         // MARK: - Life
 
@@ -344,7 +344,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     if let timeToCrack = Attacker.single.timeToCrack( string: secretText, hash: .spectre ) {
                         strengthProgress = ((timeToCrack.period.seconds / age_of_the_universe) as NSDecimalNumber).doubleValue
                         strengthProgress = pow( 1 - pow( strengthProgress - 1, 30 ), 1 / 30.0 )
-                        strengthText = "\(.icon( "" )) \(timeToCrack.period.normalize.brief)︎"
+                        strengthText = "\(.icon( "shield-slash" )) \(timeToCrack.period.normalize.brief)︎"
                     }
 
                     DispatchQueue.main.perform {
@@ -533,13 +533,13 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.avatarTip.isHidden = self.nameField.isHidden
             self.secretField.nameField = !self.nameField.isHidden ? self.nameField: nil
             self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userFile == nil
-            self.avatarButton.image = self.avatar?.image ?? .icon( "", withSize: 96, invert: true )
+            self.avatarButton.image = self.avatar?.image ?? .icon( "user-plus", withSize: 96, invert: true )
             self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
             self.strengthMeter.isHidden = !self.isSelected || self.userFile != nil
             self.strengthLabel.isHidden = !self.isSelected || self.userFile != nil
             self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||
                     !(self.userFile?.keychainKeyFactory.isKeyPresent( for: self.userFile?.algorithm ?? .current ) ?? false)
-            self.biometricButton.image = .icon( KeychainKeyFactory.factor.icon )
+            self.biometricButton.image = .icon( KeychainKeyFactory.factor.iconName )
 
             if self.secretField.text?.isEmpty ?? true {
                 self.strengthMeter.progress = 0

@@ -169,7 +169,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     indexPath: indexPath, previewProvider: { _ in SitePreviewController( site: site ) },
                     actionProvider: { [unowned self] _, _ in
                         UIMenu( title: site.siteName, children: [
-                            UIAction( title: "Delete", image: .icon( "" ),
+                            UIAction( title: "Delete", image: .icon( "trash-can" ),
                                       identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { _ in
                                 site.user.sites.removeAll { $0 === site }
                             },
@@ -409,11 +409,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         private let backgroundImage = BackgroundView( mode: .clear )
         private let maskButton      = EffectButton( track: .subject( "sites.site", action: "mask" ),
-                                                    image: .icon( "" ), border: 0, background: false )
+                                                    image: .icon( "eye-slash" ), border: 0, background: false )
         private let purposeButton   = EffectButton( track: .subject( "sites.site", action: "purpose" ),
-                                                    image: .icon( "🔑" ), border: 0, background: false )
+                                                    image: .icon( "key" ), border: 0, background: false )
         private let newButton       = EffectButton( track: .subject( "sites.site", action: "add" ),
-                                                    image: .icon( "" ), border: 0, background: false )
+                                                    image: .icon( "octagon-plus" ), border: 0, background: false )
 
         private let actionStack   = UIStackView()
         private let selectionView = UIView()
@@ -720,17 +720,17 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 self.nameLabel.attributedText = nil
             }
 
-            self.maskButton.image = .icon( self.unmasked ? "👁": "", invert: true )
+            self.maskButton.image = .icon( self.unmasked ? "eye": "eye-slash", invert: true )
             if !InAppFeature.premium.isEnabled {
                 self.purpose = .authentication
             }
             switch self.purpose {
                 case .authentication:
-                    self.purposeButton.image = .icon( "🔑" )
+                    self.purposeButton.image = .icon( "key" )
                 case .identification:
-                    self.purposeButton.image = .icon( "" )
+                    self.purposeButton.image = .icon( "id-card-clip" )
                 case .recovery:
-                    self.purposeButton.image = .icon( "" )
+                    self.purposeButton.image = .icon( "comments-question-check" )
                 @unknown default:
                     self.purposeButton.image = nil
             }

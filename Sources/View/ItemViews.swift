@@ -132,9 +132,7 @@ class Item<M>: AnyItem {
             self.subitemsStack.insetsLayoutMarginsFromSafeArea = false
             self.subitemsStack.isLayoutMarginsRelativeArrangement = true
 
-            self.captionLabel => \.textColor => Theme.current.color.secondary
             self.captionLabel.textAlignment = .center
-            self.captionLabel => \.font => Theme.current.font.caption1
             self.captionLabel.numberOfLines = 0
             self.captionLabel.setContentHuggingPriority( .defaultHigh, for: .vertical )
 
@@ -188,9 +186,9 @@ class Item<M>: AnyItem {
             self.titleLabel.attributedText = item.title?.attributedString( for: self.titleLabel )
             self.titleLabel.isHidden = self.titleLabel.attributedText?.string.nonEmpty == nil
 
-            self.captionLabel.attributedText = item.model.flatMap {
-                item.captionProvider( $0 )?.attributedString( for: self.captionLabel )
-            }
+            self.captionLabel.attributedText = item.model.flatMap { item.captionProvider( $0 ) }?.attributedString
+            self.captionLabel => \.attributedText => .font => Theme.current.font.caption1
+            self.captionLabel => \.attributedText => .foregroundColor => Theme.current.color.secondary
             self.captionLabel.isHidden = self.captionLabel.attributedText?.string.nonEmpty == nil
 
             for i in 0..<max( item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
@@ -801,12 +799,12 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
         }
         let valueView  = UIView()
         let valueLabel = UILabel()
-        lazy var downButton = EffectButton( attributedTitle: .icon( "" ), border: 0, background: false ) { [unowned self]  _, _ in
+        lazy var downButton = EffectButton( attributedTitle: .icon( "caret-down" ), border: 0, background: false ) { [unowned self]  _, _ in
             if let stepperItem = self.stepperItem, let value = stepperItem.value, value > stepperItem.min {
                 stepperItem.update?( stepperItem, value.advanced( by: -stepperItem.step ) )
             }
         }
-        lazy var upButton = EffectButton( attributedTitle: .icon( "" ), border: 0, background: false ) { [unowned self] _, _ in
+        lazy var upButton = EffectButton( attributedTitle: .icon( "caret-up" ), border: 0, background: false ) { [unowned self] _, _ in
             if let stepperItem = self.stepperItem, let value = stepperItem.value, value < stepperItem.max {
                 stepperItem.update?( stepperItem, value.advanced( by: stepperItem.step ) )
             }

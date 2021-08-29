@@ -33,12 +33,14 @@ class MainSitesViewController: BaseSitesViewController {
 
         // - View
         self.userButton.isCircular = true
-        self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
+        self.userButton.action( for: .primaryActionTriggered ) {
+            [unowned self] in
             if let user = self.user {
                 self.detailsHost.show( DetailUserViewController( model: user ), sender: self )
             }
         }
-        self.userButton.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
+        self.userButton.addGestureRecognizer( UILongPressGestureRecognizer {
+            [unowned self] in
             guard case .began = $0.state
             else { return }
 
@@ -47,15 +49,18 @@ class MainSitesViewController: BaseSitesViewController {
         self.searchField.rightView = self.userButton
         self.sitesTableView.siteActions = [
             .init( tracking: .subject( "sites.site", action: "settings" ),
-                   title: "Details", icon: .icon( "", invert: true ), appearance: [ .cell, .menu ] ) { [unowned self] site, _, _ in
+                   title: "Details", icon: .icon( "circle-info", invert: true ), appearance: [ .cell, .menu ] ) {
+                [unowned self] site, _, _ in
                 self.detailsHost.show( DetailSiteViewController( model: site ), sender: self )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy", icon: .icon( "" ), appearance: [ .cell ] ) { [unowned self] site, purpose, _ in
+                   title: "Copy", icon: .icon( "copy" ), appearance: [ .cell ] ) {
+                [unowned self] site, purpose, _ in
                 site.result( keyPurpose: purpose ?? .authentication ).copy( fromView: self.view, trackingFrom: "site>cell" )
             },
             .init( tracking: .subject( "sites.site", action: "mode" ),
-                   title: "Configure", icon: .icon( "⚙" ), appearance: [ .mode ] ) { [unowned self] site, purpose, _ in
+                   title: "Configure", icon: .icon( "gear" ), appearance: [ .mode ] ) {
+                [unowned self] site, purpose, _ in
                 let focus: Item<Site>.Type?
                 switch purpose {
                     case .authentication:
@@ -70,19 +75,23 @@ class MainSitesViewController: BaseSitesViewController {
                 self.detailsHost.show( DetailSiteViewController( model: site, focus: focus ), sender: self )
             },
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.authentication)" ] ),
-                   title: "Copy Password", icon: .icon( "" ), appearance: [ .menu ] ) { [unowned self] site, purpose, _ in
+                   title: "Copy Password", icon: .icon( "copy" ), appearance: [ .menu ] ) {
+                [unowned self] site, purpose, _ in
                 site.result( keyPurpose: purpose ?? .authentication ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.identification)" ] ),
-                   title: "Copy Login", icon: .icon( "" ), appearance: [ .menu, .premium ] ) { [unowned self] site, purpose, _ in
+                   title: "Copy Login", icon: .icon( "copy" ), appearance: [ .menu, .premium ] ) {
+                [unowned self] site, purpose, _ in
                 site.result( keyPurpose: purpose ?? .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.recovery)" ] ),
-                   title: "Copy Security Answer", icon: .icon( "" ), appearance: [ .menu, .premium ] ) { [unowned self] site, purpose, _ in
+                   title: "Copy Security Answer", icon: .icon( "copy" ), appearance: [ .menu, .premium ] ) {
+                [unowned self] site, purpose, _ in
                 site.result( keyPurpose: purpose ?? .recovery ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "open" ),
-                   title: "Open Site", icon: .icon( "🌐" ), appearance: [ .menu, .premium ] ) { [unowned self] site, _, _ in
+                   title: "Open Site", icon: .icon( "globe" ), appearance: [ .menu, .premium ] ) {
+                [unowned self] site, _, _ in
                 if let url = URL( string: site.url ?? "https://\(site.siteName)" ) {
                     self.present( SFSafariViewController( url: url ), animated: true )
                 }

@@ -128,6 +128,8 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
                 if let newProperty = self.property {
                     self.binding = newProperty.bind( propertyPath: self )
                 }
+            } else {
+                self.binding?.doUpdate()
             }
         }
     }
@@ -198,30 +200,45 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
         }
 
         if let attribute = self.attribute, let string = target[keyPath: self.nullableKeyPath!] as? NSAttributedString {
-            let string = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
+            let oldString   = NSAttributedString( attributedString: string )
+            let string      = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
+            let stringRange = NSRange( location: 0, length: string.length )
 
             if let value = value {
+                // Retain existing foregroundColor alpha (eg. duotone).
                 if attribute == .foregroundColor, let primaryColor = value as? UIColor {
-                    string.enumerateAttribute( .foregroundColor, in: NSRange( location: 0, length: string.length ) ) { value, range, _ in
-                        if let value = value as? UIColor {
-                            string.addAttribute( .foregroundColor, value: primaryColor.with( alpha: value.alpha ), range: range )
+                    string.enumerateAttribute( .foregroundColor, in: stringRange ) { value, range, _ in
+                        if let currentColor = value as? UIColor {
+                            string.addAttribute( .foregroundColor, value: primaryColor.with( alpha: currentColor.alpha ), range: range )
                         }
                     }
                 }
+                // strokeColor overrides foregroundColor with an alternative color, retaining existing alpha.
                 else if attribute == .strokeColor, let secondaryColor = value as? UIColor {
-                    string.enumerateAttribute( .strokeColor, in: NSRange( location: 0, length: string.length ) ) { value, range, _ in
-                        if let value = value as? UIColor,
+                    string.enumerateAttribute( .strokeColor, in: stringRange ) { value, range, _ in
+                        if let currentColor = value as? UIColor,
                            (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
-                            string.addAttribute( .foregroundColor, value: secondaryColor.with( alpha: value.alpha ), range: range )
+                            string.addAttribute( .foregroundColor, value: secondaryColor.with( alpha: currentColor.alpha ), range: range )
                         }
                     }
                 }
+                // Update attribute without any special handling.
                 else {
-                    string.addAttribute( attribute, value: value, range: NSRange( location: 0, length: string.length ) )
+                    string.addAttribute( attribute, value: value, range: stringRange )
                 }
             }
+            // Remove attribute without any special handling.
             else {
-                string.removeAttribute( attribute, range: NSRange( location: 0, length: string.length ) )
+                string.removeAttribute( attribute, range: stringRange )
+            }
+
+            // Restore Font Awesome elements after updating fonts.
+            if attribute == .font, let font = value as? UIFont, !font.familyName.contains( "Font Awesome" ) {
+                oldString.enumerateAttribute( .font, in: stringRange ) { value, range, _ in
+                    if let oldFont = value as? UIFont, oldFont.familyName.contains( "Font Awesome" ) {
+                        string.addAttribute( .font, value: oldFont.withSize( font.pointSize ), range: range )
+                    }
+                }
             }
 
             value = string

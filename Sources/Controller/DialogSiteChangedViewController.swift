@@ -33,7 +33,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.closeButton.image = .icon( "✓" )
+        self.closeButton.image = .icon( "check" )
         self.backgroundView.image = self.newSite.preview.image
 
         self.title = "Update Your Site"

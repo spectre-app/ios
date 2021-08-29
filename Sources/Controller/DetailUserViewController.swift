@@ -124,7 +124,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             view.valueField.autocorrectionType = .no
             view.valueField.keyboardType = .emailAddress
             view.valueField.leftViewMode = .always
-            view.valueField.leftView = MarginView( for: UIImageView( image: .icon( "" ) ), margins: .border( 4 ) )
+            view.valueField.leftView = MarginView( for: UIImageView( image: .icon( "circle-user" ) ), margins: .border( 4 ) )
             return view
         }
 
@@ -200,7 +200,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( subitems: [
                 ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords",
-                                  icon: { .icon( $0.maskPasswords ? "": "👁" ) },
+                                  icon: { .icon( $0.maskPasswords ? "eye-slash": "eye" ) },
                                   value: { $0.maskPasswords }, update: { $0.model?.maskPasswords = $1 }, caption: { _ in
                     """
                     Do not reveal passwords on screen.
@@ -208,7 +208,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     """
                 } ),
                 ToggleItem( track: .subject( "user", action: "biometricLock" ), title: "Biometric Lock 🅿︎",
-                            icon: { _ in .icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon ) },
+                            icon: { _ in .icon( KeychainKeyFactory.factor.iconName ?? KeychainKeyFactory.Factor.biometricTouch.iconName ) },
                             value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 }, caption: { _ in
                     """
                     Sign in using biometrics (eg. TouchID, FaceID).
@@ -225,7 +225,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class SystemFeaturesItem: Item<User> {
         init() {
             super.init( subitems: [
-                ToggleItem<User>( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "⌨" ) },
+                ToggleItem<User>( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "keyboard" ) },
                                   value: { $0.autofill }, update: { $0.model?.autofill = $1 }, caption: { _ in
                     """
                     Auto-fill your site passwords from other apps.
@@ -238,7 +238,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         } ) )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
-                ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "" ) },
+                ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "file-export" ) },
                                   value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """
                     Allow other apps to see and backup your user through On My iPhone.

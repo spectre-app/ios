@@ -103,27 +103,27 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
           SubscriptionUnavailableItem(),
           SubscriptionActiveItem(),
           Item<Void>( subitems: [
-              FeatureItem( name: "Biometric Lock", icon: "",
+              FeatureItem( name: "Biometric Lock", icon: "fingerprint",
                            caption: "A touch or smile and we can recognize you now. Skip your personal secret." ),
-              FeatureItem( name: "Auto-Fill", icon: "⌨",
+              FeatureItem( name: "Auto-Fill", icon: "keyboard",
                            caption: "Your passwords exactly when you need them, instantly, from any app." ),
           ] ),
           Item<Void>( subitems: [
-              FeatureItem( name: "Login Name Generator", icon: "",
+              FeatureItem( name: "Login Name Generator", icon: "id-card-clip",
                            caption: "Upgrade your inter-site anonymity with unique login names. Who is who?" ),
-              FeatureItem( name: "Security Answer Generator", icon: "",
+              FeatureItem( name: "Security Answer Generator", icon: "comments-question-check",
                            caption: "Say « No » to those pretentiously invasive \"security\" questions." ),
           ] ),
           Item<Void>( subitems: [
-              FeatureItem( name: "Password Strength", icon: "",
+              FeatureItem( name: "Password Strength", icon: "bone-break",
                            caption: "Understand what a password's complexity truly translates into." ),
-              FeatureItem( name: "Application Themes", icon: "",
+              FeatureItem( name: "Application Themes", icon: "paint-roller",
                            caption: "Make it yours and dye \(productName) with a dash of personality." ),
           ] ),
           Item<Void>( subitems: [
-              FeatureItem( name: "Advanced Integrations", icon: "",
+              FeatureItem( name: "Advanced Integrations", icon: "handshake",
                            caption: "Universal Clipboard, third‑party storage apps, opening site URLs, etc." ),
-              FeatureItem( name: "Support", icon: "",
+              FeatureItem( name: "Support", icon: "osi",
                            caption: "Super‑charge development of \(productName)'s open source privacy‑first digital identity platform." ),
           ] ),
           SeparatorItem( subitems: [
@@ -160,7 +160,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
     class HeaderItem: ImageItem<Void> {
         init() {
-            super.init( title: "\(productName) Premium", value: { _ in .icon( "", withSize: 64 ) },
+            super.init( title: "\(productName) Premium", value: { _ in .icon( "user-tie", withSize: 64 ) },
                         caption: { _ in
                             """
                             Unlock enhanced comfort and security features.
@@ -254,7 +254,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
     class SubscriptionUnavailableItem: ImageItem<Void> {
         init() {
-            super.init( title: "Cannot Enroll", value: { _ in .icon( "", withSize: 64 ) },
+            super.init( title: "Cannot Enroll", value: { _ in .icon( "store-slash", withSize: 64 ) },
                         caption: { _ in
                             """
                             Ensure you are online and try logging out and back into your Apple ID from Settings.
@@ -268,7 +268,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
     class SubscriptionActiveItem: ImageItem<Void> {
         init() {
-            super.init( title: "Enrolled", value: { _ in .icon( "✓", withSize: 64 ) },
+            super.init( title: "Enrolled", value: { _ in .icon( "check", withSize: 64 ) },
                         caption: { _ in
                             """
                             Thank you for making \(productName) possible!
@@ -288,7 +288,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
     class EnablePremiumItem: ToggleItem<Void> {
         init() {
             super.init( track: .subject( "premium", action: "override" ),
-                        title: "Subscribed 🅳", icon: { _ in .icon( "" ) },
+                        title: "Subscribed 🅳", icon: { _ in .icon( "user-tie" ) },
                         value: { _ in InAppFeature.premium.isEnabled }, update: { InAppFeature.premium.enable( $1 ) },
                         caption: { _ in
                             """
@@ -301,7 +301,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
     class EnableStoreItem: ToggleItem<Void> {
         init() {
             super.init( track: .subject( "premium", action: "sandbox" ),
-                        title: "Sandbox 🅳", icon: { _ in .icon( "" ) },
+                        title: "Sandbox 🅳", icon: { _ in .icon( "app-store-ios" ) },
                         value: { _ in AppConfig.shared.sandboxStore }, update: { AppConfig.shared.sandboxStore = $1 },
                         caption: { _ in
                             """

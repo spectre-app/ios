@@ -56,7 +56,7 @@ class AutoFillConfigurationView: UIScrollView {
 
         self.settingsImage.preservesImageRatio = true
         self.appImage.padded = false
-        self.autofillImage.image = .icon( "⌨" )
+        self.autofillImage.image = .icon( "keyboard" )
         self.autofillImage.isSelected = true
 
         self.stackView.axis = .vertical
@@ -72,7 +72,7 @@ class AutoFillConfigurationView: UIScrollView {
         self.stackView.addArrangedSubview( self.step2Title )
         let step2Steps = UIStackView( arrangedSubviews: [
             MarginView( for: self.appImage, anchor: .center ),
-            MarginView( for: UIImageView( image: .icon( "" ) ), anchor: .center ),
+            MarginView( for: UIImageView( image: .icon( "right-long" ) ), anchor: .center ),
             MarginView( for: self.avatarImage, anchor: .center ),
         ], alignment: .center, distribution: .fillEqually, spacing: 8 )
         self.stackView.addArrangedSubview( step2Steps )
@@ -80,7 +80,7 @@ class AutoFillConfigurationView: UIScrollView {
         self.stackView.addArrangedSubview( self.step3Title )
         let step3Steps = UIStackView( arrangedSubviews: [
             MarginView( for: self.userImage, anchor: .center ),
-            MarginView( for: UIImageView( image: .icon( "" ) ), anchor: .center ),
+            MarginView( for: UIImageView( image: .icon( "right-long" ) ), anchor: .center ),
             MarginView( for: self.autofillImage, anchor: .center ),
         ], alignment: .center, distribution: .fillEqually, spacing: 8 )
         self.stackView.addArrangedSubview( step3Steps )

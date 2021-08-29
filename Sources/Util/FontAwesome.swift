@@ -39,18 +39,30 @@ public enum IconStyle: CaseIterable {
     }
 }
 
+private let fontAwesomeUnicode : [ String: String? ] =
+        Bundle.main.url( forResource: "Font Awesome 6", withExtension: "json" ).flatMap {
+            try? Data( contentsOf: $0 )
+        }.flatMap {
+            try? JSONDecoder().decode( [ String: String ].self, from: $0 ).mapValues {
+                var unicode: UInt64 = 0
+                return Scanner( string: $0 ).scanHexInt64( &unicode ) ?
+                        Unicode.Scalar( UInt32( unicode ) ).flatMap { String( Character( $0 ) ) } : nil
+            }
+        } ?? .init()
+
 extension NSAttributedString {
     public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false)
                     -> NSAttributedString? {
-        guard let icon = icon, let style = style ?? {
-            let glyphs = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
-            defer {
-                glyphs.deinitialize( count: icon.utf16.count )
-            }
-            return IconStyle.allCases.first( where: {
-                CTFontGetGlyphsForCharacters( $0.font() as CTFont, [ UniChar ]( icon.utf16 ), glyphs, icon.utf16.count )
-            } )
-        }()
+        guard let icon = icon.flatMap( { fontAwesomeUnicode[$0] } ) ?? icon,
+              let style = style ?? {
+                  let glyphs = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
+                  defer {
+                      glyphs.deinitialize( count: icon.utf16.count )
+                  }
+                  return IconStyle.allCases.first( where: {
+                      CTFontGetGlyphsForCharacters( $0.font() as CTFont, [ UniChar ]( icon.utf16 ), glyphs, icon.utf16.count )
+                  } )
+              }()
         else { return nil }
 
         let font           = style.font( withSize: size )

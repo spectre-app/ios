@@ -153,6 +153,16 @@ extension NSAttributedString {
 
         return NSAttributedString( string: string, attributes: mergedAttributes )
     }
+
+    func attributeLocations(_ attrName: NSAttributedString.Key, in range: NSRange? = nil, options: EnumerationOptions = []) -> [Int] {
+        var locations = [ Int ]()
+        self.enumerateAttribute( attrName, in: range ?? NSRange( location: 0, length: self.length ), options: options ) { value, range, _ in
+            if value != nil {
+                locations.append( range.location )
+            }
+        }
+        return locations
+    }
 }
 
 extension OperationQueue {
@@ -276,8 +286,8 @@ extension URLSession {
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
             "User-Agent": "\(productName)/\(productVersion) " +
-                          "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
-                          "Mozilla/5.0 AppleWebKit/605.1.15",
+                    "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
+                    "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .responsiveData
@@ -294,8 +304,8 @@ extension URLSession {
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
             "User-Agent": "\(productName)/\(productVersion) " +
-                          "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
-                          "Mozilla/5.0 AppleWebKit/605.1.15",
+                    "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
+                    "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .background

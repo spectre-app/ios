@@ -246,6 +246,8 @@
 		DABC7BB8251C14160021ADD8 /* BaseSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */; };
 		DABC7BBB251C1B410021ADD8 /* BaseUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
+		DADBD8D626DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
+		DADBD8D726DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
 		DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */ = {isa = PBXBuildFile; fileRef = DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */; };
 		DAF560502393411A000475BA /* libjson-c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8620C4C0C400101DC7 /* libjson-c.a */; };
 		DAF5605123934134000475BA /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA7BB8A20C4C10F00101DC7 /* libsodium.a */; };
@@ -575,6 +577,7 @@
 		DAC510C6247C7286006CC5D6 /* json_inttypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_inttypes.h; sourceTree = "<group>"; };
 		DAC510C7247C7286006CC5D6 /* json_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_object.h; sourceTree = "<group>"; };
 		DAC632871486D95D0075AEA5 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "Font Awesome 6.json"; sourceTree = "<group>"; };
 		DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "enwiki-top-30000.txt"; sourceTree = "<group>"; };
 		DAEBC45214F6364500987BF6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -840,6 +843,7 @@
 				DAAEDE1525E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf */,
 				DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */,
 				DAAEDE1125E1DF5400E78F79 /* Font Awesome 6 Pro-Thin-100.otf */,
+				DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */,
 				DA762FB524E0C58700E61D3F /* Poppins-VF.otf */,
 				DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */,
 				DA762F6F24E04F2E00E61D3F /* SourceCodePro-ExtraLight.otf */,
@@ -1317,6 +1321,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAA0EDFF25E5861B00533479 /* Assets.xcassets in Resources */,
+				DADBD8D726DAB7E000111AC5 /* Font Awesome 6.json in Resources */,
 				DAAEDE2225E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */,
 				DAAEDE1825E1DF5500E78F79 /* Font Awesome 6 Pro-Thin-100.otf in Resources */,
 				DAAEDE1C25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
@@ -1352,6 +1357,7 @@
 				DA07B20B26CE90B100AC5C1A /* Light Logo76x76.png in Resources */,
 				DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */,
 				DA07B1FC26CE02A300AC5C1A /* Dark Logo60x60@2x.png in Resources */,
+				DADBD8D626DAB7E000111AC5 /* Font Awesome 6.json in Resources */,
 				DA07B20A26CE90B100AC5C1A /* Dark Icon76x76.png in Resources */,
 				DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */,
 				DAAEDE2125E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */,

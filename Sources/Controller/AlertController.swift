@@ -183,7 +183,7 @@ class AlertController {
         self.messageLabel.textAlignment = .center
         self.messageLabel.numberOfLines = 0
 
-        self.expandChevron.attributedText = NSAttributedString.icon( "" )
+        self.expandChevron.attributedText = NSAttributedString.icon( "caret-up" )
         self.expandChevron => \.textColor => Theme.current.color.body
         self.expandChevron.textAlignment = .center
         self.expandChevron.alignmentRectOutsets.top = -4

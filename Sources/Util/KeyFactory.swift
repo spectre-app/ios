@@ -301,13 +301,13 @@ public class KeychainKeyFactory: KeyFactory {
             }
         }
 
-        var icon: String? {
+        var iconName: String? {
             switch self {
                 case .biometricTouch:
-                    return ""
+                    return "fingerprint"
 
                 case .biometricFace:
-                    return ""
+                    return "face-viewfinder"
 
                 case .biometricNone:
                     return nil

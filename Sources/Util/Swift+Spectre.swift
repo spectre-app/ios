@@ -232,6 +232,11 @@ extension String {
         return self.valid( pointer.baseAddress, length: pointer.count, consume: consume )
     }
 
+    static func unhex(_ hex: String) -> String? {
+        var length: Int = 0
+        return self.valid( spectre_unhex( hex, &length ), length: length, consume: true )
+    }
+
     subscript(_ pattern: String) -> [[Substring?]] {
         do {
             let regex = try NSRegularExpression( pattern: pattern )

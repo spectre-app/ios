@@ -28,7 +28,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
     // MARK: - Life
 
     override func loadItems() -> [Item<User>] {
-        [ ImageItem( title: "AutoFill 🅿︎", value: { _ in .icon( "⌨", withSize: 64 ) },
+        [ ImageItem( title: "AutoFill 🅿︎", value: { _ in .icon( "keyboard", withSize: 64 ) },
                      caption: { _ in
                          """
                          Getting ready to use AutoFill on your \(UIDevice.current.model).
@@ -45,7 +45,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             Swipe ahead to begin.
                             """
                         } ),
-                        ImageItem( value: { _ in .icon( "", withSize: 64 ) } ),
+                        ImageItem( value: { _ in .icon( "hand-point-right", withSize: 64 ) } ),
                     ], axis: .vertical ),
 
                     // Step 1
@@ -56,7 +56,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem( track: .subject( "autofill_setup", action: "biometricLock" ),
-                                    icon: { _ in .icon( KeychainKeyFactory.factor.icon ?? KeychainKeyFactory.Factor.biometricTouch.icon ) },
+                                    icon: { _ in .icon( KeychainKeyFactory.factor.iconName ?? KeychainKeyFactory.Factor.biometricTouch.iconName ) },
                                     value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
                                 .addBehaviour( PremiumTapBehaviour() )
@@ -84,7 +84,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem( track: .subject( "autofill_setup", action: "settings" ),
-                                    icon: { [unowned self] _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "" ): .icon( "" ) },
+                                    icon: { [unowned self] _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "toggle-on" ): .icon( "toggle-off" ) },
                                     value: { [unowned self] _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
                             URL( string: UIApplication.openSettingsURLString ).flatMap { UIApplication.shared.open( $0 ) }
                         } )
@@ -100,7 +100,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             Enable auto-filling \($0.userName)'s sites from other apps.
                             """
                         } ),
-                        ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "⌨" ) },
+                        ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "keyboard" ) },
                                           value: { $0.autofill }, update: { $0.model?.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                                 .addBehaviour( PremiumTapBehaviour() )
