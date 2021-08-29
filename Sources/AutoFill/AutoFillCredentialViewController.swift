@@ -47,7 +47,14 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
             return
         }
 
-        site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).success {
+        guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
+        else {
+            self.extensionContext?.cancelRequest( withError: ASExtensionError( .userInteractionRequired, "" +
+                    "Unauthenticated user: \(user.userName)" ) )
+            return
+        }
+
+        login.token.and( password.token ).success {
             (self.extensionContext as? ASCredentialProviderExtensionContext)?.completeRequest(
                     withSelectedCredential: ASPasswordCredential( user: $0.0, password: $0.1 ), completionHandler: nil )
         }.failure { error in

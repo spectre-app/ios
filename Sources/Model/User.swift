@@ -388,7 +388,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
                        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: SpectreResultType? = nil, resultParam: String? = nil,
                        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation {
+                    -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
                 return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial,
@@ -419,7 +419,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: SpectreResultType? = nil, resultParam: String,
                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation {
+                    -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
                 return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial,
@@ -450,38 +450,44 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
                                 keyPurpose: SpectreKeyPurpose, keyContext: String?,
                                 resultType: SpectreResultType, resultParam: String?,
                                 algorithm: SpectreAlgorithm, operand: SpectreOperand)
-                    -> SpectreOperation {
-        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose,
-                          type: resultType, algorithm: algorithm, operand: operand,
-                          token: self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
-                              defer { userKey.deallocate() }
+                    -> SpectreOperation? {
+        guard let keyFactory = self.userKeyFactory
+        else { return nil }
 
-                              guard let result = String.valid(
-                                      spectre_site_result( userKey, name, resultType, resultParam,
-                                                           counter, keyPurpose, keyContext ), consume: true )
-                              else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
+        return SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose,
+                                 type: resultType, algorithm: algorithm, operand: operand,
+                                 token: keyFactory.newKey( for: algorithm ).promise( on: .api ) { userKey in
+                                     defer { userKey.deallocate() }
 
-                              return result
-                          } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
+                                     guard let result = String.valid(
+                                             spectre_site_result( userKey, name, resultType, resultParam,
+                                                                  counter, keyPurpose, keyContext ), consume: true )
+                                     else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
+
+                                     return result
+                                 } )
     }
 
     private func spectre_state(for name: String, counter: SpectreCounter,
                                keyPurpose: SpectreKeyPurpose, keyContext: String?,
                                resultType: SpectreResultType, resultParam: String?,
                                algorithm: SpectreAlgorithm, operand: SpectreOperand)
-                    -> SpectreOperation {
-        SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose,
-                          type: resultType, algorithm: algorithm, operand: operand,
-                          token: self.userKeyFactory?.newKey( for: algorithm ).promise( on: .api ) { userKey in
-                              defer { userKey.deallocate() }
+                    -> SpectreOperation? {
+        guard let keyFactory = self.userKeyFactory
+        else { return nil }
 
-                              guard let result = String.valid(
-                                      spectre_site_state( userKey, name, resultType, resultParam,
-                                                          counter, keyPurpose, keyContext ), consume: true )
-                              else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
+        return SpectreOperation( siteName: name, counter: counter, purpose: keyPurpose,
+                                 type: resultType, algorithm: algorithm, operand: operand,
+                                 token: keyFactory.newKey( for: algorithm ).promise( on: .api ) { userKey in
+                                     defer { userKey.deallocate() }
 
-                              return result
-                          } ?? Promise( .failure( AppError.state( title: "User is not authenticated" ) ) ) )
+                                     guard let result = String.valid(
+                                             spectre_site_state( userKey, name, resultType, resultParam,
+                                                                 counter, keyPurpose, keyContext ), consume: true )
+                                     else { throw AppError.internal( cause: "Cannot calculate result", details: self ) }
+
+                                     return result
+                                 } )
     }
 
     // MARK: - Types

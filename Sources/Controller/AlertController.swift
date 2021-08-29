@@ -18,19 +18,24 @@ extension AlertController {
         let oldSite = site.copy()
         try operation()
 
-        oldSite.result( keyPurpose: .authentication ).token.and( site.result( keyPurpose: .authentication ).token ).success {
-            if $0.0 != $0.1 {
-                self.forSite( site, in: viewController, changedFrom: oldSite )
-            }
-            else {
-                oldSite.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .identification ).token ).success {
-                    if $0.0 != $0.1 {
-                        self.forSite( site, in: viewController, changedFrom: oldSite )
-                    }
-                    else {
-                        oldSite.result( keyPurpose: .recovery ).token.and( site.result( keyPurpose: .recovery ).token ).success {
-                            if $0.0 != $0.1 {
-                                self.forSite( site, in: viewController, changedFrom: oldSite )
+        if let oldPassword = oldSite.result( keyPurpose: .authentication ),
+           let newPassword = site.result( keyPurpose: .authentication ) {
+            oldPassword.token.and( newPassword.token ).success {
+                if $0.0 != $0.1 {
+                    self.forSite( site, in: viewController, changedFrom: oldSite )
+                }
+                else if let oldLogin = oldSite.result( keyPurpose: .identification ),
+                        let newLogin = site.result( keyPurpose: .identification ) {
+                    oldLogin.token.and( newLogin.token ).success {
+                        if $0.0 != $0.1 {
+                            self.forSite( site, in: viewController, changedFrom: oldSite )
+                        }
+                        else if let oldAnswer = oldSite.result( keyPurpose: .recovery ),
+                                let newAnswer = site.result( keyPurpose: .recovery ) {
+                            oldAnswer.token.and( newAnswer.token ).success {
+                                if $0.0 != $0.1 {
+                                    self.forSite( site, in: viewController, changedFrom: oldSite )
+                                }
                             }
                         }
                     }

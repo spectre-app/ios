@@ -56,7 +56,7 @@ class MainSitesViewController: BaseSitesViewController {
             .init( tracking: .subject( "sites.site", action: "copy" ),
                    title: "Copy", icon: .icon( "copy" ), appearance: [ .cell ] ) {
                 [unowned self] site, purpose, _ in
-                site.result( keyPurpose: purpose ?? .authentication ).copy( fromView: self.view, trackingFrom: "site>cell" )
+                site.result( keyPurpose: purpose ?? .authentication )?.copy( fromView: self.view, trackingFrom: "site>cell" )
             },
             .init( tracking: .subject( "sites.site", action: "mode" ),
                    title: "Configure", icon: .icon( "gear" ), appearance: [ .mode ] ) {
@@ -77,17 +77,17 @@ class MainSitesViewController: BaseSitesViewController {
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.authentication)" ] ),
                    title: "Copy Password", icon: .icon( "copy" ), appearance: [ .menu ] ) {
                 [unowned self] site, purpose, _ in
-                site.result( keyPurpose: purpose ?? .authentication ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
+                site.result( keyPurpose: purpose ?? .authentication )?.copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.identification)" ] ),
                    title: "Copy Login", icon: .icon( "copy" ), appearance: [ .menu, .premium ] ) {
                 [unowned self] site, purpose, _ in
-                site.result( keyPurpose: purpose ?? .identification ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
+                site.result( keyPurpose: purpose ?? .identification )?.copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.recovery)" ] ),
                    title: "Copy Security Answer", icon: .icon( "copy" ), appearance: [ .menu, .premium ] ) {
                 [unowned self] site, purpose, _ in
-                site.result( keyPurpose: purpose ?? .recovery ).copy( fromView: self.view, trackingFrom: "site>cell>menu" )
+                site.result( keyPurpose: purpose ?? .recovery )?.copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "open" ),
                    title: "Open Site", icon: .icon( "globe" ), appearance: [ .menu, .premium ] ) {

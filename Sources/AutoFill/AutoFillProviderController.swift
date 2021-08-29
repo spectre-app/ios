@@ -88,10 +88,15 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             AutoFillModel.shared.cacheUser( user )
 
             guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
-            else { throw ASExtensionError( .credentialIdentityNotFound, "" +
-                    "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) }
+            else {
+                throw ASExtensionError( .credentialIdentityNotFound, "" +
+                        "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
+            }
 
-            return site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).promise {
+            guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
+            else { throw ASExtensionError( .userInteractionRequired, "Unauthenticated user: \(user.userName)" ) }
+
+            return login.token.and( password.token ).promise {
                 ASPasswordCredential( user: $0.0, password: $0.1 )
             }
         }.failure( on: .main ) { error in

@@ -755,7 +755,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3: Theme.current.font.subheadline)
 
-            self.site?.result( keyPurpose: self.purpose ).token.then( on: .main ) {
+            self.site?.result( keyPurpose: self.purpose )?.token.then( on: .main ) {
                 do {
                     self.resultLabel.text = try $0.get()
                 }

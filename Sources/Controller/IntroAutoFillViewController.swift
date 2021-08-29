@@ -190,7 +190,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
     class LoginResultItem: FieldItem<User> {
         init() {
             super.init( title: nil, placeholder: "enter a login name",
-                        value: { try? $0.result( keyPurpose: .identification ).token.await() },
+                        value: { try? $0.result( keyPurpose: .identification )?.token.await() },
                         update: { item, login in
                             guard let user = item.model
                             else { return }
@@ -200,7 +200,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                 "entropy": Attacker.entropy( string: login ) ?? 0,
                             ] ) )
 
-                            user.state( keyPurpose: .identification, resultParam: login ).token.then {
+                            user.state( keyPurpose: .identification, resultParam: login )?.token.then {
                                 do { user.loginState = try $0.get() }
                                 catch { mperror( title: "Couldn't update login name", error: error ) }
                             }

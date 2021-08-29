@@ -71,33 +71,35 @@ class AutoFillSitesViewController: BaseSitesViewController {
         else { return }
 
         let event = Tracker.shared.begin( track: .subject( "site", action: "use" ) )
-        site.result( keyPurpose: .identification ).token.and( site.result( keyPurpose: .authentication ).token ).then( on: .main ) {
-            do {
-                let (login, password) = try $0.get()
-                site.use()
-                event.end(
-                        [ "result": $0.name,
-                          "from": trackingFrom,
-                          "action": "fill",
-                          "counter": "\(site.counter)",
-                          "purpose": "\(SpectreKeyPurpose.identification)",
-                          "type": "\(site.resultType)",
-                          "algorithm": "\(site.algorithm)",
-                          "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ) ?? 0,
-                        ] )
+        if let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication ) {
+            login.token.and( password.token ).then( on: .main ) {
+                do {
+                    let (login, password) = try $0.get()
+                    site.use()
+                    event.end(
+                            [ "result": $0.name,
+                              "from": trackingFrom,
+                              "action": "fill",
+                              "counter": "\(site.counter)",
+                              "purpose": "\(SpectreKeyPurpose.identification)",
+                              "type": "\(site.resultType)",
+                              "algorithm": "\(site.algorithm)",
+                              "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ) ?? 0,
+                            ] )
 
-                extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password ) ) { _ in
-                    site.user.save( onlyIfDirty: true, await: true )
+                    extensionContext.completeRequest( withSelectedCredential: ASPasswordCredential( user: login, password: password ) ) { _ in
+                        site.user.save( onlyIfDirty: true, await: true )
+                    }
                 }
-            }
-            catch {
-                mperror( title: "Couldn't compute site result", error: error )
-                event.end( [
-                               "result": $0.name,
-                               "from": trackingFrom,
-                               "action": "fill",
-                               "error": error.localizedDescription,
-                           ] )
+                catch {
+                    mperror( title: "Couldn't compute site result", error: error )
+                    event.end( [
+                                   "result": $0.name,
+                                   "from": trackingFrom,
+                                   "action": "fill",
+                                   "error": error.localizedDescription,
+                               ] )
+                }
             }
         }
     }

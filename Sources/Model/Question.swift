@@ -97,7 +97,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
                        keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
                        resultType: SpectreResultType? = nil, resultParam: String? = nil,
                        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation {
+                    -> SpectreOperation? {
         self.site.result( for: name, counter: counter,
                           keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                           resultType: resultType, resultParam: resultParam ?? self.resultState,
@@ -108,7 +108,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
                       keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
                       resultType: SpectreResultType? = nil, resultParam: String,
                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation {
+                    -> SpectreOperation? {
         self.site.state( for: name, counter: counter,
                          keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam,

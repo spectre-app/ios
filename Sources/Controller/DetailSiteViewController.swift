@@ -115,7 +115,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                             let attacker = $0.user.attacker ?? .default
                             if InAppFeature.premium.isEnabled,
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
-                                       attacker.timeToCrack( string: try? $0.result().token.await() ) {
+                                       attacker.timeToCrack( string: try? $0.result()?.token.await() ) {
                                 return "\(.icon( "shield-slash" )) Time to crack: \(timeToCrack) 🅿︎"
                             }
                             else {
@@ -132,7 +132,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
     class PasswordResultItem: FieldItem<Site> {
         init() {
             super.init( title: nil, placeholder: "enter a password",
-                        value: { try? $0.result().token.await() },
+                        value: { try? $0.result()?.token.await() },
                         update: { item, password in
                             guard let site = item.model, let viewController = item.viewController
                             else { return }
@@ -142,7 +142,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                                 "entropy": Attacker.entropy( string: password ) ?? 0,
                             ] ) )
 
-                            site.state( resultParam: password ).token.then { result in
+                            site.state( resultParam: password )?.token.then { result in
                                 do {
                                     try AlertController.showChange( to: site, in: viewController ) {
                                         site.resultState = try result.get()
@@ -214,7 +214,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
         init() {
             super.init( title: nil, placeholder: "enter a login name",
-                        value: { try? $0.result( keyPurpose: .identification ).token.await() },
+                        value: { try? $0.result( keyPurpose: .identification )?.token.await() },
                         update: { item, login in
                             guard let site = item.model, let viewController = item.viewController
                             else { return }
@@ -224,7 +224,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                                 "entropy": Attacker.entropy( string: login ) ?? 0,
                             ] ) )
 
-                            site.state( keyPurpose: .identification, resultParam: login ).token.then { result in
+                            site.state( keyPurpose: .identification, resultParam: login )?.token.then { result in
                                 do {
                                     try AlertController.showChange( to: site, in: viewController ) {
                                         site.loginState = try result.get()
@@ -366,7 +366,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
             weak var question: Question? {
                 didSet {
-                    self.question?.result().token.then( on: .main ) {
+                    self.question?.result()?.token.then( on: .main ) {
                         do {
                             self.resultLabel.text = try $0.get()
                             self.keywordLabel.text = self.question?.keyword.nonEmpty ?? "(generic)"
@@ -403,7 +403,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                 self.resultLabel.adjustsFontSizeToFitWidth = true
 
                 self.copyButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                    self.question?.result().copy( fromView: self, trackingFrom: "site>details" )
+                    self.question?.result()?.copy( fromView: self, trackingFrom: "site>details" )
                 }
 
                 // - Hierarchy

@@ -18,11 +18,11 @@ public protocol SpectreOperand {
 
     func result(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
                 resultType: SpectreResultType?, resultParam: String?, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
-                    -> SpectreOperation
+                    -> SpectreOperation?
 
     func state(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
                resultType: SpectreResultType?, resultParam: String, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
-                    -> SpectreOperation
+                    -> SpectreOperation?
 }
 
 public struct SpectreOperation {

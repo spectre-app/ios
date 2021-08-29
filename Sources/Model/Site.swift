@@ -233,7 +233,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: SpectreResultType? = nil, resultParam: String? = nil,
                        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation {
+                    -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
                 return self.user.result( for: name ?? self.siteName, counter: counter ?? self.counter,
@@ -264,7 +264,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: SpectreResultType? = nil, resultParam: String,
                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation {
+                    -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
                 return self.user.state( for: name ?? self.siteName, counter: counter ?? self.counter,

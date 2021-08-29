@@ -91,12 +91,14 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
 
         let oldPassword = self.oldSite.result( keyPurpose: .authentication )
         let newPassword = self.newSite.result( keyPurpose: .authentication )
-        let oldPasswordButton = EffectButton { [unowned self] in oldPassword.copy( fromView: self.view, trackingFrom: "site>changed" ) }
-        let newPasswordButton = EffectButton { [unowned self] in newPassword.copy( fromView: self.view, trackingFrom: "site>changed" ) }
-        oldPassword.token.then( on: .main ) { oldPasswordButton.title = try? $0.get() }
-        newPassword.token.then( on: .main ) { newPasswordButton.title = try? $0.get() }
-        oldPassword.token.and( newPassword.token ).success( on: .main ) {
-            newPasswordButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+        let oldPasswordButton = EffectButton { [unowned self] in oldPassword?.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        let newPasswordButton = EffectButton { [unowned self] in newPassword?.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        if let oldPassword = oldPassword, let newPassword = newPassword {
+            oldPassword.token.then( on: .main ) { oldPasswordButton.title = try? $0.get() }
+            newPassword.token.then( on: .main ) { newPasswordButton.title = try? $0.get() }
+            oldPassword.token.and( newPassword.token ).success( on: .main ) {
+                newPasswordButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+            }
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldPasswordButton, newPasswordButton ],
                                                    distribution: .fillEqually, spacing: 8 ) )
@@ -110,12 +112,14 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
 
         let oldLogin = self.oldSite.result( keyPurpose: .identification )
         let newLogin = self.newSite.result( keyPurpose: .identification )
-        let oldLoginButton = EffectButton { [unowned self] in oldLogin.copy( fromView: self.view, trackingFrom: "site>changed" ) }
-        let newLoginButton = EffectButton { [unowned self] in newLogin.copy( fromView: self.view, trackingFrom: "site>changed" ) }
-        oldLogin.token.then( on: .main ) { oldLoginButton.title = try? $0.get() }
-        newLogin.token.then( on: .main ) { newLoginButton.title = try? $0.get() }
-        oldLogin.token.and( newLogin.token ).success( on: .main ) {
-            newLoginButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+        let oldLoginButton = EffectButton { [unowned self] in oldLogin?.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        let newLoginButton = EffectButton { [unowned self] in newLogin?.copy( fromView: self.view, trackingFrom: "site>changed" ) }
+        if let oldLogin = oldLogin, let newLogin = newLogin {
+            oldLogin.token.then( on: .main ) { oldLoginButton.title = try? $0.get() }
+            newLogin.token.then( on: .main ) { newLoginButton.title = try? $0.get() }
+            oldLogin.token.and( newLogin.token ).success( on: .main ) {
+                newLoginButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+            }
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldLoginButton, newLoginButton ],
                                                    distribution: .fillEqually, spacing: 8 ) )
@@ -130,13 +134,15 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
         let oldAnswer = self.oldSite.result( keyPurpose: .recovery )
         let newAnswer = self.newSite.result( keyPurpose: .recovery )
         let oldAnswerButton = EffectButton( title: "(generic)" ) { [unowned self] in
-            oldAnswer.copy( fromView: self.view, trackingFrom: "site>changed" )
+            oldAnswer?.copy( fromView: self.view, trackingFrom: "site>changed" )
         }
         let newAnswerButton = EffectButton( title: "(generic)" ) { [unowned self] in
-            newAnswer.copy( fromView: self.view, trackingFrom: "site>changed" )
+            newAnswer?.copy( fromView: self.view, trackingFrom: "site>changed" )
         }
-        oldAnswer.token.and( newAnswer.token ).success( on: .main ) {
-            newAnswerButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+        if let oldAnswer = oldAnswer, let newAnswer = newAnswer {
+            oldAnswer.token.and( newAnswer.token ).success( on: .main ) {
+                newAnswerButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+            }
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldAnswerButton, newAnswerButton ],
                                                    distribution: .fillEqually, spacing: 8 ) )
