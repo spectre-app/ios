@@ -178,6 +178,7 @@ platform :ios do
     )
 
     # Advance the source state beyond the released product.
+    clean_build_artifacts
     increment_build_number(
       skip_info_plist: true,
     )
