@@ -92,7 +92,7 @@ platform :ios do
         file.puts "CHANGELOG"
         file.puts "---------"
         file.puts ""
-        file.puts changes
+        file.puts changes.lines.grep_v(/Bump project version post release/).join()
         File.absolute_path( file.path )
       end
     end
