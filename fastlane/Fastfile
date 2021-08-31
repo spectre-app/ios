@@ -181,6 +181,9 @@ platform :ios do
     increment_build_number(
       skip_info_plist: true,
     )
+    commit_version_bump(
+      message: "Bump project version post release.",
+    )
 
     # Complete and verify Xcode verification from asynchronous process.
     UI.message "Xcode verification..."
