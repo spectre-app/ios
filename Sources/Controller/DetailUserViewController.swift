@@ -366,12 +366,13 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             super.init( title: "Private User Identifier",
                         caption: { (try? $0.authenticatedIdentifier.await()).flatMap { "\($0)" } } )
 
-            self.addBehaviour( BlockTapBehaviour {
-                _ = $0.model.flatMap {
-                    $0.userKeyFactory?.authenticatedIdentifier( for: $0.algorithm ).promise {
-                        UIPasteboard.general.setItemProviders(
-                                [ NSItemProvider( item: $0 as NSString?, typeIdentifier: UIPasteboard.typeAutomatic ) ],
-                                localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
+            self.addBehaviour( BlockTapBehaviour { user in
+                _ = user.model.flatMap { user in
+                    user.userKeyFactory?.authenticatedIdentifier( for: user.algorithm ).promise { identifier in
+                        if let identifier = identifier {
+                            UIPasteboard.general.setObjects(
+                                    [ identifier as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
+                        }
                     }
                 }
             } )

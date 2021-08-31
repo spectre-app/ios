@@ -46,9 +46,8 @@ public struct SpectreOperation {
         return self.token.promise { token in
             Feedback.shared.play( .trigger )
 
-            UIPasteboard.general.setItemProviders(
-                    [ NSItemProvider( item: token as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
-                    localOnly: !AppConfig.shared.allowHandoff, expirationDate: Date( timeIntervalSinceNow: 3 * 60 ) )
+            UIPasteboard.general.setObjects(
+                    [ token as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: Date( timeIntervalSinceNow: 3 * 60 ) )
             self.operand.use()
 
             AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:

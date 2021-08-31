@@ -183,9 +183,8 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         "\(logs)[\(dateFormatter.string( from: log.occurrence )) \(log.level) | \(log.source)] \(log.message)\n"
                     }
 
-                    UIPasteboard.general.setItemProviders(
-                            [ NSItemProvider( item: logs as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
-                            localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
+                    UIPasteboard.general.setObjects(
+                            [ logs as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
                 } ),
             ] )
         }
@@ -197,9 +196,8 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         caption: { _ in "\(Tracker.shared.identifierForDevice)" } )
 
             self.addBehaviour( BlockTapBehaviour { _ in
-                UIPasteboard.general.setItemProviders(
-                        [ NSItemProvider( item: Tracker.shared.identifierForDevice as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
-                        localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
+                UIPasteboard.general.setObjects(
+                        [ Tracker.shared.identifierForDevice as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
             } )
         }
     }
@@ -210,9 +208,8 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         caption: { _ in "\(Tracker.shared.identifierForOwner)" } )
 
             self.addBehaviour( BlockTapBehaviour { _ in
-                UIPasteboard.general.setItemProviders(
-                        [ NSItemProvider( item: Tracker.shared.identifierForOwner as NSString, typeIdentifier: UIPasteboard.typeAutomatic ) ],
-                        localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
+                UIPasteboard.general.setObjects(
+                        [ Tracker.shared.identifierForOwner as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
             } )
         }
     }
