@@ -39,7 +39,7 @@ public enum IconStyle: CaseIterable {
     }
 }
 
-private let fontAwesomeUnicode : [ String: String? ] =
+private let fontAwesomeUnicode: [String: String?] =
         Bundle.main.url( forResource: "Font Awesome 6", withExtension: "json" ).flatMap {
             try? Data( contentsOf: $0 )
         }.flatMap {
@@ -54,7 +54,7 @@ extension NSAttributedString {
     public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false)
                     -> NSAttributedString? {
         guard let icon = icon.flatMap( { fontAwesomeUnicode[$0] } ) ?? icon,
-              let style = style ?? {
+              var style = style ?? {
                   let glyphs = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
                   defer {
                       glyphs.deinitialize( count: icon.utf16.count )
@@ -65,25 +65,32 @@ extension NSAttributedString {
               }()
         else { return nil }
 
+        // FIXME: iOS 12 doesn't support the kerning tricks we need to do to support DuoTone, so fall back to Solid.
+        if #available( iOS 13, * ) {
+        }
+        else if case .duotone = style {
+            style = .solid
+        }
+
+
         let font           = style.font( withSize: size )
         let attributedIcon = NSMutableAttributedString()
         if case .duotone = style, let icon = icon.unicodeScalars.first {
             let tone1 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe01 ) )! ] ) )
             let tone2 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe02 ) )! ] ) )
             attributedIcon.append( NSAttributedString( string: tone2, attributes: [
-                NSAttributedString.Key.kern: -1000,
-                NSAttributedString.Key.font: font,
-                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
+                .foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
+                .font: font, .kern: -1000,
             ] ) )
             attributedIcon.append( NSAttributedString( string: tone1, attributes: [
-                NSAttributedString.Key.font: font,
-                NSAttributedString.Key.foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
+                .foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
+                .font: font,
             ] ) )
         }
         else {
             attributedIcon.append( NSAttributedString( string: icon, attributes: [
-                NSAttributedString.Key.font: font,
-                NSAttributedString.Key.foregroundColor: UIColor.black,
+                .foregroundColor: UIColor.black,
+                .font: font,
             ] ) )
         }
 
