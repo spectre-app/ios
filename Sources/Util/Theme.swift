@@ -213,12 +213,11 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
                         }
                     }
                 }
-                // strokeColor overrides foregroundColor with an alternative color, retaining existing alpha.
+                // strokeColor without strokeWidth overrides foregroundColor with an alternative color.
                 else if attribute == .strokeColor, let secondaryColor = value as? UIColor {
                     string.enumerateAttribute( .strokeColor, in: stringRange ) { value, range, _ in
-                        if let currentColor = value as? UIColor,
-                           (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
-                            string.addAttribute( .foregroundColor, value: secondaryColor.with( alpha: currentColor.alpha ), range: range )
+                        if (string.attribute( .strokeWidth, at: range.location, effectiveRange: nil ) as? NSNumber)?.intValue ?? 0 == 0 {
+                            string.addAttribute( .foregroundColor, value: secondaryColor, range: range )
                         }
                     }
                 }

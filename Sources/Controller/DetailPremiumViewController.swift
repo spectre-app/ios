@@ -102,6 +102,11 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
           SubscriptionProductsItem(),
           SubscriptionUnavailableItem(),
           SubscriptionActiveItem(),
+          Item( subitems: [
+              EnablePremiumItem(),
+              EnableStoreItem(),
+          ] ).addBehaviour( IfConfiguration( .public, effect: .hides ) ),
+          SeparatorItem(),
           Item<Void>( subitems: [
               FeatureItem( name: "Biometric Lock", icon: "fingerprint",
                            caption: "A touch or smile and we can recognize you now. Skip your personal secret." ),
@@ -126,10 +131,6 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
               FeatureItem( name: "Support", icon: "osi",
                            caption: "Super‑charge development of \(productName)'s open source privacy‑first digital identity platform." ),
           ] ),
-          SeparatorItem( subitems: [
-              EnablePremiumItem(),
-              EnableStoreItem(),
-          ] ).addBehaviour( IfConfiguration( .public, effect: .hides ) ),
         ]
     }
 
