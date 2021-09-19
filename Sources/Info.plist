@@ -9,12 +9,6 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleTypeIconFiles</key>
-			<array>
-				<string>Icon-64.png</string>
-				<string>Icon-320.png</string>
-				<string>Icon-1024.png</string>
-			</array>
 			<key>CFBundleTypeName</key>
 			<string>Spectre sites export</string>
 			<key>LSHandlerRank</key>
@@ -26,12 +20,6 @@
 			</array>
 		</dict>
 		<dict>
-			<key>CFBundleTypeIconFiles</key>
-			<array>
-				<string>Icon-64.png</string>
-				<string>Icon-320.png</string>
-				<string>Icon-1024.png</string>
-			</array>
 			<key>CFBundleTypeName</key>
 			<string>Spectre JSON export</string>
 			<key>LSHandlerRank</key>
@@ -97,7 +85,7 @@
 				<key>CFBundleIconFiles</key>
 				<array>
 					<string>Dark Icon60x60</string>
-                                        <string>Dark Icon76x76</string>
+					<string>Dark Icon76x76</string>
 				</array>
 			</dict>
 			<key>Dark Logo</key>
@@ -105,7 +93,7 @@
 				<key>CFBundleIconFiles</key>
 				<array>
 					<string>Dark Logo60x60</string>
-                                        <string>Dark Logo76x76</string>
+					<string>Dark Logo76x76</string>
 				</array>
 			</dict>
 			<key>Light Icon</key>
@@ -113,7 +101,7 @@
 				<key>CFBundleIconFiles</key>
 				<array>
 					<string>Light Icon60x60</string>
-                                        <string>Light Icon76x76</string>
+					<string>Light Icon76x76</string>
 				</array>
 			</dict>
 			<key>Light Logo</key>
@@ -121,7 +109,7 @@
 				<key>CFBundleIconFiles</key>
 				<array>
 					<string>Light Logo60x60</string>
-                                        <string>Light Logo76x76</string>
+					<string>Light Logo76x76</string>
 				</array>
 			</dict>
 		</dict>
@@ -143,7 +131,7 @@
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
-	<string>APPL</string>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleURLTypes</key>
@@ -151,8 +139,6 @@
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-			<key>CFBundleURLIconFile</key>
-			<string>Icon-1024</string>
 			<key>CFBundleURLName</key>
 			<string>app.spectre</string>
 			<key>CFBundleURLSchemes</key>

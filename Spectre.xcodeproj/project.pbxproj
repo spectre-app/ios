@@ -1747,6 +1747,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_ONLY_ACTIVE_RESOURCES = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -1835,10 +1836,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
 					"TARGET_APP=1",
+					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -1854,7 +1854,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_APP $(inherited)";
 			};
 			name = Public;
 		};
@@ -1862,10 +1862,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"TARGET_AUTOFILL=1",
 					"$(inherited)",
-					"TARGET_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -1880,7 +1879,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
 			};
 			name = Development;
 		};
@@ -1888,10 +1887,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"TARGET_AUTOFILL=1",
 					"$(inherited)",
-					"TARGET_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -1906,7 +1904,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
 			};
 			name = Pilot;
 		};
@@ -1914,10 +1912,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"TARGET_AUTOFILL=1",
 					"$(inherited)",
-					"TARGET_EXTENSION=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -1932,7 +1929,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_AUTOFILL";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
 			};
 			name = Public;
 		};
@@ -2043,6 +2040,7 @@
 				ENABLE_ONLY_ACTIVE_RESOURCES = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -2231,6 +2229,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_ONLY_ACTIVE_RESOURCES = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -2319,10 +2318,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
 					"TARGET_APP=1",
+					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2338,7 +2336,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_APP $(inherited)";
 			};
 			name = Development;
 		};
@@ -2348,10 +2346,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
 					"TARGET_APP=1",
+					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
@@ -2367,7 +2364,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) TARGET_APP";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_APP $(inherited)";
 			};
 			name = Pilot;
 		};
