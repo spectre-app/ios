@@ -137,9 +137,11 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
     // MARK: - AppConfigObserver
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        #if !PUBLIC
         if change == \AppConfig.sandboxStore {
             self.setNeedsUpdate()
         }
+        #endif
     }
 
     // MARK: - InAppStoreObserver
@@ -286,6 +288,13 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         }
     }
 
+    #if PUBLIC
+    class EnablePremiumItem: Item<Void> {
+    }
+
+    class EnableStoreItem: Item<Void> {
+    }
+    #else
     class EnablePremiumItem: ToggleItem<Void> {
         init() {
             super.init( track: .subject( "premium", action: "override" ),
@@ -311,4 +320,5 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                         } )
         }
     }
+    #endif
 }
