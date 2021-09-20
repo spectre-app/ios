@@ -48,7 +48,7 @@ platform :ios do
     # Ensure the source code is in a valid state before building.
     ensure_git_status_clean
     ensure_git_branch(
-      branch: "^stream/(alpha|beta|probe)$",
+      branch: "^stream/(alpha|beta|probe|public)$",
     )
     ensure_no_debug_code(
       text: "<<<<<<|WIP:",
