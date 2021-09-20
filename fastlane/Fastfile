@@ -38,13 +38,8 @@ def system_silencing(cmd)
 end
 
 platform :ios do
-  desc "Build an application archive"
-
-  lane :dev do
-  end
-
   desc "Build an application archive and send it to TestFlight"
-  lane :beta do
+  lane :upload do
     # Ensure the source code is in a valid state before building.
     ensure_git_status_clean
     ensure_git_branch(
