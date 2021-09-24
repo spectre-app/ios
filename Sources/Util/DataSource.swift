@@ -259,6 +259,12 @@ class DataSource<E: Hashable>: NSObject, UICollectionViewDataSource, UITableView
 
         var selectionPaths = paths ?? []
         selectionPaths.append( contentsOf: elements?.compactMap { self.indexPath( for: $0 ) } ?? [] )
+        selectionPaths = selectionPaths.filter {
+            ($0.section < self.tableView?.numberOfSections
+                     ?? self.collectionView?.numberOfSections ?? 0)
+                    && ($0.item < self.tableView?.numberOfRows( inSection: $0.section )
+                                ?? self.collectionView?.numberOfItems( inSection: $0.section ) ?? 0)
+        }
 
         if self.tableView?.allowsMultipleSelection ?? false || self.collectionView?.allowsMultipleSelection ?? false
                    || selectionPaths.isEmpty {
