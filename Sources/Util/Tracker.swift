@@ -138,7 +138,7 @@ class Tracker: AppConfigObserver {
                 "src.func": String.valid( logEvent.function ) ?? "-",
             ]
 
-            if logEvent.level <= .error {
+            if logEvent.level <= .fatal {
                 let event = Event( level: level )
                 event.logger = "api"
                 event.message = SentryMessage( formatted: String.valid( logEvent.formatter( logPointer ) ) ?? "-" )
