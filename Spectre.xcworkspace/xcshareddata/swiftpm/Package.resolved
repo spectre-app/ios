@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/stacksift/SDK",
         "state": {
           "branch": null,
-          "revision": "f25e2e9d10c1f0d10933f2b42687c5ff07d07015",
-          "version": "0.3.3"
+          "revision": "6cd6cfbcd0f1624b1f7bd0c91f180600f2b8c51a",
+          "version": "0.3.5"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
-          "revision": "d9b37a6664cf2467efda861e1383ec806a221b18",
-          "version": "7.1.4"
+          "revision": "4abaa663a7916902ae9196a8bf3c4c047caacc17",
+          "version": "7.3.0"
         }
       },
       {

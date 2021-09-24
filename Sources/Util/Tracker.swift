@@ -384,6 +384,8 @@ class Tracker: AppConfigObserver {
                 SentrySDK.start {
                     $0.dsn = dsn
                     $0.environment = [ .private: "Private", .pilot: "Pilot", .public: "Public" ][AppConfig.shared.configuration]
+                    $0.stitchAsyncCode = true
+                    $0.tracesSampleRate = 1
                 }
                 SentrySDK.configureScope {
                     $0.setTags( self.identifiers )
