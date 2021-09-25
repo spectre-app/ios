@@ -229,7 +229,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             // Decode and validate the application's App Store receipt.
             do {
                 let receipt = try InAppReceipt.localReceipt()
-                try receipt.verify()
+                try receipt.validate()
                 self.receipt = receipt
             }
             catch {

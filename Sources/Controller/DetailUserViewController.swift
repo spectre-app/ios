@@ -225,7 +225,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class SystemFeaturesItem: Item<User> {
         init() {
             super.init( subitems: [
-                ToggleItem<User>( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "keyboard" ) },
+                ToggleItem( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "keyboard" ) },
                                   value: { $0.autofill }, update: { $0.model?.autofill = $1 }, caption: { _ in
                     """
                     Auto-fill your site passwords from other apps.
@@ -238,7 +238,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         } ) )
                         .addBehaviour( PremiumTapBehaviour() )
                         .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
-                ToggleItem<User>( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "file-export" ) },
+                ToggleItem( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "file-export" ) },
                                   value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """
                     Allow other apps to see and backup your user through On My iPhone.

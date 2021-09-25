@@ -72,7 +72,6 @@ extension NSAttributedString {
             style = .solid
         }
 
-
         let font           = style.font( withSize: size )
         let attributedIcon = NSMutableAttributedString()
         if case .duotone = style, let icon = icon.unicodeScalars.first {

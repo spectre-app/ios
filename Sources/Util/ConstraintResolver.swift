@@ -185,8 +185,7 @@ class HashableConstraint: Hashable {
 }
 
 public extension NSLayoutConstraint {
-    // FIXME: https://bugs.swift.org/browse/TF-1287
-    // FIXME: @_dynamicReplacement(for: description)
+    // @_dynamicReplacement(for: description) FIXME: https://bugs.swift.org/browse/SR-13121
     override var debugDescription: String {
         if self.firstAttribute.description.contains( "?" ) || self.secondAttribute.description.contains( "?" ) {
             return self.description

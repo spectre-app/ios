@@ -88,8 +88,7 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
 
                     return arg as? CVarArg ?? String( reflecting: arg )
                 } ) {
-                    // The va_list C type is incompatible with CVaListPointer on x86_64.
-                    // FIXME: https://bugs.swift.org/browse/SR-13779
+                    // FIXME: https://bugs.swift.org/browse/SR-13779 - The va_list C type is incompatible with CVaListPointer on x86_64.
                     withUnsafeBytes( of: $0 ) { args in
                         var event = SpectreLogEvent(
                                 occurrence: time( nil ), level: level, file: file, line: line, function: function, formatter: { event in
