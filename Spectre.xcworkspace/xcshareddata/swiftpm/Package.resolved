@@ -12,11 +12,11 @@
       },
       {
         "package": "Countly",
-        "repositoryURL": "https://github.com/lhunath/countly-sdk-ios",
+        "repositoryURL": "https://github.com/Countly/countly-sdk-ios",
         "state": {
-          "branch": "extension-availability",
-          "revision": "a3766f046b6823dfab615462af5d045c00205c48",
-          "version": null
+          "branch": null,
+          "revision": "3867c05ade87d6327383fe1c3742da02f053c766",
+          "version": "20.11.3"
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/tikhop/TPInAppReceipt",
         "state": {
           "branch": null,
-          "revision": "695f0db9a790c8c62d5335728877059851ffd912",
-          "version": "3.2.1"
+          "revision": "14f707e28fc7e19aadac72c8d63eb8610fa9c3bf",
+          "version": "3.3.0"
         }
       },
       {

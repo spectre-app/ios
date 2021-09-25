@@ -203,10 +203,8 @@
 		DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */; };
 		DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */; };
 		DA5DAE7926A3BBA100D9EC22 /* Stacksift in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7826A3BBA100D9EC22 /* Stacksift */; };
-		DA5DAE7C26A623A800D9EC22 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7B26A623A800D9EC22 /* Countly */; };
 		DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7D26A623E300D9EC22 /* Sentry */; };
 		DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7F26A623F000D9EC22 /* Sentry */; };
-		DA5DAE8226A623F500D9EC22 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8126A623F500D9EC22 /* Countly */; };
 		DA5DAE8426A623FC00D9EC22 /* Stacksift in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8326A623FC00D9EC22 /* Stacksift */; };
 		DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */; };
 		DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */; };
@@ -237,6 +235,7 @@
 		DABC7BB8251C14160021ADD8 /* BaseSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */; };
 		DABC7BBB251C1B410021ADD8 /* BaseUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
+		DAD8055F26FFCFC6008BF2E1 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DAD8055E26FFCFC6008BF2E1 /* Countly */; };
 		DADBD8D626DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
 		DADBD8D726DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
 		DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */ = {isa = PBXBuildFile; fileRef = DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */; };
@@ -571,7 +570,6 @@
 			files = (
 				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
 				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
-				DA5DAE8226A623F500D9EC22 /* Countly in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */,
 				DA5DAE8426A623FC00D9EC22 /* Stacksift in Frameworks */,
@@ -583,6 +581,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
+				DAD8055F26FFCFC6008BF2E1 /* Countly in Frameworks */,
 				DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */,
 				DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */,
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
@@ -590,7 +589,6 @@
 				DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */,
 				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
 				DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */,
-				DA5DAE7C26A623A800D9EC22 /* Countly in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 				DA5DAE7926A3BBA100D9EC22 /* Stacksift in Frameworks */,
 			);
@@ -1088,7 +1086,6 @@
 			name = "Spectre-AutoFill";
 			packageProductDependencies = (
 				DA5DAE7F26A623F000D9EC22 /* Sentry */,
-				DA5DAE8126A623F500D9EC22 /* Countly */,
 				DA5DAE8326A623FC00D9EC22 /* Stacksift */,
 			);
 			productName = "Spectre-AutoFill";
@@ -1118,9 +1115,9 @@
 				DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */,
 				DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */,
 				DA5DAE7826A3BBA100D9EC22 /* Stacksift */,
-				DA5DAE7B26A623A800D9EC22 /* Countly */,
 				DA5DAE7D26A623E300D9EC22 /* Sentry */,
 				DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */,
+				DAD8055E26FFCFC6008BF2E1 /* Countly */,
 			);
 			productName = Spectre;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
@@ -1273,7 +1270,7 @@
 				DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */,
 				DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */,
-				DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */,
+				DAD8055D26FFCFC6008BF2E1 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */,
 			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
@@ -2543,12 +2540,12 @@
 				minimumVersion = 0.3.3;
 			};
 		};
-		DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */ = {
+		DAD8055D26FFCFC6008BF2E1 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/lhunath/countly-sdk-ios";
+			repositoryURL = "https://github.com/Countly/countly-sdk-ios";
 			requirement = {
-				branch = "extension-availability";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 20.0.0;
 			};
 		};
 		DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */ = {
@@ -2601,11 +2598,6 @@
 			package = DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */;
 			productName = Stacksift;
 		};
-		DA5DAE7B26A623A800D9EC22 /* Countly */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
-			productName = Countly;
-		};
 		DA5DAE7D26A623E300D9EC22 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
@@ -2616,11 +2608,6 @@
 			package = DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
-		DA5DAE8126A623F500D9EC22 /* Countly */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DA5DAE7A26A623A700D9EC22 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
-			productName = Countly;
-		};
 		DA5DAE8326A623FC00D9EC22 /* Stacksift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DA5DAE6D26A35D9C00D9EC22 /* XCRemoteSwiftPackageReference "SDK" */;
@@ -2630,6 +2617,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */;
 			productName = TPInAppReceipt;
+		};
+		DAD8055E26FFCFC6008BF2E1 /* Countly */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAD8055D26FFCFC6008BF2E1 /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
+			productName = Countly;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
