@@ -169,6 +169,13 @@ platform :ios do
       sign: true,
       message: dep_notes,
     )
+    push_to_git_remote(
+      remote: 'origin',
+      local_branch: git_branch,
+      tags: true,
+    )
+
+    # Submit the distribution to third-party services.
     download_dsyms(
       wait_for_dsym_processing: true,
       build_number: lane_context[SharedValues::BUILD_NUMBER],
