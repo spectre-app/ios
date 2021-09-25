@@ -185,6 +185,7 @@ platform :ios do
       build: app_build,
       finalize: true,
     )
+    git_from = last_git_tag( pattern: "build/*" )
     sentry_set_commits(
       commit: "Spectre / Spectre iOS@" + git_from + "..HEAD",
       app_identifier: 'app.spectre',
