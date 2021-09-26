@@ -297,7 +297,8 @@ extension UICollectionView {
 
         guard self.indexPathsForSelectedItems != selectPath.flatMap( { [ $0 ] } )
         else {
-            if let selectPath = selectPath {
+            if let selectPath = selectPath,
+               selectPath.section < self.numberOfSections, selectPath.item < self.numberOfItems( inSection: 0 ) {
                 self.scrollToItem( at: selectPath, at: .centeredHorizontally, animated: animated )
             }
             return true

@@ -25,7 +25,7 @@ class CarouselView: UICollectionView {
             return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
         }
         set {
-            if !self.bounds.isEmpty {
+            if !self.bounds.isEmpty, 0 < self.numberOfSections, newValue < self.numberOfItems( inSection: 0 ) {
                 self.scrollToItem( at: IndexPath( item: newValue, section: 0 ), at: .centeredHorizontally, animated: true )
             }
         }
