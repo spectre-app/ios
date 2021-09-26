@@ -157,6 +157,12 @@ extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {
     }
 }
 
+public extension RawRepresentable where Self: CustomStringConvertible, RawValue: LosslessStringConvertible {
+    var description: String {
+        String( self.rawValue )
+    }
+}
+
 extension Result {
     var error:       Failure? {
         guard case .failure(let error) = self

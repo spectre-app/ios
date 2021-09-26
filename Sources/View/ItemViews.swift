@@ -398,7 +398,7 @@ class IfDebug<M>: ConditionalBehaviour<M> {
 
 class IfConfiguration<M>: ConditionalBehaviour<M> {
     init(_ configuration: AppConfiguration, effect: Effect) {
-        super.init( effect: effect, condition: { _ in AppConfig.shared.configuration == configuration } )
+        super.init( effect: effect, condition: { _ in AppConfig.shared.environment == configuration } )
     }
 }
 

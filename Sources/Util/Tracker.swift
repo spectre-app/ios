@@ -335,7 +335,7 @@ class Tracker: AppConfigObserver {
         if !appConfig.offline && !self.hasCountlyStarted {
             if let countly = [
                 .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
-            ][AppConfig.shared.configuration],
+            ][AppConfig.shared.environment],
                let countlyKey = countly.key.b64Decrypt(), let countlySalt = countly.salt.b64Decrypt() {
                 let countlyConfig = CountlyConfig()
                 countlyConfig.host = "https://countly.spectre.app"
@@ -350,7 +350,7 @@ class Tracker: AppConfigObserver {
                 //countlyConfig.enableDebug = true
                 countlyConfig.pushTestMode = [
                     .private: .development, .pilot: .testFlightOrAdHoc, .public: nil,
-                ][AppConfig.shared.configuration] ?? .development
+                ][AppConfig.shared.environment] ?? .development
                 Countly.sharedInstance().start( with: countlyConfig )
                 self.hasCountlyStarted = true
 
@@ -383,7 +383,7 @@ class Tracker: AppConfigObserver {
                 // https://github.com/getsentry/sentry-cocoa/issues/369
                 SentrySDK.start {
                     $0.dsn = dsn
-                    $0.environment = [ .private: "Private", .pilot: "Pilot", .public: "Public" ][AppConfig.shared.configuration]
+                    $0.environment = [ .private: "Private", .pilot: "Pilot", .public: "Public" ][AppConfig.shared.environment]
                     $0.stitchAsyncCode = true
                     $0.tracesSampleRate = 1
                 }

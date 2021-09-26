@@ -17,9 +17,9 @@ public class AppConfig: Observable {
 
     public let observers = Observers<AppConfigObserver>()
 
-    public var isApp         = false
-    public var isDebug       = false
-    public var configuration = AppConfiguration.private
+    public var isApp:       Bool
+    public let isDebug:     Bool
+    public var environment: AppConfiguration
     public var runCount: Int {
         get {
             UserDefaults.shared.integer( forKey: #function )
@@ -152,16 +152,20 @@ public class AppConfig: Observable {
 
         #if TARGET_APP
         self.isApp = true
+        #else
+        self.isApp = false
         #endif
         #if DEBUG
         self.isDebug = true
+        #else
+        self.isDebug = false
         #endif
         #if PRIVATE
-        self.configuration = .private
+        self.environment = .private
         #elseif PILOT
-        self.configuration = .pilot
+        self.environment = .pilot
         #elseif PUBLIC
-        self.configuration = .public
+        self.environment = .public
         #else
         #error( "Build should define a configuration, either PRIVATE, PILOT or PUBLIC." )
         #endif
@@ -171,8 +175,8 @@ public class AppConfig: Observable {
     }
 }
 
-public enum AppConfiguration {
-    case `private`, pilot, `public`
+public enum AppConfiguration: String, CustomStringConvertible {
+    case `private`, `pilot`, `public`
 }
 
 public protocol AppConfigObserver {

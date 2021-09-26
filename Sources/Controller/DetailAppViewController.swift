@@ -101,9 +101,8 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
     class VersionItem: LabelItem<AppConfig> {
         init() {
-            super.init( title: "\(productName)",
-                        value: { _ in Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) },
-                        caption: { _ in (Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String).flatMap { "\($0)" } } )
+            super.init( title: "\(productName)", value: { _ in productVersion },
+                        caption: { _ in "Build \(productBuild)\(AppConfig.shared.isDebug ? "D": "") (\(AppConfig.shared.environment))" } )
         }
     }
 
