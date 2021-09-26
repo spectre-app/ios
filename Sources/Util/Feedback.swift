@@ -77,7 +77,7 @@ public class HapticFeedback: Feedback {
             self.hapticEngine = hapticEngine
         }
         catch {
-            wrn( "Haptics not available [>PII]" )
+            wrn( "Haptics not available: %@ [>PII]", error.localizedDescription )
             pii( "[>] Error: %@", error )
 
             self.hapticEngine = nil
@@ -96,7 +96,7 @@ public class HapticFeedback: Feedback {
                 }
             }
             catch {
-                err( "Couldn't play haptic [>PII]" )
+                err( "Couldn't play haptic: %@ [>PII]", error.localizedDescription )
                 pii( "[>] Error: %@", error )
             }
         }

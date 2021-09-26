@@ -104,8 +104,12 @@ class AlertController {
     @discardableResult
     public func show(in host: @escaping @autoclosure () -> UIView? = nil, dismissAutomatically: Bool = true,
                      file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) -> Self {
-        log( file: file, line: line, function: function, dso: dso, level: self.level, "[ %@ ]", [ self.title ] )
-        pii( file: file, line: line, function: function, dso: dso, "> %@: %@", self.message, self.details )
+        if let details = self.details {
+            log( file: file, line: line, function: function, dso: dso, level: self.level, "%@: %@ [>PII]", [ self.title, self.message ] )
+            pii( file: file, line: line, function: function, dso: dso, "> %@", details )
+        } else {
+            log( file: file, line: line, function: function, dso: dso, level: self.level, "%@: %@", [ self.title, self.message ] )
+        }
 
         // TODO: Stack multiple alerts
         DispatchQueue.main.perform {

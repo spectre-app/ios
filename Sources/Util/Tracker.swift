@@ -62,7 +62,7 @@ class Tracker: AppConfigObserver {
                     AppConfig.shared.notificationsDecided = true
 
                     if let error = error {
-                        wrn( "Notification authorization error. [>PII]" )
+                        wrn( "Notifications not authorized: %@ [>PII]", error.localizedDescription )
                         pii( "[>] Error: %@", error )
                     }
                     if granted {

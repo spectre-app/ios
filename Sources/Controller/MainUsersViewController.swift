@@ -157,7 +157,7 @@ class MainUsersViewController: BaseUsersViewController {
                 self.appUpdate.isHidden = result.upToDate
             }
             catch {
-                wrn( "Application update check failed. [>PII]" )
+                wrn( "Application update check failed: %@ [>PII]", error.localizedDescription )
                 pii( "[>] Error: %@", error )
             }
         }

@@ -106,12 +106,12 @@ class Marshal: Observable, Updatable {
                 if user.sharing {
                     if let sharingURL = self.createURL( for: user, in: FileManager.appDocuments, format: format ) {
                         if !FileManager.default.createFile( atPath: sharingURL.path, contents: exportData ) {
-                            wrn( "Issue sharing user. Couldn't create user file. [>PII]" )
+                            wrn( "Issue sharing user: Couldn't create user file. [>PII]" )
                             pii( "[>] URL: %@", sharingURL )
                         }
                     }
                     else {
-                        wrn( "Issue sharing user. No application document path available." )
+                        wrn( "Issue sharing user: No application document path available." )
                     }
                 }
 
@@ -272,7 +272,7 @@ class Marshal: Observable, Updatable {
                             if FileManager.default.fileExists( atPath: existingURL.path ) {
                                 do { try FileManager.default.removeItem( at: existingURL ) }
                                 catch {
-                                    wrn( "Couldn't delete existing document when importing new one. [>PII]" )
+                                    wrn( "Couldn't delete existing document when importing new one: %@ [>PII]", error.localizedDescription )
                                     pii( "[>] URL: %@, Error: %@", existingURL, error )
                                 }
                             }

@@ -122,7 +122,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         if let selectedCell = self.usersCarousel.cellForItem( at: indexPath ) as? UserCell {
             selectedCell.userEvent = self.userEvent
             selectedCell.attemptBiometrics().failure { error in
-                inf( "Skipping biometrics. [>PII]" )
+                inf( "Skipping biometrics: %@ [>PII]", error.localizedDescription )
                 pii( "[>] Error: %@", error )
             }
         }
@@ -299,7 +299,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 self.attemptBiometrics().failure { error in
-                    err( "Failed biometrics. [>PII]" )
+                    err( "Failed biometrics: %@ [>PII]", error.localizedDescription )
                     pii( "[>] Error: %@", error )
                 }
             }
@@ -516,7 +516,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
                     switch error {
                         case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
-                            wrn( "Biometrics cancelled. [>PII]" )
+                            wrn( "Biometrics cancelled: %@ [>PII]", error.localizedDescription )
                             pii( "[>] Error: %@", error )
                         default:
                             mperror( title: "Couldn't unlock user", error: error )

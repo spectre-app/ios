@@ -155,8 +155,8 @@ class SitePreview: Equatable {
                             self.data.imageURL = nil
                             self.data.imageData = nil
                             self.data.imageDate = Date()
-                            wrn( "[preview error] [>PII]" )
-                            pii( "[>] URL: %@, Error: %@", self.url, error )
+                            wrn( "Preview unavailable: %@ [>PII]", error.localizedDescription )
+                            pii( "[>] Candidates: %@, Error: %@", candidates, error )
                         }
 
                         SitePreview.semaphore.await {
@@ -292,7 +292,7 @@ struct PreviewData: Codable, Equatable {
                 try SitePreview.previewImageFile( for: self.siteName ).flatMap { try imageData.write( to: $0 ) }
             }
             catch {
-                wrn( "Couldn't save site preview image. [>PII]" )
+                wrn( "Couldn't save site preview image: %@ [>PII]", error.localizedDescription )
                 pii( "[>] %@: error: %@", self.siteName, error )
             }
         }

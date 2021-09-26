@@ -140,7 +140,7 @@ public class KeychainKeyFactory: KeyFactory {
         var error: NSError?
         defer {
             if let error = error {
-                wrn( "Biometrics unavailable. [>PII]" )
+                wrn( "Biometrics unavailable: %@ [>PII]", error.localizedDescription )
                 pii( "[>] Error: %@", error )
             }
         }

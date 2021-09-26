@@ -185,7 +185,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             SKStoreProductParameterITunesItemIdentifier: appleID ?? productAppleID,
         ] ) { success, error in
             if !success || error != nil {
-                wrn( "Couldn't load store controller. [>PII]" )
+                wrn( "Couldn't load store controller: %@ [>PII]", error?.localizedDescription )
                 pii( "[>] Error: %@", error )
             }
         }
@@ -233,7 +233,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                 self.receipt = receipt
             }
             catch {
-                wrn( "App Store receipt unavailable. [>PII]" )
+                wrn( "App Store receipt unavailable: %@ [>PII]", error.localizedDescription )
                 pii( "[>] Error: %@", error )
                 self.receipt = nil
             }
