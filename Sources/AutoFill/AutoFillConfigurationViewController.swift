@@ -36,4 +36,10 @@ class AutoFillConfigurationViewController: BaseViewController {
         LayoutConfiguration( view: self.closeButton )
                 .constrain( as: .bottomCenter, margin: true ).activate()
     }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        Marshal.shared.updateTask.request()
+    }
 }

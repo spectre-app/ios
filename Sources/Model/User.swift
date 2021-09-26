@@ -369,12 +369,8 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
         self.userName
     }
     var credentials: [AutoFill.Credential]? {
-        self.autofill ? self.sites.flatMap { site -> [AutoFill.Credential] in
-            var siteNames = Set<String>( [ site.siteName, site.siteName.domainName( .host ), site.siteName.domainName( .topPrivate ) ] )
-            if let url = site.url {
-                siteNames.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
-            }
-            return siteNames.map { AutoFill.Credential( supplier: self, siteName: $0 ) }
+        self.autofill ? self.sites.map { site in
+            .init( supplier: self, site: site.siteName, url: site.url )
         }: nil
     }
 

@@ -62,52 +62,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    func launchDecisions(completion: @escaping () -> Void = {}) {
-        guard let window = self.window
-        else { return }
-
-        // Diagnostics decision
-        if !AppConfig.shared.diagnosticsDecided {
-            let alertController = UIAlertController( title: "Diagnostics", message:
-            """
-            If a bug, crash or issue should happen, Diagnostics will let us know and fix it.
-
-            It's just code and statistics; personal information is sacred and cannot leave your device.
-            """, preferredStyle: .actionSheet )
-            alertController.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
-                AppConfig.shared.diagnostics = false
-                AppConfig.shared.diagnosticsDecided = true
-                self.launchDecisions( completion: completion )
-            } )
-            alertController.addAction( UIAlertAction( title: "Engage", style: .default ) { _ in
-                AppConfig.shared.diagnostics = true
-                AppConfig.shared.diagnosticsDecided = true
-                self.launchDecisions( completion: completion )
-            } )
-            alertController.popoverPresentationController?.sourceView = window
-            alertController.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
-            window.rootViewController?.present( alertController, animated: true )
-            return
-        }
-
-        // Notifications decision
-        if !AppConfig.shared.notificationsDecided {
-            let alertController = UIAlertController( title: "Keeping Safe", message:
-            """
-            Things move fast in the online world.
-
-            If you enable notifications, we can inform you of known breaches and keep you current on important security events.
-            """, preferredStyle: .actionSheet )
-            alertController.popoverPresentationController?.sourceView = window
-            alertController.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
-            alertController.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
-                Tracker.shared.enableNotifications( consented: false ) { _ in
-                    self.launchDecisions( completion: completion )
-                }
-            } )
-            window.rootViewController?.present( alertController, animated: true )
-            return
-        }
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        Marshal.shared.updateTask.request()
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
@@ -212,7 +168,57 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        wrn( "Couldn't register for remote notifications. [>PII]" )
+        wrn( "Couldn't register for remote notifications: %@ [>PII]", error.localizedDescription )
         pii( "[>] Error: %@", error )
+    }
+
+    // - Private
+
+    private func launchDecisions(completion: @escaping () -> Void = {}) {
+        guard let window = self.window
+        else { return }
+
+        // Diagnostics decision
+        if !AppConfig.shared.diagnosticsDecided {
+            let alertController = UIAlertController( title: "Diagnostics", message:
+            """
+            If a bug, crash or issue should happen, Diagnostics will let us know and fix it.
+
+            It's just code and statistics; personal information is sacred and cannot leave your device.
+            """, preferredStyle: .actionSheet )
+            alertController.addAction( UIAlertAction( title: "Disable", style: .cancel ) { _ in
+                AppConfig.shared.diagnostics = false
+                AppConfig.shared.diagnosticsDecided = true
+                self.launchDecisions( completion: completion )
+            } )
+            alertController.addAction( UIAlertAction( title: "Engage", style: .default ) { _ in
+                AppConfig.shared.diagnostics = true
+                AppConfig.shared.diagnosticsDecided = true
+                self.launchDecisions( completion: completion )
+            } )
+            alertController.popoverPresentationController?.sourceView = window
+            alertController.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
+            window.rootViewController?.present( alertController, animated: true )
+            return
+        }
+
+        // Notifications decision
+        if !AppConfig.shared.notificationsDecided {
+            let alertController = UIAlertController( title: "Keeping Safe", message:
+            """
+            Things move fast in the online world.
+
+            If you enable notifications, we can inform you of known breaches and keep you current on important security events.
+            """, preferredStyle: .actionSheet )
+            alertController.popoverPresentationController?.sourceView = window
+            alertController.popoverPresentationController?.sourceRect = CGRect( center: window.bounds.bottom, size: .zero )
+            alertController.addAction( UIAlertAction( title: "Thanks!", style: .default ) { _ in
+                Tracker.shared.enableNotifications( consented: false ) { _ in
+                    self.launchDecisions( completion: completion )
+                }
+            } )
+            window.rootViewController?.present( alertController, animated: true )
+            return
+        }
     }
 }

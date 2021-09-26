@@ -50,6 +50,12 @@ class AutoFillSitesViewController: BaseSitesViewController {
             .init( tracking: nil, title: "", icon: nil, appearance: [ .cell ], action: { _, _, _ in } ),
             .init( tracking: .subject( "sites.site", action: "fill" ),
                    title: "Fill", icon: .icon( "paper-plane-top" ), appearance: [ .cell, .menu ] ) { [unowned self] site, _, appearance in
+                if site.url == nil,
+                   let serviceURL = allServiceIdentifiers.filter( { $0.type == .URL } )
+                                                         .compactMap( { URL( string: $0.identifier ) } ).first {
+                    site.url = serviceURL.absoluteString
+                }
+
                 switch appearance {
                     case .cell:
                         self.completeRequest( site: site, trackingFrom: "site>cell" )

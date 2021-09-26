@@ -695,8 +695,8 @@ class Marshal: Observable, Updatable {
             self.userKeyID = info.keyID
             self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
 
-            self.biometricLock = file.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
-            self.autofill = file.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
+            self.biometricLock = self.file.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
+            self.autofill = self.file.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
 
             for purchase in [
                 "com.lyndir.masterpassword.products.generatelogins",
@@ -843,8 +843,10 @@ class Marshal: Observable, Updatable {
             guard self.autofill
             else { return nil }
 
-            return self.file.spectre_find( path: "sites" )?.compactMap {
-                String.valid( $0.obj_key ).flatMap { AutoFill.Credential( supplier: self, siteName: $0 ) }
+            return self.file.spectre_find( path: "sites" )?.compactMap { site in
+                String.valid( site.obj_key ).flatMap { siteName in
+                    .init( supplier: self, site: siteName, url: site.spectre_get( path: "_ext_spectre", "url" ) )
+                }
             }
         }
     }

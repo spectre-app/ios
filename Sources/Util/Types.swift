@@ -264,22 +264,180 @@ extension SpectreResultType: CustomStringConvertible, CaseIterable {
 }
 
 extension UnsafeMutablePointer where Pointee == SpectreMarshalledFile {
-
     public func spectre_get(path: String...) -> Bool? {
-        path.withCStringVaList { spectre_marshal_data_vget_bool( self.pointee.data, $0 ) }
+        self.pointee.data.spectre_get( path: path )
     }
 
     public func spectre_get(path: String...) -> Double? {
-        path.withCStringVaList { spectre_marshal_data_vget_num( self.pointee.data, $0 ) }
+        self.pointee.data.spectre_get( path: path )
     }
 
     public func spectre_get(path: String...) -> String? {
-        path.withCStringVaList { .valid( spectre_marshal_data_vget_str( self.pointee.data, $0 ) ) }
+        self.pointee.data.spectre_get( path: path )
     }
 
     public func spectre_get(path: String...) -> Date? {
+        self.pointee.data.spectre_get( path: path )
+    }
+
+    @discardableResult
+    public func spectre_set(_ value: Bool, path: String...) -> Bool {
+        self.pointee.data.spectre_set( value, path: path )
+    }
+
+    @discardableResult
+    public func spectre_set(_ value: Double, path: String...) -> Bool {
+        self.pointee.data.spectre_set( value, path: path )
+    }
+
+    @discardableResult
+    public func spectre_set(_ value: String?, path: String...) -> Bool {
+        self.pointee.data.spectre_set( value, path: path )
+    }
+
+    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        self.pointee.data.spectre_find( path: path )
+    }
+}
+
+extension SpectreMarshalledData {
+    public func spectre_get(path: String...) -> Bool? {
+        withUnsafePointer( to: self ) {
+            Optional( $0 ).spectre_get( path: path )
+        }
+    }
+
+    public func spectre_get(path: String...) -> Double? {
+        withUnsafePointer( to: self ) {
+            Optional( $0 ).spectre_get( path: path )
+        }
+    }
+
+    public func spectre_get(path: String...) -> String? {
+        withUnsafePointer( to: self ) {
+            Optional( $0 ).spectre_get( path: path )
+        }
+    }
+
+    public func spectre_get(path: String...) -> Date? {
+        withUnsafePointer( to: self ) {
+            Optional( $0 ).spectre_get( path: path )
+        }
+    }
+
+    @discardableResult
+    public mutating func spectre_set(_ value: Bool, path: String...) -> Bool {
+        withUnsafeMutablePointer( to: &self ) {
+            Optional( $0 ).spectre_set( value, path: path )
+        }
+    }
+
+    @discardableResult
+    public mutating func spectre_set(_ value: Double, path: String...) -> Bool {
+        withUnsafeMutablePointer( to: &self ) {
+            Optional( $0 ).spectre_set( value, path: path )
+        }
+    }
+
+    @discardableResult
+    public mutating func spectre_set(_ value: String?, path: String...) -> Bool {
+        withUnsafeMutablePointer( to: &self ) {
+            Optional( $0 ).spectre_set( value, path: path )
+        }
+    }
+
+    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        withUnsafePointer( to: self ) {
+            Optional( $0 ).spectre_find( path: path )
+        }
+    }
+}
+
+extension Optional where Wrapped == UnsafeMutablePointer<SpectreMarshalledData> {
+    public func spectre_get(path: String...) -> Bool? {
+        self.spectre_get( path: path )
+    }
+
+    public func spectre_get(path: String...) -> Double? {
+        self.spectre_get( path: path )
+    }
+
+    public func spectre_get(path: String...) -> String? {
+        self.spectre_get( path: path )
+    }
+
+    public func spectre_get(path: String...) -> Date? {
+        self.spectre_get( path: path )
+    }
+
+    @discardableResult
+    public func spectre_set(_ value: Bool, path: String...) -> Bool {
+        self.spectre_set( value, path: path )
+    }
+
+    @discardableResult
+    public func spectre_set(_ value: Double, path: String...) -> Bool {
+        self.spectre_set( value, path: path )
+    }
+
+    @discardableResult
+    public func spectre_set(_ value: String?, path: String...) -> Bool {
+        self.spectre_set( value, path: path )
+    }
+
+    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        self.spectre_find( path: path )
+    }
+}
+
+extension Optional where Wrapped == UnsafePointer<SpectreMarshalledData> {
+    public func spectre_get(path: [String]) -> Bool? {
+        path.withCStringVaList { spectre_marshal_data_vget_bool( self, $0 ) }
+    }
+
+    public func spectre_get(path: [String]) -> Double? {
+        path.withCStringVaList { spectre_marshal_data_vget_num( self, $0 ) }
+    }
+
+    public func spectre_get(path: [String]) -> String? {
+        path.withCStringVaList { .valid( spectre_marshal_data_vget_str( self, $0 ) ) }
+    }
+
+    public func spectre_get(path: [String]) -> Date? {
         path.withCStringVaList {
-            let time = spectre_get_timegm( spectre_marshal_data_vget_str( self.pointee.data, $0 ) )
+            let time = spectre_get_timegm( spectre_marshal_data_vget_str( self, $0 ) )
+            if time == ERR {
+                return nil
+            }
+
+            return Date( timeIntervalSince1970: TimeInterval( time ) )
+        }
+    }
+
+    public func spectre_find(path: [String]) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        guard let found = path.withCStringVaList( body: { spectre_marshal_data_vfind( self, $0 ) } )
+        else { return nil }
+
+        return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )
+    }
+}
+
+extension Optional where Wrapped == UnsafeMutablePointer<SpectreMarshalledData> {
+    public func spectre_get(path: [String]) -> Bool? {
+        path.withCStringVaList { spectre_marshal_data_vget_bool( self, $0 ) }
+    }
+
+    public func spectre_get(path: [String]) -> Double? {
+        path.withCStringVaList { spectre_marshal_data_vget_num( self, $0 ) }
+    }
+
+    public func spectre_get(path: [String]) -> String? {
+        path.withCStringVaList { .valid( spectre_marshal_data_vget_str( self, $0 ) ) }
+    }
+
+    public func spectre_get(path: [String]) -> Date? {
+        path.withCStringVaList {
+            let time = spectre_get_timegm( spectre_marshal_data_vget_str( self, $0 ) )
             if time == ERR {
                 return nil
             }
@@ -289,22 +447,22 @@ extension UnsafeMutablePointer where Pointee == SpectreMarshalledFile {
     }
 
     @discardableResult
-    public func spectre_set(_ value: Bool, path: String...) -> Bool {
-        path.withCStringVaList { spectre_marshal_data_vset_bool( value, self.pointee.data, $0 ) }
+    public func spectre_set(_ value: Bool, path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_bool( value, self, $0 ) }
     }
 
     @discardableResult
-    public func spectre_set(_ value: Double, path: String...) -> Bool {
-        path.withCStringVaList { spectre_marshal_data_vset_num( value, self.pointee.data, $0 ) }
+    public func spectre_set(_ value: Double, path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_num( value, self, $0 ) }
     }
 
     @discardableResult
-    public func spectre_set(_ value: String?, path: String...) -> Bool {
-        path.withCStringVaList { spectre_marshal_data_vset_str( value, self.pointee.data, $0 ) }
+    public func spectre_set(_ value: String?, path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_str( value, self, $0 ) }
     }
 
-    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
-        guard let found = path.withCStringVaList( body: { spectre_marshal_data_vfind( self.pointee.data, $0 ) } )
+    public func spectre_find(path: [String]) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        guard let found = path.withCStringVaList( body: { spectre_marshal_data_vfind( self, $0 ) } )
         else { return nil }
 
         return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )

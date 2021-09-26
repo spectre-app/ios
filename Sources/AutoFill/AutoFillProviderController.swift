@@ -51,7 +51,6 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
-        //dbg( "prepareCredentialList: %@", serviceIdentifiers )
         AutoFillModel.shared.context = AutoFillModel.Context( serviceIdentifiers: serviceIdentifiers )
 
         let usersViewController = AutoFillUsersViewController()
@@ -67,7 +66,6 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
-        //dbg( "provideCredentialWithoutUserInteraction: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
         Marshal.shared.updateTask.request( now: true ).promising( on: .api ) { userFiles in
@@ -126,7 +124,6 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     }
 
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
-        //dbg( "prepareInterfaceToProvideCredential: %@", credentialIdentity )
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
         let credentialViewController = AutoFillCredentialViewController()
