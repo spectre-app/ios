@@ -186,13 +186,11 @@ platform :ios do
       app_identifier: 'app.spectre',
       version: app_version,
       build: app_build,
-      finalize: true,
     )
     sentry_create_release(
       app_identifier: 'app.spectre.autofill',
       version: app_version,
       build: app_build,
-      finalize: true,
     )
     sentry_set_commits(
       commit: "Spectre / Spectre iOS@" + git_previous_deploy + "..HEAD",
@@ -222,6 +220,16 @@ platform :ios do
       time: Time.now.to_i - dep_start,
       app_identifier: 'app.spectre.autofill',
       env: dep_stream == "public" ? "Public" : "Pilot",
+      version: app_version,
+      build: app_build,
+    )
+    sentry_finalize_release(
+      app_identifier: 'app.spectre',
+      version: app_version,
+      build: app_build,
+    )
+    sentry_finalize_release(
+      app_identifier: 'app.spectre.autofill',
       version: app_version,
       build: app_build,
     )
