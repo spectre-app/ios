@@ -84,7 +84,7 @@ class Marshal: Observable, Updatable {
             }
 
             return self.export( user: user, format: format, redacted: redacted ).thenPromise { result in
-                saveEvent.end( [ "result": result.name, "error": result.error ?? "-" ] )
+                saveEvent.end( [ "result": result.name, "error": result.error ] )
                 let exportData = try result.get()
 
                 // Save export data to user's origin.
@@ -228,7 +228,7 @@ class Marshal: Observable, Updatable {
 
         return DispatchQueue.main.promising {
             let promise = Promise<UserFile>()
-            promise.then { importEvent.end( [ "result": $0.name, "error": $0.error ?? "-" ] ) }
+            promise.then { importEvent.end( [ "result": $0.name, "error": $0.error ] ) }
 
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
                                                    content: UIActivityIndicatorView( style: .whiteLarge ) )
@@ -247,7 +247,7 @@ class Marshal: Observable, Updatable {
             } )
             alertController.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                 let replaceEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "replace" ) )
-                promise.then { replaceEvent.end( [ "result": $0.name, "error": $0.error ?? "-" ] ) }
+                promise.then { replaceEvent.end( [ "result": $0.name, "error": $0.error ] ) }
 
                 guard let authentication = secretField.authenticate( { keyFactory in
                     importingFile.authenticate( using: keyFactory )
@@ -294,7 +294,7 @@ class Marshal: Observable, Updatable {
             } )
             alertController.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
                 let mergeEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "merge" ) )
-                promise.then { mergeEvent.end( [ "result": $0.name, "error": $0.error ?? "-" ] ) }
+                promise.then { mergeEvent.end( [ "result": $0.name, "error": $0.error ] ) }
 
                 guard let authentication = secretField.authenticate( { keyFactory in
                     Promise( .success(

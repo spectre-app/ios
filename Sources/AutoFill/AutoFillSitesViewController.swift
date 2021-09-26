@@ -90,7 +90,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
                               "purpose": "\(SpectreKeyPurpose.identification)",
                               "type": "\(site.resultType)",
                               "algorithm": "\(site.algorithm)",
-                              "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ) ?? 0,
+                              "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ),
                             ] )
 
                     extensionContext.completeRequest( withSelectedCredential: .init( user: login, password: password ) ) { _ in

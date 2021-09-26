@@ -40,7 +40,21 @@ extension UIAlertController {
         let secretField = UserSecretField<U>( userName: userName, identicon: identicon, nameField: nameField )
         secretField.authenticater = { factory in
             spinner.show( in: viewController.view, dismissAutomatically: false )
-            return try authenticator( factory )
+            return try authenticator( factory ).then {
+                event?.end(
+                        [ "result": $0.name,
+                          "type": "secret",
+                          "length": factory.metadata.length,
+                          "entropy": factory.metadata.entropy,
+                          "error": $0.error,
+                        ] )
+                if case .success = $0 {
+                    event = nil
+                }
+                else {
+                    event = track.flatMap { Tracker.shared.begin( track: $0 ) }
+                }
+            }
         }
         secretField.authenticated = { result in
             spinner.dismiss()
@@ -57,14 +71,6 @@ extension UIAlertController {
                 catch {
                     mperror( title: "Couldn't authenticate user", error: error, in: viewController.view )
 
-                    event?.end(
-                            [ "result": result.name,
-                              "type": "secret",
-                              "length": secretField.text?.count ?? 0,
-                              "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
-                              "error": error,
-                            ] )
-                    event = track.flatMap { Tracker.shared.begin( track: $0 ) }
                     viewController.present( alertController, animated: true )
                 }
             }
@@ -81,8 +87,6 @@ extension UIAlertController {
                 event?.end(
                         [ "result": "!userSecret",
                           "type": "secret",
-                          "length": secretField.text?.count ?? 0,
-                          "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
                         ] )
                 event = track.flatMap { Tracker.shared.begin( track: $0 ) }
                 viewController.present( alertController, animated: true )
@@ -94,9 +98,7 @@ extension UIAlertController {
             event?.end(
                     [ "result": $0.name,
                       "type": "secret",
-                      "length": secretField.text?.count ?? 0,
-                      "entropy": Attacker.entropy( string: secretField.text ) ?? 0,
-                      "error": $0.error ?? "-",
+                      "error": $0.error,
                     ] )
         }
     }

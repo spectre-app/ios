@@ -94,7 +94,7 @@ class MainUsersViewController: BaseUsersViewController {
                                  incognitoButton.timing?.end(
                                          [ "result": $0.name,
                                            "type": "incognito",
-                                           "error": $0.error ?? "-",
+                                           "error": $0.error,
                                          ] )
 
                                  if $0.isCancelled {

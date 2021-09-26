@@ -139,7 +139,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
                             Tracker.shared.event( track: .subject( "site", action: "result", [
                                 "type": "\(site.resultType)",
-                                "entropy": Attacker.entropy( string: password ) ?? 0,
+                                "entropy": Attacker.entropy( string: password ),
                             ] ) )
 
                             site.state( resultParam: password )?.token.then { result in
@@ -221,7 +221,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
                             Tracker.shared.event( track: .subject( "site", action: "login", [
                                 "type": "\(site.loginType)",
-                                "entropy": Attacker.entropy( string: login ) ?? 0,
+                                "entropy": Attacker.entropy( string: login ),
                             ] ) )
 
                             site.state( keyPurpose: .identification, resultParam: login )?.token.then { result in
@@ -361,7 +361,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             private let resultLabel  = UILabel()
             private lazy var copyButton = EffectButton(
                     track: .subject( "site.question", action: "copy", [
-                        "words": self.question?.keyword.split( separator: " " ).count ?? 0,
+                        "words": self.question?.keyword.split( separator: " " ).count,
                     ] ), title: "copy" )
 
             weak var question: Question? {

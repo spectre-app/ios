@@ -114,12 +114,12 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         let templates = UnsafeBufferPointer( start: spectre_type_templates( type, &count ), count: count )
         defer { templates.deallocate() }
 
-        var typePermutations = Decimal( 0 )
+        var typePermutations: Decimal = 0
         for template in templates {
             guard let template = template
             else { continue }
 
-            var templatePermutations = Decimal( 1 )
+            var templatePermutations: Decimal = 1
             for c in 0..<strlen( template ) {
                 templatePermutations *= Decimal( strlen( spectre_class_characters( template[c] ) ) )
             }
@@ -142,7 +142,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         guard var string = string, let dictionary = dictionary
         else { return nil }
 
-        var stringPermutations = Decimal( 1 )
+        var stringPermutations: Decimal = 1
 
         for word in dictionary {
             let newString = string.replacingOccurrences( of: word, with: "" )
@@ -163,7 +163,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
                 continue
             }
 
-            var characterEntropy = Decimal( 256 ) /* a byte */
+            var characterEntropy: Decimal = 256 /* a byte */
             for characterClass in [ "v", "c", "a", "n", "x" ] {
                 guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
                 else { continue }

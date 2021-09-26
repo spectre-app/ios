@@ -197,7 +197,8 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
 
                             Tracker.shared.event( track: .subject( "autofill_setup", action: "login", [
                                 "type": "\(user.loginType)",
-                                "entropy": Attacker.entropy( string: login ) ?? 0,
+                                "length": login.count,
+                                "entropy": Attacker.entropy( string: login ),
                             ] ) )
 
                             user.state( keyPurpose: .identification, resultParam: login )?.token.then {

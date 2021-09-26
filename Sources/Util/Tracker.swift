@@ -18,9 +18,9 @@ import Countly
 struct Tracking {
     let subject:    String
     let action:     String
-    let parameters: () -> [String: Any]
+    let parameters: () -> [String: Any?]
 
-    static func subject(_ subject: String, action: String, _ parameters: @autoclosure @escaping () -> [String: Any] = [:]) -> Tracking {
+    static func subject(_ subject: String, action: String, _ parameters: @autoclosure @escaping () -> [String: Any?] = [:]) -> Tracking {
         Tracking( subject: subject, action: action, parameters: parameters )
     }
 
@@ -28,7 +28,7 @@ struct Tracking {
         Tracking( subject: "\(scope)::\(self.subject)", action: self.action, parameters: self.parameters )
     }
 
-    func with(parameters: @autoclosure @escaping () -> [String: Any] = [:]) -> Tracking {
+    func with(parameters: @autoclosure @escaping () -> [String: Any?] = [:]) -> Tracking {
         Tracking( subject: self.subject, action: self.action, parameters: { self.parameters().merging( parameters() ) } )
     }
 }
@@ -133,9 +133,9 @@ class Tracker: AppConfigObserver {
                 .warning: .warning, .error: .error, .fatal: .fatal,
             ][logEvent.level] ?? .debug
             let tags               = [
-                "src.file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
+                "src.file": String.valid( logEvent.file )?.lastPathComponent,
                 "src.line": "\(logEvent.line)",
-                "src.func": String.valid( logEvent.function ) ?? "-",
+                "src.func": String.valid( logEvent.function ),
             ]
 
             if logEvent.level <= .fatal {
@@ -230,7 +230,7 @@ class Tracker: AppConfigObserver {
     }
 
     func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                named name: String, _ parameters: [String: Any] = [:]) -> Screen {
+                named name: String, _ parameters: [String: Any?] = [:]) -> Screen {
         Screen( name: name, tracker: self )
     }
 
@@ -278,8 +278,8 @@ class Tracker: AppConfigObserver {
     }
 
     private func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                       named name: String, _ parameters: [String: Any] = [:], timing: TimedEvent? = nil) {
-        var eventParameters = parameters
+                       named name: String, _ parameters: [String: Any?] = [:], timing: TimedEvent? = nil) {
+        var eventParameters = parameters.compactMapValues( { $0 } )
         #if TARGET_APP
         eventParameters["app.container"] = "app"
         #elseif TARGET_AUTOFILL
@@ -417,7 +417,7 @@ class Tracker: AppConfigObserver {
         }
 
         func open(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                  _ parameters: [String: Any] = [:]) {
+                  _ parameters: [String: Any?] = [:]) {
             // Log
             if parameters.isEmpty {
                 dbg( file: file, line: line, function: function, dso: dso, "@ %@", self.name )
@@ -427,7 +427,7 @@ class Tracker: AppConfigObserver {
             }
 
             let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
-                    .merging( parameters, uniquingKeysWith: { $1 } )
+                    .merging( parameters.compactMapValues( { $0 } ), uniquingKeysWith: { $1 } )
             let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
             // Sentry
@@ -473,7 +473,7 @@ class Tracker: AppConfigObserver {
         }
 
         func end(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                 _ parameters: [String: Any] = [:]) {
+                 _ parameters: [String: Any?] = [:]) {
             guard !self.ended
             else { return }
 

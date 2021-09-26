@@ -252,7 +252,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let nameField     = UITextField()
         private let floorView     = BackgroundView( mode: .tint )
         private let avatarTip     = UILabel()
-        private var secretEvent:                 Tracker.TimedEvent?
         private let userNameField = UITextField()
         private let secretField   = UserSecretField<User>()
         private let actionsStack  = UIStackView()
@@ -309,10 +308,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField => \.font => Theme.current.font.callout
             self.secretField.placeholder = "Your personal secret"
             self.secretField.authenticater = { keyFactory in
-                self.secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
-
-                return self.userFile?.authenticate( using: keyFactory ) ??
-                        User( userName: keyFactory.userName ).login( using: keyFactory )
+                let secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
+                return (self.userFile?.authenticate( using: keyFactory ) ??
+                                User( userName: keyFactory.userName ).login( using: keyFactory )).then {
+                    secretEvent.end(
+                            [ "result": $0.name,
+                              "type": "secret",
+                              "length": keyFactory.metadata.length,
+                              "entropy": keyFactory.metadata.entropy,
+                              "error": $0.error
+                            ] )
+                }
             }
             self.secretField.authenticated = { result in
                 do {
@@ -322,23 +328,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     }
 
                     Feedback.shared.play( .trigger )
-                    self.secretEvent?.end(
-                            [ "result": result.name,
-                              "type": "secret",
-                              "length": self.secretField.text?.count ?? 0,
-                              "entropy": Attacker.entropy( string: self.secretField.text ) ?? 0,
-                            ] )
                     self.userEvent?.end( [ "result": result.name, "type": "secret" ] )
                     self.viewController?.login( user: user )
                 }
                 catch {
-                    self.secretEvent?.end(
-                            [ "result": result.name,
-                              "type": "secret",
-                              "length": self.secretField.text?.count ?? 0,
-                              "entropy": Attacker.entropy( string: self.secretField.text ) ?? 0,
-                              "error": error,
-                            ] )
                     mperror( title: "Couldn't unlock user", error: error )
                 }
             }

@@ -72,7 +72,7 @@ public struct SpectreOperation {
                           "purpose": "\(operation.purpose)",
                           "type": "\(operation.type)",
                           "algorithm": "\(operation.algorithm)",
-                          "entropy": Attacker.entropy( type: operation.type ) ?? Attacker.entropy( string: token ) ?? 0,
+                          "entropy": Attacker.entropy( type: operation.type ) ?? Attacker.entropy( string: token ),
                         ] )
             }
             catch {

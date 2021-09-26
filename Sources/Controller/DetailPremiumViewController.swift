@@ -190,7 +190,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
         class Cell: UITableViewCell {
             private lazy var buyButton = EffectButton( track: .subject( "premium.subscription", action: "subscribe",
-                                                                        [ "product": self.product?.productIdentifier ?? "n/a" ] ),
+                                                                        [ "product": self.product?.productIdentifier ] ),
                                                        title: "Subscribe" )
             private let captionLabel = UILabel()
 

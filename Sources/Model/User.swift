@@ -277,7 +277,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
             switch result {
                 case .success:
                     if let keyFactory = keyFactory as? SecretKeyFactory {
-                        self.identicon = keyFactory.identicon
+                        self.identicon = keyFactory.metadata.identicon
                     }
 
                     self.userKeyFactory = keyFactory

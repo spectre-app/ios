@@ -112,8 +112,10 @@ public class SecretKeyFactory: KeyFactory {
 
     // MARK: - Interface
 
-    public var identicon: SpectreIdenticon {
-        spectre_identicon( self.userName, self.userSecret )
+    public var metadata: (length: Int, entropy: Int, identicon: SpectreIdenticon) {
+        (length: self.userSecret.count,
+         entropy: Attacker.entropy( string: self.userSecret ) ?? -1,
+         identicon: spectre_identicon( self.userName, self.userSecret ))
     }
 
     public func toKeychain() -> Promise<KeychainKeyFactory> {
