@@ -66,8 +66,8 @@ platform :ios do
       merge_commit_filtering: "exclude_merges",
       pretty: " - %w(0,0,3)%s%n%b",
     )
-    if dep_notes = File.read( dep_notes ).lines if File.exist?( "notes.md" )
-      dep_notes[0] = dep_header
+    if dep_notes = (File.read( 'notes.md' ).lines if File.exist?( 'notes.md' ))
+      dep_notes[0] = dep_header + "\n"
       dep_notes = dep_notes[0...dep_notes.find_index("CHANGELOG\n")].join()
     else
       dep_notes = <<~END
@@ -96,9 +96,8 @@ platform :ios do
       
       #{dep_changes.lines.grep_v(/Bump project version post release/).join()}
       END
-    end
     File.write( 'notes.md', dep_notes )
-    thr_notes = system_silencing( '"$EDITOR" notes.md' )
+    thr_notes = system_silencing( '"$EDITOR" ' + Shellwords.escape( File.absolute_path( 'notes.md' ) ) )
 
     # Build and verify the product.
     build_app(
@@ -134,7 +133,7 @@ platform :ios do
 
     # Complete and collect release notes from asynchronous process.
     thr_notes.value
-    dep_notes = File.read( dep_notes )
+    dep_notes = File.read( 'notes.md' )
 
     # Pause until user has tested build on device and confirmed it is healthy.
     if UI.interactive?
