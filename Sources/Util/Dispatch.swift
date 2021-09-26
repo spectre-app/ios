@@ -416,6 +416,9 @@ public class DispatchTask<V> {
     /**
      * Queue the task for execution if it has not already been queued.
      * The task is removed from the request queue as soon as the work begins.
+     * - Parameters:
+     *  - Parameter: now Skip the task's deadline and schedule the task for immediate execution.
+     *  - Parameter: await Perform the task synchronously, blocking the request until it has completed.
      */
     @discardableResult
     public func request(now: Bool = false, await: Bool = false)

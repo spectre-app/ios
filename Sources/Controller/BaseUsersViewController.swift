@@ -72,6 +72,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         Marshal.shared.observers.register( observer: self ).didChange( userFiles: Marshal.shared.userFiles )
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear( animated )
+
+        Marshal.shared.updateTask.request( now: true, await: true )
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         Marshal.shared.observers.unregister( observer: self )
         self.usersCarousel.selectedItem = nil
