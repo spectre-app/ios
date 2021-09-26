@@ -86,11 +86,18 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             if self.products != oldValue {
                 self.observers.notify { $0.didChange( store: self, products: self.products ) }
             }
+
+            Tracker.shared.event( track: .subject( "appstore", action: "status", [
+                "payments": SKPaymentQueue.canMakePayments(),
+                "products": self.products.count,
+            ] ) )
         }
     }
     var receipt: InAppReceipt?
 
     private var updatePromise: Promise<Bool>?
+    private var purchaseEvent: Tracker.TimedEvent?
+    private var restoreEvent:  Tracker.TimedEvent?
 
     override init() {
         super.init()
@@ -127,6 +134,12 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         payment.paymentDiscount = promotion
         payment.quantity = quantity
 
+        self.purchaseEvent = Tracker.shared.begin( track: .subject( "appstore", action: "purchase", [
+            "product": product.productIdentifier,
+            "promotion": promotion?.identifier,
+            "quantity": quantity,
+        ] ) )
+
         SKPaymentQueue.default().add( payment )
     }
 
@@ -143,6 +156,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             wrn( "In-app purchases disabled, skipping purchase restoration." )
             return
         }
+
+        self.restoreEvent = Tracker.shared.begin( track: .subject( "appstore", action: "restore" ) )
 
         SKPaymentQueue.default().restoreCompletedTransactions()
     }
@@ -279,6 +294,24 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             missingFeatures.forEach { $0.enable( false ) }
             subscribedFeatures.forEach { $0.enable( true ) }
 
+            let originalPremiumPurchase = self.products( forSubscription: .premium ).compactMap {
+                self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
+            }.sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
+            let currentPremiumPurchase = self.products( forSubscription: .premium ).compactMap {
+                self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
+            }.sorted( by: {
+                $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
+                        $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
+            } ).last
+            let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
+            Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
+                "premium_active": InAppFeature.premium.isEnabled,
+                "premium_in_trial": currentPremiumPurchase?.subscriptionTrialPeriod ?? false,
+                "premium_in_intro": currentPremiumPurchase?.subscriptionIntroductoryPricePeriod ?? false,
+                "premium_months_age": originalPremiumPurchase?.originalPurchaseDate.flatMap { months( $0, Date() ) } ?? -1,
+                "premium_months_left": currentPremiumPurchase?.subscriptionExpirationDate.flatMap { months( Date(), $0 ) } ?? -1,
+            ] ) )
+
             promise.finish( .success( self.receipt ) )
         }
     }
@@ -294,6 +327,14 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             inf( "Product: %@, is %@", transaction.payment.productIdentifier, transaction.transactionState )
+
+            switch transaction.transactionState {
+                case .purchasing, .deferred:
+                    ()
+                default:
+                    self.purchaseEvent?.end( [ "result": transaction.transactionState, "error": transaction.error ] )
+                    self.restoreEvent?.end( [ "result": transaction.transactionState, "error": transaction.error ] )
+            }
 
             switch transaction.transactionState {
                 case .purchasing, .deferred:
@@ -338,7 +379,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         if !response.invalidProductIdentifiers.isEmpty {
-            inf( "Unsupported products: %@", response.invalidProductIdentifiers )
+            wrn( "Unsupported products: %@", response.invalidProductIdentifiers )
         }
 
         self.products = response.products

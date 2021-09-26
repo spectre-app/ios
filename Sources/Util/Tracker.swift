@@ -133,9 +133,9 @@ class Tracker: AppConfigObserver {
                 .warning: .warning, .error: .error, .fatal: .fatal,
             ][logEvent.level] ?? .debug
             let tags               = [
-                "src.file": String.valid( logEvent.file )?.lastPathComponent,
+                "src.file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
                 "src.line": "\(logEvent.line)",
-                "src.func": String.valid( logEvent.function ),
+                "src.func": String.valid( logEvent.function ) ?? "-",
             ]
 
             if logEvent.level <= .fatal {
