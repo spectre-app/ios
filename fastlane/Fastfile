@@ -58,45 +58,47 @@ platform :ios do
     dep_stream = git_branch.split( "/" )[-1]
     app_version = get_version_number( target: "Spectre" )
     app_build = get_build_number
-    git_from = last_git_tag( pattern: "build/*-" + dep_stream )
+    git_previous_deploy = last_git_tag( pattern: "build/*" )
+    git_previous_stream = last_git_tag( pattern: "build/*-" + dep_stream )
     dep_header = "Spectre iOS v" + app_version + ", build " + app_build + " (" + dep_stream + ")"
     dep_changes = changelog_from_git_commits(
-      between: [ git_from, "HEAD" ],
+      between: [ git_previous_stream, "HEAD" ],
       merge_commit_filtering: "exclude_merges",
       pretty: " - %w(0,0,3)%s%n%b",
     )
-    dep_notes = File.exist?( "notes.md" ) ? File.open( "notes.md", "r" ) do |file|
-      if file.read.include? dep_header and file.read.include? dep_changes
-        File.absolute_path( file.path )
-      end
-    end : false
-    if not dep_notes
-      dep_notes = File.open( "notes.md", "w" ) do |file|
-        file.puts dep_header
-        file.puts ""
-        file.puts "ADDED"
-        file.puts "-----"
-        file.puts ""
-        file.puts "- "
-        file.puts ""
-        file.puts "UPDATED"
-        file.puts "-------"
-        file.puts ""
-        file.puts "- "
-        file.puts ""
-        file.puts "FIXED"
-        file.puts "-----"
-        file.puts ""
-        file.puts "- "
-        file.puts ""
-        file.puts "CHANGELOG"
-        file.puts "---------"
-        file.puts ""
-        file.puts dep_changes.lines.grep_v(/Bump project version post release/).join()
-        File.absolute_path( file.path )
-      end
+    if dep_notes = File.read( dep_notes ).lines if File.exist?( "notes.md" )
+      dep_notes[0] = dep_header
+      dep_notes = dep_notes[0...dep_notes.find_index("CHANGELOG\n")].join()
+    else
+      dep_notes = <<~END
+        #{dep_header}
+        
+        ADDED
+        -----
+        
+        - 
+        
+        UPDATED
+        -------
+        
+        - 
+        
+        FIXED
+        -----
+        
+        - 
+        
+        END
     end
-    thr_notes = system_silencing( '"$EDITOR" ' + Shellwords.escape( dep_notes ) )
+    dep_notes += <<~END
+      CHANGELOG
+      ---------
+      
+      #{dep_changes.lines.grep_v(/Bump project version post release/).join()}
+      END
+    end
+    File.write( 'notes.md', dep_notes )
+    thr_notes = system_silencing( '"$EDITOR" notes.md' )
 
     # Build and verify the product.
     build_app(
@@ -192,15 +194,14 @@ platform :ios do
       build: app_build,
       finalize: true,
     )
-    git_from = last_git_tag( pattern: "build/*" )
     sentry_set_commits(
-      commit: "Spectre / Spectre iOS@" + git_from + "..HEAD",
+      commit: "Spectre / Spectre iOS@" + git_previous_deploy + "..HEAD",
       app_identifier: 'app.spectre',
       version: app_version,
       build: app_build,
     )
     sentry_set_commits(
-      commit: "Spectre / Spectre iOS@" + git_from + "..HEAD",
+      commit: "Spectre / Spectre iOS@" + git_previous_deploy + "..HEAD",
       app_identifier: 'app.spectre.autofill',
       version: app_version,
       build: app_build,
@@ -238,5 +239,6 @@ platform :ios do
     UI.message "Xcode verification..."
     thr_verify_xcode.value.call or
       UI.abort_with_message! "Xcode couldn't be verified. DO NOT SHIP THIS BUILD!"
+    File.delete( 'notes.md' ) if File.exist?( 'notes.md' )
   end
 end
