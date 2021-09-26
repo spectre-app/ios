@@ -91,9 +91,10 @@ class MainSitesViewController: BaseSitesViewController {
             },
             .init( tracking: .subject( "sites.site", action: "open" ),
                    title: "Open Site", icon: .icon( "globe" ), appearance: [ .menu, .premium ] ) {
-                [unowned self] site, _, _ in
+                site, _, _ in
                 if let url = URL( string: site.url ?? "https://\(site.siteName)" ) {
-                    self.present( SFSafariViewController( url: url ), animated: true )
+                    UIApplication.shared.open( url )
+                    //self.present( SFSafariViewController( url: url ), animated: true )
                 }
             },
         ]
