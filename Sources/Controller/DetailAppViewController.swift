@@ -43,7 +43,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                       .init( title: "User Agreement", url: URL( string: "https://spectre.app/policy/eula/" ) ),
                       .init( title: "Privacy Policy", url: URL( string: "https://spectre.app/policy/privacy/" ) ),
                   ]
-              } ),
+              }, caption: { _ in "©2011, Maarten Billemont — Spectre®" } ),
           ], axis: .vertical ),
           SeparatorItem(),
 
