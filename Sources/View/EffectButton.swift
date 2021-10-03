@@ -23,17 +23,19 @@ class EffectButton: EffectView {
         }
     }
     var title:           String? {
-        didSet {
-            if self.title != oldValue {
-                self.update()
-            }
+        get {
+            self.button.currentTitle
+        }
+        set {
+            self.button.setTitle( newValue, for: .normal )
         }
     }
     var attributedTitle: NSAttributedString? {
-        didSet {
-            if self.attributedTitle != oldValue {
-                self.update()
-            }
+        get {
+            self.button.currentAttributedTitle
+        }
+        set {
+            self.button.setAttributedTitle( newValue, for: .normal )
         }
     }
 
@@ -139,8 +141,6 @@ class EffectButton: EffectView {
             }
 
             self.button.setImage( self.image, for: .normal )
-            self.button.setTitle( self.title, for: .normal )
-            self.button.setAttributedTitle( self.attributedTitle, for: .normal )
             self.button => \.titleLabel!.font => Theme.current.font.callout
             //self.button => \.currentAttributedTitle => .font => Theme.current.font.callout
             self.button => \.currentAttributedTitle => .foregroundColor => Theme.current.color.body

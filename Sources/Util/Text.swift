@@ -12,7 +12,7 @@
 
 import Foundation
 
-struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+struct Text: CustomStringConvertible, ExpressibleByStringInterpolation {
     var description: String {
         self.attributedString.string
     }
@@ -25,31 +25,19 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
         self.attributedString = attributedString
     }
 
-    init(_ string: String) {
-        self.attributedString = NSAttributedString( string: string )
+    init(_ string: String, _ attributes: [NSAttributedString.Key: Any] = [:]) {
+        self.init( NSAttributedString( string: string, attributes ) )
     }
 
-    init(stringLiteral value: String) {
-        self.attributedString = NSAttributedString( string: value )
+    init(stringLiteral string: String) {
+        self.init( NSAttributedString( string: string ) )
     }
 
     init(stringInterpolation: StringInterpolation) {
-        self.attributedString = NSAttributedString( attributedString: stringInterpolation.attributedString )
+        self.init( stringInterpolation.attributedString )
     }
 
     // MARK: - Interface
-
-    func attributedString(for label: UILabel) -> NSAttributedString {
-        self.attributedString( textColor: label.textColor, textSize: label.font.pointSize )
-    }
-
-    func attributedString(for field: UITextField) -> NSAttributedString {
-        self.attributedString( textColor: field.textColor, textSize: field.font?.pointSize )
-    }
-
-    func attributedString(for button: UIButton) -> NSAttributedString {
-        self.attributedString( textColor: button.currentTitleColor, textSize: button.titleLabel?.font.pointSize )
-    }
 
     func attributedString(textColor: UIColor? = nil, textSize: CGFloat? = nil) -> NSAttributedString {
         let attributedString = NSMutableAttributedString( attributedString: self.attributedString )
@@ -61,9 +49,9 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
                 fixedAttributes[.font] = font.withSize( textSize )
                 fixed = true
             }
-            if let color = attributes[.foregroundColor] as? UIColor, let textColor = textColor,
-               color != textColor.with( alpha: color.alpha ) {
-                fixedAttributes[.foregroundColor] = textColor.with( alpha: color.alpha )
+            if let color = attributes[.foregroundColor] as? UIColor, let textColor = textColor?.with( alpha: color.alpha ),
+               color != textColor {
+                fixedAttributes[.foregroundColor] = textColor
                 fixed = true
             }
             if fixed {
@@ -94,5 +82,25 @@ struct Text: CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByS
         mutating func appendInterpolation(_ string: CustomStringConvertible?, _ attributes: [NSAttributedString.Key: Any] = [:]) {
             string.flatMap { self.attributedString.append( NSAttributedString( string: $0.description, attributes: attributes ) ) }
         }
+    }
+}
+
+extension UILabel {
+    func applyText(_ text: Text?) {
+        self.attributedText = text?.attributedString( textColor: self.textColor, textSize: self.font.pointSize )
+    }
+}
+
+extension UITextField {
+    func applyText(_ text: Text?) {
+        self.attributedText = text?.attributedString( textColor: self.textColor, textSize: self.font?.pointSize )
+    }
+}
+
+extension UIButton {
+    func applyText(_ text: Text?) {
+        self.setAttributedTitle(
+                text?.attributedString( textColor: self.currentTitleColor, textSize: self.titleLabel?.font.pointSize ),
+                for: .normal )
     }
 }

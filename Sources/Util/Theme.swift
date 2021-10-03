@@ -304,18 +304,18 @@ struct ThemePattern {
             flat: .hex( "64858C" ),
             dawn: .hex( "AAB9BF" ),
             pale: .hex( "F2F2F2" ) )
-    static let aged    = ThemePattern(
-            dark: .hex( "07090D" ),
-            dusk: .hex( "1E2626" ),
-            flat: .hex( "6C7365" ),
-            dawn: .hex( "A3A68D" ),
-            pale: .hex( "BBBF9F" ) )
-    static let pale    = ThemePattern(
-            dark: .hex( "09090D" ),
-            dusk: .hex( "1F1E26" ),
-            flat: .hex( "3E5159" ),
-            dawn: .hex( "5E848C" ),
-            pale: .hex( "B0CDD9" ) )
+    static let deep    = ThemePattern(
+            dark: .hex( "1A2A40" ),
+            dusk: .hex( "3F4859" ),
+            flat: .hex( "877B8C" ),
+            dawn: .hex( "B6A8BF" ),
+            pale: .hex( "BFCDD9" ) )
+    static let sand    = ThemePattern(
+            dark: .hex( "0D0D0D" ),
+            dusk: .hex( "736656" ),
+            flat: .hex( "A69880" ),
+            dawn: .hex( "D9CDBF" ),
+            pale: .hex( "F2EEEB" ) )
     static let lush    = ThemePattern(
             dark: .hex( "141F26" ),
             dusk: .hex( "213A40" ),
@@ -346,18 +346,18 @@ struct ThemePattern {
             flat: .hex( "593825" ),
             dawn: .hex( "BFB7A8" ),
             pale: .hex( "F2D5BB" ) )
-    static let deep    = ThemePattern(
-            dark: .hex( "1A2A40" ),
-            dusk: .hex( "3F4859" ),
-            flat: .hex( "877B8C" ),
-            dawn: .hex( "B6A8BF" ),
-            pale: .hex( "BFCDD9" ) )
-    static let sand    = ThemePattern(
-            dark: .hex( "0D0D0D" ),
-            dusk: .hex( "736656" ),
-            flat: .hex( "A69880" ),
-            dawn: .hex( "D9CDBF" ),
-            pale: .hex( "F2EEEB" ) )
+    static let pale    = ThemePattern(
+            dark: .hex( "09090D" ),
+            dusk: .hex( "1F1E26" ),
+            flat: .hex( "3E5159" ),
+            dawn: .hex( "5E848C" ),
+            pale: .hex( "B0CDD9" ) )
+    static let aged    = ThemePattern(
+            dark: .hex( "07090D" ),
+            dusk: .hex( "1E2626" ),
+            flat: .hex( "6C7365" ),
+            dawn: .hex( "A3A68D" ),
+            pale: .hex( "BBBF9F" ) )
 
     let dark: UIColor?
     let dusk: UIColor?
@@ -367,9 +367,9 @@ struct ThemePattern {
 }
 
 public enum AppIcon: String, CaseIterable {
-    case iconLight = "Light Icon", logoLight = "Light Logo", iconDark = "Dark Icon", logoDark = "Dark Logo"
+    case light = "Light Icon", dark = "Dark Icon"
 
-    static let primary = AppIcon.iconLight
+    static let primary = AppIcon.light
     static var current: AppIcon {
         #if TARGET_APP
         self.allCases.first( where: { $0.rawValue == UIApplication.shared.alternateIconName } ) ?? .primary
@@ -623,7 +623,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.shadow.set( light: pattern.pale?.with( alpha: .long ), dark: pattern.dark?.with( alpha: .long ) )
             self.color.mute.set( light: pattern.dusk?.with( alpha: .short * .short ), dark: pattern.dawn?.with( alpha: .short * .short ) )
             self.color.selection.set( light: pattern.flat?.with( alpha: .short ), dark: pattern.flat?.with( alpha: .short ) )
-            self.color.tint.set( light: pattern.flat, dark: pattern.flat )
+            self.color.tint.set( light: pattern.dusk, dark: pattern.dawn )
         }
         override?( self )
 

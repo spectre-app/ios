@@ -771,8 +771,8 @@
 				DABD3B9F1711E2DB00CF925C /* Sources */,
 				DACA22121705DDC5002C6C22 /* Libraries */,
 				DACA23B41705DF7D002C6C22 /* Resources */,
-				DA5BFA47147E415C00F98B1E /* Frameworks */,
 				DA5BFA45147E415C00F98B1E /* Products */,
+				DA5BFA47147E415C00F98B1E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};

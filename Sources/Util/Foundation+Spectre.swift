@@ -138,8 +138,20 @@ extension NSAttributedString {
         return attributedString
     }
 
-    public static func str(_ string: String, font: UIFont? = nil, textColor: UIColor? = nil, secondaryColor: UIColor? = nil,
-                           _ attributes: [NSAttributedString.Key: Any] = [:]) -> NSAttributedString {
+    public convenience init(string: String, font: UIFont? = nil, textColor: UIColor? = nil, secondaryColor: UIColor? = nil,
+                            _ attributes: [NSAttributedString.Key: Any] = [:]) {
+        self.init( attributedString: NSMutableAttributedString( string: string ),
+                   textColor: textColor, secondaryColor: secondaryColor, attributes )
+    }
+
+    public convenience init(attributedString: NSAttributedString, font: UIFont? = nil, textColor: UIColor? = nil, secondaryColor: UIColor? = nil,
+                            _ attributes: [NSAttributedString.Key: Any] = [:]) {
+        self.init( attributedString: NSMutableAttributedString( attributedString: attributedString ),
+                   textColor: textColor, secondaryColor: secondaryColor, attributes )
+    }
+
+    public convenience init(attributedString: NSMutableAttributedString, font: UIFont? = nil, textColor: UIColor? = nil, secondaryColor: UIColor? = nil,
+                            _ attributes: [NSAttributedString.Key: Any] = [:]) {
         var mergedAttributes = attributes
         if let font = font {
             mergedAttributes[.font] = font
@@ -151,7 +163,8 @@ extension NSAttributedString {
             mergedAttributes[.strokeColor] = secondaryColor
         }
 
-        return NSAttributedString( string: string, attributes: mergedAttributes )
+        attributedString.setAttributes( attributes, range: NSRange( location: 0, length: attributedString.length ) )
+        self.init( attributedString: attributedString )
     }
 
     func attributeLocations(_ attrName: NSAttributedString.Key, in range: NSRange? = nil, options: EnumerationOptions = []) -> [Int] {

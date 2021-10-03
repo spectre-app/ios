@@ -33,7 +33,7 @@ class TipsView: UIView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(tips: [Text], first: Int? = nil, random: Bool = true, duration: TimeInterval = 10) {
+    init(tips: [Text], first: Int? = nil, random: Bool = false, duration: TimeInterval = 10) {
         self.tips = tips
         self.nextTip = first
         self.random = random
@@ -99,7 +99,7 @@ class TipsView: UIView {
             UIView.animate( withDuration: .short, animations: {
                 self.tipLabel.alpha = .off
             }, completion: { _ in
-                self.tipLabel.attributedText = (tip ?? "").attributedString( for: self.tipLabel )
+                self.tipLabel.applyText( tip ?? "" )
 
                 UIView.animate( withDuration: .short, animations: {
                     self.tipLabel.alpha = .on

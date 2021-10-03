@@ -282,6 +282,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameLabel.adjustsFontSizeToFitWidth = true
             self.nameLabel.textAlignment = .center
             self.nameLabel => \.textColor => Theme.current.color.body
+            self.nameLabel.layer => \.shadowColor => Theme.current.color.backdrop
+            self.nameLabel.layer.shadowOpacity = .on
+            self.nameLabel.layer.shadowOffset = .zero
+            self.nameLabel.layer.shadowRadius = 10
             self.nameLabel.numberOfLines = 0
             self.nameLabel.preferredMaxLayoutWidth = .infinity
 
@@ -350,7 +354,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                         self.strengthMeter.progress = Float( strengthProgress )
                         self.strengthMeter.progressTintColor = .systemGreen
                         self.strengthMeter.trackTintColor = strengthProgress < 0.5 ? .systemRed: .systemOrange
-                        self.strengthLabel.attributedText = strengthText?.attributedString( for: self.strengthLabel )
+                        self.strengthLabel.applyText( strengthText )
                     }
                 }
             }
@@ -362,6 +366,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameField => \.font => Theme.current.font.title1
             self.nameField => \.textColor => Theme.current.color.body
             self.nameField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
+            self.nameField.layer => \.shadowColor => Theme.current.color.backdrop
+            self.nameField.layer.shadowOpacity = .on
+            self.nameField.layer.shadowOffset = .zero
+            self.nameField.layer.shadowRadius = 0
 
             self.strengthLabel => \.font => Theme.current.font.caption1
             self.strengthLabel.textAlignment = .center

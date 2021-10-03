@@ -199,8 +199,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                     if let product = self.product {
                         if let introductoryPrice = product.introductoryPrice {
                             self.buyButton.attributedTitle =
-                                    .str( introductoryPrice.localizedOffer ) +
-                                    .str( " for \(introductoryPrice.localizedValidity)", secondaryColor: .clear )
+                                    NSAttributedString( string: introductoryPrice.localizedOffer ) +
+                                    NSAttributedString( string: " for \(introductoryPrice.localizedValidity)", secondaryColor: .clear )
                             self.captionLabel.text = "Then \(product.localizedOffer()). \(product.localizedDescription)"
                         }
                         else {

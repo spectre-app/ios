@@ -183,7 +183,7 @@ class Item<M>: AnyItem {
             updateHidden( item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: item ) ?? $0) } )
             updateEnabled( item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: item ) ?? $0) } )
 
-            self.titleLabel.attributedText = item.title?.attributedString( for: self.titleLabel )
+            self.titleLabel.applyText( item.title )
             self.titleLabel.isHidden = self.titleLabel.attributedText?.string.nonEmpty == nil
 
             self.captionLabel.attributedText = item.model.flatMap { item.captionProvider( $0 ) }?.attributedString
@@ -603,7 +603,7 @@ class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
             super.doUpdate()
 
             let value = self.buttonItem?.value
-            self.button.attributedTitle = value?.label?.attributedString( for: self.button.button )
+            self.button.button.applyText( value?.label )
             self.button.image = value?.image
         }
     }

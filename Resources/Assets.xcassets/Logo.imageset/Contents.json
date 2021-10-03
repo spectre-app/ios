@@ -1,6 +1,16 @@
 {
   "images" : [
     {
+      "filename" : "Dark Logo.pdf",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
       "filename" : "Light Logo.pdf",
       "idiom" : "universal"
     }
