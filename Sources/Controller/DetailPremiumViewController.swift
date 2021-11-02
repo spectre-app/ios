@@ -299,7 +299,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         init() {
             super.init( track: .subject( "premium", action: "override" ),
                         title: "Subscribed 🅳", icon: { _ in .icon( "user-tie" ) },
-                        value: { _ in InAppFeature.premium.isEnabled }, update: { InAppFeature.premium.enable( $1 ) },
+                        value: { _ in InAppFeature.premium.isEnabled },
+                        update: { AppConfig.shared.testingPremium = $1 },
                         caption: { _ in
                             """
                             Toggle access to all Premium features while testing the app.

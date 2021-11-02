@@ -146,13 +146,26 @@ public class AppConfig: Observable {
             UserDefaults.shared.bool( forKey: #function )
         }
         set {
-            if newValue != self.offline {
+            if newValue != self.masterPasswordCustomer {
                 UserDefaults.shared.set( newValue, forKey: #function )
                 // swiftlint:disable:next inclusive_language
                 self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.masterPasswordCustomer ) }
             }
         }
     }
+    #if !PUBLIC
+    public var testingPremium: Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.testingPremium {
+                UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.testingPremium ) }
+            }
+        }
+    }
+    #endif
 
     // MARK: - Life
 

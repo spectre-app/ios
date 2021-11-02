@@ -28,12 +28,12 @@ extension InAppSubscription {
 
     var latest: InAppPurchase? {
         AppStore.shared.products( forSubscription: self, onlyPublic: false )
-                       .compactMap {
-                           AppStore.shared.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
-                       }
-                       .sorted {
-                           $0.subscriptionExpirationDate ?? $0.purchaseDate > $1.subscriptionExpirationDate ?? $1.purchaseDate
-                       }.first
+                .compactMap {
+                    AppStore.shared.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
+                }
+                .sorted {
+                    $0.subscriptionExpirationDate ?? $0.purchaseDate > $1.subscriptionExpirationDate ?? $1.purchaseDate
+                }.first
     }
 }
 
@@ -46,6 +46,14 @@ extension InAppProduct {
         if case .legacyMasterPassword = self, AppConfig.shared.masterPasswordCustomer { // swiftlint:disable:this inclusive_language
             return true
         }
+        #if !PUBLIC
+        if case .premiumMonthly = self, AppConfig.shared.testingPremium {
+            return true
+        }
+        else if !AppConfig.shared.sandboxStore {
+            return false
+        }
+        #endif
 
         return AppStore.shared.receipt?.purchases( ofProductIdentifier: self.productIdentifier ).contains { purchase in
             !purchase.isRenewableSubscription || purchase.isActiveAutoRenewableSubscription( forDate: Date() )
@@ -74,7 +82,7 @@ extension InAppProduct {
     }
 }
 
-class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, SKStoreProductViewControllerDelegate, Observable {
+class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, SKStoreProductViewControllerDelegate, Observable, AppConfigObserver {
     public static let shared = AppStore()
 
     var observers = Observers<InAppStoreObserver>()
@@ -107,6 +115,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         super.init()
 
         SKPaymentQueue.default().add( self )
+        AppConfig.shared.observers.register( observer: self )
     }
 
     @discardableResult
@@ -116,12 +125,16 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
             self.updateReceipt( allowRefresh: active ).then { _ in
                 if active || self.products.isEmpty {
-                    // Passive mode and no receipt: give up for now to avoid undesirable store errors.
                     let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
                     productsRequest.delegate = self
                     productsRequest.start()
                 }
+                else {
+                    self.updatePromise?.finish( .success( true ) )
+                }
             }
+        }.finally {
+            self.updatePromise = nil
         }
     }
 
@@ -167,7 +180,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     func isUpToDate(appleID: Int? = nil, buildVersion: String? = nil)
-                    -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
+            -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
         guard let urlSession = URLSession.required.get()
         else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
 
@@ -218,7 +231,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     func products(forSubscription subscription: InAppSubscription, onlyPublic: Bool = true) -> [SKProduct] {
         self.products.filter { $0.subscriptionGroupIdentifier == subscription.subscriptionGroupIdentifier }
-                     .filter { !onlyPublic || InAppProduct.find( $0.productIdentifier )?.isPublic ?? false }
+            .filter { !onlyPublic || InAppProduct.find( $0.productIdentifier )?.isPublic ?? false }
     }
 
     private func refreshReceipt() -> Promise<InAppReceipt?> {
@@ -256,14 +269,6 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                 pii( "[>] Error: %@", error )
                 self.receipt = nil
             }
-
-            #if !PUBLIC
-            if !AppConfig.shared.sandboxStore {
-                inf( "Sandbox store disabled, skipping receipt parsing." )
-                promise.finish( .success( self.receipt ) )
-                return
-            }
-            #endif
 
             // If no (valid) App Store receipt is present, try requesting one from the store.
             if self.receipt == nil {
@@ -321,6 +326,19 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
             promise.finish( .success( self.receipt ) )
         }
+    }
+
+    // MARK: - AppConfigObserver
+
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        if change == \AppConfig.masterPasswordCustomer {
+            self.update()
+        }
+        #if !PUBLIC
+        if change == \AppConfig.testingPremium {
+            self.update()
+        }
+        #endif
     }
 
     // MARK: - SKStoreProductViewControllerDelegate
@@ -396,7 +414,6 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     func requestDidFinish(_ request: SKRequest) {
         self.updatePromise?.finish( .success( true ) )
-        self.updatePromise = nil
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
@@ -404,7 +421,6 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         "Ensure you are online and try logging out and back into your Apple ID from Settings.",
                  error: error )
         self.updatePromise?.finish( .success( false ) )
-        self.updatePromise = nil
     }
 }
 
