@@ -255,6 +255,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         private let userNameField = UITextField()
         private let secretField   = UserSecretField<User>()
         private let actionsStack  = UIStackView()
+        private let strengthTips  = UILabel()
         private let strengthMeter = UIProgressView()
         private let strengthLabel = UILabel()
         private var authenticationConfiguration: LayoutConfiguration<UserCell>!
@@ -369,11 +370,21 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameField.layer => \.shadowColor => Theme.current.color.backdrop
             self.nameField.layer.shadowOpacity = .on
             self.nameField.layer.shadowOffset = .zero
-            self.nameField.layer.shadowRadius = 0
+            self.nameField.layer.shadowRadius = 10
+
+            self.strengthTips => \.font => Theme.current.font.caption1
+            self.strengthTips => \.textColor => Theme.current.color.secondary
+            self.strengthTips.numberOfLines = 0
+            self.strengthTips.textAlignment = .center
+            self.strengthTips.text =
+                    """
+                    A good personal secret is long, unpredictable and easy to remember.
+                    Try a random nonsense sentence, eg. tall piano strawberry blonde
+                    """
 
             self.strengthLabel => \.font => Theme.current.font.caption1
-            self.strengthLabel.textAlignment = .center
             self.strengthLabel => \.textColor => Theme.current.color.secondary
+            self.strengthLabel.textAlignment = .center
 
             // - Hierarchy
             self.contentView.addSubview( self.avatarButton )
@@ -384,6 +395,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.contentView.addSubview( self.userNameField )
             self.contentView.addSubview( self.secretField )
             self.contentView.addSubview( self.actionsStack )
+            self.contentView.addSubview( self.strengthTips )
             self.contentView.addSubview( self.strengthMeter )
             self.contentView.addSubview( self.strengthLabel )
 
@@ -427,8 +439,13 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
                     .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
                     .activate()
-            LayoutConfiguration( view: self.strengthMeter )
+            LayoutConfiguration( view: self.strengthTips )
                     .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: self.secretField.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: self.secretField.trailingAnchor ) }
+                    .activate()
+            LayoutConfiguration( view: self.strengthMeter )
+                    .constrain { $1.topAnchor.constraint( equalTo: self.strengthTips.bottomAnchor, constant: 4 ) }
                     .constrain { $1.leadingAnchor.constraint( equalTo: self.secretField.leadingAnchor ) }
                     .constrain { $1.trailingAnchor.constraint( equalTo: self.secretField.trailingAnchor ) }
                     .activate()
@@ -539,6 +556,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userFile == nil
             self.avatarButton.image = self.avatar?.image ?? .icon( "user-plus", withSize: 96, invert: true )
             self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
+            self.strengthTips.isHidden = !self.isSelected || self.userFile != nil
             self.strengthMeter.isHidden = !self.isSelected || self.userFile != nil
             self.strengthLabel.isHidden = !self.isSelected || self.userFile != nil
             self.biometricButton.isHidden = !InAppFeature.biometrics.isEnabled || !(self.userFile?.biometricLock ?? false)
