@@ -13,11 +13,17 @@
 import UIKit
 import StoreKit
 
-class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
+class FeatureTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
+    let feature: InAppFeature
+
+    init(feature: InAppFeature) {
+        self.feature = feature
+    }
+
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
-        InAppFeature.observers.register( observer: self ).didChange( feature: .premium )
+        InAppFeature.observers.register( observer: self ).didChange( feature: self.feature )
     }
 
     override func doTapped(item: Item<M>) {
@@ -29,17 +35,16 @@ class PremiumTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     // MARK: - InAppFeatureObserver
 
     func didChange(feature: InAppFeature) {
-        guard case .premium = feature
-        else { return }
-
-        self.isEnabled = !InAppFeature.premium.isEnabled
+        if feature == self.feature {
+            self.isEnabled = !self.feature.isEnabled
+        }
     }
 }
 
-class PremiumConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
+class FeatureConditionalBehaviour<M>: ConditionalBehaviour<M>, InAppFeatureObserver {
 
-    init(effect: Effect) {
-        super.init( effect: effect, condition: { _ in InAppFeature.premium.isEnabled } )
+    init(feature: InAppFeature, effect: Effect) {
+        super.init( effect: effect, condition: { _ in feature.isEnabled } )
     }
 
     override func didInstall(into item: Item<M>) {
@@ -177,7 +182,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
             super.init( title: "Enroll", values: { AppStore.shared.products( forSubscription: .premium ) } )
 
             self.addBehaviour( ConditionalBehaviour( effect: .reveals ) { _ in AppStore.shared.canBuyProducts } )
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .hides ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .hides ) )
 
             self.animated = false
         }
@@ -265,7 +270,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                         } )
 
             self.addBehaviour( ConditionalBehaviour( effect: .hides ) { _ in AppStore.shared.canBuyProducts } )
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .hides ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .hides ) )
         }
     }
 
@@ -278,7 +283,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                             """
                         } )
 
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .reveals ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .reveals ) )
         }
     }
 

@@ -195,8 +195,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                                     "The site is using a site‑specific login name."
                         } )
 
-            self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
+            self.addBehaviour( FeatureTapBehaviour( feature: .logins ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .logins, effect: .enables ) )
         }
 
         override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
@@ -234,7 +234,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                             }
                         } )
 
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .reveals ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .logins, effect: .reveals ) )
         }
 
         override func createItemView() -> FieldItemView {
@@ -342,8 +342,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         } )
             self.deletable = true
 
-            self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
+            self.addBehaviour( FeatureTapBehaviour( feature: .answers ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature:.answers, effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Question) {

@@ -88,6 +88,9 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                             The login name used for sites that do not have a site‑specific login name.
                             """
                         } )
+
+            self.addBehaviour( FeatureTapBehaviour( feature: .logins ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .logins, effect: .enables ) )
         }
 
         override func populate(_ cell: EffectResultTypeCell, indexPath: IndexPath, value: SpectreResultType) {
@@ -115,7 +118,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                             }
                         } )
 
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .reveals ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .logins, effect: .reveals ) )
         }
 
         override func createItemView() -> FieldItemView {
@@ -168,8 +171,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                             """
                         } )
 
-            self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
+            self.addBehaviour( FeatureTapBehaviour( feature: .premium ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Attacker?) {
@@ -217,8 +220,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     """
                 } )
                         // TODO: Enable toggle if premium is off but biometric key is set to allow clearing it?
-                        .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
+                        .addBehaviour( FeatureTapBehaviour( feature: .biometrics ) )
+                        .addBehaviour( FeatureConditionalBehaviour( feature: .biometrics, effect: .enables ) ),
             ] )
         }
     }
@@ -237,8 +240,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                                 $0.viewController?.show( IntroAutoFillViewController( model: user ), sender: $0.view )
                             }
                         } ) )
-                        .addBehaviour( PremiumTapBehaviour() )
-                        .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
+                        .addBehaviour( FeatureTapBehaviour( feature: .premium ) )
+                        .addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) ),
                 ToggleItem( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "file-export" ) },
                                   value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """

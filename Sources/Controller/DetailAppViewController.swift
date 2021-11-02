@@ -165,8 +165,8 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                 """
             } )
 
-            self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
+            self.addBehaviour( FeatureTapBehaviour( feature: .premium ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) )
         }
     }
 
@@ -197,8 +197,8 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                         value: { Theme.with( path: $0.theme ) ?? .default }, update: { $0.model?.theme = $1.path },
                         caption: { _ in "\(Theme.current)" } )
 
-            self.addBehaviour( PremiumTapBehaviour() )
-            self.addBehaviour( PremiumConditionalBehaviour( effect: .enables ) )
+            self.addBehaviour( FeatureTapBehaviour( feature: .premium ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Theme) {

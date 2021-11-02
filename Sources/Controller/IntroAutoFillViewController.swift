@@ -59,8 +59,6 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                     icon: { _ in .icon( KeychainKeyFactory.factor.iconName ?? KeychainKeyFactory.Factor.biometricTouch.iconName ) },
                                     value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
-                                .addBehaviour( PremiumTapBehaviour() )
-                                .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
                     ], axis: .vertical ),
 
                     // Step 2
@@ -103,8 +101,6 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                         ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "keyboard" ) },
                                           value: { $0.autofill }, update: { $0.model?.autofill = $1 } )
                                 .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
-                                .addBehaviour( PremiumTapBehaviour() )
-                                .addBehaviour( PremiumConditionalBehaviour( effect: .enables ) ),
                     ], axis: .vertical ),
                 ]
             } ),
