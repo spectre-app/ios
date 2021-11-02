@@ -43,7 +43,11 @@ extension InAppProduct {
     }
 
     var isActive: Bool {
-        AppStore.shared.receipt?.purchases( ofProductIdentifier: self.productIdentifier ).contains { purchase in
+        if case .legacyMasterPassword = self, AppConfig.shared.masterPasswordCustomer { // swiftlint:disable:this inclusive_language
+            return true
+        }
+
+        return AppStore.shared.receipt?.purchases( ofProductIdentifier: self.productIdentifier ).contains { purchase in
             !purchase.isRenewableSubscription || purchase.isActiveAutoRenewableSubscription( forDate: Date() )
         } ?? false
     }
@@ -305,6 +309,9 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             } ).last
             let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
             Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
+                "answers_active": InAppFeature.answers.isEnabled,
+                "logins_active": InAppFeature.logins.isEnabled,
+                "biometrics_active": InAppFeature.biometrics.isEnabled,
                 "premium_active": InAppFeature.premium.isEnabled,
                 "premium_in_trial": currentPremiumPurchase?.subscriptionTrialPeriod ?? false,
                 "premium_in_intro": currentPremiumPurchase?.subscriptionIntroductoryPricePeriod ?? false,

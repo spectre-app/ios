@@ -16,7 +16,7 @@ import StoreKit
 enum InAppFeature: String, CaseIterable {
     static let observers = Observers<InAppFeatureObserver>()
 
-    case premium
+    case answers, logins, biometrics, premium
 
     var isEnabled: Bool {
         UserDefaults.shared.bool( forKey: self.rawValue )
@@ -40,6 +40,7 @@ enum InAppProduct: String, CaseIterable {
     case premiumAnnual         = "app.spectre.premium.annual"
     case premiumMonthly        = "app.spectre.premium.monthly"
     case premiumMasterPassword = "app.spectre.premium.masterpassword" // swiftlint:disable:this inclusive_language
+    case legacyMasterPassword  = "app.spectre.legacy.masterpassword" // swiftlint:disable:this inclusive_language
 
     static func find(_ productIdentifier: String) -> InAppProduct? {
         self.allCases.first( where: { $0.productIdentifier == productIdentifier } )
@@ -54,9 +55,10 @@ enum InAppProduct: String, CaseIterable {
         ].contains( self )
     }
     var features:          [InAppFeature] {
-        [ .premiumAnnual: [ .premium ],
-          .premiumMonthly: [ .premium ],
-          .premiumMasterPassword: [ .premium ],
+        [ .premiumAnnual: [ .answers, .logins, .biometrics, .premium ],
+          .premiumMonthly: [ .answers, .logins, .biometrics, .premium ],
+          .premiumMasterPassword: [ .answers, .logins, .biometrics, .premium ],
+          .legacyMasterPassword: [ .answers, .logins, .biometrics ],
         ][self] ?? []
     }
 }

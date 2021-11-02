@@ -476,16 +476,13 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         // MARK: - InAppFeatureObserver
 
         func didChange(feature: InAppFeature) {
-            guard case .premium = feature
-            else { return }
-
             self.updateTask.request()
         }
 
         // MARK: - Private
 
         func attemptBiometrics() -> Promise<User> {
-            guard InAppFeature.premium.isEnabled
+            guard InAppFeature.biometrics.isEnabled
             else { return Promise( .failure( AppError.state( title: "Biometrics not available" ) ) ) }
             guard let userFile = self.userFile, userFile.biometricLock
             else { return Promise( .failure( AppError.state( title: "Biometrics not enabled", details: self.userFile ) ) ) }
@@ -544,8 +541,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
             self.strengthMeter.isHidden = !self.isSelected || self.userFile != nil
             self.strengthLabel.isHidden = !self.isSelected || self.userFile != nil
-            self.biometricButton.isHidden = !InAppFeature.premium.isEnabled || !(self.userFile?.biometricLock ?? false) ||
-                    !(self.userFile?.keychainKeyFactory.isKeyPresent( for: self.userFile?.algorithm ?? .current ) ?? false)
+            self.biometricButton.isHidden = !InAppFeature.biometrics.isEnabled || !(self.userFile?.biometricLock ?? false)
+                    || !(self.userFile?.keychainKeyFactory.isKeyPresent( for: self.userFile?.algorithm ?? .current ) ?? false)
             self.biometricButton.image = .icon( KeychainKeyFactory.factor.iconName )
 
             if self.secretField.text?.isEmpty ?? true {

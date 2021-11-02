@@ -210,9 +210,9 @@ class Marshal: Observable, Updatable {
                     importEvent.end( [ "result": $0.name ] )
                 }
             }
-        }.success( on: .main ) {
+        }.success( on: .main ) { _ in
             // Master Password purchase migration
-            if $0.isMasterPasswordCustomer, !InAppFeature.premium.isEnabled {
+            if AppConfig.shared.masterPasswordCustomer, !InAppFeature.premium.isEnabled {
                 viewController.present( DialogMasterPasswordViewController(), animated: true )
             }
         }
@@ -637,7 +637,6 @@ class Marshal: Observable, Updatable {
         public var id: String {
             self.userName
         }
-        public var isMasterPasswordCustomer = false // swiftlint:disable:this inclusive_language
 
         static func load(origin: URL) throws -> UnsafeMutablePointer<SpectreMarshalledFile>? {
             var error:      NSError?
@@ -706,7 +705,7 @@ class Marshal: Observable, Updatable {
                 if let proof: String = self.file.spectre_get( path: "user", "_ext_mpw", purchase ),
                    let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: secrets.mpw.salt.b64Decrypt() )?.hex().prefix( 16 ),
                    proof == purchaseDigest {
-                    self.isMasterPasswordCustomer = true
+                    AppConfig.shared.masterPasswordCustomer = true
                 }
 
                 self.file.spectre_set( nil, path: "user", "_ext_mpw", purchase )

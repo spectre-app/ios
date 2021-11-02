@@ -174,8 +174,18 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                                 site.user.sites.removeAll { $0 === site }
                             },
                         ] + self.siteActions.filter { siteAction in
-                            siteAction.appearance.contains( .menu )
-                                    && (InAppFeature.premium.isEnabled || !siteAction.appearance.contains( .premium ))
+                            if !siteAction.appearance.contains( .menu ) {
+                                // Not a menu action.
+                                return false
+                            }
+                            if siteAction.appearance.contains(where: {
+                                if case let .feature(feature) = $0 { return !feature.isEnabled }
+                                return false
+                            }) {
+                                // Required feature is missing.
+                                return false
+                            }
+                            return true
                         }.map { siteAction in
                             UIAction( title: siteAction.title, image: .icon( siteAction.icon ) ) { action in
                                 if let tracking = siteAction.tracking {
@@ -496,9 +506,19 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 else { return }
 
                 self.sitesView?.siteActions.filter { siteAction in
-                    siteAction.appearance.contains( .mode )
-                            && (InAppFeature.premium.isEnabled || !siteAction.appearance.contains( .premium ))
-                }.forEach { siteAction in
+                        if !siteAction.appearance.contains( .mode ) {
+                            // Not a mode action.
+                            return false
+                        }
+                        if siteAction.appearance.contains(where: {
+                            if case let .feature(feature) = $0 { return !feature.isEnabled }
+                            return false
+                        }) {
+                            // Required feature is missing.
+                            return false
+                        }
+                        return true
+                    }.forEach { siteAction in
                     if let tracking = siteAction.tracking {
                         Tracker.shared.event( track: tracking.with( parameters: [
                             "purpose": self.purpose,
@@ -597,8 +617,18 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self.actionStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
             self.sitesView?.siteActions.filter { siteAction in
-                siteAction.appearance.contains( .cell )
-                        && (InAppFeature.premium.isEnabled || !siteAction.appearance.contains( .premium ))
+                if !siteAction.appearance.contains( .cell ) {
+                    // Not a menu action.
+                    return false
+                }
+                if siteAction.appearance.contains(where: {
+                    if case let .feature(feature) = $0 { return !feature.isEnabled }
+                    return false
+                }) {
+                    // Required feature is missing.
+                    return false
+                }
+                return true
             }.forEach { siteAction in
                 self.actionStack.addArrangedSubview(
                         EffectButton( track: siteAction.tracking?.with( parameters: [ "appearance": "cell" ] ),
@@ -667,9 +697,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         // MARK: - InAppFeatureObserver
 
         func didChange(feature: InAppFeature) {
-            guard case .premium = feature
-            else { return }
-
             self.updateTask.request()
         }
 
@@ -721,24 +748,20 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
 
             self.maskButton.image = .icon( self.unmasked ? "eye": "eye-slash", invert: true )
-            if !InAppFeature.premium.isEnabled {
-                self.purpose = .authentication
+            if case .identification = self.purpose, InAppFeature.logins.isEnabled {
+                self.purposeButton.image = .icon( "id-card-clip" )
             }
-            switch self.purpose {
-                case .authentication:
-                    self.purposeButton.image = .icon( "key" )
-                case .identification:
-                    self.purposeButton.image = .icon( "id-card-clip" )
-                case .recovery:
-                    self.purposeButton.image = .icon( "comments-question-check" )
-                @unknown default:
-                    self.purposeButton.image = nil
+            else if case .recovery = self.purpose, InAppFeature.answers.isEnabled {
+                self.purposeButton.image = .icon( "comments-question-check" )
+            }
+            else {
+                self.purpose = .authentication
+                self.purposeButton.image = .icon( "key" )
             }
 
             self.maskButton.isSelected = self.unmasked
             self.maskButton.isUserInteractionEnabled = (self.site?.user.maskPasswords ?? false)
             self.maskButton.alpha = self.maskButton.isUserInteractionEnabled ? .on: .off
-            self.purposeButton.isUserInteractionEnabled = InAppFeature.premium.isEnabled
             self.purposeButton.alpha = self.purposeButton.isUserInteractionEnabled ? .on: .off
             self.modeStack.isUserInteractionEnabled = self.isSelected
             self.modeStack.alpha = self.modeStack.isUserInteractionEnabled ? .on: .off
@@ -845,8 +868,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let appearance: [Appearance]
         let action:     (Site, SpectreKeyPurpose?, Appearance) -> Void
 
-        enum Appearance {
-            case cell, menu, mode, premium
+        enum Appearance: Hashable {
+            case cell, menu, mode, feature(_: InAppFeature)
         }
     }
 }

@@ -141,6 +141,18 @@ public class AppConfig: Observable {
             }
         }
     }
+    public var masterPasswordCustomer: Bool { // swiftlint:disable:this inclusive_language
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.offline {
+                UserDefaults.shared.set( newValue, forKey: #function )
+                // swiftlint:disable:next inclusive_language
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.masterPasswordCustomer ) }
+            }
+        }
+    }
 
     // MARK: - Life
 

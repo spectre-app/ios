@@ -325,7 +325,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
     // MARK: - Private
 
     private func tryKeyFactoryMigration() {
-        guard InAppFeature.premium.isEnabled
+        guard InAppFeature.biometrics.isEnabled
         else { return }
 
         if self.biometricLock {
