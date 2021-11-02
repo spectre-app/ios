@@ -11,7 +11,6 @@
 // =============================================================================
 
 import Foundation
-import Stacksift
 import Sentry
 import Countly
 
@@ -247,7 +246,6 @@ class Tracker: AppConfigObserver {
 
     func crash() {
         SentrySDK.crash()
-        Stacksift.testCrash()
     }
 
     // MARK: - Private
@@ -315,7 +313,10 @@ class Tracker: AppConfigObserver {
         // Countly
         if self.hasCountlyStarted {
             Countly.sharedInstance().recordEvent(
-                    name, segmentation: eventParameters.mapValues { String( reflecting: $0 ) },
+                    name, segmentation: eventParameters.mapValues {
+                String( reflecting: $0 )
+                        .replacingOccurrences( of: #"\b0x[A-Z0-9]+\b"#, with: "0x?", options: [.regularExpression, .caseInsensitive] )
+            },
                     count: eventParameters["event.count"] as? UInt ?? 1,
                     sum: eventParameters["event.sum"] as? Double ?? 0,
                     duration: duration )
@@ -326,7 +327,7 @@ class Tracker: AppConfigObserver {
 
     // FIXME: We should use Countly.sharedInstance().hasStarted instead but it's not exposed yet.
     // https://support.count.ly/hc/en-us/community/posts/900002422786-Stopping-Countly
-    private var hasCountlyStarted = false, hasSentryStarted = false, hasStacksiftStarted = false
+    private var hasCountlyStarted = false, hasSentryStarted = false
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         guard change == \AppConfig.isApp || change == \AppConfig.diagnostics || change == \AppConfig.offline
@@ -392,18 +393,10 @@ class Tracker: AppConfigObserver {
                 }
                 self.hasSentryStarted = true
             }
-            if !self.hasStacksiftStarted, let apiKey = secrets.stacksift.key.b64Decrypt() {
-                Stacksift.shared.installIdentifier = self.identifierForDevice
-                Stacksift.start( APIKey: apiKey, monitor: .metricKitOnly )
-                self.hasStacksiftStarted = true
-            }
         }
         else {
             SentrySDK.close()
             self.hasSentryStarted = false
-            // Stacksift doesn't currently support consent opt-out, but only transmits data on start-up.
-            // https://github.com/stacksift/SDK/issues/3
-            //Stacksift.close()
         }
     }
 

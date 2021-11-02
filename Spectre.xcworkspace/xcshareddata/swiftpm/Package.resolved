@@ -29,30 +29,12 @@
         }
       },
       {
-        "package": "Impact",
-        "repositoryURL": "https://github.com/stacksift/Impact",
-        "state": {
-          "branch": null,
-          "revision": "af1ccb6b707373ef69cfad51f635c7d85e526a34",
-          "version": "0.4.0"
-        }
-      },
-      {
-        "package": "Stacksift",
-        "repositoryURL": "https://github.com/stacksift/SDK",
-        "state": {
-          "branch": null,
-          "revision": "6cd6cfbcd0f1624b1f7bd0c91f180600f2b8c51a",
-          "version": "0.3.5"
-        }
-      },
-      {
         "package": "Sentry",
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
-          "revision": "4abaa663a7916902ae9196a8bf3c4c047caacc17",
-          "version": "7.3.0"
+          "revision": "fa1ba77bd74a227875a585a8ee569f330564926b",
+          "version": "7.5.0"
         }
       },
       {
@@ -71,15 +53,6 @@
           "branch": null,
           "revision": "14f707e28fc7e19aadac72c8d63eb8610fa9c3bf",
           "version": "3.3.0"
-        }
-      },
-      {
-        "package": "Wells",
-        "repositoryURL": "https://github.com/stacksift/Wells",
-        "state": {
-          "branch": null,
-          "revision": "7c2322e991c15e3643fa16861f71fad902381463",
-          "version": "0.1.4"
         }
       }
     ]
