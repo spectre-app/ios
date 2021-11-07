@@ -421,7 +421,7 @@ extension UIFont {
     }
 
     static func poppins(_ weight: UIFont.Weight, asTextStyle textStyle: UIFont.TextStyle) -> UIFont? {
-        self.custom( family: "Poppins VF", weight: weight, asTextStyle: textStyle )
+        self.custom( family: "Poppins", weight: weight, asTextStyle: textStyle )
     }
 
     static func sourceCodePro(_ weight: UIFont.Weight, ofSize size: CGFloat) -> UIFont? {
