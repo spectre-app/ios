@@ -286,7 +286,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 if self.isExact {
                     self.matches = Array( attributedKey.string.indices )
                     self.isMatched = true
-                    attributedKey.addAttribute( NSAttributedString.Key.backgroundColor, value: UIColor.red,
+                    attributedKey.addAttribute( NSAttributedString.Key.backgroundColor,
+                                                value: Theme.current.color.selection.get() as Any,
                                                 range: NSRange( key.startIndex..<key.endIndex, in: key ) )
                     return
                 }
@@ -304,7 +305,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
                     if self.query[q] == key[k] {
                         self.matches.append( k )
-                        attributedKey.addAttribute( NSAttributedString.Key.backgroundColor, value: UIColor.red,
+                        attributedKey.addAttribute( NSAttributedString.Key.backgroundColor,
+                                                    value: Theme.current.color.selection.get() as Any,
                                                     range: NSRange( k..<n, in: key ) )
                         q = self.query.index( after: q )
                     }
