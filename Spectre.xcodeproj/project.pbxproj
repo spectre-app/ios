@@ -1715,7 +1715,6 @@
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMPRESS_PNG_FILES = YES;
-				CURRENT_PROJECT_VERSION = 44;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCREMENTAL_DISTILL = NO;
@@ -1780,7 +1779,6 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES;
-				MARKETING_VERSION = 3.0.1;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
@@ -1811,6 +1809,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
+				CURRENT_PROJECT_VERSION = 44;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"TARGET_APP=1",
 					"$(inherited)",
@@ -1826,7 +1825,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.3;
+				MARKETING_VERSION = 3.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
@@ -1838,6 +1837,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
+				CURRENT_PROJECT_VERSION = 44;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"TARGET_AUTOFILL=1",
 					"$(inherited)",
@@ -1853,6 +1853,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
+				MARKETING_VERSION = 3.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
@@ -1863,6 +1864,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
+				CURRENT_PROJECT_VERSION = 44;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"TARGET_AUTOFILL=1",
 					"$(inherited)",
@@ -1878,6 +1880,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
+				MARKETING_VERSION = 3.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
@@ -1888,6 +1891,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Sources/AutoFill/AutoFill.entitlements;
+				CURRENT_PROJECT_VERSION = 44;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"TARGET_AUTOFILL=1",
 					"$(inherited)",
@@ -1903,6 +1907,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
+				MARKETING_VERSION = 3.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
@@ -2006,7 +2011,6 @@
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMPRESS_PNG_FILES = YES;
-				CURRENT_PROJECT_VERSION = 44;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2074,7 +2078,6 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 3.0.1;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
@@ -2198,7 +2201,6 @@
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMPRESS_PNG_FILES = YES;
-				CURRENT_PROJECT_VERSION = 44;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCREMENTAL_DISTILL = NO;
@@ -2263,7 +2265,6 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES;
-				MARKETING_VERSION = 3.0.1;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
@@ -2294,6 +2295,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
+				CURRENT_PROJECT_VERSION = 44;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"TARGET_APP=1",
 					"$(inherited)",
@@ -2309,7 +2311,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.3;
+				MARKETING_VERSION = 3.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
@@ -2323,6 +2325,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Light Icon";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Spectre.entitlements;
+				CURRENT_PROJECT_VERSION = 44;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"TARGET_APP=1",
 					"$(inherited)",
@@ -2338,7 +2341,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.3;
+				MARKETING_VERSION = 3.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
