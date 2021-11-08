@@ -244,6 +244,18 @@ class Tracker: AppConfigObserver {
         self.event( file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters() )
     }
 
+    func feedback(_ rating: Int, comment: String?, contact: String?) {
+        if let widget = [
+            .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
+        ][AppConfig.shared.environment]?.feedback.b64Decrypt() {
+            Countly.sharedInstance().submitFeedbackWidget(withID: widget, rating: UInt(rating), comment: comment, email: contact) {
+                if let error = $0 {
+                    wrn("Couldn't submit feedback: %@", error)
+                }
+            }
+        }
+    }
+
     func crash() {
         SentrySDK.crash()
     }
@@ -370,11 +382,11 @@ class Tracker: AppConfigObserver {
             }
             else if appConfig.diagnostics {
                 Countly.sharedInstance().giveConsent(
-                        forFeatures: [ .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+                        forFeatures: [ .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring, .feedback ] )
             }
             else {
                 Countly.sharedInstance().cancelConsent(
-                        forFeatures: [ .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring ] )
+                        forFeatures: [ .sessions, .events, .userDetails, .viewTracking, .performanceMonitoring, .feedback ] )
             }
         }
 

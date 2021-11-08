@@ -85,7 +85,7 @@ extension InAppProduct {
 class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, SKStoreProductViewControllerDelegate, Observable, AppConfigObserver {
     public static let shared = AppStore()
 
-    var observers = Observers<InAppStoreObserver>()
+    let observers = Observers<InAppStoreObserver>()
     var canBuyProducts: Bool {
         #if PUBLIC
         return SKPaymentQueue.canMakePayments() && !self.products.isEmpty

@@ -166,6 +166,30 @@ public class AppConfig: Observable {
         }
     }
     #endif
+    public var rating: Int {
+        get {
+            UserDefaults.shared.integer( forKey: #function )
+        }
+        set {
+            if newValue != self.rating {
+                UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.rating ) }
+            }
+        }
+    }
+    public var reviewed: Date? {
+        get {
+            UserDefaults.shared.double(forKey: #function).nonEmpty.flatMap {
+                Date( timeIntervalSince1970: $0 )
+            }
+        }
+        set {
+            if newValue != self.reviewed {
+                UserDefaults.shared.set( newValue?.timeIntervalSince1970, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.reviewed ) }
+            }
+        }
+    }
 
     // MARK: - Life
 

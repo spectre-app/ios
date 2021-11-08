@@ -14,7 +14,7 @@ import UIKit
 
 class KeyboardMonitor {
     static let shared = KeyboardMonitor()
-    var observers = Observers<KeyboardMonitorObserver>()
+    let observers = Observers<KeyboardMonitorObserver>()
 
     fileprivate var notificationObservers     = [ Any ]()
     fileprivate var keyboardScreenFrameLatest = CGRect.null

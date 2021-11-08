@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "Countly",
-        "repositoryURL": "https://github.com/Countly/countly-sdk-ios",
-        "state": {
-          "branch": null,
-          "revision": "3867c05ade87d6327383fe1c3742da02f053c766",
-          "version": "20.11.3"
-        }
-      },
-      {
         "package": "FreshchatSDK",
         "repositoryURL": "https://github.com/freshworks/freshchat-ios",
         "state": {

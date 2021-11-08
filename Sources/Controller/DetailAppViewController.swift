@@ -28,7 +28,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     }
 
     override func loadItems() -> [Item<AppConfig>] {
-        [ VersionItem(), SeparatorItem(),
+        [ VersionItem(), FeedbackItem(), SeparatorItem(),
 
           Item<AppConfig>( subitems: [
               Item<AppConfig>( subitems: [

@@ -691,6 +691,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             super.didLoad()
 
             self.valueField.delegate = self.fieldItem
+            self.valueField => \.font => Theme.current.font.mono
             self.valueField => \.textColor => Theme.current.color.body
             self.valueField.textAlignment = .center
         }

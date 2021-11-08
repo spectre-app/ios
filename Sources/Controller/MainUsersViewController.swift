@@ -13,8 +13,9 @@
 import UIKit
 import LocalAuthentication
 import SafariServices
+import Countly
 
-class MainUsersViewController: BaseUsersViewController {
+class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
     private let tipsView    = TipsView( tips: [
         // App
         "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
@@ -47,8 +48,9 @@ class MainUsersViewController: BaseUsersViewController {
         "Use Security Answers \(.icon( "comments-question-check" )) to avoid divulging private information.",
         "Sites are automatically styled \(.icon( "paint-brush" )) from their home page.",
     ], first: 0, random: false )
-    private let actionStack = UIStackView()
-    private let appToolbar  = UIStackView()
+    private let actionStack  = UIStackView()
+    private let feedbackView = FeedbackView()
+    private let appToolbar   = UIStackView()
     private lazy var appUpdate = EffectButton( track: .subject( "users", action: "update" ),
                                                title: "Update Available", background: false ) { [unowned self] _, _ in
         AppStore.shared.presentStore( in: self )
@@ -128,9 +130,12 @@ class MainUsersViewController: BaseUsersViewController {
             },
         ]
 
+        self.feedbackView.observers.register(observer: self)
+
         // - Hierarchy
         self.view.insertSubview( self.tipsView, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.actionStack, belowSubview: self.detailsHost.view )
+        self.view.insertSubview( self.feedbackView, belowSubview: self.detailsHost.view )
         self.view.insertSubview( self.appToolbar, belowSubview: self.detailsHost.view )
 
         // - Layout
@@ -142,6 +147,10 @@ class MainUsersViewController: BaseUsersViewController {
                 .activate()
         LayoutConfiguration( view: self.appToolbar )
                 .constrain( as: .bottomCenter, margin: true ).activate()
+        LayoutConfiguration( view: self.feedbackView )
+                .constrain { $1.bottomAnchor.constraint(lessThanOrEqualTo: self.appToolbar.topAnchor, constant: -8) }
+                .constrain { $1.bottomAnchor.constraint(lessThanOrEqualTo: self.keyboardLayoutGuide.topAnchor, constant: -8) }
+                .constrain(as: .centerH).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -160,6 +169,10 @@ class MainUsersViewController: BaseUsersViewController {
                 wrn( "Application update check failed: %@ [>PII]", error.localizedDescription )
                 pii( "[>] Error: %@", error )
             }
+        }
+
+        if AppConfig.shared.reviewed == nil, AppConfig.shared.runCount > 5 {
+            self.feedbackView.show(in: self)
         }
     }
 
@@ -184,6 +197,13 @@ class MainUsersViewController: BaseUsersViewController {
             self.appMigrate.isHidden = !userFiles.isEmpty ||
                     !(URL( string: "masterpassword:" ).flatMap { UIApplication.shared.canOpenURL( $0 ) } ?? false)
         }
+    }
+
+    // MARK: - FeedbackObserver
+
+    func didUpdate(feedback: FeedbackView, shown: Bool, expanded: Bool, submitted: Bool) {
+        self.usersCarousel.alpha = shown && expanded ? .off : .on
+        self.usersCarousel.isUserInteractionEnabled = !(shown && expanded)
     }
 
     // MARK: - Private
