@@ -38,7 +38,10 @@
 	<string>$(INFOPLIST_KEY_NSHumanReadableCopyright)</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Poppins-VF.otf</string>
+		<string>Poppins-Light.otf</string>
+		<string>Poppins-Medium.otf</string>
+		<string>Poppins-Regular.otf</string>
+		<string>Poppins-SemiBold.otf</string>
 		<string>Font Awesome 6 Brands-Regular-400.otf</string>
 		<string>Font Awesome 6 Duotone-Solid-900.otf</string>
 		<string>Font Awesome 6 Pro-Light-300.otf</string>
