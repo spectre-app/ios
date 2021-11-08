@@ -437,6 +437,16 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.nameLabel ] )
 
         private var selectionConfiguration: LayoutConfiguration<SiteCell>!
+        private var primaryGestureRecognizer: UIGestureRecognizer? {
+            didSet {
+                if let oldValue = oldValue {
+                    self.removeGestureRecognizer(oldValue)
+                }
+                if let primaryGestureRecognizer = self.primaryGestureRecognizer {
+                    self.addGestureRecognizer(primaryGestureRecognizer)
+                }
+            }
+        }
 
         // MARK: - Life
 
@@ -617,6 +627,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
 
+            self.primaryGestureRecognizer = nil
             self.actionStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
             self.sitesView?.siteActions.filter { siteAction in
                 if !siteAction.appearance.contains( .cell ) {
@@ -632,14 +643,20 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 }
                 return true
             }.forEach { siteAction in
-                self.actionStack.addArrangedSubview(
-                        EffectButton( track: siteAction.tracking?.with( parameters: [ "appearance": "cell" ] ),
-                                      image: .icon( siteAction.icon ), border: 0, background: false ) {
-                            [unowned self] _, _ in
-                            if let site = self.site {
-                                siteAction.action( site, self.purpose, .cell )
-                            }
-                        } )
+                let actionButton = EffectButton( track: siteAction.tracking?.with( parameters: [ "appearance": "cell" ] ),
+                                                 image: .icon( siteAction.icon ), border: 0, background: false ) {
+                    [unowned self] in
+                    if let site = self.site {
+                        siteAction.action( site, self.purpose, .cell )
+                    }
+                }
+                if siteAction.appearance.contains( .primary ) {
+                    self.primaryGestureRecognizer = UITapGestureRecognizer { _ in
+                        actionButton.activate()
+                    }
+                }
+                self.primaryGestureRecognizer?.isEnabled = self.isSelected
+                self.actionStack.addArrangedSubview(actionButton)
             }
         }
 
@@ -772,6 +789,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.newButton.isUserInteractionEnabled = self.isSelected && isNew
             self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on: .off
             self.selectionConfiguration.isActive = self.isSelected
+            self.primaryGestureRecognizer?.isEnabled = self.isSelected
 
             self.resultLabel.isSecureTextEntry =
                     (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
@@ -871,7 +889,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let action:     (Site, SpectreKeyPurpose?, Appearance) -> Void
 
         enum Appearance: Hashable {
-            case cell, menu, mode, feature(_: InAppFeature)
+            case cell, menu, mode, primary, feature(_: InAppFeature)
         }
     }
 }

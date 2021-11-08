@@ -52,12 +52,12 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
     private let feedbackView = FeedbackView()
     private let appToolbar   = UIStackView()
     private lazy var appUpdate = EffectButton( track: .subject( "users", action: "update" ),
-                                               title: "Update Available", background: false ) { [unowned self] _, _ in
+                                               title: "Update Available", background: false ) { [unowned self] _ in
         AppStore.shared.presentStore( in: self )
     }
     // swiftlint:disable inclusive_language
     private lazy var appMigrate = EffectButton( track: .subject( "users", action: "masterPassword" ),
-                                                title: "Migrate from Master Password", background: false ) { [unowned self] _, _ in
+                                                title: "Migrate from Master Password", background: false ) { [unowned self] _ in
         if let masterPasswordURL = URL( string: "masterpassword:" ) {
             UIApplication.shared.open( masterPasswordURL )
         }
@@ -79,11 +79,11 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
 
         self.appToolbar.axis = .horizontal
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "app" ), image: .icon( "gears" ),
-                                                          border: 0, background: false, square: true ) { [unowned self] _, _ in
+                                                          border: 0, background: false, square: true ) { [unowned self] _ in
             self.detailsHost.show( DetailAppViewController(), sender: self )
         } )
         self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users", action: "user" ), image: .icon( "user-secret" ),
-                                                         border: 0, background: false, square: true ) { [unowned self] _, incognitoButton in
+                                                         border: 0, background: false, square: true ) { [unowned self] incognitoButton in
             guard let incognitoButton = incognitoButton as? TimedButton
             else { return }
 
@@ -113,7 +113,7 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
                              }
         } )
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ), image: .icon( "comments" ),
-                                                          border: 0, background: false, square: true ) { [unowned self] _, _ in
+                                                          border: 0, background: false, square: true ) { [unowned self] _ in
             if let url = URL( string: "https://chat.spectre.app" ) {
                 self.present( SFSafariViewController( url: url ), animated: true )
             }

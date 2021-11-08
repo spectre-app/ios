@@ -54,7 +54,7 @@ class MainSitesViewController: BaseSitesViewController {
                 self.detailsHost.show( DetailSiteViewController( model: site ), sender: self )
             },
             .init( tracking: .subject( "sites.site", action: "copy" ),
-                   title: "Copy", icon: .icon( "copy" ), appearance: [ .cell ] ) {
+                   title: "Copy", icon: .icon( "copy" ), appearance: [ .cell, .primary ] ) {
                 [unowned self] site, purpose, _ in
                 site.result( keyPurpose: purpose ?? .authentication )?.copy( fromView: self.view, trackingFrom: "site>cell" )
             },

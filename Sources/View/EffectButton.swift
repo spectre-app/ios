@@ -14,7 +14,7 @@ import UIKit
 
 class EffectButton: EffectView {
     var tracking:        Tracking?
-    var action:          ((UIEvent, EffectButton) -> Void)?
+    var action:          ((EffectButton) -> Void)?
     var image:           UIImage? {
         didSet {
             if self.image != oldValue {
@@ -65,12 +65,12 @@ class EffectButton: EffectView {
                      dims: Bool = false, action: @escaping () -> Void) {
         self.init( track: track, image: image, title: title, attributedTitle: attributedTitle,
                    border: border, background: background, square: square, circular: circular, rounding: rounding,
-                   dims: dims ) { _, _ in action() }
+                   dims: dims ) { _ in action() }
     }
 
     init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
          border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = false, rounding: CGFloat = 12,
-         dims: Bool = false, action: ((UIEvent, EffectButton) -> Void)? = nil) {
+         dims: Bool = false, action: ((EffectButton) -> Void)? = nil) {
         self.tracking = track
         self.action = action
         super.init( border: border, background: background, circular: circular, rounding: rounding, dims: dims )
@@ -85,13 +85,7 @@ class EffectButton: EffectView {
         self.button.titleLabel?.textAlignment = .center
         self.button.titleLabel?.allowsDefaultTighteningForTruncation = true
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
-            self.track()
-
-            if self.tapEffect {
-                TapEffectView().run( for: self )
-            }
-
-            self.action?( $0, self )
+            self.activate()
         }
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .vertical )
         self.button.setContentHuggingPriority( .defaultHigh + 1, for: .horizontal )
@@ -112,6 +106,16 @@ class EffectButton: EffectView {
 
     override func sizeThatFits(_ size: CGSize) -> CGSize {
         self.systemLayoutSizeFitting( size )
+    }
+
+    func activate() {
+        self.track()
+
+        if self.tapEffect {
+            TapEffectView().run( for: self )
+        }
+
+        self.action?( self )
     }
 
     func track() {

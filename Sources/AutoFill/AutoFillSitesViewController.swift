@@ -49,7 +49,8 @@ class AutoFillSitesViewController: BaseSitesViewController {
         self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: nil, appearance: [ .cell ], action: { _, _, _ in } ),
             .init( tracking: .subject( "sites.site", action: "fill" ),
-                   title: "Fill", icon: .icon( "paper-plane-top" ), appearance: [ .cell, .menu ] ) { [unowned self] site, _, appearance in
+                   title: "Fill", icon: .icon( "paper-plane-top" ), appearance: [ .cell, .menu, .primary ] ) {
+                [unowned self] site, _, appearance in
                 if site.url == nil,
                    let serviceURL = allServiceIdentifiers.filter( { $0.type == .URL } )
                                                          .compactMap( { URL( string: $0.identifier ) } ).first {
@@ -63,7 +64,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
                         self.completeRequest( site: site, trackingFrom: "site>cell>menu" )
                     case .mode:
                         self.completeRequest( site: site, trackingFrom: "site>cell>mode" )
-                    case .feature:
+                    case .feature, .primary:
                         ()
                 }
             },

@@ -50,7 +50,7 @@ extension AlertController {
         You've made changes to \(site.siteName).
 
         You should update the site's account to reflect these changes. We can help!
-        """, content: EffectButton( title: "Help Me Update" ) { _, _ in
+        """, content: EffectButton( title: "Help Me Update" ) { _ in
             viewController.present( DialogSiteChangedViewController( old: oldSite, new: site ), animated: true )
         } ).show( in: viewController.view )
     }

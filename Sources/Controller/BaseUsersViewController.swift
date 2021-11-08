@@ -226,7 +226,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 self.userActions.forEach { action in
                     self.actionsStack.addArrangedSubview(
                             EffectButton( track: action.tracking, image: .icon( action.icon ), border: 0, background: false ) {
-                                [unowned self] _, _ in
+                                [unowned self] _ in
                                 if let userFile = self.userFile {
                                     action.action( userFile )
                                 }

@@ -16,7 +16,7 @@ import AuthenticationServices
 class AutoFillConfigurationViewController: BaseViewController {
     private let configurationView = AutoFillConfigurationView( fromSettings: true )
     private lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ), image: .icon( "xmark", style: .regular ),
-                                                 border: 0, background: false, square: true ) { [unowned self] _, _ in
+                                                 border: 0, background: false, square: true ) { [unowned self] _ in
         (self.extensionContext as? ASCredentialProviderExtensionContext)?.completeExtensionConfigurationRequest()
     }
 

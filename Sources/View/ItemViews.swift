@@ -591,7 +591,7 @@ class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
             self.item as? ButtonItem
         }
 
-        lazy var button = EffectButton( track: self.buttonItem?.tracking ) { [unowned self] _, _ in
+        lazy var button = EffectButton( track: self.buttonItem?.tracking ) { [unowned self] _ in
             self.buttonItem.flatMap { $0.action( $0 ) }
         }
 
@@ -800,12 +800,12 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
         }
         let valueView  = UIView()
         let valueLabel = UILabel()
-        lazy var downButton = EffectButton( attributedTitle: .icon( "caret-down" ), border: 0, background: false ) { [unowned self]  _, _ in
+        lazy var downButton = EffectButton( attributedTitle: .icon( "caret-down" ), border: 0, background: false ) { [unowned self] _ in
             if let stepperItem = self.stepperItem, let value = stepperItem.value, value > stepperItem.min {
                 stepperItem.update?( stepperItem, value.advanced( by: -stepperItem.step ) )
             }
         }
-        lazy var upButton = EffectButton( attributedTitle: .icon( "caret-up" ), border: 0, background: false ) { [unowned self] _, _ in
+        lazy var upButton = EffectButton( attributedTitle: .icon( "caret-up" ), border: 0, background: false ) { [unowned self] _ in
             if let stepperItem = self.stepperItem, let value = stepperItem.value, value < stepperItem.max {
                 stepperItem.update?( stepperItem, value.advanced( by: stepperItem.step ) )
             }
