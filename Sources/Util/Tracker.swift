@@ -116,7 +116,7 @@ class Tracker: AppConfigObserver {
         kSecAttrSynchronizable: true,
     ] ).uuidString
     private lazy var identifiers
-            = [ "id.vendor": self.identifierForVendor, "id.device": self.identifierForDevice, "id.owner": self.identifierForOwner ]
+            = [ "id_vendor": self.identifierForVendor, "id_device": self.identifierForDevice, "id_owner": self.identifierForOwner ]
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                  extensionController: UIViewController? = nil) {
@@ -132,9 +132,9 @@ class Tracker: AppConfigObserver {
                 .warning: .warning, .error: .error, .fatal: .fatal,
             ][logEvent.level] ?? .debug
             let tags               = [
-                "src.file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
-                "src.line": "\(logEvent.line)",
-                "src.func": String.valid( logEvent.function ) ?? "-",
+                "src_file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
+                "src_line": "\(logEvent.line)",
+                "src_func": String.valid( logEvent.function ) ?? "-",
             ]
 
             if logEvent.level <= .fatal {
@@ -160,21 +160,21 @@ class Tracker: AppConfigObserver {
 
         AppConfig.shared.observers.register( observer: self ).didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
 
-        #if TARGET_APP
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "app", action: "startup", [
-                        "app.version": productVersion,
-                        "app.build": productBuild,
-                        "app.run": AppConfig.shared.runCount,
+                    track: .subject( AppConfig.shared.isApp ? "app" : "autofill", action: "startup", [
+                        "app_version": productVersion,
+                        "app_build": productBuild,
+                        "app_runCount": AppConfig.shared.runCount,
+                        "app_reviewed": AppConfig.shared.reviewed,
+                        "app_rating": AppConfig.shared.rating,
+                        "app_environment": AppConfig.shared.environment,
+                        "app_masterPasswordCustomer": AppConfig.shared.masterPasswordCustomer,
+                        "app_appIcon": AppConfig.shared.appIcon,
+                        "app_colorfulSites": AppConfig.shared.colorfulSites,
+                        "app_allowHandoff": AppConfig.shared.allowHandoff,
+                        "app_theme": AppConfig.shared.theme,
+                        "app_premium": InAppFeature.premium.isEnabled,
                     ].merging( self.identifiers ) ) )
-        #elseif TARGET_AUTOFILL
-        self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( "autofill", action: "startup", [
-                        "app.version": productVersion,
-                        "app.build": productBuild,
-                        "app.run": AppConfig.shared.runCount,
-                    ].merging( self.identifiers ) ) )
-        #endif
     }
 
     func appeared(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
@@ -291,9 +291,9 @@ class Tracker: AppConfigObserver {
                        named name: String, _ parameters: [String: Any?] = [:], timing: TimedEvent? = nil) {
         var eventParameters = parameters.compactMapValues( { $0 } )
         #if TARGET_APP
-        eventParameters["app.container"] = "app"
+        eventParameters["app_container"] = "app"
         #elseif TARGET_AUTOFILL
-        eventParameters["app.container"] = "autofill"
+        eventParameters["app_container"] = "autofill"
         #endif
 
         var duration               = TimeInterval( 0 )
@@ -311,7 +311,7 @@ class Tracker: AppConfigObserver {
             dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, untimedEventParameters )
         }
 
-        let sourceParameters: [String: Any] = [ "src.file": file.lastPathComponent, "src.line": line, "src.function": function ]
+        let sourceParameters: [String: Any] = [ "src_file": file.lastPathComponent, "src_line": line, "src_function": function ]
         eventParameters.merge( sourceParameters, uniquingKeysWith: { $1 } )
         untimedEventParameters.merge( sourceParameters, uniquingKeysWith: { $1 } )
 
