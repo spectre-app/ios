@@ -40,8 +40,39 @@ end
 platform :ios do
   desc "Build an application archive and send it to TestFlight"
   lane :deploy do
-    dep_start = Time.now.to_i
+    @dep_start = Time.now.to_i
+    check
 
+    @thr_verify_xcode = system_silenced( 'fastlane run verify_xcode' )
+    gather
+    @thr_notes = system_silencing( '"$EDITOR" ' + Shellwords.escape( File.absolute_path( 'notes.md' ) ) )
+    build
+    distribute
+    release
+    bump
+
+    # Complete and verify Xcode verification from asynchronous process.
+    UI.message "Xcode verification..."
+    @thr_verify_xcode.value.call or
+      UI.abort_with_message! "Xcode couldn't be verified. DO NOT SHIP THIS BUILD!"
+    File.delete( 'notes.md' ) if File.exist?( 'notes.md' )
+  end
+
+  lane :resume do
+    lane_context[SharedValues::XCODEBUILD_ARCHIVE] = "/Users/lhunath/Library/Developer/Xcode/Archives/2021-11-08/Spectre 2021-11-08 17.07.13.xcarchive"
+    lane_context[SharedValues::IPA_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.ipa"
+    lane_context[SharedValues::DSYM_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.app.dSYM.zip"
+
+    @dep_start = Time.now.to_i
+    #check
+    gather
+    #build
+    #distribute
+    release
+    bump
+  end
+
+  lane :check do
     # Ensure the source code is in a valid state before building.
     ensure_git_status_clean
     ensure_git_branch(
@@ -51,27 +82,28 @@ platform :ios do
       text: "<<<<<<|WIP:",
       exclude_dirs: [ ".git", "fastlane" ],
     )
-    thr_verify_xcode = system_silenced( 'fastlane run verify_xcode' )
+  end
 
+  lane :gather do
     # Prepare product release notes.
     git_branch
-    dep_stream = git_branch.split( "/" )[-1]
-    app_version = get_version_number( target: "Spectre" )
-    app_build = get_build_number
-    git_previous_deploy = last_git_tag( pattern: "build/*" )
-    git_previous_stream = last_git_tag( pattern: "build/*-" + dep_stream )
-    dep_header = "Spectre iOS v" + app_version + ", build " + app_build + " (" + dep_stream + ")"
-    dep_changes = changelog_from_git_commits(
-      between: [ git_previous_stream, "HEAD" ],
+    @dep_stream = git_branch.split( "/" )[-1]
+    @app_version = get_version_number( target: "Spectre" )
+    @app_build = get_build_number
+    @git_previous_deploy = last_git_tag( pattern: "build/*" )
+    @git_previous_stream = last_git_tag( pattern: "build/*-" + @dep_stream )
+    @dep_header = "Spectre iOS v" + @app_version + ", build " + @app_build + " (" + @dep_stream + ")"
+    @dep_changes = changelog_from_git_commits(
+      between: [ @git_previous_stream, "HEAD" ],
       merge_commit_filtering: "exclude_merges",
       pretty: " - %w(0,0,3)%s%n%b",
     )
-    if dep_notes = (File.read( 'notes.md' ).lines if File.exist?( 'notes.md' ))
-      dep_notes[0] = dep_header + "\n"
-      dep_notes = dep_notes[0...dep_notes.find_index("CHANGELOG\n")].join()
+    if @dep_notes = (File.read( 'notes.md' ).lines if File.exist?( 'notes.md' ))
+      @dep_notes[0] = @dep_header + "\n"
+      @dep_notes = @dep_notes[0...@dep_notes.find_index("CHANGELOG\n")].join()
     else
-      dep_notes = <<~END
-        #{dep_header}
+      @dep_notes = <<~END
+        #{@dep_header}
         
         ADDED
         -----
@@ -90,25 +122,26 @@ platform :ios do
         
         END
     end
-    dep_notes += <<~END
+    @dep_notes += <<~END
       CHANGELOG
       ---------
       
-      #{dep_changes.lines.grep_v(/Bump project version post release/).join()}
+      #{@dep_changes.lines.grep_v(/Bump project version post release/).join()}
       END
-    File.write( 'notes.md', dep_notes )
-    thr_notes = system_silencing( '"$EDITOR" ' + Shellwords.escape( File.absolute_path( 'notes.md' ) ) )
+    File.write( 'notes.md', @dep_notes )
+  end
 
+  lane :build do
     # Build and verify the product.
     build_app(
       scheme: "Spectre-iOS",
-      configuration: dep_stream == "public" ? "Public" : "Pilot",
+      configuration: @dep_stream == "public" ? "Public" : "Pilot",
       buildlog_path: "fastlane",
       skip_package_ipa: true,
     )
     build_app(
       scheme: "Spectre-iOS",
-      configuration: dep_stream == "public" ? "Public" : "Pilot",
+      configuration: @dep_stream == "public" ? "Public" : "Pilot",
       buildlog_path: "fastlane",
       export_method: "ad-hoc",
       export_options: {
@@ -132,8 +165,8 @@ platform :ios do
     )
 
     # Complete and collect release notes from asynchronous process.
-    thr_notes.value
-    dep_notes = File.read( 'notes.md' )
+    @thr_notes.value if @thr_notes
+    @dep_notes = File.read( 'notes.md' )
 
     # Pause until user has tested build on device and confirmed it is healthy.
     if UI.interactive?
@@ -141,11 +174,13 @@ platform :ios do
             UI.abort_with_message! "Build issue reported by user. Please fix the issue and retry the lane. Aborting!"
         end
     end
+  end
 
+  lane :distribute do
     # Distribute the product.
     build_app(
       scheme: "Spectre-iOS",
-      configuration: dep_stream == "public" ? "Public" : "Pilot",
+      configuration: @dep_stream == "public" ? "Public" : "Pilot",
       buildlog_path: "fastlane",
       export_method: "app-store",
       export_options: {
@@ -159,16 +194,19 @@ platform :ios do
       archive_path: lane_context[SharedValues::XCODEBUILD_ARCHIVE],
     )
     upload_to_testflight(
-      changelog: dep_notes,
+      changelog: @dep_notes,
       #distribute_external: true,
       #groups: alpha/beta,
     )
+  end
+
+  lane :release do
     add_git_tag(
       grouping: "build",
       includes_lane: false,
-      postfix: "-" + dep_stream,
+      postfix: "-" + @dep_stream,
       sign: true,
-      message: dep_notes,
+      message: @dep_notes,
     )
     push_to_git_remote(
       remote: 'origin',
@@ -183,68 +221,66 @@ platform :ios do
     )
     sentry_create_release(
       app_identifier: 'app.spectre',
-      version: app_version,
-      build: app_build,
+      version: @app_version,
+      build: @app_build,
     )
     sentry_create_release(
       app_identifier: 'app.spectre.autofill',
-      version: app_version,
-      build: app_build,
+      version: @app_version,
+      build: @app_build,
     )
     sentry_set_commits(
-      commit: "Spectre / Spectre iOS@" + git_previous_deploy + "..HEAD",
+      commit: "Spectre / Spectre iOS@" + @git_previous_deploy + "..HEAD",
       app_identifier: 'app.spectre',
-      version: app_version,
-      build: app_build,
+      version: @app_version,
+      build: @app_build,
     )
     sentry_set_commits(
-      commit: "Spectre / Spectre iOS@" + git_previous_deploy + "..HEAD",
+      commit: "Spectre / Spectre iOS@" + @git_previous_deploy + "..HEAD",
       app_identifier: 'app.spectre.autofill',
-      version: app_version,
-      build: app_build,
+      version: @app_version,
+      build: @app_build,
     )
     sentry_upload_dif(
       include_sources: true,
     )
     sentry_create_deploy(
       name: "fastlane",
-      time: Time.now.to_i - dep_start,
+      time: Time.now.to_i - @dep_start,
       app_identifier: 'app.spectre',
-      env: dep_stream == "public" ? "Public" : "Pilot",
-      version: app_version,
-      build: app_build,
+      env: @dep_stream == "public" ? "Public" : "Pilot",
+      version: @app_version,
+      build: @app_build,
     )
     sentry_create_deploy(
       name: "fastlane",
-      time: Time.now.to_i - dep_start,
+      time: Time.now.to_i - @dep_start,
       app_identifier: 'app.spectre.autofill',
-      env: dep_stream == "public" ? "Public" : "Pilot",
-      version: app_version,
-      build: app_build,
+      env: @dep_stream == "public" ? "Public" : "Pilot",
+      version: @app_version,
+      build: @app_build,
     )
     sentry_finalize_release(
       app_identifier: 'app.spectre',
-      version: app_version,
-      build: app_build,
+      version: @app_version,
+      build: @app_build,
     )
     sentry_finalize_release(
       app_identifier: 'app.spectre.autofill',
-      version: app_version,
-      build: app_build,
+      version: @app_version,
+      build: @app_build,
     )
+  end
 
+  lane :bump do
     # Advance the source state beyond the released product.
     clean_build_artifacts
     increment_build_number_in_xcodeproj
-    increment_version_number_in_xcodeproj
+    increment_version_number_in_xcodeproj(
+      scheme: 'Spectre-iOS'
+    )
     commit_version_bump(
       message: "Bump project version post release.",
     )
-
-    # Complete and verify Xcode verification from asynchronous process.
-    UI.message "Xcode verification..."
-    thr_verify_xcode.value.call or
-      UI.abort_with_message! "Xcode couldn't be verified. DO NOT SHIP THIS BUILD!"
-    File.delete( 'notes.md' ) if File.exist?( 'notes.md' )
   end
 end
