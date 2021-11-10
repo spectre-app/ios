@@ -17,7 +17,6 @@ import UIKit
 #endif
 
 class SitePreview: Equatable {
-
     private static var previews  = NSCache<NSString, SitePreview>()
     private static let semaphore = DispatchQueue( label: "SitePreview" )
 
@@ -131,11 +130,14 @@ class SitePreview: Equatable {
 
             // Resolve candidate image URLs for the site.
             // If the site URL is not a pure domain, install a fallback resolver for the site domain.
-            var candidates = Set<String>( [ self.name, self.name.domainName( .host ), self.name.domainName( .topPrivate ) ] )
-            if let url = self.url?.nonEmpty {
-                candidates.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
-            }
-            candidates = Set( candidates.map {
+            let candidates = Set( [ self.name, self.url?.nonEmpty ].compactMap { $0 }.flatMap {
+                [
+                    $0,
+                    $0.domainName( .host ),
+                    $0.domainName( .topPrivate ),
+                    "www.\($0.domainName( .topPrivate ))",
+                ]
+            }.map {
                 "https://\($0.replacingOccurrences( of: "^[^:/]*:", with: "", options: .regularExpression ))"
             } )
 

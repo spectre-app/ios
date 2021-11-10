@@ -203,11 +203,11 @@
 		DA4563D8265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
 		DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4A0C20201531BA004E2CE5 /* AppDelegate.swift */; };
-		DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */; };
 		DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */; };
 		DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7D26A623E300D9EC22 /* Sentry */; };
 		DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7F26A623F000D9EC22 /* Sentry */; };
 		DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */; };
+		DA704B3D273B92AB00572C20 /* SwiftLinkPreview in Frameworks */ = {isa = PBXBuildFile; productRef = DA704B3C273B92AB00572C20 /* SwiftLinkPreview */; };
 		DA762FAC24E04F2E00E61D3F /* SourceCodePro-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */; };
 		DA762FAD24E04F2E00E61D3F /* SourceCodePro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DA762F6B24E04F2E00E61D3F /* SourceCodePro-Regular.otf */; };
 		DA762FB424E04F5400E61D3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA762FB324E04F5400E61D3F /* Assets.xcassets */; };
@@ -461,6 +461,7 @@
 		DA6701DD16406B7300B61001 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		DA6701DF16406BB400B61001 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		DA6A72E72371E63A006C1AD3 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
+		DA704B3B273B921100572C20 /* SwiftLinkPreview */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftLinkPreview; path = ../../../local/SwiftLinkPreview; sourceTree = "<group>"; };
 		DA70EC7F1811B13C00F65DB2 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		DA762F6A24E04F2E00E61D3F /* SourceCodePro-Black.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Black.otf"; sourceTree = "<group>"; };
 		DA762F6B24E04F2E00E61D3F /* SourceCodePro-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Regular.otf"; sourceTree = "<group>"; };
@@ -592,9 +593,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
-				DA5DAE7326A3BBA100D9EC22 /* SwiftLinkPreview in Frameworks */,
 				DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */,
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
+				DA704B3D273B92AB00572C20 /* SwiftLinkPreview in Frameworks */,
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */,
 				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
@@ -760,6 +761,7 @@
 			isa = PBXGroup;
 			children = (
 				DA0DAFAD273839EF0011BEE0 /* countly-sdk-ios */,
+				DA704B3B273B921100572C20 /* SwiftLinkPreview */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -1135,11 +1137,11 @@
 			);
 			name = Spectre;
 			packageProductDependencies = (
-				DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */,
 				DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */,
 				DA5DAE7D26A623E300D9EC22 /* Sentry */,
 				DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */,
 				DA0DAFAE27383ADE0011BEE0 /* Countly */,
+				DA704B3C273B92AB00572C20 /* SwiftLinkPreview */,
 			);
 			productName = Spectre;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
@@ -1287,7 +1289,6 @@
 			);
 			mainGroup = DA5BFA39147E415C00F98B1E;
 			packageReferences = (
-				DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */,
 				DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */,
 				DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */,
@@ -2565,14 +2566,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/LeonardoCardoso/SwiftLinkPreview";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
 		DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tikhop/TPInAppReceipt";
@@ -2608,11 +2601,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Countly;
 		};
-		DA5DAE7226A3BBA100D9EC22 /* SwiftLinkPreview */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DAF291892698B3DF004A16A7 /* XCRemoteSwiftPackageReference "SwiftLinkPreview" */;
-			productName = SwiftLinkPreview;
-		};
 		DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */;
@@ -2632,6 +2620,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */;
 			productName = TPInAppReceipt;
+		};
+		DA704B3C273B92AB00572C20 /* SwiftLinkPreview */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftLinkPreview;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
