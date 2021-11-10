@@ -33,8 +33,7 @@ class MainSitesViewController: BaseSitesViewController {
 
         // - View
         self.userButton.isCircular = true
-        self.userButton.action( for: .primaryActionTriggered ) {
-            [unowned self] in
+        self.userButton.action( for: .primaryActionTriggered ) { [unowned self] in
             if let user = self.user {
                 self.detailsHost.show( DetailUserViewController( model: user ), sender: self )
             }

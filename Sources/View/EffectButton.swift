@@ -125,11 +125,11 @@ class EffectButton: EffectView {
     }
 
     func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) {
-        self.button.action( for: controlEvents, action )
+        self.action = { _ in action() }
     }
 
-    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) {
-        self.button.action( for: controlEvents, action )
+    func action(for controlEvents: UIControl.Event, _ action: @escaping (EffectButton) -> Void) {
+        self.action = action
     }
 
     private func update() {

@@ -651,8 +651,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     }
                 }
                 if siteAction.appearance.contains( .primary ) {
-                    self.primaryGestureRecognizer = UITapGestureRecognizer { _ in
-                        actionButton.activate()
+                    self.primaryGestureRecognizer = UITapGestureRecognizer { [unowned self] _ in
+                        if self.newButton.isUserInteractionEnabled {
+                            self.newButton.activate()
+                        } else {
+                            actionButton.activate()
+                        }
                     }
                 }
                 self.primaryGestureRecognizer?.isEnabled = self.isSelected

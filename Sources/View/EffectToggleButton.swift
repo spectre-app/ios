@@ -89,14 +89,7 @@ class EffectToggleButton: UIView {
 
         self.button.contentEdgeInsets = UIEdgeInsets( top: 8, left: 8, bottom: 20, right: 8 )
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
-            self.action( !self.isSelected ).flatMap { self.isSelected = $0 }
-            self.track()
-
-            if self.tapEffect {
-                TapEffectView().run( for: self )
-            }
-
-            Feedback.shared.play( .trigger )
+            self.activate()
         }
 
         // - Hierarchy
@@ -131,17 +124,24 @@ class EffectToggleButton: UIView {
         self.checkLabel.layer.cornerRadius = self.checkLabel.bounds.width / 2
     }
 
+    func activate() {
+        self.action( !self.isSelected ).flatMap { self.isSelected = $0 }
+        self.track()
+
+        if self.tapEffect {
+            TapEffectView().run( for: self )
+        }
+
+        Feedback.shared.play( .trigger )
+    }
+
     func track() {
         if let tracking = self.tracking {
             Tracker.shared.event( track: tracking.with( parameters: [ "value": self.isSelected ] ) )
         }
     }
 
-    func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) {
-        self.button.action( for: controlEvents, action )
-    }
-
-    func action(for controlEvents: UIControl.Event, _ action: @escaping (UIEvent) -> Void) {
-        self.button.action( for: controlEvents, action )
+    func action(for controlEvents: UIControl.Event, _ action: @escaping (Bool) -> Bool?) {
+        self.action = action
     }
 }
