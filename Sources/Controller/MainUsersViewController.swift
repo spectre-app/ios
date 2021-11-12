@@ -171,7 +171,7 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
             }
         }
 
-        if AppConfig.shared.reviewed == nil, AppConfig.shared.runCount > 5 {
+        if AppConfig.shared.rating == 0, AppConfig.shared.runCount > 5 {
             self.feedbackView.show(in: self)
         }
     }

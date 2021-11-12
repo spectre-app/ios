@@ -161,35 +161,35 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
         guard let self = self
         else { return }
 
+        let rating = AppConfig.shared.rating
         self.starButtons.arrangedSubviews.enumerated().forEach {
-            let rating = AppConfig.shared.rating
             ($0.element as? EffectButton)?.image = .icon("star", style: $0.offset < rating ? .solid : .regular)
+        }
 
-            if rating <= 2 {
-                self.commentLabel.text = "Sorry about that! What's going wrong?"
-            }
-            else if rating <= 3 {
-                self.commentLabel.text = "What could we do better for you?"
-            }
-            else {
-                self.commentLabel.text = "Thanks! Leave us a comment?"
-            }
+        if rating <= 2 {
+            self.commentLabel.text = "Sorry about that! What's going wrong?"
+        }
+        else if rating <= 3 {
+            self.commentLabel.text = "What could we do better for you?"
+        }
+        else {
+            self.commentLabel.text = "Thanks! Leave us a comment?"
+        }
 
-            self.promptLabel.isHidden = !self.shown || self.submitted
-            self.starButtons.isHidden = !self.shown || self.submitted
-            self.commentLabel.isHidden = !self.shown || self.submitted || !self.expanded
-            self.commentView.isHidden = !self.shown || self.submitted || !self.expanded
-            self.contactLabel.isHidden = !self.shown || self.submitted || !self.expanded
-            self.contactField.isHidden = !self.shown || self.submitted || !self.expanded
-            self.submitButton.isHidden = !self.shown || self.submitted || !self.expanded
-            self.submittedButton.isHidden = !self.shown || !self.submitted
+        self.promptLabel.isHidden = !self.shown || self.submitted
+        self.starButtons.isHidden = !self.shown || self.submitted
+        self.commentLabel.isHidden = !self.shown || self.submitted || !self.expanded
+        self.commentView.isHidden = !self.shown || self.submitted || !self.expanded
+        self.contactLabel.isHidden = !self.shown || self.submitted || !self.expanded
+        self.contactField.isHidden = !self.shown || self.submitted || !self.expanded
+        self.submitButton.isHidden = !self.shown || self.submitted || !self.expanded
+        self.submittedButton.isHidden = !self.shown || !self.submitted
 
-            if self.commentView.isHidden {
-                self.commentView.resignFirstResponder()
-            }
-            if self.contactField.isHidden {
-                self.contactField.resignFirstResponder()
-            }
+        if self.commentView.isHidden {
+            self.commentView.resignFirstResponder()
+        }
+        if self.contactField.isHidden {
+            self.contactField.resignFirstResponder()
         }
 
         self.observers.notify {
