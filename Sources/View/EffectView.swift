@@ -197,7 +197,7 @@ class EffectView: UIView, ThemeObserver {
     // MARK: - ThemeObserver
 
     func didChange(theme: Theme) {
-        self.setNeedsDisplay()
+        self.update()
     }
 
     // MARK: - Updatable

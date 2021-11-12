@@ -384,7 +384,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
     }
 
-    class SiteCell: UITableViewCell, CellAppearance, Updatable, SiteObserver, UserObserver, AppConfigObserver, InAppFeatureObserver {
+    class SiteCell: UITableViewCell, CellAppearance, Updatable, SiteObserver, UserObserver,
+                    ThemeObserver, AppConfigObserver, InAppFeatureObserver {
         public weak var sitesView: SitesTableView?
         public var result: SiteItem? {
             willSet {
@@ -615,6 +616,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             super.willMove( toWindow: newWindow )
 
             if newWindow != nil {
+                Theme.current.observers.register( observer: self )
                 AppConfig.shared.observers.register( observer: self )
                 InAppFeature.observers.register( observer: self )
             }
@@ -708,6 +710,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         // MARK: - SiteObserver
 
         func didChange(site: Site, at change: PartialKeyPath<Site>) {
+            self.updateTask.request()
+        }
+
+        // MARK: - ThemeObserver
+
+        func didChange(theme: Theme) {
             self.updateTask.request()
         }
 

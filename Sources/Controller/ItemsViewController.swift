@@ -13,7 +13,7 @@
 import Foundation
 import UIKit
 
-class ItemsViewController<M>: BaseViewController {
+class ItemsViewController<M>: BaseViewController, ThemeObserver {
     public let model: M
     public var color: UIColor? {
         didSet {
@@ -106,6 +106,20 @@ class ItemsViewController<M>: BaseViewController {
                 }
             } )
         }
+
+        Theme.current.observers.register(observer: self)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        Theme.current.observers.unregister(observer: self)
+
+        super.viewWillDisappear( animated )
+    }
+
+    // MARK: - ThemeObserver
+
+    func didChange(theme: Theme) {
+        self.updateTask.request()
     }
 
     // MARK: - Updatable

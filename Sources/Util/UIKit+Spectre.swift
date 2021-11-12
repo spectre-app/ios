@@ -13,14 +13,21 @@
 import UIKit
 import SafariServices
 
-extension SFSafariViewController {
+extension SFSafariViewController: ThemeObserver {
     convenience init(url: URL) {
         self.init( url: url, configuration: Configuration() )
 
         self.dismissButtonStyle = .close
         self.modalPresentationStyle = .pageSheet
-        self.preferredBarTintColor = Theme.current.color.backdrop.get()
-        self.preferredControlTintColor = Theme.current.color.tint.get()
+
+        Theme.current.observers.register( observer: self ).didChange( theme: Theme.current )
+    }
+
+    // MARK: - ThemeObserver
+
+    func didChange(theme: Theme) {
+        self.preferredBarTintColor = theme.color.backdrop.get()
+        self.preferredControlTintColor = theme.color.tint.get()
     }
 }
 

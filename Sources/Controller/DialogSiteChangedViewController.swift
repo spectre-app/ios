@@ -97,7 +97,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
             oldPassword.token.then( on: .main ) { oldPasswordButton.title = try? $0.get() }
             newPassword.token.then( on: .main ) { newPasswordButton.title = try? $0.get() }
             oldPassword.token.and( newPassword.token ).success( on: .main ) {
-                newPasswordButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+                newPasswordButton => \.backgroundColor => ($0.0 != $0.1 ? Theme.current.color.selection: nil)
             }
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldPasswordButton, newPasswordButton ],
@@ -118,7 +118,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
             oldLogin.token.then( on: .main ) { oldLoginButton.title = try? $0.get() }
             newLogin.token.then( on: .main ) { newLoginButton.title = try? $0.get() }
             oldLogin.token.and( newLogin.token ).success( on: .main ) {
-                newLoginButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+                newLoginButton => \.backgroundColor => ($0.0 != $0.1 ? Theme.current.color.selection: nil)
             }
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldLoginButton, newLoginButton ],
@@ -141,7 +141,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
         }
         if let oldAnswer = oldAnswer, let newAnswer = newAnswer {
             oldAnswer.token.and( newAnswer.token ).success( on: .main ) {
-                newAnswerButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+                newAnswerButton => \.backgroundColor => ($0.0 != $0.1 ? Theme.current.color.selection: nil)
             }
         }
         stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldAnswerButton, newAnswerButton ],
@@ -162,7 +162,7 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
             newAnswerButton.alpha = newQuestion == nil ? .off: .on
             if let oldToken = oldAnswer?.token, let newToken = newAnswer?.token {
                 oldToken.and( newToken ).success {
-                    newAnswerButton.backgroundColor = $0.0 != $0.1 ? Theme.current.color.selection.get(): nil
+                    newAnswerButton => \.backgroundColor => ($0.0 != $0.1 ? Theme.current.color.selection: nil)
                 }
             }
             stackView.addArrangedSubview( UIStackView( arrangedSubviews: [ oldAnswerButton, newAnswerButton ],
