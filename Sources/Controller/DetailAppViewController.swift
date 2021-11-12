@@ -187,29 +187,41 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class ThemeItem: PickerItem<AppConfig, Theme, ThemeItem.Cell> {
         init() {
             super.init( track: .subject( "app", action: "theme" ),
-                        title: "Application Themes 🅿︎",
+                        title: "Application Themes",
                         values: { _ in
                             [ Theme? ].joined(
                                     separator: [ nil ],
                                     [ .default ],
                                     Theme.allCases ).unique()
                         },
-                        value: { Theme.with( path: $0.theme ) ?? .default }, update: { $0.model?.theme = $1.path },
+                        value: { Theme.with( path: $0.theme ) ?? .default },
+                        update: {
+                            if $1.pattern?.isPremium ?? false, !InAppFeature.premium.isEnabled {
+                                $0.viewController?.show( DetailPremiumViewController(), sender: $0 )
+                            } else {
+                                $0.model?.theme = $1.path
+                            }
+                        },
                         caption: { _ in "\(Theme.current)" } )
-
-            self.addBehaviour( FeatureTapBehaviour( feature: .premium ) )
-            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Theme) {
             cell.theme = value
+
+            let isPremium = value.pattern?.isPremium ?? false
+            let enabled = !isPremium || InAppFeature.premium.isEnabled
+            cell.premiumLabel.alpha = isPremium ? .on: .off
+            cell.contentView.alpha = enabled ? .on: .short
+            cell.tintAdjustmentMode = enabled ? .automatic: .dimmed
         }
 
         class Cell: EffectCell {
             let iconView = UIImageView( image: .icon( "brush" ) )
+            let premiumLabel = UILabel()
             override var isSelected: Bool {
                 didSet {
                     self.iconView.isHidden = !self.isSelected
+                    self.premiumLabel.isHidden = self.isSelected
                 }
             }
             weak var theme: Theme? = Theme.default {
@@ -228,10 +240,18 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             override init(frame: CGRect) {
                 super.init( frame: frame )
 
+                // - View
+                self.premiumLabel => \.font => Theme.current.font.callout
+                self.premiumLabel => \.textColor => Theme.current.color.body
+                self.premiumLabel.text = "🅿︎"
+
                 // - Hierarchy
+                self.contentView.addSubview( self.premiumLabel )
                 self.contentView.addSubview( self.iconView )
 
                 // - Layout
+                LayoutConfiguration( view: self.premiumLabel )
+                        .constrain( as: .center ).activate()
                 LayoutConfiguration( view: self.iconView )
                         .constrain( as: .center ).activate()
             }

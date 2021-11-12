@@ -291,7 +291,7 @@ class PropertyPathCleaner<E, V> where E: AnyObject {
     }
 }
 
-struct ThemePattern {
+struct ThemePattern: Hashable {
     static let spectre = ThemePattern(
             dark: .hex( "0E3345" ),
             dusk: .hex( "173D50" ),
@@ -364,6 +364,10 @@ struct ThemePattern {
     let flat: UIColor?
     let dawn: UIColor?
     let pale: UIColor?
+
+    var isPremium: Bool {
+        self != .spectre
+    }
 }
 
 public enum AppIcon: String, CaseIterable {
@@ -551,6 +555,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         }
     }
     var mood:        String?
+    var pattern:     ThemePattern?
     var description: String {
         self.mood ?? self.parent?.description ?? self.path
     }
@@ -582,8 +587,8 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.shade.set( UIColor.lightText )
         self.color.shadow.set( UIColor.white.with( alpha: .long ) )
         self.color.mute.set( UIColor.darkGray.with( alpha: .short * .short ) )
-        self.color.selection.set( .hex( "41A0A0" )?.with( alpha: .short ) )
-        self.color.tint.set( .hex( "41A0A0" ) )
+        self.color.selection.set( light: .hex( "173D50" )?.with( alpha: .short ), dark: .hex( "F1F9FC" )?.with( alpha: .short ) )
+        self.color.tint.set( light: .hex( "173D50" ), dark: .hex( "F1F9FC" ) )
 
         if #available( iOS 13, * ) {
             self.font.mono.set( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
@@ -602,6 +607,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
 
     private init(path: String, pattern: ThemePattern? = nil, mood: String? = nil, override: ((Theme) -> Void)? = nil) {
         self.mood = mood
+        self.pattern = pattern
 
         var parent: Theme?
         if let lastDot = path.lastIndex( of: "." ) {
@@ -613,7 +619,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         }
 
         Theme.byPath[path] = self
-        if let pattern = pattern {
+        if let pattern = self.pattern {
             self.color.body.set( light: pattern.dark, dark: pattern.pale )
             self.color.secondary.set( light: pattern.dusk?.with( alpha: .long ), dark: pattern.dawn?.with( alpha: .long ) )
             self.color.placeholder.set( light: pattern.dusk?.with( alpha: .short ), dark: pattern.dawn?.with( alpha: .short ) )

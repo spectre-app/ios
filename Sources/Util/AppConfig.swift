@@ -92,8 +92,11 @@ public class AppConfig: Observable {
     }
     public var theme: String {
         get {
-            (InAppFeature.premium.isEnabled ? UserDefaults.shared.string( forKey: #function ): nil)
-                    ?? Theme.default.path
+            let theme = UserDefaults.shared.string( forKey: #function ) ?? Theme.default.path
+            if !InAppFeature.premium.isEnabled, Theme.with(path: theme)?.pattern?.isPremium ?? false {
+                return Theme.default.path
+            }
+            return theme
         }
         set {
             if newValue != self.theme {
