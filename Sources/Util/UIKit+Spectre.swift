@@ -514,44 +514,27 @@ extension UIColor {
         return alpha
     }
 
-    func with(alpha newAlpha: CGFloat?) -> UIColor {
+    func with(
+            hue newHue: CGFloat? = nil,
+            saturation newSaturation: CGFloat? = nil,
+            brightness newBrightness: CGFloat? = nil,
+            alpha newAlpha: CGFloat? = nil
+    ) -> UIColor {
+        if newHue == nil, newSaturation == nil, newBrightness == nil, let newAlpha = newAlpha {
+            return self.withAlphaComponent( newAlpha )
+        }
+
         var hue:        CGFloat = 0
         var saturation: CGFloat = 0
         var brightness: CGFloat = 0
         var alpha:      CGFloat = 0
         self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
 
-        return UIColor( hue: hue, saturation: saturation, brightness: brightness, alpha: newAlpha ?? alpha )
-    }
-
-    func with(hue newHue: CGFloat?) -> UIColor {
-        var hue:        CGFloat = 0
-        var saturation: CGFloat = 0
-        var brightness: CGFloat = 0
-        var alpha:      CGFloat = 0
-        self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
-
-        return UIColor( hue: newHue ?? hue, saturation: saturation, brightness: brightness, alpha: alpha )
-    }
-
-    func with(saturation newSaturation: CGFloat?) -> UIColor {
-        var hue:        CGFloat = 0
-        var saturation: CGFloat = 0
-        var brightness: CGFloat = 0
-        var alpha:      CGFloat = 0
-        self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
-
-        return UIColor( hue: hue, saturation: newSaturation ?? saturation, brightness: brightness, alpha: alpha )
-    }
-
-    func with(brightness newBrightness: CGFloat?) -> UIColor {
-        var hue:        CGFloat = 0
-        var saturation: CGFloat = 0
-        var brightness: CGFloat = 0
-        var alpha:      CGFloat = 0
-        self.getHue( &hue, saturation: &saturation, brightness: &brightness, alpha: &alpha )
-
-        return UIColor( hue: hue, saturation: saturation, brightness: newBrightness ?? brightness, alpha: alpha )
+        return UIColor(
+                hue: newHue ?? hue,
+                saturation: newSaturation ?? saturation,
+                brightness: newBrightness ?? brightness,
+                alpha: newAlpha ?? alpha )
     }
 }
 
