@@ -60,7 +60,6 @@ class SitePreview: Equatable {
         do {
             if let previewFile = SitePreview.previewDataFile( for: previewName ),
                FileManager.default.fileExists( atPath: previewFile.path ) {
-                UIPasteboard.general.string = try String( contentsOf: previewFile )
                 return SitePreview( name: previewName, url: url, data:
                 try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewFile ) ) )
             }
