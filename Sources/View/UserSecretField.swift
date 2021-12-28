@@ -28,7 +28,7 @@ extension UIAlertController {
                                 authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>) -> Promise<U> {
         let promise         = Promise<U>()
         let spinner         = AlertController( title: "Unlocking", message: userName,
-                                               content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                               content: UIActivityIndicatorView( style: .large ) )
         let alertController = UIAlertController( title: title, message: message, preferredStyle: .alert )
         var event = track.flatMap { Tracker.shared.begin( track: $0 ) }
 
@@ -168,7 +168,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     var authenticater: ((SecretKeyFactory) throws -> Promise<U>)?
     var authenticated: ((Result<U, Error>) -> Void)?
 
-    private let activityIndicator = UIActivityIndicatorView( style: .gray )
+    private let activityIndicator = UIActivityIndicatorView( style: .medium )
     private lazy var identiconLabel    = UILabel()
     private lazy var leftItemView      = UIView()
     private lazy var rightItemView     = UIView()

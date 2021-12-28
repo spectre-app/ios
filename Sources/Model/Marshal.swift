@@ -231,7 +231,7 @@ class Marshal: Observable, Updatable {
             promise.then { importEvent.end( [ "result": $0.name, "error": $0.error ] ) }
 
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
-                                                   content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                                   content: UIActivityIndicatorView( style: .large ) )
             let secretField     = UserSecretField<User>( userName: existingFile.userName, identicon: existingFile.identicon )
             let alertController = UIAlertController( title: "Merge Users", message:
             """
@@ -371,7 +371,7 @@ class Marshal: Observable, Updatable {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-user" ) )
 
         let spinner = AlertController( title: "Merging", message: existedUser.description,
-                                       content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                       content: UIActivityIndicatorView( style: .large ) )
 
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
@@ -446,7 +446,7 @@ class Marshal: Observable, Updatable {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-url" ) )
 
         let spinner = AlertController( title: "Replacing", message: documentURL.lastPathComponent,
-                                       content: UIActivityIndicatorView( style: .whiteLarge ) )
+                                       content: UIActivityIndicatorView( style: .large ) )
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
         return DispatchQueue.api.promise {

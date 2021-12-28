@@ -185,10 +185,8 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
 
         var countryCode2 = "US"
-        if #available( iOS 13.0, * ) {
-            if let countryCode3 = SKPaymentQueue.default().storefront?.countryCode {
-                countryCode2 = self.countryCode3to2[countryCode3] ?? countryCode2
-            }
+        if let countryCode3 = SKPaymentQueue.default().storefront?.countryCode {
+            countryCode2 = self.countryCode3to2[countryCode3] ?? countryCode2
         }
         let searchURLString = "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\(countryCode2)&limit=1"
         guard let searchURL = URL( string: searchURLString )

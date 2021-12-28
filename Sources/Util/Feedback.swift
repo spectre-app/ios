@@ -14,29 +14,16 @@ import Foundation
 import CoreHaptics
 
 public class Feedback {
-    public static let `shared`: Feedback = {
-        if #available( iOS 13, * ) {
-            return HapticFeedback()
-        }
-        else {
-            return Feedback()
-        }
-    }()
-
-    public func play(_ effect: Effect) {
-    }
+    public static let `shared`: Feedback = Feedback()
 
     public enum Effect: Int, CaseIterable {
         case flick, activate, trigger, error
     }
-}
 
-@available( iOS 13, * )
-public class HapticFeedback: Feedback {
     private var hapticEngine: CHHapticEngine?
     private var players = [ Effect: CHHapticPatternPlayer ]()
 
-    fileprivate override init() {
+    private init() {
         do {
             let hapticEngine = try CHHapticEngine()
             try hapticEngine.start()
@@ -85,7 +72,7 @@ public class HapticFeedback: Feedback {
         }
     }
 
-    public override func play(_ effect: Effect) {
+    public func play(_ effect: Effect) {
         self.hapticEngine?.start { error in
             do {
                 if let error = error {

@@ -54,7 +54,7 @@ extension NSAttributedString {
     public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false)
                     -> NSAttributedString? {
         guard let icon = icon.flatMap( { fontAwesomeUnicode[$0] } ) ?? icon,
-              var style = style ?? {
+              let style = style ?? {
                   let glyphs = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
                   defer {
                       glyphs.deinitialize( count: icon.utf16.count )
@@ -64,13 +64,6 @@ extension NSAttributedString {
                   } )
               }()
         else { return nil }
-
-        // FIXME: iOS 12 doesn't support the kerning tricks we need to do to support DuoTone, so fall back to Solid.
-        if #available( iOS 13, * ) {
-        }
-        else if case .duotone = style {
-            style = .solid
-        }
 
         let font           = style.font( withSize: size )
         let attributedIcon = NSMutableAttributedString()

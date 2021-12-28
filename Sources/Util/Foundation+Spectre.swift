@@ -304,9 +304,7 @@ extension URLSession {
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .responsiveData
-        if #available( iOS 13.0, * ) {
-            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
-        }
+        configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
         return configuration
     }
 
@@ -324,11 +322,9 @@ extension URLSession {
         configuration.networkServiceType = .background
         configuration.isDiscretionary = true
         configuration.waitsForConnectivity = true
-        if #available( iOS 13.0, * ) {
-            configuration.allowsExpensiveNetworkAccess = false
-            configuration.allowsConstrainedNetworkAccess = false
-            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
-        }
+        configuration.allowsExpensiveNetworkAccess = false
+        configuration.allowsConstrainedNetworkAccess = false
+        configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
         return configuration
     }
 
@@ -346,18 +342,5 @@ extension URLSession {
             }
         }.resume()
         return promise
-    }
-}
-
-// Stub for iOS 13 type.
-protocol Identifiable {
-    associatedtype ID: Hashable
-
-    var id: Self.ID { get }
-}
-
-extension Identifiable where Self: AnyObject {
-    var id: ObjectIdentifier {
-        ObjectIdentifier( self )
     }
 }

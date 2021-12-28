@@ -103,12 +103,7 @@ class EffectView: UIView, ThemeObserver {
         didSet {
             self.blurEffectView.effect = self.blurEffect
 //            if let blurEffect = self.blurEffect {
-//                if #available( iOS 13, * ) {
-//                    self.vibrancyEffect = UIVibrancyEffect( blurEffect: blurEffect, style: .fill )
-//                }
-//                else {
-//                    self.vibrancyEffect = UIVibrancyEffect( blurEffect: blurEffect )
-//                }
+//                self.vibrancyEffect = UIVibrancyEffect( blurEffect: blurEffect, style: .fill )
 //            }
 //            else {
 //                self.vibrancyEffect = nil
@@ -206,23 +201,14 @@ class EffectView: UIView, ThemeObserver {
         DispatchQueue.main.perform {
             if self.isBackground {
                 self.innerShadowLayer.opacity = .on
-                self.blurEffect = UIBlurEffect( style: {
-                    if #available( iOS 13, * ) {
-                        return self.isDimmed ? .systemUltraThinMaterial: .systemThinMaterial
-                    }
-                    else {
-                        return self.isDimmed ? .regular: .prominent
-                    }
-                }() )
+                self.blurEffect = UIBlurEffect( style: self.isDimmed ? .systemUltraThinMaterial: .systemThinMaterial )
             }
             else {
                 self.innerShadowLayer.opacity = .off
                 self.blurEffect = nil
             }
 
-            if #available( iOS 13.0, * ) {
-                self.layer.cornerCurve = self.isCircular ? .circular: .continuous
-            }
+            self.layer.cornerCurve = self.isCircular ? .circular: .continuous
             self.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2: self.rounding
             self.layer.borderWidth = self.borderWidth
             self.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor:

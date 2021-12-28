@@ -161,7 +161,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     private var previewEvents = [ IndexPath: Tracker.TimedEvent ]()
 
     #if TARGET_APP
-    @available( iOS 13, * )
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint)
                     -> UIContextMenuConfiguration? {
         (self.sitesDataSource.element( at: indexPath )?.site).flatMap { site in
@@ -202,7 +201,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
     }
 
-    @available( iOS 13, * )
     func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration)
                     -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
@@ -215,7 +213,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
-    @available( iOS 13, * )
     func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration)
                     -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )

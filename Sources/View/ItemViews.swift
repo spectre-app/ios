@@ -1013,7 +1013,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             self.item as? ListItem
         }
         let tableView         = TableView()
-        let activityIndicator = UIActivityIndicatorView( style: .whiteLarge )
+        let activityIndicator = UIActivityIndicatorView( style: .large )
         lazy var dataSource = ListSource( view: self )
 
         override func createValueView() -> UIView? {

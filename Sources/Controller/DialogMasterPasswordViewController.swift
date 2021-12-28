@@ -14,7 +14,7 @@ import UIKit
 
 class DialogMasterPasswordViewController: DialogViewController { // swiftlint:disable:this inclusive_language
 
-    private let offerProgress = UIActivityIndicatorView( style: .whiteLarge )
+    private let offerProgress = UIActivityIndicatorView( style: .large )
     private let offerTitle    = UILabel()
     private let offerButton   = EffectButton( track: .subject( "masterpassword", action: "subscribe" ), title: "Subscribe" )
     private let offerLabel    = UILabel()

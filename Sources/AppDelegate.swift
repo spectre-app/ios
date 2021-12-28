@@ -67,7 +67,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
-        guard let viewController = app.keyWindow?.rootViewController
+        guard let viewController = app.windows.first?.rootViewController
         else { return false }
         let navigationController = viewController as? UINavigationController ?? viewController.navigationController
 

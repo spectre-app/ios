@@ -116,7 +116,7 @@ class AlertController {
             let host   = host()
             var window = host?.window ?? host as? UIWindow
             #if TARGET_APP
-            window = window ?? UIApplication.shared.keyWindow
+            window = window ?? UIApplication.shared.windows.first
             #endif
             guard let window = window
             else {

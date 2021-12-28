@@ -1787,7 +1787,7 @@
 				IBSC_ERRORS = YES;
 				IBSC_WARNINGS = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2086,7 +2086,7 @@
 				IBSC_ERRORS = YES;
 				IBSC_WARNINGS = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2273,7 +2273,7 @@
 				IBSC_ERRORS = YES;
 				IBSC_WARNINGS = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

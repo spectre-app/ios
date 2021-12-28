@@ -154,12 +154,7 @@ extension SpectreIdenticonColor {
             case .cyan:
                 return .cyan
             case .mono:
-                if #available( iOS 13, * ) {
-                    return .label
-                }
-                else {
-                    return .lightText
-                }
+                return .label
             default:
                 fatalError( "Unsupported color: \(self)" )
         }

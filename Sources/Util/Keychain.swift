@@ -30,10 +30,8 @@ public class Keychain {
             kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
             kSecUseOperationPrompt: "Access \(userName)'s user key.",
+            kSecUseDataProtectionKeychain: true,
         ]
-        if #available( iOS 13, * ) {
-            query[kSecUseDataProtectionKeychain] = true
-        }
 
         if let context = context {
             var error: NSError?
@@ -82,7 +80,7 @@ public class Keychain {
                     -> Promise<UnsafePointer<SpectreUserKey>> {
         let spinner = AlertController( title: "Biometrics Authentication",
                                        message: "Please authenticate to access user key for:\n\(userName)",
-                                       content: UIActivityIndicatorView( style: .white ) )
+                                       content: UIActivityIndicatorView( style: .medium ) )
         spinner.show( dismissAutomatically: false )
 
         return DispatchQueue.api.promise {

@@ -578,29 +578,17 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.font.caption2.set( UIFont.poppins( .medium, asTextStyle: .caption2 ), withTextStyle: .caption2 )
         self.font.footnote.set( UIFont.poppins( .medium, asTextStyle: .footnote ), withTextStyle: .footnote )
         self.font.password.set( UIFont.sourceCodePro( .semibold, ofSize: 16 ), withTextStyle: .largeTitle )
-        self.font.mono.set( UIFont.sourceCodePro( .thin, ofSize: UIFont.systemFontSize ), withTextStyle: .body )
-        self.color.body.set( UIColor.darkText )
-        self.color.secondary.set( UIColor.darkGray.with( alpha: .long ) )
-        self.color.placeholder.set( UIColor.darkGray.with( alpha: .short ) )
-        self.color.backdrop.set( UIColor.white )
-        self.color.panel.set( UIColor.groupTableViewBackground )
-        self.color.shade.set( UIColor.lightText )
-        self.color.shadow.set( UIColor.white.with( alpha: .long ) )
-        self.color.mute.set( UIColor.darkGray.with( alpha: .short * .short ) )
+        self.font.mono.set( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
+        self.color.body.set( UIColor.label )
+        self.color.secondary.set( UIColor.secondaryLabel )
+        self.color.placeholder.set( UIColor.placeholderText )
+        self.color.backdrop.set( UIColor.systemBackground )
+        self.color.panel.set( UIColor.secondarySystemBackground )
+        self.color.shade.set( UIColor.systemFill )
+        self.color.shadow.set( UIColor.systemBackground.with( alpha: .long ) )
+        self.color.mute.set( UIColor.separator )
         self.color.selection.set( light: .hex( "173D50" )?.with( alpha: .short ), dark: .hex( "F1F9FC" )?.with( alpha: .short ) )
         self.color.tint.set( light: .hex( "173D50" ), dark: .hex( "F1F9FC" ) )
-
-        if #available( iOS 13, * ) {
-            self.font.mono.set( .monospacedSystemFont( ofSize: UIFont.labelFontSize, weight: .thin ) )
-            self.color.body.set( UIColor.label )
-            self.color.secondary.set( UIColor.secondaryLabel )
-            self.color.placeholder.set( UIColor.placeholderText )
-            self.color.backdrop.set( UIColor.systemBackground )
-            self.color.panel.set( UIColor.secondarySystemBackground )
-            self.color.shade.set( UIColor.systemFill )
-            self.color.shadow.set( UIColor.systemBackground.with( alpha: .long ) )
-            self.color.mute.set( UIColor.separator )
-        }
 
         Theme.byPath[""] = self
     }
@@ -854,12 +842,7 @@ class AppearanceProperty<V>: Property<V> {
     }
 
     override func get() -> V? {
-        if #available( iOS 13, * ) {
-            return (UITraitCollection.current.userInterfaceStyle == .dark ? self.value.dark: self.value.light) ?? super.get()
-        }
-        else {
-            return self.value.light ?? super.get()
-        }
+        (UITraitCollection.current.userInterfaceStyle == .dark ? self.value.dark: self.value.light) ?? super.get()
     }
 
     func set(light lightValue: V?, dark darkValue: V?) {
@@ -871,22 +854,12 @@ class AppearanceProperty<V>: Property<V> {
     }
 
     override var valueDescription: String {
-        if #available( iOS 13, * ) {
-            if UITraitCollection.current.userInterfaceStyle == .dark {
-                if let value = self.value.dark {
-                    return "dark[ \(type( of: value )) ]"
-                }
-                else {
-                    return super.valueDescription
-                }
+        if UITraitCollection.current.userInterfaceStyle == .dark {
+            if let value = self.value.dark {
+                return "dark[ \(type( of: value )) ]"
             }
             else {
-                if let value = self.value.light {
-                    return "light[ \(type( of: value )) ]"
-                }
-                else {
-                    return super.valueDescription
-                }
+                return super.valueDescription
             }
         }
         else {
