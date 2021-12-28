@@ -79,17 +79,17 @@ class MainSitesViewController: BaseSitesViewController {
                 site.result( keyPurpose: purpose ?? .authentication )?.copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.identification)" ] ),
-                   title: "Copy Login", icon: .icon( "copy" ), appearance: [ .menu, .feature(.logins) ] ) {
+                   title: "Copy Login", icon: .icon( "copy" ), appearance: [ .menu, .feature( .logins ) ] ) {
                 [unowned self] site, purpose, _ in
                 site.result( keyPurpose: purpose ?? .identification )?.copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "copy", [ "purpose": "\(SpectreKeyPurpose.recovery)" ] ),
-                   title: "Copy Security Answer", icon: .icon( "copy" ), appearance: [ .menu, .feature(.answers) ] ) {
+                   title: "Copy Security Answer", icon: .icon( "copy" ), appearance: [ .menu, .feature( .answers ) ] ) {
                 [unowned self] site, purpose, _ in
                 site.result( keyPurpose: purpose ?? .recovery )?.copy( fromView: self.view, trackingFrom: "site>cell>menu" )
             },
             .init( tracking: .subject( "sites.site", action: "open" ),
-                   title: "Open Site", icon: .icon( "globe" ), appearance: [ .menu, .feature(.premium) ] ) {
+                   title: "Open Site", icon: .icon( "globe" ), appearance: [ .menu, .feature( .premium ) ] ) {
                 site, _, _ in
                 if let url = URL( string: site.url ?? "https://\(site.siteName)" ) {
                     UIApplication.shared.open( url )
@@ -107,7 +107,7 @@ class MainSitesViewController: BaseSitesViewController {
         LayoutConfiguration( view: self.detailsHost.view )
                 .constrain { _, _ in
                     self.detailsHost.contentView.topAnchor.constraint( greaterThanOrEqualTo: self.topContainer.bottomAnchor, constant: -8 )
-                                                          .with( priority: UILayoutPriority( 520 ) )
+                        .with( priority: UILayoutPriority( 520 ) )
                 }
                 .constrain( as: .box )
                 .activate()

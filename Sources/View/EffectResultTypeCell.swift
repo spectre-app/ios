@@ -76,8 +76,8 @@ class EffectClassifiedCell: EffectCell, Updatable {
         self.nameLabel.isHidden = self.name?.isEmpty ?? true
         self.classLabel.isHidden = self.class?.isEmpty ?? true
         self.separatorView.isHidden = self.nameLabel.isHidden || self.classLabel.isHidden
-        self.nameLabel.numberOfLines = self.separatorView.isHidden ? 0: 1
-        self.classLabel.numberOfLines = self.separatorView.isHidden ? 0: 1
+        self.nameLabel.numberOfLines = self.separatorView.isHidden ? 0 : 1
+        self.classLabel.numberOfLines = self.separatorView.isHidden ? 0 : 1
     }
 }
 

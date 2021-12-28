@@ -156,7 +156,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     KeyboardMonitor.shared.didChange( self )
                 }
                 UIView.animate( withDuration: .short, animations: {
-                    self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off: .on
+                    self.closeButton.alpha = detailController?.isCloseHidden ?? false ? .off : .on
                     activeController.view.window?.endEditing( true )
                     self.popupConfiguration.activate()
                 }, completion: { _ in

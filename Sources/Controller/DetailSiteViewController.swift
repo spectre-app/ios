@@ -50,7 +50,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
     }
 
     override func doUpdate() {
-        self.color = AppConfig.shared.colorfulSites ? self.model.preview.color: nil
+        self.color = AppConfig.shared.colorfulSites ? self.model.preview.color : nil
         self.image = self.model.preview.image
 
         super.doUpdate()
@@ -115,7 +115,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                             let attacker = $0.user.attacker ?? .default
                             if InAppFeature.premium.isEnabled,
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
-                                       attacker.timeToCrack( string: try? $0.result()?.token.await() ) {
+                                                 attacker.timeToCrack( string: try? $0.result()?.token.await() ) {
                                 return "\(.icon( "shield-slash" )) Time to crack: \(timeToCrack) 🅿︎"
                             }
                             else {
@@ -190,9 +190,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         },
                         subitems: [ LoginResultItem() ],
                         caption: {
-                            $0.loginType == .none ?
-                                    "The site uses your Standard Login Name.":
-                                    "The site is using a site‑specific login name."
+                            $0.loginType == .none ? "The site uses your Standard Login Name."
+                                                  : "The site is using a site‑specific login name."
                         } )
 
             self.addBehaviour( FeatureTapBehaviour( feature: .logins ) )
@@ -266,7 +265,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             self.userButton.title = self.model?.user.userName.name( style: .abbreviated )
             self.userButton.sizeToFit()
 
-            (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == SpectreResultType.none ? .always: .never
+            (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == SpectreResultType.none ? .always : .never
         }
     }
 
@@ -343,7 +342,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             self.deletable = true
 
             self.addBehaviour( FeatureTapBehaviour( feature: .answers ) )
-            self.addBehaviour( FeatureConditionalBehaviour( feature:.answers, effect: .enables ) )
+            self.addBehaviour( FeatureConditionalBehaviour( feature: .answers, effect: .enables ) )
         }
 
         override func populate(_ cell: Cell, indexPath: IndexPath, value: Question) {
@@ -483,9 +482,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                 New protections roll out in new algorithm versions. Always use the latest algorithm to protect your sites.
                 Upgrading or downgrading may change your site password. Don't forget to update your site.
 
-                \(site.algorithm == .current ?
-                        "\(site.siteName) is using the latest algorithm.":
-                        "!! \(site.siteName) is NOT using the latest algorithm. !!")
+                \(site.algorithm == .current ? "\(site.siteName) is using the latest algorithm."
+                                             : "!! \(site.siteName) is NOT using the latest algorithm. !!")
                 """, preferredStyle: .actionSheet )
                 alertController.popoverPresentationController?.sourceView = item.view
                 alertController.popoverPresentationController?.sourceRect = item.view.bounds

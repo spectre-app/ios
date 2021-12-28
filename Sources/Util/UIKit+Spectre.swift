@@ -156,16 +156,16 @@ extension CGSize {
     }
 
     func union(_ size: CGSize) -> CGSize {
-        size.width <= self.width && size.height <= self.height ? self:
-                size.width >= self.width && size.height >= self.height ? size:
-                CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
+        size.width <= self.width && size.height <= self.height ? self :
+        size.width >= self.width && size.height >= self.height ? size :
+        CGSize( width: max( self.width, size.width ), height: max( self.height, size.height ) )
     }
 
     func grow(width: CGFloat = 0, height: CGFloat = 0, size: CGSize = .zero, point: CGPoint = .zero) -> CGSize {
         let width  = width + size.width + point.x
         let height = height + size.height + point.y
-        return width == 0 && height == 0 ? self:
-                CGSize( width: self.width + width, height: self.height + height )
+        return width == 0 && height == 0 ? self :
+               CGSize( width: self.width + width, height: self.height + height )
     }
 }
 
@@ -242,10 +242,10 @@ extension UIEdgeInsets {
             let topLeftInset     = max( .zero, remove.bottomRight - bounds.topLeft )
             let bottomRightInset = max( .zero, bounds.bottomRight - remove.topLeft )
 
-            let top    = remove.topLeft.y <= bounds.topLeft.y && remove.bottomRight.y < bounds.bottomRight.y ? topLeftInset.y: 0
-            let left   = remove.topLeft.x <= bounds.topLeft.x && remove.bottomRight.x < bounds.bottomRight.x ? topLeftInset.x: 0
-            let bottom = remove.topLeft.y > bounds.topLeft.y && remove.bottomRight.y >= bounds.bottomRight.y ? bottomRightInset.y: 0
-            let right  = remove.topLeft.x > bounds.topLeft.x && remove.bottomRight.x >= bounds.bottomRight.x ? bottomRightInset.x: 0
+            let top    = remove.topLeft.y <= bounds.topLeft.y && remove.bottomRight.y < bounds.bottomRight.y ? topLeftInset.y : 0
+            let left   = remove.topLeft.x <= bounds.topLeft.x && remove.bottomRight.x < bounds.bottomRight.x ? topLeftInset.x : 0
+            let bottom = remove.topLeft.y > bounds.topLeft.y && remove.bottomRight.y >= bounds.bottomRight.y ? bottomRightInset.y : 0
+            let right  = remove.topLeft.x > bounds.topLeft.x && remove.bottomRight.x >= bounds.bottomRight.x ? bottomRightInset.x : 0
 
             self.init( top: top, left: left, bottom: bottom, right: right )
         }
@@ -260,7 +260,6 @@ extension NSLayoutConstraint {
 }
 
 extension UICollectionView {
-
     func register(_ type: UICollectionViewCell.Type, nib: UINib? = nil) {
         if let nib = nib {
             self.register( nib, forCellWithReuseIdentifier: NSStringFromClass( type ) )
@@ -304,7 +303,7 @@ extension UICollectionView {
                 // Select all requested items that are allowed to be selected.
                 requestedPaths.filter {
                     $0.section < self.numberOfSections && $0.item < self.numberOfItems( inSection: $0.section ) &&
-                            !delegation || self.delegate?.collectionView?( self, shouldSelectItemAt: $0 ) ?? true
+                    !delegation || self.delegate?.collectionView?( self, shouldSelectItemAt: $0 ) ?? true
                 }
         )
                 // And all currently selected items that are not allowed to be deselected.

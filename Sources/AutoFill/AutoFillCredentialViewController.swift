@@ -41,21 +41,23 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
 
         guard let credentialIdentity = AutoFillModel.shared.context.credentialIdentity
         else {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError( .failed, "Expected a credential identity." ) )
+            self.extensionContext?.cancelRequest( withError: ASExtensionError(
+                    .failed, "Expected a credential identity." ) )
             return
         }
 
         guard   let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
         else {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError( .credentialIdentityNotFound, "" +
+            self.extensionContext?.cancelRequest( withError: ASExtensionError(
+                    .credentialIdentityNotFound,
                     "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) )
             return
         }
 
         guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
         else {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError( .userInteractionRequired, "" +
-                    "Unauthenticated user: \(user.userName)" ) )
+            self.extensionContext?.cancelRequest( withError: ASExtensionError(
+                    .userInteractionRequired, "Unauthenticated user: \(user.userName)" ) )
             return
         }
 
@@ -64,7 +66,8 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
                     withSelectedCredential: ASPasswordCredential( user: $0.0, password: $0.1 ), completionHandler: nil )
         }.failure { error in
             mperror( title: "Couldn't compute site result", error: error )
-            self.extensionContext?.cancelRequest( withError: ASExtensionError( .failed, "Couldn't compute site result." ) )
+            self.extensionContext?.cancelRequest( withError: ASExtensionError(
+                    .failed, "Couldn't compute site result." ) )
         }
     }
 }

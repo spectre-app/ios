@@ -127,10 +127,9 @@ class Tracker: AppConfigObserver {
             guard let logEvent = logPointer?.pointee, logEvent.level <= .info
             else { return false }
 
-            let level: SentryLevel = [
-                .trace: .debug, .debug: .debug, .info: .info,
-                .warning: .warning, .error: .error, .fatal: .fatal,
-            ][logEvent.level] ?? .debug
+            let level: SentryLevel = [ .trace: .debug, .debug: .debug, .info: .info,
+                                       .warning: .warning, .error: .error, .fatal: .fatal,
+                                     ][logEvent.level] ?? .debug
             let tags               = [
                 "src_file": String.valid( logEvent.file )?.lastPathComponent ?? "-",
                 "src_line": "\(logEvent.line)",
@@ -248,9 +247,9 @@ class Tracker: AppConfigObserver {
         if let widget = [
             .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
         ][AppConfig.shared.environment]?.feedback.b64Decrypt() {
-            Countly.sharedInstance().submitFeedbackWidget(withID: widget, rating: UInt(rating), comment: comment, email: contact) {
+            Countly.sharedInstance().submitFeedbackWidget( withID: widget, rating: UInt( rating ), comment: comment, email: contact ) {
                 if let error = $0 {
-                    wrn("Couldn't submit feedback: %@", error)
+                    wrn( "Couldn't submit feedback: %@", error )
                 }
             }
         }
@@ -327,7 +326,7 @@ class Tracker: AppConfigObserver {
             Countly.sharedInstance().recordEvent(
                     name, segmentation: eventParameters.mapValues {
                 String( reflecting: $0 )
-                        .replacingOccurrences( of: #"\b0x[A-Z0-9]+\b"#, with: "0x?", options: [.regularExpression, .caseInsensitive] )
+                        .replacingOccurrences( of: #"\b0x[A-Z0-9]+\b"#, with: "0x?", options: [ .regularExpression, .caseInsensitive ] )
             },
                     count: eventParameters["event.count"] as? UInt ?? 1,
                     sum: eventParameters["event.sum"] as? Double ?? 0,

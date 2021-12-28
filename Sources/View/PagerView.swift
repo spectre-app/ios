@@ -82,7 +82,7 @@ class PagerView: UIView, UICollectionViewDelegate {
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         self.page = Int( CGFloat( self.pages.count - 1 ) * scrollView.contentOffset.x /
-                                 (scrollView.contentSize.width - scrollView.bounds.width) )
+                         (scrollView.contentSize.width - scrollView.bounds.width) )
     }
 
     // MARK: - Types
@@ -93,7 +93,7 @@ class PagerView: UIView, UICollectionViewDelegate {
 
         override var intrinsicContentSize: CGSize {
             CGSize( width: UIView.noIntrinsicMetric,
-                    height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
+                    height: self.isHidden ? UIView.noIntrinsicMetric : self.collectionViewLayout.collectionViewContentSize.height )
         }
 
         // MARK: - Life
@@ -148,7 +148,7 @@ class PagerView: UIView, UICollectionViewDelegate {
                     }
                 }
             }
-            for indexPath in context.invalidateEverything ? Array( self.attributes.keys ): context.invalidatedItemIndexPaths ?? [] {
+            for indexPath in context.invalidateEverything ? Array( self.attributes.keys ) : context.invalidatedItemIndexPaths ?? [] {
                 if let attrs = self.attributes[indexPath] {
                     attrs.size.width = self.pageSize.width
                     attrs.center = CGPoint( x: self.pageSize.width * (CGFloat( indexPath.item ) + 0.5), y: attrs.size.height / 2 )
@@ -160,12 +160,12 @@ class PagerView: UIView, UICollectionViewDelegate {
         }
 
         override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect)
-                        -> Bool {
+                -> Bool {
             newBounds.size.width != self.pageSize.width
         }
 
         override func invalidationContext(forBoundsChange newBounds: CGRect)
-                        -> UICollectionViewLayoutInvalidationContext {
+                -> UICollectionViewLayoutInvalidationContext {
             using( super.invalidationContext( forBoundsChange: newBounds ) ) {
                 $0.invalidateItems( at: Array( self.attributes.keys ) )
                 self.pageSize.width = newBounds.size.width
@@ -174,13 +174,13 @@ class PagerView: UIView, UICollectionViewDelegate {
 
         open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                                   withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
-                        -> Bool {
+                -> Bool {
             originalAttributes.size.height != preferredAttributes.size.height
         }
 
         override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                           withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
-                        -> UICollectionViewLayoutInvalidationContext {
+                -> UICollectionViewLayoutInvalidationContext {
             self.attributes[originalAttributes.indexPath]?.size.height = preferredAttributes.size.height
 
             return using( super.invalidationContext( forPreferredLayoutAttributes: preferredAttributes,
@@ -190,24 +190,24 @@ class PagerView: UIView, UICollectionViewDelegate {
         }
 
         open override func layoutAttributesForElements(in rect: CGRect)
-                        -> [UICollectionViewLayoutAttributes]? {
+                -> [UICollectionViewLayoutAttributes]? {
             self.attributes.values.filter( { rect.intersects( $0.frame ) } ).compactMap { self.effectiveLayoutAttributes( for: $0 ) }
         }
 
         open override func layoutAttributesForItem(at indexPath: IndexPath)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[indexPath] )
         }
 
         open override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[itemIndexPath] )
         }
 
         // MARK: - Private
 
         private func effectiveLayoutAttributes(for attributes: UICollectionViewLayoutAttributes?)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             guard var attributes = attributes
             else { return nil }
 
@@ -266,7 +266,7 @@ class PagerView: UIView, UICollectionViewDelegate {
 
         override func systemLayoutSizeFitting(
                 _ targetSize: CGSize, withHorizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority)
-                        -> CGSize {
+                -> CGSize {
             super.systemLayoutSizeFitting(
                     targetSize,
                     withHorizontalFittingPriority: .required,
@@ -322,7 +322,7 @@ class PagerView: UIView, UICollectionViewDelegate {
                 self.stackView.addArrangedSubview( PageIndicator() )
             }
             for (s, subview) in self.stackView.arrangedSubviews.enumerated() {
-                subview.alpha = s == self.pagerView.page ? .on: .short
+                subview.alpha = s == self.pagerView.page ? .on : .short
             }
         }
     }

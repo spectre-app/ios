@@ -204,7 +204,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( subitems: [
                 ToggleItem<User>( track: .subject( "user", action: "maskPasswords" ), title: "Mask Passwords",
-                                  icon: { .icon( $0.maskPasswords ? "eye-slash": "eye" ) },
+                                  icon: { .icon( $0.maskPasswords ? "eye-slash" : "eye" ) },
                                   value: { $0.maskPasswords }, update: { $0.model?.maskPasswords = $1 }, caption: { _ in
                     """
                     Do not reveal passwords on screen.
@@ -230,7 +230,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         init() {
             super.init( subitems: [
                 ToggleItem( track: .subject( "user", action: "autofill" ), title: "AutoFill 🅿︎", icon: { _ in .icon( "keyboard" ) },
-                                  value: { $0.autofill }, update: { $0.model?.autofill = $1 }, caption: { _ in
+                            value: { $0.autofill }, update: { $0.model?.autofill = $1 }, caption: { _ in
                     """
                     Auto-fill your site passwords from other apps.
                     """
@@ -243,7 +243,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                         .addBehaviour( FeatureTapBehaviour( feature: .premium ) )
                         .addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) ),
                 ToggleItem( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "file-export" ) },
-                                  value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
+                            value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """
                     Allow other apps to see and backup your user through On My iPhone.
                     """
@@ -307,9 +307,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 """
                 New protections roll out in new algorithm versions. Always use the latest algorithm to protect your sites.
 
-                \(user.algorithm == .current ?
-                        "\(user.userName) is using the latest algorithm.":
-                        "!! \(user.userName) is NOT using the latest algorithm. !!")
+                \(user.algorithm == .current ? "\(user.userName) is using the latest algorithm."
+                                             : "!! \(user.userName) is NOT using the latest algorithm. !!")
                 """, preferredStyle: .actionSheet )
                 alertController.popoverPresentationController?.sourceView = item.view
                 alertController.popoverPresentationController?.sourceRect = item.view.bounds

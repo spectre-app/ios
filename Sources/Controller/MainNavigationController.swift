@@ -59,7 +59,7 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
     func navigationController(_ navigationController: UINavigationController,
                               animationControllerFor operation: UINavigationController.Operation,
                               from fromVC: UIViewController, to toVC: UIViewController)
-                    -> UIViewControllerAnimatedTransitioning? {
+            -> UIViewControllerAnimatedTransitioning? {
         self.transition
     }
 

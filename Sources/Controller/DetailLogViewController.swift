@@ -172,7 +172,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                     logs.append( NSAttributedString(
                             string: "\(record.message)\n",
                             attributes: [
-                                .font: (record.level <= .warning ? boldFont: font) as Any,
+                                .font: (record.level <= .warning ? boldFont : font) as Any,
                                 .foregroundColor: Theme.current.color.body.get() as Any,
                             ] ) )
                     return logs

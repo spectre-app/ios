@@ -73,18 +73,18 @@ extension SKProduct {
         }
 
         return self.localizedDescription == object.localizedDescription &&
-                self.localizedTitle == object.localizedTitle &&
-                self.price == object.price &&
-                self.priceLocale == object.priceLocale &&
-                self.productIdentifier == object.productIdentifier &&
-                self.isDownloadable == object.isDownloadable &&
-                self.downloadContentLengths == object.downloadContentLengths &&
-                self.contentVersion == object.contentVersion &&
-                self.downloadContentVersion == object.downloadContentVersion &&
-                self.subscriptionPeriod == object.subscriptionPeriod &&
-                self.introductoryPrice == object.introductoryPrice &&
-                self.subscriptionGroupIdentifier == object.subscriptionGroupIdentifier &&
-                self.discounts == object.discounts
+               self.localizedTitle == object.localizedTitle &&
+               self.price == object.price &&
+               self.priceLocale == object.priceLocale &&
+               self.productIdentifier == object.productIdentifier &&
+               self.isDownloadable == object.isDownloadable &&
+               self.downloadContentLengths == object.downloadContentLengths &&
+               self.contentVersion == object.contentVersion &&
+               self.downloadContentVersion == object.downloadContentVersion &&
+               self.subscriptionPeriod == object.subscriptionPeriod &&
+               self.introductoryPrice == object.introductoryPrice &&
+               self.subscriptionGroupIdentifier == object.subscriptionGroupIdentifier &&
+               self.discounts == object.discounts
     }
 
     func localizedPrice(quantity: Int = 1) -> String {
@@ -93,12 +93,12 @@ extension SKProduct {
     }
 
     func localizedDuration(quantity: Int = 1) -> String? {
-        self.subscriptionPeriod?.localizedDescription( periods: quantity, context: self.isAutoRenewing ? .frequency: .quantity )
+        self.subscriptionPeriod?.localizedDescription( periods: quantity, context: self.isAutoRenewing ? .frequency : .quantity )
     }
 
     func localizedOffer(quantity: Int = 1) -> String {
         if let amount = self.localizedDuration( quantity: quantity ) {
-            return "\(self.localizedPrice( quantity: quantity )) \(self.isAutoRenewing ? "/": "for") \(amount)"
+            return "\(self.localizedPrice( quantity: quantity )) \(self.isAutoRenewing ? "/" : "for") \(amount)"
         }
         else {
             return self.localizedPrice( quantity: quantity )
@@ -116,12 +116,12 @@ extension SKProductDiscount {
         else { return false }
 
         return self.price == object.price &&
-                self.priceLocale == object.priceLocale &&
-                self.identifier == object.identifier &&
-                self.subscriptionPeriod == object.subscriptionPeriod &&
-                self.numberOfPeriods == object.numberOfPeriods &&
-                self.paymentMode == object.paymentMode &&
-                self.type == object.type
+               self.priceLocale == object.priceLocale &&
+               self.identifier == object.identifier &&
+               self.subscriptionPeriod == object.subscriptionPeriod &&
+               self.numberOfPeriods == object.numberOfPeriods &&
+               self.paymentMode == object.paymentMode &&
+               self.type == object.type
     }
 
     var localizedOffer: String {
@@ -165,15 +165,14 @@ extension SKProductSubscriptionPeriod {
         else { return false }
 
         return self.numberOfUnits == object.numberOfUnits &&
-                self.unit == object.unit
+               self.unit == object.unit
     }
 
     func localizedDescription(periods: Int = 1, context: LocalizedContext) -> String {
         let units = Decimal( self.numberOfUnits * periods )
 
-        return context == .frequency && units == 1 ?
-                self.unit.localizedDescription( units: .nan ):
-                self.unit.localizedDescription( units: units )
+        return context == .frequency && units == 1 ? self.unit.localizedDescription( units: .nan )
+                                                   : self.unit.localizedDescription( units: units )
     }
 
     enum LocalizedContext {

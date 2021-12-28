@@ -52,7 +52,7 @@ class EffectButton: EffectView {
 
     private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
-                                                                     .with( priority: .defaultHigh + 2 )
+                                                  .with( priority: .defaultHigh + 2 )
 
     // MARK: - Life
 

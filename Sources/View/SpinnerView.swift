@@ -20,7 +20,7 @@ public class SpinnerView: UICollectionView {
     public var scrolledItem: Int {
         let currentOffset = self.contentOffset.y
         let maximumOffset = max( 0, self.contentSize.height - self.bounds.size.height )
-        let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset: 0
+        let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset : 0
         return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
     }
     public var selectedItem: Int? {
@@ -90,7 +90,7 @@ public class SpinnerView: UICollectionView {
             super.prepare()
 
             self.bounds = self.collectionView?.bounds ?? .null
-            self.count = self.collectionView?.numberOfSections == 0 ? 0: self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
+            self.count = self.collectionView?.numberOfSections == 0 ? 0 : self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
             self.size = CGSize( width: 0, height: self.bounds.size.height * CGFloat( self.count ) )
             let scan = self.bounds.origin.y / self.bounds.size.height
 

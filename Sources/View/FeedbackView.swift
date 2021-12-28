@@ -10,21 +10,21 @@ import StoreKit
 class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
     let observers = Observers<FeedbackObserver>()
 
-    let promptLabel = UILabel()
-    let starButtons = UIStackView()
+    let promptLabel  = UILabel()
+    let starButtons  = UIStackView()
     let commentLabel = UILabel()
-    let commentView = UITextView()
+    let commentView  = UITextView()
     let contactLabel = UILabel()
     let contactField = UITextField()
-    lazy var submittedButton = EffectButton(image: .icon("stars"), background: false) { [unowned self] in
-        self.viewController.flatMap { self.show(in: $0) }
+    lazy var submittedButton = EffectButton( image: .icon( "stars" ), background: false ) { [unowned self] in
+        self.viewController.flatMap { self.show( in: $0 ) }
     }
-    lazy var submitButton = EffectButton(title: "Submit") { [unowned self] in
+    lazy var submitButton = EffectButton( title: "Submit" ) { [unowned self] in
         self.submit()
     }
 
     var viewController: UIViewController?
-    var shown = false {
+    var shown     = false {
         didSet {
             if oldValue != self.shown {
                 self.updateTask.request()
@@ -38,7 +38,7 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
             }
         }
     }
-    var expanded = false {
+    var expanded  = false {
         didSet {
             if oldValue != self.expanded {
                 self.updateTask.request()
@@ -52,7 +52,7 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
 
     init() {
         super.init( frame: .zero )
-        AppConfig.shared.observers.register(observer: self)
+        AppConfig.shared.observers.register( observer: self )
 
         // - View
         self.translatesAutoresizingMaskIntoConstraints = false
@@ -84,30 +84,30 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
         self.contactField.autocorrectionType = .no
         self.contactField.keyboardType = .emailAddress
 
-        self.starButtons.addArrangedSubview(EffectButton(image: .icon("star", style: .regular) ) { self.rate(1) } )
-        self.starButtons.addArrangedSubview(EffectButton(image: .icon("star", style: .regular) ) { self.rate(2) } )
-        self.starButtons.addArrangedSubview(EffectButton(image: .icon("star", style: .regular) ) { self.rate(3) } )
-        self.starButtons.addArrangedSubview(EffectButton(image: .icon("star", style: .regular) ) { self.rate(4) } )
-        self.starButtons.addArrangedSubview(EffectButton(image: .icon("star", style: .regular) ) { self.rate(5) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 1 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 2 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 3 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 4 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 5 ) } )
 
         // - Hierarchy
-        self.addSubview( UIStackView(arrangedSubviews: [
+        self.addSubview( UIStackView( arrangedSubviews: [
             self.promptLabel, self.starButtons,
             self.commentLabel, self.commentView,
             self.contactLabel, self.contactField,
             self.submitButton, self.submittedButton
-        ], axis: .vertical, spacing: 8) )
+        ], axis: .vertical, spacing: 8 ) )
 
         // - Layout
         LayoutConfiguration( view: self.subviews.first )
                 .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.commentView )
-                .constrain { $1.heightAnchor.constraint(equalToConstant: 88) }.activate()
+                .constrain { $1.heightAnchor.constraint( equalToConstant: 88 ) }.activate()
     }
 
     override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove( toSuperview: newSuperview )
-        self.updateTask.request(now: true)
+        self.updateTask.request( now: true )
     }
 
     func show(in viewController: UIViewController) {
@@ -138,19 +138,20 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
 
         if AppConfig.shared.reviewed == nil, AppConfig.shared.rating == 5 {
             if let viewController = self.viewController, !self.commentView.text.isEmpty,
-               let url = URL(string: "https://apps.apple.com/us/app/password-spectre/id1526402806?action=write-review") {
+               let url = URL( string: "https://apps.apple.com/us/app/password-spectre/id1526402806?action=write-review" ) {
                 let controller = UIAlertController( title: "Publish Review?", message:
                 """
                 Sharing your thoughts on the App Store helps us immeasurably.
                 Would you like to write a short public review?
-                """, preferredStyle: .actionSheet)
-                controller.addAction(UIAlertAction(title: "Not now", style: .cancel))
-                controller.addAction(UIAlertAction(title: "I will!", style: .default) { _ in
-                    UIApplication.shared.open(url)
+                """, preferredStyle: .actionSheet )
+                controller.addAction( UIAlertAction( title: "Not now", style: .cancel ) )
+                controller.addAction( UIAlertAction( title: "I will!", style: .default ) { _ in
+                    UIApplication.shared.open( url )
                     AppConfig.shared.reviewed = Date()
-                })
-                viewController.present(controller, animated: true)
-            } else {
+                } )
+                viewController.present( controller, animated: true )
+            }
+            else {
                 SKStoreReviewController.requestReview()
                 AppConfig.shared.reviewed = Date()
             }
@@ -163,7 +164,7 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
 
         let rating = AppConfig.shared.rating
         self.starButtons.arrangedSubviews.enumerated().forEach {
-            ($0.element as? EffectButton)?.image = .icon("star", style: $0.offset < rating ? .solid : .regular)
+            ($0.element as? EffectButton)?.image = .icon( "star", style: $0.offset < rating ? .solid : .regular )
         }
 
         if rating <= 2 {
@@ -193,7 +194,7 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
         }
 
         self.observers.notify {
-            $0.didUpdate(feedback: self, shown: self.shown, expanded: self.expanded, submitted: self.submitted)
+            $0.didUpdate( feedback: self, shown: self.shown, expanded: self.expanded, submitted: self.submitted )
         }
 
         self.window?.layoutIfNeeded()
@@ -217,7 +218,7 @@ class FeedbackItem<M>: Item<M> {
         lazy var feedbackView = FeedbackView()
 
         override func createValueView() -> UIView? {
-            self.feedbackView.observers.register(observer: self)
+            self.feedbackView.observers.register( observer: self )
             return self.feedbackView
         }
 
@@ -225,14 +226,14 @@ class FeedbackItem<M>: Item<M> {
             super.didLoad()
 
             (self.item?.viewController).flatMap {
-                self.feedbackView.show(in: $0)
+                self.feedbackView.show( in: $0 )
             }
         }
 
         override func doUpdate() {
             super.doUpdate()
 
-            self.feedbackView.updateTask.request(now: true)
+            self.feedbackView.updateTask.request( now: true )
         }
 
         // - FeedbackObserver

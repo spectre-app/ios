@@ -16,9 +16,9 @@ import SafariServices
 import Countly
 
 class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
-    private let tipsView    = TipsView( tips: [
+    private let tipsView     = TipsView( tips: [
         // App
-        "Welcome\(AppConfig.shared.runCount <= 1 ? "": " back") to Spectre!",
+        "Welcome\(AppConfig.shared.runCount <= 1 ? "" : " back") to Spectre!",
         "Spectre is 100% open source \(.icon( "osi" )) and Free Software.",
         "Leave no traces by using incognito \(.icon( "user-secret" )) mode.",
         "With Diagnostics \(.icon( "briefcase-medical" )), we can build you the best app.",
@@ -130,7 +130,7 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
             },
         ]
 
-        self.feedbackView.observers.register(observer: self)
+        self.feedbackView.observers.register( observer: self )
 
         // - Hierarchy
         self.view.insertSubview( self.tipsView, belowSubview: self.detailsHost.view )
@@ -148,9 +148,9 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
         LayoutConfiguration( view: self.appToolbar )
                 .constrain( as: .bottomCenter, margin: true ).activate()
         LayoutConfiguration( view: self.feedbackView )
-                .constrain { $1.bottomAnchor.constraint(lessThanOrEqualTo: self.appToolbar.topAnchor, constant: -8) }
-                .constrain { $1.bottomAnchor.constraint(lessThanOrEqualTo: self.keyboardLayoutGuide.topAnchor, constant: -8) }
-                .constrain(as: .centerH).activate()
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.appToolbar.topAnchor, constant: -8 ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.keyboardLayoutGuide.topAnchor, constant: -8 ) }
+                .constrain( as: .centerH ).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -172,7 +172,7 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
         }
 
         if AppConfig.shared.rating == 0, AppConfig.shared.runCount > 5 {
-            self.feedbackView.show(in: self)
+            self.feedbackView.show( in: self )
         }
     }
 

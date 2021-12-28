@@ -19,7 +19,7 @@ class PickerView: UICollectionView {
 
     override var intrinsicContentSize: CGSize {
         CGSize( width: UIView.noIntrinsicMetric,
-                height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
+                height: self.isHidden ? UIView.noIntrinsicMetric : self.collectionViewLayout.collectionViewContentSize.height )
     }
 
     // MARK: - Life
@@ -118,13 +118,13 @@ class PickerView: UICollectionView {
 
         override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                              withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
-                        -> Bool {
+                -> Bool {
             originalAttributes.size != preferredAttributes.size
         }
 
         override func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                           withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
-                        -> UICollectionViewLayoutInvalidationContext {
+                -> UICollectionViewLayoutInvalidationContext {
             self.attributes[originalAttributes.representedElementCategory]?[originalAttributes.indexPath]?.size = preferredAttributes.size
             if !self.initialSize.keys.contains( originalAttributes.representedElementCategory ) {
                 self.initialSize[originalAttributes.representedElementCategory] = preferredAttributes.size
@@ -135,35 +135,35 @@ class PickerView: UICollectionView {
         }
 
         override func layoutAttributesForElements(in rect: CGRect)
-                        -> [UICollectionViewLayoutAttributes]? {
+                -> [UICollectionViewLayoutAttributes]? {
             self.attributes.values.flatMap( { $0.values } ).filter( { rect.intersects( $0.frame ) } )
-                                  .compactMap { self.effectiveLayoutAttributes( for: $0 ) }
+                .compactMap { self.effectiveLayoutAttributes( for: $0 ) }
         }
 
         override func layoutAttributesForItem(at indexPath: IndexPath)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[indexPath] )
         }
 
         override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.cell]?[itemIndexPath] )
         }
 
         override func layoutAttributesForDecorationView(ofKind elementKind: String, at indexPath: IndexPath)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.decorationView]?[indexPath] )
         }
 
         override func initialLayoutAttributesForAppearingDecorationElement(ofKind elementKind: String, at decorationIndexPath: IndexPath)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             self.effectiveLayoutAttributes( for: self.attributes[.decorationView]?[decorationIndexPath] )
         }
 
         // MARK: - Private
 
         private func effectiveLayoutAttributes(for attributes: UICollectionViewLayoutAttributes?)
-                        -> UICollectionViewLayoutAttributes? {
+                -> UICollectionViewLayoutAttributes? {
             guard let attributes = attributes
             else { return nil }
 
@@ -188,7 +188,7 @@ class PickerView: UICollectionView {
 
         override func systemLayoutSizeFitting(
                 _ targetSize: CGSize, withHorizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority)
-                        -> CGSize {
+                -> CGSize {
             CGSize( width: 1, height: targetSize.height )
         }
     }

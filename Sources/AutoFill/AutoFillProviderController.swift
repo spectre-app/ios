@@ -74,11 +74,17 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             }
 
             guard let userFile = userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
-            else { throw ASExtensionError( .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" ) }
+            else {
+                throw ASExtensionError(
+                        .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" )
+            }
 
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.isKeyAvailable( for: userFile.algorithm )
-            else { throw ASExtensionError( .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" ) }
+            else {
+                throw ASExtensionError(
+                        .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" )
+            }
 
             keychainKeyFactory.expiry = .minutes( 5 )
             return userFile.authenticate( using: keychainKeyFactory )
@@ -87,12 +93,16 @@ class AutoFillProviderController: ASCredentialProviderViewController {
 
             guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
             else {
-                throw ASExtensionError( .credentialIdentityNotFound, "" +
+                throw ASExtensionError(
+                        .credentialIdentityNotFound,
                         "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
             }
 
             guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
-            else { throw ASExtensionError( .userInteractionRequired, "Unauthenticated user: \(user.userName)" ) }
+            else {
+                throw ASExtensionError(
+                        .userInteractionRequired, "Unauthenticated user: \(user.userName)" )
+            }
 
             return login.token.and( password.token ).promise {
                 ASPasswordCredential( user: $0.0, password: $0.1 )

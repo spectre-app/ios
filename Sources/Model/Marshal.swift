@@ -45,7 +45,7 @@ class Marshal: Observable, Updatable {
     public func save(user: User) -> Promise<URL> {
         let redacted = user.file?.pointee.info?.pointee.redacted ?? true
         let format = user.file.flatMap { $0.pointee.info?.pointee.format ?? .default } ?? .none
-        guard let userURL = user.origin.flatMap( { format.is( url: $0 ) ? $0: nil } ) ?? self.createURL( for: user, format: format )
+        guard let userURL = user.origin.flatMap( { format.is( url: $0 ) ? $0 : nil } ) ?? self.createURL( for: user, format: format )
         else {
             return Promise( .failure( AppError.internal( cause: "No path to marshal user", details: user ) ) )
         }
@@ -189,7 +189,7 @@ class Marshal: Observable, Updatable {
 
     #if TARGET_APP
     public func `import`(data: Data, viewController: UIViewController)
-                    -> Promise<UserFile> {
+            -> Promise<UserFile> {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "from-data" ) )
 
         return DispatchQueue.api.promising {
@@ -223,7 +223,7 @@ class Marshal: Observable, Updatable {
 
     // swiftlint:disable:next function_body_length
     private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile, viewController: UIViewController)
-                    -> Promise<UserFile> {
+            -> Promise<UserFile> {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-file" ) )
 
         return DispatchQueue.main.promising {
@@ -367,7 +367,7 @@ class Marshal: Observable, Updatable {
     }
 
     private func `import`(from importedUser: User, into existedUser: User, viewController: UIViewController)
-                    -> Promise<User> {
+            -> Promise<User> {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-user" ) )
 
         let spinner = AlertController( title: "Merging", message: existedUser.description,
@@ -429,9 +429,8 @@ class Marshal: Observable, Updatable {
                     Completed the import of sites into \(existedUser).
 
                     This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
-                    \(updatedUser ?
-                            "The user settings were updated from the import.":
-                            "The existing user's settings were more recent than the import.")
+                    \(updatedUser ? "The user settings were updated from the import."
+                                  : "The existing user's settings were more recent than the import.")
                     """ ).show( in: viewController.view )
                 }
 
@@ -442,7 +441,7 @@ class Marshal: Observable, Updatable {
     }
 
     private func `import`(data: Data, from importingFile: UserFile, into documentURL: URL, viewController: UIViewController)
-                    -> Promise<UserFile> {
+            -> Promise<UserFile> {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-url" ) )
 
         let spinner = AlertController( title: "Replacing", message: documentURL.lastPathComponent,
@@ -565,13 +564,13 @@ class Marshal: Observable, Updatable {
         // MARK: - UIActivityItemSource
 
         func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController)
-                        -> Any {
+                -> Any {
             self.user.description
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController,
                                     itemForActivityType activityType: UIActivity.ActivityType?)
-                        -> Any? {
+                -> Any? {
             do {
                 // FIXME: possible deadlock if await needs main thread?
                 let exportFile = try Marshal.shared.save( user: self.user, in: URL( fileURLWithPath: NSTemporaryDirectory() ),
@@ -587,19 +586,19 @@ class Marshal: Observable, Updatable {
 
         func activityViewController(_ activityViewController: UIActivityViewController,
                                     dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?)
-                        -> String {
+                -> String {
             self.format.uti ?? ""
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController,
                                     subjectForActivityType activityType: UIActivity.ActivityType?)
-                        -> String {
+                -> String {
             "\(productName) Export: \(self.user.userName)"
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController,
                                     thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize)
-                        -> UIImage? {
+                -> UIImage? {
             self.user.avatar.image
         }
 
@@ -713,7 +712,7 @@ class Marshal: Observable, Updatable {
         }
 
         public func authenticate(using keyFactory: KeyFactory) -> Promise<User> {
-            (self.resetKey ? Promise( .success( nil ) ): keyFactory.provide().optional()).promising( on: .api ) {
+            (self.resetKey ? Promise( .success( nil ) ) : keyFactory.provide().optional()).promising( on: .api ) {
                 // Check origin for updates.
                 if let origin = self.origin, let file = try UserFile.load( origin: origin ) {
                     self.file = file
@@ -729,7 +728,7 @@ class Marshal: Observable, Updatable {
                         avatar: User.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
                         userName: String.valid( marshalledUser.userName ) ?? self.userName,
                         identicon: marshalledUser.identicon,
-                        userKeyID: self.resetKey ? SpectreKeyIDUnset: self.userKeyID,
+                        userKeyID: self.resetKey ? SpectreKeyIDUnset : self.userKeyID,
                         defaultType: marshalledUser.defaultType,
                         loginType: marshalledUser.loginType,
                         loginState: .valid( marshalledUser.loginState ),
@@ -792,9 +791,9 @@ class Marshal: Observable, Updatable {
 
         static func == (lhs: UserFile, rhs: UserFile) -> Bool {
             lhs.origin == rhs.origin && lhs.format == rhs.format && lhs.exportDate == rhs.exportDate && lhs.redacted == rhs.redacted &&
-                    lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
-                    lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
-                    lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
+            lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
+            lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
+            lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
         }
 
         static func != (lhs: UserFile, rhs: UserFile) -> Bool {
@@ -803,9 +802,9 @@ class Marshal: Observable, Updatable {
 
         static func == (lhs: User, rhs: UserFile) -> Bool {
             lhs.origin == rhs.origin && lhs.exportDate == rhs.exportDate &&
-                    lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
-                    lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
-                    lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
+            lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName &&
+            lhs.identicon == rhs.identicon && lhs.userKeyID == rhs.userKeyID && lhs.lastUsed == rhs.lastUsed &&
+            lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
         }
 
         static func != (lhs: User, rhs: UserFile) -> Bool {

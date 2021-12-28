@@ -32,7 +32,7 @@ extension Array {
     }
 
     public var nonEmpty: Self? {
-        self.isEmpty ? nil: self
+        self.isEmpty ? nil : self
     }
 }
 
@@ -61,7 +61,7 @@ extension Collection where Element == String {
 
     func withCStringVaList<R>(terminate: Bool = true, body: (CVaListPointer) -> R) -> R {
         self.withCStrings {
-            withVaList( terminate ? $0 + [ Int( bitPattern: nil ) ]: $0, body )
+            withVaList( terminate ? $0 + [ Int( bitPattern: nil ) ] : $0, body )
         }
     }
 }
@@ -116,7 +116,7 @@ extension Error {
             details.failure.flatMap { "Failure: \($0)" },
             details.suggestion.flatMap { "Suggestion: \($0)" },
             details.underlying.joined( separator: "\n\n" ).nonEmpty
-                    .flatMap { "Underlying:\n  - \($0.replacingOccurrences( of: "\n", with: "    " ))" },
+                   .flatMap { "Underlying:\n  - \($0.replacingOccurrences( of: "\n", with: "    " ))" },
         ].compactMap { $0 }.joined( separator: "\n" )
     }
 }
@@ -258,7 +258,7 @@ extension String {
     }
 
     public var nonEmpty: Self? {
-        self.isEmpty ? nil: self
+        self.isEmpty ? nil : self
     }
 
     public func isVersionOutdated(by other: String) -> Bool {
@@ -379,11 +379,11 @@ extension UnsafeBufferPointer where Element == UInt8 {
 
 extension Numeric {
     public var nonEmpty: Self? {
-        self == Self.init( exactly: 0 ) ? nil: self
+        self == Self.init( exactly: 0 ) ? nil : self
     }
 
     public func ifEmpty<T>(_ emptyValue: T) -> Self where T: BinaryInteger {
-        self == Self.init( exactly: 0 ) ? Self.init( exactly: emptyValue )!: self
+        self == Self.init( exactly: 0 ) ? Self.init( exactly: emptyValue )! : self
     }
 }
 
@@ -440,7 +440,7 @@ extension String.StringInterpolation {
             }
             else if value >= 1_000_000_000 {
                 value /= 1_000_000_000
-                formatter.positiveSuffix = options.contains( .currency ) ? "B": "G"
+                formatter.positiveSuffix = options.contains( .currency ) ? "B" : "G"
                 formatter.negativeSuffix = formatter.positiveSuffix
             }
             else if value >= 1_000_000 {
@@ -450,7 +450,7 @@ extension String.StringInterpolation {
             }
             else if value >= 1_000 {
                 value /= 1_000
-                formatter.positiveSuffix = options.contains( .currency ) ? "K": "k"
+                formatter.positiveSuffix = options.contains( .currency ) ? "K" : "k"
                 formatter.negativeSuffix = formatter.positiveSuffix
             }
         }

@@ -377,7 +377,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
     var credentials: [AutoFill.Credential]? {
         self.autofill ? self.sites.map { site in
             .init( supplier: self, site: site.siteName, url: site.url )
-        }: nil
+        } : nil
     }
 
     // MARK: - Operand
@@ -390,7 +390,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
                        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: SpectreResultType? = nil, resultParam: String? = nil,
                        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation? {
+            -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
                 return self.spectre_result( for: name ?? self.userName, counter: counter ?? .initial,
@@ -421,7 +421,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: SpectreResultType? = nil, resultParam: String,
                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-                    -> SpectreOperation? {
+            -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
                 return self.spectre_state( for: name ?? self.userName, counter: counter ?? .initial,
@@ -452,7 +452,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
                                 keyPurpose: SpectreKeyPurpose, keyContext: String?,
                                 resultType: SpectreResultType, resultParam: String?,
                                 algorithm: SpectreAlgorithm, operand: SpectreOperand)
-                    -> SpectreOperation? {
+            -> SpectreOperation? {
         guard let keyFactory = self.userKeyFactory
         else { return nil }
 
@@ -474,7 +474,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
                                keyPurpose: SpectreKeyPurpose, keyContext: String?,
                                resultType: SpectreResultType, resultParam: String?,
                                algorithm: SpectreAlgorithm, operand: SpectreOperand)
-                    -> SpectreOperation? {
+            -> SpectreOperation? {
         guard let keyFactory = self.userKeyFactory
         else { return nil }
 

@@ -168,7 +168,7 @@ class Item<M>: AnyItem {
         func didLoad() {
             if let valueView = self.valueView, let superview = valueView.superview {
                 valueView.widthAnchor.constraint( equalTo: superview.readableContentGuide.widthAnchor )
-                                     .with( priority: .defaultLow + 1 ).isActive = true
+                         .with( priority: .defaultLow + 1 ).isActive = true
             }
 
             self.item?.subitems.forEach { $0.view.didLoad() }
@@ -192,8 +192,8 @@ class Item<M>: AnyItem {
             self.captionLabel.isHidden = self.captionLabel.attributedText?.string.nonEmpty == nil
 
             for i in 0..<max( item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
-                let subitemView  = i < item.subitems.count ? item.subitems[i].view: nil
-                let arrangedView = i < self.subitemsStack.arrangedSubviews.count ? self.subitemsStack.arrangedSubviews[i]: nil
+                let subitemView  = i < item.subitems.count ? item.subitems[i].view : nil
+                let arrangedView = i < self.subitemsStack.arrangedSubviews.count ? self.subitemsStack.arrangedSubviews[i] : nil
 
                 if arrangedView != subitemView {
                     arrangedView?.removeFromSuperview()
@@ -225,9 +225,9 @@ class Item<M>: AnyItem {
         }
 
         func updateEnabled(_ enabled: Bool) {
-            self.alpha = enabled ? .on: .short
+            self.alpha = enabled ? .on : .short
             self.contentView.isUserInteractionEnabled = enabled
-            self.tintAdjustmentMode = enabled ? .automatic: .dimmed
+            self.tintAdjustmentMode = enabled ? .automatic : .dimmed
         }
     }
 }
@@ -748,7 +748,7 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 
             if let window = self.valueView.window {
                 self.valueView.heightAnchor.constraint( equalTo: window.heightAnchor, multiplier: .long )
-                                           .with( priority: .defaultHigh ).isActive = true
+                    .with( priority: .defaultHigh ).isActive = true
             }
         }
 
@@ -1003,7 +1003,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
     }
 
     class ListItemView: ItemView, UITableViewDelegate {
-        var listItem: ListItem? {
+        var listItem:   ListItem? {
             self.item as? ListItem
         }
         let tableView         = TableView()

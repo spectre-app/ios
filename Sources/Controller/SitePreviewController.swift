@@ -57,7 +57,7 @@ class SitePreviewController: UIViewController, SiteObserver {
         DispatchQueue.main.perform {
             self.view.backgroundColor = site.preview.color
             self.siteButton.setImage( site.preview.image, for: .normal )
-            self.siteButton.setTitle( site.preview.image == nil ? site.siteName: nil, for: .normal )
+            self.siteButton.setTitle( site.preview.image == nil ? site.siteName : nil, for: .normal )
             self.preferredContentSize = site.preview.image?.size ?? CGSize( width: 0, height: 200 )
         }
     }

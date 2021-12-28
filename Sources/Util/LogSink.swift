@@ -16,7 +16,7 @@ import os
 @discardableResult
 public func pii(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) -> Bool {
-    log( file: file, line: line, function: function, dso: dso, level: AppConfig.shared.isDebug ? .debug: .trace, format, args )
+    log( file: file, line: line, function: function, dso: dso, level: AppConfig.shared.isDebug ? .debug : .trace, format, args )
 }
 
 @discardableResult
@@ -224,7 +224,7 @@ public class LogSink: AppConfigObserver {
     // MARK: - AppConfigObserver
 
     public func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
-        self.level = appConfig.isDebug ? .debug: appConfig.diagnostics ? .info: .warning
+        self.level = appConfig.isDebug ? .debug : appConfig.diagnostics ? .info : .warning
     }
 }
 
@@ -248,7 +248,7 @@ struct LogRecord: Comparable {
 
     public static func == (lhs: LogRecord, rhs: LogRecord) -> Bool {
         lhs.occurrence == rhs.occurrence && lhs.level == rhs.level &&
-                lhs.file == rhs.file && lhs.line == rhs.line && lhs.function == rhs.function &&
-                lhs.message == rhs.message
+        lhs.file == rhs.file && lhs.line == rhs.line && lhs.function == rhs.function &&
+        lhs.message == rhs.message
     }
 }

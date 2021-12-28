@@ -205,7 +205,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     class UserCell: UICollectionViewCell, InAppFeatureObserver, Updatable {
         public var hasSelected = false {
             didSet {
-                self.contentView.alpha = self.hasSelected ? (self.isSelected ? .on: .off): .on
+                self.contentView.alpha = self.hasSelected ? (self.isSelected ? .on : .off) : .on
             }
         }
         public override var isSelected: Bool {
@@ -345,7 +345,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.authenticater = { keyFactory in
                 let secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
                 return (self.userItem.file?.authenticate( using: keyFactory )
-                                ?? User( userName: keyFactory.userName ).login( using: keyFactory ))
+                        ?? User( userName: keyFactory.userName ).login( using: keyFactory ))
                         .then {
                             secretEvent.end(
                                     [ "result": $0.name,
@@ -385,7 +385,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     DispatchQueue.main.perform {
                         self.strengthMeter.progress = Float( strengthProgress )
                         self.strengthMeter.progressTintColor = .systemGreen
-                        self.strengthMeter.trackTintColor = strengthProgress < 0.5 ? .systemRed: .systemOrange
+                        self.strengthMeter.trackTintColor = strengthProgress < 0.5 ? .systemRed : .systemOrange
                         self.strengthLabel.applyText( strengthText )
                     }
                 }
@@ -583,7 +583,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameLabel.isHidden = self.isSelected && self.userItem.file == nil
             self.nameField.isHidden = !self.nameLabel.isHidden
             self.avatarTip.isHidden = self.nameField.isHidden
-            self.secretField.nameField = !self.nameField.isHidden ? self.nameField: nil
+            self.secretField.nameField = !self.nameField.isHidden ? self.nameField : nil
             self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userItem.file == nil
             self.avatarButton.image = self.avatar?.image ?? .icon( "user-plus", withSize: 96, invert: true )
             self.actionsStack.isHidden = !self.isSelected || self.userItem.file == nil

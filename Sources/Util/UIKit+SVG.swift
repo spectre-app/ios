@@ -23,15 +23,13 @@ private typealias ImageWithCGSVGDocumentFunction =
 private let MAGIC                                                             = "</svg>".data( using: .utf8 )
 private let CGSVGDocumentRelease:        CGSVGDocumentReleaseFunction?        = load( "CGSVGDocumentRelease" )
 private let CGSVGDocumentCreateFromData: CGSVGDocumentCreateFromDataFunction? = load( "CGSVGDocumentCreateFromData" )
-// FIXME: Test to see if this crashes when the selector does not exist.
 private let imageWithCGSVGDocument:      Selector?                            = Selector( ("_imageWithCGSVGDocument:") )
 
 extension UIImage {
     static func isSVG(data: Data) -> Bool {
         MAGIC.flatMap {
             data.range( of: $0, options: .backwards, in: max( data.startIndex, data.endIndex - 100 )..<data.endIndex )
-        }
-                != nil
+        } != nil
     }
 
     static func svg(data: Data) -> UIImage? {

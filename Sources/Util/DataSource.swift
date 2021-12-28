@@ -25,9 +25,9 @@ class DataSource<S: Hashable, E: Hashable> {
         get {
             self.tableSource?.tableView?.indexPathsForSelectedRows?
                 .compactMap { self.tableSource?.itemIdentifier( for: $0 ) } ??
-                    self.collectionSource?.collectionView?.indexPathsForSelectedItems?
-                        .compactMap { self.collectionSource?.itemIdentifier( for: $0 ) } ??
-                    []
+            self.collectionSource?.collectionView?.indexPathsForSelectedItems?
+                .compactMap { self.collectionSource?.itemIdentifier( for: $0 ) } ??
+            []
         }
         set {
             self.select( items: newValue )

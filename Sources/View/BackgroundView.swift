@@ -63,7 +63,7 @@ class BackgroundView: UIView, ThemeObserver {
     let imageTint = UIView()
     override var backgroundColor: UIColor? {
         didSet {
-            self.imageTint.backgroundColor = self.backgroundColor.flatMap { $0.alpha == .on ? $0.with( alpha: .long ): .clear }
+            self.imageTint.backgroundColor = self.backgroundColor.flatMap { $0.alpha == .on ? $0.with( alpha: .long ) : .clear }
         }
     }
     private var imageMask      = CAGradientLayer()
@@ -171,9 +171,9 @@ class BackgroundView: UIView, ThemeObserver {
 
     func didChange(theme: Theme) {
         if case .gradient = self.mode {
-            self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
-                Theme.current.color.panel.get(), Theme.current.color.backdrop.get(),
-            ] as CFArray, locations: nil )
+            self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                             colors: [ Theme.current.color.panel.get(), Theme.current.color.backdrop.get() ] as CFArray,
+                                             locations: nil )
         }
         else if case .custom(let color) = self.mode {
             self.backgroundColor = color()

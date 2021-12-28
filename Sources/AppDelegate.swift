@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - UIApplicationDelegate
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
-                    -> Bool {
+            -> Bool {
         // Require encrypted DNS.  Note: WebKit (eg. WKWebView/SFSafariViewController) ignores this.
         if #available( iOS 14.0, * ) {
             if let dohURL = URL( string: "https://cloudflare-dns.com/dns-query" ) {
@@ -51,7 +51,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
-                    -> Bool {
+            -> Bool {
         OperationQueue.main.addOperation {
             self.launchDecisions()
         }

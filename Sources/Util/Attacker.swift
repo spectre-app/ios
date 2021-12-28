@@ -73,7 +73,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
     }
     var localizedDescription: String {
         "\(number: self.scale, as: "0.#") x \(number: Rig.gtx1080ti.attempts_per_second( for: .bcrypt10 ), .abbreviated)/s " +
-                "(~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) + \(number: self.monthly_budget, .currency, .abbreviated)/m)"
+        "(~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) + \(number: self.monthly_budget, .currency, .abbreviated)/m)"
     }
     var rig:                  Rig {
         .gtx1080ti
@@ -224,7 +224,7 @@ struct TimeToCrack: CustomStringConvertible {
             return normalizedPeriod.localizedDescription
         }
         return "~\(normalizedPeriod.localizedDescription) & " +
-                "~\(number: cost, locale: .C, .currency, .abbreviated), " +
-                "~\(number: Wh, .abbreviated)Wh"
+               "~\(number: cost, locale: .C, .currency, .abbreviated), " +
+               "~\(number: Wh, .abbreviated)Wh"
     }
 }

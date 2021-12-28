@@ -21,19 +21,19 @@ infix operator =>: MultiplicationPrecedence
 // Level 1: Obtain a property path to object O's key path K.
 
 func => <E: NSObject, V>(target: E, keyPath: KeyPath<E, V>)
-                -> PropertyPath<E, V> {
+        -> PropertyPath<E, V> {
     find( propertyPath: PropertyPath( target: target, nonnullKeyPath: keyPath, nullableKeyPath: nil, attribute: nil ),
           identity: target, keyPath )
 }
 
 func => <E: NSObject, V>(target: E, keyPath: KeyPath<E, V?>)
-                -> PropertyPath<E, V> {
+        -> PropertyPath<E, V> {
     find( propertyPath: PropertyPath( target: target, nonnullKeyPath: nil, nullableKeyPath: keyPath, attribute: nil ),
           identity: target, keyPath )
 }
 
 func => <E: NSObject>(propertyPath: PropertyPath<E, NSAttributedString>, attribute: NSAttributedString.Key)
-                -> PropertyPath<E, NSAttributedString> {
+        -> PropertyPath<E, NSAttributedString> {
     find( propertyPath: PropertyPath( target: propertyPath.target!, nonnullKeyPath: propertyPath.nonnullKeyPath,
                                       nullableKeyPath: propertyPath.nullableKeyPath, attribute: attribute ),
           identity: propertyPath.target, propertyPath.nonnullKeyPath ?? propertyPath.nullableKeyPath, attribute.rawValue as NSString )
@@ -43,7 +43,7 @@ private var cachedPropertyPaths = NSCache<Identity, AnyPropertyPath>()
 private var activePropertyPaths = [ Identity: WeakBox<AnyPropertyPath> ]()
 
 private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, identity members: AnyObject?...)
-                -> PropertyPath<E, V> {
+        -> PropertyPath<E, V> {
     let identity = Identity( members )
     //dbg( "[properties] finding identity(%x) with members: %@", identity.hashValue, members )
     if let propertyPath = activePropertyPaths[identity]?.value as? PropertyPath<E, V>, propertyPath.target != nil {
@@ -128,7 +128,8 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
                 if let newProperty = self.property {
                     self.binding = newProperty.bind( propertyPath: self )
                 }
-            } else {
+            }
+            else {
                 self.binding?.doUpdate()
             }
         }
@@ -159,7 +160,7 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
             return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String( describing: keyPath ))"
         }
         else {
-            return "\(self.target == nil ? String( reflecting: E.self ): String( reflecting: self.target! ))"
+            return "\(self.target == nil ? String( reflecting: E.self ) : String( reflecting: self.target! ))"
         }
     }
 
@@ -389,7 +390,7 @@ public enum AppIcon: String, CaseIterable {
     #if TARGET_APP
     func activate() {
         DispatchQueue.main.perform {
-            UIApplication.shared.setAlternateIconName( self == .primary ? nil: self.rawValue ) { error in
+            UIApplication.shared.setAlternateIconName( self == .primary ? nil : self.rawValue ) { error in
                 if let error = error {
                     mperror( title: "Couldn't change app icon.", error: error )
                 }
@@ -438,8 +439,8 @@ extension UIFont.Weight {
         let myScale = self.rawValue, blackScale = UIFont.Weight.black.rawValue, ultraLightScale = UIFont.Weight.ultraLight.rawValue
         let regular = CGFloat( 400 ), black = CGFloat( 900 ), ultraLight = CGFloat( 100 )
 
-        return myScale >= 0 ? regular + myScale / blackScale * (black - regular):
-                regular - myScale / ultraLightScale * (regular - ultraLight)
+        return myScale >= 0 ? regular + myScale / blackScale * (black - regular)
+                            : regular - myScale / ultraLightScale * (regular - ultraLight)
     }
 }
 
@@ -842,7 +843,7 @@ class AppearanceProperty<V>: Property<V> {
     }
 
     override func get() -> V? {
-        (UITraitCollection.current.userInterfaceStyle == .dark ? self.value.dark: self.value.light) ?? super.get()
+        (UITraitCollection.current.userInterfaceStyle == .dark ? self.value.dark : self.value.light) ?? super.get()
     }
 
     func set(light lightValue: V?, dark darkValue: V?) {

@@ -66,7 +66,7 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
                     [
                         $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
                         $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )
-                                    .with( priority: UILayoutPriority( 500 ) ),
+                          .with( priority: UILayoutPriority( 500 ) ),
                         $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
                         $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
                         $1.heightAnchor.constraint( equalToConstant: 50 ),

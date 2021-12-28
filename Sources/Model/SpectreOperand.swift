@@ -18,11 +18,11 @@ public protocol SpectreOperand {
 
     func result(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
                 resultType: SpectreResultType?, resultParam: String?, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
-                    -> SpectreOperation?
+            -> SpectreOperation?
 
     func state(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
                resultType: SpectreResultType?, resultParam: String, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
-                    -> SpectreOperation?
+            -> SpectreOperation?
 }
 
 public struct SpectreOperation {
@@ -36,7 +36,7 @@ public struct SpectreOperation {
 
     @discardableResult
     public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<(SpectreOperation, String), Error>) -> Void)
-                    -> Promise<(SpectreOperation, String)> {
+            -> Promise<(SpectreOperation, String)> {
         Promise( .success( self ) ).and( self.token ).then( on: queue, consumer )
     }
 

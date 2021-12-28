@@ -93,7 +93,7 @@ public class AppConfig: Observable {
     public var theme: String {
         get {
             let theme = UserDefaults.shared.string( forKey: #function ) ?? Theme.default.path
-            if !InAppFeature.premium.isEnabled, Theme.with(path: theme)?.pattern?.isPremium ?? false {
+            if !InAppFeature.premium.isEnabled, Theme.with( path: theme )?.pattern?.isPremium ?? false {
                 return Theme.default.path
             }
             return theme
@@ -182,7 +182,7 @@ public class AppConfig: Observable {
     }
     public var reviewed: Date? {
         get {
-            UserDefaults.shared.double(forKey: #function).nonEmpty.flatMap {
+            UserDefaults.shared.double( forKey: #function ).nonEmpty.flatMap {
                 Date( timeIntervalSince1970: $0 )
             }
         }

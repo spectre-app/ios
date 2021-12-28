@@ -14,7 +14,7 @@ import Foundation
 
 extension Array {
     subscript(maybe index: Index) -> Element? {
-        index < self.underestimatedCount || index < self.count ? self[index]: nil
+        index < self.underestimatedCount || index < self.count ? self[index] : nil
     }
 
     func reordered(first: ((Element) -> Bool)? = nil, last: ((Element) -> Bool)? = nil) -> [Element] {
@@ -43,7 +43,7 @@ extension Collection {
             guard let rhs = other.first( where: { rhs in lhs == rhs } )
             else { return nil }
             return (lhs, rhs)
-        }: other.compactMap { rhs in
+        } : other.compactMap { rhs in
             guard let lhs = self.first( where: { lhs in lhs == rhs } )
             else { return nil }
             return (lhs, rhs)
@@ -62,7 +62,7 @@ extension Collection where Element == UInt8 {
 
 extension Date {
     func format(date dateStyle: DateFormatter.Style = .medium, time timeStyle: DateFormatter.Style = .medium)
-                    -> String {
+            -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = dateStyle
         dateFormatter.timeStyle = timeStyle
@@ -146,9 +146,9 @@ extension Dictionary where Key == Int {
 
 extension FileManager {
     public static let groupCaches    = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
-                                                          .appendingPathComponent( "Library/Caches" )
+                                                  .appendingPathComponent( "Library/Caches" )
     public static let groupDocuments = FileManager.default.containerURL( forSecurityApplicationGroupIdentifier: productGroup )?
-                                                          .appendingPathComponent( "Documents" )
+                                                  .appendingPathComponent( "Documents" )
     public static let appDocuments   = FileManager.default.urls( for: .documentDirectory, in: .userDomainMask ).first
 }
 
@@ -324,8 +324,8 @@ extension URLSession {
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
             "User-Agent": "\(productName)/\(productVersion) " +
-                    "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
-                    "Mozilla/5.0 AppleWebKit/605.1.15",
+                          "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
+                          "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .responsiveData
@@ -340,8 +340,8 @@ extension URLSession {
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
             "User-Agent": "\(productName)/\(productVersion) " +
-                    "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
-                    "Mozilla/5.0 AppleWebKit/605.1.15",
+                          "(\(UIDevice.current.model); CPU \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)) " +
+                          "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .background

@@ -308,7 +308,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                 self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
             }.sorted( by: {
                 $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
-                        $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
+                $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
             } ).last
             let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
             Tracker.shared.event( track: .subject( "appstore", action: "receipt", [

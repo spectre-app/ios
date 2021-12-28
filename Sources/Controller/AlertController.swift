@@ -71,8 +71,8 @@ class AlertController {
         inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
     }
     private lazy var activationConfiguration = LayoutConfiguration( view: self.view ).didSet { [unowned self] _, isActive in
-        self.titleLabel => \.font => (isActive ? Theme.current.font.headline: Theme.current.font.headline)
-        self.messageLabel => \.font => (isActive ? Theme.current.font.subheadline: Theme.current.font.subheadline)
+        self.titleLabel => \.font => (isActive ? Theme.current.font.headline : Theme.current.font.headline)
+        self.messageLabel => \.font => (isActive ? Theme.current.font.subheadline : Theme.current.font.subheadline)
         self.expandChevron.isHidden = isActive || self.detailLabel.text?.isEmpty ?? true
         self.detailLabel.isHidden = !isActive
     }
@@ -107,7 +107,8 @@ class AlertController {
         if let details = self.details {
             log( file: file, line: line, function: function, dso: dso, level: self.level, "%@: %@ [>PII]", [ self.title, self.message ] )
             pii( file: file, line: line, function: function, dso: dso, "> %@", details )
-        } else {
+        }
+        else {
             log( file: file, line: line, function: function, dso: dso, level: self.level, "%@: %@", [ self.title, self.message ] )
         }
 
@@ -229,7 +230,7 @@ public func mperror(title: String, message: CustomStringConvertible? = nil,
                     file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
     let error   = error?.details
     let message = message?.description ?? error?.description
-    let details = [ details?.description, error?.failure != message ? error?.failure: nil, error?.suggestion,
+    let details = [ details?.description, error?.failure != message ? error?.failure : nil, error?.suggestion,
                     error?.underlying.joined( separator: "\n" ), ]
             .compactMap( { $0 } ).joined( separator: "\n" )
 

@@ -30,11 +30,11 @@ class EffectToggleButton: UIView {
                 self.contentView.isSelected = newValue
 
                 UIView.animate( withDuration: .short ) {
-                    self.button.alpha = self.isSelected ? .on: .long
+                    self.button.alpha = self.isSelected ? .on : .long
                     self.checkLabel => \.textColor => Theme.current.color.body.transform { [unowned self] in
-                        $0?.with( alpha: self.isSelected ? .on: .off )
+                        $0?.with( alpha: self.isSelected ? .on : .off )
                     }
-                    self.checkLabel.layer => \.borderColor => (self.isSelected ? Theme.current.color.body: Theme.current.color.mute)
+                    self.checkLabel.layer => \.borderColor => (self.isSelected ? Theme.current.color.body : Theme.current.color.mute)
                 }
             }
         }
@@ -45,7 +45,7 @@ class EffectToggleButton: UIView {
         }
         set {
             self.button.isEnabled = newValue
-            self.tintAdjustmentMode = newValue ? .automatic: .dimmed
+            self.tintAdjustmentMode = newValue ? .automatic : .dimmed
         }
     }
     var image:     UIImage? {

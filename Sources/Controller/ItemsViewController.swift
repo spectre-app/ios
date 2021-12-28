@@ -77,8 +77,10 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
 
         // - Layout
         LayoutConfiguration( view: self.imageSpacer )
-                .constrain { $1.heightAnchor.constraint( equalTo: self.backgroundView.imageView.heightAnchor,
-                                                         multiplier: .long, constant: -40 ) }
+                .constrain {
+                    $1.heightAnchor.constraint( equalTo: self.backgroundView.imageView.heightAnchor,
+                                                multiplier: .long, constant: -40 )
+                }
                 .activate()
         LayoutConfiguration( view: self.itemsView )
                 .constrain( as: .box, margin: true )
@@ -101,17 +103,17 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
             UIView.animate( withDuration: .long, animations: {
                 focusItem.view.backgroundColor = colorOn
             }, completion: {
-                UIView.animate( withDuration: $0 ? .long: .off ) {
+                UIView.animate( withDuration: $0 ? .long : .off ) {
                     focusItem.view.backgroundColor = colorOff
                 }
             } )
         }
 
-        Theme.current.observers.register(observer: self)
+        Theme.current.observers.register( observer: self )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        Theme.current.observers.unregister(observer: self)
+        Theme.current.observers.unregister( observer: self )
 
         super.viewWillDisappear( animated )
     }

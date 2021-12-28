@@ -102,7 +102,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
     class VersionItem: LabelItem<AppConfig> {
         init() {
             super.init( title: "\(productName)", value: { _ in productVersion },
-                        caption: { _ in "Build \(productBuild)\(AppConfig.shared.isDebug ? "D": "") (\(AppConfig.shared.environment))" } )
+                        caption: { _ in "Build \(productBuild)\(AppConfig.shared.isDebug ? "D" : "") (\(AppConfig.shared.environment))" } )
         }
     }
 
@@ -198,7 +198,8 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                         update: {
                             if $1.pattern?.isPremium ?? false, !InAppFeature.premium.isEnabled {
                                 $0.viewController?.show( DetailPremiumViewController(), sender: $0 )
-                            } else {
+                            }
+                            else {
                                 $0.model?.theme = $1.path
                             }
                         },
@@ -209,14 +210,14 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             cell.theme = value
 
             let isPremium = value.pattern?.isPremium ?? false
-            let enabled = !isPremium || InAppFeature.premium.isEnabled
-            cell.premiumLabel.alpha = isPremium ? .on: .off
-            cell.contentView.alpha = enabled ? .on: .short
-            cell.tintAdjustmentMode = enabled ? .automatic: .dimmed
+            let enabled   = !isPremium || InAppFeature.premium.isEnabled
+            cell.premiumLabel.alpha = isPremium ? .on : .off
+            cell.contentView.alpha = enabled ? .on : .short
+            cell.tintAdjustmentMode = enabled ? .automatic : .dimmed
         }
 
         class Cell: EffectCell {
-            let iconView = UIImageView( image: .icon( "brush" ) )
+            let iconView     = UIImageView( image: .icon( "brush" ) )
             let premiumLabel = UILabel()
             override var isSelected: Bool {
                 didSet {

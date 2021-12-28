@@ -82,7 +82,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         ToggleItem( track: .subject( "autofill_setup", action: "settings" ),
-                                    icon: { [unowned self] _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "toggle-on" ): .icon( "toggle-off" ) },
+                                    icon: { [unowned self] _ in (self.autoFillState?.isEnabled ?? false) ? .icon( "toggle-on" ) : .icon( "toggle-off" ) },
                                     value: { [unowned self] _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
                             URL( string: UIApplication.openSettingsURLString ).flatMap { UIApplication.shared.open( $0 ) }
                         } )

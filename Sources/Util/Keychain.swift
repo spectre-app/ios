@@ -15,12 +15,14 @@ import LocalAuthentication
 
 public class Keychain {
     private static func keyQuery(for userName: String, algorithm: SpectreAlgorithm, context: LAContext?) throws
-                    -> [CFString: Any] {
+            -> [CFString: Any] {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
                 kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error ), error == nil
-        else { throw AppError.issue( error?.takeRetainedValue() as Error?, title: "Keychain unavailable",
-                                     details: "Keychain access control could not be created." ) }
+        else {
+            throw AppError.issue( error?.takeRetainedValue() as Error?, title: "Keychain unavailable",
+                                  details: "Keychain access control could not be created." )
+        }
 
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
@@ -36,8 +38,10 @@ public class Keychain {
         if let context = context {
             var error: NSError?
             guard context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: &error ), error == nil
-            else { throw AppError.issue( error, title: "Biometrics unavailable",
-                                         details: "Biometrics authentication is not available at this time." ) }
+            else {
+                throw AppError.issue( error, title: "Biometrics unavailable",
+                                      details: "Biometrics authentication is not available at this time." )
+            }
 
             query[kSecUseAuthenticationContext] = context
         }
@@ -46,7 +50,7 @@ public class Keychain {
     }
 
     public static func keyStatus(for userName: String, algorithm: SpectreAlgorithm, context: LAContext?)
-                    -> (present: Bool, available: Bool, status: OSStatus) {
+            -> (present: Bool, available: Bool, status: OSStatus) {
         guard var query = try? self.keyQuery( for: userName, algorithm: algorithm, context: context )
         else {
             return (present: false, available: false, status: errSecBadReq)
@@ -66,7 +70,7 @@ public class Keychain {
 
     @discardableResult
     public static func deleteKey(for userName: String, algorithm: SpectreAlgorithm)
-                    -> Promise<Void> {
+            -> Promise<Void> {
         DispatchQueue.api.promise {
             let query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
 
@@ -77,7 +81,7 @@ public class Keychain {
     }
 
     public static func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext)
-                    -> Promise<UnsafePointer<SpectreUserKey>> {
+            -> Promise<UnsafePointer<SpectreUserKey>> {
         let spinner = AlertController( title: "Biometrics Authentication",
                                        message: "Please authenticate to access user key for:\n\(userName)",
                                        content: UIActivityIndicatorView( style: .medium ) )
@@ -105,7 +109,7 @@ public class Keychain {
 
     @discardableResult
     public static func saveKey(for userName: String, algorithm: SpectreAlgorithm, keyFactory: KeyFactory, context: LAContext)
-                    -> Promise<Void> {
+            -> Promise<Void> {
         keyFactory.newKey( for: algorithm ).promise( on: .api ) { userKey in
             defer { userKey.deallocate() }
 

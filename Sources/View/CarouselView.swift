@@ -21,7 +21,7 @@ class CarouselView: UICollectionView {
         get {
             let currentOffset = self.contentOffset.x
             let maximumOffset = max( 0, self.contentSize.width - self.bounds.size.width )
-            let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset: 0
+            let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset : 0
             return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
         }
         set {
@@ -45,7 +45,7 @@ class CarouselView: UICollectionView {
 
     override var intrinsicContentSize: CGSize {
         CGSize( width: UIView.noIntrinsicMetric,
-                height: self.isHidden ? UIView.noIntrinsicMetric: self.collectionViewLayout.collectionViewContentSize.height )
+                height: self.isHidden ? UIView.noIntrinsicMetric : self.collectionViewLayout.collectionViewContentSize.height )
     }
 
     // MARK: - Life
@@ -110,8 +110,8 @@ class CarouselView: UICollectionView {
             super.prepare()
 
             self.bounds = self.collectionView?.bounds ?? .null
-            self.count = self.collectionView?.numberOfSections == 0 ? 0: self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
-            let scan = self.bounds.isEmpty ? 0: self.bounds.origin.x / self.bounds.size.width
+            self.count = self.collectionView?.numberOfSections == 0 ? 0 : self.collectionView?.numberOfItems( inSection: 0 ) ?? 0
+            let scan = self.bounds.isEmpty ? 0 : self.bounds.origin.x / self.bounds.size.width
 
             // Align attributes keys when indexPaths change.
             let attributes = self.attributes.values.filter { $0.indexPath.item < self.count }
@@ -149,7 +149,7 @@ class CarouselView: UICollectionView {
 
                 attrs.size = self.bounds.size
                 attrs.center = self.bounds.center
-                attrs.zIndex = itemDistance == 0 ? 1: -1
+                attrs.zIndex = itemDistance == 0 ? 1 : -1
                 attrs.alpha = alpha
                 attrs.isHidden = alpha == .off
                 attrs.transform = CGAffineTransform( translationX: offset, y: 0 ).scaledBy( x: scale, y: scale )

@@ -138,7 +138,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     private var inactiveProperties = [ String: Any ]()
 
     public var description: String {
-        "\(self.target)[\(self.activated ? "on": "off")]"
+        "\(self.target)[\(self.activated ? "on" : "off")]"
     }
 
     public var debugDescription: String {
@@ -239,7 +239,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             allAnchors.filter { toAnchors.contains( $0 ) }.flatMap { anchor -> [NSLayoutConstraint] in
                 switch anchor {
                     case .top:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.topAnchor.constraint( equalTo: target.topAnchor ) ]
                         }
                         else {
@@ -247,7 +247,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .leading:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.leadingAnchor.constraint( equalTo: target.leadingAnchor ) ]
                         }
                         else {
@@ -255,7 +255,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .trailing:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.trailingAnchor.constraint( equalTo: target.trailingAnchor ) ]
                         }
                         else {
@@ -263,7 +263,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .bottom:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.bottomAnchor.constraint( equalTo: target.bottomAnchor ) ]
                         }
                         else {
@@ -271,7 +271,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .left:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.leftAnchor.constraint( equalTo: target.leftAnchor ) ]
                         }
                         else {
@@ -279,7 +279,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .right:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.rightAnchor.constraint( equalTo: target.rightAnchor ) ]
                         }
                         else {
@@ -287,7 +287,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .width:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.widthAnchor.constraint( equalTo: target.widthAnchor ) ]
                         }
                         else {
@@ -295,7 +295,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .height:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [ guide.heightAnchor.constraint( equalTo: target.heightAnchor ) ]
                         }
                         else {
@@ -303,7 +303,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .centerH:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [
                                 guide.leadingAnchor.constraint( lessThanOrEqualTo: target.leadingAnchor ),
                                 guide.centerXAnchor.constraint( equalTo: target.centerXAnchor ),
@@ -319,7 +319,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         }
 
                     case .centerV:
-                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide: nil) {
+                        if let guide = guide ?? (margin ? (view ?? superview).layoutMarginsGuide : nil) {
                             return [
                                 guide.topAnchor.constraint( lessThanOrEqualTo: target.topAnchor ),
                                 guide.centerYAnchor.constraint( equalTo: target.centerYAnchor ),
@@ -350,7 +350,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
     @discardableResult
     func compressionResistance(horizontal: UILayoutPriority = UILayoutPriority( -1 ), vertical: UILayoutPriority = UILayoutPriority( -1 ))
-                    -> Self {
+            -> Self {
         guard let targetView = self.target.view
         else { preconditionFailure( "compression resistance is only supported for view-based LayoutConfigurations" ) }
 
@@ -439,7 +439,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     //! Set a given value for the target at the given key, when the configuration becomes active.  If reverses, restore the old value when deactivated.
     @discardableResult
     func set<V: Equatable>(_ value: @escaping @autoclosure () -> V, keyPath: ReferenceWritableKeyPath<T, V>, reverses: Bool = false)
-                    -> Self {
+            -> Self {
         let property = Property( value: value, keyPath: keyPath, reversable: reverses )
         if self.isActive {
             property.update( self.target.view )

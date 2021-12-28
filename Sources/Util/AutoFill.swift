@@ -158,7 +158,7 @@ final class AutoFill {
             if let variants = self.variants {
                 identities.append( contentsOf: variants.map {
                     ASPasswordCredentialIdentity(
-                            serviceIdentifier: ASCredentialServiceIdentifier( identifier: $0, type: $0.contains( "://" ) ? .URL: .domain ),
+                            serviceIdentifier: ASCredentialServiceIdentifier( identifier: $0, type: $0.contains( "://" ) ? .URL : .domain ),
                             user: self.userName, recordIdentifier: self.userName )
                 } )
             }

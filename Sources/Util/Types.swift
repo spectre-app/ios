@@ -84,7 +84,7 @@ extension SpectreCounter: Strideable, CustomStringConvertible {
 extension SpectreIdenticon: Equatable {
     public static func == (lhs: SpectreIdenticon, rhs: SpectreIdenticon) -> Bool {
         lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
-                lhs.accessory == rhs.accessory && lhs.color == rhs.color
+        lhs.accessory == rhs.accessory && lhs.color == rhs.color
     }
 
     public var isUnset: Bool {
@@ -92,12 +92,11 @@ extension SpectreIdenticon: Equatable {
     }
 
     public func encoded() -> String? {
-        self.isUnset ? nil:
-                .valid( spectre_identicon_encode( self ), consume: true )
+        self.isUnset ? nil : .valid( spectre_identicon_encode( self ), consume: true )
     }
 
     public func text() -> String? {
-        self.isUnset ? nil: [
+        self.isUnset ? nil : [
             String( cString: self.leftArm ),
             String( cString: self.body ),
             String( cString: self.rightArm ),
@@ -246,7 +245,7 @@ extension SpectreResultType: CustomStringConvertible, CaseIterable {
     }
 
     public var nonEmpty: Self? {
-        self == .none ? nil: self
+        self == .none ? nil : self
     }
 
     func `in`(class: SpectreResultClass) -> Bool {

@@ -23,7 +23,7 @@ class ConstraintResolver: CustomDebugStringConvertible {
 
         return self.constraints.reduce( "" ) { description, constraint in
             if self.axis == nil || constraint.firstAttribute.on( axis: self.axis! ) || constraint.secondAttribute.on( axis: self.axis! ) {
-                return (description.isEmpty ? "": "\(description)\n") + String( reflecting: constraint )
+                return (description.isEmpty ? "" : "\(description)\n") + String( reflecting: constraint )
             }
 
             return description

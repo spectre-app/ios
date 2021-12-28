@@ -82,7 +82,7 @@ extension NSObject {
 
             for ivar in ivars {
                 if let iname = String.valid( ivar_getName( ivar ) ) {
-                    let ival = String.valid( ivar_getTypeEncoding( ivar ) ) == "@" ? object_getIvar( self, ivar ) as AnyObject?: nil
+                    let ival = String.valid( ivar_getTypeEncoding( ivar ) ) == "@" ? object_getIvar( self, ivar ) as AnyObject? : nil
                     description += " - \(iname): \(String( reflecting: ival ))\n"
                 }
             }

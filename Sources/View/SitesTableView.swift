@@ -147,7 +147,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         // Reload items that already exist but have changed.
         let updatedItems = sites.itemIdentifiers.joinedIntersection( self.sitesDataSource.snapshot()?.itemIdentifiers ?? [] )
-                                .compactMap { new, old in new.isEqual( to: old ) ? nil: new }
+                                .compactMap { new, old in new.isEqual( to: old ) ? nil : new }
 
         // Update the sites table to show the newly filtered sites
         let selectedItems = self.sitesDataSource.selectedItems
@@ -186,25 +186,24 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     #if TARGET_APP
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint)
-                    -> UIContextMenuConfiguration? {
+            -> UIContextMenuConfiguration? {
         (self.sitesDataSource.item( for: indexPath )?.site).flatMap { site in
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in SitePreviewController( site: site ) },
                     actionProvider: { [unowned self] _, _ in
-                        UIMenu( title: site.siteName, children: [
-                            UIAction( title: "Delete", image: .icon( "trash-can" ),
-                                      identifier: UIAction.Identifier( "delete" ), attributes: .destructive ) { _ in
-                                site.user.sites.removeAll { $0 === site }
-                            },
-                        ] + self.siteActions.filter { siteAction in
+                        UIMenu( title: site.siteName, children:
+                        .init( arrayLiteral: UIAction( title: "Delete", image: .icon( "trash-can" ),
+                                                       identifier: UIAction.Identifier( "delete" ), attributes: .destructive,
+                                                       handler: { _ in site.user.sites.removeAll { $0 === site } } ) )
+                        + self.siteActions.filter { siteAction in
                             if !siteAction.appearance.contains( .menu ) {
                                 // Not a menu action.
                                 return false
                             }
-                            if siteAction.appearance.contains(where: {
+                            if siteAction.appearance.contains( where: {
                                 if case let .feature(feature) = $0 { return !feature.isEnabled }
                                 return false
-                            }) {
+                            } ) {
                                 // Required feature is missing.
                                 return false
                             }
@@ -226,7 +225,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     }
 
     func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration)
-                    -> UITargetedPreview? {
+            -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
@@ -238,7 +237,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     }
 
     func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration)
-                    -> UITargetedPreview? {
+            -> UITargetedPreview? {
         guard let indexPath = configuration.indexPath, let view = self.cellForRow( at: indexPath )
         else { return nil }
 
@@ -337,7 +336,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let isPreferred: Bool
 
         var id: String {
-            self.site.isDetached ? "": self.site.siteName
+            self.site.isDetached ? "" : self.site.siteName
         }
 
         init(site: Site, query: String = "", preferred: Bool = false) {
@@ -427,14 +426,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         private lazy var modeStack    = UIStackView( arrangedSubviews: [ self.maskButton, self.purposeButton ] )
         private lazy var contentStack = UIStackView( arrangedSubviews: [ self.selectionView, self.resultLabel, self.nameLabel ] )
 
-        private var selectionConfiguration: LayoutConfiguration<SiteCell>!
+        private var selectionConfiguration:   LayoutConfiguration<SiteCell>!
         private var primaryGestureRecognizer: UIGestureRecognizer? {
             didSet {
                 if let oldValue = oldValue {
-                    self.removeGestureRecognizer(oldValue)
+                    self.removeGestureRecognizer( oldValue )
                 }
                 if let primaryGestureRecognizer = self.primaryGestureRecognizer {
-                    self.addGestureRecognizer(primaryGestureRecognizer)
+                    self.addGestureRecognizer( primaryGestureRecognizer )
                 }
             }
         }
@@ -509,19 +508,19 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 else { return }
 
                 self.sitesView?.siteActions.filter { siteAction in
-                        if !siteAction.appearance.contains( .mode ) {
-                            // Not a mode action.
-                            return false
-                        }
-                        if siteAction.appearance.contains(where: {
-                            if case let .feature(feature) = $0 { return !feature.isEnabled }
-                            return false
-                        }) {
-                            // Required feature is missing.
-                            return false
-                        }
-                        return true
-                    }.forEach { siteAction in
+                    if !siteAction.appearance.contains( .mode ) {
+                        // Not a mode action.
+                        return false
+                    }
+                    if siteAction.appearance.contains( where: {
+                        if case let .feature(feature) = $0 { return !feature.isEnabled }
+                        return false
+                    } ) {
+                        // Required feature is missing.
+                        return false
+                    }
+                    return true
+                }.forEach { siteAction in
                     if let tracking = siteAction.tracking {
                         Tracker.shared.event( track: tracking.with( parameters: [
                             "purpose": self.purpose,
@@ -592,7 +591,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     .apply( LayoutConfiguration( view: self.contentStack ) { active, _ in
                         active.constrain {
                             $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
-                                           .with( priority: .defaultHigh + 10 )
+                              .with( priority: .defaultHigh + 10 )
                         }
                     } )
                     .apply( LayoutConfiguration( view: self.separatorView ) { active, _ in
@@ -638,10 +637,10 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     // Not a menu action.
                     return false
                 }
-                if siteAction.appearance.contains(where: {
+                if siteAction.appearance.contains( where: {
                     if case let .feature(feature) = $0 { return !feature.isEnabled }
                     return false
-                }) {
+                } ) {
                     // Required feature is missing.
                     return false
                 }
@@ -658,13 +657,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     self.primaryGestureRecognizer = UITapGestureRecognizer { [unowned self] _ in
                         if self.newButton.isUserInteractionEnabled {
                             self.newButton.activate()
-                        } else {
+                        }
+                        else {
                             actionButton.activate()
                         }
                     }
                 }
                 self.primaryGestureRecognizer?.isEnabled = self.isSelected
-                self.actionStack.addArrangedSubview(actionButton)
+                self.actionStack.addArrangedSubview( actionButton )
             }
         }
 
@@ -739,7 +739,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             guard let self = self
             else { return }
 
-            self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow: Theme.current.color.backdrop)
+            self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow : Theme.current.color.backdrop)
             if AppConfig.shared.colorfulSites, let siteColor = self.site?.preview.color {
                 self.separatorView => \.backgroundColor => Theme.current.color.tint.transform { $0?.with( hue: siteColor.hue ) }
                 self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
@@ -766,7 +766,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 } )
             }
             #else
-            self.backgroundImage.alpha = self.isSelected ? .on: .off
+            self.backgroundImage.alpha = self.isSelected ? .on : .off
             #endif
 
             let isDetached = self.site?.isDetached ?? false
@@ -780,7 +780,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 self.nameLabel.attributedText = nil
             }
 
-            self.maskButton.image = .icon( self.unmasked ? "eye": "eye-slash", invert: true )
+            self.maskButton.image = .icon( self.unmasked ? "eye" : "eye-slash", invert: true )
             if case .identification = self.purpose, InAppFeature.logins.isEnabled {
                 self.purposeButton.image = .icon( "id-card-clip" )
             }
@@ -794,23 +794,23 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self.maskButton.isSelected = self.unmasked
             self.maskButton.isUserInteractionEnabled = (self.site?.user.maskPasswords ?? false)
-            self.maskButton.alpha = self.maskButton.isUserInteractionEnabled ? .on: .off
-            self.purposeButton.alpha = self.purposeButton.isUserInteractionEnabled ? .on: .off
+            self.maskButton.alpha = self.maskButton.isUserInteractionEnabled ? .on : .off
+            self.purposeButton.alpha = self.purposeButton.isUserInteractionEnabled ? .on : .off
             self.modeStack.isUserInteractionEnabled = self.isSelected
-            self.modeStack.alpha = self.modeStack.isUserInteractionEnabled ? .on: .off
+            self.modeStack.alpha = self.modeStack.isUserInteractionEnabled ? .on : .off
             self.actionStack.isUserInteractionEnabled = self.isSelected && !isDetached
-            self.actionStack.alpha = self.actionStack.isUserInteractionEnabled ? .on: .off
+            self.actionStack.alpha = self.actionStack.isUserInteractionEnabled ? .on : .off
             self.newButton.isUserInteractionEnabled = self.isSelected && isDetached
-            self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on: .off
+            self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on : .off
             self.selectionConfiguration.isActive = self.isSelected
             self.primaryGestureRecognizer?.isEnabled = self.isSelected
 
             self.resultLabel.isSecureTextEntry =
                     (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
             self.resultLabel.isUserInteractionEnabled = !self.resultLabel.isSecureTextEntry
-            self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on: .off
+            self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on : .off
 
-            self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3: Theme.current.font.subheadline)
+            self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3 : Theme.current.font.subheadline)
 
             self.site?.result( keyPurpose: self.purpose )?.token.then( on: .main ) {
                 do {

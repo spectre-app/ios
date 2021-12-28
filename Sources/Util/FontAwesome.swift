@@ -45,14 +45,14 @@ private let fontAwesomeUnicode: [String: String?] =
         }.flatMap {
             try? JSONDecoder().decode( [ String: String ].self, from: $0 ).mapValues {
                 var unicode: UInt64 = 0
-                return Scanner( string: $0 ).scanHexInt64( &unicode ) ?
-                        Unicode.Scalar( UInt32( unicode ) ).flatMap { String( Character( $0 ) ) } : nil
+                return Scanner( string: $0 ).scanHexInt64( &unicode )
+                       ? Unicode.Scalar( UInt32( unicode ) ).flatMap { String( Character( $0 ) ) } : nil
             }
         } ?? .init()
 
 extension NSAttributedString {
     public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false)
-                    -> NSAttributedString? {
+            -> NSAttributedString? {
         guard let icon = icon.flatMap( { fontAwesomeUnicode[$0] } ) ?? icon,
               let style = style ?? {
                   let glyphs = UnsafeMutablePointer<CGGlyph>.allocate( capacity: icon.utf16.count )
@@ -71,11 +71,11 @@ extension NSAttributedString {
             let tone1 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe01 ) )! ] ) )
             let tone2 = String( String.UnicodeScalarView( [ icon, Unicode.Scalar( Int( 0xfe02 ) )! ] ) )
             attributedIcon.append( NSAttributedString( string: tone2, attributes: [
-                .foregroundColor: UIColor.black.with( alpha: invert ? .on: .short ),
+                .foregroundColor: UIColor.black.with( alpha: invert ? .on : .short ),
                 .font: font, .kern: -1000,
             ] ) )
             attributedIcon.append( NSAttributedString( string: tone1, attributes: [
-                .foregroundColor: UIColor.black.with( alpha: invert ? .short: .on ),
+                .foregroundColor: UIColor.black.with( alpha: invert ? .short : .on ),
                 .font: font,
             ] ) )
         }
