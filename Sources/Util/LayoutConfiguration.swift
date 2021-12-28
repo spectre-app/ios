@@ -638,8 +638,6 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         case display
         //! Request a layout. Useful if it affects custom layout code.
         case layout
-        //! Request an update. Useful if it affects table or collection cell sizing.
-        case update
 
         func perform(in targetView: UIView) {
             switch self {
@@ -648,17 +646,6 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
 
                 case .layout:
                     targetView.setNeedsLayout()
-
-                case .update:
-                    var targetView: UIView? = targetView
-                    while let needle = targetView {
-                        if needle is UITableView || needle is UICollectionView {
-                            break
-                        }
-                        targetView = needle.superview
-                    }
-                    (targetView as? UITableView)?.performBatchUpdates( {} )
-                    (targetView as? UICollectionView)?.performBatchUpdates( {} )
             }
         }
     }

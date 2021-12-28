@@ -13,6 +13,10 @@
 import Foundation
 
 extension Array {
+    subscript(maybe index: Index) -> Element? {
+        index < self.underestimatedCount || index < self.count ? self[index]: nil
+    }
+
     func reordered(first: ((Element) -> Bool)? = nil, last: ((Element) -> Bool)? = nil) -> [Element] {
         var firstElements = [ Element ](), middleElements = [ Element ](), lastElements = [ Element ]()
 
@@ -29,6 +33,21 @@ extension Array {
         }
 
         return firstElements + middleElements + lastElements
+    }
+}
+
+extension Collection {
+    func joinedIntersection<C>(_ other: C) -> [(Element, Element)]
+            where Element: Equatable, Element == C.Element, C: Collection {
+        (self.count < other.count) ? self.compactMap { lhs in
+            guard let rhs = other.first( where: { rhs in lhs == rhs } )
+            else { return nil }
+            return (lhs, rhs)
+        }: other.compactMap { rhs in
+            guard let lhs = self.first( where: { lhs in lhs == rhs } )
+            else { return nil }
+            return (lhs, rhs)
+        }
     }
 }
 
@@ -116,6 +135,12 @@ extension Decimal {
         var _self = self, result = Decimal()
         NSDecimalRound( &result, &_self, scale, roundingMode )
         return result
+    }
+}
+
+extension Dictionary where Key == Int {
+    init<S: Sequence>(enumerated: S) where S.Element == Value {
+        self.init( uniqueKeysWithValues: enumerated.enumerated().map { ($0.offset, $0.element) } )
     }
 }
 

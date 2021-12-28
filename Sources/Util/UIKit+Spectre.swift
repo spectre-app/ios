@@ -287,50 +287,53 @@ extension UICollectionView {
         self.collectionViewLayout.register( nib, forDecorationViewOfKind: kind )
     }
 
-    @discardableResult
     public func requestSelection(item: Int?, inSection section: Int = 0,
-                                 animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
-                    -> Bool {
-        self.requestSelection( at: item.flatMap { IndexPath( item: $0, section: section ) },
-                               animated: animated, scrollPosition: scrollPosition )
+                                 delegation: Bool = true, animated: Bool = UIView.areAnimationsEnabled,
+                                 scrollPosition: ScrollPosition = [ .centeredHorizontally, .centeredVertically ]) {
+        self.requestSelection( at: item.flatMap { [ IndexPath( item: $0, section: section ) ] } ?? [],
+                               delegation: delegation, animated: animated, scrollPosition: scrollPosition )
     }
 
-    @discardableResult
-    public func requestSelection(at selectPath: IndexPath?,
-                                 animated: Bool = UIView.areAnimationsEnabled, scrollPosition: ScrollPosition = .centeredVertically)
-                    -> Bool {
+    public func requestSelection(at requestedPaths: [IndexPath],
+                                 delegation: Bool = true, animated: Bool = UIView.areAnimationsEnabled,
+                                 scrollPosition: ScrollPosition = [ .centeredHorizontally, .centeredVertically ]) {
         guard !self.bounds.isEmpty
-        else { return false }
+        else { return }
 
-        guard self.indexPathsForSelectedItems != selectPath.flatMap( { [ $0 ] } )
-        else {
-            if let selectPath = selectPath,
-               selectPath.section < self.numberOfSections, selectPath.item < self.numberOfItems( inSection: 0 ) {
-                self.scrollToItem( at: selectPath, at: .centeredHorizontally, animated: animated )
+        let selectionPaths = Set(
+                // Select all requested items that are allowed to be selected.
+                requestedPaths.filter {
+                    $0.section < self.numberOfSections && $0.item < self.numberOfItems( inSection: $0.section ) &&
+                            !delegation || self.delegate?.collectionView?( self, shouldSelectItemAt: $0 ) ?? true
+                }
+        )
+                // And all currently selected items that are not allowed to be deselected.
+                .union( (self.indexPathsForSelectedItems ?? []).filter {
+                    !(!delegation || self.delegate?.collectionView?( self, shouldDeselectItemAt: $0 ) ?? true)
+                } )
+
+        // Deselect currently selected items that are no longer selected.
+        for itemPath in Set( self.indexPathsForSelectedItems ?? [] ).subtracting( selectionPaths ) {
+            self.deselectItem( at: itemPath, animated: animated )
+            if delegation, let delegate = self.delegate {
+                delegate.collectionView?( self, didDeselectItemAt: itemPath )
             }
-            return true
         }
 
-        let selectedPath = self.indexPathsForSelectedItems?.first
-        if let selectPath = selectPath, selectPath == selectedPath ||
-                !(self.delegate?.collectionView?( self, shouldSelectItemAt: selectPath ) ?? true) {
-            return false
+        if (self.indexPathsForSelectedItems ?? []).elementsEqual( selectionPaths ),
+           let firstItemPath = self.indexPathsForSelectedItems?.first {
+            // Scroll to already selected items.
+            self.scrollToItem( at: firstItemPath, at: scrollPosition, animated: animated )
         }
-        if let selectedPath = selectedPath, selectedPath != selectPath &&
-                !(self.delegate?.collectionView?( self, shouldDeselectItemAt: selectedPath ) ?? true) {
-            return false
+        else {
+            // Select newly selected items.
+            for itemPath in selectionPaths.subtracting( self.indexPathsForSelectedItems ?? [] ) {
+                self.selectItem( at: itemPath, animated: animated, scrollPosition: scrollPosition )
+                if delegation, let delegate = self.delegate {
+                    delegate.collectionView?( self, didSelectItemAt: itemPath )
+                }
+            }
         }
-
-        self.selectItem( at: selectPath, animated: animated, scrollPosition: scrollPosition )
-
-        if let selectedPath = selectedPath {
-            self.delegate?.collectionView?( self, didDeselectItemAt: selectedPath )
-        }
-        if let selectPath = selectPath {
-            self.delegate?.collectionView?( self, didSelectItemAt: selectPath )
-        }
-
-        return true
     }
 }
 
@@ -603,6 +606,57 @@ extension UITableView {
         }
         else {
             self.register( type, forCellReuseIdentifier: NSStringFromClass( type ) )
+        }
+    }
+
+    public func requestSelection(row: Int?, inSection section: Int = 0,
+                                 delegation: Bool = true, animated: Bool = UIView.areAnimationsEnabled,
+                                 scrollPosition: ScrollPosition = .middle) {
+        self.requestSelection( at: row.flatMap { [ IndexPath( item: $0, section: section ) ] } ?? [],
+                               delegation: delegation, animated: animated, scrollPosition: scrollPosition )
+    }
+
+    public func requestSelection(at requestedPaths: [IndexPath],
+                                 delegation: Bool = true, animated: Bool = UIView.areAnimationsEnabled,
+                                 scrollPosition: ScrollPosition = .middle) {
+        guard !self.bounds.isEmpty
+        else { return }
+
+        let selectionPaths = Set<IndexPath>(
+                // Select all requested items that are allowed to be selected.
+                requestedPaths.compactMap {
+                    guard $0.section < self.numberOfSections && $0.item < self.numberOfRows( inSection: $0.section )
+                    else { return nil }
+                    guard delegation, let delegate = self.delegate,
+                          delegate.responds( to: #selector( UITableViewDelegate.tableView(_:willSelectRowAt:) ) )
+                    else { return $0 }
+                    return delegate.tableView?( self, willSelectRowAt: $0 )
+                }
+        )
+                // And all currently selected items that are not allowed to be deselected.
+                .union( (self.indexPathsForSelectedRows ?? []).compactMap {
+                    guard delegation, let delegate = self.delegate,
+                          delegate.responds( to: #selector( UITableViewDelegate.tableView(_:willDeselectRowAt:) ) )
+                    else { return $0 }
+                    return delegate.tableView?( self, willDeselectRowAt: $0 )
+                } )
+
+        // Deselect currently selected items that are no longer selected.
+        for itemPath in Set( self.indexPathsForSelectedRows ?? [] ).subtracting( selectionPaths ) {
+            self.deselectRow( at: itemPath, animated: animated )
+            self.delegate?.tableView?( self, didDeselectRowAt: itemPath )
+        }
+
+        if (self.indexPathsForSelectedRows ?? []).elementsEqual( selectionPaths ) {
+            // Scroll to already selected items.
+            self.scrollToNearestSelectedRow( at: scrollPosition, animated: animated )
+        }
+        else {
+            // Select newly selected items.
+            for itemPath in selectionPaths.subtracting( self.indexPathsForSelectedRows ?? [] ) {
+                self.selectRow( at: itemPath, animated: animated, scrollPosition: scrollPosition )
+                self.delegate?.tableView?( self, didSelectRowAt: itemPath )
+            }
         }
     }
 }

@@ -17,14 +17,19 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
 
     // MARK: - MarshalObserver
 
-    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
-        [ [ userFiles.first( where: { $0.autofill && $0.userName == AutoFillModel.shared.context.credentialIdentity?.user } ) ] ]
+    override func items(for userFiles: [Marshal.UserFile]) -> [UserItem] {
+        guard let credentialUser = userFiles.first( where: {
+            $0.autofill && $0.userName == AutoFillModel.shared.context.credentialIdentity?.user
+        } )
+        else { return super.items( for: userFiles ) }
+
+        return [ .knownUser( userFile: credentialUser ) ]
     }
 
     override func didChange(userFiles: [Marshal.UserFile]) {
         super.didChange( userFiles: userFiles )
 
-        if self.usersSource.isEmpty {
+        if self.usersSource?.isEmpty ?? false {
             self.extensionContext?.cancelRequest( withError: ASExtensionError( .failed, "Expected a credential identity." ) )
         }
     }

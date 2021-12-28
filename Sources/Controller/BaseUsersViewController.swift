@@ -13,16 +13,11 @@
 import UIKit
 import LocalAuthentication
 
-extension Optional: Identifiable where Wrapped == Marshal.UserFile {
-    var id: String {
-        self.flatMap { $0.id } ?? ""
-    }
-}
-
 class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, MarshalObserver {
-    internal lazy var usersSource = UsersSource( viewController: self )
-    private var userEvent: Tracker.TimedEvent?
+    private var userEvent:    Tracker.TimedEvent?
+    private var scrolledUser: UserItem?
 
+    internal var usersSource: DataSource<NoSections, UserItem>?
     internal let usersCarousel = CarouselView()
     internal let detailsHost   = DetailHostController()
     internal var userActions   = [ UserAction ]()
@@ -36,12 +31,19 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.usersSource = .init( collectionView: self.usersCarousel ) { collectionView, indexPath, item in
+            using( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) { cell in
+                UIView.performWithoutAnimation {
+                    cell.state = (userItem: item, userActions: self.userActions, viewController: self)
+                }
+            }
+        }
+
         // - View
         self.view.layoutMargins = .border( 8 )
 
         self.usersCarousel.register( UserCell.self )
         self.usersCarousel.delegate = self
-        self.usersCarousel.dataSource = self.usersSource
         self.usersCarousel.backgroundColor = .clear
         self.usersCarousel.indicatorStyle = .white
         self.usersCarousel.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] recognizer in
@@ -94,8 +96,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: - Interface
 
-    func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
-        [ userFiles.sorted() ]
+    func items(for userFiles: [Marshal.UserFile]) -> [UserItem] {
+        userFiles.sorted().map { .knownUser( userFile: $0 ) }
     }
 
     func login(user: User) {
@@ -137,38 +139,66 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = false }
     }
 
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate, scrollView == self.usersCarousel {
+            self.didEndScrolling()
+        }
+    }
+
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        if scrollView == self.usersCarousel {
+            self.didEndScrolling()
+        }
+    }
+
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        if scrollView == self.usersCarousel {
+            self.didEndScrolling()
+        }
+    }
+
     // MARK: - MarshalObserver
 
     func didChange(userFiles: [Marshal.UserFile]) {
-        let sections = self.sections( for: userFiles )
-
-        DispatchQueue.main.perform {
-            let scrolledUser = self.usersSource.element( item: self.usersCarousel.scrolledItem )
-            self.usersSource.update( sections ) { _ in
-                self.usersCarousel.scrolledItem = self.usersSource.indexPath( where: { $0?.id == scrolledUser?.id } )?.item ?? 0
-                self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = self.usersCarousel.selectedItem != nil }
+        let sections = self.items( for: userFiles )
+        self.usersSource?.apply( [ .items: sections ] ) {
+            if !(self.scrolledUser.flatMap( { self.usersSource?.snapshot()?.itemIdentifiers.contains( $0 ) } ) ?? false) {
+                self.scrolledUser = self.usersSource?.snapshot()?.itemIdentifiers.first
             }
+            self.usersCarousel.scrolledItem = self.scrolledUser.flatMap { self.usersSource?.snapshot()?.indexOfItem( $0 ) } ?? 0
+            self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = self.usersCarousel.selectedItem != nil }
         }
+    }
+
+    // MARK: - Private
+
+    private func didEndScrolling() {
+        self.scrolledUser = self.usersSource?.snapshot()?.itemIdentifiers[maybe: self.usersCarousel.scrolledItem]
     }
 
     // MARK: - Types
 
-    class UsersSource: DataSource<Marshal.UserFile?> {
-        unowned let viewController: BaseUsersViewController
+    enum UserItem: Hashable {
+        case knownUser(userFile: Marshal.UserFile)
+        case newUser
 
-        init(viewController: BaseUsersViewController) {
-            self.viewController = viewController
-            super.init( collectionView: viewController.usersCarousel )
+        var file: Marshal.UserFile? {
+            switch self {
+                case .knownUser(userFile: let userFile):
+                    return userFile
+                case .newUser:
+                    return nil
+            }
         }
 
-        override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            using( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) { cell in
-                UIView.performWithoutAnimation {
-                    cell.state = (userFile: self.element( at: indexPath ) ?? nil,
-                                  userActions: self.viewController.userActions,
-                                  viewController: self.viewController)
-                }
-            }
+        // Hashable
+
+        static func == (lhs: UserItem, rhs: UserItem) -> Bool {
+            lhs.file?.userName == rhs.file?.userName
+        }
+
+        func hash(into hasher: inout Hasher) {
+            self.file.flatMap { hasher.combine( $0.userName ) }
         }
     }
 
@@ -181,12 +211,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         public override var isSelected: Bool {
             didSet {
                 if self.isSelected {
-                    if self.userFile == nil {
+                    if case .newUser = self.userItem {
                         self.avatar = User.Avatar.allCases.randomElement()
                     }
                 }
                 else {
-                    if self.userFile == nil {
+                    if case .newUser = self.userItem {
                         self.avatar = nil
                     }
                     self.nameField.text = nil
@@ -202,21 +232,21 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
         internal weak var userEvent: Tracker.TimedEvent?
-        internal var state: (userFile: Marshal.UserFile?, userActions: [UserAction], viewController: BaseUsersViewController)! {
+        internal var state: (userItem: UserItem, userActions: [UserAction], viewController: BaseUsersViewController)! {
             didSet {
-                self.userFile = self.state.userFile
+                self.userItem = self.state.userItem
                 self.userActions = self.state.userActions
                 self.viewController = self.state.viewController
                 self.updateTask.request( now: true )
             }
         }
 
-        private var userFile: Marshal.UserFile? {
+        private var userItem: UserItem = .newUser {
             didSet {
-                if self.userFile != oldValue {
-                    self.secretField.userName = self.userFile?.userName
-                    self.secretField.identicon = self.userFile?.identicon ?? SpectreIdenticonUnset
-                    self.avatar = self.userFile?.avatar
+                if self.userItem != oldValue {
+                    self.secretField.userName = self.userItem.file?.userName
+                    self.secretField.identicon = self.userItem.file?.identicon ?? SpectreIdenticonUnset
+                    self.avatar = self.userItem.file?.avatar
                 }
             }
         }
@@ -227,7 +257,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     self.actionsStack.addArrangedSubview(
                             EffectButton( track: action.tracking, image: .icon( action.icon ), border: 0, background: false ) {
                                 [unowned self] _ in
-                                if let userFile = self.userFile {
+                                if case .knownUser(let userFile) = self.userItem {
                                     action.action( userFile )
                                 }
                             } )
@@ -314,16 +344,17 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.placeholder = "Your personal secret"
             self.secretField.authenticater = { keyFactory in
                 let secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
-                return (self.userFile?.authenticate( using: keyFactory ) ??
-                                User( userName: keyFactory.userName ).login( using: keyFactory )).then {
-                    secretEvent.end(
-                            [ "result": $0.name,
-                              "type": "secret",
-                              "length": keyFactory.metadata.length,
-                              "entropy": keyFactory.metadata.entropy,
-                              "error": $0.error
-                            ] )
-                }
+                return (self.userItem.file?.authenticate( using: keyFactory )
+                                ?? User( userName: keyFactory.userName ).login( using: keyFactory ))
+                        .then {
+                            secretEvent.end(
+                                    [ "result": $0.name,
+                                      "type": "secret",
+                                      "length": keyFactory.metadata.length,
+                                      "entropy": keyFactory.metadata.entropy,
+                                      "error": $0.error
+                                    ] )
+                        }
             }
             self.secretField.authenticated = { result in
                 do {
@@ -501,8 +532,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         func attemptBiometrics() -> Promise<User> {
             guard InAppFeature.biometrics.isEnabled
             else { return Promise( .failure( AppError.state( title: "Biometrics not available" ) ) ) }
-            guard let userFile = self.userFile, userFile.biometricLock
-            else { return Promise( .failure( AppError.state( title: "Biometrics not enabled", details: self.userFile ) ) ) }
+            guard let userFile = self.userItem.file, userFile.biometricLock
+            else { return Promise( .failure( AppError.state( title: "Biometrics not enabled", details: self.userItem.file ) ) ) }
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
             guard keychainKeyFactory.isKeyPresent( for: userFile.algorithm )
             else { return Promise( .failure( AppError.state( title: "Biometrics key not present" ) ) ) }
@@ -548,19 +579,19 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             self.authenticationConfiguration.isActive = self.isSelected
 
-            self.nameLabel.text = self.userFile?.userName ?? "Add a new user"
-            self.nameLabel.isHidden = self.isSelected && self.userFile == nil
+            self.nameLabel.text = self.userItem.file?.userName ?? "Add a new user"
+            self.nameLabel.isHidden = self.isSelected && self.userItem.file == nil
             self.nameField.isHidden = !self.nameLabel.isHidden
             self.avatarTip.isHidden = self.nameField.isHidden
             self.secretField.nameField = !self.nameField.isHidden ? self.nameField: nil
-            self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userFile == nil
+            self.avatarButton.isUserInteractionEnabled = self.isSelected && self.userItem.file == nil
             self.avatarButton.image = self.avatar?.image ?? .icon( "user-plus", withSize: 96, invert: true )
-            self.actionsStack.isHidden = !self.isSelected || self.userFile == nil
-            self.strengthTips.isHidden = !self.isSelected || self.userFile != nil
-            self.strengthMeter.isHidden = !self.isSelected || self.userFile != nil
-            self.strengthLabel.isHidden = !self.isSelected || self.userFile != nil
-            self.biometricButton.isHidden = !InAppFeature.biometrics.isEnabled || !(self.userFile?.biometricLock ?? false)
-                    || !(self.userFile?.keychainKeyFactory.isKeyPresent( for: self.userFile?.algorithm ?? .current ) ?? false)
+            self.actionsStack.isHidden = !self.isSelected || self.userItem.file == nil
+            self.strengthTips.isHidden = !self.isSelected || self.userItem.file != nil
+            self.strengthMeter.isHidden = !self.isSelected || self.userItem.file != nil
+            self.strengthLabel.isHidden = !self.isSelected || self.userItem.file != nil
+            self.biometricButton.isHidden = !InAppFeature.biometrics.isEnabled || !(self.userItem.file?.biometricLock ?? false)
+                    || !(self.userItem.file?.keychainKeyFactory.isKeyPresent( for: self.userItem.file?.algorithm ?? .current ) ?? false)
             self.biometricButton.image = .icon( KeychainKeyFactory.factor.iconName )
 
             if self.secretField.text?.isEmpty ?? true {

@@ -350,7 +350,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             cell.question = value
         }
 
-        override func delete(indexPath: IndexPath, value: Question) {
+        override func delete(value: Question) {
             trc( "Trashing security question: %@", value )
 
             self.model?.questions.removeAll { $0 === value }

@@ -178,8 +178,8 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
 
     // MARK: - Interface
 
-    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
-        [ userFiles.sorted() + [ nil ] ]
+    override func items(for userFiles: [Marshal.UserFile]) -> [Spectre.BaseUsersViewController.UserItem] {
+        super.items( for: userFiles ) + [ .newUser ]
     }
 
     override func login(user: User) {

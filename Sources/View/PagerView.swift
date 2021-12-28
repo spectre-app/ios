@@ -17,8 +17,8 @@ import UIKit
  * The item the spinner has at its centre when at rest is the selected item.
  */
 class PagerView: UIView, UICollectionViewDelegate {
-    private let collectionView = PagerCollectionView()
-    private lazy var source        = PagerSource( collectionView: self.collectionView, sectionsOfElements: [ self.pages ] )
+    private let collectionView: PagerCollectionView
+    private let source:         DataSource<NoSections, UIView>
     private lazy var indicatorView = PagerIndicator( pagerView: self )
 
     // MARK: - State
@@ -32,11 +32,8 @@ class PagerView: UIView, UICollectionViewDelegate {
     }
     public var pages = [ UIView ]() {
         didSet {
-            if self.collectionView.dataSource !== self.source {
-                self.collectionView.dataSource = self.source
-            }
             if oldValue != self.pages {
-                self.source.update( [ self.pages ] )
+                self.source.apply( [ .items: self.pages ] )
             }
             self.indicatorView.updateTask.request()
         }
@@ -49,6 +46,13 @@ class PagerView: UIView, UICollectionViewDelegate {
     }
 
     public init() {
+        self.collectionView = .init()
+        self.source = .init( collectionView: self.collectionView ) { collectionView, indexPath, item in
+            using( PagerCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                $0.collectionView = collectionView
+                $0.pageView = item
+            }
+        }
         super.init( frame: .zero )
 
         // - View
@@ -216,18 +220,12 @@ class PagerView: UIView, UICollectionViewDelegate {
         }
     }
 
-    internal class PagerSource: DataSource<UIView> {
-        override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath)
-                        -> UICollectionViewCell {
-            using( PagerCell.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                $0.collectionView = collectionView
-                $0.pageView = self.element( at: indexPath )
-            }
-        }
+    enum Sections: Hashable {
+        case pages
     }
 
     class PagerCell: UICollectionViewCell {
-        var collectionView: UICollectionView?
+        unowned var collectionView: UICollectionView?
         var pageView: UIView? {
             didSet {
                 self.contentView.subviews.filter { $0 != self.pageView }.forEach {

@@ -36,7 +36,7 @@ class AutoFillUsersViewController: AutoFillBaseUsersViewController {
         super.didChange( userFiles: userFiles )
 
         DispatchQueue.main.perform {
-            self.configurationView.isHidden = !self.usersSource.isEmpty
+            self.configurationView.isHidden = !(self.usersSource?.isEmpty ?? true)
         }
     }
 

@@ -44,8 +44,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     }
     public var proposedSite:    String?
 
-    private lazy var sitesDataSource = SitesSource( view: self )
-
     // MARK: - State
 
     override var contentSize:          CGSize {
@@ -59,14 +57,37 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     // MARK: - Life
 
+    private var sitesDataSource: DataSource<Sections, SiteItem>!
+
     init() {
         super.init( frame: .zero, style: .plain )
 
         self.register( SiteCell.self )
         self.register( LiefsteCell.self )
 
+        self.sitesDataSource = .init( tableView: self ) { tableView, indexPath, item in
+            if LiefsteCell.is( result: item ) {
+                return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
+            }
+
+            return SiteCell.dequeue( from: tableView, indexPath: indexPath ) { (cell: SiteCell) in
+                cell.sitesView = tableView as? SitesTableView
+                cell.result = item
+                cell.updateTask.request( now: true )
+            }
+        } editor: { item in
+            guard !item.site.isDetached
+            else { return nil }
+
+            return { editingStyle in
+                if editingStyle == .delete {
+                    Tracker.shared.event( track: .subject( "sites.site", action: "delete" ) )
+                    item.site.user.sites.removeAll { $0 === item.site }
+                }
+            }
+        }
+
         self.delegate = self
-        self.dataSource = self.sitesDataSource
         self.backgroundColor = .clear
         self.isOpaque = false
         self.separatorStyle = .none
@@ -96,56 +117,59 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         guard let self = self
         else { return }
 
-        var elementsBySection = [ [ SiteItem ] ]()
-        let wasSelectedItem   = self.sitesDataSource.selectedItem
-        self.sitesDataSource.selectedItem = nil
+        var sites = NSDiffableDataSourceSnapshot<Sections, SiteItem>()
+
+        var selectionOptions = [ SiteItem ]()
+        sites.appendSections( Sections.allCases )
 
         if let user = self.user, user.userKeyFactory != nil {
             // Filter sites by query and order by preference.
-            let results = SiteItem.filtered( user.sites, query: self.query ?? "", preferred: self.preferredFilter )
-            elementsBySection.append( results )
+            var results = SiteItem.filtered( user.sites, query: self.query ?? "", preferred: self.preferredFilter )
 
-            // Add "new site" from query if there is one and no exact result
+            // Add "new site" from proposed site if there is one and no preferred results
+            if let proposedSite = self.proposedSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
+                let proposedItem = SiteItem( site: Site( user: user, siteName: proposedSite ), preferred: true )
+                results.insert( proposedItem, at: 0 )
+                selectionOptions.append( proposedItem )
+            }
+
+            // Section 0: Known site results.
+            sites.appendItems( results, toSection: .known )
+            results.first.flatMap { selectionOptions.append( $0 ) }
+
+            // Section 1: New site from query.
             if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
                 let newItem = SiteItem( site: Site( user: user, siteName: query ), query: query )
-                elementsBySection.append( [ newItem ] )
-
-                if wasSelectedItem?.site.isNew ?? false {
-                    self.sitesDataSource.selectedItem = newItem
-                }
-            }
-            // Add "new site" from proposed site if there is one and no preferred results
-            else if let proposedSite = self.proposedSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
-                let proposedItem = SiteItem( site: Site( user: user, siteName: proposedSite ), preferred: true )
-                elementsBySection.append( [ proposedItem ] )
-
-                if let wasSelectedItem = wasSelectedItem {
-                    if wasSelectedItem.id == proposedItem.id {
-                        self.sitesDataSource.selectedItem = proposedItem
-                    }
-                }
-                else {
-                    self.sitesDataSource.selectedItem = proposedItem
-                }
-            }
-            // No "new site" results.
-            else {
-                elementsBySection.append( [] )
-            }
-
-            // If no selection requested, restore originally selected item if it's still in the results, or initially select the first item.
-            if self.sitesDataSource.selectedItem == nil {
-                if let wasSelectedItem = wasSelectedItem {
-                    self.sitesDataSource.selectedItem = results.first { $0.id == wasSelectedItem.id }
-                }
-                else if self.sitesDataSource.isFirstTimeUse, let firstResult = results.first {
-                    self.sitesDataSource.selectedItem = firstResult
-                }
+                sites.appendItems( [ newItem ], toSection: .unknown )
+                selectionOptions.append( newItem )
             }
         }
 
+        // Reload items that already exist but have changed.
+        let updatedItems = sites.itemIdentifiers.joinedIntersection( self.sitesDataSource.snapshot()?.itemIdentifiers ?? [] )
+                                .compactMap { new, old in new.isEqual( to: old ) ? nil: new }
+
         // Update the sites table to show the newly filtered sites
-        self.sitesDataSource.update( elementsBySection, selected: self.sitesDataSource.selectedItem.flatMap { [ $0 ] } )
+        let selectedItems = self.sitesDataSource.selectedItems
+        self.sitesDataSource.apply( sites ) {
+
+            // Reconfigure *after* applying new sites due to an iOS bug: unchanged item identifiers only updated after snapshot is applied.
+            if #available( iOS 15.0, * ) {
+                sites.reconfigureItems( updatedItems )
+            }
+            else {
+                sites.reloadItems( updatedItems )
+            }
+
+            self.sitesDataSource.apply( sites, animatingDifferences: false ) {
+                for selectItem in selectedItems + selectionOptions {
+                    if let selectItem = sites.itemIdentifiers.first( where: { $0 == selectItem } ) {
+                        self.sitesDataSource.select( item: selectItem )
+                        break
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - UITableViewDelegate
@@ -163,7 +187,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     #if TARGET_APP
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint)
                     -> UIContextMenuConfiguration? {
-        (self.sitesDataSource.element( at: indexPath )?.site).flatMap { site in
+        (self.sitesDataSource.item( for: indexPath )?.site).flatMap { site in
             UIContextMenuConfiguration(
                     indexPath: indexPath, previewProvider: { _ in SitePreviewController( site: site ) },
                     actionProvider: { [unowned self] _, _ in
@@ -209,7 +233,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.previewEvents[indexPath] = Tracker.shared.begin( track: .subject( "sites.site", action: "menu" ) )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.sitesDataSource.element( at: indexPath )?.site.preview.color?.with( alpha: .long )
+        parameters.backgroundColor = self.sitesDataSource.item( for: indexPath )?.site.preview.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -221,18 +245,10 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.previewEvents[indexPath]?.end( [ "action": "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.sitesDataSource.element( at: indexPath )?.site.preview.color?.with( alpha: .long )
+        parameters.backgroundColor = self.sitesDataSource.item( for: indexPath )?.site.preview.color?.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
     #endif
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.sitesDataSource.selectedItem = self.sitesDataSource.element( at: self.indexPathForSelectedRow )
-    }
-
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        self.sitesDataSource.selectedItem = self.sitesDataSource.element( at: self.indexPathForSelectedRow )
-    }
 
     // MARK: - UserObserver
 
@@ -254,8 +270,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     // MARK: - Types
 
-    class SiteItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
-        class func filtered(_ sites: [Site], query: String, preferred: ((Site) -> Bool)?) -> [SiteItem] {
+    struct SiteItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
+        static func filtered(_ sites: [Site], query: String, preferred: ((Site) -> Bool)?) -> [SiteItem] {
             var items = sites.map { SiteItem( site: $0, query: query, preferred: preferred?( $0 ) ?? false ) }
                              .filter { $0.isMatched }.sorted()
 
@@ -321,7 +337,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         let isPreferred: Bool
 
         var id: String {
-            self.site.isNew ? "": self.site.siteName
+            self.site.isDetached ? "": self.site.siteName
         }
 
         init(site: Site, query: String = "", preferred: Bool = false) {
@@ -333,52 +349,29 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
         }
 
-        func hash(into hasher: inout Hasher) {
-            hasher.combine( self.site )
+        func isEqual(to item: SiteItem) -> Bool {
+            self.site === item.site && self.query == item.query && self.isPreferred == item.isPreferred
         }
 
+        // MARK: - Hashable
+
         static func == (lhs: SiteItem, rhs: SiteItem) -> Bool {
-            lhs.subtitle == rhs.subtitle && lhs.site === rhs.site
+            lhs.id == rhs.id
         }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine( self.id )
+        }
+
+        // MARK: - Comparable
 
         static func < (lhs: SiteItem, rhs: SiteItem) -> Bool {
             lhs.site < rhs.site
         }
     }
 
-    class SitesSource: DataSource<SiteItem> {
-        unowned let view: SitesTableView
-        var selectedItem: SiteItem?
-
-        init(view: SitesTableView) {
-            self.view = view
-            super.init( tableView: view )
-        }
-
-        override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            !(self.element( at: indexPath )?.site.isNew ?? true)
-        }
-
-        override func tableView(_ tableView: UITableView, commit: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-            if let site = self.element( at: indexPath )?.site, commit == .delete {
-                Tracker.shared.event( track: .subject( "sites.site", action: "delete" ) )
-
-                site.user.sites.removeAll { $0 === site }
-            }
-        }
-
-        override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            let result = self.element( at: indexPath )
-            if LiefsteCell.is( result: result ) {
-                return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
-            }
-
-            return SiteCell.dequeue( from: tableView, indexPath: indexPath ) { (cell: SiteCell) in
-                cell.sitesView = self.view
-                cell.result = result
-                cell.updateTask.request( now: true )
-            }
-        }
+    enum Sections: Hashable, CaseIterable {
+        case known, unknown
     }
 
     class SiteCell: UITableViewCell, CellAppearance, Updatable, SiteObserver, UserObserver,
@@ -488,7 +481,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.newButton.tapEffect = false
             self.newButton.isUserInteractionEnabled = false
             self.newButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                if let site = self.site, site.isNew {
+                if let site = self.site, site.isDetached {
                     site.user.sites.append( site )
                 }
             }
@@ -606,7 +599,19 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                         active.constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
                         active.constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
                     } )
-                    .needs( .update )
+                    .didSet { siteCell, _ in
+                        guard let dataSource = siteCell.sitesView?.sitesDataSource, var snapshot = dataSource.snapshot(),
+                              let result = siteCell.result, snapshot.indexOfItem( result ) != nil
+                        else { return }
+
+                        if #available( iOS 15.0, * ) {
+                            snapshot.reconfigureItems( [ result ] )
+                        }
+                        else {
+                            snapshot.reloadItems( [ result ] )
+                        }
+                        dataSource.apply( snapshot )
+                    }
         }
 
         override func willMove(toWindow newWindow: UIWindow?) {
@@ -764,9 +769,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.backgroundImage.alpha = self.isSelected ? .on: .off
             #endif
 
-            let isNew = self.site?.isNew ?? false
+            let isDetached = self.site?.isDetached ?? false
             if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
-                if isNew {
+                if isDetached {
                     resultCaption.append( NSAttributedString( string: " (new site)" ) )
                 }
                 self.nameLabel.attributedText = resultCaption
@@ -793,9 +798,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.purposeButton.alpha = self.purposeButton.isUserInteractionEnabled ? .on: .off
             self.modeStack.isUserInteractionEnabled = self.isSelected
             self.modeStack.alpha = self.modeStack.isUserInteractionEnabled ? .on: .off
-            self.actionStack.isUserInteractionEnabled = self.isSelected && !isNew
+            self.actionStack.isUserInteractionEnabled = self.isSelected && !isDetached
             self.actionStack.alpha = self.actionStack.isUserInteractionEnabled ? .on: .off
-            self.newButton.isUserInteractionEnabled = self.isSelected && isNew
+            self.newButton.isUserInteractionEnabled = self.isSelected && isDetached
             self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on: .off
             self.selectionConfiguration.isActive = self.isSelected
             self.primaryGestureRecognizer?.isEnabled = self.isSelected

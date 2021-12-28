@@ -116,16 +116,15 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             }
         }
     }
-    public var isNew: Bool {
-        !self.user.sites.contains( self )
-    }
+    public var isDetached = true
+
     var description: String {
         self.siteName
     }
     var dirty = false {
         didSet {
             if self.dirty {
-                if !self.initializing && !self.isNew {
+                if !self.initializing && !self.isDetached {
                     self.user.dirty = true
                 }
             }

@@ -890,7 +890,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
             self.item as? PickerItem
         }
         let collectionView = PickerView()
-        lazy var dataSource = PickerSource( view: self )
+        var dataSource: DataSource<Int, V>?
 
         override func createValueView() -> UIView? {
             self.collectionView
@@ -901,14 +901,24 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
 
             self.collectionView.register( C.self )
             self.collectionView.delegate = self
-            self.collectionView.dataSource = self.dataSource
+
+            self.dataSource = .init( collectionView: self.collectionView ) { collectionView, indexPath, item in
+                using( C.dequeue( from: collectionView, indexPath: indexPath ) ) {
+                    self.pickerItem?.populate( $0, indexPath: indexPath, value: item )
+                }
+            }
+
             self.updateDataSource()
         }
 
         func updateDataSource() {
             if let pickerItem = self.pickerItem, let model = pickerItem.model {
-                let values = pickerItem.values( model ), selection = pickerItem.valueProvider( model ).flatMap { [ $0 ] }
-                self.dataSource.update( values.split( separator: nil ).map( { $0.compactMap { $0 } } ), selected: selection )
+                let values = pickerItem.values( model )
+                let sections = values.split( separator: nil ).map { $0.compactMap { $0 } }
+                let selection = pickerItem.valueProvider( model )
+                self.dataSource?.apply( Dictionary( enumerated: sections ) ) {
+                    self.dataSource?.select( item: selection, delegation: false )
+                }
             }
         }
 
@@ -921,28 +931,12 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
         // MARK: - UICollectionViewDelegate
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            if let value = self.dataSource.element( at: indexPath ), let pickerItem = self.pickerItem {
+            if let value = self.dataSource?.item( for: indexPath ), let pickerItem = self.pickerItem {
                 if let tracking = pickerItem.tracking( indexPath: indexPath, value: value ) {
                     Tracker.shared.event( track: tracking )
                 }
 
                 pickerItem.update?( pickerItem, value )
-            }
-        }
-
-        class PickerSource: DataSource<V> {
-            unowned var view: PickerItemView
-
-            init(view: PickerItemView) {
-                self.view = view
-
-                super.init( collectionView: view.collectionView )
-            }
-
-            override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-                using( C.dequeue( from: collectionView, indexPath: indexPath ) ) {
-                    self.view.pickerItem?.populate( $0, indexPath: indexPath, value: self.element( at: indexPath )! )
-                }
             }
         }
     }
@@ -1001,7 +995,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
     func populate(_ cell: C, indexPath: IndexPath, value: V) {
     }
 
-    func delete(indexPath: IndexPath, value: V) {
+    func delete(value: V) {
     }
 
     override func createItemView() -> ListItemView {
@@ -1014,7 +1008,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         }
         let tableView         = TableView()
         let activityIndicator = UIActivityIndicatorView( style: .large )
-        lazy var dataSource = ListSource( view: self )
+        var dataSource: DataSource<Int, V>?
 
         override func createValueView() -> UIView? {
             self.tableView
@@ -1023,9 +1017,23 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         override func didLoad() {
             super.didLoad()
 
+            self.dataSource = .init( tableView: self.tableView ) { tableView, indexPath, item in
+                C.dequeue( from: tableView, indexPath: indexPath ) { (cell: C) in
+                    self.listItem?.populate( cell, indexPath: indexPath, value: item )
+                }
+            } editor: { item in
+                guard self.listItem?.deletable ?? false
+                else { return nil }
+
+                return {
+                    if $0 == .delete, self.listItem?.deletable ?? false {
+                        self.listItem?.delete( value: item )
+                    }
+                }
+            }
+
             self.tableView.register( C.self )
             self.tableView.delegate = self
-            self.tableView.dataSource = self.dataSource
             self.tableView.tableHeaderView = self.activityIndicator
             self.activityIndicator.startAnimating()
         }
@@ -1033,16 +1041,13 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         override func doUpdate() {
             super.doUpdate()
 
-            guard let listItem = self.listItem
-            else { return }
+            if let listItem = self.listItem, let model = listItem.model {
+                self.tableView.isHidden = false
+                self.tableView.tableHeaderView = self.activityIndicator
 
-            self.tableView.isHidden = false
-            self.tableView.tableHeaderView = self.activityIndicator
-
-            DispatchQueue.api.perform {
-                self.dataSource.update( [ listItem.model.flatMap( listItem.values ) ?? [] ], animated: listItem.animated ) { finished in
-                    if finished {
-                        self.tableView.isHidden = self.dataSource.isEmpty
+                DispatchQueue.api.perform {
+                    self.dataSource?.apply( [ 0: listItem.values( model ) ], animatingDifferences: listItem.animated ) {
+                        self.tableView.isHidden = self.dataSource?.isEmpty ?? true
                         self.tableView.tableHeaderView = nil
                     }
                 }
@@ -1052,31 +1057,6 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         // MARK: - UITableViewDelegate
 
         // MARK: - Types
-
-        class ListSource: DataSource<V> {
-            unowned var view: ListItemView
-
-            init(view: ListItemView) {
-                self.view = view
-                super.init( tableView: view.tableView )
-            }
-
-            override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-                C.dequeue( from: tableView, indexPath: indexPath ) { (cell: C) in
-                    self.view.listItem?.populate( cell, indexPath: indexPath, value: self.element( at: indexPath )! )
-                }
-            }
-
-            override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-                self.view.listItem?.deletable ?? false
-            }
-
-            override func tableView(_ tableView: UITableView, commit: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-                if commit == .delete, self.view.listItem?.deletable ?? false, let value = self.element( at: indexPath ) {
-                    self.view.listItem?.delete( indexPath: indexPath, value: value )
-                }
-            }
-        }
 
         class TableView: UITableView {
 

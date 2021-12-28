@@ -38,18 +38,19 @@ class AutoFillBaseUsersViewController: BaseUsersViewController {
         // Necessary to ensure usersCarousel is fully laid-out; selection in empty collection view leads to a hang in -selectItemAtIndexPath.
         self.view.layoutIfNeeded()
 
-        if let userName = AutoFillModel.shared.context.credentialIdentity?.user {
-            self.usersCarousel.requestSelection( at: self.usersSource.indexPath( where: { $0?.userName == userName } ) )
+        if let userName = AutoFillModel.shared.context.credentialIdentity?.user,
+           let item = self.usersSource?.snapshot()?.itemIdentifiers.enumerated().first( where: { $0.element.file?.userName == userName } ) {
+            self.usersCarousel.requestSelection( item: item.offset )
         }
-        else if self.usersSource.count() == 1, let only = self.usersSource.enumerated().first( where: { _ in true } )?.indexPath {
-            self.usersCarousel.requestSelection( at: only )
+        else if self.usersSource?.snapshot()?.numberOfItems == 1 {
+            self.usersCarousel.requestSelection( item: 0 )
         }
     }
 
     // MARK: - Interface
 
-    override func sections(for userFiles: [Marshal.UserFile]) -> [[Marshal.UserFile?]] {
-        [ userFiles.filter( { $0.autofill } ).sorted() ]
+    override func items(for userFiles: [Marshal.UserFile]) -> [UserItem] {
+        super.items( for: userFiles ).filter( { $0.file?.autofill ?? false } )
     }
 
     // MARK: - Types
