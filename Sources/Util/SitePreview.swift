@@ -137,7 +137,7 @@ class SitePreview: Equatable {
                     "www.\($0.domainName( .topPrivate ))",
                 ]
             }.map {
-                "https://\($0.replacingOccurrences( of: "^[^:/]*:", with: "", options: .regularExpression ))"
+                "https://\($0.replacingOccurrences( of: "^[^:/]*:/*", with: "", options: .regularExpression ))"
             } )
 
             let updating: Promise<Bool> =
@@ -195,7 +195,7 @@ class SitePreview: Equatable {
         guard let string = string?.trimmingCharacters( in: .whitespacesAndNewlines ), !string.isEmpty
         else { return nil }
 
-        return URL( string: string )
+        return URL( string: "https://\(string.replacingOccurrences( of: "^[^:/]*:/*", with: "", options: .regularExpression ))" )
     }
 
     private func preview(forURL url: String) -> Promise<Response> {

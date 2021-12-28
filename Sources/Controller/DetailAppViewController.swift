@@ -58,7 +58,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
           LinksItem<AppConfig>( title: "Links", values: { _ in
               [
                   .init( title: "Home", url: URL( string: "https://spectre.app" ) ),
-                  .init( title: "Questions", url: URL( string: "http://chat.spectre.app" ) ),
+                  .init( title: "Questions", url: URL( string: "https://chat.spectre.app" ) ),
                   .init( title: "White Paper", url: URL( string: "https://spectre.app/spectre-algorithm.pdf" ) ),
                   .init( title: "Source Portal", url: URL( string: "https://source.spectre.app" ) ),
               ]

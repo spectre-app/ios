@@ -471,7 +471,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.resultLabel => \.textColor => Theme.current.color.body
             self.resultLabel.isEnabled = false
 
-            self.nameLabel => \.font => Theme.current.font.subheadline
             self.nameLabel.textAlignment = .center
             self.nameLabel => \.textColor => Theme.current.color.secondary
             self.nameLabel => \.shadowColor => Theme.current.color.shadow
@@ -810,7 +809,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.resultLabel.isUserInteractionEnabled = !self.resultLabel.isSecureTextEntry
             self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on : .off
 
-            self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3 : Theme.current.font.subheadline)
+            self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3 : Theme.current.font.callout)
 
             self.site?.result( keyPurpose: self.purpose )?.token.then( on: .main ) {
                 do {
