@@ -90,8 +90,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
     // MARK: - KeyboardLayoutObserver
 
-    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
-                            curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool,
+                            fromScreenFrame: CGRect, toScreenFrame: CGRect, animated: Bool) {
         // Don't adjust the safe area. Keyboard is handled explicitly.
     }
 

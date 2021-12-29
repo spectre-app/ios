@@ -199,16 +199,15 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         }
     }
 
-    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
-                            curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+    override func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool,
+                            fromScreenFrame: CGRect, toScreenFrame: CGRect, animated: Bool) {
         if !self.scrollView.isScrollEnabled {
             self.additionalSafeAreaInsets = .zero
             return
         }
 
         super.didChange( keyboard: keyboard, showing: showing, changing: changing,
-                         fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame,
-                         curve: curve, duration: duration )
+                         fromScreenFrame: fromScreenFrame, toScreenFrame: toScreenFrame, animated: animated )
     }
 
     // MARK: - UIGestureRecognizerDelegate

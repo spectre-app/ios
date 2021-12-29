@@ -35,9 +35,16 @@ class KeyboardMonitor {
                     .flatMap( UIView.AnimationCurve.init )
             let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue
 
-            self.observers.notify {
-                self.didChange( $0, fromScreenFrame: screenFrameFrom, toScreenFrame: screenFrameTo,
-                                curve: curve, duration: duration )
+            if let duration = duration, let curve = curve {
+                UIViewPropertyAnimator( duration: duration, curve: curve ) {
+                    self.observers.notify {
+                        self.didChange( $0, fromScreenFrame: screenFrameFrom, toScreenFrame: screenFrameTo, animated: true )
+                    }
+                }.startAnimation()
+            } else {
+                self.observers.notify {
+                    self.didChange( $0, fromScreenFrame: screenFrameFrom, toScreenFrame: screenFrameTo, animated: false )
+                }
             }
         } )
         self.notificationObservers.append( NotificationCenter.default.addObserver(
@@ -91,12 +98,12 @@ class KeyboardMonitor {
         self.notificationObservers.removeAll()
     }
 
-    func didChange(_ observer: KeyboardMonitorObserver, fromScreenFrame: CGRect? = nil, toScreenFrame: CGRect? = nil,
-                   curve: UIView.AnimationCurve? = nil, duration: TimeInterval? = nil) {
+    func didChange(_ observer: KeyboardMonitorObserver,
+                   fromScreenFrame: CGRect? = nil, toScreenFrame: CGRect? = nil, animated: Bool = false) {
         observer.didChange( keyboard: self, showing: self.keyboardShowing, changing: self.keyboardChanging,
                             fromScreenFrame: fromScreenFrame ?? self.keyboardScreenFrameLatest,
                             toScreenFrame: toScreenFrame ?? self.keyboardScreenFrameLatest,
-                            curve: nil, duration: nil )
+                            animated: animated )
     }
 }
 
@@ -134,7 +141,8 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
                             showing: KeyboardMonitor.shared.keyboardShowing, changing: KeyboardMonitor.shared.keyboardChanging,
                             fromScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
                             toScreenFrame: KeyboardMonitor.shared.keyboardScreenFrameLatest,
-                            curve: nil, duration: nil )
+                            animated: false
+                    )
                 }
             }
         }
@@ -204,24 +212,22 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
 
     // MARK: - KeyboardMonitorObserver
 
-    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
-                   curve: UIView.AnimationCurve?, duration: TimeInterval?) {
-        if let curve = curve, let duration = duration, let owningView = self.owningView {
-            if fromScreenFrame != toScreenFrame {
-                self.updateKeyboardFrame( inScreen: fromScreenFrame )
-                owningView.layoutIfNeeded()
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool,
+                   fromScreenFrame: CGRect, toScreenFrame: CGRect, animated: Bool) {
+        if animated {
+            UIView.performWithoutAnimation {
+                if fromScreenFrame != toScreenFrame {
+                    self.updateKeyboardFrame( inScreen: fromScreenFrame )
+                    self.owningView?.layoutIfNeeded()
+                }
             }
-            let animator = UIViewPropertyAnimator( duration: duration, curve: curve ) {
-                self.updateKeyboardFrame( inScreen: toScreenFrame )
-                self.constraints.forEach { $0.isActive = showing }
-
-                owningView.layoutIfNeeded()
-            }
-            animator.startAnimation()
         }
-        else {
-            self.updateKeyboardFrame( inScreen: toScreenFrame )
-            self.constraints.forEach { $0.isActive = showing }
+
+        self.updateKeyboardFrame( inScreen: toScreenFrame )
+        self.constraints.forEach { $0.isActive = showing }
+
+        if animated {
+            self.owningView?.layoutIfNeeded()
         }
     }
 
@@ -231,6 +237,8 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
         if keyboardScreenFrame == .null {
             self.keyboardFrame = .null
             self.keyboardInsets = .zero
+            // dbg( "keyboardFrame in window: UNSET, view: %@", self.keyboardFrame )
+            // dbg( "keyboardFrame view insets: %@, constraints: UNCHANGED", self.keyboardInsets )
         }
         else {
             guard let view = self.owningView, let window = view.window
@@ -251,6 +259,13 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
             self.keyboardLeftConstraint?.constant = self.keyboardFrame.minX
             self.keyboardRightConstraint?.constant = self.keyboardFrame.maxX - view.bounds.maxX
             self.keyboardBottomConstraint?.constant = self.keyboardFrame.maxY - view.bounds.maxY
+
+            // dbg( "keyboardFrame in window: %@, view: %@", keyboardWindowFrame, self.keyboardFrame )
+            // dbg( "keyboardFrame view insets: %@, constraints: t=%g, l=%g, r=%g, b=%g", self.keyboardInsets,
+            //      self.keyboardTopConstraint?.constant ?? -1,
+            //      self.keyboardLeftConstraint?.constant ?? -1,
+            //      self.keyboardRightConstraint?.constant ?? -1,
+            //      self.keyboardBottomConstraint?.constant ?? -1 )
         }
 
         self.keyboardTopConstraint?.isActive = self.keyboardFrame != .null
@@ -261,17 +276,10 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
         self.inputLeftConstraint?.constant = self.keyboardInsets.left
         self.inputRightConstraint?.constant = -self.keyboardInsets.right
         self.inputBottomConstraint?.constant = -self.keyboardInsets.bottom
-
-        //dbg( "keyboardFrame in window: %@, view: %@", keyboardWindowFrame, self.keyboardFrame )
-        //dbg( "keyboardFrame view insets: %@, constraints: t=%g, l=%g, r=%g, b=%g", self.keyboardInsets,
-        //     self.keyboardTopConstraint?.constant ?? -1,
-        //     self.keyboardLeftConstraint?.constant ?? -1,
-        //     self.keyboardRightConstraint?.constant ?? -1,
-        //     self.keyboardBottomConstraint?.constant ?? -1 )
     }
 }
 
 protocol KeyboardMonitorObserver {
-    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool, fromScreenFrame: CGRect, toScreenFrame: CGRect,
-                   curve: UIView.AnimationCurve?, duration: TimeInterval?)
+    func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool,
+                   fromScreenFrame: CGRect, toScreenFrame: CGRect, animated: Bool)
 }

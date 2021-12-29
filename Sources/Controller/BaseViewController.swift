@@ -134,8 +134,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
     var changingScrollViews = [ UIScrollView ]()
 
     func didChange(keyboard: KeyboardMonitor, showing: Bool, changing: Bool,
-                   fromScreenFrame: CGRect, toScreenFrame: CGRect,
-                   curve: UIView.AnimationCurve?, duration: TimeInterval?) {
+                   fromScreenFrame: CGRect, toScreenFrame: CGRect, animated: Bool) {
         if nil != self.view.findSuperview( ofType: UIScrollView.self, where: { $0.isScrollEnabled } ) {
             self.additionalSafeAreaInsets = .zero
 
