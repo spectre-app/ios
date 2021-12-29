@@ -1829,14 +1829,14 @@
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/include\"",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
 				MARKETING_VERSION = 3.0.7;
@@ -1857,14 +1857,14 @@
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/include\"",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
 				MARKETING_VERSION = 3.0.7;
@@ -1884,14 +1884,14 @@
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/include\"",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
 				MARKETING_VERSION = 3.0.7;
@@ -1911,14 +1911,14 @@
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/include\"",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/AutoFill/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
 				MARKETING_VERSION = 3.0.7;
@@ -2315,14 +2315,14 @@
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/include\"",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
 				MARKETING_VERSION = 3.0.7;
@@ -2345,14 +2345,14 @@
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/include\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/include\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/include\"",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Sources/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"\"$(PROJECT_DIR)/lib/libsodium/build-ios~/out/lib\"",
-					"\"$(PROJECT_DIR)/lib/libjson-c/build-ios~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libsodium/build-$(PLATFORM_NAME)~/out/lib\"",
+					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
 				MARKETING_VERSION = 3.0.7;

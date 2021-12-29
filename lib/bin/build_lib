@@ -105,9 +105,9 @@ _clean() {
     rm -rf "$prefix"
 }
 
-# prepare <prefix> <platform> [ <arch:host> ... ]
+# prepare <prefix> <platform> [ <system:arch> ... ]
 #
-# Initialize the prefix in anticipation for building the <arch>s on this machine.
+# Initialize the prefix in anticipation for building the <system>s on this machine.
 # The build script invokes this once prior to building each of its targets.
 #
 prepare() { _prepare "$@"; }
@@ -116,7 +116,7 @@ _prepare() {
     prepare_config "$@"
 }
 
-# prepare_create <prefix> <platform> [ <arch:host> ... ]
+# prepare_create <prefix> <platform> [ <system:arch> ... ]
 #
 # Perform any necessary clean-up of the library code prior to building.
 #
@@ -136,7 +136,7 @@ _prepare_create() {
     install -d "$prefix/out"
 }
 
-# prepare_config <prefix> <platform> [ <arch:host> ... ]
+# prepare_config <prefix> <platform> [ <system:arch> ... ]
 #
 # Generate build solution for configuring a build on this machine.
 # The <prefix> has been newly created.
@@ -163,9 +163,9 @@ _prepare_config() {
     touch "$prefix/out/.prepared"
 }
 
-# target <prefix> <platform> <arch> <host>
+# target <prefix> <platform> <system> <arch>
 #
-# Build the library to the <arch> binary for the <host> architecture on <platform> into the given <prefix>.
+# Build the library binary to use on <system> (having the <arch> architecture) for use from <platform>, into the given <prefix>.
 # The build script invokes this function when it's ready to build the library's code.
 #
 target() { _target "$@"; }
@@ -175,7 +175,7 @@ _target() {
     target_build "$@"
 }
 
-# target_prepare <prefix> <platform> <arch> <host>
+# target_prepare <prefix> <platform> <system> <arch>
 #
 # Any build-related work to be done in the prefix prior to building.
 #
@@ -187,42 +187,45 @@ _target() {
 #
 target_prepare() { _target_prepare "$@"; }
 _target_prepare() {
-    local prefix=$1 platform=$2 arch=$3 host=$4; shift 3
+    local prefix=$1 platform=$2 system=$3 arch=$4; shift 3
+
+    case "$platform" in
+        'iphone'*|'macosx')
+            [[ ! $SDKROOT || $PLATFORM_NAME != $platform ]] && \
+                SDKROOT=$(xcrun --show-sdk-path --sdk "$platform")
+            [[ ! $PLATFORM_DEVELOPER_BIN_DIR || $PLATFORM_NAME != $platform ]] && \
+                PLATFORM_DEVELOPER_BIN_DIR="$(xcrun --show-sdk-platform-path --sdk "$platform")/Developer/usr/bin"
+            export PATH="$PLATFORM_DEVELOPER_BIN_DIR:$PATH"
+        ;;
+    esac
 
     case "$platform" in
         'windows')
         ;;
 
-        'macos')
-            SDKROOT="$(xcrun --show-sdk-path --sdk macosx)"
-            export PATH="$(xcrun --show-sdk-platform-path --sdk macosx)/usr/bin:$PATH"
-            export CPPFLAGS="-arch $host -flto -O2 -g -isysroot $SDKROOT -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:-10.8} $CPPFLAGS"
-            export LDFLAGS="-arch $host -flto -isysroot $SDKROOT -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:-10.8} $LDFLAGS"
+        'macosx')
+            export CPPFLAGS="-arch $arch -flto -O2 -g -isysroot $SDKROOT -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:-10.8} $CPPFLAGS"
+            export LDFLAGS="-arch $arch -flto -isysroot $SDKROOT -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:-10.8} $LDFLAGS"
         ;;
 
-        'ios')
-            case "$arch" in
-                *'arm'*)
-                    if [[ $arch = armv7* ]] && (( ${IPHONEOS_DEPLOYMENT_TARGET%%.*} > 10 )); then IPHONEOS_DEPLOYMENT_TARGET=10.2; fi
-                    SDKROOT="$(xcrun --show-sdk-path --sdk iphoneos)"
-                    export PATH="$(xcrun --show-sdk-platform-path --sdk iphoneos)/usr/bin:$PATH"
-                    export CPPFLAGS="-arch $host -mthumb -fembed-bitcode -flto -O2 -g -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $CPPFLAGS"
-                    export LDFLAGS="-arch $host -mthumb -fembed-bitcode -flto -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $LDFLAGS"
-                ;;
-                *)
-                    if [[ $arch = x86 ]] && (( ${IPHONEOS_DEPLOYMENT_TARGET%%.*} > 10 )); then IPHONEOS_DEPLOYMENT_TARGET=10.2; fi
-                    SDKROOT="$(xcrun --show-sdk-path --sdk iphonesimulator)"
-                    export PATH="$(xcrun --show-sdk-platform-path --sdk iphonesimulator)/usr/bin:$PATH"
-                    export CPPFLAGS="-arch $host -flto -O2 -g -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $CPPFLAGS"
-                    export LDFLAGS="-arch $host -flto -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $LDFLAGS"
-                ;;
-            esac
+        'iphoneos')
+            # Downgrade iOS deployment target for ARMv7 since higher targets don't support it.
+            if [[ $arch = armv7* ]] && (( ${IPHONEOS_DEPLOYMENT_TARGET%%.*} > 10 )); then IPHONEOS_DEPLOYMENT_TARGET=10.2; fi
+            export CPPFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -O2 -g -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $CPPFLAGS"
+            export LDFLAGS="-arch $arch -mthumb -fembed-bitcode -flto -isysroot $SDKROOT -mios-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $LDFLAGS"
+        ;;
+
+        'iphonesimulator')
+            # Downgrade iOS deployment target for 32-bit x86 since higher targets don't support it.
+            if [[ $arch = i386 ]] && (( ${IPHONEOS_DEPLOYMENT_TARGET%%.*} > 10 )); then IPHONEOS_DEPLOYMENT_TARGET=10.2; fi
+            export CPPFLAGS="-arch $arch -flto -O2 -g -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $CPPFLAGS"
+            export LDFLAGS="-arch $arch -flto -isysroot $SDKROOT -mios-simulator-version-min=${IPHONEOS_DEPLOYMENT_TARGET:-9.0} $LDFLAGS"
         ;;
 
         'android')
             [[ -x $ANDROID_NDK_HOME/build/ndk-build ]] || { echo >&2 "Android NDK not found.  Please set ANDROID_NDK_HOME."; return 1; }
 
-            SDKROOT="$prefix/$arch/ndk"
+            export SDKROOT=${SDKROOT:-"$prefix/$system/ndk"}
             # Platform 21 is lowest that supports x86_64
             "$ANDROID_NDK_HOME/build/tools/make-standalone-toolchain.sh" --force --install-dir="$SDKROOT" --platform='android-21' --arch="$arch"
             export PATH="$SDKROOT/bin:$PATH"
@@ -232,11 +235,11 @@ _target_prepare() {
         ;;
 
         *)
-            case "$arch" in
-                x86)
+            case "$system" in
+                *x86)
                     export CPPFLAGS="-m32 $CPPFLAGS" LDFLAGS="-m32 $LDFLAGS"
                 ;;
-                x86_64)
+                *x86_64)
                     export CPPFLAGS="-m64 $CPPFLAGS" LDFLAGS="-m64 $LDFLAGS"
                 ;;
             esac
@@ -249,22 +252,22 @@ _target_prepare() {
     fi
 }
 
-# target_configure <prefix> <platform> <arch> <host> [ <args> ... ]
+# target_configure <prefix> <platform> <system> <arch> [ <args> ... ]
 #
 # Configure the library for building the target. This generates the compiler configuration.
 #
 # By default, this will:
 # - Windows: do nothing
-# - Other: run `./configure --host=<host> --prefix=<prefix>/<arch> <args>`.
+# - Other: run `./configure --host=<arch> --prefix=<prefix>/<system> <args>`.
 #
 # Some platform-specific configure arguments will be passed in as well.
 # --enable-pic --disable-pie to ensure the resulting library can be linked again.
 #
 target_configure() { _target_configure "$@"; }
 _target_configure() {
-    local prefix=$1 platform=$2 arch=$3 host=$4; shift 4
+    local prefix=$1 platform=$2 system=$3 arch=$4; shift 4
 
-    local build=
+    local build= host=$arch
     [[ -x config.guess ]] && build=$(./config.guess)
     [[ -x build-aux/config.guess ]] && build=$(build-aux/config.guess)
 
@@ -273,12 +276,12 @@ _target_configure() {
             # doesn't use ./configure
             return 0
         ;;
-        'ios'|'macos')
+        'iphone'*|'macosx')
             host+=-apple
             set -- --enable-static --disable-shared "$@"
         ;;
         'android')
-            host=( "$SDKROOT/$host"*-android* ) host=${host##*/}
+            host=( "$SDKROOT/$arch"*-android* ) host=${host##*/}
             set -- --disable-static --enable-shared --with-sysroot="$SDKROOT/sysroot" "$@"
         ;;
         *)
@@ -286,41 +289,42 @@ _target_configure() {
         ;;
     esac
 
-    ./configure ${build:+--build="$build"} ${host:+--host="$host"} --prefix="$prefix/$arch" --enable-pic --disable-pie "$@"
+    ./configure ${build:+--build="$build"} ${host:+--host="$host"} --prefix="$prefix/$system" --enable-pic --disable-pie "$@"
 }
 
-# target_build <prefix> <platform> <arch> <host>
+# target_build <prefix> <platform> <system> <arch>
 #
 # Build the library code for the target. This runs the compiler per the previous configuration.
 #
 # By default, this will:
-# - Windows: run `msbuild /t:Rebuild /p:Configuration:Release;Platform=<host>`
+# - Windows: run `msbuild /t:Rebuild /p:Configuration:Release;Platform=<arch>`
 # - Other: run `make check install`.
 #
 target_build() { _target_build "$@"; }
 _target_build() {
-    local prefix=$1 platform=$2 arch=$3 host=$4; shift 4
+    local prefix=$1 platform=$2 system=$3 arch=$4; shift 4
 
     if [[ $platform = windows ]]; then
         if [[ -e CMakeLists.txt ]]; then
-            ( projdir=$PWD; mkdir -p "$prefix/$arch/"; cd "$prefix/$arch/"
+            ( projdir=$PWD; mkdir -p "$prefix/$system/"; cd "$prefix/$system/"
             PATH="$(cygpath "$VSINSTALLDIR")/Common7/Tools:$(cygpath "$VSINSTALLDIR")/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin:$PATH" \
                 cmd /v /c "$(printf 'VsMSBuildCmd && cmake -A %s %s && for %%s in (*.sln) do msbuild /m /t:Rebuild /p:Configuration=Release;Platform=%s;OutDir=. %%s' \
-                "$host" "$(cygpath -w "$projdir")" "$host")" )
+                "$arch" "$(cygpath -w "$projdir")" "$arch")" )
         else
 	    PATH="$(cygpath "$VSINSTALLDIR")/Common7/Tools:$PATH" \
 		cmd /v /c "$(printf 'VsMSBuildCmd && for %%s in (*.sln) do msbuild /m /t:Rebuild /p:Configuration=Release;Platform=%s;OutDir=%s %%s' \
-		"$host" "$(cygpath -w "${prefix##$PWD/}/$arch/")")"
+		"$arch" "$(cygpath -w "${prefix##$PWD/}/$system/")")"
 	fi
     else
-        local cores=$(getconf NPROCESSORS_ONLN 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null ||:)
+        local cores=$(nproc 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null ||:)
+        make -j"${cores:-3}"
         #make -j"${cores:-3}" check install # TODO: libjson-c breaks on parallel build for check and install
         #make check install # TODO: libjson-c has a failing test atm
         make install
     fi
 }
 
-# finalize <prefix> <platform> [ <arch> ... ]
+# finalize <prefix> <platform> [ <system> ... ]
 #
 # Prepare the final build product.
 # The build script invokes this once after a successful build of all targets.
@@ -331,7 +335,7 @@ _finalize() {
     finalize_clean "$@"
 }
 
-# finalize_merge <prefix> <platform> [ <arch> ... ]
+# finalize_merge <prefix> <platform> [ <system> ... ]
 #
 # Merge all targets into a product the application can use, available at `<prefix>/out`.
 #
@@ -340,41 +344,41 @@ _finalize() {
 finalize_merge() { _finalize_merge "$@"; }
 _finalize_merge() {
     local prefix=$1 platform=$2; shift 2
-    local archs=( "$@" )
+    local systems=( "$@" )
 
-    [[ -e "$prefix/$archs/include" ]] && cp -a -- "$prefix/$archs/include" "$prefix/out/"
+    [[ -e "$prefix/$systems/include" ]] && cp -a -- "$prefix/$systems/include" "$prefix/out/"
 
     install -d "$prefix/out/lib"
     case "$platform" in
         'linux')
-            for arch in "${archs[@]}"; do
-                install -d "$prefix/out/lib/$arch"
-                install -p "$prefix/$arch/lib/"*.a "$prefix/out/lib/$arch/"
+            for system in "${systems[@]}"; do
+                install -d "$prefix/out/lib/$system"
+                install -p "$prefix/$system/lib/"*.a "$prefix/out/lib/$system/"
             done
         ;;
         'windows')
-            for arch in "${archs[@]}"; do
-                install -d "$prefix/out/lib/$arch"
-                install -p "$prefix/$arch/"*.lib "$prefix/out/lib/$arch/"
+            for system in "${systems[@]}"; do
+                install -d "$prefix/out/lib/$system"
+                install -p "$prefix/$system/"*.lib "$prefix/out/lib/$system/"
             done
         ;;
-        'macos'|'ios')
-            for arch in "${archs[@]}"; do
-                install -d "$prefix/out/lib/$arch"
-                install -p "$prefix/$arch/lib/"*.a "$prefix/out/lib/$arch/"
+        'iphone'*|'macosx')
+            for system in "${systems[@]}"; do
+                install -d "$prefix/out/lib/$system"
+                install -p "$prefix/$system/lib/"*.a "$prefix/out/lib/$system/"
             done
             local libs=( "$prefix/out/lib/"*/* )
             lipo -create "${libs[@]}" -output "$prefix/out/lib/${libs##*/}"
         ;;
         'android')
-            for arch in "${archs[@]}"; do
-                local abi=$arch
-                case "$arch" in
+            for system in "${systems[@]}"; do
+                local abi=$system
+                case "$system" in
                     'arm')      abi='armeabi-v7a' ;;
                     'arm64')    abi='arm64-v8a' ;;
                 esac
                 install -d "$prefix/out/lib/$abi"
-                install -p "$prefix/$arch/lib/"*.so "$prefix/out/lib/$abi/"
+                install -p "$prefix/$system/lib/"*.so "$prefix/out/lib/$abi/"
             done
         ;;
     esac
@@ -382,7 +386,7 @@ _finalize_merge() {
     touch "$prefix/out/.success"
 }
 
-# finalize_clean <prefix> [ <arch> ... ]
+# finalize_clean <prefix> [ <system> ... ]
 #
 # Clean up the library after a successful build (eg. housekeeping of temporary files).
 #
@@ -401,7 +405,7 @@ _finalize_clean() {
 # Build the library <name> (found at ../<name>) for platform <platform> (or "host" if unspecified).
 #
 build() { _build "$@"; }
-_build() {
+_build() (
     local name=$1 platform=${2:-host}
     local path="../$name"
     [[ $path = /* ]] || path="${BASH_SOURCE%/*}/$path"
@@ -409,22 +413,32 @@ _build() {
 
     if [[ $platform = host ]]; then
         case "$(uname -s)" in
-            'Darwin') platform='macos' archs=( "$(uname -m)" ) ;;
-        esac
-    fi
-    if (( ! ${#archs[@]} )); then
-        case "$platform" in
-            'macos') archs=( 'x86_64' ) ;;
-            'ios') archs=( 'x86:i386' 'x86_64' 'armv7' 'armv7s' 'arm64' ) ;;
-            'android') archs=( 'arm' 'arm64:aarch64' 'x86:i686' 'x86_64' ) ;;
-            'windows') archs=( 'x86:Win32' 'x86_64:x64' ) ;;
-            *) archs=( 'x86:i686' 'x86_64' ) ;;
+            'Darwin') platform='macosx' systems=( "$(uname -m)" ) ;;
         esac
     fi
 
+    # If SUPPORTED_PLATFORMS or PLATFORM_NAME is defined, only build for the requested platforms.
+    [[ $SUPPORTED_PLATFORMS && " $SUPPORTED_PLATFORMS " != *" $platform "* ]] && return
+    [[ $PLATFORM_NAME && $PLATFORM_NAME != $platform ]] && return
+
+    if (( ! ${#systems[@]} )); then
+        case "$platform" in
+            'macosx') systems=( 'x86_64' ) ;;
+            'iphoneos') systems=( 'armv7' 'armv7s' 'arm64' ) ;;
+            'iphonesimulator') systems=( 'x86:i386' 'x86_64' 'arm64' ) ;;
+            'android') systems=( 'arm' 'arm64:aarch64' 'x86:i686' 'x86_64' ) ;;
+            'windows') systems=( 'x86:Win32' 'x86_64:x64' ) ;;
+            *) systems=( 'x86:i686' 'x86_64' ) ;;
+        esac
+    fi
+
+    # If VALID_ARCHS or ARCHS is defined, only build for the requested architectures.
+    [[ $VALID_ARCHS ]] && systems=( $(for system in "${systems[@]}"; do [[ $VALID_ARCHS = *${system##*:}* ]] && echo "$system"; done) ) ||:
+    [[ $ARCHS ]] && systems=( $(for system in "${systems[@]}"; do [[ $ARCHS = *${system##*:}* ]] && echo "$system"; done) ) ||:
+
     local prefix="$PWD/build-$platform~"
     echo
-    echo " # $name ($platform: ${archs[*]}) into $prefix ..."
+    echo " # $name ($platform: ${systems[*]}) into $prefix ..."
     initialize "$prefix" "$platform"
 
     # "clean" argument wipes the lib clean and exits. If .success exists in prefix output, skip build.
@@ -437,17 +451,17 @@ _build() {
     fi
 
     # Prepare the output location and build configuration.
-    prepare "$prefix" "$platform" "${archs[@]}"
+    prepare "$prefix" "$platform" "${systems[@]}"
 
     # Repeat the build for each individual architecture.
-    for arch in "${archs[@]}"; do (
-        local host=${arch#*:} arch=${arch%%:*}
+    for system in "${systems[@]}"; do (
+        local arch=${system##*:} system=${system%:*}
 
         echo
-        echo " # $name [$platform: $arch ($host)] ..."
+        echo " # $name [$platform: $system ($arch)] ..."
 
-        target "$prefix" "$platform" "$arch" "$host"
+        target "$prefix" "$platform" "$system" "$arch"
     ); done
 
-    finalize "$prefix" "$platform" "${archs[@]%%:*}"
-}
+    finalize "$prefix" "$platform" "${systems[@]%%:*}"
+)

@@ -5,4 +5,5 @@ autoreconf() {
     command autoreconf -Iautoconf-archive/m4 "$@"
 }
 
-build libjson-c ios
+build libjson-c iphonesimulator
+build libjson-c iphoneos

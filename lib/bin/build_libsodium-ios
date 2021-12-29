@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 source "${BASH_SOURCE%/*}/build_lib"
 
-build libsodium ios
+build libsodium iphonesimulator
+build libsodium iphoneos
