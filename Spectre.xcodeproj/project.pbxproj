@@ -1839,7 +1839,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.7;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
@@ -1867,7 +1867,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.7;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
@@ -1894,7 +1894,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.7;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
@@ -1921,7 +1921,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.7;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
@@ -2325,7 +2325,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.7;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
@@ -2355,7 +2355,7 @@
 					"\"$(PROJECT_DIR)/lib/libjson-c/build-$(PLATFORM_NAME)~/out/lib\"",
 					"$(inherited)",
 				);
-				MARKETING_VERSION = 3.0.7;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
 				SKIP_INSTALL = NO;
