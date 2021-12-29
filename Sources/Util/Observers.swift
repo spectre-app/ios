@@ -21,18 +21,20 @@ public class Observers<O> {
     private var observers = [ WeakBox<O> ]()
 
     @discardableResult
-    public func register(observer: O) -> O {
+    public func register(observer: O) -> O? {
         let box = WeakBox( observer )
-        if !self.observers.contains( box ) {
-            self.observers.append( box )
+        if self.observers.contains( box ) {
+            return nil
         }
+        self.observers.append( box )
         return observer
     }
 
     @discardableResult
-    public func unregister(observer: O) -> O {
+    public func unregister(observer: O) -> O? {
+        let count = self.observers.count
         self.observers.removeAll { $0 == observer }
-        return observer
+        return count != self.observers.count ? observer : nil
     }
 
     public func clear() {

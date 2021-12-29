@@ -157,7 +157,8 @@ class Tracker: AppConfigObserver {
             return true
         } )
 
-        AppConfig.shared.observers.register( observer: self ).didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
+        AppConfig.shared.observers.register( observer: self )?
+                 .didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
 
         self.event( file: file, line: line, function: function, dso: dso,
                     track: .subject( AppConfig.shared.isApp ? "app" : "autofill", action: "startup", [

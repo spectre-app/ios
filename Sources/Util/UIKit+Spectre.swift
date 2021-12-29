@@ -20,7 +20,8 @@ extension SFSafariViewController: ThemeObserver {
         self.dismissButtonStyle = .close
         self.modalPresentationStyle = .pageSheet
 
-        Theme.current.observers.register( observer: self ).didChange( theme: Theme.current )
+        Theme.current.observers.register( observer: self )?
+             .didChange( theme: Theme.current )
     }
 
     // MARK: - ThemeObserver

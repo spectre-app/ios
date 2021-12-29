@@ -71,7 +71,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        Marshal.shared.observers.register( observer: self ).didChange( userFiles: Marshal.shared.userFiles )
+        Marshal.shared.observers.register( observer: self )?
+               .didChange( userFiles: Marshal.shared.userFiles )
     }
 
     override func viewDidAppear(_ animated: Bool) {

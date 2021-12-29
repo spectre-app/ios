@@ -196,7 +196,8 @@ public class LogSink: AppConfigObserver {
                 return LogSink.shared.record( event )
             } )
 
-            AppConfig.shared.observers.register( observer: self ).didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
+            AppConfig.shared.observers.register( observer: self )?
+                     .didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
 
             self.registered = true
         }

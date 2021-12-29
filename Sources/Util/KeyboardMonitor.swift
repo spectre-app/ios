@@ -168,11 +168,11 @@ class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
         }
 
         KeyboardMonitor.shared.observers.register( observer: self )
-        KeyboardMonitor.shared.didChange( self )
+                       .flatMap { KeyboardMonitor.shared.didChange( $0 ) }
 
         if let observer = observer {
             KeyboardMonitor.shared.observers.register( observer: observer )
-            KeyboardMonitor.shared.didChange( observer )
+                           .flatMap { KeyboardMonitor.shared.didChange( $0 ) }
         }
     }
 

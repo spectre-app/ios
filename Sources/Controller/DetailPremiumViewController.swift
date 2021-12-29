@@ -23,7 +23,8 @@ class FeatureTapBehaviour<M>: TapBehaviour<M>, InAppFeatureObserver {
     override func didInstall(into item: Item<M>) {
         super.didInstall( into: item )
 
-        InAppFeature.observers.register( observer: self ).didChange( feature: self.feature )
+        InAppFeature.observers.register( observer: self )?
+                    .didChange( feature: self.feature )
     }
 
     override func doTapped(item: Item<M>) {

@@ -16,13 +16,13 @@ import AVKit
 // swiftlint:disable:next type_body_length
 class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable {
     public var user:            User? {
-        willSet {
-            self.user?.observers.unregister( observer: self )
-            self.query = nil
-        }
         didSet {
-            self.user?.observers.register( observer: self )
-            self.updateTask.request()
+            if oldValue != self.user {
+                oldValue?.observers.unregister( observer: self )
+                self.user?.observers.register( observer: self )
+                self.query = nil
+                self.updateTask.request()
+            }
         }
     }
     public var query:           String? {
@@ -377,14 +377,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     ThemeObserver, AppConfigObserver, InAppFeatureObserver {
         public weak var sitesView: SitesTableView?
         public var result: SiteItem? {
-            willSet {
-                self.site?.observers.unregister( observer: self )
-                self.site?.user.observers.unregister( observer: self )
-            }
             didSet {
-                if let site = self.site {
-                    site.observers.register( observer: self )
-                    site.user.observers.register( observer: self )
+                if oldValue?.site != self.result?.site {
+                    oldValue?.site.user.observers.unregister( observer: self )
+                    oldValue?.site.observers.unregister( observer: self )
+                    self.result?.site.observers.register( observer: self )
+                    self.result?.site.user.observers.register( observer: self )
                 }
 
                 self.updateTask.request()

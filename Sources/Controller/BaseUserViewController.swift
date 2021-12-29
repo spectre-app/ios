@@ -14,12 +14,12 @@ import UIKit
 
 class BaseUserViewController: BaseViewController, UserObserver {
     var user: User? {
-        willSet {
-            self.user?.observers.unregister( observer: self )
-        }
         didSet {
-            self.user?.observers.register( observer: self )
-            self.validate()
+            if oldValue != self.user {
+                oldValue?.observers.unregister( observer: self )
+                self.user?.observers.register( observer: self )
+                self.validate()
+            }
         }
     }
 

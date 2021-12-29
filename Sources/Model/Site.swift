@@ -111,6 +111,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         didSet {
             if oldValue != self.questions {
                 self.dirty = true
+                Set( oldValue ).subtracting( self.questions ).forEach { $0.observers.unregister( observer: self ) }
                 self.questions.forEach { question in question.observers.register( observer: self ) }
                 self.observers.notify { $0.didChange( site: self, at: \Site.questions ) }
             }
