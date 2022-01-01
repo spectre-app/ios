@@ -87,6 +87,24 @@ extension SKProduct {
                self.discounts == object.discounts
     }
 
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine( self.localizedDescription )
+        hasher.combine( self.localizedTitle )
+        hasher.combine( self.price )
+        hasher.combine( self.priceLocale )
+        hasher.combine( self.productIdentifier )
+        hasher.combine( self.isDownloadable )
+        hasher.combine( self.downloadContentLengths )
+        hasher.combine( self.contentVersion )
+        hasher.combine( self.downloadContentVersion )
+        hasher.combine( self.subscriptionPeriod )
+        hasher.combine( self.introductoryPrice )
+        hasher.combine( self.subscriptionGroupIdentifier )
+        hasher.combine( self.discounts )
+        return hasher.finalize()
+    }
+
     func localizedPrice(quantity: Int = 1) -> String {
         let price = self.price.doubleValue * Double( quantity )
         return "\(number: price, locale: self.priceLocale, .currency)"
@@ -122,6 +140,18 @@ extension SKProductDiscount {
                self.numberOfPeriods == object.numberOfPeriods &&
                self.paymentMode == object.paymentMode &&
                self.type == object.type
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine( self.price )
+        hasher.combine( self.priceLocale )
+        hasher.combine( self.identifier )
+        hasher.combine( self.subscriptionPeriod )
+        hasher.combine( self.numberOfPeriods )
+        hasher.combine( self.paymentMode )
+        hasher.combine( self.type )
+        return hasher.finalize()
     }
 
     var localizedOffer: String {
@@ -166,6 +196,13 @@ extension SKProductSubscriptionPeriod {
 
         return self.numberOfUnits == object.numberOfUnits &&
                self.unit == object.unit
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine( self.numberOfUnits )
+        hasher.combine( self.unit )
+        return hasher.finalize()
     }
 
     func localizedDescription(periods: Int = 1, context: LocalizedContext) -> String {
