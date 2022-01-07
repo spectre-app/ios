@@ -21,7 +21,8 @@ class CarouselView: UICollectionView {
         get {
             let currentOffset = self.contentOffset.x
             let maximumOffset = max( 0, self.contentSize.width - self.bounds.size.width )
-            let scrolledItem  = maximumOffset > 0 ? CGFloat( self.numberOfItems( inSection: 0 ) - 1 ) * currentOffset / maximumOffset : 0
+            let items         = self.numberOfSections == 0 ? 0 : self.numberOfItems( inSection: 0 )
+            let scrolledItem  = maximumOffset > 0 ? CGFloat( items - 1 ) * currentOffset / maximumOffset : 0
             return Int( scrolledItem.rounded( .toNearestOrAwayFromZero ) )
         }
         set {

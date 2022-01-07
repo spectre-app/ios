@@ -139,8 +139,9 @@ class PagerView: UIView, UICollectionViewDelegate {
                 self.pageSize.height = self.attributes.reduce( 0, { max( $0, $1.value.size.height ) } )
             }
 
+            let items = collectionView.numberOfSections == 0 ? 0 : collectionView.numberOfItems( inSection: 0 )
             if context.invalidateDataSourceCounts {
-                for item in 0..<collectionView.numberOfItems( inSection: 0 ) {
+                for item in 0..<items {
                     let indexPath = IndexPath( item: item, section: 0 )
                     if !self.attributes.keys.contains( indexPath ) {
                         self.attributes[indexPath] = UICollectionViewLayoutAttributes( forCellWith: indexPath )
@@ -155,7 +156,7 @@ class PagerView: UIView, UICollectionViewDelegate {
                 }
             }
 
-            self.contentSize = CGSize( width: max( 1, self.pageSize.width * CGFloat( collectionView.numberOfItems( inSection: 0 ) ) ),
+            self.contentSize = CGSize( width: max( 1, self.pageSize.width * CGFloat( items ) ),
                                        height: self.attributes.values.reduce( 1 ) { max( $0, $1.frame.maxY ) } )
         }
 
