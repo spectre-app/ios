@@ -52,7 +52,8 @@ extension AlertController {
         You should update the site's account to reflect these changes. We can help!
         """, content: EffectButton( title: "Help Me Update" ) { _ in
             viewController.present( DialogSiteChangedViewController( old: oldSite, new: site ), animated: true )
-        } ).show( in: viewController.view )
+        } )
+            .show( in: viewController.view )
     }
 }
 #endif
@@ -130,9 +131,9 @@ class AlertController {
             self.view = view
 
             LayoutConfiguration( view: view )
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
-                    .activate()
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
+                .activate()
             self.appearanceConfiguration.deactivate()
             self.activationConfiguration.deactivate()
             UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { _ in
@@ -232,8 +233,8 @@ public func mperror(title: String, message: CustomStringConvertible? = nil,
     let message = message?.description ?? error?.description
     let details = [ details?.description, error?.failure != message ? error?.failure : nil, error?.suggestion,
                     error?.underlying.joined( separator: "\n" ), ]
-            .compactMap( { $0 } ).joined( separator: "\n" )
+        .compactMap( { $0 } ).joined( separator: "\n" )
 
     AlertController( title: title, message: message, details: details, level: .error )
-            .show( in: view, file: file, line: line, function: function, dso: dso )
+        .show( in: view, file: file, line: line, function: function, dso: dso )
 }

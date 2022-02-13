@@ -65,21 +65,21 @@ class DateView: EffectView {
         // - Layout
         self.widthAnchor.constraint( equalTo: self.heightAnchor, constant: .long ).isActive = true
         LayoutConfiguration( view: self.monthLabel )
-                .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                .constrain { $1.bottomAnchor.constraint( equalTo: self.separatorView.topAnchor ) }
-                .activate()
+            .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+            .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+            .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+            .constrain { $1.bottomAnchor.constraint( equalTo: self.separatorView.topAnchor ) }
+            .activate()
         LayoutConfiguration( view: self.separatorView )
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
-                .activate()
+            .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+            .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+            .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+            .activate()
         LayoutConfiguration( view: self.dayLabel )
-                .constrain { $1.topAnchor.constraint( equalTo: self.separatorView.bottomAnchor ) }
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .activate()
+            .constrain { $1.topAnchor.constraint( equalTo: self.separatorView.bottomAnchor ) }
+            .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+            .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+            .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+            .activate()
     }
 }

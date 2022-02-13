@@ -220,8 +220,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     """
                 } )
                         // TODO: Enable toggle if premium is off but biometric key is set to allow clearing it?
-                        .addBehaviour( FeatureTapBehaviour( feature: .biometrics ) )
-                        .addBehaviour( FeatureConditionalBehaviour( feature: .biometrics, effect: .enables ) ),
+                    .addBehaviour( FeatureTapBehaviour( feature: .biometrics ) )
+                    .addBehaviour( FeatureConditionalBehaviour( feature: .biometrics, effect: .enables ) ),
             ] )
         }
     }
@@ -235,13 +235,13 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     Auto-fill your site passwords from other apps.
                     """
                 } )
-                        .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) }, {
-                            if let user = $0.model {
-                                $0.viewController?.show( IntroAutoFillViewController( model: user ), sender: $0.view )
-                            }
-                        } ) )
-                        .addBehaviour( FeatureTapBehaviour( feature: .premium ) )
-                        .addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) ),
+                    .addBehaviour( BlockTapBehaviour( enabled: { !($0.model?.autofillDecided ?? true) }, {
+                        if let user = $0.model {
+                            $0.viewController?.show( IntroAutoFillViewController( model: user ), sender: $0.view )
+                        }
+                    } ) )
+                    .addBehaviour( FeatureTapBehaviour( feature: .premium ) )
+                    .addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) ),
                 ToggleItem( track: .subject( "user", action: "sharing" ), title: "File Sharing", icon: { _ in .icon( "file-export" ) },
                             value: { $0.sharing }, update: { $0.model?.sharing = $1 }, caption: { _ in
                     """
@@ -317,10 +317,10 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     alertController.addAction( UIAlertAction(
                             title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: upgrade ).or(
-                                    UIAlertController.authenticate(
-                                            userName: user.userName, title: "Upgrade",
-                                            message: "Your personal secret is required to perform the upgrade.",
-                                            action: "Authenticate", in: viewController ) { $0.newKey( for: upgrade ) } )
+                                UIAlertController.authenticate(
+                                        userName: user.userName, title: "Upgrade",
+                                        message: "Your personal secret is required to perform the upgrade.",
+                                        action: "Authenticate", in: viewController ) { $0.newKey( for: upgrade ) } )
                             .success { upgradedKey in
                                 defer { upgradedKey.deallocate() }
                                 user.algorithm = upgradedKey.pointee.algorithm
@@ -333,10 +333,10 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     alertController.addAction( UIAlertAction(
                             title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
                         user.userKeyFactory?.newKey( for: downgrade ).or(
-                                    UIAlertController.authenticate(
-                                            userName: user.userName, title: "Downgrade",
-                                            message: "Your personal secret is required to perform the downgrade.",
-                                            action: "Authenticate", in: viewController ) { $0.newKey( for: downgrade ) } )
+                                UIAlertController.authenticate(
+                                        userName: user.userName, title: "Downgrade",
+                                        message: "Your personal secret is required to perform the downgrade.",
+                                        action: "Authenticate", in: viewController ) { $0.newKey( for: downgrade ) } )
                             .success { downgradedKey in
                                 defer { downgradedKey.deallocate() }
                                 user.algorithm = downgradedKey.pointee.algorithm

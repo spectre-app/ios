@@ -115,12 +115,12 @@ class BackgroundView: UIView, ThemeObserver {
 
         // - Layout
         LayoutConfiguration( view: self.imageView )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.imageTint )
-                .constrain( as: .topBox )
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-                .constrain { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: .long ).with( priority: .defaultHigh + 1 ) }
-                .activate()
+            .constrain( as: .topBox )
+            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+            .constrain { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: .long ).with( priority: .defaultHigh + 1 ) }
+            .activate()
 
         defer {
             self.mode = mode

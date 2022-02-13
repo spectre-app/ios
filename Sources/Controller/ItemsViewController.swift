@@ -77,15 +77,15 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
 
         // - Layout
         LayoutConfiguration( view: self.imageSpacer )
-                .constrain {
-                    $1.heightAnchor.constraint( equalTo: self.backgroundView.imageView.heightAnchor,
-                                                multiplier: .long, constant: -40 )
-                }
-                .activate()
+            .constrain {
+                $1.heightAnchor.constraint( equalTo: self.backgroundView.imageView.heightAnchor,
+                                            multiplier: .long, constant: -40 )
+            }
+            .activate()
         LayoutConfiguration( view: self.itemsView )
-                .constrain( as: .box, margin: true )
-                .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
-                .activate()
+            .constrain( as: .box, margin: true )
+            .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
+            .activate()
 
         self.items.forEach { $0.view.didLoad() }
     }

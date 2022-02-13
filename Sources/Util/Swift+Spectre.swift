@@ -104,7 +104,7 @@ extension Error {
 
         return (description: resolver( NSLocalizedDescriptionKey ) as? String ?? self.localizedDescription,
                 failure: [ resolver( NSLocalizedFailureErrorKey ) as? String, error.localizedFailureReason ]
-                        .compactMap( { $0 } ).joined( separator: " " ).nonEmpty,
+                    .compactMap( { $0 } ).joined( separator: " " ).nonEmpty,
                 suggestion: error.localizedRecoverySuggestion,
                 underlying: underlyingErrors.compactMap { $0.detailsDescription })
     }

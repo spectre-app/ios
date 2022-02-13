@@ -53,12 +53,12 @@ class TipsView: UIView {
 
         // - Layout
         LayoutConfiguration( view: self.tipLabel )
-                .constrain( as: .verticalCenterH )
-                .activate()
+            .constrain( as: .verticalCenterH )
+            .activate()
         LayoutConfiguration( view: self.tipProgress )
-                .constrain( as: .bottomCenter )
-                .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
-                .activate()
+            .constrain( as: .bottomCenter )
+            .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+            .activate()
         self.tipExpiryConfiguration = LayoutConfiguration( view: self.tipProgress ) { active, inactive in
             inactive.constrain { $1.widthAnchor.constraint( equalToConstant: 20 ) }
             active.constrain { $1.widthAnchor.constraint( equalToConstant: 0 ) }

@@ -44,45 +44,46 @@ public struct SpectreOperation {
         let event = Tracker.shared.begin( track: .subject( "site", action: "use" ) )
 
         return self.token.promise { token in
-            Feedback.shared.play( .trigger )
+                       Feedback.shared.play( .trigger )
 
-            UIPasteboard.general.setObjects(
-                    [ token as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: Date( timeIntervalSinceNow: 3 * 60 ) )
-            self.operand.use()
+                       UIPasteboard.general.setObjects(
+                               [ token as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: Date( timeIntervalSinceNow: 3 * 60 ) )
+                       self.operand.use()
 
-            AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
-            """
-            Your \(self.purpose) for \(self.siteName) is:
-            \(token)
+                       AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
+                       """
+                       Your \(self.purpose) for \(self.siteName) is:
+                       \(token)
 
-            It was copied to the pasteboard, you can now switch to your application and paste it into the \(self.purpose) field.
+                       It was copied to the pasteboard, you can now switch to your application and paste it into the \(self.purpose) field.
 
-            Note that after 3 minutes, the \(self.purpose) will expire from the pasteboard for security reasons.
-            """ ).show( in: view )
+                       Note that after 3 minutes, the \(self.purpose) will expire from the pasteboard for security reasons.
+                       """ ).show( in: view )
 
-            return (self, token)
-        }.then {
-            do {
-                let (operation, token) = try $0.get()
-                event.end(
-                        [ "result": $0.name,
-                          "from": trackingFrom,
-                          "action": "copy",
-                          "counter": "\(operation.counter)",
-                          "purpose": "\(operation.purpose)",
-                          "type": "\(operation.type)",
-                          "algorithm": "\(operation.algorithm)",
-                          "entropy": Attacker.entropy( type: operation.type ) ?? Attacker.entropy( string: token ),
-                        ] )
-            }
-            catch {
-                event.end(
-                        [ "result": $0.name,
-                          "from": trackingFrom,
-                          "action": "copy",
-                          "error": error.localizedDescription,
-                        ] )
-            }
-        }
+                       return (self, token)
+                   }
+                   .then {
+                       do {
+                           let (operation, token) = try $0.get()
+                           event.end(
+                                   [ "result": $0.name,
+                                     "from": trackingFrom,
+                                     "action": "copy",
+                                     "counter": "\(operation.counter)",
+                                     "purpose": "\(operation.purpose)",
+                                     "type": "\(operation.type)",
+                                     "algorithm": "\(operation.algorithm)",
+                                     "entropy": Attacker.entropy( type: operation.type ) ?? Attacker.entropy( string: token ),
+                                   ] )
+                       }
+                       catch {
+                           event.end(
+                                   [ "result": $0.name,
+                                     "from": trackingFrom,
+                                     "action": "copy",
+                                     "error": error.localizedDescription,
+                                   ] )
+                       }
+                   }
     }
 }

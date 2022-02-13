@@ -40,15 +40,15 @@ public enum IconStyle: CaseIterable {
 }
 
 private let fontAwesomeUnicode: [String: String?] =
-        Bundle.main.url( forResource: "Font Awesome 6", withExtension: "json" ).flatMap {
-            try? Data( contentsOf: $0 )
-        }.flatMap {
-            try? JSONDecoder().decode( [ String: String ].self, from: $0 ).mapValues {
-                var unicode: UInt64 = 0
-                return Scanner( string: $0 ).scanHexInt64( &unicode )
-                       ? Unicode.Scalar( UInt32( unicode ) ).flatMap { String( Character( $0 ) ) } : nil
-            }
-        } ?? .init()
+        Bundle.main.url( forResource: "Font Awesome 6", withExtension: "json" )
+              .flatMap { try? Data( contentsOf: $0 ) }
+              .flatMap {
+                  try? JSONDecoder().decode( [ String: String ].self, from: $0 ).mapValues {
+                      var unicode: UInt64 = 0
+                      return Scanner( string: $0 ).scanHexInt64( &unicode )
+                             ? Unicode.Scalar( UInt32( unicode ) ).flatMap { String( Character( $0 ) ) } : nil
+                  }
+              } ?? .init()
 
 extension NSAttributedString {
     public static func icon(_ icon: String?, withSize size: CGFloat? = nil, style: IconStyle? = nil, invert: Bool = false)

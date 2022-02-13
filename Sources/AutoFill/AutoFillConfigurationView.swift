@@ -90,17 +90,17 @@ class AutoFillConfigurationView: UIScrollView {
 
         // - Layout
         LayoutConfiguration( view: self.appImage )
-                .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
-                .activate()
+            .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
+            .activate()
         LayoutConfiguration( view: self.avatarImage )
-                .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
-                .activate()
+            .constrain { $1.widthAnchor.constraint( equalToConstant: 60 ) }
+            .activate()
         LayoutConfiguration( view: self.stackView )
-                .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
-                .constrain( as: .center, to: self.contentLayoutGuide )
-                .activate()
+            .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+            .constrain( as: .center, to: self.contentLayoutGuide )
+            .activate()
         LayoutConfiguration( view: step3Steps )
-                .constrain { $1.widthAnchor.constraint( equalTo: step2Steps.widthAnchor ) }
-                .activate()
+            .constrain { $1.widthAnchor.constraint( equalTo: step2Steps.widthAnchor ) }
+            .activate()
     }
 }

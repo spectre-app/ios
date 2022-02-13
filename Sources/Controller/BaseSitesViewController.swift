@@ -60,19 +60,18 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
 
         // - Layout
         LayoutConfiguration( view: self.sitesTableView )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.topContainer )
-                .constrainAll {
-                    [
-                        $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
-                        $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 )
-                          .with( priority: UILayoutPriority( 500 ) ),
-                        $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
-                        $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
-                        $1.heightAnchor.constraint( equalToConstant: 50 ),
-                    ]
-                }
-                .activate()
+            .constrainAll {
+                [
+                    $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ),
+                    $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor, constant: 8 ).with( priority: .init( 500 ) ),
+                    $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor, constant: 8 ),
+                    $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor, constant: -8 ),
+                    $1.heightAnchor.constraint( equalToConstant: 50 ),
+                ]
+            }
+            .activate()
     }
 
     override func viewDidLayoutSubviews() {
@@ -80,9 +79,9 @@ class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, Deta
 
         // Offset sites table's top inset to make space for the top container.
         self.sitesTableView.contentInset.top =
-                max( 0, self.sitesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y
-                        - (self.sitesTableView.bounds.origin.y + self.sitesTableView.safeAreaInsets.top)
-                        - 8 )
+        max( 0, self.sitesTableView.convert( self.topContainer.bounds.bottom, from: self.topContainer ).y
+                - (self.sitesTableView.bounds.origin.y + self.sitesTableView.safeAreaInsets.top)
+                - 8 )
     }
 
     // MARK: - UITextFieldDelegate

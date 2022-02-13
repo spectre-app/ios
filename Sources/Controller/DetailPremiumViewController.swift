@@ -205,8 +205,8 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
                     if let product = self.product {
                         if let introductoryPrice = product.introductoryPrice {
                             self.buyButton.attributedTitle =
-                                    NSAttributedString( string: introductoryPrice.localizedOffer ) +
-                                    NSAttributedString( string: " for \(introductoryPrice.localizedValidity)", secondaryColor: .clear )
+                            NSAttributedString( string: introductoryPrice.localizedOffer ) +
+                            NSAttributedString( string: " for \(introductoryPrice.localizedValidity)", secondaryColor: .clear )
                             self.captionLabel.text = "Then \(product.localizedOffer()). \(product.localizedDescription)"
                         }
                         else {
@@ -252,11 +252,11 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
                 // - Layout
                 LayoutConfiguration( view: self.buyButton )
-                        .constrain( as: .topBox, margin: true ).activate()
+                    .constrain( as: .topBox, margin: true ).activate()
                 LayoutConfiguration( view: self.captionLabel )
-                        .constrain( as: .bottomBox, margin: true )
-                        .constrain { $1.topAnchor.constraint( equalTo: self.buyButton.bottomAnchor, constant: 4 ) }
-                        .activate()
+                    .constrain( as: .bottomBox, margin: true )
+                    .constrain { $1.topAnchor.constraint( equalTo: self.buyButton.bottomAnchor, constant: 4 ) }
+                    .activate()
             }
         }
     }

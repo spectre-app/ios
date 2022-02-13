@@ -31,10 +31,10 @@ class AutoFillConfigurationViewController: BaseViewController {
 
         // - Layout
         LayoutConfiguration( view: self.configurationView )
-                .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
-                .constrain( as: .box ).activate()
+            .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
+            .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.closeButton )
-                .constrain( as: .bottomCenter, margin: true ).activate()
+            .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {

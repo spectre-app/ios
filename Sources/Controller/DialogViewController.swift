@@ -65,13 +65,13 @@ class DialogViewController: BaseViewController {
 
         // - Layout
         LayoutConfiguration( view: self.scrollView )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.stackView )
-                .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
-                .constrain( as: .box )
-                .activate()
+            .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+            .constrain( as: .box )
+            .activate()
         LayoutConfiguration( view: self.closeButton )
-                .constrain( as: .bottomCenter, margin: true ).activate()
+            .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     internal func populate(stackView: UIStackView) {

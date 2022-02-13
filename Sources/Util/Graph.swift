@@ -34,10 +34,11 @@ class Graph<E: Hashable>: CustomStringConvertible {
 
     func find(from root: E, _ found: (E) -> Bool, budget: Double = Double.greatestFiniteMagnitude) -> E? {
         Graph.path( from: root, find: found, links: { node in
-            self.links.reduce( [ Link<E> ]() ) { links, link in
-                link.from == node ? links + [ link ] : links
-            }
-        }, budget: budget )?.target
+                 self.links.reduce( [ Link<E> ]() ) { links, link in
+                     link.from == node ? links + [ link ] : links
+                 }
+             }, budget: budget )?
+             .target
     }
 
     public static func path<E: Hashable, S: Sequence>(

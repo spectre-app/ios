@@ -88,10 +88,10 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
             else { return }
 
             UIAlertController.authenticate(
-                                     title: "Incognito Login",
-                                     message: "While in incognito mode, no user information is kept on the device",
-                                     action: "Log In", in: self, track: .subject( "users.user", action: "auth" ),
-                                     authenticator: { User( userName: $0.userName, file: nil ).login( using: $0 ) } )
+                    title: "Incognito Login",
+                    message: "While in incognito mode, no user information is kept on the device",
+                    action: "Log In", in: self, track: .subject( "users.user", action: "auth" ),
+                    authenticator: { User( userName: $0.userName, file: nil ).login( using: $0 ) } )
                              .then( on: .main ) {
                                  incognitoButton.timing?.end(
                                          [ "result": $0.name,
@@ -140,17 +140,17 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
 
         // - Layout
         LayoutConfiguration( view: self.tipsView )
-                .constrain( as: .topCenter, to: self.view.safeAreaLayoutGuide ).activate()
+            .constrain( as: .topCenter, to: self.view.safeAreaLayoutGuide ).activate()
         LayoutConfiguration( view: self.actionStack )
-                .constrain { $1.bottomAnchor.constraint( equalTo: self.appToolbar.topAnchor ) }
-                .constrain { $1.centerXAnchor.constraint( equalTo: self.appToolbar.centerXAnchor ) }
-                .activate()
+            .constrain { $1.bottomAnchor.constraint( equalTo: self.appToolbar.topAnchor ) }
+            .constrain { $1.centerXAnchor.constraint( equalTo: self.appToolbar.centerXAnchor ) }
+            .activate()
         LayoutConfiguration( view: self.appToolbar )
-                .constrain( as: .bottomCenter, margin: true ).activate()
+            .constrain( as: .bottomCenter, margin: true ).activate()
         LayoutConfiguration( view: self.feedbackView )
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.appToolbar.topAnchor, constant: -8 ) }
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.keyboardLayoutGuide.topAnchor, constant: -8 ) }
-                .constrain( as: .centerH ).activate()
+            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.appToolbar.topAnchor, constant: -8 ) }
+            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.keyboardLayoutGuide.topAnchor, constant: -8 ) }
+            .constrain( as: .centerH ).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -195,7 +195,7 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
 
         DispatchQueue.main.perform {
             self.appMigrate.isHidden = !userFiles.isEmpty ||
-                    !(URL( string: "masterpassword:" ).flatMap { UIApplication.shared.canOpenURL( $0 ) } ?? false)
+            !(URL( string: "masterpassword:" ).flatMap { UIApplication.shared.canOpenURL( $0 ) } ?? false)
         }
     }
 

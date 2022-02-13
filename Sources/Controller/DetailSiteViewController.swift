@@ -275,8 +275,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             super.init( title: "Security Answers 🅿︎",
                         values: {
                             $0.questions.reduce( [ "": Question( site: $0, keyword: "" ) ] ) {
-                                $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
-                            }.values.sorted()
+                                  $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
+                              }
+                              .values.sorted()
                         },
                         subitems: [
                             ButtonItem( track: .subject( "site.question", action: "add" ),
@@ -412,22 +413,22 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
                 // - Layout
                 LayoutConfiguration( view: self.resultLabel )
-                        .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                        .constrain { $1.topAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
-                        .activate()
+                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                    .constrain { $1.topAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .activate()
                 LayoutConfiguration( view: self.keywordLabel )
-                        .constrain { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
-                        .constrain { $1.leadingAnchor.constraint( equalTo: self.resultLabel.leadingAnchor ) }
-                        .constrain { $1.trailingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor ) }
-                        .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                        .activate()
+                    .constrain { $1.topAnchor.constraint( equalTo: self.resultLabel.bottomAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: self.resultLabel.leadingAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .activate()
                 LayoutConfiguration( view: self.copyButton )
-                        .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
-                        .constrain { $1.leadingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor, constant: 8 ) }
-                        .constrain { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
-                        .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                        .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                        .activate()
+                    .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
+                    .constrain { $1.leadingAnchor.constraint( equalTo: self.resultLabel.trailingAnchor, constant: 8 ) }
+                    .constrain { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                    .activate()
             }
         }
     }

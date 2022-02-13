@@ -38,12 +38,12 @@ class DialogSiteChangedViewController: DialogViewController, AppConfigObserver {
 
         self.title = "Update Your Site"
         self.message =
-                """
-                Let's get \(self.oldSite.siteName) updated!
+        """
+        Let's get \(self.oldSite.siteName) updated!
 
-                Highlighted items have changed.
-                Log into your site and update your account with the new values.
-                """
+        Highlighted items have changed.
+        Log into your site and update your account with the new values.
+        """
     }
 
     override func viewDidAppear(_ animated: Bool) {

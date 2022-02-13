@@ -197,11 +197,11 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         self.rightMinimumWidth.isActive = true
 
         LayoutConfiguration( view: self.activityIndicator )
-                .constrain( as: .center, margin: true )
-                .activate()
+            .constrain( as: .center, margin: true )
+            .activate()
         LayoutConfiguration( view: self.identiconLabel )
-                .constrain( as: .center, margin: true )
-                .activate()
+            .constrain( as: .center, margin: true )
+            .activate()
 
         defer {
             self.nameField = nameField
@@ -253,20 +253,21 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
             self.activityIndicator.startAnimating()
 
             return DispatchQueue.api.promising {
-                try handler( SecretKeyFactory( userName: userName, userSecret: userSecret ) )
-            }.then( on: .main ) { result in
-                self.passwordField?.text = nil
-                self.passwordField?.isEnabled = true
-                switch result {
-                    case .success:
-                        self.passwordField?.resignFirstResponder()
+                                    try handler( SecretKeyFactory( userName: userName, userSecret: userSecret ) )
+                                }
+                                .then( on: .main ) { result in
+                                    self.passwordField?.text = nil
+                                    self.passwordField?.isEnabled = true
+                                    switch result {
+                                        case .success:
+                                            self.passwordField?.resignFirstResponder()
 
-                    case .failure:
-                        self.passwordField?.becomeFirstResponder()
-                        self.passwordField?.shake()
-                }
-                self.activityIndicator.stopAnimating()
-            }
+                                        case .failure:
+                                            self.passwordField?.becomeFirstResponder()
+                                            self.passwordField?.shake()
+                                    }
+                                    self.activityIndicator.stopAnimating()
+                                }
         }
     }
 

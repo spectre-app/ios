@@ -100,9 +100,9 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
 
         // - Layout
         LayoutConfiguration( view: self.subviews.first )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.commentView )
-                .constrain { $1.heightAnchor.constraint( equalToConstant: 88 ) }.activate()
+            .constrain { $1.heightAnchor.constraint( equalToConstant: 88 ) }.activate()
     }
 
     override func willMove(toSuperview newSuperview: UIView?) {

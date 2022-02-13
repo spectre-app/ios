@@ -129,47 +129,50 @@ class SitePreview: Equatable {
 
             // Resolve candidate image URLs for the site.
             // If the site URL is not a pure domain, install a fallback resolver for the site domain.
-            let candidates = Set( [ self.name, self.url?.nonEmpty ].compactMap { $0 }.flatMap {
-                [
-                    $0,
-                    $0.domainName( .host ),
-                    $0.domainName( .topPrivate ),
-                    "www.\($0.domainName( .topPrivate ))",
-                ]
-            }.map {
-                "https://\($0.replacingOccurrences( of: "^[^:/]*:/*", with: "", options: .regularExpression ))"
-            } )
+            let candidates = Set(
+                    [ self.name, self.url?.nonEmpty ]
+                        .compactMap { $0 }
+                        .flatMap {
+                            [
+                                $0,
+                                $0.domainName( .host ),
+                                $0.domainName( .topPrivate ),
+                                "www.\($0.domainName( .topPrivate ))",
+                            ]
+                        }
+                        .map { "https://\($0.replacingOccurrences( of: "^[^:/]*:/*", with: "", options: .regularExpression ))" }
+            )
 
             let updating: Promise<Bool> =
-                    candidates.map { self.preview( forURL: $0 ) }.flatten().promising {
-                        self.bestImage( fromPreviews: $0.compactMap( { try? $0.get() } ) )
-                    }.thenPromise {
-                        do {
-                            let result = try $0.get()
-                            //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
-                            self.data.imageURL = result.response.url?.absoluteString
-                            self.data.imageData = result.data
-                            self.data.imageDate = Date()
-                        }
-                        catch {
-                            //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
-                            self.data.imageURL = nil
-                            self.data.imageData = nil
-                            self.data.imageDate = Date()
-                            wrn( "Preview unavailable: %@ [>PII]", error.localizedDescription )
-                            pii( "[>] Candidates: %@, Error: %@", candidates, error )
-                        }
+                    candidates.map { self.preview( forURL: $0 ) }.flatten()
+                              .promising { self.bestImage( fromPreviews: $0.compactMap( { try? $0.get() } ) ) }
+                              .thenPromise {
+                                  do {
+                                      let result = try $0.get()
+                                      //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
+                                      self.data.imageURL = result.response.url?.absoluteString
+                                      self.data.imageData = result.data
+                                      self.data.imageDate = Date()
+                                  }
+                                  catch {
+                                      //dbg( "[preview fetched] %@: %d", self.url, imageData.count )
+                                      self.data.imageURL = nil
+                                      self.data.imageData = nil
+                                      self.data.imageDate = Date()
+                                      wrn( "Preview unavailable: %@ [>PII]", error.localizedDescription )
+                                      pii( "[>] Candidates: %@, Error: %@", candidates, error )
+                                  }
 
-                        SitePreview.semaphore.await {
-                            SitePreview.previews.setObject( self, forKey: self.name as NSString, cost: self.data.imageSize )
-                        }
+                                  SitePreview.semaphore.await {
+                                      SitePreview.previews.setObject( self, forKey: self.name as NSString, cost: self.data.imageSize )
+                                  }
 
-                        if let previewFile = SitePreview.previewDataFile( for: self.name ) {
-                            try JSONEncoder().encode( self.data ).write( to: previewFile )
-                        }
+                                  if let previewFile = SitePreview.previewDataFile( for: self.name ) {
+                                      try JSONEncoder().encode( self.data ).write( to: previewFile )
+                                  }
 
-                        return true
-                    }
+                                  return true
+                              }
             self.updating = updating.finally( on: SitePreview.semaphore ) {
                 self.updating = nil
             }
@@ -181,14 +184,15 @@ class SitePreview: Equatable {
     private static func byImageSize(_ urls: [String?]) -> Promise<[URL]> {
         // Perform a HEAD request for each candidate URL
         urls.compactMap { self.validURL( $0 ) }.compactMap {
-            URLSession.optional.get()?.promise( with: URLRequest( method: .head, url: $0 ) ).promise { $0.1 }
-        }.flatten().promise {
-            // Return all URLs that resulted in image responses, sorted by content length.
-            $0.compactMap { try? $0.get() }
-              .filter { $0.mimeType?.contains( "image/" ) ?? false }
-              .sorted { $0.expectedContentLength > $1.expectedContentLength }
-              .compactMap { $0.url }
-        }
+                URLSession.optional.get()?.promise( with: URLRequest( method: .head, url: $0 ) ).promise { $0.1 }
+            }
+            .flatten().promise {
+                // Return all URLs that resulted in image responses, sorted by content length.
+                $0.compactMap { try? $0.get() }
+                  .filter { $0.mimeType?.contains( "image/" ) ?? false }
+                  .sorted { $0.expectedContentLength > $1.expectedContentLength }
+                  .compactMap { $0.url }
+            }
     }
 
     private static func validURL(_ string: String?) -> URL? {
@@ -278,9 +282,9 @@ struct PreviewData: Codable, Equatable {
                 // Weigh colors according to interested parameters.
                 let saturation = color.saturation, value = color.value, alpha = Int( color.alpha )
                 scoresByColor[color] = 0 +
-                        400 * alpha * alpha / 65536 +
-                        200 * saturation / 256 +
-                        100 * mirror( ratio: value, center: 216, max: 256 ) / 256
+                400 * alpha * alpha / 65536 +
+                200 * saturation / 256 +
+                100 * mirror( ratio: value, center: 216, max: 256 ) / 256
             }
 
             // Use top weighted color as site's color.

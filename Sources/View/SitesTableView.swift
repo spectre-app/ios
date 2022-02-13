@@ -195,31 +195,33 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                         .init( arrayLiteral: UIAction( title: "Delete", image: .icon( "trash-can" ),
                                                        identifier: UIAction.Identifier( "delete" ), attributes: .destructive,
                                                        handler: { _ in site.user.sites.removeAll { $0 === site } } ) )
-                        + self.siteActions.filter { siteAction in
-                            if !siteAction.appearance.contains( .menu ) {
-                                // Not a menu action.
-                                return false
-                            }
-                            if siteAction.appearance.contains( where: {
-                                if case let .feature(feature) = $0 { return !feature.isEnabled }
-                                return false
-                            } ) {
-                                // Required feature is missing.
-                                return false
-                            }
-                            return true
-                        }.map { siteAction in
-                            UIAction( title: siteAction.title, image: .icon( siteAction.icon ) ) { action in
-                                if let tracking = siteAction.tracking {
-                                    self.previewEvents[indexPath]?.end( [ "action": tracking.action ] )
-                                    Tracker.shared.event( track: tracking.with( parameters: [
-                                        "appearance": "menu",
-                                    ] ) )
-                                }
+                        + self.siteActions
+                              .filter { siteAction in
+                                  if !siteAction.appearance.contains( .menu ) {
+                                      // Not a menu action.
+                                      return false
+                                  }
+                                  if siteAction.appearance.contains( where: {
+                                      if case let .feature(feature) = $0 { return !feature.isEnabled }
+                                      return false
+                                  } ) {
+                                      // Required feature is missing.
+                                      return false
+                                  }
+                                  return true
+                              }
+                              .map { siteAction in
+                                  UIAction( title: siteAction.title, image: .icon( siteAction.icon ) ) { action in
+                                      if let tracking = siteAction.tracking {
+                                          self.previewEvents[indexPath]?.end( [ "action": tracking.action ] )
+                                          Tracker.shared.event( track: tracking.with( parameters: [
+                                              "appearance": "menu",
+                                          ] ) )
+                                      }
 
-                                siteAction.action( site, nil, .menu )
-                            }
-                        } )
+                                      siteAction.action( site, nil, .menu )
+                                  }
+                              } )
                     } )
         }
     }
@@ -504,28 +506,30 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 guard let site = self.site, case .began = $0.state
                 else { return }
 
-                self.sitesView?.siteActions.filter { siteAction in
-                    if !siteAction.appearance.contains( .mode ) {
-                        // Not a mode action.
-                        return false
+                self.sitesView?.siteActions
+                    .filter { siteAction in
+                        if !siteAction.appearance.contains( .mode ) {
+                            // Not a mode action.
+                            return false
+                        }
+                        if siteAction.appearance.contains( where: {
+                            if case let .feature(feature) = $0 { return !feature.isEnabled }
+                            return false
+                        } ) {
+                            // Required feature is missing.
+                            return false
+                        }
+                        return true
                     }
-                    if siteAction.appearance.contains( where: {
-                        if case let .feature(feature) = $0 { return !feature.isEnabled }
-                        return false
-                    } ) {
-                        // Required feature is missing.
-                        return false
+                    .forEach { siteAction in
+                        if let tracking = siteAction.tracking {
+                            Tracker.shared.event( track: tracking.with( parameters: [
+                                "purpose": self.purpose,
+                                "appearance": "mode",
+                            ] ) )
+                        }
+                        siteAction.action( site, self.purpose, .mode )
                     }
-                    return true
-                }.forEach { siteAction in
-                    if let tracking = siteAction.tracking {
-                        Tracker.shared.event( track: tracking.with( parameters: [
-                            "purpose": self.purpose,
-                            "appearance": "mode",
-                        ] ) )
-                    }
-                    siteAction.action( site, self.purpose, .mode )
-                }
             } )
 
             // - Hierarchy
@@ -537,77 +541,77 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             // - Layout
             LayoutConfiguration( view: self.separatorView )
-                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    .constrain { $1.widthAnchor.constraint( equalToConstant: 40 ).with( priority: .defaultHigh ) }
-                    .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
-                    .activate()
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .constrain { $1.widthAnchor.constraint( equalToConstant: 40 ).with( priority: .defaultHigh ) }
+                .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+                .activate()
 
             LayoutConfiguration( view: self.modeStack )
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .activate()
 
             LayoutConfiguration( view: self.actionStack )
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .activate()
 
             LayoutConfiguration( view: self.newButton )
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrain { $1.topAnchor.constraint( equalTo: $0.topAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                .activate()
 
             LayoutConfiguration( view: self.contentStack )
-                    .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeStack.trailingAnchor ) }
-                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.actionStack.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.newButton.leadingAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: self.modeStack.trailingAnchor ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.actionStack.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: self.newButton.leadingAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .activate()
 
             LayoutConfiguration( view: self.selectionView )
-                    .hugging( horizontal: .fittingSizeLevel, vertical: .fittingSizeLevel )
-                    .activate()
+                .hugging( horizontal: .fittingSizeLevel, vertical: .fittingSizeLevel )
+                .activate()
 
             LayoutConfiguration( view: self.resultLabel )
-                    .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
-                    .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 3 )
-                    .activate()
+                .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
+                .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 3 )
+                .activate()
 
             LayoutConfiguration( view: self.nameLabel )
-                    .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
-                    .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 2 )
-                    .activate()
+                .hugging( horizontal: .fittingSizeLevel, vertical: .defaultLow )
+                .compressionResistance( horizontal: .defaultHigh - 1, vertical: .defaultHigh + 2 )
+                .activate()
 
             self.selectionConfiguration = LayoutConfiguration( view: self )
-                    .apply( LayoutConfiguration( view: self.contentStack ) { active, _ in
-                        active.constrain {
-                            $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
-                              .with( priority: .defaultHigh + 10 )
-                        }
-                    } )
-                    .apply( LayoutConfiguration( view: self.separatorView ) { active, _ in
-                        active.constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                        active.constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    } )
-                    .didSet { siteCell, _ in
-                        guard let dataSource = siteCell.sitesView?.sitesDataSource, var snapshot = dataSource.snapshot(),
-                              let result = siteCell.result, snapshot.indexOfItem( result ) != nil
-                        else { return }
-
-                        if #available( iOS 15.0, * ) {
-                            snapshot.reconfigureItems( [ result ] )
-                        }
-                        else {
-                            snapshot.reloadItems( [ result ] )
-                        }
-                        dataSource.apply( snapshot )
+                .apply( LayoutConfiguration( view: self.contentStack ) { active, _ in
+                    active.constrain {
+                        $1.heightAnchor.constraint( equalTo: $0.widthAnchor, multiplier: .short )
+                          .with( priority: .defaultHigh + 10 )
                     }
+                } )
+                .apply( LayoutConfiguration( view: self.separatorView ) { active, _ in
+                    active.constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                    active.constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                } )
+                .didSet { siteCell, _ in
+                    guard let dataSource = siteCell.sitesView?.sitesDataSource, var snapshot = dataSource.snapshot(),
+                          let result = siteCell.result, snapshot.indexOfItem( result ) != nil
+                    else { return }
+
+                    if #available( iOS 15.0, * ) {
+                        snapshot.reconfigureItems( [ result ] )
+                    }
+                    else {
+                        snapshot.reloadItems( [ result ] )
+                    }
+                    dataSource.apply( snapshot )
+                }
         }
 
         override func willMove(toWindow newWindow: UIWindow?) {
@@ -629,40 +633,42 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self.primaryGestureRecognizer = nil
             self.actionStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-            self.sitesView?.siteActions.filter { siteAction in
-                if !siteAction.appearance.contains( .cell ) {
-                    // Not a menu action.
-                    return false
-                }
-                if siteAction.appearance.contains( where: {
-                    if case let .feature(feature) = $0 { return !feature.isEnabled }
-                    return false
-                } ) {
-                    // Required feature is missing.
-                    return false
-                }
-                return true
-            }.forEach { siteAction in
-                let actionButton = EffectButton( track: siteAction.tracking?.with( parameters: [ "appearance": "cell" ] ),
-                                                 image: .icon( siteAction.icon ), border: 0, background: false ) {
-                    [unowned self] in
-                    if let site = self.site {
-                        siteAction.action( site, self.purpose, .cell )
+            self.sitesView?.siteActions
+                .filter { siteAction in
+                    if !siteAction.appearance.contains( .cell ) {
+                        // Not a menu action.
+                        return false
                     }
+                    if siteAction.appearance.contains( where: {
+                        if case let .feature(feature) = $0 { return !feature.isEnabled }
+                        return false
+                    } ) {
+                        // Required feature is missing.
+                        return false
+                    }
+                    return true
                 }
-                if siteAction.appearance.contains( .primary ) {
-                    self.primaryGestureRecognizer = UITapGestureRecognizer { [unowned self] _ in
-                        if self.newButton.isUserInteractionEnabled {
-                            self.newButton.activate()
-                        }
-                        else {
-                            actionButton.activate()
+                .forEach { siteAction in
+                    let actionButton = EffectButton( track: siteAction.tracking?.with( parameters: [ "appearance": "cell" ] ),
+                                                     image: .icon( siteAction.icon ), border: 0, background: false ) {
+                        [unowned self] in
+                        if let site = self.site {
+                            siteAction.action( site, self.purpose, .cell )
                         }
                     }
+                    if siteAction.appearance.contains( .primary ) {
+                        self.primaryGestureRecognizer = UITapGestureRecognizer { [unowned self] _ in
+                            if self.newButton.isUserInteractionEnabled {
+                                self.newButton.activate()
+                            }
+                            else {
+                                actionButton.activate()
+                            }
+                        }
+                    }
+                    self.primaryGestureRecognizer?.isEnabled = self.isSelected
+                    self.actionStack.addArrangedSubview( actionButton )
                 }
-                self.primaryGestureRecognizer?.isEnabled = self.isSelected
-                self.actionStack.addArrangedSubview( actionButton )
-            }
         }
 
         override func prepareForReuse() {
@@ -803,7 +809,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.primaryGestureRecognizer?.isEnabled = self.isSelected
 
             self.resultLabel.isSecureTextEntry =
-                    (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
+            (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
             self.resultLabel.isUserInteractionEnabled = !self.resultLabel.isSecureTextEntry
             self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on : .off
 
@@ -860,14 +866,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             // - Layout
             LayoutConfiguration( view: self.emitterView )
-                    .constrain( as: .box ).activate()
+                .constrain( as: .box ).activate()
             LayoutConfiguration( view: self.propLabel )
-                    .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                    .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .activate()
         }
 
         func willDisplay() {

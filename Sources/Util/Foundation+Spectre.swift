@@ -356,16 +356,17 @@ extension URLSession {
     public func promise(with request: URLRequest) -> Promise<(data: Data, response: URLResponse)> {
         let promise = Promise<(data: Data, response: URLResponse)>()
         self.dataTask( with: request ) {
-            if let error = $2 {
-                promise.finish( .failure( error ) )
+                if let error = $2 {
+                    promise.finish( .failure( error ) )
+                }
+                else if let data = $0, let response = $1 {
+                    promise.finish( .success( (data, response) ) )
+                }
+                else {
+                    promise.finish( .failure( AppError.internal( cause: "Missing error, data or response to URL request", details: request ) ) )
+                }
             }
-            else if let data = $0, let response = $1 {
-                promise.finish( .success( (data, response) ) )
-            }
-            else {
-                promise.finish( .failure( AppError.internal( cause: "Missing error, data or response to URL request", details: request ) ) )
-            }
-        }.resume()
+            .resume()
         return promise
     }
 }

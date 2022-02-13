@@ -66,7 +66,7 @@ extension UIView: Describable {
         }
         else if let owner = owner {
             description = short ? owner.property :
-                          "\(owner.property)::\(_describe( Self.self, short: true ))@\(_describe( type( of: owner.owner ), short: true ))"
+            "\(owner.property)::\(_describe( Self.self, short: true ))@\(_describe( type( of: owner.owner ), short: true ))"
         }
         else if let index = self.superview?.subviews.firstIndex( of: self ) {
             description = short ? "[\(index)]" : "[\(index)]\(_describe( Self.self ))"

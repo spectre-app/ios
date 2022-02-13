@@ -71,11 +71,11 @@ class PagerView: UIView, UICollectionViewDelegate {
 
         // - Layout
         LayoutConfiguration( view: self.collectionView )
-                .constrain( as: .topBox )
-                .activate()
+            .constrain( as: .topBox )
+            .activate()
         LayoutConfiguration( view: self.indicatorView )
-                .constrain { $1.topAnchor.constraint( equalTo: self.collectionView.bottomAnchor, constant: 8 ) }
-                .constrain( as: .bottomCenter, margin: true ).activate()
+            .constrain { $1.topAnchor.constraint( equalTo: self.collectionView.bottomAnchor, constant: 8 ) }
+            .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     // MARK: - UICollectionViewDelegate
@@ -235,7 +235,7 @@ class PagerView: UIView, UICollectionViewDelegate {
                 if let pageView = self.pageView, pageView.superview != self.contentView {
                     self.contentView.addSubview( pageView )
                     LayoutConfiguration( view: pageView )
-                            .constrain( as: .box ).activate()
+                        .constrain( as: .box ).activate()
                 }
             }
         }
@@ -252,7 +252,7 @@ class PagerView: UIView, UICollectionViewDelegate {
             self.contentView.insetsLayoutMarginsFromSafeArea = false
             self.contentView.preservesSuperviewLayoutMargins = true
             LayoutConfiguration( view: self.contentView )
-                    .constrain( as: .box ).activate()
+                .constrain( as: .box ).activate()
         }
 
         override func layoutSubviews() {
@@ -301,7 +301,7 @@ class PagerView: UIView, UICollectionViewDelegate {
 
             // - Layout
             LayoutConfiguration( view: self.stackView )
-                    .constrain( as: .box, margin: true ).activate()
+                .constrain( as: .box, margin: true ).activate()
         }
 
         override func layoutSubviews() {

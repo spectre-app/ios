@@ -33,7 +33,8 @@ extension InAppSubscription {
                 }
                 .sorted {
                     $0.subscriptionExpirationDate ?? $0.purchaseDate > $1.subscriptionExpirationDate ?? $1.purchaseDate
-                }.first
+                }
+                .first
     }
 }
 
@@ -133,9 +134,10 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                     self.updatePromise?.finish( .success( true ) )
                 }
             }
-        }.finally {
-            self.updatePromise = nil
         }
+            .finally {
+                self.updatePromise = nil
+            }
     }
 
     func purchase(product: SKProduct, promotion: SKPaymentDiscount? = nil, quantity: Int = 1) {
@@ -301,15 +303,18 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             missingFeatures.forEach { $0.enable( false ) }
             subscribedFeatures.forEach { $0.enable( true ) }
 
-            let originalPremiumPurchase = self.products( forSubscription: .premium ).compactMap {
-                self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
-            }.sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
-            let currentPremiumPurchase = self.products( forSubscription: .premium ).compactMap {
-                self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
-            }.sorted( by: {
-                $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
-                $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
-            } ).last
+            let originalPremiumPurchase =
+                    self.products( forSubscription: .premium )
+                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+                        .sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
+            let currentPremiumPurchase =
+                    self.products( forSubscription: .premium )
+                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+                        .sorted( by: {
+                            $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
+                            $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
+                        } )
+                        .last
             let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
             Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
                 "answers_active": InAppFeature.answers.isEnabled,

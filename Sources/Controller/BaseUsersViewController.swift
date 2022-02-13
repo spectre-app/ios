@@ -63,9 +63,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         // - Layout
         LayoutConfiguration( view: self.usersCarousel )
-                .constrain( as: .box, to: self.keyboardLayoutGuide.inputLayoutGuide ).activate()
+            .constrain( as: .box, to: self.keyboardLayoutGuide.inputLayoutGuide ).activate()
         LayoutConfiguration( view: self.detailsHost.view )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -347,15 +347,15 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 let secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
                 return (self.userItem.file?.authenticate( using: keyFactory )
                         ?? User( userName: keyFactory.userName ).login( using: keyFactory ))
-                        .then {
-                            secretEvent.end(
-                                    [ "result": $0.name,
-                                      "type": "secret",
-                                      "length": keyFactory.metadata.length,
-                                      "entropy": keyFactory.metadata.entropy,
-                                      "error": $0.error
-                                    ] )
-                        }
+                    .then {
+                        secretEvent.end(
+                                [ "result": $0.name,
+                                  "type": "secret",
+                                  "length": keyFactory.metadata.length,
+                                  "entropy": keyFactory.metadata.entropy,
+                                  "error": $0.error
+                                ] )
+                    }
             }
             self.secretField.authenticated = { result in
                 do {
@@ -409,10 +409,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.strengthTips.numberOfLines = 0
             self.strengthTips.textAlignment = .center
             self.strengthTips.text =
-                    """
-                    A good personal secret is long, unpredictable and easy to remember.
-                    Try a random nonsense sentence, eg. tall piano strawberry blonde
-                    """
+            """
+            A good personal secret is long, unpredictable and easy to remember.
+            Try a random nonsense sentence, eg. tall piano strawberry blonde
+            """
 
             self.strengthLabel => \.font => Theme.current.font.caption1
             self.strengthLabel => \.textColor => Theme.current.color.secondary
@@ -433,78 +433,78 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
             // - Layout
             LayoutConfiguration( view: self.contentView )
-                    .constrain( as: .box ).activate()
+                .constrain( as: .box ).activate()
             LayoutConfiguration( view: self.avatarButton )
-                    .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
-                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.topAnchor ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.floorView )
-                    .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor ) }
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                    .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
-                    .activate()
+                .constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+                .activate()
             LayoutConfiguration( view: self.avatarTip )
-                    .constrain { $1.topAnchor.constraint( equalTo: self.floorView.bottomAnchor ) }
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( equalTo: self.floorView.bottomAnchor ) }
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.nameLabel )
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.nameField )
-                    .constrain( as: .box, to: self.nameLabel ).activate()
+                .constrain( as: .box, to: self.nameLabel ).activate()
             LayoutConfiguration( view: userNameField )
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
-                    .constrain { $1.bottomAnchor.constraint( equalTo: self.secretField.topAnchor ) }
-                    .activate()
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+                .constrain { $1.bottomAnchor.constraint( equalTo: self.secretField.topAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.secretField )
-                    .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                    .activate()
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.actionsStack )
-                    .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
-                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.strengthTips )
-                    .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
-                    .constrain { $1.leadingAnchor.constraint( equalTo: self.secretField.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: self.secretField.trailingAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( equalTo: self.secretField.bottomAnchor, constant: 12 ) }
+                .constrain { $1.leadingAnchor.constraint( equalTo: self.secretField.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: self.secretField.trailingAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.strengthMeter )
-                    .constrain { $1.topAnchor.constraint( equalTo: self.strengthTips.bottomAnchor, constant: 4 ) }
-                    .constrain { $1.leadingAnchor.constraint( equalTo: self.secretField.leadingAnchor ) }
-                    .constrain { $1.trailingAnchor.constraint( equalTo: self.secretField.trailingAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( equalTo: self.strengthTips.bottomAnchor, constant: 4 ) }
+                .constrain { $1.leadingAnchor.constraint( equalTo: self.secretField.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: self.secretField.trailingAnchor ) }
+                .activate()
             LayoutConfiguration( view: self.strengthLabel )
-                    .constrain { $1.topAnchor.constraint( equalTo: self.strengthMeter.bottomAnchor, constant: 4 ) }
-                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                    .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                    .activate()
+                .constrain { $1.topAnchor.constraint( equalTo: self.strengthMeter.bottomAnchor, constant: 4 ) }
+                .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+                .activate()
 
             self.authenticationConfiguration = LayoutConfiguration( view: self )
-                    .apply( LayoutConfiguration( view: self.avatarButton ) { active, inactive in
-                        active.constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
-                        inactive.constrain { $1.bottomAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
-                    } )
-                    .apply( LayoutConfiguration( view: self.nameLabel ) { active, inactive in
-                        active.constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: -20 ) }
-                        inactive.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
-                    } )
-                    .apply( LayoutConfiguration( view: self.secretField ) { active, inactive in
-                        active.set( .on, keyPath: \.alpha )
-                        active.set( true, keyPath: \.isEnabled )
-                        active.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 28 ) }
-                        inactive.set( .off, keyPath: \.alpha )
-                        inactive.set( false, keyPath: \.isEnabled )
-                        inactive.set( nil, keyPath: \.text )
-                        inactive.constrain { $1.topAnchor.constraint( equalTo: self.nameLabel.bottomAnchor ) }
-                    } )
+                .apply( LayoutConfiguration( view: self.avatarButton ) { active, inactive in
+                    active.constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
+                    inactive.constrain { $1.bottomAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
+                } )
+                .apply( LayoutConfiguration( view: self.nameLabel ) { active, inactive in
+                    active.constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: -20 ) }
+                    inactive.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
+                } )
+                .apply( LayoutConfiguration( view: self.secretField ) { active, inactive in
+                    active.set( .on, keyPath: \.alpha )
+                    active.set( true, keyPath: \.isEnabled )
+                    active.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 28 ) }
+                    inactive.set( .off, keyPath: \.alpha )
+                    inactive.set( false, keyPath: \.isEnabled )
+                    inactive.set( nil, keyPath: \.text )
+                    inactive.constrain { $1.topAnchor.constraint( equalTo: self.nameLabel.bottomAnchor ) }
+                } )
         }
 
         required init?(coder aDecoder: NSCoder) {
@@ -539,9 +539,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             guard keychainKeyFactory.isKeyPresent( for: userFile.algorithm )
             else { return Promise( .failure( AppError.state( title: "Biometrics key not present" ) ) ) }
 
-            return keychainKeyFactory.unlock().promising {
-                userFile.authenticate( using: $0 )
-            }.then( on: .main ) { [unowned self] result in
+            return keychainKeyFactory.unlock().promising { userFile.authenticate( using: $0 ) }.then( on: .main ) {
+                [unowned self] result in
+
                 do {
                     let user = try result.get()
                     Feedback.shared.play( .trigger )
@@ -592,7 +592,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.strengthMeter.isHidden = !self.isSelected || self.userItem.file != nil
             self.strengthLabel.isHidden = !self.isSelected || self.userItem.file != nil
             self.biometricButton.isHidden = !InAppFeature.biometrics.isEnabled || !(self.userItem.file?.biometricLock ?? false)
-                    || !(self.userItem.file?.keychainKeyFactory.isKeyPresent( for: self.userItem.file?.algorithm ?? .current ) ?? false)
+            || !(self.userItem.file?.keychainKeyFactory.isKeyPresent( for: self.userItem.file?.algorithm ?? .current ) ?? false)
             self.biometricButton.image = .icon( KeychainKeyFactory.factor.iconName )
 
             if self.secretField.text?.isEmpty ?? true {

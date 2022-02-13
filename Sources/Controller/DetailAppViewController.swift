@@ -252,9 +252,9 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
                 // - Layout
                 LayoutConfiguration( view: self.premiumLabel )
-                        .constrain( as: .center ).activate()
+                    .constrain( as: .center ).activate()
                 LayoutConfiguration( view: self.iconView )
-                        .constrain( as: .center ).activate()
+                    .constrain( as: .center ).activate()
             }
         }
     }
@@ -297,8 +297,8 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
                 // - Layout
                 LayoutConfiguration( view: self.logoView )
-                        .compressionResistance( horizontal: .defaultLow, vertical: .defaultLow )
-                        .constrain( as: .box ).activate()
+                    .compressionResistance( horizontal: .defaultLow, vertical: .defaultLow )
+                    .constrain( as: .box ).activate()
             }
         }
     }

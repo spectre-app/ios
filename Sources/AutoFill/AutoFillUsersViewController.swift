@@ -26,8 +26,8 @@ class AutoFillUsersViewController: AutoFillBaseUsersViewController {
 
         // - Layout
         LayoutConfiguration( view: self.configurationView )
-                .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
-                .constrain( as: .box ).activate()
+            .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
+            .constrain( as: .box ).activate()
     }
 
     // MARK: - MarshalObserver

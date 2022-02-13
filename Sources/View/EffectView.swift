@@ -147,9 +147,9 @@ class EffectView: UIView, ThemeObserver {
 
         // - Layout
         LayoutConfiguration( view: self.vibrancyEffectView )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.blurEffectView )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
     }
 
     convenience init(content: UIView, border: CGFloat = 1, background: Bool = true,
@@ -161,7 +161,7 @@ class EffectView: UIView, ThemeObserver {
 
         // - Layout
         LayoutConfiguration( view: content )
-                .constrain( as: .box, margin: true ).activate()
+            .constrain( as: .box, margin: true ).activate()
     }
 
     required init?(coder aDecoder: NSCoder) {

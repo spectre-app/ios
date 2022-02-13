@@ -25,14 +25,14 @@ public enum AppError: LocalizedError {
                 return "Operation Cancelled"
             case .issue(let error, title: let title, _):
                 return [ title, error?.localizedDescription ]
-                        .compactMap( { $0 } ).joined( separator: ": " ).nonEmpty
+                    .compactMap( { $0 } ).joined( separator: ": " ).nonEmpty
             case .internal( _, _ ):
                 return "Internal Inconsistency"
             case .state(let title, _):
                 return title
             case .marshal(let error, let title, _):
                 return [ title, error.localizedDescription ]
-                        .compactMap( { $0 } ).joined( separator: ": " ).nonEmpty
+                    .compactMap( { $0 } ).joined( separator: ": " ).nonEmpty
         }
     }
     public var failureReason: String? {
@@ -41,15 +41,15 @@ public enum AppError: LocalizedError {
                 return nil
             case .issue(let error, _, let details):
                 return [ (error as NSError?)?.localizedFailureReason, details?.description ]
-                        .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
+                    .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
             case .internal(let cause, let details):
                 return [ cause, details?.description ]
-                        .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
+                    .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
             case .state(_, let details):
                 return details?.description
             case .marshal(let error, _, let details):
                 return [ (error as NSError).localizedFailureReason, details?.description ]
-                        .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
+                    .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
         }
     }
     public var recoverySuggestion: String? {

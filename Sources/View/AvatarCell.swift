@@ -37,8 +37,8 @@ class AvatarCell: EffectCell {
         self.effectView.addContentView( self.avatarImage )
 
         LayoutConfiguration( view: self.avatarImage )
-                .constrain( as: .box )
-                .constrain { $1.heightAnchor.constraint( equalToConstant: 150 ) }
-                .activate()
+            .constrain( as: .box )
+            .constrain { $1.heightAnchor.constraint( equalToConstant: 150 ) }
+            .activate()
     }
 }

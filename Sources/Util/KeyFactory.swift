@@ -79,14 +79,15 @@ public class KeyFactory {
 
     private func getKey(for algorithm: SpectreAlgorithm) -> Promise<UnsafePointer<SpectreUserKey>> {
         keyQueue.promising {
-            // Try to resolve the user key from the cache.
-            if let cachedKey = self.userKeysCache[algorithm] {
-                return Promise( .success( cachedKey ) )
-            }
+                    // Try to resolve the user key from the cache.
+                    if let cachedKey = self.userKeysCache[algorithm] {
+                        return Promise( .success( cachedKey ) )
+                    }
 
-            // Try to produce the user key in the factory.
-            return self.createKey( for: algorithm )
-        }.success( on: keyQueue, self.cacheKey )
+                    // Try to produce the user key in the factory.
+                    return self.createKey( for: algorithm )
+                }
+                .success( on: keyQueue, self.cacheKey )
     }
 
     fileprivate func cacheKey(_ key: UnsafePointer<SpectreUserKey>) {
@@ -265,10 +266,11 @@ public class KeychainKeyFactory: KeyFactory {
     fileprivate func saveKeys(_ keys: [Promise<UnsafePointer<SpectreUserKey>>]) -> Promise<[Result<Void, Error>]> {
         keyQueue.promising {
             keys.map {
-                $0.success( self.cacheKey ).promising {
-                    Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
+                    $0.success( self.cacheKey ).promising {
+                        Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
+                    }
                 }
-            }.flatten()
+                .flatten()
         }
     }
 

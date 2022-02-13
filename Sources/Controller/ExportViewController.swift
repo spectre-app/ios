@@ -78,11 +78,11 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
         self.messageLabel.textAlignment = .center
         self.messageLabel => \.textColor => Theme.current.color.secondary
         self.messageLabel.text =
-                """
-                A "Secure Export" contains everything necessary to fully restore your user's history.
+        """
+        A "Secure Export" contains everything necessary to fully restore your user's history.
 
-                "Reveal Passwords" is useful for creating a backup file that you can print or use independently of the app.
-                """
+        "Reveal Passwords" is useful for creating a backup file that you can print or use independently of the app.
+        """
         self.formatControl.selectedSegmentIndex = SpectreFormat.allCases.firstIndex( of: SpectreFormat.default ) ?? -1
         self.revealControl.selectedSegmentIndex = 1
 
@@ -114,7 +114,7 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
 
         // - Layout
         LayoutConfiguration( view: self.contentView )
-                .constrain( as: .box, margin: true ).activate()
+            .constrain( as: .box, margin: true ).activate()
     }
 
     // MARK: UIPopoverPresentationControllerDelegate

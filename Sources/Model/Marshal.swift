@@ -125,66 +125,67 @@ class Marshal: Observable, Updatable {
         let exportEvent = Tracker.shared.begin( track: .subject( "user", action: "export" ) )
 
         return DispatchQueue.api.promising {
-            guard let keyFactory = user.userKeyFactory
-            else {
-                exportEvent.end( [ "result": "!keyFactory" ] )
-                throw AppError.state( title: "Not authenticated", details: user )
-            }
+                                guard let keyFactory = user.userKeyFactory
+                                else {
+                                    exportEvent.end( [ "result": "!keyFactory" ] )
+                                    throw AppError.state( title: "Not authenticated", details: user )
+                                }
 
-            return keyFactory.provide()
-        }.promise( on: .api ) { (keyProvider: @escaping SpectreKeyProvider) in
-            guard let marshalledUser = spectre_marshal_user( user.userName, keyProvider, user.algorithm )
-            else {
-                exportEvent.end( [ "result": "!marshal_user" ] )
-                throw AppError.internal( cause: "Couldn't marshal user", details: user )
-            }
+                                return keyFactory.provide()
+                            }
+                            .promise( on: .api ) { (keyProvider: @escaping SpectreKeyProvider) in
+                                guard let marshalledUser = spectre_marshal_user( user.userName, keyProvider, user.algorithm )
+                                else {
+                                    exportEvent.end( [ "result": "!marshal_user" ] )
+                                    throw AppError.internal( cause: "Couldn't marshal user", details: user )
+                                }
 
-            marshalledUser.pointee.redacted = redacted
-            marshalledUser.pointee.avatar = user.avatar.rawValue
-            marshalledUser.pointee.identicon = user.identicon
-            marshalledUser.pointee.keyID = user.userKeyID
-            marshalledUser.pointee.defaultType = user.defaultType
-            marshalledUser.pointee.loginType = user.loginType
-            marshalledUser.pointee.loginState = spectre_strdup( user.loginState )
-            marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
+                                marshalledUser.pointee.redacted = redacted
+                                marshalledUser.pointee.avatar = user.avatar.rawValue
+                                marshalledUser.pointee.identicon = user.identicon
+                                marshalledUser.pointee.keyID = user.userKeyID
+                                marshalledUser.pointee.defaultType = user.defaultType
+                                marshalledUser.pointee.loginType = user.loginType
+                                marshalledUser.pointee.loginState = spectre_strdup( user.loginState )
+                                marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
-            for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
-                guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType,
-                                                                 site.counter, site.algorithm )
-                else {
-                    exportEvent.end( [ "result": "!marshal_site" ] )
-                    throw AppError.internal( cause: "Couldn't marshal site", details: [ user, site ] )
-                }
+                                for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
+                                    guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType,
+                                                                                     site.counter, site.algorithm )
+                                    else {
+                                        exportEvent.end( [ "result": "!marshal_site" ] )
+                                        throw AppError.internal( cause: "Couldn't marshal site", details: [ user, site ] )
+                                    }
 
-                marshalledSite.pointee.resultState = spectre_strdup( site.resultState )
-                marshalledSite.pointee.loginType = site.loginType
-                marshalledSite.pointee.loginState = spectre_strdup( site.loginState )
-                marshalledSite.pointee.url = spectre_strdup( site.url )
-                marshalledSite.pointee.uses = site.uses
-                marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+                                    marshalledSite.pointee.resultState = spectre_strdup( site.resultState )
+                                    marshalledSite.pointee.loginType = site.loginType
+                                    marshalledSite.pointee.loginState = spectre_strdup( site.loginState )
+                                    marshalledSite.pointee.url = spectre_strdup( site.url )
+                                    marshalledSite.pointee.uses = site.uses
+                                    marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
 
-                for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
-                    guard let marshalledQuestion = spectre_marshal_question( marshalledSite, question.keyword )
-                    else {
-                        exportEvent.end( [ "result": "!marshal_question" ] )
-                        throw AppError.internal( cause: "Couldn't marshal question", details: [ user, site, question ] )
-                    }
+                                    for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
+                                        guard let marshalledQuestion = spectre_marshal_question( marshalledSite, question.keyword )
+                                        else {
+                                            exportEvent.end( [ "result": "!marshal_question" ] )
+                                            throw AppError.internal( cause: "Couldn't marshal question", details: [ user, site, question ] )
+                                        }
 
-                    marshalledQuestion.pointee.type = question.resultType
-                    marshalledQuestion.pointee.state = spectre_strdup( question.resultState )
-                }
-            }
+                                        marshalledQuestion.pointee.type = question.resultType
+                                        marshalledQuestion.pointee.state = spectre_strdup( question.resultState )
+                                    }
+                                }
 
-            if let data = String.valid( spectre_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
-               user.file?.pointee.error.type == .success {
-                exportEvent.end( [ "result": "success" ] )
-                return data
-            }
+                                if let data = String.valid( spectre_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
+                                   user.file?.pointee.error.type == .success {
+                                    exportEvent.end( [ "result": "success" ] )
+                                    return data
+                                }
 
-            exportEvent.end( [ "result": "!marshal_write" ] )
-            throw AppError.marshal( user.file?.pointee.error ?? SpectreMarshalError( type: .errorInternal, message: nil ),
-                                    title: "Issue writing user", details: user )
-        }
+                                exportEvent.end( [ "result": "!marshal_write" ] )
+                                throw AppError.marshal( user.file?.pointee.error ?? SpectreMarshalError( type: .errorInternal, message: nil ),
+                                                        title: "Issue writing user", details: user )
+                            }
     }
 
     #if TARGET_APP
@@ -193,29 +194,30 @@ class Marshal: Observable, Updatable {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "from-data" ) )
 
         return DispatchQueue.api.promising {
-            let importingFile = try UserFile( data: data )
-            guard let importingURL = self.createURL( for: importingFile.userName, format: importingFile.format )
-            else {
-                importEvent.end( [ "result": "!url" ] )
-                throw AppError.issue( title: "User not savable", details: importingFile )
-            }
+                                let importingFile = try UserFile( data: data )
+                                guard let importingURL = self.createURL( for: importingFile.userName, format: importingFile.format )
+                                else {
+                                    importEvent.end( [ "result": "!url" ] )
+                                    throw AppError.issue( title: "User not savable", details: importingFile )
+                                }
 
-            if let existingFile = try UserFile( origin: importingURL ) {
-                return self.import( data: data, from: importingFile, into: existingFile, viewController: viewController ).then {
-                    importEvent.end( [ "result": $0.name ] )
-                }
-            }
-            else {
-                return self.import( data: data, from: importingFile, into: importingURL, viewController: viewController ).then {
-                    importEvent.end( [ "result": $0.name ] )
-                }
-            }
-        }.success( on: .main ) { _ in
-            // Master Password purchase migration
-            if AppConfig.shared.masterPasswordCustomer, !InAppFeature.premium.isEnabled {
-                viewController.present( DialogMasterPasswordViewController(), animated: true )
-            }
-        }
+                                if let existingFile = try UserFile( origin: importingURL ) {
+                                    return self.import( data: data, from: importingFile, into: existingFile, viewController: viewController ).then {
+                                        importEvent.end( [ "result": $0.name ] )
+                                    }
+                                }
+                                else {
+                                    return self.import( data: data, from: importingFile, into: importingURL, viewController: viewController ).then {
+                                        importEvent.end( [ "result": $0.name ] )
+                                    }
+                                }
+                            }
+                            .success( on: .main ) { _ in
+                                // Master Password purchase migration
+                                if AppConfig.shared.masterPasswordCustomer, !InAppFeature.premium.isEnabled {
+                                    viewController.present( DialogMasterPasswordViewController(), animated: true )
+                                }
+                            }
     }
     #endif
 
@@ -449,40 +451,41 @@ class Marshal: Observable, Updatable {
         spinner.show( in: viewController.view, dismissAutomatically: false )
 
         return DispatchQueue.api.promise {
-            guard !documentURL.hasDirectoryPath
-            else { throw AppError.internal( cause: "Cannot save to a directory URL", details: documentURL ) }
-            do {
-                let documentDirectory = documentURL.deletingLastPathComponent()
-                if documentDirectory.hasDirectoryPath {
-                    try FileManager.default.createDirectory(
-                            at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
-                }
-            }
-            catch {
-                importEvent.end( [ "result": "!createPath" ] )
-                throw AppError.issue( error, title: "Cannot create document path", details: documentURL )
-            }
+                                guard !documentURL.hasDirectoryPath
+                                else { throw AppError.internal( cause: "Cannot save to a directory URL", details: documentURL ) }
+                                do {
+                                    let documentDirectory = documentURL.deletingLastPathComponent()
+                                    if documentDirectory.hasDirectoryPath {
+                                        try FileManager.default.createDirectory(
+                                                at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
+                                    }
+                                }
+                                catch {
+                                    importEvent.end( [ "result": "!createPath" ] )
+                                    throw AppError.issue( error, title: "Cannot create document path", details: documentURL )
+                                }
 
-            if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
-                importEvent.end( [ "result": "!createFile" ] )
-                throw AppError.issue( title: "Cannot write user document", details: documentURL )
-            }
-            importingFile.origin = documentURL
+                                if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
+                                    importEvent.end( [ "result": "!createFile" ] )
+                                    throw AppError.issue( title: "Cannot write user document", details: documentURL )
+                                }
+                                importingFile.origin = documentURL
 
-            importEvent.end( [ "result": "success", "type": "created" ] )
-            AlertController( title: "Import Complete", message: documentURL.lastPathComponent, details:
-            """
-            Completed the import of \(importingFile) (\(importingFile.format)).
-            This export file was created on \(importingFile.exportDate).
+                                importEvent.end( [ "result": "success", "type": "created" ] )
+                                AlertController( title: "Import Complete", message: documentURL.lastPathComponent, details:
+                                """
+                                Completed the import of \(importingFile) (\(importingFile.format)).
+                                This export file was created on \(importingFile.exportDate).
 
-            This was a direct installation of the import data, not a merge import.
-            """ ).show( in: viewController.view )
+                                This was a direct installation of the import data, not a merge import.
+                                """ ).show( in: viewController.view )
 
-            self.updateTask.request()
-            return importingFile
-        }.finally {
-            spinner.dismiss()
-        }
+                                self.updateTask.request()
+                                return importingFile
+                            }
+                            .finally {
+                                spinner.dismiss()
+                            }
     }
 
     private func userDocuments() throws -> [URL] {
@@ -767,7 +770,8 @@ class Marshal: Observable, Updatable {
                             } )
                         }
                     }
-                }.login( using: keyFactory )
+                }
+                    .login( using: keyFactory )
             }
         }
 

@@ -29,7 +29,7 @@ class AutoFillBaseUsersViewController: BaseUsersViewController {
 
         // - Layout
         LayoutConfiguration( view: self.closeButton )
-                .constrain( as: .bottomCenter, margin: true ).activate()
+            .constrain( as: .bottomCenter, margin: true ).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {

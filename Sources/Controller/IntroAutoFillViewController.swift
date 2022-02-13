@@ -58,7 +58,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                         ToggleItem( track: .subject( "autofill_setup", action: "biometricLock" ),
                                     icon: { _ in .icon( KeychainKeyFactory.factor.iconName ?? KeychainKeyFactory.Factor.biometricTouch.iconName ) },
                                     value: { $0.biometricLock }, update: { $0.model?.biometricLock = $1 } )
-                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
+                            .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.biometricLock } )
                     ], axis: .vertical ),
 
                     // Step 2
@@ -70,7 +70,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             """
                         } ),
                         LoginTypeItem(), LoginResultItem()
-                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { _ in true } ),
+                            .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { _ in true } ),
                     ], axis: .vertical ),
 
                     // Step 3
@@ -86,9 +86,9 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                                     value: { [unowned self] _ in self.autoFillState?.isEnabled ?? false }, update: { _, _ in
                             URL( string: UIApplication.openSettingsURLString ).flatMap { UIApplication.shared.open( $0 ) }
                         } )
-                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { [unowned self] _ in
-                                    self.autoFillState?.isEnabled ?? false
-                                } ),
+                            .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { [unowned self] _ in
+                                self.autoFillState?.isEnabled ?? false
+                            } ),
                     ], axis: .vertical ),
 
                     // Step 4
@@ -100,7 +100,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                         } ),
                         ToggleItem<User>( track: .subject( "autofill_setup", action: "autofill" ), icon: { _ in .icon( "keyboard" ) },
                                           value: { $0.autofill }, update: { $0.model?.autofill = $1 } )
-                                .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
+                            .addBehaviour( ColorizeBehaviour( color: .systemGreen ) { $0.autofill } )
                     ], axis: .vertical ),
                 ]
             } ),
@@ -158,7 +158,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
             self.hide {
                 AlertController( title: "AutoFill Enabled",
                                  message: "\(self.model.userName)'s sites are now available from AutoFill." )
-                        .show()
+                    .show()
             }
         }
     }

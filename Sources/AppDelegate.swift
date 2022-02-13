@@ -83,25 +83,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if let format = SpectreFormat.allCases.first( where: { utis.contains( $0.uti ) } ) {
                 let securityScoped = url.startAccessingSecurityScopedResource()
                 let promise = Promise<Marshal.UserFile>()
-                        .failure {
-                            if let error = $0 as? AppError, case AppError.cancelled = error {
-                                return
-                            }
-                            mperror( title: "Couldn't import user", error: $0 )
+                    .failure {
+                        if let error = $0 as? AppError, case AppError.cancelled = error {
+                            return
                         }
-                        .success {
-                            guard $0.format == format
-                            else {
-                                wrn( "Imported user format: %@, doesn't match format: %@. [>PII]", $0.format, format )
-                                pii( "[>] URL: %@, UTIs: %@", url, utis )
-                                return
-                            }
+                        mperror( title: "Couldn't import user", error: $0 )
+                    }
+                    .success {
+                        guard $0.format == format
+                        else {
+                            wrn( "Imported user format: %@, doesn't match format: %@. [>PII]", $0.format, format )
+                            pii( "[>] URL: %@, UTIs: %@", url, utis )
+                            return
                         }
-                        .finally {
-                            if securityScoped {
-                                url.stopAccessingSecurityScopedResource()
-                            }
+                    }
+                    .finally {
+                        if securityScoped {
+                            url.stopAccessingSecurityScopedResource()
                         }
+                    }
 
                 var error: NSError?
                 NSFileCoordinator().coordinate( readingItemAt: url, error: &error ) { url in

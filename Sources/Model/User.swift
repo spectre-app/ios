@@ -209,25 +209,26 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
         guard let self = self, self.dirty, self.file != nil
         else { return nil }
 
-        return try Marshal.shared.save( user: self ).then( {
-            defer { self.dirty = false }
+        return try Marshal.shared.save( user: self ).then {
+                              defer { self.dirty = false }
 
-            do {
-                let destination = try $0.get()
-                if let origin = self.origin, origin != destination,
-                   FileManager.default.fileExists( atPath: origin.path ) {
-                    do { try FileManager.default.removeItem( at: origin ) }
-                    catch {
-                        mperror( title: "Migration issue", message: "Obsolete origin document could not be deleted.",
-                                 details: origin.lastPathComponent, error: error )
-                    }
-                }
-                self.origin = destination
-            }
-            catch {
-                mperror( title: "Couldn't save user", details: self, error: error )
-            }
-        } ).await()
+                              do {
+                                  let destination = try $0.get()
+                                  if let origin = self.origin, origin != destination,
+                                     FileManager.default.fileExists( atPath: origin.path ) {
+                                      do { try FileManager.default.removeItem( at: origin ) }
+                                      catch {
+                                          mperror( title: "Migration issue", message: "Obsolete origin document could not be deleted.",
+                                                   details: origin.lastPathComponent, error: error )
+                                      }
+                                  }
+                                  self.origin = destination
+                              }
+                              catch {
+                                  mperror( title: "Couldn't save user", details: self, error: error )
+                              }
+                          }
+                          .await()
     }
 
     // MARK: - Life
@@ -265,33 +266,35 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
     }
 
     func login(using keyFactory: KeyFactory) -> Promise<User> {
-        keyFactory.newKey( for: self.algorithm ).promise( on: .api ) { authKey in
-            defer { authKey.deallocate() }
+        keyFactory.newKey( for: self.algorithm )
+                  .promise( on: .api ) { authKey in
+                      defer { authKey.deallocate() }
 
-            guard spectre_id_valid( [ authKey.pointee.keyID ] )
-            else { throw AppError.internal( cause: "Could not determine key ID for authentication key", details: self ) }
+                      guard spectre_id_valid( [ authKey.pointee.keyID ] )
+                      else { throw AppError.internal( cause: "Could not determine key ID for authentication key", details: self ) }
 
-            if !spectre_id_valid( &self.userKeyID ) {
-                self.userKeyID = authKey.pointee.keyID
-            }
-            else if !spectre_id_equals( &self.userKeyID, [ authKey.pointee.keyID ] ) {
-                throw AppError.state( title: "Incorrect user key", details: self )
-            }
+                      if !spectre_id_valid( &self.userKeyID ) {
+                          self.userKeyID = authKey.pointee.keyID
+                      }
+                      else if !spectre_id_equals( &self.userKeyID, [ authKey.pointee.keyID ] ) {
+                          throw AppError.state( title: "Incorrect user key", details: self )
+                      }
 
-            return self
-        }.then { (result: Result<User, Error>) -> Void in
-            switch result {
-                case .success:
-                    if let keyFactory = keyFactory as? SecretKeyFactory {
-                        self.identicon = keyFactory.metadata.identicon
-                    }
+                      return self
+                  }
+                  .then { (result: Result<User, Error>) -> Void in
+                      switch result {
+                          case .success:
+                              if let keyFactory = keyFactory as? SecretKeyFactory {
+                                  self.identicon = keyFactory.metadata.identicon
+                              }
 
-                    self.userKeyFactory = keyFactory
+                              self.userKeyFactory = keyFactory
 
-                case .failure:
-                    self.logout()
-            }
-        }
+                          case .failure:
+                              self.logout()
+                      }
+                  }
     }
 
     func logout() {

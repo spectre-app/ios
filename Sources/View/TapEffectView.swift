@@ -42,12 +42,12 @@ class TapEffectView: UIView {
 
             effectContainer.insertSubview( self, aboveSubview: hostContainer )
             LayoutConfiguration( view: self )
-                    .constrain { $1.centerXAnchor.constraint( equalTo: host.centerXAnchor ) }
-                    .constrain { $1.centerYAnchor.constraint( equalTo: host.centerYAnchor ) }
-                    .constrain { $1.widthAnchor.constraint( greaterThanOrEqualTo: $0.widthAnchor, multiplier: 1 / 2 ) }
-                    .constrain { $1.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor, multiplier: 1 / 2 ) }
-                    .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                    .activate()
+                .constrain { $1.centerXAnchor.constraint( equalTo: host.centerXAnchor ) }
+                .constrain { $1.centerYAnchor.constraint( equalTo: host.centerYAnchor ) }
+                .constrain { $1.widthAnchor.constraint( greaterThanOrEqualTo: $0.widthAnchor, multiplier: 1 / 2 ) }
+                .constrain { $1.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor, multiplier: 1 / 2 ) }
+                .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+                .activate()
 
             if let hostSnapshot = host.snapshotView( afterScreenUpdates: false ) {
                 self.addSubview( hostSnapshot )

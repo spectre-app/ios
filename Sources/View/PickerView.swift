@@ -70,7 +70,7 @@ class PickerView: UICollectionView {
                         let indexPath = IndexPath( item: item, section: section )
                         if !(self.attributes[.cell]?.keys.contains( indexPath ) ?? false) {
                             self.attributes[.cell, default: .init()][indexPath] =
-                                    UICollectionViewLayoutAttributes( forCellWith: indexPath )
+                            UICollectionViewLayoutAttributes( forCellWith: indexPath )
                         }
                     }
 
@@ -78,7 +78,7 @@ class PickerView: UICollectionView {
                         let indexPath = IndexPath( item: 0, section: section )
                         if !(self.attributes[.decorationView]?.keys.contains( indexPath ) ?? false) {
                             self.attributes[.decorationView, default: .init()][indexPath] =
-                                    UICollectionViewLayoutAttributes( forDecorationViewOfKind: "Separator", with: indexPath )
+                            UICollectionViewLayoutAttributes( forDecorationViewOfKind: "Separator", with: indexPath )
                         }
                     }
                 }

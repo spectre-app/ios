@@ -154,7 +154,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
         }
 
         self.additionalSafeAreaInsets =
-                max( .zero, self.keyboardLayoutGuide.keyboardInsets - (self.view.safeAreaInsets - self.additionalSafeAreaInsets) )
+        max( .zero, self.keyboardLayoutGuide.keyboardInsets - (self.view.safeAreaInsets - self.additionalSafeAreaInsets) )
     }
 
     // MARK: - Updatable

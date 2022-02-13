@@ -27,7 +27,7 @@ public class Keychain {
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: [ SpectreKeyPurpose.authentication.scope, algorithm.description ]
-                    .compactMap { $0 }.joined( separator: "." ),
+                .compactMap { $0 }.joined( separator: "." ),
             kSecAttrAccount: userName,
             kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
@@ -88,23 +88,24 @@ public class Keychain {
         spinner.show( dismissAutomatically: false )
 
         return DispatchQueue.api.promise {
-            var query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
-            query[kSecReturnData] = true
+                                var query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
+                                query[kSecReturnData] = true
 
-            var result: CFTypeRef?
-            let status = SecItemCopyMatching( query as CFDictionary, &result )
-            guard status == errSecSuccess
-            else { throw AppError.issue( status, title: "Biometrics key denied", details: userName ) }
+                                var result: CFTypeRef?
+                                let status = SecItemCopyMatching( query as CFDictionary, &result )
+                                guard status == errSecSuccess
+                                else { throw AppError.issue( status, title: "Biometrics key denied", details: userName ) }
 
-            guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
-            else { throw AppError.internal( cause: "Biometrics key not valid", details: userName ) }
+                                guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
+                                else { throw AppError.internal( cause: "Biometrics key not valid", details: userName ) }
 
-            let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
-            data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: SpectreUserKey.self ) ) }
-            return UnsafePointer( userKeyBytes )
-        }.finally {
-            spinner.dismiss()
-        }
+                                let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
+                                data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: SpectreUserKey.self ) ) }
+                                return UnsafePointer( userKeyBytes )
+                            }
+                            .finally {
+                                spinner.dismiss()
+                            }
     }
 
     @discardableResult

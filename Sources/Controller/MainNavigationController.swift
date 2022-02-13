@@ -29,7 +29,7 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
 
         // - Layout
         LayoutConfiguration( view: self.backgroundView )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
     }
 
     override func viewDidAppear(_ animated: Bool) {

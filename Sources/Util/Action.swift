@@ -95,7 +95,7 @@ enum Action: String, CaseIterable {
                         if result.upToDate {
                             AlertController( title: "Your \(productName) app is up-to-date!", message: result.buildVersion,
                                              details: "build[\(result.buildVersion)] > store[\(result.storeVersion)]" )
-                                    .show()
+                                .show()
                         }
                         else {
                             inf( "%@ is outdated: build[%@] < store[%@]", productName, result.buildVersion, result.storeVersion )

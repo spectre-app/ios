@@ -53,16 +53,16 @@ class EffectClassifiedCell: EffectCell, Updatable {
         self.effectView.addContentView( self.stackView )
 
         LayoutConfiguration( view: self.stackView )
-                .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .constrain { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
-                .activate()
+            .constrain { $1.topAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.topAnchor ) }
+            .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
+            .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
+            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+            .constrain { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerYAnchor ) }
+            .activate()
         LayoutConfiguration( view: self.separatorView )
-                .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
-                .constrain { $1.centerYAnchor.constraint( equalTo: self.stackView.centerYAnchor ) }
-                .activate()
+            .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
+            .constrain { $1.centerYAnchor.constraint( equalTo: self.stackView.centerYAnchor ) }
+            .activate()
     }
 
     // MARK: - Updatable

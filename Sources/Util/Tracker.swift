@@ -327,7 +327,7 @@ class Tracker: AppConfigObserver {
             Countly.sharedInstance().recordEvent(
                     name, segmentation: eventParameters.mapValues {
                 String( reflecting: $0 )
-                        .replacingOccurrences( of: #"\b0x[A-Z0-9]+\b"#, with: "0x?", options: [ .regularExpression, .caseInsensitive ] )
+                    .replacingOccurrences( of: #"\b0x[A-Z0-9]+\b"#, with: "0x?", options: [ .regularExpression, .caseInsensitive ] )
             },
                     count: eventParameters["event.count"] as? UInt ?? 1,
                     sum: eventParameters["event.sum"] as? Double ?? 0,
@@ -432,7 +432,7 @@ class Tracker: AppConfigObserver {
             }
 
             let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
-                    .merging( parameters.compactMapValues( { $0 } ), uniquingKeysWith: { $1 } )
+                .merging( parameters.compactMapValues( { $0 } ), uniquingKeysWith: { $1 } )
             let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
 
             // Sentry

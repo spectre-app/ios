@@ -78,12 +78,12 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
         self.contentSizeObservation = self.scrollView.observe( \.contentSize ) { [unowned self] _, _ in
             // Inset top to push content to the bottom of the host.
             self.scrollView.contentInset.top =
-                    max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height )
+            max( 0, self.scrollView.layoutMarginsGuide.layoutFrame.height - self.scrollView.contentSize.height )
 
             // Inset bottom to ensure content is large enough to enable scrolling.
             self.scrollView.contentInset.bottom =
-                    max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height
-                            - self.scrollView.adjustedContentInset.top - self.scrollView.adjustedContentInset.bottom + 1 )
+            max( 0, self.scrollView.frame.height - self.scrollView.contentSize.height
+                    - self.scrollView.adjustedContentInset.top - self.scrollView.adjustedContentInset.bottom + 1 )
         }
 
         // - Hierarchy
@@ -93,36 +93,36 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
 
         // - Layout
         LayoutConfiguration( view: self.scrollView )
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
-                .constrain { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
-                .activate()
+            .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+            .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+            .constrain { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
+            .activate()
 
         LayoutConfiguration( view: self.contentView )
-                .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
-                .constrain( as: .box )
-                .activate()
+            .constrain { $1.widthAnchor.constraint( equalTo: $0.widthAnchor ) }
+            .constrain( as: .box )
+            .activate()
 
         self.scrollableContentConfiguration = LayoutConfiguration( view: self.contentView )
-                .constrain { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
-                .apply( LayoutConfiguration( view: self.scrollView )
-                                .set( false, keyPath: \.isScrollEnabled, reverses: true ) )
+            .constrain { $1.heightAnchor.constraint( equalTo: $0.heightAnchor ) }
+            .apply( LayoutConfiguration( view: self.scrollView )
+                        .set( false, keyPath: \.isScrollEnabled, reverses: true ) )
 
         LayoutConfiguration( view: self.closeButton )
-                .constrain { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
-                .constrain { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).with( priority: .fittingSizeLevel ) }
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -8 ) }
-                .activate()
+            .constrain { $1.centerXAnchor.constraint( equalTo: self.contentView.centerXAnchor ) }
+            .constrain { $1.centerYAnchor.constraint( equalTo: self.contentView.bottomAnchor ).with( priority: .fittingSizeLevel ) }
+            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -8 ) }
+            .activate()
 
         self.popupConfiguration = LayoutConfiguration( view: self.view )
-                .apply { active, inactive in
-                    active.set( Theme.current.color.shade.get(), keyPath: \.backgroundColor )
-                    inactive.set( Theme.current.color.shade.get()?.with( alpha: .off ), keyPath: \.backgroundColor )
-                }
-                .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
-                    active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                    inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                } )
+            .apply { active, inactive in
+                active.set( Theme.current.color.shade.get(), keyPath: \.backgroundColor )
+                inactive.set( Theme.current.color.shade.get()?.with( alpha: .off ), keyPath: \.backgroundColor )
+            }
+            .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
+                active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+                inactive.constrain { $1.topAnchor.constraint( equalTo: $0.bottomAnchor ) }
+            } )
     }
 
     #if TARGET_APP
@@ -151,7 +151,7 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
                     activeController.view.bounds.size = self.contentView.bounds.size
                     self.contentView.addSubview( activeController.view )
                     LayoutConfiguration( view: activeController.view )
-                            .constrain( as: .box, margin: true ).activate()
+                        .constrain( as: .box, margin: true ).activate()
                     self.view.isHidden = false
                     KeyboardMonitor.shared.didChange( self )
                 }

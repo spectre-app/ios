@@ -174,21 +174,22 @@ public class Promise<V> {
     public func finish(_ result: Result<V, Error>, maybe: Bool = false)
             -> Self {
         self.semaphore.await { () -> [(queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void)] in
-            if maybe && self.result != nil {
-                return []
-            }
+                if maybe && self.result != nil {
+                    return []
+                }
 
-            assert( self.result == nil, "Tried to finish promise with \(result), but was already finished with \(self.result!)" )
-            self.result = result
-            return self.targets
-        }.forEach { target in
-            if let queue = target.queue {
-                queue.perform { target.consumer( result ) }
+                assert( self.result == nil, "Tried to finish promise with \(result), but was already finished with \(self.result!)" )
+                self.result = result
+                return self.targets
             }
-            else {
-                target.consumer( result )
+            .forEach { target in
+                if let queue = target.queue {
+                    queue.perform { target.consumer( result ) }
+                }
+                else {
+                    target.consumer( result )
+                }
             }
-        }
 
         return self
     }

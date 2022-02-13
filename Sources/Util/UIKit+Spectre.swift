@@ -308,9 +308,9 @@ extension UICollectionView {
                 }
         )
                 // And all currently selected items that are not allowed to be deselected.
-                .union( (self.indexPathsForSelectedItems ?? []).filter {
-                    !(!delegation || self.delegate?.collectionView?( self, shouldDeselectItemAt: $0 ) ?? true)
-                } )
+            .union( (self.indexPathsForSelectedItems ?? []).filter {
+                !(!delegation || self.delegate?.collectionView?( self, shouldDeselectItemAt: $0 ) ?? true)
+            } )
 
         // Deselect currently selected items that are no longer selected.
         for itemPath in Set( self.indexPathsForSelectedItems ?? [] ).subtracting( selectionPaths ) {
@@ -634,12 +634,12 @@ extension UITableView {
                 }
         )
                 // And all currently selected items that are not allowed to be deselected.
-                .union( (self.indexPathsForSelectedRows ?? []).compactMap {
-                    guard delegation, let delegate = self.delegate,
-                          delegate.responds( to: #selector( UITableViewDelegate.tableView(_:willDeselectRowAt:) ) )
-                    else { return $0 }
-                    return delegate.tableView?( self, willDeselectRowAt: $0 )
-                } )
+            .union( (self.indexPathsForSelectedRows ?? []).compactMap {
+                guard delegation, let delegate = self.delegate,
+                      delegate.responds( to: #selector( UITableViewDelegate.tableView(_:willDeselectRowAt:) ) )
+                else { return $0 }
+                return delegate.tableView?( self, willDeselectRowAt: $0 )
+            } )
 
         // Deselect currently selected items that are no longer selected.
         for itemPath in Set( self.indexPathsForSelectedRows ?? [] ).subtracting( selectionPaths ) {

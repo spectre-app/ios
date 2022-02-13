@@ -101,17 +101,17 @@ class EffectToggleButton: UIView {
         self.heightAnchor.constraint( equalToConstant: 88 ).with( priority: .defaultHigh + 1 ).isActive = true
 
         LayoutConfiguration( view: self.button )
-                .hugging( horizontal: .defaultHigh, vertical: .defaultHigh )
-                .constrain( as: .box ).activate()
+            .hugging( horizontal: .defaultHigh, vertical: .defaultHigh )
+            .constrain( as: .box ).activate()
         LayoutConfiguration( view: self.contentView )
-                .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrain( as: .box, margin: true ).activate()
+            .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+            .constrain( as: .box, margin: true ).activate()
         LayoutConfiguration( view: self.checkLabel )
-                .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
-                .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                .constrain { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
-                .activate()
+            .constrain { $1.widthAnchor.constraint( equalTo: $1.heightAnchor ) }
+            .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
+            .constrain { $1.centerYAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
+            .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }
+            .activate()
 
         defer {
             self.isSelected = false

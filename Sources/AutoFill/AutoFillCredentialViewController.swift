@@ -61,13 +61,15 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
             return
         }
 
-        login.token.and( password.token ).success {
-            (self.extensionContext as? ASCredentialProviderExtensionContext)?.completeRequest(
-                    withSelectedCredential: ASPasswordCredential( user: $0.0, password: $0.1 ), completionHandler: nil )
-        }.failure { error in
-            mperror( title: "Couldn't compute site result", error: error )
-            self.extensionContext?.cancelRequest( withError: ASExtensionError(
-                    .failed, "Couldn't compute site result." ) )
-        }
+        login.token.and( password.token )
+             .success {
+                 (self.extensionContext as? ASCredentialProviderExtensionContext)?.completeRequest(
+                         withSelectedCredential: ASPasswordCredential( user: $0.0, password: $0.1 ), completionHandler: nil )
+             }
+             .failure { error in
+                 mperror( title: "Couldn't compute site result", error: error )
+                 self.extensionContext?.cancelRequest( withError: ASExtensionError(
+                         .failed, "Couldn't compute site result." ) )
+             }
     }
 }

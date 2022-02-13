@@ -62,75 +62,79 @@ class AutoFillProviderController: ASCredentialProviderViewController {
 
         // - Layout
         LayoutConfiguration( view: usersViewController.view )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
     }
 
     override func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
-        Marshal.shared.updateTask.request( now: true ).promising( on: .api ) { userFiles in
-            if let user = AutoFillModel.shared.cachedUser( userName: credentialIdentity.recordIdentifier ) {
-                return Promise( .success( user ) )
-            }
+        Marshal.shared.updateTask.request( now: true )
+               .promising( on: .api ) { userFiles in
+                   if let user = AutoFillModel.shared.cachedUser( userName: credentialIdentity.recordIdentifier ) {
+                       return Promise( .success( user ) )
+                   }
 
-            guard let userFile = userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
-            else {
-                throw ASExtensionError(
-                        .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" )
-            }
+                   guard let userFile = userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
+                   else {
+                       throw ASExtensionError(
+                               .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" )
+                   }
 
-            let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
-            guard keychainKeyFactory.isKeyAvailable( for: userFile.algorithm )
-            else {
-                throw ASExtensionError(
-                        .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" )
-            }
+                   let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
+                   guard keychainKeyFactory.isKeyAvailable( for: userFile.algorithm )
+                   else {
+                       throw ASExtensionError(
+                               .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" )
+                   }
 
-            keychainKeyFactory.expiry = .minutes( 5 )
-            return userFile.authenticate( using: keychainKeyFactory )
-        }.promising { (user: User) in
-            AutoFillModel.shared.cacheUser( user )
+                   keychainKeyFactory.expiry = .minutes( 5 )
+                   return userFile.authenticate( using: keychainKeyFactory )
+               }
+               .promising { (user: User) in
+                   AutoFillModel.shared.cacheUser( user )
 
-            guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
-            else {
-                throw ASExtensionError(
-                        .credentialIdentityNotFound,
-                        "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
-            }
+                   guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
+                   else {
+                       throw ASExtensionError(
+                               .credentialIdentityNotFound,
+                               "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
+                   }
 
-            guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
-            else {
-                throw ASExtensionError(
-                        .userInteractionRequired, "Unauthenticated user: \(user.userName)" )
-            }
+                   guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
+                   else {
+                       throw ASExtensionError(
+                               .userInteractionRequired, "Unauthenticated user: \(user.userName)" )
+                   }
 
-            return login.token.and( password.token ).promise {
-                ASPasswordCredential( user: $0.0, password: $0.1 )
-            }
-        }.failure( on: .main ) { error in
-            Feedback.shared.play( .error )
+                   return login.token.and( password.token ).promise {
+                       ASPasswordCredential( user: $0.0, password: $0.1 )
+                   }
+               }
+               .failure( on: .main ) { error in
+                   Feedback.shared.play( .error )
 
-            switch error {
-                case let extensionError as ASExtensionError:
-                    self.extensionContext.cancelRequest( withError: extensionError )
+                   switch error {
+                       case let extensionError as ASExtensionError:
+                           self.extensionContext.cancelRequest( withError: extensionError )
 
-                case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel:
-                    self.extensionContext.cancelRequest( withError: ASExtensionError(
-                            .userCanceled, "Local authentication cancelled.", error: error ) )
+                       case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel:
+                           self.extensionContext.cancelRequest( withError: ASExtensionError(
+                                   .userCanceled, "Local authentication cancelled.", error: error ) )
 
-                case let error as LAError:
-                    self.extensionContext.cancelRequest( withError: ASExtensionError(
-                            .userInteractionRequired, "Non-interactive authentication denied.", error: error ) )
+                       case let error as LAError:
+                           self.extensionContext.cancelRequest( withError: ASExtensionError(
+                                   .userInteractionRequired, "Non-interactive authentication denied.", error: error ) )
 
-                default:
-                    self.extensionContext.cancelRequest( withError: ASExtensionError(
-                            .failed, "Credential unavailable.", error: error ) )
-            }
-        }.success( on: .main ) { (credential: ASPasswordCredential) in
-            Feedback.shared.play( .activate )
+                       default:
+                           self.extensionContext.cancelRequest( withError: ASExtensionError(
+                                   .failed, "Credential unavailable.", error: error ) )
+                   }
+               }
+               .success( on: .main ) { (credential: ASPasswordCredential) in
+                   Feedback.shared.play( .activate )
 
-            self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
-        }
+                   self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
+               }
     }
 
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
@@ -145,7 +149,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
 
         // - Layout
         LayoutConfiguration( view: credentialViewController.view )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
     }
 
     override func prepareInterfaceForExtensionConfiguration() {
@@ -158,7 +162,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
 
         // - Layout
         LayoutConfiguration( view: configurationViewController.view )
-                .constrain( as: .box ).activate()
+            .constrain( as: .box ).activate()
     }
 }
 

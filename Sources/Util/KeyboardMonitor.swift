@@ -32,7 +32,7 @@ class KeyboardMonitor {
 
             self.keyboardScreenFrameLatest = screenFrameTo
             let curve    = ((notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber)?.intValue)
-                    .flatMap( UIView.AnimationCurve.init )
+                .flatMap( UIView.AnimationCurve.init )
             let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue
 
             if let duration = duration, let curve = curve {
@@ -40,8 +40,10 @@ class KeyboardMonitor {
                     self.observers.notify {
                         self.didChange( $0, fromScreenFrame: screenFrameFrom, toScreenFrame: screenFrameTo, animated: true )
                     }
-                }.startAnimation()
-            } else {
+                }
+                    .startAnimation()
+            }
+            else {
                 self.observers.notify {
                     self.didChange( $0, fromScreenFrame: screenFrameFrom, toScreenFrame: screenFrameTo, animated: false )
                 }

@@ -26,20 +26,20 @@ class DialogMasterPasswordViewController: DialogViewController { // swiftlint:di
 
         self.title = "Migrating From Master Password"
         self.message =
-                """
-                10 years ago I began development on the concept of Master Password.
-                This level of privacy and security was only possible by going back to first principles.
+        """
+        10 years ago I began development on the concept of Master Password.
+        This level of privacy and security was only possible by going back to first principles.
 
-                Spectre marks a complete overhaul and the foundation for new things to come.
+        Spectre marks a complete overhaul and the foundation for new things to come.
 
-                Making it possible is a new support model: our Premium subscription.
-                All core functionality remains free, forever.
+        Making it possible is a new support model: our Premium subscription.
+        All core functionality remains free, forever.
 
-                You made all of this possible.
-                From my heart, thank you.
+        You made all of this possible.
+        From my heart, thank you.
 
-                — Maarten Billemont
-                """
+        — Maarten Billemont
+        """
     }
 
     override func populate(stackView: UIStackView) {
@@ -62,29 +62,29 @@ class DialogMasterPasswordViewController: DialogViewController { // swiftlint:di
         self.offerTitle.isHidden = true
         self.offerButton.isHidden = true
         self.offerLabel.isHidden = true
-        AppStore.shared.update( active: true ).finally( on: .main ) {
-            self.offerProgress.isHidden = true
-        }.success( on: .main ) {
-            guard $0, let product = InAppProduct.premiumMasterPassword.product ?? InAppProduct.premiumAnnual.product
-            else { return }
+        AppStore.shared.update( active: true )
+                .finally( on: .main ) { self.offerProgress.isHidden = true }
+                .success( on: .main ) {
+                    guard $0, let product = InAppProduct.premiumMasterPassword.product ?? InAppProduct.premiumAnnual.product
+                    else { return }
 
-            if let introductoryPrice = product.introductoryPrice {
-                self.offerButton.title = "\(introductoryPrice.localizedOffer) access to Premium for \(introductoryPrice.localizedValidity)"
-                self.offerLabel.text = "Then \(product.localizedOffer()). \(product.localizedDescription)"
-            }
-            else {
-                self.offerButton.title = product.localizedOffer()
-                self.offerLabel.text = product.localizedDescription
-            }
+                    if let introductoryPrice = product.introductoryPrice {
+                        self.offerButton.title = "\(introductoryPrice.localizedOffer) access to Premium for \(introductoryPrice.localizedValidity)"
+                        self.offerLabel.text = "Then \(product.localizedOffer()). \(product.localizedDescription)"
+                    }
+                    else {
+                        self.offerButton.title = product.localizedOffer()
+                        self.offerLabel.text = product.localizedDescription
+                    }
 
-            self.offerButton.action( for: .primaryActionTriggered ) {
-                AppStore.shared.purchase( product: product )
-            }
+                    self.offerButton.action( for: .primaryActionTriggered ) {
+                        AppStore.shared.purchase( product: product )
+                    }
 
-            self.offerTitle.isHidden = false
-            self.offerButton.isHidden = false
-            self.offerLabel.isHidden = false
-        }
+                    self.offerTitle.isHidden = false
+                    self.offerButton.isHidden = false
+                    self.offerLabel.isHidden = false
+                }
 
         stackView.addArrangedSubview( self.offerProgress )
         stackView.addArrangedSubview( self.offerTitle )

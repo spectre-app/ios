@@ -38,16 +38,18 @@ class AutoFillModel: MarshalObserver {
 
     func didChange(userFiles: [Marshal.UserFile]) {
         // Purge cached users that have: changed, disappeared, or have disabled autofill.
-        self.cachedUsers.filter { userName in
-            guard let userFile = userFiles.first( where: { $0.autofill && $0.userName == userName } )
-            else { return true }
-            guard let cachedUser = self.usersCache.object( forKey: userFile.userName as NSString )
-            else { return true }
-            return cachedUser != userFile
-        }.forEach {
-            self.usersCache.removeObject( forKey: $0 as NSString )
-            self.cachedUsers.remove( $0 )
-        }
+        self.cachedUsers
+            .filter { userName in
+                guard let userFile = userFiles.first( where: { $0.autofill && $0.userName == userName } )
+                else { return true }
+                guard let cachedUser = self.usersCache.object( forKey: userFile.userName as NSString )
+                else { return true }
+                return cachedUser != userFile
+            }
+            .forEach {
+                self.usersCache.removeObject( forKey: $0 as NSString )
+                self.cachedUsers.remove( $0 )
+            }
     }
 
     // MARK: - Types
