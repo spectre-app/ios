@@ -168,7 +168,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
             self.usersCarousel.scrolledItem = self.scrolledUser.flatMap { self.usersSource?.snapshot()?.indexOfItem( $0 ) } ?? 0
             self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = self.usersCarousel.selectedItem != nil }
+
+            self.didUpdateUsers( isEmpty: self.usersSource?.isEmpty ?? true )
         }
+    }
+
+    func didUpdateUsers(isEmpty: Bool) {
     }
 
     // MARK: - Private

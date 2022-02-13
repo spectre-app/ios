@@ -190,13 +190,12 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
 
     // MARK: - MarshalObserver
 
-    override func didChange(userFiles: [Marshal.UserFile]) {
-        super.didChange( userFiles: userFiles )
+    override func didUpdateUsers(isEmpty: Bool) {
+        super.didUpdateUsers( isEmpty: isEmpty )
 
-        DispatchQueue.main.perform {
-            self.appMigrate.isHidden = !userFiles.isEmpty ||
-            !(URL( string: "masterpassword:" ).flatMap { UIApplication.shared.canOpenURL( $0 ) } ?? false)
-        }
+        self.appMigrate.isHidden = !isEmpty || !(URL( string: "masterpassword:" ).flatMap {
+            UIApplication.shared.canOpenURL( $0 )
+        } ?? false)
     }
 
     // MARK: - FeedbackObserver

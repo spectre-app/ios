@@ -76,7 +76,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 cell.updateTask.request( now: true )
             }
         } editor: { item in
-            guard !item.site.isDetached
+            guard !item.isNew
             else { return nil }
 
             return { editingStyle in
@@ -128,7 +128,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             // Add "new site" from proposed site if there is one and no preferred results
             if let proposedSite = self.proposedSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
-                let proposedItem = SiteItem( site: Site( user: user, siteName: proposedSite ), preferred: true )
+                let proposedItem = SiteItem( site: Site( user: user, siteName: proposedSite ), preferred: true, new: true )
                 results.insert( proposedItem, at: 0 )
                 selectionOptions.append( proposedItem )
             }
@@ -139,7 +139,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             // Section 1: New site from query.
             if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
-                let newItem = SiteItem( site: Site( user: user, siteName: query ), query: query )
+                let newItem = SiteItem( site: Site( user: user, siteName: query ), query: query, preferred: false, new: true )
                 sites.appendItems( [ newItem ], toSection: .unknown )
                 selectionOptions.append( newItem )
             }
@@ -273,7 +273,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     struct SiteItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
         static func filtered(_ sites: [Site], query: String, preferred: ((Site) -> Bool)?) -> [SiteItem] {
-            var items = sites.map { SiteItem( site: $0, query: query, preferred: preferred?( $0 ) ?? false ) }
+            var items = sites.map { SiteItem( site: $0, query: query, preferred: preferred?( $0 ) ?? false, new: false ) }
                              .filter { $0.isMatched }.sorted()
 
             if preferred != nil {
@@ -336,14 +336,16 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         var isMatched = false
         var isExact   = false
         let isPreferred: Bool
+        let isNew:       Bool
 
         var id: String {
-            self.site.isDetached ? "" : self.site.siteName
+            self.isNew ? "" : self.site.siteName
         }
 
-        init(site: Site, query: String = "", preferred: Bool = false) {
+        init(site: Site, query: String = "", preferred: Bool, new: Bool) {
             self.site = site
             self.isPreferred = preferred
+            self.isNew = new
 
             defer {
                 self.query = query
@@ -479,7 +481,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.newButton.tapEffect = false
             self.newButton.isUserInteractionEnabled = false
             self.newButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                if let site = self.site, site.isDetached {
+                if self.result?.isNew ?? false, let site = self.site {
                     site.user.sites.append( site )
                 }
             }
@@ -772,9 +774,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.backgroundImage.alpha = self.isSelected ? .on : .off
             #endif
 
-            let isDetached = self.site?.isDetached ?? false
+            let isNew = self.result?.isNew ?? false
             if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
-                if isDetached {
+                if isNew {
                     resultCaption.append( NSAttributedString( string: " (new site)" ) )
                 }
                 self.nameLabel.attributedText = resultCaption
@@ -801,9 +803,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.purposeButton.alpha = self.purposeButton.isUserInteractionEnabled ? .on : .off
             self.modeStack.isUserInteractionEnabled = self.isSelected
             self.modeStack.alpha = self.modeStack.isUserInteractionEnabled ? .on : .off
-            self.actionStack.isUserInteractionEnabled = self.isSelected && !isDetached
+            self.actionStack.isUserInteractionEnabled = self.isSelected && !isNew
             self.actionStack.alpha = self.actionStack.isUserInteractionEnabled ? .on : .off
-            self.newButton.isUserInteractionEnabled = self.isSelected && isDetached
+            self.newButton.isUserInteractionEnabled = self.isSelected && isNew
             self.newButton.alpha = self.newButton.isUserInteractionEnabled ? .on : .off
             self.selectionConfiguration.isActive = self.isSelected
             self.primaryGestureRecognizer?.isEnabled = self.isSelected

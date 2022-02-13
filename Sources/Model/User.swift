@@ -171,12 +171,10 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
             if oldValue != self.sites {
                 self.dirty = true
                 Set( oldValue ).subtracting( self.sites ).forEach { site in
-                    site.isDetached = true
                     site.observers.unregister( observer: self )
                 }
                 self.sites.forEach { site in
                     site.observers.register( observer: self )
-                    site.isDetached = false
                 }
                 self.observers.notify { $0.didChange( user: self, at: \User.sites ) }
             }

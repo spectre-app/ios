@@ -15,16 +15,8 @@ import UIKit
 class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, SiteObserver, QuestionObserver {
     public let observers = Observers<SiteObserver>()
 
-    public let user: User
-    public var siteName: String {
-        didSet {
-            if oldValue != self.siteName {
-                self.dirty = true
-                self.preview = SitePreview.for( self.siteName, withURL: self.url )
-                self.observers.notify { $0.didChange( site: self, at: \Site.siteName ) }
-            }
-        }
-    }
+    public let user:     User
+    public let siteName: String
     public var algorithm: SpectreAlgorithm {
         didSet {
             if oldValue != self.algorithm {
@@ -117,7 +109,6 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             }
         }
     }
-    public var isDetached = true
 
     var description: String {
         self.siteName
@@ -125,7 +116,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     var dirty = false {
         didSet {
             if self.dirty {
-                if !self.initializing && !self.isDetached {
+                if !self.initializing {
                     self.user.dirty = true
                 }
             }

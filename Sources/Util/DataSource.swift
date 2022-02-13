@@ -19,7 +19,9 @@ class DataSource<S: Hashable, E: Hashable> {
 
     public var isFirstTimeUse = true
     public var isEmpty: Bool {
-        (self.tableSource?.snapshot().numberOfItems ?? self.collectionSource?.snapshot().numberOfItems ?? 0) == 0
+        self.queue.sync {
+            (self.tableSource?.snapshot().numberOfItems ?? self.collectionSource?.snapshot().numberOfItems ?? 0) == 0
+        }
     }
     public var selectedItems: [E] {
         get {
@@ -48,11 +50,15 @@ class DataSource<S: Hashable, E: Hashable> {
     }
 
     func snapshot() -> NSDiffableDataSourceSnapshot<S, E>? {
-        self.tableSource?.snapshot() ?? self.collectionSource?.snapshot()
+        self.queue.sync {
+            self.tableSource?.snapshot() ?? self.collectionSource?.snapshot()
+        }
     }
 
     func item(for indexPath: IndexPath) -> E? {
-        self.tableSource?.itemIdentifier( for: indexPath ) ?? self.collectionSource?.itemIdentifier( for: indexPath )
+        self.queue.sync {
+            self.tableSource?.itemIdentifier( for: indexPath ) ?? self.collectionSource?.itemIdentifier( for: indexPath )
+        }
     }
 
     func apply(_ items: [S: [E]], animatingDifferences: Bool = true, completion: (() -> Void)? = nil)

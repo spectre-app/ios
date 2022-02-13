@@ -14,29 +14,31 @@ import UIKit
 import AuthenticationServices
 
 class AutoFillUsersViewController: AutoFillBaseUsersViewController {
-    private let configurationView = AutoFillConfigurationView( fromSettings: false )
+    private var configurationView: AutoFillConfigurationView? {
+        didSet {
+            if self.configurationView != oldValue, let oldValue = oldValue {
+                oldValue.removeFromSuperview()
+            }
 
-    // MARK: - Life
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // - Hierarchy
-        self.view.insertSubview( self.configurationView, belowSubview: self.closeButton )
-
-        // - Layout
-        LayoutConfiguration( view: self.configurationView )
-            .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
-            .constrain( as: .box ).activate()
+            if let configurationView = self.configurationView, configurationView.superview == nil {
+                self.view.insertSubview( configurationView, belowSubview: self.closeButton )
+                LayoutConfiguration( view: configurationView )
+                    .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
+                    .constrain( as: .box ).activate()
+            }
+        }
     }
 
     // MARK: - MarshalObserver
 
-    override func didChange(userFiles: [Marshal.UserFile]) {
-        super.didChange( userFiles: userFiles )
+    override func didUpdateUsers(isEmpty: Bool) {
+        super.didUpdateUsers( isEmpty: isEmpty )
 
-        DispatchQueue.main.perform {
-            self.configurationView.isHidden = !(self.usersSource?.isEmpty ?? true)
+        if isEmpty {
+            self.configurationView = self.configurationView ?? AutoFillConfigurationView( fromSettings: false )
+        }
+        else {
+            self.configurationView = nil
         }
     }
 
