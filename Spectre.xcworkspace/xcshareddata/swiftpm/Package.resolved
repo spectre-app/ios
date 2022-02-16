@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
-          "revision": "6768e055cc7979d9e0f5af8804c8539bf54a641f",
-          "version": "7.5.1"
+          "revision": "967f04b3cd6989df3f9ced3060481a21646c146d",
+          "version": "7.9.0"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/tikhop/TPInAppReceipt",
         "state": {
           "branch": null,
-          "revision": "4bdd84a82d1db4f03e7df55b666b4442c301980d",
-          "version": "3.3.2"
+          "revision": "2b9946f8fe2dd74ed87dfcb5dbedc3be06c5ccab",
+          "version": "3.3.3"
         }
       }
     ]
