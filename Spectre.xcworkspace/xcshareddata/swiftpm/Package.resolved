@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "FreshchatSDK",
-        "repositoryURL": "https://github.com/freshworks/freshchat-ios",
-        "state": {
-          "branch": "spm-beta",
-          "revision": "6eece74f7f5e83934571b341a559e6222e11744c",
-          "version": null
-        }
-      },
-      {
         "package": "Sentry",
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {

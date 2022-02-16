@@ -11,9 +11,6 @@
 // =============================================================================
 
 #import <Foundation/Foundation.h>
-#if TARGET_APP
-#import <FreshchatSDK/FreshchatSDK.h>
-#endif
 
 #import "spectre-algorithm.h"
 #import "spectre-util.h"

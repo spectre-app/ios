@@ -203,7 +203,6 @@
 		DA4563D8265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
 		DA4A0C23201531BA004E2CE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4A0C20201531BA004E2CE5 /* AppDelegate.swift */; };
-		DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */; };
 		DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7D26A623E300D9EC22 /* Sentry */; };
 		DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE7F26A623F000D9EC22 /* Sentry */; };
 		DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */ = {isa = PBXBuildFile; productRef = DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */; };
@@ -600,7 +599,6 @@
 				DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */,
 				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
 				DA0DAFAF27383ADE0011BEE0 /* Countly in Frameworks */,
-				DA5DAE7726A3BBA100D9EC22 /* FreshchatSDK in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1137,7 +1135,6 @@
 			);
 			name = Spectre;
 			packageProductDependencies = (
-				DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */,
 				DA5DAE7D26A623E300D9EC22 /* Sentry */,
 				DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */,
 				DA0DAFAE27383ADE0011BEE0 /* Countly */,
@@ -1291,7 +1288,6 @@
 			packageReferences = (
 				DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */,
 				DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
-				DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */,
 			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
@@ -2582,14 +2578,6 @@
 				minimumVersion = 7.0.0;
 			};
 		};
-		DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/freshworks/freshchat-ios";
-			requirement = {
-				branch = "spm-beta";
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -2600,11 +2588,6 @@
 		DA0DAFB027383AE50011BEE0 /* Countly */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Countly;
-		};
-		DA5DAE7626A3BBA100D9EC22 /* FreshchatSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DAF291962698B6D8004A16A7 /* XCRemoteSwiftPackageReference "freshchat-ios" */;
-			productName = FreshchatSDK;
 		};
 		DA5DAE7D26A623E300D9EC22 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;

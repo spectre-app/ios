@@ -38,7 +38,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
     }
 
     override func loadItems() -> [Item<Model>] {
-        [ FeedbackItem(), CrashItem(), SeparatorItem(),
+        [ CrashItem(), SeparatorItem(),
           LogLevelPicker(), LogsItem(), SeparatorItem(),
           DeviceIdentifierItem(), OwnerIdentifierItem(),
         ]
@@ -52,36 +52,36 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
 
     // MARK: - Types
 
-    class FeedbackItem: ButtonItem<Model> {
-        init() {
-            super.init( track: .subject( "logbook", action: "feedback" ),
-                        value: { _ in (label: "Let's Talk 🅿︎", image: nil) },
-                        caption: { _ in
-                            """
-                            We're here to help.  You can also reach us at:\nsupport@spectre.app
-                            """
-                        },
-                        action: {
-                            if let viewController = $0.viewController {
-                                let options = ConversationOptions()
-                                options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
-                                Freshchat.sharedInstance().showConversations( viewController, with: options )
-                            }
-                        } )
-
-            if Freshchat.sharedInstance().config.appKey.nonEmpty == nil,
-               let freshchatApp = secrets.freshchat.app.b64Decrypt(), let freshchatKey = secrets.freshchat.key.b64Decrypt() {
-                let freshchatConfig = FreshchatConfig( appID: freshchatApp, andAppKey: freshchatKey )
-                freshchatConfig.domain = "msdk.eu.freshchat.com"
-                Freshchat.sharedInstance().initWith( freshchatConfig )
-            }
-
-            self.addBehaviour( ConditionalBehaviour( effect: .hides ) { _ in Freshchat.sharedInstance().config.appKey.nonEmpty == nil } )
-            self.addBehaviour( FeatureTapBehaviour( feature: .premium ) )
-            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) )
-            self.addBehaviour( ConditionalBehaviour( effect: .enables ) { _ in !AppConfig.shared.offline } )
-        }
-    }
+//    class FeedbackItem: ButtonItem<Model> {
+//        init() {
+//            super.init( track: .subject( "logbook", action: "feedback" ),
+//                        value: { _ in (label: "Let's Talk 🅿︎", image: nil) },
+//                        caption: { _ in
+//                            """
+//                            We're here to help.  You can also reach us at:\nsupport@spectre.app
+//                            """
+//                        },
+//                        action: {
+//                            if let viewController = $0.viewController {
+//                                let options = ConversationOptions()
+//                                options.filter( byTags: [ "premium" ], withTitle: "Premium Support" )
+//                                Freshchat.sharedInstance().showConversations( viewController, with: options )
+//                            }
+//                        } )
+//
+//            if Freshchat.sharedInstance().config.appKey.nonEmpty == nil,
+//               let freshchatApp = secrets.freshchat.app.b64Decrypt(), let freshchatKey = secrets.freshchat.key.b64Decrypt() {
+//                let freshchatConfig = FreshchatConfig( appID: freshchatApp, andAppKey: freshchatKey )
+//                freshchatConfig.domain = "msdk.eu.freshchat.com"
+//                Freshchat.sharedInstance().initWith( freshchatConfig )
+//            }
+//
+//            self.addBehaviour( ConditionalBehaviour( effect: .hides ) { _ in Freshchat.sharedInstance().config.appKey.nonEmpty == nil } )
+//            self.addBehaviour( FeatureTapBehaviour( feature: .premium ) )
+//            self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .enables ) )
+//            self.addBehaviour( ConditionalBehaviour( effect: .enables ) { _ in !AppConfig.shared.offline } )
+//        }
+//    }
 
     class CrashItem: ButtonItem<Model> {
         init() {
