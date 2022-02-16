@@ -124,12 +124,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         if let user = self.user, user.userKeyFactory != nil {
             // Filter sites by query and order by preference.
-            var results = SiteItem.filtered( user.sites, query: self.query ?? "", preferred: self.preferredFilter )
+            let results = SiteItem.filtered( user.sites, query: self.query ?? "", preferred: self.preferredFilter ?? { _ in false } )
 
             // Add "new site" from proposed site if there is one and no preferred results
             if let proposedSite = self.proposedSite?.nonEmpty, !results.contains( where: { $0.isPreferred } ) {
                 let proposedItem = SiteItem( site: Site( user: user, siteName: proposedSite ), preferred: true, new: true )
-                results.insert( proposedItem, at: 0 )
+                sites.appendItems( [ proposedItem ], toSection: .proposed )
                 selectionOptions.append( proposedItem )
             }
 
@@ -138,9 +138,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             results.first.flatMap { selectionOptions.append( $0 ) }
 
             // Section 1: New site from query.
-            if let query = self.query?.nonEmpty, !results.contains( where: { $0.isExact } ) {
+            if let query = self.query?.nonEmpty,
+               !results.contains( where: { $0.isExact } ),
+               !selectionOptions.contains( where: { $0.site.siteName == query } ) {
                 let newItem = SiteItem( site: Site( user: user, siteName: query ), query: query, preferred: false, new: true )
-                sites.appendItems( [ newItem ], toSection: .unknown )
+                sites.appendItems( [ newItem ], toSection: .new )
                 selectionOptions.append( newItem )
             }
         }
@@ -272,15 +274,10 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     // MARK: - Types
 
     struct SiteItem: Hashable, Identifiable, Comparable, CustomDebugStringConvertible {
-        static func filtered(_ sites: [Site], query: String, preferred: ((Site) -> Bool)?) -> [SiteItem] {
-            var items = sites.map { SiteItem( site: $0, query: query, preferred: preferred?( $0 ) ?? false, new: false ) }
+        static func filtered(_ sites: [Site], query: String, preferred: (Site) -> Bool) -> [SiteItem] {
+            sites.map { SiteItem( site: $0, query: query, preferred: preferred( $0 ), new: false ) }
                              .filter { $0.isMatched }.sorted()
-
-            if preferred != nil {
-                items = items.reordered( first: { $0.isPreferred } )
-            }
-
-            return items
+                             .reordered( first: { $0.isPreferred } )
         }
 
         var debugDescription: String {
@@ -374,7 +371,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
     }
 
     enum Sections: Hashable, CaseIterable {
-        case known, unknown
+        case proposed, known, new
     }
 
     class SiteCell: UITableViewCell, CellAppearance, Updatable, SiteObserver, UserObserver,
