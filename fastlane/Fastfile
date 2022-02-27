@@ -59,7 +59,7 @@ platform :ios do
   end
 
   lane :resume do
-    lane_context[SharedValues::XCODEBUILD_ARCHIVE] = "/Users/lhunath/Library/Developer/Xcode/Archives/2021-11-08/Spectre 2021-11-08 17.07.13.xcarchive"
+    lane_context[SharedValues::XCODEBUILD_ARCHIVE] = Dir.glob( "/Users/lhunath/Library/Developer/Xcode/Archives/*/Spectre *.xcarchive" ).sort.last
     lane_context[SharedValues::IPA_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.ipa"
     lane_context[SharedValues::DSYM_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.app.dSYM.zip"
 
