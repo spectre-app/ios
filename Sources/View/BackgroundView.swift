@@ -102,7 +102,7 @@ class BackgroundView: UIView, ThemeObserver {
         self.imageMask.needsDisplayOnBoundsChange = true
         self.imageMask.colors = [
             UIColor.black.with( alpha: .short * .short ).cgColor,
-            UIColor.black.with( alpha: .short * .short ).cgColor,
+            UIColor.black.with( alpha: .short * .short * .short ).cgColor,
             UIColor.black.with( alpha: .off ).cgColor,
         ]
         self.imageViewObservation = self.imageView.observe( \.bounds ) { [unowned self] _, _ in
