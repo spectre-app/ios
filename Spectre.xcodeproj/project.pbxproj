@@ -1096,6 +1096,7 @@
 			buildConfigurationList = DA0E553B250D6F7F002B3AB1 /* Build configuration list for PBXNativeTarget "Spectre-AutoFill" */;
 			buildPhases = (
 				DA0E5526250D6F7F002B3AB1 /* Sources */,
+				DABC6E9327BCBB26004AF39A /* Integrate Reveal Server */,
 				DA0E5527250D6F7F002B3AB1 /* Frameworks */,
 				DA0E5528250D6F7F002B3AB1 /* Resources */,
 			);
@@ -1120,6 +1121,7 @@
 			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre" */;
 			buildPhases = (
 				DA5BFA40147E415C00F98B1E /* Sources */,
+				DABC6E9227BCAFAB004AF39A /* Integrate Reveal Server */,
 				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
 				DA0E5537250D6F7F002B3AB1 /* Embed App Extensions */,
@@ -1354,6 +1356,44 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		DABC6E9227BCAFAB004AF39A /* Integrate Reveal Server */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Integrate Reveal Server";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "REVEAL_APP_PATH=$(mdfind kMDItemCFBundleIdentifier=\"com.ittybittyapps.Reveal2\" | head -n 1)\nBUILD_SCRIPT_PATH=\"${REVEAL_APP_PATH}/Contents/SharedSupport/Scripts/reveal_server_build_phase.sh\"\nif [ \"${REVEAL_APP_PATH}\" -a -e \"${BUILD_SCRIPT_PATH}\" ]; then\n    REVEAL_LOAD_FOR_CONFIGURATION=Development \"${BUILD_SCRIPT_PATH}\"\nelse\n    echo \"Reveal Server not loaded: Cannot find a compatible Reveal app.\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		DABC6E9327BCBB26004AF39A /* Integrate Reveal Server */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Integrate Reveal Server";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "REVEAL_APP_PATH=$(mdfind kMDItemCFBundleIdentifier=\"com.ittybittyapps.Reveal2\" | head -n 1)\nBUILD_SCRIPT_PATH=\"${REVEAL_APP_PATH}/Contents/SharedSupport/Scripts/reveal_server_build_phase.sh\"\nif [ \"${REVEAL_APP_PATH}\" -a -e \"${BUILD_SCRIPT_PATH}\" ]; then\n    REVEAL_LOAD_FOR_CONFIGURATION=Development \"${BUILD_SCRIPT_PATH}\"\nelse\n    echo \"Reveal Server not loaded: Cannot find a compatible Reveal app.\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
 		DAD8047123C512CA000A4E86 /* Upload Sentry dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 8;
@@ -2021,6 +2061,7 @@
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMPRESS_PNG_FILES = YES;
+				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = HL3Q45LX9N;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2095,6 +2136,7 @@
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_PNG_TEXT = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PRIVATE DEBUG";
 				SWIFT_COMPILATION_MODE = singlefile;
