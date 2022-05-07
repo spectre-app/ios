@@ -230,6 +230,8 @@
 		DAAEDE2225E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAAEDE1625E1DF5500E78F79 /* Font Awesome 6 Pro-Solid-900.otf */; };
 		DAB07C9D1F7725C500CC6D43 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB07C9B1F7725C500CC6D43 /* aes.c */; };
 		DAB7AE991F3DDEE000C856B1 /* spectre-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* spectre-marshal-util.c */; };
+		DABB83702826EED000AEC9E7 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = DABB836F2826EED000AEC9E7 /* OrderedCollections */; };
+		DABB83722826F1C300AEC9E7 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = DABB83712826F1C300AEC9E7 /* OrderedCollections */; };
 		DABC7BB8251C14160021ADD8 /* BaseSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */; };
 		DABC7BBB251C1B410021ADD8 /* BaseUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
@@ -581,6 +583,7 @@
 			files = (
 				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
 				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
+				DABB83722826F1C300AEC9E7 /* OrderedCollections in Frameworks */,
 				DA0DAFB127383AE50011BEE0 /* Countly in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */,
@@ -591,6 +594,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DABB83702826EED000AEC9E7 /* OrderedCollections in Frameworks */,
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
 				DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */,
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
@@ -1111,6 +1115,7 @@
 			packageProductDependencies = (
 				DA5DAE7F26A623F000D9EC22 /* Sentry */,
 				DA0DAFB027383AE50011BEE0 /* Countly */,
+				DABB83712826F1C300AEC9E7 /* OrderedCollections */,
 			);
 			productName = "Spectre-AutoFill";
 			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */;
@@ -1141,6 +1146,7 @@
 				DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */,
 				DA0DAFAE27383ADE0011BEE0 /* Countly */,
 				DA704B3C273B92AB00572C20 /* SwiftLinkPreview */,
+				DABB836F2826EED000AEC9E7 /* OrderedCollections */,
 			);
 			productName = Spectre;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
@@ -1290,6 +1296,7 @@
 			packageReferences = (
 				DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */,
 				DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				DABB836E2826EED000AEC9E7 /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
@@ -2604,6 +2611,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		DABB836E2826EED000AEC9E7 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tikhop/TPInAppReceipt";
@@ -2649,6 +2664,16 @@
 		DA704B3C273B92AB00572C20 /* SwiftLinkPreview */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftLinkPreview;
+		};
+		DABB836F2826EED000AEC9E7 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DABB836E2826EED000AEC9E7 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+		DABB83712826F1C300AEC9E7 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DABB836E2826EED000AEC9E7 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

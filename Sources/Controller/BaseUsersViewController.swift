@@ -200,11 +200,14 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         // Hashable
 
         static func == (lhs: UserItem, rhs: UserItem) -> Bool {
-            lhs.file?.userName == rhs.file?.userName
+            lhs.file?.origin == rhs.file?.origin && lhs.file?.userName == rhs.file?.userName
         }
 
         func hash(into hasher: inout Hasher) {
-            self.file.flatMap { hasher.combine( $0.userName ) }
+            self.file.flatMap {
+                hasher.combine( $0.origin )
+                hasher.combine( $0.userName )
+            }
         }
     }
 

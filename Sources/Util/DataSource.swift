@@ -11,6 +11,7 @@
 // =============================================================================
 
 import UIKit
+import OrderedCollections
 
 class DataSource<S: Hashable, E: Hashable> {
     private let queue = DispatchQueue.global( qos: .userInitiated )
@@ -66,7 +67,7 @@ class DataSource<S: Hashable, E: Hashable> {
         var snapshot = NSDiffableDataSourceSnapshot<S, E>()
         snapshot.appendSections( items.keys.sorted() )
         for (section, items) in items {
-            snapshot.appendItems( items, toSection: section )
+            snapshot.appendItems( OrderedSet( items ).elements, toSection: section )
         }
         self.apply( snapshot, animatingDifferences: animatingDifferences, completion: completion )
     }

@@ -12,6 +12,7 @@
 
 import UIKit
 import AVKit
+import OrderedCollections
 
 // swiftlint:disable:next type_body_length
 class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable {
@@ -134,7 +135,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
 
             // Section 0: Known site results.
-            sites.appendItems( results, toSection: .known )
+            sites.appendItems( OrderedSet( results ).elements, toSection: .known )
             results.first.flatMap { selectionOptions.append( $0 ) }
 
             // Section 1: New site from query.
