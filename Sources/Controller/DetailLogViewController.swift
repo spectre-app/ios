@@ -183,6 +183,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         "\(logs)[\(dateFormatter.string( from: log.occurrence )) \(log.level) | \(log.source)] \(log.message)\n"
                     }
 
+                    inf( "Copying logs." )
                     UIPasteboard.general.setObjects(
                             [ logs as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
                 } ),
@@ -196,6 +197,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         caption: { _ in "\(Tracker.shared.identifierForDevice)" } )
 
             self.addBehaviour( BlockTapBehaviour { _ in
+                inf( "Copying device identifier: %@", Tracker.shared.identifierForDevice )
                 UIPasteboard.general.setObjects(
                         [ Tracker.shared.identifierForDevice as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
             } )
@@ -208,6 +210,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         caption: { _ in "\(Tracker.shared.identifierForOwner)" } )
 
             self.addBehaviour( BlockTapBehaviour { _ in
+                inf( "Copying owner identifier: %@", Tracker.shared.identifierForOwner )
                 UIPasteboard.general.setObjects(
                         [ Tracker.shared.identifierForOwner as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
             } )

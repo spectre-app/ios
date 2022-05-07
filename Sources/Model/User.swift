@@ -377,7 +377,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
     }
     var credentials: [AutoFill.Credential]? {
         self.autofill ? self.sites.map { site in
-            .init( supplier: self, site: site.siteName, url: site.url )
+            .init( supplier: self, siteName: site.siteName, url: site.url )
         } : nil
     }
 

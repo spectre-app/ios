@@ -46,6 +46,7 @@ public struct SpectreOperation {
         return self.token.promise { token in
                        Feedback.shared.play( .trigger )
 
+                       inf( "Copying %@ for: %@", self.purpose, self.siteName )
                        UIPasteboard.general.setObjects(
                                [ token as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: Date( timeIntervalSinceNow: 3 * 60 ) )
                        self.operand.use()

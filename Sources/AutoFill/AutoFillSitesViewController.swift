@@ -40,7 +40,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
         self.sitesTableView.preferredFilter = { site in
             allServiceIdentifiers.contains( where: {
                 let serviceHost = URL( string: $0.identifier )?.host ?? $0.identifier
-                return serviceHost.contains( site.siteName ) || site.siteName.contains( serviceHost )
+                return serviceHost.hasSuffix( site.siteName ) || site.siteName.hasSuffix( serviceHost )
             } )
         }
         self.sitesTableView.proposedSite = allServiceIdentifiers.first.flatMap {
@@ -81,6 +81,9 @@ class AutoFillSitesViewController: BaseSitesViewController {
         if let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication ) {
             login.token.and( password.token ).then( on: .main ) {
                 do {
+                    inf( "Autofilling manually: %@, for site: %@", login, site.siteName )
+                    Feedback.shared.play( .activate )
+
                     let (login, password) = try $0.get()
                     site.use()
                     event.end(

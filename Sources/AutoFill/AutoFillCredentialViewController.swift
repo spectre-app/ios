@@ -26,50 +26,51 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
         return [ .knownUser( userFile: credentialUser ) ]
     }
 
-    override func didChange(userFiles: [Marshal.UserFile]) {
-        super.didChange( userFiles: userFiles )
-
-        if self.usersSource?.isEmpty ?? false {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError( .failed, "Expected a credential identity." ) )
-        }
-    }
-
     // MARK: - Types
 
     override func login(user: User) {
         super.login( user: user )
 
-        guard let credentialIdentity = AutoFillModel.shared.context.credentialIdentity
-        else {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError(
-                    .failed, "Expected a credential identity." ) )
-            return
-        }
+        Promise(.success(()))
+            .promise {
+                guard let credentialIdentity = AutoFillModel.shared.context.credentialIdentity
+                else {
+                    throw ASExtensionError(
+                            .failed, "Expected a credential identity." )
+                }
 
-        guard   let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
-        else {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError(
-                    .credentialIdentityNotFound,
-                    "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" ) )
-            return
-        }
+                guard let siteName = user.credential( for: credentialIdentity.serviceIdentifier )?.siteName,
+                      let site = user.sites.first( where: { $0.siteName == siteName } )
+                else {
+                    throw ASExtensionError(
+                            .credentialIdentityNotFound,
+                            "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
+                }
 
-        guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
-        else {
-            self.extensionContext?.cancelRequest( withError: ASExtensionError(
-                    .userInteractionRequired, "Unauthenticated user: \(user.userName)" ) )
-            return
-        }
+                return site
+            }
+            .promising { (site: Site) -> Promise<(String, (String, String))> in
+                guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
+                else {
+                    throw ASExtensionError(
+                            .userInteractionRequired, "Unauthenticated user: \(user.userName)" )
+                }
 
-        login.token.and( password.token )
+                return Promise(.success(site.siteName)).and(login.token.and( password.token ))
+            }
              .success {
+                 inf( "Autofilling interactively: %@, for site: %@", $0.1.0, $0.0 )
+                 Feedback.shared.play( .activate )
+
                  (self.extensionContext as? ASCredentialProviderExtensionContext)?.completeRequest(
-                         withSelectedCredential: ASPasswordCredential( user: $0.0, password: $0.1 ), completionHandler: nil )
+                         withSelectedCredential: ASPasswordCredential( user: $0.1.0, password: $0.1.1 ), completionHandler: nil )
              }
              .failure { error in
-                 mperror( title: "Couldn't compute site result", error: error )
-                 self.extensionContext?.cancelRequest( withError: ASExtensionError(
-                         .failed, "Couldn't compute site result." ) )
+                 wrn( "Autofill unsuccessful: %@ [>PII]", error.localizedDescription )
+                 pii( "[>] Error: %@", error )
+                 Feedback.shared.play( .error )
+
+                 self.extensionContext?.cancelRequest( withError: ASExtensionError(for: error ) )
              }
     }
 }

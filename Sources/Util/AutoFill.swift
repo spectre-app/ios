@@ -119,22 +119,22 @@ final class AutoFill {
 
     class Credential: Hashable, CustomDebugStringConvertible {
         let userName: String
-        let site:     String
+        let siteName: String
         let variants: [String]?
 
         var debugDescription: String {
-            "<Credential: \(self.userName) :: \(self.site)>"
+            "<Credential: \(self.userName) :: \(self.siteName)>"
         }
 
-        init(supplier: CredentialSupplier, site: String, url: String?) {
+        init(supplier: CredentialSupplier, siteName: String, url: String?) {
             self.userName = supplier.credentialOwner
-            self.site = site
+            self.siteName = siteName
 
-            var variants = Set<String>( [ site.domainName( .host ), site.domainName( .topPrivate ) ] )
+            var variants = Set<String>( [ siteName.domainName( .host ), siteName.domainName( .topPrivate ) ] )
             if let url = url {
                 variants.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
             }
-            variants.remove( site )
+            variants.remove( siteName )
             self.variants = Array( variants )
         }
 
@@ -143,7 +143,7 @@ final class AutoFill {
             else { return nil }
 
             self.userName = user
-            self.site = site
+            self.siteName = site
             self.variants = dictionary?["variants"] as? [String]
         }
 
@@ -153,7 +153,7 @@ final class AutoFill {
 
         func identities() -> [ASPasswordCredentialIdentity] {
             var identities = [ ASPasswordCredentialIdentity(
-                    serviceIdentifier: ASCredentialServiceIdentifier( identifier: self.site, type: .domain ),
+                    serviceIdentifier: ASCredentialServiceIdentifier( identifier: self.siteName, type: .domain ),
                     user: self.userName, recordIdentifier: self.userName ) ]
             if let variants = self.variants {
                 identities.append( contentsOf: variants.map {
@@ -168,7 +168,7 @@ final class AutoFill {
         func dictionary() -> [String: Any?] {
             [
                 "user": self.userName,
-                "site": self.site,
+                "site": self.siteName,
                 "variants": self.variants,
             ]
         }
@@ -177,12 +177,12 @@ final class AutoFill {
 
         func hash(into hasher: inout Hasher) {
             hasher.combine( self.userName )
-            hasher.combine( self.site )
+            hasher.combine( self.siteName )
             hasher.combine( self.variants )
         }
 
         static func == (lhs: Credential, rhs: Credential) -> Bool {
-            lhs.userName == rhs.userName && lhs.site == rhs.site && lhs.variants == rhs.variants
+            lhs.userName == rhs.userName && lhs.siteName == rhs.siteName && lhs.variants == rhs.variants
         }
     }
 }
@@ -190,4 +190,12 @@ final class AutoFill {
 protocol CredentialSupplier {
     var credentialOwner: String { get }
     var credentials:     [AutoFill.Credential]? { get }
+}
+
+extension CredentialSupplier {
+    func credential(for serviceIdentifier: ASCredentialServiceIdentifier) -> AutoFill.Credential? {
+        self.credentials?.first {
+            $0.identities().contains { $0.serviceIdentifier.identifier == serviceIdentifier.identifier }
+        }
+    }
 }

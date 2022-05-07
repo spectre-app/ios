@@ -847,7 +847,7 @@ class Marshal: Observable, Updatable {
 
             return self.file.spectre_find( path: "sites" )?.compactMap { site in
                 String.valid( site.obj_key ).flatMap { siteName in
-                    .init( supplier: self, site: siteName, url: site.spectre_get( path: "_ext_spectre", "url" ) )
+                    .init( supplier: self, siteName: siteName, url: site.spectre_get( path: "_ext_spectre", "url" ) )
                 }
             }
         }

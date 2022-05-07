@@ -373,6 +373,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                 _ = user.model.flatMap { user in
                     user.userKeyFactory?.authenticatedIdentifier( for: user.algorithm ).promise { identifier in
                         if let identifier = identifier {
+                            inf( "Copying private user identifier: %@, for: %@", identifier, user.userName )
                             UIPasteboard.general.setObjects(
                                     [ identifier as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
                         }

@@ -17,7 +17,6 @@ import LocalAuthentication
 class AutoFillProviderController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         LogSink.shared.register()
-        KeyboardMonitor.shared.install()
 
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
     }
@@ -36,6 +35,12 @@ class AutoFillProviderController: ASCredentialProviderViewController {
 
         Tracker.shared.startup( extensionController: self )
         AutoFillModel.shared.context = AutoFillModel.Context()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear( animated )
+
+        KeyboardMonitor.shared.install()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -93,7 +98,8 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                .promising { (user: User) in
                    AutoFillModel.shared.cacheUser( user )
 
-                   guard let site = user.sites.first( where: { $0.siteName == credentialIdentity.serviceIdentifier.identifier } )
+                   guard let siteName = user.credential( for: credentialIdentity.serviceIdentifier )?.siteName,
+                         let site = user.sites.first( where: { $0.siteName == siteName } )
                    else {
                        throw ASExtensionError(
                                .credentialIdentityNotFound,
@@ -111,26 +117,14 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                    }
                }
                .failure( on: .main ) { error in
+                   wrn( "Autofill unsuccessful: %@ [>PII]", error.localizedDescription )
+                   pii( "[>] Error: %@", error )
                    Feedback.shared.play( .error )
 
-                   switch error {
-                       case let extensionError as ASExtensionError:
-                           self.extensionContext.cancelRequest( withError: extensionError )
-
-                       case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel:
-                           self.extensionContext.cancelRequest( withError: ASExtensionError(
-                                   .userCanceled, "Local authentication cancelled.", error: error ) )
-
-                       case let error as LAError:
-                           self.extensionContext.cancelRequest( withError: ASExtensionError(
-                                   .userInteractionRequired, "Non-interactive authentication denied.", error: error ) )
-
-                       default:
-                           self.extensionContext.cancelRequest( withError: ASExtensionError(
-                                   .failed, "Credential unavailable.", error: error ) )
-                   }
+                   self.extensionContext.cancelRequest( withError: ASExtensionError(for: error ) )
                }
                .success( on: .main ) { (credential: ASPasswordCredential) in
+                   inf( "Autofilling non-interactively: %@, for service: %@", credential.user, credentialIdentity.serviceIdentifier )
                    Feedback.shared.play( .activate )
 
                    self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
@@ -177,5 +171,21 @@ extension ASExtensionError: Error {
         }
 
         self.init( code, userInfo: userInfo )
+    }
+
+    init(for error: Error) {
+        switch error {
+            case let extensionError as ASExtensionError:
+                self = extensionError
+
+            case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel:
+                self = ASExtensionError( .userCanceled, "Local authentication cancelled.", error: error )
+
+            case let error as LAError:
+                self = ASExtensionError( .userInteractionRequired, "Non-interactive authentication denied.", error: error )
+
+            default:
+                self = ASExtensionError( .failed, "Credential unavailable.", error: error )
+        }
     }
 }
