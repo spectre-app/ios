@@ -225,6 +225,7 @@ public class KeychainKeyFactory: KeyFactory {
     public func purgeKeys() {
         for algorithm in SpectreAlgorithm.allCases {
             Keychain.deleteKey( for: self.userName, algorithm: algorithm )
+            inf( "Purged keychain key: %@, v%d", self.userName, algorithm.rawValue )
         }
 
         self.invalidate()
@@ -263,14 +264,16 @@ public class KeychainKeyFactory: KeyFactory {
         Keychain.loadKey( for: self.userName, algorithm: algorithm, context: self.context )
     }
 
-    fileprivate func saveKeys(_ keys: [Promise<UnsafePointer<SpectreUserKey>>]) -> Promise<[Result<Void, Error>]> {
+    fileprivate func saveKeys(_ keys: [Promise<UnsafePointer<SpectreUserKey>>]) -> Promise<Void> {
         keyQueue.promising {
             keys.map {
-                    $0.success( self.cacheKey ).promising {
-                        Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
-                    }
+                $0.success( self.cacheKey ).promising {
+                    Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
                 }
-                .flatten()
+            }
+            .flatten().promise { _ in }.success {
+                inf( "Saved keychain keys for: %@", self.userName )
+            }
         }
     }
 

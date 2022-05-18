@@ -36,10 +36,16 @@ extension AlertController {
                                 if $0.0 != $0.1 {
                                     self.forSite( site, in: viewController, changedFrom: oldSite )
                                 }
+                            }.failure {
+                                mperror( title: "Couldn't show site change", error: $0 )
                             }
                         }
+                    }.failure {
+                        mperror( title: "Couldn't show site change", error: $0 )
                     }
                 }
+            }.failure {
+                mperror( title: "Couldn't show site change", error: $0 )
             }
         }
     }

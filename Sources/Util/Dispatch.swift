@@ -203,8 +203,7 @@ public class Promise<V> {
         }
     }
 
-    /** When this promise fails, run the given block. */
-    @discardableResult
+    /** When this promise succeeds, run the given block. */
     public func success(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) -> Void)
             -> Self {
         self.then( on: queue ) { if case .success(let value) = $0 { consumer( value ) } }
@@ -362,20 +361,30 @@ public class Promise<V> {
 }
 
 extension Collection {
-    /// A promise that always succeeds, once all the promises in this collection have completed, with a new collection of all of their results, in the same order as their respective promises in this collection.
-    func flatten<V>() -> Promise<[Result<V, Error>]> where Self.Element == Promise<V> {
+    /// A promise that succeeds once all the promises in this collection have completed successfully, with all results in the same order as their respective promises in this collection.
+    ///
+    /// The promise fails with the first error if any promise in the collection fails.
+    func flatten<V>() -> Promise<[V]> where Self.Element == Promise<V> {
         guard !self.isEmpty
         else { return Promise( .success( [] ) ) }
 
-        let promise = Promise<[Result<V, Error>]>()
-        var results = [ Result<V, Error>? ]( repeating: nil, count: self.count )
+        let promise = Promise<[V]>()
+        var results = [V?]( repeating: nil, count: self.count )
+        var aborted = false
         for (p, _promise) in self.enumerated() {
             _promise.then { result in
                 promise.semaphore.await {
-                    results[p] = result
+                    guard !aborted
+                    else { return }
+                    do {
+                        results[p] = try result.get()
 
-                    if !results.contains( where: { $0 == nil } ) {
-                        promise.finish( .success( results.compactMap { $0 }.reduce( [], { $0 + [ $1 ] } ) ) )
+                        if !results.contains( where: { $0 == nil } ) {
+                            promise.finish( .success( results.compactMap { $0 }.reduce( [], { $0 + [ $1 ] } ) ) )
+                        }
+                    } catch {
+                        aborted = true
+                        promise.finish( .failure( error ) )
                     }
                 }
             }

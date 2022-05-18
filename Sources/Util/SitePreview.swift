@@ -147,7 +147,7 @@ class SitePreview: Equatable {
 
             let updating: Promise<Bool> =
                     candidates.map { self.preview( forURL: $0 ) }.flatten()
-                              .promising { self.bestImage( fromPreviews: $0.compactMap( { try? $0.get() } ) ) }
+                              .promising { self.bestImage( fromPreviews: $0 ) }
                               .thenPromise {
                                   do {
                                       let result = try $0.get()
@@ -190,8 +190,7 @@ class SitePreview: Equatable {
             }
             .flatten().promise {
                 // Return all URLs that resulted in image responses, sorted by content length.
-                $0.compactMap { try? $0.get() }
-                  .filter { $0.mimeType?.contains( "image/" ) ?? false }
+                $0.filter { $0.mimeType?.contains( "image/" ) ?? false }
                   .sorted { $0.expectedContentLength > $1.expectedContentLength }
                   .compactMap { $0.url }
             }

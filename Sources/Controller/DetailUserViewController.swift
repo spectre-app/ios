@@ -326,6 +326,9 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                                 user.algorithm = upgradedKey.pointee.algorithm
                                 user.userKeyID = upgradedKey.pointee.keyID
                             }
+                            .failure {
+                                mperror( title: "Couldn't upgrade user algorithm", error: $0 )
+                            }
                     } )
                 }
                 if user.algorithm > .first {
@@ -341,6 +344,9 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                                 defer { downgradedKey.deallocate() }
                                 user.algorithm = downgradedKey.pointee.algorithm
                                 user.userKeyID = downgradedKey.pointee.keyID
+                            }
+                            .failure {
+                                mperror( title: "Couldn't downgrade user algorithm", error: $0 )
                             }
                     } )
                 }

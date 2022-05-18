@@ -85,6 +85,10 @@ class DialogMasterPasswordViewController: DialogViewController { // swiftlint:di
                     self.offerButton.isHidden = false
                     self.offerLabel.isHidden = false
                 }
+                .failure {
+                    wrn( "App Store unavailable: %@ [>PII]", $0.localizedDescription )
+                    pii( "[>] Error: ", $0 )
+                }
 
         stackView.addArrangedSubview( self.offerProgress )
         stackView.addArrangedSubview( self.offerTitle )

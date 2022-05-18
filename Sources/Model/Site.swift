@@ -191,6 +191,8 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             if updated {
                 self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
             }
+        }.failure {
+            wrn("Couldn't refresh preview for %@: %@", self.siteName, $0.localizedDescription)
         }
     }
     #endif

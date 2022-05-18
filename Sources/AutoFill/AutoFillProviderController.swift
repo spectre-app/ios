@@ -110,18 +110,18 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                        ASPasswordCredential( user: $0.0, password: $0.1 )
                    }
                }
+               .success( on: .main ) { (credential: ASPasswordCredential) in
+                   inf( "Autofilling non-interactively: %@, for service: %@", credential.user, credentialIdentity.serviceIdentifier )
+                   Feedback.shared.play( .activate )
+
+                   self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
+               }
                .failure( on: .main ) { error in
                    wrn( "Autofill unsuccessful: %@ [>PII]", error.localizedDescription )
                    pii( "[>] Error: %@", error )
                    Feedback.shared.play( .error )
 
                    self.extensionContext.cancelRequest( withError: ASExtensionError(for: error ) )
-               }
-               .success( on: .main ) { (credential: ASPasswordCredential) in
-                   inf( "Autofilling non-interactively: %@, for service: %@", credential.user, credentialIdentity.serviceIdentifier )
-                   Feedback.shared.play( .activate )
-
-                   self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
                }
     }
 

@@ -187,9 +187,12 @@ class Tracker: AppConfigObserver {
     }
 
     func login(user: User) {
-        user.authenticatedIdentifier.success { userId in
-            guard let userId = userId
-            else { return }
+        user.authenticatedIdentifier.then {
+            guard let userId = try? $0.get()
+            else {
+                wrn( "Login [user: unknown]" )
+                return
+            }
 
             let userConfig: [String: Any] = [
                 "algorithm": user.algorithm,
