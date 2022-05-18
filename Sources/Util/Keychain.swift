@@ -34,6 +34,10 @@ public class Keychain {
             kSecUseOperationPrompt: "Access \(userName)'s user key.",
             kSecUseDataProtectionKeychain: true,
         ]
+        #if targetEnvironment(simulator)
+        // FIXME: https://developer.apple.com/forums/thread/685773
+        query.removeValue(forKey: kSecAttrAccessControl)
+        #endif
 
         if let context = context {
             var error: NSError?
