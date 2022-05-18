@@ -64,14 +64,9 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         super.init( frame: .zero, style: .plain )
 
         self.register( SiteCell.self )
-        self.register( LiefsteCell.self )
 
         self.sitesDataSource = .init( tableView: self ) { tableView, indexPath, item in
-            if LiefsteCell.is( result: item ) {
-                return LiefsteCell.dequeue( from: tableView, indexPath: indexPath )
-            }
-
-            return SiteCell.dequeue( from: tableView, indexPath: indexPath ) { (cell: SiteCell) in
+            SiteCell.dequeue( from: tableView, indexPath: indexPath ) { (cell: SiteCell) in
                 cell.sitesView = tableView as? SitesTableView
                 cell.result = item
                 cell.updateTask.request( now: true )
@@ -90,7 +85,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         self.delegate = self
         self.backgroundColor = .clear
-        self.isOpaque = false
+        self.backgroundView = UIView()
         self.separatorStyle = .none
         self => \.separatorColor => Theme.current.color.mute
     }
@@ -409,7 +404,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
         }
 
-        private let backgroundImage = BackgroundView( mode: .clear )
+        private var backgroundImage: BackgroundView?
         private let maskButton      = EffectButton( track: .subject( "sites.site", action: "mask" ),
                                                     image: .icon( "eye-slash" ), border: 0, background: false )
         private let purposeButton   = EffectButton( track: .subject( "sites.site", action: "purpose" ),
@@ -449,10 +444,19 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             super.init( style: style, reuseIdentifier: reuseIdentifier )
 
             // - View
-            self.isOpaque = false
             self.clipsToBounds = true
-            self.backgroundView = self.backgroundImage
             self.selectedBackgroundView = UIView()
+//            self.backgroundColor = .red
+            #if TARGET_APP
+            self.backgroundImage = BackgroundView( mode: .clear )
+            self.backgroundView = self.backgroundImage
+            #else
+            self.backgroundView = UIView()
+//            self.backgroundView?.backgroundColor = .clear
+            self.backgroundView!.backgroundColor = .red
+            self.backgroundView! => \.backgroundColor => Theme.current.color.backdrop
+//            self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
+            #endif
 
             self.contentView.insetsLayoutMarginsFromSafeArea = false
 
@@ -676,7 +680,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self.unmasked = false
             self.purpose = .authentication
-            self.backgroundImage.image = nil
+            self.backgroundImage?.image = nil
         }
 
         func willDisplay() {
@@ -686,8 +690,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         }
 
         func didEndDisplaying() {
-            if self.backgroundImage.alpha == .off {
-                self.backgroundImage.image = nil
+            if self.backgroundImage?.alpha == .off {
+                self.backgroundImage?.image = nil
             }
         }
 
@@ -745,32 +749,30 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow : Theme.current.color.backdrop)
             if AppConfig.shared.colorfulSites, let siteColor = self.site?.preview.color {
                 self.separatorView => \.backgroundColor => Theme.current.color.tint.transform { $0?.with( hue: siteColor.hue ) }
-                self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
-                self.backgroundImage.imageColor = siteColor
+                self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
+                self.backgroundImage?.imageColor = siteColor
             }
             else {
                 self.separatorView => \.backgroundColor => Theme.current.color.tint
-                self.backgroundImage.mode = .custom( color: { Theme.current.color.panel.get() } )
-                self.backgroundImage.imageColor = nil
+                self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get() } )
+                self.backgroundImage?.imageColor = nil
             }
 
-            #if TARGET_APP
-            if self.isSelected {
-                self.backgroundImage.alpha = .on
-                self.backgroundImage.image = self.site?.preview.image
+            if let backgroundImage = self.backgroundImage {
+                if self.isSelected {
+                    backgroundImage.alpha = .on
+                    backgroundImage.image = self.site?.preview.image
+                }
+                else {
+                    UIView.animate( withDuration: 0, animations: {
+                        backgroundImage.alpha = .off
+                    }, completion: { _ in
+                        if !self.isSelected {
+                            backgroundImage.image = nil
+                        }
+                    } )
+                }
             }
-            else {
-                UIView.animate( withDuration: 0, animations: {
-                    self.backgroundImage.alpha = .off
-                }, completion: { _ in
-                    if !self.isSelected {
-                        self.backgroundImage.image = nil
-                    }
-                } )
-            }
-            #else
-            self.backgroundImage.alpha = self.isSelected ? .on : .off
-            #endif
 
             let isNew = self.result?.isNew ?? false
             if let resultCaption = self.result.flatMap( { NSMutableAttributedString( attributedString: $0.subtitle ) } ) {
@@ -823,78 +825,6 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     mperror( title: "Couldn't update site cell", error: error )
                 }
             }
-        }
-    }
-
-    class LiefsteCell: UITableViewCell, CellAppearance {
-        private let emitterView = EmitterView()
-        private let propLabel   = UILabel()
-        private var player: AVPlayer?
-
-        class func `is`(result: SiteItem?) -> Bool {
-            result?.site.siteName == "liefste"
-        }
-
-        // MARK: - Life
-
-        required init?(coder aDecoder: NSCoder) {
-            fatalError( "init(coder:) is not supported for this class" )
-        }
-
-        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-            super.init( style: style, reuseIdentifier: reuseIdentifier )
-
-            // - View
-            self.isOpaque = false
-            self.clipsToBounds = true
-            self.backgroundColor = .clear
-            self.selectedBackgroundView = UIView()
-            self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
-            self.contentView.layoutMargins = .border( 80 )
-
-            self.propLabel.text = "💁🏻‍♀️"
-            self.propLabel.textAlignment = .center
-            self.propLabel.font = Theme.current.font.largeTitle.get()?.withSize( 64 )
-            self.propLabel.layer.shadowRadius = 8
-            self.propLabel.layer.shadowOpacity = .long
-            self.propLabel.layer.shadowOffset = .zero
-            self.propLabel.layer => \.shadowColor => Theme.current.color.shadow
-
-            // - Hierarchy
-            self.contentView.addSubview( self.emitterView )
-            self.contentView.addSubview( self.propLabel )
-
-            // - Layout
-            LayoutConfiguration( view: self.emitterView )
-                .constrain( as: .box ).activate()
-            LayoutConfiguration( view: self.propLabel )
-                .constrain { $1.topAnchor.constraint( equalTo: $0.layoutMarginsGuide.topAnchor ) }
-                .constrain { $1.leadingAnchor.constraint( greaterThanOrEqualTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                .constrain { $1.centerXAnchor.constraint( equalTo: $0.layoutMarginsGuide.centerXAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                .constrain { $1.bottomAnchor.constraint( equalTo: $0.layoutMarginsGuide.bottomAnchor ) }
-                .activate()
-        }
-
-        func willDisplay() {
-            Tracker.shared.event( track: .subject( "sites", action: "liefste" ) )
-
-            self.player = AVPlayer( url: URL( string: "https://stuff.lhunath.com/liefste.mp3" )! )
-            self.player?.play()
-            self.emitterView.emit( with: [
-                .shape( .circle, Theme.current.color.selection.get() ),
-                .shape( .triangle, Theme.current.color.shadow.get() ),
-                .emoji( "🎈" ),
-                .emoji( "❤️" ),
-                .emoji( "🎉" ),
-            ], for: 8 )
-            self.emitterView.emit( with: [
-                .emoji( "❤️" ),
-            ], for: 200 )
-        }
-
-        func didEndDisplaying() {
-            self.player = nil
         }
     }
 

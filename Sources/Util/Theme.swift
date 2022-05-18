@@ -44,6 +44,7 @@ private var activePropertyPaths = [ Identity: WeakBox<AnyPropertyPath> ]()
 
 private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, identity members: AnyObject?...)
         -> PropertyPath<E, V> {
+    #if TARGET_APP
     let identity = Identity( members )
     //dbg( "[properties] finding identity(%x) with members: %@", identity.hashValue, members )
     if let propertyPath = activePropertyPaths[identity]?.value as? PropertyPath<E, V>, propertyPath.target != nil {
@@ -56,6 +57,9 @@ private func find<E, V>(propertyPath: @autoclosure () -> PropertyPath<E, V>, ide
     cachedPropertyPaths.setObject( propertyPath, forKey: identity )
     activePropertyPaths[identity] = WeakBox( propertyPath )
     return propertyPath
+    #else
+    return propertyPath()
+    #endif
 }
 
 private class Identity: Equatable, Hashable {
@@ -77,30 +81,36 @@ private class Identity: Equatable, Hashable {
 // Level 2: Bind the property path to a property P.
 
 func => <E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
+    #if TARGET_APP
     if let property = property {
         propertyPath.bind( property: property )
+        return
     }
-    else {
-        propertyPath.assign( value: nil )
-    }
+    #endif
+
+    propertyPath.assign( value: property?.get() )
 }
 
 func => <E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
+    #if TARGET_APP
     if let property = property {
         propertyPath.bind( property: property )
+        return
     }
-    else {
-        propertyPath.assign( value: nil )
-    }
+    #endif
+
+    propertyPath.assign( value: property?.get() )
 }
 
 func => <E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
+    #if TARGET_APP
     if let property = property {
         propertyPath.bind( property: property )
+        return
     }
-    else {
-        propertyPath.assign( value: nil )
-    }
+    #endif
+
+    propertyPath.assign( value: property?.get() )
 }
 
 class AnyPropertyPath: CustomDebugStringConvertible {

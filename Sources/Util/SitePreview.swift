@@ -41,6 +41,8 @@ class SitePreview: Equatable {
     var image: UIImage? {
         self.data.image
     }
+    #else
+    let image: UIImage? = nil
     #endif
     var color: UIColor? {
         self.data.color?.uiColor

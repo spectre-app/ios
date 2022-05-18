@@ -59,14 +59,41 @@ class BackgroundView: UIView, ThemeObserver {
         }
     }
 
-    let imageView = UIImageView()
-    let imageTint = UIView()
-    override var backgroundColor: UIColor? {
-        didSet {
-            self.imageTint.backgroundColor = self.backgroundColor.flatMap { $0.alpha == .on ? $0.with( alpha: .long ) : .clear }
+    lazy var imageView = using(UIImageView()) {
+        $0.contentMode = .scaleAspectFill
+        $0.layer.compositingFilter = "luminosityBlendMode"
+        $0.layer.mask = self.imageMask
+        self.imageViewObservation = $0.observe( \.bounds ) {
+            $0.layer.mask?.frame = $1.newValue ?? .zero
         }
+
+        self.imageTint.addSubview( $0 )
+
+        LayoutConfiguration( view: $0 )
+            .constrain( as: .box ).activate()
     }
-    private var imageMask      = CAGradientLayer()
+    private lazy var imageTint = using(UIView()) {
+        self.imageTintObservation = self.observe( \.backgroundColor ) { [imageTint = $0] in
+            imageTint.backgroundColor = ($1.newValue ?? nil).flatMap { $0.alpha == .on ? $0.with( alpha: .long ) : .clear }
+        }
+
+        self.addSubview( $0 )
+
+        LayoutConfiguration( view: $0 )
+            .constrain( as: .topBox )
+            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
+            .constrain { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: .long ).with( priority: .defaultHigh + 1 ) }
+            .activate()
+    }
+    private lazy var imageMask      = using(CAGradientLayer()) {
+        $0.needsDisplayOnBoundsChange = true
+        $0.colors = [
+            UIColor.black.with( alpha: .short * .short ).cgColor,
+            UIColor.black.with( alpha: .short * .short * .short ).cgColor,
+            UIColor.black.with( alpha: .off ).cgColor,
+        ]
+    }
+
     private var gradientColor:        CGGradient? {
         didSet {
             if oldValue != self.gradientColor {
@@ -74,14 +101,14 @@ class BackgroundView: UIView, ThemeObserver {
             }
         }
     }
-    private var gradientPoint  = CGPoint() {
+    private lazy var gradientPoint  = CGPoint() {
         didSet {
             if oldValue != self.gradientPoint {
                 self.setNeedsDisplay()
             }
         }
     }
-    private var gradientRadius = CGFloat( 0 ) {
+    private lazy var gradientRadius = CGFloat( 0 ) {
         didSet {
             if oldValue != self.gradientRadius {
                 self.setNeedsDisplay()
@@ -89,38 +116,12 @@ class BackgroundView: UIView, ThemeObserver {
         }
     }
     private var imageViewObservation: NSKeyValueObservation?
+    private var imageTintObservation: NSKeyValueObservation?
 
     // MARK: - Life
 
     init(mode: Mode = .panel) {
         super.init( frame: .zero )
-
-        // - View
-        self.imageView.contentMode = .scaleAspectFill
-        self.imageView.layer.compositingFilter = "luminosityBlendMode"
-        self.imageView.layer.mask = self.imageMask
-        self.imageMask.needsDisplayOnBoundsChange = true
-        self.imageMask.colors = [
-            UIColor.black.with( alpha: .short * .short ).cgColor,
-            UIColor.black.with( alpha: .short * .short * .short ).cgColor,
-            UIColor.black.with( alpha: .off ).cgColor,
-        ]
-        self.imageViewObservation = self.imageView.observe( \.bounds ) { [unowned self] _, _ in
-            self.imageMask.frame = self.imageView.bounds
-        }
-
-        // - Hierarchy
-        self.addSubview( self.imageTint )
-        self.imageTint.addSubview( self.imageView )
-
-        // - Layout
-        LayoutConfiguration( view: self.imageView )
-            .constrain( as: .box ).activate()
-        LayoutConfiguration( view: self.imageTint )
-            .constrain( as: .topBox )
-            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
-            .constrain { $1.heightAnchor.constraint( equalTo: $1.widthAnchor, multiplier: .long ).with( priority: .defaultHigh + 1 ) }
-            .activate()
 
         defer {
             self.mode = mode
