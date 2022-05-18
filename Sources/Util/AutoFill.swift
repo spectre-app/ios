@@ -26,7 +26,7 @@ final class AutoFill {
                     // If extension is disabled credentials in the store got purged by the system: reflect that in our cache.
                     guard state.isEnabled
                     else {
-                        //dbg( "autofill: clearing" )
+                        // dbg( "autofill: clearing" )
                         ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
                         UserDefaults.shared.removeObject( forKey: "autofill.credentials" )
                         self.credentials.removeAll()
@@ -35,7 +35,7 @@ final class AutoFill {
 
                     if !state.supportsIncrementalUpdates {
                         let allCredentials = self.credentials.flatMap { $0.identities() }
-                        //dbg( "autofill: replacing:\n%@", allCredentials )
+                        // dbg( "autofill: replacing:\n%@", allCredentials )
                         ASCredentialIdentityStore.shared.replaceCredentialIdentities( with: allCredentials ) { success, error in
                             if !success || error != nil {
                                 mperror( title: "Cannot reset autofill credentials", details: allCredentials, error: error )
@@ -46,7 +46,7 @@ final class AutoFill {
                     else {
                         let expiredCredentials = oldValue.subtracting( self.credentials ).flatMap { $0.identities() }
                         if !expiredCredentials.isEmpty {
-                            //dbg( "autofill: removing:\n%@", expiredCredentials )
+                            // dbg( "autofill: removing:\n%@", expiredCredentials )
                             ASCredentialIdentityStore.shared.removeCredentialIdentities( expiredCredentials ) { success, error in
                                 if !success || error != nil {
                                     mperror( title: "Cannot purge autofill credentials", details: expiredCredentials, error: error )
@@ -56,7 +56,7 @@ final class AutoFill {
 
                         let insertedCredentials = self.credentials.subtracting( oldValue ).flatMap { $0.identities() }
                         if !insertedCredentials.isEmpty {
-                            //dbg( "autofill: inserting:\n%@", insertedCredentials )
+                            // dbg( "autofill: inserting:\n%@", insertedCredentials )
                             ASCredentialIdentityStore.shared.saveCredentialIdentities( insertedCredentials ) { success, error in
                                 if !success || error != nil {
                                     mperror( title: "Cannot save autofill credentials", details: insertedCredentials, error: error )
@@ -80,7 +80,7 @@ final class AutoFill {
             self.semaphore.await { [unowned self] in
                 guard state.isEnabled
                 else {
-                    //dbg( "autofill: clearing" )
+                    // dbg( "autofill: clearing" )
                     ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
                     UserDefaults.shared.removeObject( forKey: "autofill.credentials" )
                     self.credentials.removeAll()
@@ -88,7 +88,7 @@ final class AutoFill {
                 }
 
                 let allCredentials = self.credentials.flatMap { $0.identities() }
-                //dbg( "autofill: replacing:\n%@", allCredentials )
+                // dbg( "autofill: replacing:\n%@", allCredentials )
                 ASCredentialIdentityStore.shared.replaceCredentialIdentities( with: allCredentials ) { success, error in
                     if !success || error != nil {
                         mperror( title: "Cannot reset autofill credentials", details: allCredentials, error: error )
@@ -106,12 +106,7 @@ final class AutoFill {
 
     public func update(for supplier: CredentialSupplier) {
         self.semaphore.await { [unowned self] in
-            var otherCredentials = self.credentials.filter { !$0.isSupplied( by: supplier ) }
-            if let suppliedCredentials = supplier.credentials {
-                otherCredentials.formUnion( suppliedCredentials )
-            }
-
-            self.credentials = otherCredentials
+            self.credentials = self.credentials.filter { !$0.isSupplied( by: supplier ) }.union((supplier.credentials ?? []))
         }
     }
 

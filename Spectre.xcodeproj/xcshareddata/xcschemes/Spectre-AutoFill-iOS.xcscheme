@@ -75,6 +75,10 @@
             ReferencedContainer = "container:Spectre.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <LocationScenarioReference
+         identifier = "com.apple.dt.IDEFoundation.CurrentLocationScenarioIdentifier"
+         referenceType = "1">
+      </LocationScenarioReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Development"

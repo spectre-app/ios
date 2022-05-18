@@ -47,6 +47,6 @@ class AutoFillUsersViewController: AutoFillBaseUsersViewController {
     override func login(user: User) {
         super.login( user: user )
 
-        self.detailsHost.show( AutoFillSitesViewController( user: user ), sender: self )
+        self.navigationController?.pushViewController( AutoFillSitesViewController( user: user ), animated: true )
     }
 }

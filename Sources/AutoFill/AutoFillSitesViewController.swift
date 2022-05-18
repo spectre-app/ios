@@ -14,6 +14,10 @@ import UIKit
 import AuthenticationServices
 
 class AutoFillSitesViewController: BaseSitesViewController {
+    private lazy var closeButton = EffectButton( track: .subject( "sites", action: "close" ),
+                                                 image: .icon( "xmark", style: .regular ) ) { [unowned self] _ in
+        self.navigationController?.popViewController(animated: true)
+    }
 
     // MARK: - Life
 
@@ -21,15 +25,6 @@ class AutoFillSitesViewController: BaseSitesViewController {
         super.viewDidLoad()
 
         // - View
-        self.backgroundView.mode = .panel
-        self.backgroundView.layoutMargins.bottom = 40
-        self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
-        self.backgroundView.layer.shadowRadius = 8
-        self.backgroundView.layer.shadowOpacity = .on
-        self.backgroundView.layer.shadowOffset = .zero
-        self.backgroundView.layer.cornerRadius = 8
-        self.backgroundView.layer.masksToBounds = true
-
         var allServiceIdentifiers = [ ASCredentialServiceIdentifier ]()
         if let serviceIdentifier = AutoFillModel.shared.context.credentialIdentity?.serviceIdentifier {
             allServiceIdentifiers.append( serviceIdentifier )
@@ -69,6 +64,16 @@ class AutoFillSitesViewController: BaseSitesViewController {
                 }
             },
         ]
+
+        // - Hierarchy
+        self.view.addSubview( self.closeButton )
+
+        // - Layout
+        LayoutConfiguration( view: self.closeButton )
+            .constrain { $1.centerXAnchor.constraint( equalTo: self.view.centerXAnchor ) }
+            .constrain { $1.centerYAnchor.constraint( equalTo: self.view.bottomAnchor ).with( priority: .fittingSizeLevel ) }
+            .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -8 ) }
+            .activate()
     }
 
     // MARK: - Private

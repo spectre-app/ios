@@ -16,25 +16,22 @@ import LocalAuthentication
 // Note: The Address Sanitizer will break the ability to load this extension due to its excessive memory usage.
 class AutoFillProviderController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        LogSink.shared.register()
-
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
+
+        LogSink.shared.register()
+        Tracker.shared.startup( extensionController: self )
     }
+
+    // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    override func loadView() {
-        self.view = BackgroundView( mode: .backdrop )
-        self.view => \.tintColor => Theme.current.color.tint
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        Tracker.shared.startup( extensionController: self )
-        AutoFillModel.shared.context = AutoFillModel.Context()
+        self.view => \.tintColor => Theme.current.color.tint
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -49,29 +46,26 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         Tracker.shared.appeared()
     }
 
+    // MARK: - UITraitEnvironment
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange( previousTraitCollection )
 
         Theme.current.updateTask.request( now: true, await: true )
     }
 
+    // MARK: - ASCredentialProviderViewController
+
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
         AutoFillModel.shared.context = AutoFillModel.Context( serviceIdentifiers: serviceIdentifiers )
 
-        let usersViewController = AutoFillUsersViewController()
-
-        // - Hierarchy
-        self.addChild( usersViewController )
-        self.view.addSubview( usersViewController.view )
-        usersViewController.didMove( toParent: self )
-
-        // - Layout
-        LayoutConfiguration( view: usersViewController.view )
-            .constrain( as: .box ).activate()
+        self.rootViewController = MainNavigationController( rootViewController: AutoFillUsersViewController() )
     }
 
     override func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
+
+        self.rootViewController = nil
 
         Marshal.shared.updateTask.request( now: true )
                .promising( on: .api ) { userFiles in
@@ -134,29 +128,34 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
-        let credentialViewController = AutoFillCredentialViewController()
-
-        // - Hierarchy
-        self.addChild( credentialViewController )
-        self.view.addSubview( credentialViewController.view )
-        credentialViewController.didMove( toParent: self )
-
-        // - Layout
-        LayoutConfiguration( view: credentialViewController.view )
-            .constrain( as: .box ).activate()
+        self.rootViewController = MainNavigationController( rootViewController: AutoFillCredentialViewController() )
     }
 
     override func prepareInterfaceForExtensionConfiguration() {
-        let configurationViewController = AutoFillConfigurationViewController()
+        AutoFillModel.shared.context = AutoFillModel.Context()
 
-        // - Hierarchy
-        self.addChild( configurationViewController )
-        self.view.addSubview( configurationViewController.view )
-        configurationViewController.didMove( toParent: self )
+        self.rootViewController = MainNavigationController( rootViewController: AutoFillConfigurationViewController() )
+    }
 
-        // - Layout
-        LayoutConfiguration( view: configurationViewController.view )
-            .constrain( as: .box ).activate()
+    // MARK: - Private
+
+    private var rootViewController: UIViewController? {
+        didSet {
+            if let oldViewController = oldValue {
+                oldViewController.willMove(toParent: nil)
+                oldViewController.viewIfLoaded?.removeFromSuperview()
+                oldViewController.removeFromParent()
+            }
+
+            if let newViewController = self.rootViewController {
+                self.addChild(newViewController)
+                newViewController.view.layer.cornerRadius = 8
+                self.view.addSubview( newViewController.view )
+                LayoutConfiguration( view: newViewController.view )
+                    .constrain( as: .box, margin: true ).activate()
+                newViewController.didMove( toParent: self )
+            }
+        }
     }
 }
 

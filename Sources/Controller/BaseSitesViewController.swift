@@ -12,12 +12,10 @@
 
 import UIKit
 
-class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate, DetailViewController {
+class BaseSitesViewController: BaseUserViewController, UITextFieldDelegate {
     internal lazy var topContainer = EffectView( content: self.searchField )
     internal let searchField    = UITextField()
     internal let sitesTableView = SitesTableView()
-
-    var isContentScrollable = true
 
     // MARK: - State
 

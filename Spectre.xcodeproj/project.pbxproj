@@ -232,6 +232,7 @@
 		DAB7AE991F3DDEE000C856B1 /* spectre-marshal-util.c in Sources */ = {isa = PBXBuildFile; fileRef = DAB7AE981F3DDEE000C856B1 /* spectre-marshal-util.c */; };
 		DABB83702826EED000AEC9E7 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = DABB836F2826EED000AEC9E7 /* OrderedCollections */; };
 		DABB83722826F1C300AEC9E7 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = DABB83712826F1C300AEC9E7 /* OrderedCollections */; };
+		DABB83732828432100AEC9E7 /* MainNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E4EBBF1CB8FC90528B7 /* MainNavigationController.swift */; };
 		DABC7BB8251C14160021ADD8 /* BaseSitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39DC918D45D864FA12ED1 /* BaseSitesViewController.swift */; };
 		DABC7BBB251C1B410021ADD8 /* BaseUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3939FFDE9DAE872BB1766 /* BaseUserViewController.swift */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
@@ -1452,6 +1453,7 @@
 				DA0E5566251022EB002B3AB1 /* spectre-algorithm_v1.c in Sources */,
 				DA0E55B02510E9BB002B3AB1 /* DateView.swift in Sources */,
 				DA0E55BF251112C1002B3AB1 /* ItemsViewController.swift in Sources */,
+				DABB83732828432100AEC9E7 /* MainNavigationController.swift in Sources */,
 				DA0E55C0251112D0002B3AB1 /* BaseViewController.swift in Sources */,
 				DA0E556F251022EB002B3AB1 /* aes.c in Sources */,
 				DA0E558E2510E985002B3AB1 /* ConstraintResolver.swift in Sources */,

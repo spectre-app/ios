@@ -19,7 +19,7 @@ class AutoFillModel: MarshalObserver {
     private var usersCache  = NSCache<NSString, User>()
     private var cachedUsers = Set<String>()
 
-    var context = Context()
+    lazy var context = Context()
 
     init() {
         Marshal.shared.observers.register( observer: self )
