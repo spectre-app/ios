@@ -13,7 +13,7 @@
 import Foundation
 
 public enum IconStyle: CaseIterable {
-    case duotone, brands, regular, solid, light
+    case duotone, brands, regular, solid, light, system, emoji
 
     var fontName: String {
         switch self {
@@ -27,6 +27,10 @@ public enum IconStyle: CaseIterable {
                 return "FontAwesome6Pro-Light"
             case .regular:
                 return "FontAwesome6Pro-Regular"
+            case .system:
+                return UIFont.systemFont(ofSize: UIFont.systemFontSize).fontName
+            case .emoji:
+                return "AppleColorEmoji"
         }
     }
 
@@ -104,6 +108,11 @@ extension UIImage {
         defer { UIGraphicsEndImageContext() }
         icon.draw( in: CGRect( origin: .zero, size: size ) )
 
-        return UIGraphicsGetImageFromCurrentImageContext()?.withRenderingMode( .alwaysTemplate )
+        var image = UIGraphicsGetImageFromCurrentImageContext()
+        if IconStyle.emoji.fontName != (icon.attribute(.font, at: 0, effectiveRange: nil) as? UIFont)?.fontName {
+            image = image?.withRenderingMode( .alwaysTemplate )
+        }
+
+        return image
     }
 }

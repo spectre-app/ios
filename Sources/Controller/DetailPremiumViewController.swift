@@ -135,7 +135,22 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
               FeatureItem( name: "Advanced Integrations", icon: "handshake",
                            caption: "Universal Clipboard, third‑party storage apps, opening site URLs, etc." ),
               FeatureItem( name: "Support", icon: "osi",
-                           caption: "Super‑charge development of \(productName)'s open source privacy‑first digital identity platform." ),
+                           caption: "Super‑charge development of \(productName)'s open source privacy‑first digital identity platform." )
+                  .addBehaviour(BlockTapBehaviour { _ in
+                      AppStore.shared.presentCodeRedemption()
+                  }),
+          ] ),
+          SeparatorItem(),
+          RedeemCodeItem(),
+          Item<Void>( subitems: [
+              FeatureItem(
+                      name: "Support Ukraine", icon: "🇺🇦",
+                      caption:
+                      """
+                      Spectre is committed to supporting emerging security concerns in Ukraine.
+                      Residents can use code `SUPPORTUA`.
+                      """
+              ),
           ] ),
         ]
     }
@@ -291,6 +306,20 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
     class FeatureItem: ImageItem<Void> {
         init(name: Text?, icon: String, caption: Text?) {
             super.init( title: name, value: { _ in .icon( icon, withSize: 48 ) }, caption: { _ in caption } )
+        }
+    }
+
+    class RedeemCodeItem: ButtonItem<Void> {
+        init() {
+            super.init( track: .subject( "premium", action: "redeem" ),
+                        value: { _ in (label: "Redeem Code", image: nil) },
+                        caption: { _ in
+                            """
+                            If you have a support code, you can redeem it here.
+                            """
+                        } ) { _ in
+                AppStore.shared.presentCodeRedemption()
+            }
         }
     }
 

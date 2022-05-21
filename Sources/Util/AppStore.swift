@@ -246,6 +246,12 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         viewController.present( storeController, animated: true )
     }
 
+    func presentCodeRedemption() {
+        if #available( iOS 14.0, * ) {
+            SKPaymentQueue.default().presentCodeRedemptionSheet()
+        }
+    }
+
     // MARK: - Private
 
     private let countryCode3to2 // swiftlint:disable:next line_length
