@@ -14,20 +14,29 @@ import StoreKit
 import TPInAppReceipt
 
 extension InAppSubscription {
+    var allProducts: [SKProduct] {
+        AppStore.shared.products.filter { $0.subscriptionGroupIdentifier == self.subscriptionGroupIdentifier }
+    }
+
+    var publicProducts: [SKProduct] {
+        self.allProducts.filter { InAppProduct.find( $0.productIdentifier )?.isPublic ?? false }
+
+    }
+
     var isActive: Bool {
-        AppStore.shared.products( forSubscription: self, onlyPublic: false ).contains {
+        self.allProducts.contains {
             InAppProduct.find( $0.productIdentifier )?.isActive ?? false
         }
     }
 
     var wasActiveButExpired: Bool {
-        AppStore.shared.products( forSubscription: self, onlyPublic: false ).contains {
+        self.allProducts.contains {
             InAppProduct.find( $0.productIdentifier )?.wasActiveButExpired ?? false
         }
     }
 
     var latest: InAppPurchase? {
-        AppStore.shared.products( forSubscription: self, onlyPublic: false )
+        self.allProducts
                 .compactMap {
                     AppStore.shared.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier )
                 }
@@ -93,6 +102,17 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         #else
         return AppConfig.shared.sandboxStore && SKPaymentQueue.canMakePayments() && !self.products.isEmpty
         #endif
+    }
+    var country: Promise<String?> {
+        if let countryCode = SKPaymentQueue.default().storefront?.countryCode {
+            return Promise(.success(self.countryCode3to2[countryCode]))
+        }
+
+        if #available(iOS 15, *) {
+            return Promise { await Storefront.current?.countryCode }
+        }
+
+        return Promise(.success(nil))
     }
     var products = [ SKProduct ]() {
         didSet {
@@ -186,27 +206,29 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         guard let urlSession = URLSession.required.get()
         else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
 
-        var countryCode2 = "US"
-        if let countryCode3 = SKPaymentQueue.default().storefront?.countryCode {
-            countryCode2 = self.countryCode3to2[countryCode3] ?? countryCode2
-        }
-        let searchURLString = "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\(countryCode2)&limit=1"
-        guard let searchURL = URL( string: searchURLString )
-        else { return Promise( .failure( AppError.internal( cause: "Couldn't resolve store URL", details: searchURLString ) ) ) }
+        return self.country
+            .promise { "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\($0 ?? "US")&limit=1" }
+            .promising { (url: String?) -> Promise<(data: Data, response: URLResponse)> in
+                guard let url = url, let searchURL = URL( string: url ) else {
+                    throw AppError.internal( cause: "Couldn't resolve store URL", details: url )
+                }
 
-        return urlSession.promise( with: URLRequest( url: searchURL ) ).promise {
-            let json = try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any]
-            if let error = json?["errorMessage"] as? String {
-                throw AppError.issue( title: "iTunes store lookup issue", details: error )
+                return urlSession.promise( with: URLRequest( url: searchURL ) )
             }
-            guard let metadata = ((json?["results"] as? [Any])?.first as? [String: Any])
-            else { throw AppError.state( title: "Missing iTunes application metadata" ) }
-            guard let storeVersion = metadata["version"] as? String
-            else { throw AppError.state( title: "Missing version in iTunes metadata" ) }
+            .promise {
+                let json = try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any]
+                if let error = json?["errorMessage"] as? String {
+                    throw AppError.issue( title: "iTunes store lookup issue", details: error )
+                }
 
-            let buildVersion = buildVersion ?? productVersion
-            return (upToDate: !buildVersion.isVersionOutdated( by: storeVersion ),
-                    buildVersion: buildVersion, storeVersion: storeVersion)
+                guard let metadata = ((json?["results"] as? [Any])?.first as? [String: Any])
+                else { throw AppError.state( title: "Missing iTunes application metadata" ) }
+                guard let storeVersion = metadata["version"] as? String
+                else { throw AppError.state( title: "Missing version in iTunes metadata" ) }
+
+                let buildVersion = buildVersion ?? productVersion
+                return (upToDate: !buildVersion.isVersionOutdated( by: storeVersion ),
+                        buildVersion: buildVersion, storeVersion: storeVersion)
         }
     }
 
@@ -228,11 +250,6 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     private let countryCode3to2 // swiftlint:disable:next line_length
             = [ "AFG": "AF", "ALB": "AL", "DZA": "DZ", "AND": "AD", "AGO": "AO", "AIA": "AI", "ATG": "AG", "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "AZE": "AZ", "BHS": "BS", "BHR": "BH", "BGD": "BD", "BRB": "BB", "BLR": "BY", "BEL": "BE", "BLZ": "BZ", "BEN": "BJ", "BMU": "BM", "BTN": "BT", "BOL": "BO", "BIH": "BA", "BWA": "BW", "BRA": "BR", "BRN": "BN", "BGR": "BG", "BFA": "BF", "KHM": "KH", "CMR": "CM", "CAN": "CA", "CPV": "CV", "CYM": "KY", "CAF": "CF", "TCD": "TD", "CHL": "CL", "CHN": "CN", "COL": "CO", "COG": "CG", "COD": "CD", "CRI": "CR", "CIV": "CI", "HRV": "HR", "CYP": "CY", "CZE": "CZ", "DNK": "DK", "DMA": "DM", "DOM": "DO", "ECU": "EC", "EGY": "EG", "SLV": "SV", "EST": "EE", "ETH": "ET", "FJI": "FJ", "FIN": "FI", "FRA": "FR", "GAB": "GA", "GMB": "GM", "GEO": "GE", "DEU": "DE", "GHA": "GH", "GRC": "GR", "GRD": "GD", "GTM": "GT", "GIN": "GN", "GNB": "GW", "GUY": "GY", "HND": "HN", "HKG": "HK", "HUN": "HU", "ISL": "IS", "IND": "IN", "IDN": "ID", "IRQ": "IQ", "IRL": "IE", "ISR": "IL", "ITA": "IT", "JAM": "JM", "JPN": "JP", "JOR": "JO", "KAZ": "KZ", "KEN": "KE", "KOR": "KR", "KWT": "KW", "KGZ": "KG", "LAO": "LA", "LVA": "LV", "LBN": "LB", "LBR": "LR", "LBY": "LY", "LIE": "LI", "LTU": "LT", "LUX": "LU", "MAC": "MO", "MKD": "MK", "MDG": "MG", "MWI": "MW", "MYS": "MY", "MDV": "MV", "MLI": "ML", "MLT": "MT", "MRT": "MR", "MUS": "MU", "MEX": "MX", "FSM": "FM", "MDA": "MD", "MCO": "MC", "MNG": "MN", "MNE": "ME", "MSR": "MS", "MAR": "MA", "MOZ": "MZ", "MMR": "MM", "NAM": "NA", "NRU": "NR", "NPL": "NP", "NLD": "NL", "NZL": "NZ", "NIC": "NI", "NER": "NE", "NGA": "NG", "NOR": "NO", "OMN": "OM", "PAK": "PK", "PLW": "PW", "PSE": "PS", "PAN": "PA", "PNG": "PG", "PRY": "PY", "PER": "PE", "PHL": "PH", "POL": "PL", "PRT": "PT", "QAT": "QA", "ROU": "RO", "RUS": "RU", "RWA": "RW", "KNA": "KN", "LCA": "LC", "VCT": "VC", "WSM": "WS", "STP": "ST", "SAU": "SA", "SEN": "SN", "SRB": "RS", "SYC": "SC", "SLE": "SL", "SGP": "SG", "SVK": "SK", "SVN": "SI", "SLB": "SB", "ZAF": "ZA", "ESP": "ES", "LKA": "LK", "SUR": "SR", "SWZ": "SZ", "SWE": "SE", "CHE": "CH", "TWN": "TW", "TJK": "TJ", "TZA": "TZ", "THA": "TH", "TON": "TO", "TTO": "TT", "TUN": "TN", "TUR": "TR", "TKM": "TM", "TCA": "TC", "UGA": "UG", "UKR": "UA", "ARE": "AE", "GBR": "GB", "USA": "US", "URY": "UY", "UZB": "UZ", "VUT": "VU", "VEN": "VE", "VNM": "VN", "VGB": "VG", "YEM": "YE", "ZMB": "ZM", "ZWE": "ZW" ]
-
-    func products(forSubscription subscription: InAppSubscription, onlyPublic: Bool = true) -> [SKProduct] {
-        self.products.filter { $0.subscriptionGroupIdentifier == subscription.subscriptionGroupIdentifier }
-            .filter { !onlyPublic || InAppProduct.find( $0.productIdentifier )?.isPublic ?? false }
-    }
 
     private func refreshReceipt() -> Promise<InAppReceipt?> {
         using( Promise<InAppReceipt?>() ) { promise in
@@ -304,11 +321,11 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
             subscribedFeatures.forEach { $0.enable( true ) }
 
             let originalPremiumPurchase =
-                    self.products( forSubscription: .premium )
+                    InAppSubscription.premium.publicProducts
                         .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
                         .sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
             let currentPremiumPurchase =
-                    self.products( forSubscription: .premium )
+                    InAppSubscription.premium.publicProducts
                         .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
                         .sorted( by: {
                             $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <

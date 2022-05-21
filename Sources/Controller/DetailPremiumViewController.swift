@@ -180,7 +180,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
 
     class SubscriptionProductsItem: ListItem<Void, SKProduct, SubscriptionProductsItem.Cell> {
         init() {
-            super.init( title: "Enroll", values: { AppStore.shared.products( forSubscription: .premium ) } )
+            super.init( title: "Enroll", values: { InAppSubscription.premium.publicProducts } )
 
             self.addBehaviour( ConditionalBehaviour( effect: .reveals ) { _ in AppStore.shared.canBuyProducts } )
             self.addBehaviour( FeatureConditionalBehaviour( feature: .premium, effect: .hides ) )

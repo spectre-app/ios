@@ -154,6 +154,17 @@ public class Promise<V> {
         }
     }
 
+    public convenience init(_ task: @escaping () async throws -> V) {
+        self.init()
+        Task {
+            do {
+                let result = try await task()
+                self.finish(.success(result))
+            }
+            catch { self.finish(.failure(error)) }
+        }
+    }
+
     public func optional() -> Promise<V?> {
         let promise = Promise<V?>()
 
@@ -283,6 +294,14 @@ public class Promise<V> {
         } )
 
         return promise
+    }
+
+    /** When this promise is finished, transform its successful result with the given block, yielding a new promise for the block. */
+    public func promising<V2>(on queue: DispatchQueue? = nil, _ consumer: @escaping (V) async throws -> V2)
+            -> Promise<V2> {
+        self.promising(on: queue) { value in
+            Promise<V2> { try await consumer( value ) }
+        }
     }
 
     /** When this promise is finished, transform its result with the given block, yielding a new promise for the block. */
