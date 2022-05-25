@@ -287,6 +287,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 }
             }
         }
+        private let nameView      = UIVisualEffectView(effect: UIBlurEffect(style: .systemChromeMaterial))
         private let nameLabel     = UILabel()
         private let nameField     = UITextField()
         private let floorView     = BackgroundView( mode: .tint )
@@ -322,10 +323,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameLabel.adjustsFontSizeToFitWidth = true
             self.nameLabel.textAlignment = .center
             self.nameLabel => \.textColor => Theme.current.color.body
-            self.nameLabel.layer => \.shadowColor => Theme.current.color.backdrop
-            self.nameLabel.layer.shadowOpacity = .on
-            self.nameLabel.layer.shadowOffset = .zero
-            self.nameLabel.layer.shadowRadius = 10
             self.nameLabel.numberOfLines = 0
             self.nameLabel.preferredMaxLayoutWidth = .infinity
 
@@ -430,6 +427,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.contentView.addSubview( self.avatarButton )
             self.contentView.addSubview( self.floorView )
             self.contentView.addSubview( self.avatarTip )
+            self.contentView.addSubview( self.nameView )
             self.contentView.addSubview( self.nameLabel )
             self.contentView.addSubview( self.nameField )
             self.contentView.addSubview( self.userNameField )
@@ -457,13 +455,15 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .activate()
-            LayoutConfiguration( view: self.nameLabel )
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
-                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.layoutMarginsGuide.bottomAnchor ) }
+            LayoutConfiguration( view: self.nameView )
+                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor ) }
+                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor ) }
+                .constrain { $1.bottomAnchor.constraint( lessThanOrEqualTo: $0.bottomAnchor ) }
                 .activate()
+            LayoutConfiguration( view: self.nameLabel )
+                .constrain( as: .box, to: self.nameView.contentView, margin: true ).activate()
             LayoutConfiguration( view: self.nameField )
-                .constrain( as: .box, to: self.nameLabel ).activate()
+                .constrain( as: .box, to: self.nameView.contentView, margin: true ).activate()
             LayoutConfiguration( view: userNameField )
                 .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
@@ -500,9 +500,11 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     active.constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
                     inactive.constrain { $1.bottomAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
                 } )
-                .apply( LayoutConfiguration( view: self.nameLabel ) { active, inactive in
-                    active.constrain { $1.bottomAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: -20 ) }
-                    inactive.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 20 ) }
+                .apply( LayoutConfiguration( view: self.nameView ) { active, inactive in
+                    active.constrain { $1.bottomAnchor.constraint( equalTo: self.floorView.topAnchor ) }
+                          .set(.on, keyPath: \.alpha)
+                    inactive.constrain { $1.topAnchor.constraint( equalTo: self.floorView.bottomAnchor ) }
+                            .set(.off, keyPath: \.alpha)
                 } )
                 .apply( LayoutConfiguration( view: self.secretField ) { active, inactive in
                     active.set( .on, keyPath: \.alpha )
