@@ -345,6 +345,7 @@ extension URLSession {
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .background
+        configuration.timeoutIntervalForResource = TimeInterval( 600 /* 10 min */ )
         configuration.isDiscretionary = true
         configuration.waitsForConnectivity = true
         configuration.allowsExpensiveNetworkAccess = false

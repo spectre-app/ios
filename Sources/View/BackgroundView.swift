@@ -63,7 +63,7 @@ class BackgroundView: UIView, ThemeObserver {
         $0.contentMode = .scaleAspectFill
         $0.layer.compositingFilter = "luminosityBlendMode"
         $0.layer.mask = self.imageMask
-        self.imageViewObservation = $0.observe( \.bounds ) {
+        self.imageViewObservation = $0.observe( \.bounds, options: [ .new ] ) {
             $0.layer.mask?.frame = $1.newValue ?? .zero
         }
 
@@ -73,7 +73,7 @@ class BackgroundView: UIView, ThemeObserver {
             .constrain( as: .box ).activate()
     }
     private lazy var imageTint = using(UIView()) {
-        self.imageTintObservation = self.observe( \.backgroundColor ) { [imageTint = $0] in
+        self.imageTintObservation = self.observe( \.backgroundColor, options: [ .new ] ) { [imageTint = $0] in
             imageTint.backgroundColor = ($1.newValue ?? nil).flatMap { $0.alpha == .on ? $0.with( alpha: .long ) : .clear }
         }
 

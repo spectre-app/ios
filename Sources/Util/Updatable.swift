@@ -36,7 +36,7 @@ extension DispatchTask {
     static func update<U>(_ updatable: U, queue: DispatchQueue = .main,
                           deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now() + .seconds( .short * .short ),
                           group: DispatchGroup? = nil, qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [],
-                          animated: Bool = false, update: @escaping () -> V)
+                          animated: Bool = false, update: @escaping () throws -> V)
             -> DispatchTask<V> where U: Updatable, U.V == V {
         DispatchTask( named: "Update: \(type( of: updatable ))", queue: queue,
                       deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
@@ -53,10 +53,17 @@ extension DispatchTask {
 
             var result: V?
             if animated {
-                UIView.animate( withDuration: .short ) { result = update() }
+                var _error: Error?
+                UIView.animate( withDuration: .short ) {
+                    do { result = try update() }
+                    catch { _error = error }
+                }
+                if let error = _error {
+                    throw error
+                }
             }
             else {
-                result = update()
+                result = try update()
             }
 
             return result!

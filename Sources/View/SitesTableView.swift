@@ -446,17 +446,8 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             // - View
             self.clipsToBounds = true
             self.selectedBackgroundView = UIView()
-//            self.backgroundColor = .red
-            #if TARGET_APP
             self.backgroundImage = BackgroundView( mode: .clear )
             self.backgroundView = self.backgroundImage
-            #else
-            self.backgroundView = UIView()
-//            self.backgroundView?.backgroundColor = .clear
-            self.backgroundView!.backgroundColor = .red
-            self.backgroundView! => \.backgroundColor => Theme.current.color.backdrop
-//            self.selectedBackgroundView! => \.backgroundColor => Theme.current.color.selection
-            #endif
 
             self.contentView.insetsLayoutMarginsFromSafeArea = false
 
@@ -485,6 +476,10 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.newButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 if self.result?.isNew ?? false, let site = self.site {
                     site.user.sites.append( site )
+
+                    #if TARGET_APP
+                    self.site?.refresh()
+                    #endif
                 }
             }
 
@@ -748,12 +743,12 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow : Theme.current.color.backdrop)
             if AppConfig.shared.colorfulSites, let siteColor = self.site?.preview.color {
-                self.separatorView => \.backgroundColor => Theme.current.color.tint.transform { $0?.with( hue: siteColor.hue ) }
+                self.separatorView => \.backgroundColor => Theme.current.color.selection.transform { $0?.with( hue: siteColor.hue ) }
                 self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
                 self.backgroundImage?.imageColor = siteColor
             }
             else {
-                self.separatorView => \.backgroundColor => Theme.current.color.tint
+                self.separatorView => \.backgroundColor => Theme.current.color.selection
                 self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get() } )
                 self.backgroundImage?.imageColor = nil
             }

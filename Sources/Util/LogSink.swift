@@ -16,7 +16,7 @@ import os
 @discardableResult
 public func pii(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ format: StaticString, _ args: Any?...) -> Bool {
-    log( file: file, line: line, function: function, dso: dso, level: AppConfig.shared.isDebug ? .debug : .trace, format, args )
+    log( file: file, line: line, function: function, dso: dso, level: AppConfig.shared.isDebug ? .info : .trace, format, args )
 }
 
 @discardableResult

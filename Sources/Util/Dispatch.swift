@@ -143,10 +143,19 @@ extension DispatchQueue {
     }
 }
 
-public class Promise<V> {
+public class Promise<V>: CustomDebugStringConvertible {
     private var     result: Result<V, Error>?
     private var     targets   = [ (queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void) ]()
     fileprivate let semaphore = DispatchQueue( label: "Promise" )
+
+    public var debugDescription: String {
+        if let result = self.result {
+            return "{\(ObjectIdentifier( self ).identity): Promise<\(V.self)>, finished: \(result)}"
+        }
+        else {
+            return "{\(ObjectIdentifier( self ).identity): Promise<\(V.self)>, targets: \(self.targets.count)}"
+        }
+    }
 
     public init(_ result: Result<V, Error>? = nil) {
         if let result = result {
@@ -363,15 +372,21 @@ public class Promise<V> {
             -> V {
         // FIXME: promise runs Thread 2, then Thread 1; await on Thread 1 -> deadlock.
         let group = DispatchGroup()
+        var awaitedResult: Result<V, Error> = .failure( AppError.internal( cause: "Missing result from await()" ) )
         self.semaphore.await {
-            if self.result == nil {
+            if let result = self.result {
+                awaitedResult = result
+            } else {
                 group.enter()
-                self.targets.append( (queue: nil, consumer: { _ in group.leave() }) )
+                self.targets.append( (queue: nil, consumer: {
+                    awaitedResult = $0
+                    group.leave()
+                }) )
             }
         }
         group.wait()
 
-        return try self.semaphore.await { try self.result!.get() }
+        return try self.semaphore.await { try awaitedResult.get() }
     }
 
     enum Interruption: Error {
@@ -380,36 +395,60 @@ public class Promise<V> {
 }
 
 extension Collection {
-    /// A promise that succeeds once all the promises in this collection have completed successfully, with all results in the same order as their respective promises in this collection.
+    /// A promise that succeeds once all the promises in this collection have completed, with only the successful results in the same order as their respective promises in this collection.
     ///
-    /// The promise fails with the first error if any promise in the collection fails.
-    func flatten<V>() -> Promise<[V]> where Self.Element == Promise<V> {
+    /// The promise never fails.
+    func compactPromise<V>() -> Promise<[V]> where Self.Element == Promise<V> {
         guard !self.isEmpty
-        else { return Promise( .success( [] ) ) }
+        else { return Promise<[V]>( .success( [] ) ) }
 
-        let promise = Promise<[V]>()
-        var results = [V?]( repeating: nil, count: self.count )
-        var aborted = false
+        let compactPromise = Promise<[V]>()
+        var compactResults = [ Result<V, Error>? ]( repeating: nil, count: self.count )
         for (p, _promise) in self.enumerated() {
             _promise.then { result in
-                promise.semaphore.await {
-                    guard !aborted
-                    else { return }
-                    do {
-                        results[p] = try result.get()
+                compactPromise.semaphore.await {
+                    compactResults[p] = result
 
-                        if !results.contains( where: { $0 == nil } ) {
-                            promise.finish( .success( results.compactMap { $0 }.reduce( [], { $0 + [ $1 ] } ) ) )
-                        }
-                    } catch {
-                        aborted = true
-                        promise.finish( .failure( error ) )
+                    if !compactResults.contains( where: { $0 == nil } ) {
+                        compactPromise.finish( .success( compactResults.map { try? $0?.get() }.compactMap { $0 } ) )
                     }
                 }
             }
         }
 
-        return promise
+        return compactPromise
+    }
+
+    /// A promise that succeeds once all the promises in this collection have completed successfully, with all results in the same order as their respective promises in this collection.
+    ///
+    /// The promise fails with the first error if any promise in the collection fails.
+    func flatten<V>() -> Promise<[V]> where Self.Element == Promise<V> {
+        guard !self.isEmpty
+        else { return Promise<[V]>( .success( [] ) ) }
+
+        let flatPromise = Promise<[V]>()
+        var flatResults = [ V? ]( repeating: nil, count: self.count )
+        var aborted     = false
+        for (p, _promise) in self.enumerated() {
+            _promise.then { result in
+                flatPromise.semaphore.await {
+                    guard !aborted
+                    else { return }
+                    do {
+                        flatResults[p] = try result.get()
+
+                        if !flatResults.contains( where: { $0 == nil } ) {
+                            flatPromise.finish( .success( flatResults.compactMap { $0 } ) )
+                        }
+                    } catch {
+                        aborted = true
+                        flatPromise.finish( .failure( error ) )
+                    }
+                }
+            }
+        }
+
+        return flatPromise
     }
 }
 

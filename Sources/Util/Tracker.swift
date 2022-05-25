@@ -238,7 +238,7 @@ class Tracker: AppConfigObserver {
 
     func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                track: Tracking) -> TimedEvent {
-        dbg( file: file, line: line, function: function, dso: dso, "> %@ #%@", track.subject, track.action )
+        trc( file: file, line: line, function: function, dso: dso, "> %@ #%@", track.subject, track.action )
         return TimedEvent( track: track, start: Date() )
     }
 
@@ -308,10 +308,10 @@ class Tracker: AppConfigObserver {
 
         // Log
         if untimedEventParameters.isEmpty {
-            dbg( file: file, line: line, function: function, dso: dso, "# %@", name )
+            trc( file: file, line: line, function: function, dso: dso, "# %@", name )
         }
         else {
-            dbg( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, untimedEventParameters )
+            trc( file: file, line: line, function: function, dso: dso, "# %@: [%@]", name, untimedEventParameters )
         }
 
         let sourceParameters: [String: Any] = [ "src_file": file.lastPathComponent, "src_line": line, "src_function": function ]
@@ -428,10 +428,10 @@ class Tracker: AppConfigObserver {
                   _ parameters: [String: Any?] = [:]) {
             // Log
             if parameters.isEmpty {
-                dbg( file: file, line: line, function: function, dso: dso, "@ %@", self.name )
+                trc( file: file, line: line, function: function, dso: dso, "@ %@", self.name )
             }
             else {
-                dbg( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", self.name, parameters )
+                trc( file: file, line: line, function: function, dso: dso, "@ %@: [%@]", self.name, parameters )
             }
 
             let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
@@ -495,7 +495,7 @@ class Tracker: AppConfigObserver {
             guard !self.ended
             else { return }
 
-            dbg( file: file, line: line, function: function, dso: dso, "> %@ X%@", self.tracking.subject, self.tracking.action )
+            trc( file: file, line: line, function: function, dso: dso, "> %@ X%@", self.tracking.subject, self.tracking.action )
             self.ended = true
         }
     }

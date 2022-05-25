@@ -187,7 +187,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
 
     #if TARGET_APP
     public func refresh() {
-        self.preview.update().success { updated in
+        self.preview.updateTask.request().success { updated in
             if updated {
                 self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
             }
