@@ -110,7 +110,7 @@ extension SpectreIdenticon: Equatable {
         }
 
         let shadow = NSShadow()
-        shadow.shadowColor = Theme.current.color.shadow.get() // TODO: Update on theme change.
+        shadow.shadowColor = Theme.current.color.shadow.get(forTraits: .current) // TODO: Update on theme change.
         shadow.shadowOffset = CGSize( width: 0, height: 1 )
         return self.text().flatMap {
             NSAttributedString( string: $0, attributes: [

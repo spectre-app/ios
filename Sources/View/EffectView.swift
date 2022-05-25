@@ -134,8 +134,9 @@ class EffectView: UIView, ThemeObserver {
         self.layer.masksToBounds = true
         self.layer.shadowRadius = 0
         self.layer.shadowOpacity = .short
-        self.layer => \.shadowColor => Theme.current.color.shadow
         self.layer.shadowOffset = CGSize( width: 0, height: 1 )
+        self => \.layer.shadowColor => Theme.current.color.shadow
+        self => \.innerShadowLayer.shadowColor => Theme.current.color.shadow
 
         self.contentView.insetsLayoutMarginsFromSafeArea = false
         self.update()
@@ -212,7 +213,7 @@ class EffectView: UIView, ThemeObserver {
             self.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2 : self.rounding
             self.layer.borderWidth = self.borderWidth
             self.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor :
-                                      Theme.current.color.body.get())?.cgColor
+                                      Theme.current.color.body.get(forTraits: self.traitCollection))?.cgColor
             self.blurEffectView.alpha = self.isDimmed ? .long : .on
             self.innerShadowLayer.cornerRadius = self.layer.cornerRadius
         }

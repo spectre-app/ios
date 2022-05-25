@@ -172,9 +172,14 @@ class BackgroundView: UIView, ThemeObserver {
 
     func didChange(theme: Theme) {
         if case .gradient = self.mode {
-            self.gradientColor = CGGradient( colorsSpace: CGColorSpaceCreateDeviceRGB(),
-                                             colors: [ Theme.current.color.panel.get(), Theme.current.color.backdrop.get() ] as CFArray,
-                                             locations: nil )
+            self.gradientColor = CGGradient(
+                    colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                    colors: [
+                                Theme.current.color.panel.get(forTraits: self.traitCollection),
+                                Theme.current.color.backdrop.get(forTraits: self.traitCollection)
+                            ] as CFArray,
+                    locations: nil
+            )
         }
         else if case .custom(let color) = self.mode {
             self.backgroundColor = color()

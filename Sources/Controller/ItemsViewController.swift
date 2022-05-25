@@ -57,12 +57,12 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
         // - View
         self.view.layoutMargins = .vertical( 40 )
         self.view.insetsLayoutMarginsFromSafeArea = false
-        self.backgroundView.layer => \.shadowColor => Theme.current.color.shadow
         self.backgroundView.layer.shadowRadius = 8
         self.backgroundView.layer.shadowOpacity = .on
         self.backgroundView.layer.shadowOffset = .zero
         self.backgroundView.layer.cornerRadius = 8
         self.backgroundView.layer.masksToBounds = true
+        self.backgroundView => \.layer.shadowColor => Theme.current.color.shadow
 
         self.itemsView.axis = .vertical
         self.itemsView.spacing = 40
@@ -98,7 +98,7 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
             let focusRect = scrollView.convert( focusItem.view.bounds, from: focusItem.view )
             scrollView.setContentOffset( CGPoint( x: 0, y: focusRect.center.y - scrollView.bounds.size.height / 2 ), animated: animated )
 
-            let colorOn = Theme.current.color.selection.get(), colorOff = colorOn?.with( alpha: .off )
+            let colorOn = Theme.current.color.selection.get(forTraits: self.traitCollection), colorOff = colorOn?.with( alpha: .off )
             focusItem.view.backgroundColor = colorOff
             UIView.animate( withDuration: .long, animations: {
                 focusItem.view.backgroundColor = colorOn
@@ -130,8 +130,10 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
         super.doUpdate()
 
         if let color = self.color {
-            self.backgroundView.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: color.hue ) } )
-            self.view.tintColor = Theme.current.color.tint.get()?.with( hue: color.hue )
+            self.backgroundView.mode = .custom( color: {
+                Theme.current.color.panel.get(forTraits: self.traitCollection)?.with( hue: color.hue )
+            } )
+            self.view.tintColor = Theme.current.color.tint.get(forTraits: self.traitCollection)?.with( hue: color.hue )
         }
         else {
             self.backgroundView.mode = .panel

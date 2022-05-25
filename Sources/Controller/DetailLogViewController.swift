@@ -161,19 +161,20 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             dateFormatter.dateFormat = "DDD'-'HH':'mm':'ss"
 
             super.init( value: {
-                let font = Theme.current.font.mono.get()?.withSize( 11 ), boldFont = font?.withSymbolicTraits( .traitBold )
+                let font = Theme.current.font.mono.get(forTraits: .current)?.withSize( 11 )
+                let boldFont = font?.withSymbolicTraits( .traitBold )
                 return LogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
                     logs.append( NSAttributedString(
                             string: "\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)\n",
                             attributes: [
                                 .font: font as Any,
-                                .foregroundColor: Theme.current.color.secondary.get() as Any,
+                                .foregroundColor: Theme.current.color.secondary.get(forTraits: .current) as Any,
                             ] ) )
                     logs.append( NSAttributedString(
                             string: "\(record.message)\n",
                             attributes: [
                                 .font: (record.level <= .warning ? boldFont : font) as Any,
-                                .foregroundColor: Theme.current.color.body.get() as Any,
+                                .foregroundColor: Theme.current.color.body.get(forTraits: .current) as Any,
                             ] ) )
                     return logs
                 }

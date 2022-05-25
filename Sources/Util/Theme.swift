@@ -88,7 +88,7 @@ func => <E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
     }
     #endif
 
-    propertyPath.assign( value: property?.get() )
+    propertyPath.assign( value: property?.get( forTraits: propertyPath.target?.traitCollection ?? .current ) )
 }
 
 func => <E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
@@ -99,7 +99,7 @@ func => <E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?
     }
     #endif
 
-    propertyPath.assign( value: property?.get() )
+    propertyPath.assign( value: property?.get( forTraits: propertyPath.target?.traitCollection ?? .current ) )
 }
 
 func => <E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
@@ -110,10 +110,14 @@ func => <E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Prop
     }
     #endif
 
-    propertyPath.assign( value: property?.get() )
+    propertyPath.assign( value: property?.get( forTraits: propertyPath.target?.traitCollection ?? .current ) )
 }
 
 class AnyPropertyPath: CustomDebugStringConvertible {
+    fileprivate var anyTarget: (NSObject & UITraitEnvironment)? {
+        nil
+    }
+
     var debugDescription: String {
         "-"
     }
@@ -122,13 +126,16 @@ class AnyPropertyPath: CustomDebugStringConvertible {
     }
 }
 
-class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
+class PropertyPath<E, V>: AnyPropertyPath where E: NSObject & UITraitEnvironment {
 
     let nonnullKeyPath:  KeyPath<E, V>?
     let nullableKeyPath: KeyPath<E, V?>?
     let attribute:       NSAttributedString.Key?
 
-    internal weak var target: E?
+    fileprivate weak var target: E?
+    fileprivate override var anyTarget: (NSObject & UITraitEnvironment)? {
+        self.target
+    }
     private var property: AnyProperty? {
         didSet {
             if oldValue !== self.property {
@@ -285,7 +292,7 @@ class PropertyPath<E, V>: AnyPropertyPath where E: AnyObject {
     }
 }
 
-class PropertyPathCleaner<E, V> where E: AnyObject {
+class PropertyPathCleaner<E, V> where E: NSObject & UITraitEnvironment {
     weak var target: E?
     let propertyPath: PropertyPath<E, V>
 
@@ -523,6 +530,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         let mute        = AppearanceProperty<UIColor>() //! Dim content hinting
         let selection   = AppearanceProperty<UIColor>() //! Selected content background
         let tint        = AppearanceProperty<UIColor>() //! Control accents
+        let debug       = AppearanceProperty<UIColor>() //! Control accents
     }
 
     // MARK: - Life
@@ -552,6 +560,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.mute.parent = self.parent?.color.mute
             self.color.selection.parent = self.parent?.color.selection
             self.color.tint.parent = self.parent?.color.tint
+            self.color.debug.parent = self.parent?.color.debug
 
             self.updateTask.request()
         }
@@ -600,6 +609,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.mute.set( UIColor.separator )
         self.color.selection.set( light: .hex( "173D50" )?.with( alpha: .short ), dark: .hex( "F1F9FC" )?.with( alpha: .short ) )
         self.color.tint.set( light: .hex( "173D50" ), dark: .hex( "F1F9FC" ) )
+        self.color.debug.set( light: UIColor.systemRed, dark: UIColor.systemOrange )
 
         Theme.byPath[""] = self
     }
@@ -664,6 +674,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.mute.doUpdate()
         self.color.selection.doUpdate()
         self.color.tint.doUpdate()
+        self.color.debug.doUpdate()
 
         self.observers.notify( event: { $0.didChange( theme: self ) } )
     }
@@ -684,7 +695,7 @@ protocol ThemeObserver {
 class AnyProperty: Updates {
     var updates = [ WeakBox<Updates> ]()
 
-    func getAny() -> Any? {
+    func getAny(forTraits traits: UITraitCollection) -> Any? {
         nil
     }
 
@@ -707,21 +718,29 @@ class AnyProperty: Updates {
     }
 }
 
-private class PropertyUpdater: Updates, CustomDebugStringConvertible {
+private class PropertyUpdater: NSObject, Updates {
     private weak var propertyPath: AnyPropertyPath?
     private let property: AnyProperty
 
-    var debugDescription: String {
+    override var debugDescription: String {
         "update[\(self.propertyPath?.debugDescription ?? "gone"), from: \(self.property)]"
     }
 
     init(property: AnyProperty, propertyPath: AnyPropertyPath) {
         self.property = property
         self.propertyPath = propertyPath
+        super.init()
+
+        self.propertyPath?.anyTarget?.addObserver(self, forKeyPath: "traitCollection", context: nil)
+    }
+
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?,
+                               context: UnsafeMutableRawPointer?) {
+        self.doUpdate()
     }
 
     func doUpdate() {
-        self.propertyPath?.assign( value: self.property.getAny() )
+        self.propertyPath?.assign( value: self.property.getAny( forTraits: self.propertyPath?.anyTarget?.traitCollection ?? .current ) )
     }
 }
 
@@ -757,12 +776,12 @@ class Property<V>: AnyProperty, CustomDebugStringConvertible {
         self.parent = parent
     }
 
-    override func getAny() -> Any? {
-        self.get()
+    override func getAny(forTraits traits: UITraitCollection) -> Any? {
+        self.get(forTraits: traits)
     }
 
-    func get() -> V? {
-        self.parent?.get()
+    func get(forTraits traits: UITraitCollection) -> V? {
+        self.parent?.get(forTraits: traits)
     }
 
     func transform<T>(_ function: @escaping (V?) -> T?) -> Property<T> {
@@ -783,8 +802,8 @@ class ValueProperty<V>: Property<V> {
         self.value = value
     }
 
-    override func get() -> V? {
-        self.value ?? super.get()
+    override func get(forTraits traits: UITraitCollection) -> V? {
+        self.value ?? super.get( forTraits: traits )
     }
 
     func set(_ value: V?) {
@@ -814,8 +833,8 @@ class FontProperty: ValueProperty<UIFont> {
         super.init( value, parent: parent )
     }
 
-    override func get() -> UIFont? {
-        guard let value = super.get()
+    override func get(forTraits traits: UITraitCollection) -> UIFont? {
+        guard let value = super.get( forTraits: traits )
         else { return nil }
 
         guard let textStyle = self.textStyle
@@ -852,8 +871,8 @@ class AppearanceProperty<V>: Property<V> {
         super.init( parent: parent )
     }
 
-    override func get() -> V? {
-        (UITraitCollection.current.userInterfaceStyle == .dark ? self.value.dark : self.value.light) ?? super.get()
+    override func get(forTraits traits: UITraitCollection) -> V? {
+        (traits.userInterfaceStyle == .dark ? self.value.dark : self.value.light) ?? super.get( forTraits: traits )
     }
 
     func set(light lightValue: V?, dark darkValue: V?) {
@@ -865,22 +884,7 @@ class AppearanceProperty<V>: Property<V> {
     }
 
     override var valueDescription: String {
-        if UITraitCollection.current.userInterfaceStyle == .dark {
-            if let value = self.value.dark {
-                return "dark[ \(type( of: value )) ]"
-            }
-            else {
-                return super.valueDescription
-            }
-        }
-        else {
-            if let value = self.value.light {
-                return "light[ \(type( of: value )) ]"
-            }
-            else {
-                return super.valueDescription
-            }
-        }
+        "by-trait[\(type( of: value ))] :: parent[\(super.valueDescription)]"
     }
 }
 
@@ -894,8 +898,8 @@ class TransformProperty<F, T>: Property<T> {
         super.init( parent: nil )
     }
 
-    override func get() -> T? {
-        self.function( self.from.get() )
+    override func get(forTraits traits: UITraitCollection) -> T? {
+        self.function( self.from.get(forTraits: traits) )
     }
 
     override var valueDescription: String {

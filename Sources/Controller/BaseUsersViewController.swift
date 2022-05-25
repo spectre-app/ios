@@ -404,7 +404,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.nameField => \.font => Theme.current.font.title1
             self.nameField => \.textColor => Theme.current.color.body
             self.nameField => \.attributedPlaceholder => .foregroundColor => Theme.current.color.placeholder
-            self.nameField.layer => \.shadowColor => Theme.current.color.backdrop
+            self.nameField => \.layer.shadowColor => Theme.current.color.backdrop
             self.nameField.layer.shadowOpacity = .on
             self.nameField.layer.shadowOffset = .zero
             self.nameField.layer.shadowRadius = 10

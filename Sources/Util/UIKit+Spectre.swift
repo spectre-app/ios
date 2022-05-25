@@ -27,8 +27,8 @@ extension SFSafariViewController: ThemeObserver {
     // MARK: - ThemeObserver
 
     func didChange(theme: Theme) {
-        self.preferredBarTintColor = theme.color.backdrop.get()
-        self.preferredControlTintColor = theme.color.tint.get()
+        self.preferredBarTintColor = theme.color.backdrop.get(forTraits: self.traitCollection)
+        self.preferredControlTintColor = theme.color.tint.get(forTraits: self.traitCollection)
     }
 }
 

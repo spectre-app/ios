@@ -294,7 +294,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     self.matches = Array( attributedKey.string.indices )
                     self.isMatched = true
                     attributedKey.addAttribute( NSAttributedString.Key.backgroundColor,
-                                                value: Theme.current.color.selection.get() as Any,
+                                                value: Theme.current.color.selection.get(forTraits: .current) as Any,
                                                 range: NSRange( key.startIndex..<key.endIndex, in: key ) )
                     return
                 }
@@ -313,7 +313,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                     if self.query[q] == key[k] {
                         self.matches.append( k )
                         attributedKey.addAttribute( NSAttributedString.Key.backgroundColor,
-                                                    value: Theme.current.color.selection.get() as Any,
+                                                    value: Theme.current.color.selection.get(forTraits: .current) as Any,
                                                     range: NSRange( k..<n, in: key ) )
                         q = self.query.index( after: q )
                     }
@@ -744,12 +744,14 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow : Theme.current.color.backdrop)
             if AppConfig.shared.colorfulSites, let siteColor = self.site?.preview.color {
                 self.separatorView => \.backgroundColor => Theme.current.color.selection.transform { $0?.with( hue: siteColor.hue ) }
-                self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get()?.with( hue: siteColor.hue ) } )
+                self.backgroundImage?.mode = .custom( color: {
+                    Theme.current.color.panel.get(forTraits: self.traitCollection)?.with( hue: siteColor.hue )
+                } )
                 self.backgroundImage?.imageColor = siteColor
             }
             else {
                 self.separatorView => \.backgroundColor => Theme.current.color.selection
-                self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get() } )
+                self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get(forTraits: self.traitCollection) } )
                 self.backgroundImage?.imageColor = nil
             }
 

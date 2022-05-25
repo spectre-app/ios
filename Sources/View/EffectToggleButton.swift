@@ -34,7 +34,7 @@ class EffectToggleButton: UIView {
                     self.checkLabel => \.textColor => Theme.current.color.body.transform { [unowned self] in
                         $0?.with( alpha: self.isSelected ? .on : .off )
                     }
-                    self.checkLabel.layer => \.borderColor => (self.isSelected ? Theme.current.color.body : Theme.current.color.mute)
+                    self.checkLabel => \.layer.borderColor => (self.isSelected ? Theme.current.color.body : Theme.current.color.mute)
                 }
             }
         }
@@ -79,7 +79,7 @@ class EffectToggleButton: UIView {
         self.insetsLayoutMarginsFromSafeArea = false
 
         self.checkLabel => \.backgroundColor => Theme.current.color.panel
-        self.checkLabel.layer => \.borderColor => Theme.current.color.mute
+        self.checkLabel => \.layer.borderColor => Theme.current.color.mute
         self.checkLabel.layer.borderWidth = 1
         self.checkLabel.layer.masksToBounds = true
         self.checkLabel.textAlignment = .center

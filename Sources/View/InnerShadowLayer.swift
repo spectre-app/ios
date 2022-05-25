@@ -17,7 +17,6 @@ class InnerShadowLayer: CALayer {
     override init() {
         super.init()
 
-        self => \.shadowColor => Theme.current.color.shadow
         self.shadowRadius = 4
         self.shadowOpacity = .short
         self.shadowOffset = .zero
