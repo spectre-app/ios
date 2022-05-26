@@ -98,7 +98,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
                             ] )
 
                     extensionContext.completeRequest( withSelectedCredential: .init( user: login, password: password ) ) { _ in
-                        site.user.save( onlyIfDirty: true, await: true )
+                        site.user?.save( onlyIfDirty: true, await: true )
                     }
                 }
                 catch {

@@ -210,9 +210,9 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         // MARK: - Types
 
         class Cell: UITableViewCell {
-            private lazy var buyButton = EffectButton( track: .subject( "premium.subscription", action: "subscribe",
-                                                                        [ "product": self.product?.productIdentifier ] ),
-                                                       title: "Subscribe" )
+            private lazy var buyButton = EffectButton( track: .subject( "premium.subscription", action: "subscribe", [
+                "product": { [weak self] in self?.product?.productIdentifier }
+            ] ), title: "Subscribe" )
             private let captionLabel = UILabel()
 
             var product: SKProduct? {

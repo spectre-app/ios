@@ -2633,7 +2633,7 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		DABB836E2826EED000AEC9E7 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-collections.git";
+			repositoryURL = "https://github.com/apple/swift-collections";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.0;

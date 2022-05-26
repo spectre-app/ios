@@ -14,12 +14,12 @@ import UIKit
 import LocalAuthentication
 
 private let keyQueue     = DispatchQueue( label: "\(productName): Key Factory", qos: .utility )
-private var keyFactories = [ String: KeyFactory ]()
+private var keyFactories = [ String: WeakBox<KeyFactory> ]()
 
 private func keyFactoryProvider(_ algorithm: SpectreAlgorithm, _ userName: UnsafePointer<CChar>?) -> UnsafePointer<SpectreUserKey>? {
     keyQueue.await {
         do {
-            return try String.valid( userName ).flatMap { keyFactories[$0] }?.newKey( for: algorithm ).await()
+            return try String.valid( userName ).flatMap { keyFactories[$0]?.value }?.newKey( for: algorithm ).await()
         }
         catch {
             wrn( "Key Unavailable: %@", error )
@@ -47,7 +47,7 @@ public class KeyFactory {
 
     public func provide() -> Promise<SpectreKeyProvider> {
         keyQueue.promise {
-            keyFactories[self.userName] = self
+            keyFactories[self.userName] = WeakBox( self )
             return keyFactoryProvider
         }
     }
@@ -272,7 +272,7 @@ public class KeychainKeyFactory: KeyFactory {
                     Keychain.saveKey( for: self.userName, algorithm: $0.pointee.algorithm, keyFactory: self, context: self.context )
                 }
             }
-            .flatten().promise { _ in }.success {
+            .flatPromise().promise { _ in }.success {
                 inf( "Saved keychain keys for: %@", self.userName )
             }
         }

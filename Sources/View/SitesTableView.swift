@@ -79,7 +79,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             return { editingStyle in
                 if editingStyle == .delete {
                     Tracker.shared.event( track: .subject( "sites.site", action: "delete" ) )
-                    item.site.user.sites.removeAll { $0 === item.site }
+                    item.site.user?.sites.removeAll { $0 === item.site }
                 }
             }
         }
@@ -193,7 +193,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                         UIMenu( title: site.siteName, children:
                         .init( arrayLiteral: UIAction( title: "Delete", image: .icon( "trash-can" ),
                                                        identifier: UIAction.Identifier( "delete" ), attributes: .destructive,
-                                                       handler: { _ in site.user.sites.removeAll { $0 === site } } ) )
+                                                       handler: { _ in site.user?.sites.removeAll { $0 === site } } ) )
                         + self.siteActions
                               .filter { siteAction in
                                   if !siteAction.appearance.contains( .menu ) {
@@ -377,10 +377,10 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         public var result: SiteItem? {
             didSet {
                 if oldValue?.site != self.result?.site {
-                    oldValue?.site.user.observers.unregister( observer: self )
+                    oldValue?.site.user?.observers.unregister( observer: self )
                     oldValue?.site.observers.unregister( observer: self )
                     self.result?.site.observers.register( observer: self )
-                    self.result?.site.user.observers.register( observer: self )
+                    self.result?.site.user?.observers.register( observer: self )
                 }
 
                 self.updateTask.request()
@@ -443,6 +443,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         // swiftlint:disable:next function_body_length
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
             super.init( style: style, reuseIdentifier: reuseIdentifier )
+            LeakRegistry.shared.register( self )
 
             // - View
             self.clipsToBounds = true
@@ -476,7 +477,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.newButton.isUserInteractionEnabled = false
             self.newButton.action( for: .primaryActionTriggered ) { [unowned self] in
                 if self.result?.isNew ?? false, let site = self.site {
-                    site.user.sites.append( site )
+                    site.user?.sites.append( site )
 
                     #if TARGET_APP
                     self.site?.refresh()
@@ -650,8 +651,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
                 }
                 .forEach { siteAction in
                     let actionButton = EffectButton( track: siteAction.tracking?.with( parameters: [ "appearance": "cell" ] ),
-                                                     image: .icon( siteAction.icon ), border: 0, background: false ) {
-                        [unowned self] in
+                                                     image: .icon( siteAction.icon ), border: 0, background: false ) { [unowned self] in
                         if let site = self.site {
                             siteAction.action( site, self.purpose, .cell )
                         }
@@ -745,14 +745,16 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self => \.backgroundColor => ((self.result?.isPreferred ?? false) ? Theme.current.color.shadow : Theme.current.color.backdrop)
             if AppConfig.shared.colorfulSites, let siteColor = self.site?.preview.color {
                 self.separatorView => \.backgroundColor => Theme.current.color.selection.transform { $0?.with( hue: siteColor.hue ) }
-                self.backgroundImage?.mode = .custom( color: {
+                self.backgroundImage?.mode = .custom( color: { [unowned self] in
                     Theme.current.color.panel.get(forTraits: self.traitCollection)?.with( hue: siteColor.hue )
                 } )
                 self.backgroundImage?.imageColor = siteColor
             }
             else {
                 self.separatorView => \.backgroundColor => Theme.current.color.selection
-                self.backgroundImage?.mode = .custom( color: { Theme.current.color.panel.get(forTraits: self.traitCollection) } )
+                self.backgroundImage?.mode = .custom( color: { [unowned self] in
+                    Theme.current.color.panel.get(forTraits: self.traitCollection)
+                } )
                 self.backgroundImage?.imageColor = nil
             }
 
@@ -796,7 +798,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             }
 
             self.maskButton.isSelected = self.unmasked
-            self.maskButton.isUserInteractionEnabled = (self.site?.user.maskPasswords ?? false)
+            self.maskButton.isUserInteractionEnabled = (self.site?.user?.maskPasswords ?? false)
             self.maskButton.alpha = self.maskButton.isUserInteractionEnabled ? .on : .off
             self.purposeButton.alpha = self.purposeButton.isUserInteractionEnabled ? .on : .off
             self.modeStack.isUserInteractionEnabled = self.isSelected
@@ -809,15 +811,15 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             self.primaryGestureRecognizer?.isEnabled = self.isSelected
 
             self.resultLabel.isSecureTextEntry =
-            (self.site?.user.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
+            (self.site?.user?.maskPasswords ?? true) && !self.unmasked && self.purpose == .authentication
             self.resultLabel.isUserInteractionEnabled = !self.resultLabel.isSecureTextEntry
             self.resultLabel.alpha = self.resultLabel.isUserInteractionEnabled ? .on : .off
 
             self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3 : Theme.current.font.callout)
 
-            self.site?.result( keyPurpose: self.purpose )?.token.then( on: .main ) {
+            self.site?.result( keyPurpose: self.purpose )?.token.then( on: .main ) { [weak self] in
                 do {
-                    self.resultLabel.text = try $0.get()
+                    self?.resultLabel.text = try $0.get()
                 }
                 catch {
                     mperror( title: "Couldn't update site cell", error: error )

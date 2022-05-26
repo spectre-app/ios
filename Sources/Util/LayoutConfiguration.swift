@@ -42,8 +42,8 @@ struct Anchor: OptionSet {
 }
 
 public struct LayoutTarget<T: UIView>: CustomStringConvertible {
-    public let view:                T?
-    public let layoutGuide:         UILayoutGuide?
+    public weak var view:           T?
+    public weak var layoutGuide:    UILayoutGuide?
     public var description:         String {
         self.view?.describe() ?? self.layoutGuide?.description ?? "-"
     }

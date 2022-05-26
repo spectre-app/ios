@@ -56,8 +56,12 @@ extension UIAlertController {
                 }
             }
         }
-        secretField.authenticated = { result in
+        secretField.authenticated = { [weak alertController] result in
             spinner.dismiss()
+
+            guard let alertController = alertController
+            else { return }
+
             alertController.dismiss( animated: true ) {
                 if !retryOnError {
                     promise.finish( result )
@@ -80,7 +84,7 @@ extension UIAlertController {
         alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
             promise.finish( .failure( AppError.cancelled ) )
         } )
-        alertController.addAction( UIAlertAction( title: action, style: .default ) { _ in
+        alertController.addAction( UIAlertAction( title: action, style: .default ) { [unowned alertController] _ in
             if !secretField.try() {
                 mperror( title: "Couldn't import user", message: "Personal secret cannot be left empty.", in: viewController.view )
 
@@ -126,7 +130,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
             }
         }
     }
-    var passwordField: UITextField? {
+    weak var passwordField: UITextField? {
         willSet {
             if let passwordField = self.passwordField {
                 passwordField.delegate = nil
@@ -154,8 +158,8 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
                 self.rightItemView.frame.size = self.rightItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize )
 
                 NotificationCenter.default.addObserver(
-                        forName: UITextField.textDidChangeNotification, object: passwordField, queue: nil ) { _ in
-                    self.setNeedsIdenticon()
+                        forName: UITextField.textDidChangeNotification, object: passwordField, queue: nil ) { [weak self] _ in
+                    self?.setNeedsIdenticon()
                 }
             }
         }

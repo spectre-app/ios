@@ -13,7 +13,7 @@
 import UIKit
 
 // swiftlint:disable:next type_body_length
-class Marshal: Observable, Updatable {
+class Marshal: Observable, Updatable, LeakObserver {
     public static let shared = Marshal()
 
     public let observers = Observers<MarshalObserver>()
@@ -31,6 +31,7 @@ class Marshal: Observable, Updatable {
 
     private init() {
         LeakRegistry.shared.unregister( self.updateTask )
+        LeakRegistry.shared.observers.register( observer: self )
     }
 
     // MARK: - Interface
@@ -519,9 +520,10 @@ class Marshal: Observable, Updatable {
 
     // MARK: - Updatable
 
+    private var isEnabled = true
     lazy var updateTask: DispatchTask<[UserFile]> = LeakRegistry.shared.unregister(
             DispatchTask.update( self, queue: self.marshalQueue ) { [weak self] in
-                guard let self = self
+                guard let self = self, self.isEnabled
                 else { return [] }
 
                 self.userFiles = self.loadUserFiles()
@@ -536,6 +538,16 @@ class Marshal: Observable, Updatable {
             mperror( title: "Couldn't read user documents", error: error )
             return []
         }
+    }
+
+    // MARK: - LeakObserver
+
+    func willReportLeaks() {
+        self.userFiles.removeAll()
+    }
+
+    func shouldCancelOperations() {
+        self.isEnabled = false
     }
 
     // MARK: - Types

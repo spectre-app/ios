@@ -312,22 +312,23 @@ extension URLRequest {
     }
 }
 
+private let requiredQueue = DispatchQueue( label: "\(productName): Network Required", qos: .userInitiated, attributes: [ .concurrent ] )
+private let optionalQueue = DispatchQueue( label: "\(productName): Network Optional", qos: .background, attributes: [ .concurrent ] )
+
 extension URLSession {
     public static var required = LazyBox<URLSession> {
-        guard !AppConfig.shared.offline
+        guard AppConfig.shared.isEnabled, !AppConfig.shared.offline
         else { return nil }
 
-        return URLSession( configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue(
-                queue: DispatchQueue( label: "\(productName): Network Required", qos: .userInitiated, attributes: [ .concurrent ] ) ) )
+        return URLSession( configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue( queue: requiredQueue ) )
     } unset: {
         $0.invalidateAndCancel()
     }
     public static var optional = LazyBox<URLSession> {
-        guard !AppConfig.shared.offline
+        guard AppConfig.shared.isEnabled, !AppConfig.shared.offline
         else { return nil }
 
-        return URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(
-                queue: DispatchQueue( label: "\(productName): Network Optional", qos: .background, attributes: [ .concurrent ] ) ) )
+        return URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue( queue: optionalQueue ) )
     } unset: {
         $0.invalidateAndCancel()
     }

@@ -73,8 +73,8 @@ class BackgroundView: BaseView, ThemeObserver {
             .constrain( as: .box ).activate()
     }
     private lazy var imageTint = using(UIView()) {
-        self.imageTintObservation = self.observe( \.backgroundColor, options: [ .new ] ) { [imageTint = $0] in
-            imageTint.backgroundColor = ($1.newValue ?? nil).flatMap { $0.alpha == .on ? $0.with( alpha: .long ) : .clear }
+        self.imageTintObservation = self.observe( \.backgroundColor, options: [ .new ] ) { [weak imageTint = $0] in
+            imageTint?.backgroundColor = ($1.newValue ?? nil).flatMap { $0.alpha == .on ? $0.with( alpha: .long ) : .clear }
         }
 
         self.addSubview( $0 )

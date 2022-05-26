@@ -108,7 +108,7 @@ class TipsView: BaseView {
 
             self.tipExpiryConfiguration.deactivate( animationDuration: 0 )
             self.tipExpiryConfiguration.activate( animationDuration: self.duration )
-            DispatchQueue.main.perform( deadline: .now() + .seconds( self.duration ) ) { self.cycle() }
+            DispatchQueue.main.perform( deadline: .now() + .seconds( self.duration ) ) { [weak self] in self?.cycle() }
         }
     }
 }

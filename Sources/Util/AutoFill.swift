@@ -112,7 +112,7 @@ final class AutoFill {
 
     // MARK: - Types
 
-    class Credential: Hashable, CustomDebugStringConvertible {
+    struct Credential: Hashable, CustomDebugStringConvertible {
         let userName: String
         let siteName: String
         let variants: [String]?
@@ -131,7 +131,6 @@ final class AutoFill {
             }
             variants.remove( siteName )
             self.variants = Array( variants )
-            LeakRegistry.shared.register( self )
         }
 
         init?(dictionary: [String: Any?]?) {
@@ -141,7 +140,6 @@ final class AutoFill {
             self.userName = user
             self.siteName = site
             self.variants = dictionary?["variants"] as? [String]
-            LeakRegistry.shared.register( self )
         }
 
         func isSupplied(by supplier: CredentialSupplier) -> Bool {

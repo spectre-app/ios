@@ -130,7 +130,7 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
         super.doUpdate()
 
         if let color = self.color {
-            self.backgroundView.mode = .custom( color: {
+            self.backgroundView.mode = .custom( color: { [unowned self] in
                 Theme.current.color.panel.get(forTraits: self.traitCollection)?.with( hue: color.hue )
             } )
             self.view.tintColor = Theme.current.color.tint.get(forTraits: self.traitCollection)?.with( hue: color.hue )

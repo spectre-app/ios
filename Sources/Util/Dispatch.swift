@@ -132,7 +132,7 @@ extension DispatchQueue {
             -> Promise<V> {
         self.perform( deadline: deadline, group: group, qos: qos, flags: flags ) {
             do { try work().finishes( promise ) }
-            catch Promise<V>.Interruption.postponed {
+            catch Interruption.postponed {
                 _ = self.promising( promise, deadline: .now() + .milliseconds( 300 ),
                                     group: group, qos: qos, flags: flags, execute: work )
             }
@@ -193,16 +193,19 @@ public class Promise<V>: CustomDebugStringConvertible {
 
     /** Submit the promised result, completing the promise for all that are awaiting it. */
     @discardableResult
-    public func finish(_ result: Result<V, Error>, maybe: Bool = false)
+    public func finish(_ result: Result<V, Error>, ignoreIfFinished: Bool = false)
             -> Self {
         self.semaphore.await { () -> [(queue: DispatchQueue?, consumer: (Result<V, Error>) -> Void)] in
-                if maybe && self.result != nil {
+                if ignoreIfFinished && self.result != nil {
                     return []
                 }
 
                 assert( self.result == nil, "Tried to finish promise with \(result), but was already finished with \(self.result!)" )
                 self.result = result
-                return self.targets
+
+                let targets = self.targets
+                self.targets = []
+                return targets
             }
             .forEach { target in
                 if let queue = target.queue {
@@ -251,11 +254,11 @@ public class Promise<V>: CustomDebugStringConvertible {
             -> Self {
         self.semaphore.await {
             if let result = self.result {
-                if queue?.isActive ?? true {
-                    consumer( result )
+                if let queue = queue, !queue.isActive {
+                    queue.perform { consumer( result ) }
                 }
                 else {
-                    queue?.perform { consumer( result ) }
+                    consumer( result )
                 }
             }
             else {
@@ -390,10 +393,10 @@ public class Promise<V>: CustomDebugStringConvertible {
 
         return try self.semaphore.await { try awaitedResult.get() }
     }
+}
 
-    enum Interruption: Error {
-        case cancelled, invalidated, rejected, postponed
-    }
+enum Interruption: Error {
+    case cancelled, invalidated, rejected, postponed
 }
 
 extension Collection {
@@ -424,7 +427,7 @@ extension Collection {
     /// A promise that succeeds once all the promises in this collection have completed successfully, with all results in the same order as their respective promises in this collection.
     ///
     /// The promise fails with the first error if any promise in the collection fails.
-    func flatten<V>() -> Promise<[V]> where Self.Element == Promise<V> {
+    func flatPromise<V>() -> Promise<[V]> where Self.Element == Promise<V> {
         guard !self.isEmpty
         else { return Promise<[V]>( .success( [] ) ) }
 
@@ -457,7 +460,7 @@ extension Collection {
 /**
  * A task that can be scheduled by request.
  */
-public class DispatchTask<V>: CustomDebugStringConvertible {
+public class DispatchTask<V>: CustomDebugStringConvertible, LeakObserver {
     private let name:      String
     private let workQueue: DispatchQueue
     private let deadline:  () -> DispatchTime
@@ -470,6 +473,7 @@ public class DispatchTask<V>: CustomDebugStringConvertible {
     private var requestPromise: Promise<V>?
     private var requestRunning = false
     private lazy var requestQueue = DispatchQueue( label: "\(productName): DispatchTask: \(self.name)", qos: .userInitiated )
+
     public var debugDescription: String { self.name }
 
     public init(named name: String, queue: DispatchQueue,
@@ -484,6 +488,7 @@ public class DispatchTask<V>: CustomDebugStringConvertible {
         self.work = work
 
         LeakRegistry.shared.register( self )
+        LeakRegistry.shared.observers.register( observer: self )
     }
 
     /**
@@ -506,40 +511,45 @@ public class DispatchTask<V>: CustomDebugStringConvertible {
             }
 
             let requestPromise = Promise<V>()
-            let requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) {
-                do {
-                    self.requestQueue.await {
-                        if self.requestPromise === requestPromise {
-                            self.requestRunning = true
-                        }
-                        else {
-                            return
-                        }
-                    }
+            let requestItem = DispatchWorkItem( qos: self.qos, flags: self.flags ) { [weak self, weak requestPromise] in
+                self?.requestQueue.await {
+                    guard let self = self, self.requestPromise === requestPromise
+                    else { return }
 
-                    let result = try self.work()
+                    self.requestRunning = true
+                }
+
+                var result: V?, failure: Error?, postponed = false
+                do { result = try self?.work() }
+                catch Interruption.postponed { postponed = true }
+                catch { failure = error }
+
+                guard let self = self, let requestPromise = requestPromise
+                else { return }
+
+                if let result = result {
                     self.requestQueue.await {
                         self.requestRunning = false
-                        _ = requestPromise.finish( .success( result ), maybe: true )
+                        requestPromise.finish( .success( result ), ignoreIfFinished: true )
                     }
                 }
-                catch Promise<V>.Interruption.postponed {
+                else if postponed {
                     self.workQueue.perform( deadline: .now() + .seconds( .short ), group: self.group, qos: self.qos, flags: self.flags ) {
                         self.requestItem?.perform()
                     }
                 }
-                catch {
+                else if let failure = failure {
                     self.requestQueue.await {
                         self.requestRunning = false
-                        _ = requestPromise.finish( .failure( error ), maybe: true )
+                        requestPromise.finish( .failure( failure ), ignoreIfFinished: true )
                     }
                 }
             }
 
             self.requestItem = requestItem
-            self.requestPromise = requestPromise.finally( on: self.requestQueue ) {
-                self.requestItem = nil
-                self.requestPromise = nil
+            self.requestPromise = requestPromise.finally( on: self.requestQueue ) { [weak self] in
+                self?.requestItem = nil
+                self?.requestPromise = nil
             }
 
             self.workQueue.perform( deadline: now ? nil : self.deadline(), group: self.group,
@@ -564,10 +574,19 @@ public class DispatchTask<V>: CustomDebugStringConvertible {
 
             if !(self.requestItem?.isCancelled ?? true) {
                 self.requestItem?.cancel()
-                self.requestPromise?.finish( .failure( Promise<V>.Interruption.cancelled ) )
+                self.requestPromise?.finish( .failure( Interruption.cancelled ) )
             }
 
             return self.requestItem?.isCancelled ?? false
         }
+    }
+
+    // MARK: - LeakObserver
+
+    func shouldCancelOperations() {
+        self.cancel()
+    }
+
+    func willReportLeaks() {
     }
 }

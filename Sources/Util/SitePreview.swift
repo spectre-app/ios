@@ -17,7 +17,7 @@ import UIKit
 #endif
 
 class SitePreview: Equatable {
-    private static var previews  = Cache<NSString, SitePreview>(named: "SitePreview")
+    private static var previews = Cache<NSString, SitePreview>(named: "SitePreview")
 
     // MARK: - Life
 
@@ -99,19 +99,16 @@ class SitePreview: Equatable {
 
     #if TARGET_APP
     lazy var updateTask: DispatchTask<Bool> = DispatchTask.update( self, queue: Self.taskQueue ) { [weak self] in
-        guard let self = self
-        else { return false }
-
         // If a preview exists with identical metadata and a known image < 30 days old, don't refresh it yet.
-        if self.name == self.data.siteName, self.url == self.data.siteURL,
-           let date = self.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
+        if self?.name == self?.data.siteName, self?.url == self?.data.siteURL,
+           let date = self?.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
             return false
         }
 
         // Resolve candidate image URLs for the site.
         // If the site URL is not a pure domain, install a fallback resolver for the site domain.
         let candidates = Set(
-                [ self.name, self.url?.nonEmpty ]
+                [ self?.name, self?.url?.nonEmpty ]
                     .compactMap { $0 }
                     .flatMap {
                         [
@@ -142,8 +139,8 @@ class SitePreview: Equatable {
 
                 return true
             }
-            .failure {
-                wrn( "Preview issue for %@: %@ [>PII]", self.name, $0.localizedDescription )
+            .failure { [weak self] in
+                wrn( "Preview issue for %@: %@ [>PII]", self?.name, $0.localizedDescription )
                 pii( "[>] Candidates: %@, Error: %@", candidates, $0 )
             }
             .await()

@@ -112,7 +112,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         },
                         subitems: [ PasswordResultItem() ],
                         caption: {
-                            let attacker = $0.user.attacker ?? .default
+                            let attacker = $0.user?.attacker ?? .default
                             if InAppFeature.premium.isEnabled,
                                let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
                                                  attacker.timeToCrack( string: try? $0.result()?.token.await() ) {
@@ -262,7 +262,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
         override func doUpdate() {
             super.doUpdate()
 
-            self.userButton.title = self.model?.user.userName.name( style: .abbreviated )
+            self.userButton.title = self.model?.user?.userName.name( style: .abbreviated )
             self.userButton.sizeToFit()
 
             (self.view as? FieldItemView)?.valueField.leftViewMode = self.model?.loginType == SpectreResultType.none ? .always : .never
@@ -361,7 +361,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             private let resultLabel  = UILabel()
             private lazy var copyButton = EffectButton(
                     track: .subject( "site.question", action: "copy", [
-                        "words": self.question?.keyword.split( separator: " " ).count,
+                        "words": { [weak self] in self?.question?.keyword.split( separator: " " ).count },
                     ] ), title: "copy" )
 
             weak var question: Question? {

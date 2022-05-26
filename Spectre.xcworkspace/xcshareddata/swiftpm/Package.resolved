@@ -21,7 +21,7 @@
       },
       {
         "package": "swift-collections",
-        "repositoryURL": "https://github.com/apple/swift-collections.git",
+        "repositoryURL": "https://github.com/apple/swift-collections",
         "state": {
           "branch": null,
           "revision": "48254824bb4248676bf7ce56014ff57b142b77eb",

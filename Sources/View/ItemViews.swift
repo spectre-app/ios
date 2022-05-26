@@ -95,7 +95,7 @@ class Item<M>: AnyItem {
         case inline, pager
     }
 
-    class ItemView: UIView {
+    class ItemView: BaseView {
         let titleLabel    = UILabel()
         let captionLabel  = UILabel()
         let contentView   = UIStackView()
@@ -182,8 +182,8 @@ class Item<M>: AnyItem {
             guard let item = self.item
             else { return }
 
-            updateHidden( item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: item ) ?? $0) } )
-            updateEnabled( item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: item ) ?? $0) } )
+            self.updateHidden( item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: item ) ?? $0) } )
+            self.updateEnabled( item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: item ) ?? $0) } )
 
             self.titleLabel.applyText( item.title )
             self.titleLabel.isHidden = self.titleLabel.attributedText?.string.nonEmpty == nil
@@ -803,13 +803,13 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
         }
         let valueView  = UIView()
         let valueLabel = UILabel()
-        lazy var downButton = EffectButton( attributedTitle: .icon( "caret-down" ), border: 0, background: false ) { [unowned self] _ in
-            if let stepperItem = self.stepperItem, let value = stepperItem.value, value > stepperItem.min {
+        lazy var downButton = EffectButton( attributedTitle: .icon( "caret-down" ), border: 0, background: false ) { [weak self] _ in
+            if let stepperItem = self?.stepperItem, let value = stepperItem.value, value > stepperItem.min {
                 stepperItem.update?( stepperItem, value.advanced( by: -stepperItem.step ) )
             }
         }
-        lazy var upButton = EffectButton( attributedTitle: .icon( "caret-up" ), border: 0, background: false ) { [unowned self] _ in
-            if let stepperItem = self.stepperItem, let value = stepperItem.value, value < stepperItem.max {
+        lazy var upButton = EffectButton( attributedTitle: .icon( "caret-up" ), border: 0, background: false ) { [weak self] _ in
+            if let stepperItem = self?.stepperItem, let value = stepperItem.value, value < stepperItem.max {
                 stepperItem.update?( stepperItem, value.advanced( by: stepperItem.step ) )
             }
         }
@@ -905,7 +905,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
             self.collectionView.register( C.self )
             self.collectionView.delegate = self
 
-            self.dataSource = .init( collectionView: self.collectionView ) { collectionView, indexPath, item in
+            self.dataSource = .init( collectionView: self.collectionView ) { [unowned self] collectionView, indexPath, item in
                 using( C.dequeue( from: collectionView, indexPath: indexPath ) ) {
                     self.pickerItem?.populate( $0, indexPath: indexPath, value: item )
                 }
@@ -1020,17 +1020,17 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
         override func didLoad() {
             super.didLoad()
 
-            self.dataSource = .init( tableView: self.tableView ) { tableView, indexPath, item in
+            self.dataSource = .init( tableView: self.tableView ) { [weak self] tableView, indexPath, item in
                 C.dequeue( from: tableView, indexPath: indexPath ) { (cell: C) in
-                    self.listItem?.populate( cell, indexPath: indexPath, value: item )
+                    self?.listItem?.populate( cell, indexPath: indexPath, value: item )
                 }
-            } editor: { item in
-                guard self.listItem?.deletable ?? false
+            } editor: { [weak self] item in
+                guard self?.listItem?.deletable ?? false
                 else { return nil }
 
                 return {
-                    if $0 == .delete, self.listItem?.deletable ?? false {
-                        self.listItem?.delete( value: item )
+                    if $0 == .delete, self?.listItem?.deletable ?? false {
+                        self?.listItem?.delete( value: item )
                     }
                 }
             }
@@ -1097,6 +1097,7 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
                 super.init( frame: .zero, style: .plain )
                 self.backgroundColor = .clear
                 self.separatorStyle = .none
+                LeakRegistry.shared.register( self )
             }
         }
     }
@@ -1134,6 +1135,7 @@ class LinksItem<M>: ListItem<M, LinksItem.Link, LinksItem.Cell> {
 
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
             super.init( style: style, reuseIdentifier: reuseIdentifier )
+            LeakRegistry.shared.register(self)
 
             // - View
             self.isOpaque = false

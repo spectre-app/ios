@@ -17,9 +17,9 @@ import Countly
 struct Tracking {
     let subject:    String
     let action:     String
-    let parameters: () -> [String: Any?]
+    var parameters: [String: Any?]
 
-    static func subject(_ subject: String, action: String, _ parameters: @autoclosure @escaping () -> [String: Any?] = [:]) -> Tracking {
+    static func subject(_ subject: String, action: String, _ parameters: [String: Any?] = [:]) -> Tracking {
         Tracking( subject: subject, action: action, parameters: parameters )
     }
 
@@ -27,8 +27,8 @@ struct Tracking {
         Tracking( subject: "\(scope)::\(self.subject)", action: self.action, parameters: self.parameters )
     }
 
-    func with(parameters: @autoclosure @escaping () -> [String: Any?] = [:]) -> Tracking {
-        Tracking( subject: self.subject, action: self.action, parameters: { self.parameters().merging( parameters() ) } )
+    func with(parameters: [String: Any?] = [:]) -> Tracking {
+        Tracking( subject: self.subject, action: self.action, parameters: self.parameters.merging( parameters ) )
     }
 }
 
@@ -115,8 +115,11 @@ class Tracker: AppConfigObserver {
         kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         kSecAttrSynchronizable: true,
     ] ).uuidString
-    private lazy var identifiers
-            = [ "id_vendor": self.identifierForVendor, "id_device": self.identifierForDevice, "id_owner": self.identifierForOwner ]
+    private lazy var identifiers = [
+        "id_vendor": self.identifierForVendor,
+        "id_device": self.identifierForDevice,
+        "id_owner": self.identifierForOwner
+    ]
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                  extensionController: UIViewController? = nil) {
@@ -244,7 +247,7 @@ class Tracker: AppConfigObserver {
 
     func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                track: Tracking) {
-        self.event( file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters() )
+        self.event( file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters )
     }
 
     func feedback(_ rating: Int, comment: String?, contact: String?) {
@@ -292,7 +295,7 @@ class Tracker: AppConfigObserver {
 
     private func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                        named name: String, _ parameters: [String: Any?] = [:], timing: TimedEvent? = nil) {
-        var eventParameters = parameters.compactMapValues( { $0 } )
+        var eventParameters = parameters.compactMapValues { unwrap($0) }
         #if TARGET_APP
         eventParameters["app_container"] = "app"
         #elseif TARGET_AUTOFILL
@@ -489,7 +492,7 @@ class Tracker: AppConfigObserver {
 
             Tracker.shared.event( file: file, line: line, function: function, dso: dso,
                                   named: "\(self.tracking.subject) #\(self.tracking.action)",
-                                  self.tracking.parameters().merging( parameters ), timing: self )
+                                  self.tracking.parameters.merging( parameters ), timing: self )
             self.ended = true
         }
 
@@ -501,6 +504,55 @@ class Tracker: AppConfigObserver {
             self.ended = true
         }
     }
+}
+
+func unwrap(_ value: Any?) -> Any? {
+    guard let value = value
+    else { return nil }
+
+    let typeName = String( reflecting: type( of: value ) )
+    guard typeName.hasPrefix( "() -> ")
+    else { return value }
+
+    if let unwrapped = (value as? () -> String)?() ?? (value as? () -> String?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> Int)?() ?? (value as? () -> Int?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> Double)?() ?? (value as? () -> Double?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> Float)?() ?? (value as? () -> Float?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> CGFloat)?() ?? (value as? () -> CGFloat?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> NSString)?() ?? (value as? () -> NSString?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> NSNumber)?() ?? (value as? () -> NSNumber?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> Substring)?() ?? (value as? () -> Substring?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> Int32)?() ?? (value as? () -> Int32?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> Int64)?() ?? (value as? () -> Int64?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> UInt32)?() ?? (value as? () -> UInt32?)?() {
+        return unwrapped
+    }
+    if let unwrapped = (value as? () -> UInt64)?() ?? (value as? () -> UInt64?)?() {
+        return unwrapped
+    }
+
+    err( "Could not unwrap value of type: %@", typeName )
+    return nil
 }
 
 protocol TrackerObserver {

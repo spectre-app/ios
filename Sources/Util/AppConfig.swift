@@ -17,6 +17,7 @@ public class AppConfig: Observable {
 
     public let observers = Observers<AppConfigObserver>()
 
+    public var isEnabled = true
     public var isApp:       Bool
     public let isDebug:     Bool
     public var environment: AppConfiguration

@@ -31,10 +31,10 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.usersSource = .init( collectionView: self.usersCarousel ) { collectionView, indexPath, item in
+        self.usersSource = .init( collectionView: self.usersCarousel ) { [unowned self] collectionView, indexPath, item in
             using( UserCell.dequeue( from: collectionView, indexPath: indexPath ) ) { cell in
                 UIView.performWithoutAnimation {
-                    cell.state = (userItem: item, userActions: self.userActions, viewController: self)
+                    cell.configure(userItem: item, userActions: self.userActions, viewController: self)
                 }
             }
         }
@@ -116,7 +116,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         Feedback.shared.play( .activate )
         Tracker.shared.event( track: .subject( "users", action: "user", [
             "value": indexPath.item,
-            "items": self.usersCarousel.numberOfItems( inSection: indexPath.section ),
+            "items": { [weak self] in self?.usersCarousel.numberOfItems( inSection: indexPath.section ) },
         ] ) )
 
         self.userEvent?.end( [ "result": "deselected" ] )
@@ -241,14 +241,6 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
         }
         internal weak var userEvent: Tracker.TimedEvent?
-        internal var state: (userItem: UserItem, userActions: [UserAction], viewController: BaseUsersViewController)! {
-            didSet {
-                self.userItem = self.state.userItem
-                self.userActions = self.state.userActions
-                self.viewController = self.state.viewController
-                self.updateTask.request( now: true )
-            }
-        }
 
         private var userItem: UserItem = .newUser {
             didSet {
@@ -349,7 +341,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.borderStyle = .roundedRect
             self.secretField => \.font => Theme.current.font.callout
             self.secretField.placeholder = "Your personal secret"
-            self.secretField.authenticater = { keyFactory in
+            self.secretField.authenticater = { [unowned self] keyFactory in
                 let secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
                 return (self.userItem.file?.authenticate( using: keyFactory )
                         ?? User( userName: keyFactory.userName ).login( using: keyFactory ))
@@ -363,7 +355,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                                 ] )
                     }
             }
-            self.secretField.authenticated = { result in
+            self.secretField.authenticated = { [unowned self] result in
                 do {
                     let user = try result.get()
                     if let avatar = self.avatar {
@@ -465,7 +457,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                 .constrain( as: .box, to: self.nameView.contentView, margin: true ).activate()
             LayoutConfiguration( view: self.nameField )
                 .constrain( as: .box, to: self.nameView.contentView, margin: true ).activate()
-            LayoutConfiguration( view: userNameField )
+            LayoutConfiguration( view: self.userNameField )
                 .constrain { $1.leadingAnchor.constraint( equalTo: $0.layoutMarginsGuide.leadingAnchor ) }
                 .constrain { $1.trailingAnchor.constraint( equalTo: $0.layoutMarginsGuide.trailingAnchor ) }
                 .constrain { $1.heightAnchor.constraint( equalToConstant: 1 ) }
@@ -501,25 +493,32 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                     active.constrain { $1.centerYAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
                     inactive.constrain { $1.bottomAnchor.constraint( equalTo: $0.centerYAnchor ).with( priority: .defaultLow ) }
                 } )
-                .apply( LayoutConfiguration( view: self.nameView ) { active, inactive in
-                    active.constrain { $1.bottomAnchor.constraint( equalTo: self.floorView.topAnchor ) }
+                .apply( LayoutConfiguration( view: self.nameView ) { [unowned self] active, inactive in
+                    active.constrain { [unowned self] in $1.bottomAnchor.constraint( equalTo: self.floorView.topAnchor ) }
                           .set(.on, keyPath: \.alpha)
-                    inactive.constrain { $1.topAnchor.constraint( equalTo: self.floorView.bottomAnchor ) }
+                    inactive.constrain { [unowned self] in $1.topAnchor.constraint( equalTo: self.floorView.bottomAnchor ) }
                             .set(.off, keyPath: \.alpha)
                 } )
-                .apply( LayoutConfiguration( view: self.secretField ) { active, inactive in
+                .apply( LayoutConfiguration( view: self.secretField ) { [unowned self] active, inactive in
                     active.set( .on, keyPath: \.alpha )
                     active.set( true, keyPath: \.isEnabled )
-                    active.constrain { $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 28 ) }
+                    active.constrain { [unowned self] in $1.topAnchor.constraint( equalTo: self.avatarButton.bottomAnchor, constant: 28 ) }
                     inactive.set( .off, keyPath: \.alpha )
                     inactive.set( false, keyPath: \.isEnabled )
                     inactive.set( nil, keyPath: \.text )
-                    inactive.constrain { $1.topAnchor.constraint( equalTo: self.nameLabel.bottomAnchor ) }
+                    inactive.constrain { [unowned self] in $1.topAnchor.constraint( equalTo: self.nameLabel.bottomAnchor ) }
                 } )
         }
 
         required init?(coder aDecoder: NSCoder) {
             fatalError( "init(coder:) is not supported for this class" )
+        }
+
+        internal func configure(userItem: UserItem, userActions: [UserAction], viewController: BaseUsersViewController) {
+            self.userItem = userItem
+            self.userActions = userActions
+            self.viewController = viewController
+            self.updateTask.request( now: true )
         }
 
         override func willMove(toWindow newWindow: UIWindow?) {

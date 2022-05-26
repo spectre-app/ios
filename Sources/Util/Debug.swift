@@ -13,6 +13,26 @@
 import UIKit
 
 #if DEBUG
+var debuggedObjects = [ WeakBox<Any> ]()
+
+@discardableResult
+func debugObject<O: AnyObject>(_ object: O, ifDebugging other: AnyObject? = nil) -> O {
+    if other == nil || isDebuggingObject( other ) {
+        debuggedObjects.append( WeakBox( object ) )
+        LeakRegistry.shared.setDebugging( object )
+        dbg( ifDebugging: object, "Started debugging: %@: %@", ObjectIdentifier( object ).identity, object )
+    }
+
+    return object
+}
+
+func isDebuggingObject(_ object: AnyObject?) -> Bool {
+    guard let object = object
+    else { return false }
+
+    return debuggedObjects.contains( WeakBox( object ) )
+}
+
 class WTFLabel: UILabel {
     override init(frame: CGRect) {
         super.init( frame: frame )

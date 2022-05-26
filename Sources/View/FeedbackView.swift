@@ -23,7 +23,7 @@ class FeedbackView: BaseView, Observable, Updatable, AppConfigObserver {
         self.submit()
     }
 
-    var viewController: UIViewController?
+    weak var viewController: UIViewController?
     var shown     = false {
         didSet {
             if oldValue != self.shown {
@@ -79,11 +79,11 @@ class FeedbackView: BaseView, Observable, Updatable, AppConfigObserver {
         self.contactField.autocorrectionType = .no
         self.contactField.keyboardType = .emailAddress
 
-        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 1 ) } )
-        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 2 ) } )
-        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 3 ) } )
-        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 4 ) } )
-        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { self.rate( 5 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 1 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 2 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 3 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 4 ) } )
+        self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 5 ) } )
 
         // - Hierarchy
         self.addSubview( UIStackView( arrangedSubviews: [

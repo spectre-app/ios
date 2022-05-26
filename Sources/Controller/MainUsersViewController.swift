@@ -83,8 +83,8 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
             self.detailsHost.show( DetailAppViewController(), sender: self )
         } )
         self.appToolbar.addArrangedSubview( TimedButton( track: .subject( "users", action: "user" ), image: .icon( "user-secret" ),
-                                                         border: 0, background: false, square: true ) { [unowned self] incognitoButton in
-            guard let incognitoButton = incognitoButton as? TimedButton
+                                                         border: 0, background: false, square: true ) { [unowned self] in
+            guard let incognitoButton = $0 as? TimedButton
             else { return }
 
             UIAlertController.authenticate(
@@ -156,14 +156,14 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        AppStore.shared.isUpToDate().then( on: .main ) {
+        AppStore.shared.isUpToDate().then( on: .main ) { [weak self] in
             do {
                 let result = try $0.get()
                 if !result.upToDate {
                     inf( "Update available: %@", result )
                 }
 
-                self.appUpdate.isHidden = result.upToDate
+                self?.appUpdate.isHidden = result.upToDate
             }
             catch {
                 wrn( "Application update check failed: %@ [>PII]", error.localizedDescription )

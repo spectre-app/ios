@@ -143,11 +143,11 @@ class AlertController {
                 .activate()
             self.appearanceConfiguration.deactivate()
             self.activationConfiguration.deactivate()
-            UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.activate() }, completion: { _ in
+            UIView.animate( withDuration: .long) { self.appearanceConfiguration.activate() } completion: { _ in
                 if dismissAutomatically {
                     self.dismissTask.request()
                 }
-            } )
+            }
         }
 
         return self
@@ -158,9 +158,9 @@ class AlertController {
         guard let self = self, let view = self.view, view.superview != nil
         else { return }
 
-        UIView.animate( withDuration: .long, animations: { self.appearanceConfiguration.deactivate() }, completion: { _ in
+        UIView.animate( withDuration: .long) { self.appearanceConfiguration.deactivate() } completion: { _ in
             view.removeFromSuperview()
-        } )
+        }
     }
 
     public func dismiss() {

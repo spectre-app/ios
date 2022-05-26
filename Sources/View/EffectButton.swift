@@ -38,6 +38,7 @@ class EffectButton: EffectView {
             self.button.setAttributedTitle( newValue, for: .normal )
         }
     }
+    override var debugDescription: String { "EffectButton{title: \(self.title ?? ""), action: \(self.tracking?.action ?? "")}" }
 
     var padded    = true {
         didSet {

@@ -15,7 +15,7 @@ import UIKit
 class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, QuestionObserver {
     public let observers = Observers<QuestionObserver>()
 
-    public let site: Site
+    public weak var site: Site?
     public var keyword: String {
         didSet {
             if oldValue != self.keyword {
@@ -46,7 +46,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
     var dirty = false {
         didSet {
             if self.dirty {
-                self.site.dirty = true
+                self.site?.dirty = true
             }
         }
     }
@@ -91,7 +91,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
     // MARK: - Operand
 
     func use() {
-        self.site.use()
+        self.site?.use()
     }
 
     public func result(for name: String? = nil, counter: SpectreCounter? = nil,
@@ -99,7 +99,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
                        resultType: SpectreResultType? = nil, resultParam: String? = nil,
                        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
             -> SpectreOperation? {
-        self.site.result( for: name, counter: counter,
+        self.site?.result( for: name, counter: counter,
                           keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                           resultType: resultType, resultParam: resultParam ?? self.resultState,
                           algorithm: algorithm, operand: operand ?? self )
@@ -110,7 +110,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
                       resultType: SpectreResultType? = nil, resultParam: String,
                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
             -> SpectreOperation? {
-        self.site.state( for: name, counter: counter,
+        self.site?.state( for: name, counter: counter,
                          keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam,
                          algorithm: algorithm, operand: operand ?? self )

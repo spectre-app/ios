@@ -115,9 +115,8 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
             .activate()
 
         self.popupConfiguration = LayoutConfiguration( view: self.view )
-            .apply { active, inactive in
-                active.set( Theme.current.color.shade.get(forTraits: self.traitCollection), keyPath: \.backgroundColor )
-                inactive.set( Theme.current.color.shade.get(forTraits: self.traitCollection)?.with( alpha: .off ), keyPath: \.backgroundColor )
+            .didSet { view, active in
+                view => \.backgroundColor => Theme.current.color.shade.transform { $0?.with(alpha: active ? .on : .off ) }
             }
             .apply( LayoutConfiguration( view: self.scrollView ) { active, inactive in
                 active.constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor ) }

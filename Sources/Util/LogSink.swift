@@ -21,7 +21,7 @@ public func pii(file: String = #file, line: Int32 = #line, function: String = #f
 
 @discardableResult
 public func trp(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ condition: Bool, _ format: StaticString = "<trap>", _ args: Any?...) -> Bool {
+                _ condition: Bool = true, _ format: StaticString = "<trap>", _ args: Any?...) -> Bool {
     guard condition
     else { return false }
 
@@ -35,6 +35,18 @@ public func trc(file: String = #file, line: Int32 = #line, function: String = #f
                 _ format: StaticString, _ args: Any?...) -> Bool {
     log( file: file, line: line, function: function, dso: dso, level: .trace, format, args )
 }
+
+#if DEBUG
+@discardableResult
+public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+                ifDebugging object: AnyObject? = nil, _ format: StaticString, _ args: Any?...) -> Bool {
+    if let object = object, !isDebuggingObject( object ) {
+        return false
+    }
+
+    return log( file: file, line: line, function: function, dso: dso, level: .debug, format, args )
+}
+#endif
 
 @discardableResult
 public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
