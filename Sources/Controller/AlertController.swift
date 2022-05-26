@@ -104,6 +104,7 @@ class AlertController {
         self.detailsFactory = details
         self.contentFactory = content
         self.level = level
+        LeakRegistry.shared.register( self )
     }
 
     // MARK: - Interface

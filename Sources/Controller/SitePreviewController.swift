@@ -19,6 +19,7 @@ class SitePreviewController: UIViewController, SiteObserver {
 
     init(site: Site) {
         super.init( nibName: nil, bundle: nil )
+        LeakRegistry.shared.register(self)
 
         site.observers.register( observer: self )?
             .didChange( site: site, at: \Site.preview )

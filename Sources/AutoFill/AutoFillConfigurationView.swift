@@ -31,6 +31,7 @@ class AutoFillConfigurationView: UIScrollView {
 
     init(fromSettings: Bool) {
         super.init( frame: .zero )
+        LeakRegistry.shared.register(self)
 
         // - View
         self.messageLabel => \.font => Theme.current.font.callout

@@ -185,6 +185,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         self.userName = userName
         self.identicon = identicon
         super.init( frame: .zero )
+        LeakRegistry.shared.register( self )
 
         self.identiconLabel => \.font => Theme.current.font.password.transform { $0?.withSize( UIFont.labelFontSize ) }
         self.identiconLabel => \.textColor => Theme.current.color.body

@@ -53,6 +53,7 @@ class CarouselView: UICollectionView {
 
     init() {
         super.init( frame: .zero, collectionViewLayout: Layout() )
+        LeakRegistry.shared.register( self )
 
         self.isPagingEnabled = true
         self.contentInsetAdjustmentBehavior = .never

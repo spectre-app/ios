@@ -13,6 +13,15 @@
 import UIKit
 
 class TintedLabel: UILabel {
+    required init?(coder aDecoder: NSCoder) {
+        fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    override init(frame: CGRect) {
+        super.init( frame: frame )
+        LeakRegistry.shared.register( self )
+    }
+
     override func tintColorDidChange() {
         super.tintColorDidChange()
 

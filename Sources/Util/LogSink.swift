@@ -85,6 +85,9 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
                     if let error = arg as? Error {
                         return error.detailsDescription
                     }
+                    if level >= .debug, let arg = arg as? CustomDebugStringConvertible {
+                        return arg.debugDescription
+                    }
 
                     return arg as? CVarArg ?? String( reflecting: arg )
                 } ) {

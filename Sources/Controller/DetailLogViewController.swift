@@ -13,7 +13,7 @@
 import UIKit
 import Countly
 
-class DetailLogViewController: ItemsViewController<DetailLogViewController.Model>, ModelObserver {
+class DetailLogViewController: ItemsViewController<DetailLogViewController.Model>, AppConfigObserver, ModelObserver {
 
     // MARK: - Life
 
@@ -28,20 +28,28 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
+        AppConfig.shared.observers.register( observer: self )
         self.model.observers.register( observer: self )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear( animated )
 
+        AppConfig.shared.observers.unregister( observer: self )
         self.model.observers.unregister( observer: self )
     }
 
     override func loadItems() -> [Item<Model>] {
-        [ CrashItem(), SeparatorItem(),
+        [ CrashItem(), MemoryProfilerItem(), SeparatorItem(),
           LogLevelPicker(), LogsItem(), SeparatorItem(),
           DeviceIdentifierItem(), OwnerIdentifierItem(),
         ]
+    }
+
+    // MARK: - AppConfigObserver
+
+    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
+        self.setNeedsUpdate()
     }
 
     // MARK: - ModelObserver
@@ -97,6 +105,24 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                         } )
 
             self.addBehaviour( IfDebug( effect: .reveals ) )
+        }
+    }
+
+    class MemoryProfilerItem: ToggleItem<Model> {
+        init() {
+            super.init( track: .subject( "logbook", action: "memoryProfiler" ),
+                        title: "Memory Profiler", icon: { _ in .icon( "nfc-magnifying-glass" ) },
+                        value: { _ in AppConfig.shared.memoryProfiler }, update: { AppConfig.shared.memoryProfiler = $1 },
+                        subitems: [
+                            ButtonItem( track: .subject( "logbook", action: "leaks" ),
+                                        value: { _ in (label: "Report Leaks", image: nil) },
+                                        caption: { _ in
+                                            """
+                                            Shut down the application and report on remaining leaked objects.
+                                            """
+                                        } ) { _ in AppDelegate.shared?.reportLeaks() }
+                                .addBehaviour( ConditionalBehaviour( effect: .enables ) { _ in AppConfig.shared.memoryProfiler } )
+                        ] )
         }
     }
 

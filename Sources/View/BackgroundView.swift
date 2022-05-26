@@ -12,7 +12,7 @@
 
 import UIKit
 
-class BackgroundView: UIView, ThemeObserver {
+class BackgroundView: BaseView, ThemeObserver {
     var mode = Mode.backdrop {
         willSet {
             (self => \.backgroundColor).unbind()

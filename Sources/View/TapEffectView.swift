@@ -12,16 +12,10 @@
 
 import UIKit
 
-class TapEffectView: UIView {
+class TapEffectView: BaseView {
     private lazy var flareView = FlareView()
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    init() {
-        super.init( frame: .zero )
-
+    override func loadView() {
         self.isHidden = true
         self.backgroundColor = .clear
         self.isUserInteractionEnabled = false

@@ -138,9 +138,24 @@ extension Decimal {
     }
 }
 
-extension Dictionary where Key == Int {
-    init<S: Sequence>(enumerated: S) where S.Element == Value {
+extension Dictionary {
+    init<S: Sequence>(enumerated: S) where Key == Int, S.Element == Value {
         self.init( uniqueKeysWithValues: enumerated.enumerated().map { ($0.offset, $0.element) } )
+    }
+
+    subscript(key: Key, defaultSet defaultValue: @autoclosure () -> Value) -> Value {
+        mutating get {
+            if let value = self[key] {
+                return value
+            }
+
+            let value = defaultValue()
+            self[key] = value
+            return value
+        }
+        mutating set {
+            self[key] = newValue
+        }
     }
 }
 

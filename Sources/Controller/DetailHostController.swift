@@ -125,16 +125,21 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
             } )
     }
 
-    #if TARGET_APP
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
-        if motion == .motionShake {
+        if event?.type == .motion, motion == .motionShake {
+            #if TARGET_APP
             self.show( DetailLogViewController(), sender: self )
+            return
+            #else
+            if AppConfig.shared.memoryProfiler {
+                AutoFillProviderController.shared?.reportLeaks()
+                return
+            }
+            #endif
         }
-        else {
-            super.motionEnded( motion, with: event )
-        }
+
+        super.motionEnded( motion, with: event )
     }
-    #endif
 
     // MARK: - Interface
 

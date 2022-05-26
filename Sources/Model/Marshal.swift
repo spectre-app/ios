@@ -27,6 +27,12 @@ class Marshal: Observable, Updatable {
 
     private let marshalQueue = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
 
+    // MARK: - Life
+
+    private init() {
+        LeakRegistry.shared.unregister( self.updateTask )
+    }
+
     // MARK: - Interface
 
     public func delete(userFile: UserFile) throws {
@@ -513,13 +519,14 @@ class Marshal: Observable, Updatable {
 
     // MARK: - Updatable
 
-    lazy var updateTask: DispatchTask<[UserFile]> = DispatchTask.update( self, queue: self.marshalQueue ) { [weak self] in
-        guard let self = self
-        else { return [] }
+    lazy var updateTask: DispatchTask<[UserFile]> = LeakRegistry.shared.unregister(
+            DispatchTask.update( self, queue: self.marshalQueue ) { [weak self] in
+                guard let self = self
+                else { return [] }
 
-        self.userFiles = self.loadUserFiles()
-        return self.userFiles
-    }
+                self.userFiles = self.loadUserFiles()
+                return self.userFiles
+            } )
 
     private func loadUserFiles() -> [UserFile] {
         do {
@@ -698,6 +705,7 @@ class Marshal: Observable, Updatable {
 
             self.biometricLock = self.file.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
             self.autofill = self.file.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
+            LeakRegistry.shared.register( self )
 
             for purchase in [
                 "com.lyndir.masterpassword.products.generatelogins",

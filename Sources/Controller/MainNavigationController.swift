@@ -20,6 +20,7 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        LeakRegistry.shared.register( self )
 
         self.delegate = self
         self.isNavigationBarHidden = true
@@ -64,6 +65,10 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
     }
 
     class NavigationTransition: NSObject, UIViewControllerAnimatedTransitioning {
+        override init() {
+            super.init()
+            LeakRegistry.shared.register( self )
+        }
 
         // MARK: - Life
 

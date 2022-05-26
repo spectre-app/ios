@@ -42,12 +42,14 @@ class DataSource<S: Hashable, E: Hashable> {
                 editor: @escaping (E) -> ((UITableViewCell.EditingStyle) -> Void)? = { _ in nil }) {
         self.tableSource = TableSource( tableView: tableView, cellProvider: cellProvider, editor: editor )
         self.collectionSource = nil
+        LeakRegistry.shared.register( self )
     }
 
     public init(collectionView: UICollectionView,
                 cellProvider: @escaping (_ collectionView: UICollectionView, _ indexPath: IndexPath, _ item: E) -> UICollectionViewCell?) {
         self.tableSource = nil
         self.collectionSource = CollectionSource( collectionView: collectionView, cellProvider: cellProvider )
+        LeakRegistry.shared.register( self )
     }
 
     func snapshot() -> NSDiffableDataSourceSnapshot<S, E>? {
@@ -104,6 +106,7 @@ class DataSource<S: Hashable, E: Hashable> {
             self.tableView = tableView
             self.editor = editor
             super.init( tableView: tableView, cellProvider: cellProvider )
+            LeakRegistry.shared.register( self )
         }
 
         // MARK: - UITableViewDataSource
@@ -123,6 +126,7 @@ class DataSource<S: Hashable, E: Hashable> {
         override init(collectionView: UICollectionView, cellProvider: @escaping CellProvider) {
             self.collectionView = collectionView
             super.init( collectionView: collectionView, cellProvider: cellProvider )
+            LeakRegistry.shared.register( self )
         }
 
         // MARK: - UICollectionViewDataSource

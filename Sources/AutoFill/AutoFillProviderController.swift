@@ -15,11 +15,21 @@ import LocalAuthentication
 
 // Note: The Address Sanitizer will break the ability to load this extension due to its excessive memory usage.
 class AutoFillProviderController: ASCredentialProviderViewController {
+    static weak var shared: AutoFillProviderController?
+
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
 
+        Self.shared = self
         LogSink.shared.register()
         Tracker.shared.startup( extensionController: self )
+    }
+
+    // MARK: - Public
+
+    func reportLeaks() {
+        self.view => \.tintColor => nil
+        self.rootViewController = LeakRegistry.shared.reportViewController()
     }
 
     // MARK: - Life

@@ -12,7 +12,7 @@
 
 import UIKit
 
-class EffectView: UIView, ThemeObserver {
+class EffectView: BaseView, ThemeObserver {
     public var   borderWidth:         CGFloat {
         didSet {
             if self.borderWidth != oldValue {

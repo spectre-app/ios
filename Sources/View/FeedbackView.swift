@@ -7,7 +7,7 @@ import Foundation
 import SafariServices
 import StoreKit
 
-class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
+class FeedbackView: BaseView, Observable, Updatable, AppConfigObserver {
     let observers = Observers<FeedbackObserver>()
 
     let promptLabel  = UILabel()
@@ -46,12 +46,7 @@ class FeedbackView: UIView, Observable, Updatable, AppConfigObserver {
         }
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError( "init(coder:) is not supported for this class" )
-    }
-
-    init() {
-        super.init( frame: .zero )
+    override func loadView() {
         AppConfig.shared.observers.register( observer: self )
 
         // - View

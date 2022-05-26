@@ -12,7 +12,7 @@
 
 import UIKit
 
-class MarginView: UIView {
+class MarginView: BaseView {
     override var isHidden: Bool {
         get {
             self.subviews.first?.isHidden ?? super.isHidden

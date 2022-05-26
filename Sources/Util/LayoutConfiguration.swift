@@ -170,6 +170,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         if let configurations = configurations {
             self.apply( configurations )
         }
+        LeakRegistry.shared.register( self )
     }
 
     //! Add child configurations that triggers when this configuration's activation changes.
@@ -651,6 +652,10 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
     }
 
     private class AnyProperty {
+        init() {
+            LeakRegistry.shared.register( self )
+        }
+
         var active = false
 
         func activate(_ target: T?) {
@@ -686,7 +691,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                         self.inactiveValue = oldValue
                     }
 
-                    //dbg( "%@ %@[%@]:activate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                    //dbg( "%@ %@[%@]:activate: %@ -> %@", type( of: target ), ObjectIdentifier( target ).identity, self.keyPath,
                     //     String( reflecting: oldValue ), String( reflecting: newValue ) )
                     target[keyPath: self.keyPath] = newValue
                 }
@@ -701,7 +706,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                     let oldValue = target[keyPath: keyPath]
 
                     if newValue != oldValue {
-                        //dbg( "%@ %@[%@]:deactivate: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                        //dbg( "%@ %@[%@]:deactivate: %@ -> %@", type( of: target ), ObjectIdentifier( target ).identity, self.keyPath,
                         //     String( reflecting: oldValue ), String( reflecting: newValue ) )
                         target[keyPath: self.keyPath] = newValue
                     }
@@ -719,7 +724,7 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
                 let newValue = self.activeValue(), oldValue = target[keyPath: self.keyPath]
 
                 if newValue != oldValue {
-                    //dbg( "%@ %@[%@]:update: %@ -> %@", type( of: target ), ObjectIdentifier( target ), self.keyPath,
+                    //dbg( "%@ %@[%@]:update: %@ -> %@", type( of: target ), ObjectIdentifier( target ).identity, self.keyPath,
                     //     String( reflecting: oldValue ), String( reflecting: newValue ) )
                     target[keyPath: self.keyPath] = newValue
                 }

@@ -17,7 +17,7 @@ import UIKit
 #endif
 
 class SitePreview: Equatable {
-    private static var previews  = NSCache<NSString, SitePreview>()
+    private static var previews  = Cache<NSString, SitePreview>(named: "SitePreview")
 
     // MARK: - Life
 
@@ -51,7 +51,7 @@ class SitePreview: Equatable {
         let previewName = siteName.domainName( .host )
 
         // If a cached preview is known, use it.
-        if let preview = self.previews.object( forKey: previewName as NSString ) {
+        if let preview = self.previews[previewName as NSString] {
             return preview
         }
 
@@ -77,7 +77,8 @@ class SitePreview: Equatable {
         self.url = url
         self.data = data
 
-        SitePreview.previews.setObject( self, forKey: name as NSString, cost: self.data.imageSize )
+        SitePreview.previews[name as NSString, cost: self.data.imageSize] = self
+        LeakRegistry.shared.register( self )
     }
 
     // MARK: - Equatable
@@ -134,7 +135,7 @@ class SitePreview: Equatable {
                 self.data.imageURL = $0.response.url?.absoluteString
                 self.data.imageData = $0.data
 
-                SitePreview.previews.setObject( self, forKey: self.name as NSString, cost: self.data.imageSize )
+                SitePreview.previews[self.name as NSString, cost: self.data.imageSize] = self
                 if let previewFile = SitePreview.previewDataFile( for: self.name ) {
                     try JSONEncoder().encode( self.data ).write( to: previewFile )
                 }

@@ -12,7 +12,7 @@
 
 import UIKit
 
-class EffectToggleButton: UIView {
+class EffectToggleButton: BaseView {
     private let button     = UIButton()
     private let checkLabel = UILabel()
     private lazy var contentView = EffectView( dims: true )

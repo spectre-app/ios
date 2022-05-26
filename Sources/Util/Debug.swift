@@ -14,6 +14,15 @@ import UIKit
 
 #if DEBUG
 class WTFLabel: UILabel {
+    override init(frame: CGRect) {
+        super.init( frame: frame )
+        LeakRegistry.shared.register( self )
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError( "init(coder:) is not supported for this class" )
+    }
+
     override var isHidden: Bool {
         get {
             super.isHidden

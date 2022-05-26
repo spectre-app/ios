@@ -248,6 +248,7 @@ class User: Hashable, Comparable, CustomStringConvertible, Persisting, Credentia
         self.lastUsed = lastUsed
         self.origin = origin
         self.file = file
+        LeakRegistry.shared.register( self )
 
         defer {
             self.maskPasswords = self.file?.spectre_get( path: "user", "_ext_spectre", "maskPasswords" ) ?? false

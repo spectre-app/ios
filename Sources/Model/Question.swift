@@ -58,6 +58,7 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
         self.keyword = keyword
         self.resultType = resultType ?? .templatePhrase
         self.resultState = resultState
+        LeakRegistry.shared.register( self )
     }
 
     // MARK: - Interface

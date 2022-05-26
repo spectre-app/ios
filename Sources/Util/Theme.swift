@@ -165,7 +165,7 @@ class PropertyPath<E, V>: AnyPropertyPath where E: NSObject & UITraitEnvironment
     var propertyDescription: String {
         let targetDescription: String
         if let target = self.target {
-            targetDescription = "\(type( of: target )): \(ObjectIdentifier( target ))"
+            targetDescription = "\(type( of: target )): \(ObjectIdentifier( target ).identity)"
         }
         else {
             targetDescription = "\(type( of: E.self )): gone)"
@@ -628,6 +628,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         }
 
         Theme.byPath[path] = self
+
         if let pattern = self.pattern {
             self.color.body.set( light: pattern.dark, dark: pattern.pale )
             self.color.secondary.set( light: pattern.dusk?.with( alpha: .long ), dark: pattern.dawn?.with( alpha: .long ) )
@@ -647,7 +648,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         }
     }
 
-    lazy var updateTask = DispatchTask.update( self ) { [weak self] in
+    lazy var updateTask = LeakRegistry.shared.unregister( DispatchTask.update( self ) { [weak self] in
         guard let self = self
         else { return }
 
@@ -677,7 +678,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         self.color.debug.doUpdate()
 
         self.observers.notify( event: { $0.didChange( theme: self ) } )
-    }
+    } )
 
     func hash(into hasher: inout Hasher) {
         hasher.combine( self.path )

@@ -41,6 +41,7 @@ class EffectCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init( frame: frame )
+        LeakRegistry.shared.register( self )
 
         self.effectView.layoutMargins = .border( 6 )
 

@@ -145,6 +145,12 @@ extension CGFloat {
     public static let on    = CGFloat( 1.0 )
 }
 
+extension ObjectIdentifier {
+    var identity: String {
+        String( self.debugDescription.split { "()".contains( $0 ) }[1] )
+    }
+}
+
 // Automatic synthesis of Strideable implementation; concrete types still need to explicitly inherit Strideable
 // FIXME: https://bugs.swift.org/browse/SR-14277 - is necessitating the Stride == Int restriction
 extension RawRepresentable where RawValue: Strideable, RawValue.Stride == Int {

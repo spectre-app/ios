@@ -19,6 +19,8 @@ class AnyItem: NSObject, Updatable {
 
     init(title: Text? = nil) {
         self.title = title
+        super.init()
+        LeakRegistry.shared.register( self )
     }
 
     lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
@@ -240,6 +242,7 @@ class Behaviour<M> {
     init(hidden hiddenProvider: ((M) -> Bool)? = nil, enabled enabledProvider: ((M) -> Bool)? = nil) {
         self.hiddenProvider = hiddenProvider
         self.enabledProvider = enabledProvider
+        LeakRegistry.shared.register( self )
     }
 
     func didInstall(into item: Item<M>) {

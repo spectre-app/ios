@@ -12,10 +12,10 @@
 
 import Foundation
 
-private let cache = NSCache<NSString, NSArray>()
+private let cache = Cache<NSString, NSArray>(named: "Resources")
 
 private func cachedLinesList(named name: String, extension ext: String = "txt") -> [String]? {
-    if let linesList = cache.object( forKey: name as NSString ) as? [String] {
+    if let linesList = cache[name as NSString] as? [String] {
         return linesList
     }
 
@@ -25,7 +25,7 @@ private func cachedLinesList(named name: String, extension ext: String = "txt") 
            !$0.isEmpty && !$0.hasPrefix( "//" )
        } ) {
         let linesList = listLines as NSArray
-        cache.setObject( linesList, forKey: name as NSString )
+        cache[name as NSString] = linesList
         return linesList as? [String]
     }
 

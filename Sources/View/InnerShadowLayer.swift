@@ -12,6 +12,7 @@ class InnerShadowLayer: CALayer {
 
     override init(layer: Any) {
         super.init( layer: layer )
+        LeakRegistry.shared.register( self )
     }
 
     override init() {
@@ -21,6 +22,7 @@ class InnerShadowLayer: CALayer {
         self.shadowOpacity = .short
         self.shadowOffset = .zero
         self.masksToBounds = true
+        LeakRegistry.shared.register( self )
     }
 
     override func layoutSublayers() {

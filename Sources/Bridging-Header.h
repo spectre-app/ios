@@ -11,6 +11,7 @@
 // =============================================================================
 
 #import <Foundation/Foundation.h>
+#import <os/proc.h>
 
 #import "spectre-algorithm.h"
 #import "spectre-util.h"

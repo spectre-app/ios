@@ -110,6 +110,15 @@ class KeyboardMonitor {
 }
 
 class KeyboardLayoutGuide: UILayoutGuide, KeyboardMonitorObserver {
+    required init?(coder aDecoder: NSCoder) {
+        fatalError( "init(coder:) is not supported for this class" )
+    }
+
+    override init() {
+        super.init()
+        LeakRegistry.shared.register( self )
+    }
+
     /// The frame that encompasses the software keyboard, in the view's coordinate space.
     public var keyboardFrame    = CGRect.null
     /// The view insets that make way for the software keyboard, in the view's coordinate space.

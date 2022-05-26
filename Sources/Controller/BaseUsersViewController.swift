@@ -46,8 +46,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         self.usersCarousel.delegate = self
         self.usersCarousel.backgroundColor = .clear
         self.usersCarousel.indicatorStyle = .white
-        self.usersCarousel.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] recognizer in
-            guard case .began = recognizer.state
+        self.usersCarousel.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
+            guard case .began = $0.state
             else { return }
 
             self.usersCarousel.selectItem( at: IndexPath( item: self.usersCarousel.scrolledItem, section: 0 ),
@@ -310,6 +310,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
         // swiftlint:disable:next function_body_length
         override init(frame: CGRect) {
             super.init( frame: CGRect() )
+            LeakRegistry.shared.register( self )
 
             // - View
             self.isOpaque = false

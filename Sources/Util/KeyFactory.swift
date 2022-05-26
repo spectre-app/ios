@@ -36,6 +36,7 @@ public class KeyFactory {
 
     init(userName: String) {
         self.userName = userName
+        LeakRegistry.shared.register( self )
     }
 
     deinit {

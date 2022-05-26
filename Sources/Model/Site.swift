@@ -150,6 +150,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
         self.questions = questions
+        LeakRegistry.shared.register( self )
 
         defer {
             initialize( self )

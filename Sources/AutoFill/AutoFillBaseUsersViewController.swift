@@ -14,22 +14,20 @@ import UIKit
 import AuthenticationServices
 
 class AutoFillBaseUsersViewController: BaseUsersViewController {
-    lazy var closeButton = EffectButton( track: .subject( "users", action: "close" ), image: .icon( "xmark", style: .regular ),
-                                         border: 0, background: false, square: true ) { [unowned self] _ in
-        self.extensionContext?.cancelRequest( withError: ASExtensionError( .userCanceled, "Close button pressed." ) )
-    }
-
     // MARK: - Life
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // - Hierarchy
-        self.view.insertSubview( self.closeButton, belowSubview: self.detailsHost.view )
-
-        // - Layout
-        LayoutConfiguration( view: self.closeButton )
-            .constrain( as: .bottomCenter, margin: true ).activate()
+        self.showCloseButton( track: .subject( "users", action: "close" ) ) { [weak self] in
+            (self?.extensionContext as? ASCredentialProviderExtensionContext)?.cancelRequest(
+                    withError: ASExtensionError( .userCanceled, "Close button pressed." )
+            )
+        } longPressAction: {
+            if AppConfig.shared.memoryProfiler {
+                AutoFillProviderController.shared?.reportLeaks()
+            }
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {

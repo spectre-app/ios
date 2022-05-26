@@ -30,6 +30,7 @@ class PickerView: UICollectionView {
 
     init() {
         super.init( frame: UIScreen.main.bounds, collectionViewLayout: self.layout )
+        LeakRegistry.shared.register( self )
 
         self.backgroundColor = .clear
         self.register( Separator.self, decorationKind: "Separator" )

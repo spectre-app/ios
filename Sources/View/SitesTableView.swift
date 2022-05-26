@@ -62,6 +62,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     init() {
         super.init( frame: .zero, style: .plain )
+        LeakRegistry.shared.register( self )
 
         self.register( SiteCell.self )
 

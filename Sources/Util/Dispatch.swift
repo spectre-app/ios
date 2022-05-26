@@ -158,6 +158,8 @@ public class Promise<V>: CustomDebugStringConvertible {
     }
 
     public init(_ result: Result<V, Error>? = nil) {
+        LeakRegistry.shared.register( self )
+
         if let result = result {
             self.finish( result )
         }
@@ -455,7 +457,7 @@ extension Collection {
 /**
  * A task that can be scheduled by request.
  */
-public class DispatchTask<V> {
+public class DispatchTask<V>: CustomDebugStringConvertible {
     private let name:      String
     private let workQueue: DispatchQueue
     private let deadline:  () -> DispatchTime
@@ -468,6 +470,7 @@ public class DispatchTask<V> {
     private var requestPromise: Promise<V>?
     private var requestRunning = false
     private lazy var requestQueue = DispatchQueue( label: "\(productName): DispatchTask: \(self.name)", qos: .userInitiated )
+    public var debugDescription: String { self.name }
 
     public init(named name: String, queue: DispatchQueue,
                 deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now() + .seconds( .short ), group: DispatchGroup? = nil,
@@ -479,6 +482,8 @@ public class DispatchTask<V> {
         self.qos = qos
         self.flags = flags
         self.work = work
+
+        LeakRegistry.shared.register( self )
     }
 
     /**

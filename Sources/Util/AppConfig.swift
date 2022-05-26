@@ -42,6 +42,17 @@ public class AppConfig: Observable {
             }
         }
     }
+    public var memoryProfiler: Bool {
+        get {
+            UserDefaults.shared.bool( forKey: #function )
+        }
+        set {
+            if newValue != self.memoryProfiler {
+                UserDefaults.shared.set( newValue, forKey: #function )
+                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.memoryProfiler ) }
+            }
+        }
+    }
     public var diagnosticsDecided: Bool {
         get {
             UserDefaults.shared.bool( forKey: #function )

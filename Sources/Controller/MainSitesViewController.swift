@@ -38,8 +38,7 @@ class MainSitesViewController: BaseSitesViewController {
                 self.detailsHost.show( DetailUserViewController( model: user ), sender: self )
             }
         }
-        self.userButton.addGestureRecognizer( UILongPressGestureRecognizer {
-            [unowned self] in
+        self.userButton.addGestureRecognizer( UILongPressGestureRecognizer { [unowned self] in
             guard case .began = $0.state
             else { return }
 

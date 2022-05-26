@@ -422,6 +422,7 @@ class Tracker: AppConfigObserver {
         init(name: String, tracker: Tracker) {
             self.name = name
             self.tracker = tracker
+            LeakRegistry.shared.register( self )
         }
 
         func open(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
@@ -474,6 +475,7 @@ class Tracker: AppConfigObserver {
         init(track: Tracking, start: Date) {
             self.tracking = track
             self.start = start
+            LeakRegistry.shared.register( self )
         }
 
         deinit {

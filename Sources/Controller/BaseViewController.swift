@@ -46,6 +46,37 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
 
     private var notificationObservers = [ NSObjectProtocol ]()
 
+    private var closeButton: EffectButton? {
+        didSet {
+            if let oldValue = oldValue {
+                oldValue.removeFromSuperview()
+            }
+            if let newValue = self.closeButton {
+                self.view.addSubview( newValue )
+
+                LayoutConfiguration( view: newValue )
+                    .constrain { $1.bottomAnchor.constraint( equalTo: $0.bottomAnchor, constant: -8 ) }
+                    .constrain { $1.centerXAnchor.constraint( equalTo: $0.centerXAnchor ) }
+                    .activate()
+            }
+        }
+    }
+
+    // MARK: - Interface
+
+    func showCloseButton(track: Tracking?, primaryAction action: @escaping () -> (), longPressAction: (() -> ())? = nil) {
+        self.closeButton = EffectButton( track: track, image: .icon( "xmark", style: .regular ) ) { _ in action() }
+
+        if let longPressAction = longPressAction {
+            self.closeButton?.addGestureRecognizer( UILongPressGestureRecognizer {
+                guard case .began = $0.state
+                else { return }
+
+                longPressAction()
+            } )
+        }
+    }
+
     // MARK: - Life
 
     required init?(coder aDecoder: NSCoder) {
@@ -54,6 +85,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
 
     init() {
         super.init( nibName: nil, bundle: nil )
+        LeakRegistry.shared.register( self )
     }
 
     override func loadView() {

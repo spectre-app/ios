@@ -54,6 +54,7 @@ class PagerView: UIView, UICollectionViewDelegate {
             }
         }
         super.init( frame: .zero )
+        LeakRegistry.shared.register( self )
 
         // - View
         self.backgroundColor = .clear

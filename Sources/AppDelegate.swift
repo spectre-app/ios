@@ -18,13 +18,23 @@ import SafariServices
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    static weak var shared: AppDelegate?
 
     lazy var window: UIWindow? = UIWindow()
+
+    // MARK: - Public
+
+    func reportLeaks() {
+        self.window! => \.tintColor => nil
+        self.window?.rootViewController = LeakRegistry.shared.reportViewController()
+    }
 
     // MARK: - UIApplicationDelegate
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
             -> Bool {
+        Self.shared = self
+
         // Require encrypted DNS.  Note: WebKit (eg. WKWebView/SFSafariViewController) ignores this.
         if #available( iOS 14.0, * ) {
             if let dohURL = URL( string: "https://cloudflare-dns.com/dns-query" ) {
@@ -170,6 +180,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         wrn( "Couldn't register for remote notifications: %@ [>PII]", error.localizedDescription )
         pii( "[>] Error: %@", error )
+    }
+
+    func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+        wrn( "Low Memory!" )
     }
 
     // - Private

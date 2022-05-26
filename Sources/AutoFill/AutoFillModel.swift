@@ -16,7 +16,7 @@ import AuthenticationServices
 class AutoFillModel: MarshalObserver {
     static let shared = AutoFillModel()
 
-    private var usersCache  = NSCache<NSString, User>()
+    private var usersCache  = Cache<NSString, User>(named: "AutoFill")
     private var cachedUsers = Set<String>()
 
     lazy var context = Context()
@@ -26,11 +26,11 @@ class AutoFillModel: MarshalObserver {
     }
 
     func cachedUser(userName: String?) -> User? {
-        userName.flatMap { self.usersCache.object( forKey: $0 as NSString ) }
+        userName.flatMap { self.usersCache[$0 as NSString] }
     }
 
     func cacheUser(_ user: User) {
-        self.usersCache.setObject( user, forKey: user.userName as NSString )
+        self.usersCache[user.userName as NSString] = user
         self.cachedUsers.insert( user.userName )
     }
 
@@ -42,12 +42,12 @@ class AutoFillModel: MarshalObserver {
             .filter { userName in
                 guard let userFile = userFiles.first( where: { $0.autofill && $0.userName == userName } )
                 else { return true }
-                guard let cachedUser = self.usersCache.object( forKey: userFile.userName as NSString )
+                guard let cachedUser = self.usersCache[userFile.userName as NSString]
                 else { return true }
                 return cachedUser != userFile
             }
             .forEach {
-                self.usersCache.removeObject( forKey: $0 as NSString )
+                self.usersCache[$0 as NSString] = nil
                 self.cachedUsers.remove( $0 )
             }
     }

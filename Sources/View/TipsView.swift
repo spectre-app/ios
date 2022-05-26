@@ -12,7 +12,7 @@
 
 import UIKit
 
-class TipsView: UIView {
+class TipsView: BaseView {
     private let tipLabel    = UILabel()
     private let tipProgress = UIView()
     private var tipExpiryConfiguration: LayoutConfiguration<UIView>!

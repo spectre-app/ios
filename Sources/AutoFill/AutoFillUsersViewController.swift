@@ -21,7 +21,7 @@ class AutoFillUsersViewController: AutoFillBaseUsersViewController {
             }
 
             if let configurationView = self.configurationView, configurationView.superview == nil {
-                self.view.insertSubview( configurationView, belowSubview: self.closeButton )
+                self.view.insertSubview( configurationView, belowSubview: self.usersCarousel )
                 LayoutConfiguration( view: configurationView )
                     .constrain { $1.view!.contentLayoutGuide.heightAnchor.constraint( greaterThanOrEqualTo: $0.heightAnchor ) }
                     .constrain( as: .box ).activate()
