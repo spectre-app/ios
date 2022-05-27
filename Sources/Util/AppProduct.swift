@@ -54,6 +54,10 @@ enum InAppProduct: String, CaseIterable {
           InAppProduct.premiumMonthly,
         ].contains( self )
     }
+    var isInStore:         Bool {
+        ![ InAppProduct.legacyMasterPassword,
+        ].contains( self )
+    }
     var features:          [InAppFeature] {
         [ .premiumAnnual: [ .answers, .logins, .biometrics, .premium ],
           .premiumMonthly: [ .answers, .logins, .biometrics, .premium ],

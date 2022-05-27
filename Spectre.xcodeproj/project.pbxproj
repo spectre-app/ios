@@ -205,6 +205,7 @@
 		DA35148B233EF93400BCF504 /* spectre-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */; };
 		DA35148C233EF93400BCF504 /* spectre-algorithm_v2.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D390A3B351FEF1B9EDAB56 /* spectre-algorithm_v2.c */; };
 		DA35148D233EF93400BCF504 /* spectre-algorithm_v3.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D39D4E713564B7654341B0 /* spectre-algorithm_v3.c */; };
+		DA37DDF128415248002663EA /* country-codes.json in Resources */ = {isa = PBXBuildFile; fileRef = DA37DDF028415248002663EA /* country-codes.json */; };
 		DA4563D7265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
 		DA4563D8265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
 		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
@@ -456,6 +457,7 @@
 		DA351487233EF8FE00BCF504 /* spectre-algorithm_v1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v1.h"; sourceTree = "<group>"; };
 		DA351488233EF8FE00BCF504 /* spectre-algorithm_v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v3.h"; sourceTree = "<group>"; };
 		DA351489233EF8FE00BCF504 /* spectre-algorithm_v0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v0.h"; sourceTree = "<group>"; };
+		DA37DDF028415248002663EA /* country-codes.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "country-codes.json"; sourceTree = "<group>"; };
 		DA3954B32066D2B5004621DB /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
 		DA4563D6265623D600911BFF /* public-suffix-list.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "public-suffix-list.txt"; sourceTree = "<group>"; };
 		DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
@@ -1054,6 +1056,7 @@
 		DACA29701705E1A8002C6C22 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				DA37DDF028415248002663EA /* country-codes.json */,
 				DA4563D6265623D600911BFF /* public-suffix-list.txt */,
 				DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */,
 			);
@@ -1359,6 +1362,7 @@
 				DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */,
 				DAC8C7C927377BC000BC31BA /* Poppins-Regular.otf in Resources */,
 				DAAEDE1F25E1DF5500E78F79 /* Font Awesome 6 Pro-Regular-400.otf in Resources */,
+				DA37DDF128415248002663EA /* country-codes.json in Resources */,
 				DAAEDE1D25E1DF5500E78F79 /* Font Awesome 6 Pro-Light-300.otf in Resources */,
 				DAAEDE1B25E1DF5500E78F79 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
 				DAC8C7C727377BC000BC31BA /* Poppins-Light.otf in Resources */,

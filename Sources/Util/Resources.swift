@@ -12,7 +12,7 @@
 
 import Foundation
 
-private let cache = Cache<NSString, NSArray>(named: "Resources")
+private let cache = Cache<NSString, NSObject>( named: "Resources")
 
 private func cachedLinesList(named name: String, extension ext: String = "txt") -> [String]? {
     if let linesList = cache[name as NSString] as? [String] {
@@ -24,11 +24,27 @@ private func cachedLinesList(named name: String, extension ext: String = "txt") 
        let listLines = String( data: listData, encoding: .utf8 )?.split( separator: "\n" ).filter( {
            !$0.isEmpty && !$0.hasPrefix( "//" )
        } ) {
-        let linesList = listLines as NSArray
-        cache[name as NSString] = linesList
-        return linesList as? [String]
+        cache[name as NSString] = listLines as NSArray
+        return listLines.map { String( $0 ) }
     }
 
+    wrn( "Couldn't load resource for: %@", name )
+    return nil
+}
+
+private func cachedMap(named name: String, extension ext: String = "json") -> [String: String]? {
+    if let map = cache[name as NSString] as? [String: String] {
+        return map
+    }
+
+    if let mapURL = Bundle.main.url( forResource: name, withExtension: ext ),
+       let mapData = try? Data( contentsOf: mapURL ),
+       let map = try? JSONDecoder().decode( [ String: String].self, from: mapData ) {
+        cache[name as NSString] = map as NSObject
+        return map
+    }
+
+    wrn( "Couldn't load resource for: %@", name )
     return nil
 }
 
@@ -37,4 +53,7 @@ var dictionary:     [String]? {
 }
 var publicSuffixes: [String]? {
     cachedLinesList( named: "public-suffix-list" )
+}
+var countryCode3to2: [String: String]? {
+    cachedMap( named: "country-codes" )
 }
