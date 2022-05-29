@@ -12,7 +12,7 @@
 
 import Foundation
 
-public class WeakBox<E>: Equatable, CustomDebugStringConvertible {
+public struct WeakBox<E>: Equatable, CustomDebugStringConvertible {
     private weak var _value: AnyObject?
 
     private let name:  String

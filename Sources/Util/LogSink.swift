@@ -94,14 +94,23 @@ public func log(file: String = #file, line: Int32 = #line, function: String = #f
                     guard let arg = arg
                     else { return Int( bitPattern: nil ) }
 
-                    if let error = arg as? Error {
-                        return error.detailsDescription
-                    }
-                    if level >= .debug, let arg = arg as? CustomDebugStringConvertible {
-                        return arg.debugDescription
+                    if let arg = arg as? CVarArg, !(type(of: arg) is AnyObject.Type) {
+                        return arg
                     }
 
-                    return arg as? CVarArg ?? String( reflecting: arg )
+                    var prefix = ""
+                    #if DEBUG
+                    if isDebuggingObject(arg as AnyObject) {
+                        prefix += "[*]"
+                    }
+                    #endif
+
+                    if let error = arg as? Error {
+                        return prefix + error.detailsDescription
+                    }
+                    else {
+                        return prefix + String( reflecting: arg )
+                    }
                 } ) {
                     // FIXME: https://bugs.swift.org/browse/SR-13779 - The va_list C type is incompatible with CVaListPointer on x86_64.
                     withUnsafeBytes( of: $0 ) { args in

@@ -191,7 +191,7 @@ class Item<M>: AnyItem {
             self.captionLabel.attributedText = item.model.flatMap { item.captionProvider( $0 ) }?.attributedString
             self.captionLabel => \.attributedText => .font => Theme.current.font.caption1
             self.captionLabel => \.attributedText => .foregroundColor => Theme.current.color.secondary
-            self.captionLabel.isHidden = self.captionLabel.attributedText?.string.nonEmpty == nil
+            self.captionLabel.isHidden = self.captionLabel.attributedText?.length == .zero
 
             for i in 0..<max( item.subitems.count, self.subitemsStack.arrangedSubviews.count ) {
                 let subitemView  = i < item.subitems.count ? item.subitems[i].view : nil
@@ -296,7 +296,7 @@ class ColorizeBehaviour<M>: Behaviour<M> {
 
         if let view = item.view as? FieldItem.FieldItemView {
             if let tintColor = item.view.tintColor {
-                (view.valueField => \.textColor).unbind()
+                view.valueField => \.textColor => nil
                 view.valueField.textColor = tintColor
             }
             else {

@@ -15,7 +15,7 @@
 
 @interface UIView(Spectre_Swift)
 
-- (NSString *)describeWithShort:(BOOL)s;
+- (NSString *)describeWithDetails:(BOOL)s;
 
 @end
 
@@ -74,16 +74,10 @@
 
 - (NSString *)accessibilityIdentifier {
 
-    if ([NSThread currentThread].threadDictionary[@"accessibilityIdentifier"])
+    if ([NSThread currentThread].threadDictionary[@"_fromDescribe"])
         return nil;
 
-    @try {
-        [NSThread currentThread].threadDictionary[@"accessibilityIdentifier"] = @YES;
-        return [self describeWithShort:NO];
-    }
-    @finally {
-        [NSThread currentThread].threadDictionary[@"accessibilityIdentifier"] = nil;
-    }
+    return [self describeWithDetails:YES];
 }
 
 @end

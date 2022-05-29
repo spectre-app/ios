@@ -41,33 +41,36 @@ func => <E: NSObject & UITraitEnvironment>(propertyPath: PropertyPath<E, NSAttri
 
 func => <E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {//}
 //func ==> <E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {
-    if let property = property {
-        propertyPath.bind( property: property )
+    guard let property = property
+    else {
+        propertyPath.unbind()
+        propertyPath.assign( value: nil )
         return
     }
 
-    propertyPath.unbind()
-    propertyPath.assign( value: property?.get( forTraits: propertyPath.target?.traitCollection ?? .current ) )
+    propertyPath.bind( property: property )
 }
 
 func => <E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
-    if let property = property {
-        propertyPath.bind( property: property )
+    guard let property = property
+    else {
+        propertyPath.unbind()
+        propertyPath.assign( value: nil )
         return
     }
 
-    propertyPath.unbind()
-    propertyPath.assign( value: nil )
+    propertyPath.bind( property: property )
 }
 
 func => <E, V>(propertyPath: PropertyPath<E, NSAttributedString>, property: Property<V>?) {
-    if let property = property {
-        propertyPath.bind( property: property )
+    guard let property = property
+    else {
+        propertyPath.unbind()
+        propertyPath.assign( value: nil )
         return
     }
 
-    propertyPath.unbind()
-    propertyPath.assign( value: nil )
+    propertyPath.bind( property: property )
 }
 
 class AnyPropertyPath: NSObject {
@@ -87,6 +90,11 @@ class AnyPropertyPath: NSObject {
     func assign(value: @autoclosure () -> Any?) {
     }
 
+    func assign(property: AnyProperty) {
+        //dbg( "[properties] updating: %@ => %@", self.property, self.propertyPath )
+        self.assign( value: property.getAny( forTraits: self.anyTarget?.traitCollection ?? .current ) )
+    }
+
     override func isEqual(_ object: Any?) -> Bool {
         self.anyTarget === (object as? AnyPropertyPath)?.anyTarget
     }
@@ -95,7 +103,7 @@ class AnyPropertyPath: NSObject {
         self.anyTarget?.hash ?? 0
     }
 
-    func unbind() {}
+    fileprivate func unbind() {}
 }
 
 class PropertyPath<E, V>: AnyPropertyPath where E: NSObject & UITraitEnvironment {
@@ -116,13 +124,17 @@ class PropertyPath<E, V>: AnyPropertyPath where E: NSObject & UITraitEnvironment
     fileprivate override var anyTarget: (NSObject & UITraitEnvironment)? { self.target }
     private var property: AnyProperty? {
         didSet {
-            if oldValue !== self.property {
+            let newValue = self.property
+            //dbg( "[properties] path: %@, property updated: %@ -> %@", self, oldValue, newValue )
+            if oldValue !== newValue {
                 if let oldProperty = oldValue {
                     oldProperty.unbind( propertyPath: self )
                 }
-                if let newProperty = self.property {
+                if let newProperty = newValue {
                     newProperty.bind( propertyPath: self )
                 }
+            } else if let currentProperty = newValue {
+                self.assign( property: currentProperty )
             }
         }
     }
@@ -137,13 +149,7 @@ class PropertyPath<E, V>: AnyPropertyPath where E: NSObject & UITraitEnvironment
     }
 
     var propertyDescription: String {
-        let targetDescription: String
-        if let target = self.target {
-            targetDescription = "\(type( of: target )): \(ObjectIdentifier( target ).identity)"
-        }
-        else {
-            targetDescription = "\(type( of: E.self )): gone)"
-        }
+        let targetDescription = self.target?.describe() ?? "[gone]: \(_describe( E.self ))"
         if let keyPath = self.nullableKeyPath {
             return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String( describing: keyPath ))"
         }
@@ -151,7 +157,7 @@ class PropertyPath<E, V>: AnyPropertyPath where E: NSObject & UITraitEnvironment
             return "\(targetDescription) => \(keyPath._kvcKeyPathString ?? String( describing: keyPath ))"
         }
         else {
-            return "\(self.target == nil ? String( reflecting: E.self ) : String( reflecting: self.target! ))"
+            return targetDescription
         }
     }
 
@@ -184,28 +190,25 @@ class PropertyPath<E, V>: AnyPropertyPath where E: NSObject & UITraitEnvironment
     }
 
     func bind(property: AnyProperty) {
-        //dbg( "[properties] binding property path: %@ to %@", self, property )
         self.property = property
     }
 
-    override func unbind() {
-        //if let property = self.property {
-        //    dbg( "[properties] unbinding property path: %@ from %@", self, property )
-        //}
+    fileprivate override func unbind() {
         self.property = nil
     }
 
-    override func assign(value: @autoclosure () -> Any?) {
+    override func assign(value valueProvider: @autoclosure () -> Any?) {
         guard let target = self.target
         else { return }
 
-        var value = value()
-
-        if let color = (value as? UIColor)?.cgColor as? V {
+        var value = valueProvider()
+        if V.self == CGColor.self, let color = (value as? UIColor)?.cgColor as? V {
             value = color
         }
 
-        if let attribute = self.attribute, let string = target[keyPath: self.nullableKeyPath!] as? NSAttributedString {
+        if let attribute = self.attribute,
+           let keyPath = self.nullableKeyPath ?? self.nonnullKeyPath,
+           let string = target[keyPath: keyPath] as? NSAttributedString {
             let oldString   = NSAttributedString( attributedString: string )
             let string      = string as? NSMutableAttributedString ?? NSMutableAttributedString( attributedString: string )
             let stringRange = NSRange( location: 0, length: string.length )
@@ -532,8 +535,6 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
             self.color.selection.parent = self.parent?.color.selection
             self.color.tint.parent = self.parent?.color.tint
             self.color.debug.parent = self.parent?.color.debug
-
-            self.updateTask.request()
         }
     }
     private let name: String
@@ -724,7 +725,6 @@ private class PropertyUpdater: NSObject, Updates {
         //dbg( "[properties] init updater for: %@ => %@", self.property, self.propertyPath )
 
         if let target = self.propertyPath.anyTarget {
-//            target.addObserver(self, forKeyPath: "traitCollection", options: [.new, .old], context: nil)
             target.propertyUpdaters[self.propertyPath] = self
         }
 
@@ -733,7 +733,6 @@ private class PropertyUpdater: NSObject, Updates {
 
     deinit {
         //dbg( "[properties] deinit updater: %@ => %@", self.property, self.propertyPath )
-//        self.propertyPath.anyTarget?.removeObserver(self, forKeyPath: "traitCollection")
         self.propertyPath.unbind()
     }
 
@@ -741,18 +740,8 @@ private class PropertyUpdater: NSObject, Updates {
         self.propertyPath.anyTarget?.propertyUpdaters[self.propertyPath] = nil
     }
 
-//    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?,
-//                               context: UnsafeMutableRawPointer?) {
-//        dbg( "[properties] updater: %@ => %@, observed: %@", self.property, self.propertyPath, change )
-//        if let old = change?[.oldKey] as? UITraitCollection, let new = change?[.newKey] as? UITraitCollection,
-//           old.hasDifferentColorAppearance(comparedTo: new) {
-//            self.doUpdate()
-//        }
-//    }
-
     func doUpdate() {
-        //dbg( "[properties] updating: %@ => %@", self.property, self.propertyPath )
-        self.propertyPath.assign( value: self.property.getAny( forTraits: self.propertyPath.anyTarget?.traitCollection ?? .current ) )
+        self.propertyPath.assign( property: self.property )
     }
 }
 
@@ -804,7 +793,7 @@ class Property<V>: AnyProperty {
         let updater = TransformProperty( self, function: function )
         self.updates.append( WeakBox( updater ) )
         LeakRegistry.shared.register(updater)
-        //dbg( "[properties] %@ transformed; updates now: %@", self, self.updates )
+        //dbg( "[properties] %@ transformed into: %@; updates now: %@", self, updater, self.updates )
 
         return updater
     }
@@ -933,6 +922,6 @@ class TransformProperty<F, T>: Property<T> {
     }
 
     override var valueDescription: String {
-        "transform[ \(self.from) ]"
+        "transform[ \(self.from) ] -> \(T.self)"
     }
 }

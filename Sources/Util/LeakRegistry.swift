@@ -131,8 +131,8 @@ class LeakRegistry: LeakObserver, AppConfigObserver {
             #else
             self.isDebugging = false
             #endif
-            self.shortType = _describe( Swift.type( of: value ), typeDetails: false )
-            self.detailType = _describe( Swift.type( of: value ), typeDetails: true )
+            self.shortType = _describe( Swift.type( of: value ), details: false )
+            self.detailType = _describe( Swift.type( of: value ), details: true )
             self.description = value.debugDescription
         }
     }

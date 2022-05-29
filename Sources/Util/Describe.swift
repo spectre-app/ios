@@ -14,20 +14,20 @@ import UIKit
 
 @objc
 public protocol Describable {
-    func describe(short: Bool) -> String
+    func describe(details: Bool) -> String
 }
 
 private let swiftTypePattern = (try? NSRegularExpression( pattern: "^_T[^0-9]*" ))!
 
-func _describe(_ type: AnyClass?, typeDetails: Bool = false, abbreviated: Bool = false, _: Void = ()) -> String? {
-    type.flatMap { _describe( $0, typeDetails: typeDetails, abbreviated: abbreviated ) }
+func _describe(_ type: AnyClass?, details: Bool = false, abbreviated: Bool = false, _: Void = ()) -> String? {
+    type.flatMap { _describe( $0, details: details, abbreviated: abbreviated ) }
 }
 
-func _describe(_ type: AnyClass, typeDetails: Bool = false, abbreviated: Bool = false) -> String {
+func _describe(_ type: AnyClass, details: Bool = false, abbreviated: Bool = false) -> String {
     var className = NSStringFromClass( type )
 
     // Get the last inner class name.
-    if !typeDetails {
+    if !details {
         className = className.lastIndex( of: "." ).flatMap { String( className.suffix( from: className.index( after: $0 ) ) ) } ?? className
     }
 
@@ -53,7 +53,7 @@ func _describe(_ type: AnyClass, typeDetails: Bool = false, abbreviated: Bool = 
 
             if prefix.isEmpty {
                 decoded.append( typeElement )
-            } else if typeDetails {
+            } else if details {
                 decoded.append( "[\(prefix)]" + typeElement )
             } else if prefix.contains("S") {
                 // Probably found a type parameter, don't parse the other parameters if typeDetails is off.
@@ -62,7 +62,7 @@ func _describe(_ type: AnyClass, typeDetails: Bool = false, abbreviated: Bool = 
             }
             index = to
         }
-        className = typeDetails ? decoded.joined(separator: ".") : decoded.last ?? String( decoding )
+        className = details ? decoded.joined(separator: ".") : decoded.last ?? String( decoding )
     }
 
     if abbreviated {
@@ -72,30 +72,35 @@ func _describe(_ type: AnyClass, typeDetails: Bool = false, abbreviated: Bool = 
     return className
 }
 
-extension UIView: Describable {
-    public func describe(short: Bool = false) -> String {
-        let owner = self.ownership
-        let description: String
+extension NSObject: Describable {
+    public func describe(details: Bool = true) -> String {
+        !details ? ObjectIdentifier( self ).identity : "[\(ObjectIdentifier( self ).identity)]: \(_describe( Self.self ))"
+    }
+}
+
+extension UIView {
+    public override func describe(details: Bool = true) -> String {
+        Thread.current.threadDictionary["_fromDescribe"] = true
+        defer {
+            Thread.current.threadDictionary["_fromDescribe"] = nil
+        }
 
         if let identifier = self.accessibilityIdentifier?.nonEmpty {
-            description = identifier
-        }
-        else if let owner = owner {
-            description = short ? owner.property :
-            "\(owner.property)::\(_describe( Self.self, abbreviated: true ))@\(_describe( type( of: owner.owner ), abbreviated: true ))"
-        }
-        else if let index = self.superview?.subviews.firstIndex( of: self ) {
-            description = short ? "[\(index)]" : "[\(index)]\(_describe( Self.self ))"
-        }
-        else {
-            description = _describe( Self.self )
+            return !details ? identifier :
+                   "\(identifier): \(_describe( Self.self ))"
         }
 
-//        if !short, let ownerView = owner?.owner as? UIView {
-//            return "\(description) << \(ownerView.describe( short: false ))"
-//        }
-//        else {
-        return description
-//        }
+        let owner = self.ownership
+        if let owner = owner {
+            return !details ? owner.property :
+                   "\(_describe( type( of: owner.owner ), abbreviated: true )).\(owner.property): \(_describe( Self.self ))"
+        }
+
+        if let index = self.superview?.subviews.firstIndex( of: self ) {
+            return !details ? "[\(index)]" :
+                   "[\(index)]: \(_describe( Self.self ))"
+        }
+
+        return super.describe( details: details )
     }
 }

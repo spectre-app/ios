@@ -15,7 +15,7 @@ import UIKit
 class BackgroundView: BaseView, ThemeObserver {
     var mode = Mode.backdrop {
         willSet {
-            (self => \.backgroundColor).unbind()
+            self => \.backgroundColor => nil
             self.gradientColor = nil
             self.isOpaque = true
         }

@@ -517,7 +517,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                     itemView.valueLabel => \.textColor => Theme.current.color.body
                 }
                 else {
-                    (itemView.valueLabel => \.textColor).unbind()
+                    itemView.valueLabel => \.textColor => nil
                     itemView.valueLabel.textColor = .systemRed
                 }
             }
