@@ -185,7 +185,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
 
     class LoginResultItem: FieldItem<User> {
         init() {
-            super.init( title: nil, placeholder: "enter a login name",
+            super.init( title: nil, placeholder: "enter a login name", contentType: .username,
                         value: { try? $0.result( keyPurpose: .identification )?.token.await() },
                         update: { item, login in
                             guard let user = item.model
@@ -207,9 +207,6 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
         override func createItemView() -> FieldItemView {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
-            view.valueField.autocapitalizationType = .none
-            view.valueField.autocorrectionType = .no
-            view.valueField.keyboardType = .emailAddress
             return view
         }
 

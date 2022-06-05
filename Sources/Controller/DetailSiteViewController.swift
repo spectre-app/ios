@@ -131,7 +131,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
     class PasswordResultItem: FieldItem<Site> {
         init() {
-            super.init( title: nil, placeholder: "enter a password",
+            super.init( title: nil, placeholder: "enter a password", contentType: .password,
                         value: { try? $0.result()?.token.await() },
                         update: { item, password in
                             guard let site = item.model, let viewController = item.viewController
@@ -151,15 +151,6 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                                 catch { mperror( title: "Couldn't update site password", error: error ) }
                             }
                         } )
-        }
-
-        override func createItemView() -> FieldItemView {
-            let view = super.createItemView()
-            view.valueField => \.font => Theme.current.font.password
-            view.valueField.autocapitalizationType = .none
-            view.valueField.autocorrectionType = .no
-            view.valueField.keyboardType = .asciiCapable
-            return view
         }
 
         override func doUpdate() {
@@ -212,7 +203,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
         let userButton = EffectButton( track: .subject( "site.login", action: "user" ) )
 
         init() {
-            super.init( title: nil, placeholder: "enter a login name",
+            super.init( title: nil, placeholder: "enter a login name", contentType: .username,
                         value: { try? $0.result( keyPurpose: .identification )?.token.await() },
                         update: { item, login in
                             guard let site = item.model, let viewController = item.viewController
@@ -239,9 +230,6 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
         override func createItemView() -> FieldItemView {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
-            view.valueField.autocapitalizationType = .none
-            view.valueField.autocorrectionType = .no
-            view.valueField.keyboardType = .emailAddress
             view.valueField.leftView = MarginView( for: self.userButton, margins: .border( 4 ) )
 
             self.userButton.isCircular = true
@@ -435,16 +423,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
     class URLItem: FieldItem<Site> {
         init() {
-            super.init( title: "URL", placeholder: "eg. https://www.apple.com",
+            super.init( title: "URL", placeholder: "eg. https://www.apple.com", contentType: .URL,
                         value: { $0.url }, update: { $0.model?.url = $1 } )
-        }
-
-        override func createItemView() -> FieldItemView {
-            let itemView = super.createItemView()
-            itemView.valueField.autocapitalizationType = .none
-            itemView.valueField.autocorrectionType = .no
-            itemView.valueField.keyboardType = .URL
-            return itemView
         }
     }
 

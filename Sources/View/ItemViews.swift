@@ -649,18 +649,69 @@ class DateItem<M>: ValueItem<M, Date> {
 
 class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     let placeholder: String?
+    let contentType: UITextContentType?
 
-    init(title: Text? = nil, placeholder: String?,
+    init(title: Text? = nil, placeholder: String?, contentType: UITextContentType? = nil,
          value: @escaping (M) -> String? = { _ in nil },
          update: ((Item<M>, String) -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
          caption: @escaping (M) -> Text? = { _ in nil }) {
         self.placeholder = placeholder
+        self.contentType = contentType
         super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
     }
 
     override func createItemView() -> FieldItemView {
         FieldItemView( withItem: self )
+    }
+
+    private var autocorrectionType: UITextAutocorrectionType {
+        self.contentType == nil ? .default : .no
+    }
+
+    private var autocapitalizationType: UITextAutocapitalizationType {
+        if [.postalCode, .telephoneNumber, .creditCardNumber, .oneTimeCode].contains(self.contentType) {
+            return .allCharacters
+        }
+        else if #available(iOS 15, *), [.shipmentTrackingNumber, .flightNumber].contains(self.contentType) {
+            return .allCharacters
+        }
+        else if [.emailAddress, .URL, .username, .password, .newPassword].contains(self.contentType) {
+            return .none
+        }
+        else if self.contentType == nil {
+            return .sentences
+        }
+        else {
+            return .words
+        }
+    }
+
+    private var keyboardType: UIKeyboardType {
+        if [.telephoneNumber].contains(self.contentType) {
+            return .phonePad
+        }
+        else if [.creditCardNumber].contains(self.contentType) {
+            return .numberPad
+        }
+        else if [.oneTimeCode, .postalCode].contains(self.contentType) {
+            return .namePhonePad
+        }
+        else if #available(iOS 15, *), [.shipmentTrackingNumber, .flightNumber].contains(self.contentType) {
+            return .namePhonePad
+        }
+        else if [.emailAddress, .username].contains(self.contentType) {
+            return .emailAddress
+        }
+        else if [.URL].contains(self.contentType) {
+            return .URL
+        }
+        else if [.password, .newPassword].contains(self.contentType) {
+            return .asciiCapable
+        }
+        else {
+            return .default
+        }
     }
 
     // MARK: UITextFieldDelegate
@@ -703,6 +754,11 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             super.doUpdate()
 
             self.valueField.placeholder = self.fieldItem?.placeholder
+            self.valueField.autocapitalizationType = self.fieldItem?.autocapitalizationType ?? .sentences
+            self.valueField.autocorrectionType = self.fieldItem?.autocorrectionType ?? .default
+            self.valueField.textContentType = self.fieldItem?.contentType
+            self.valueField.keyboardType = self.fieldItem?.keyboardType ?? .default
+            self.valueField.returnKeyType = .done
             self.valueField.text = self.fieldItem?.value
         }
     }

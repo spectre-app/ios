@@ -100,7 +100,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
 
     class LoginResultItem: FieldItem<User> {
         init() {
-            super.init( title: nil, placeholder: "enter a login name",
+            super.init( title: nil, placeholder: "enter a login name", contentType: .username,
                         value: { try? $0.result( keyPurpose: .identification )?.token.await() },
                         update: { item, login in
                             guard let user = item.model
@@ -124,9 +124,6 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         override func createItemView() -> FieldItemView {
             let view = super.createItemView()
             view.valueField => \.font => Theme.current.font.password
-            view.valueField.autocapitalizationType = .none
-            view.valueField.autocorrectionType = .no
-            view.valueField.keyboardType = .emailAddress
             view.valueField.leftViewMode = .always
             view.valueField.leftView = MarginView( for: UIImageView( image: .icon( "circle-user" ) ), margins: .border( 4 ) )
             return view
