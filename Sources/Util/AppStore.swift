@@ -203,15 +203,13 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     func isUpToDate(appleID: Int? = nil, buildVersion: String? = nil)
             -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
-        guard let urlSession = URLSession.required.get()
-        else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
-
-        return self.country
+        self.country
             .promise { "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\($0 ?? "US")&limit=1" }
             .promising { (url: String?) -> Promise<(data: Data, response: URLResponse)> in
-                guard let url = url, let searchURL = URL( string: url ) else {
-                    throw AppError.internal( cause: "Couldn't resolve store URL", details: url )
-                }
+                guard let url = url, let searchURL = URL( string: url )
+                else { throw AppError.internal( cause: "Couldn't resolve store URL", details: url ) }
+                guard let urlSession = URLSession.required.get()
+                else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
 
                 return urlSession.promise( with: URLRequest( url: searchURL ) )
             }

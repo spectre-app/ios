@@ -148,7 +148,7 @@ class SitePreview: Equatable {
 
     private static let previewQueue = DispatchQueue( label: "SwiftLinkPreview", qos: .background, attributes: [ .concurrent ] )
     private static let taskQueue    = DispatchQueue( label: "\(productName): SitePreview", qos: .utility, attributes: [ .concurrent ] )
-    private static let linkPreview = LazyBox {
+    public static let linkPreview = LazyBox {
         URLSession.optional.get().flatMap {
             SwiftLinkPreview( session: $0, workQueue: previewQueue, responseQueue: previewQueue, cache: InMemoryCache() )
         }
@@ -191,9 +191,6 @@ class SitePreview: Equatable {
     }
 
     private static func bestImage(fromPreviews previews: [Response]) -> Promise<(data: Data, response: URLResponse)> {
-        guard let session = URLSession.optional.get()
-        else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
-
         // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
         let imageURL: Promise<URL?>
         if let svgImageURL = previews.flatMap( { [ $0.image, $0.icon ] } ).compactMap( { SitePreview.validURL( $0 ) } )
@@ -201,6 +198,9 @@ class SitePreview: Equatable {
             imageURL = Promise( .success( svgImageURL ) )
         }
         else {
+            guard let session = URLSession.optional.get()
+            else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
+
             let candidates = previews.flatMap( { [ $0.image, $0.icon ] + ($0.images ?? []) } )
             imageURL = SitePreview.byImageSize( candidates, in: session ).promise {
                 $0.reordered( last: { $0.pathExtension == "gif" } ).first
@@ -211,6 +211,8 @@ class SitePreview: Equatable {
         return imageURL.promising {
             guard let imageURL = $0
             else { throw AppError.issue( title: "No candidate images on site", details: String( describing: previews ) ) }
+            guard let session = URLSession.optional.get()
+            else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
 
             return session.promise( with: URLRequest( url: imageURL ) )
         }

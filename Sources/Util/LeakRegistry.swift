@@ -112,6 +112,9 @@ class LeakRegistry: LeakObserver, AppConfigObserver {
 
     func shouldCancelOperations() {
         AppConfig.shared.isEnabled = false
+        #if TARGET_APP
+        SitePreview.linkPreview.unset()
+        #endif
         URLSession.required.unset()
         URLSession.optional.unset()
     }

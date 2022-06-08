@@ -322,7 +322,7 @@ extension URLSession {
 
         return URLSession( configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue( queue: requiredQueue ) )
     } unset: {
-        $0.invalidateAndCancel()
+        $0.getAllTasks { $0.forEach { $0.cancel() } }
     }
     public static var optional = LazyBox<URLSession> {
         guard AppConfig.shared.isEnabled, !AppConfig.shared.offline
@@ -330,7 +330,7 @@ extension URLSession {
 
         return URLSession( configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue( queue: optionalQueue ) )
     } unset: {
-        $0.invalidateAndCancel()
+        $0.getAllTasks { $0.forEach { $0.cancel() } }
     }
 
     public static func requiredConfiguration() -> URLSessionConfiguration {

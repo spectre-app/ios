@@ -147,6 +147,9 @@ public class AppConfig: Observable {
         set {
             if newValue != self.offline {
                 if self.offline {
+                    #if TARGET_APP
+                    SitePreview.linkPreview.unset()
+                    #endif
                     URLSession.optional.unset()
                     URLSession.required.unset()
                 }
@@ -161,6 +164,7 @@ public class AppConfig: Observable {
             UserDefaults.shared.bool( forKey: #function )
         }
         set {
+            // swiftlint:disable:next inclusive_language
             if newValue != self.masterPasswordCustomer {
                 UserDefaults.shared.set( newValue, forKey: #function )
                 // swiftlint:disable:next inclusive_language
