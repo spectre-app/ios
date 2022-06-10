@@ -86,6 +86,7 @@ platform :ios do
 
   lane :gather do
     # Prepare product release notes.
+    git_pull( only_tags: true )
     git_branch
     @dep_stream = git_branch.split( "/" )[-1]
     @app_version = get_version_number( target: "Spectre" )
