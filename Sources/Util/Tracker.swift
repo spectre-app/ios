@@ -120,6 +120,20 @@ class Tracker: AppConfigObserver {
         "id_device": self.identifierForDevice,
         "id_owner": self.identifierForOwner
     ]
+    private lazy var tags = [
+        "app_version": "\(productVersion)",
+        "app_build": "\(productBuild)",
+        "app_runCount": "\(AppConfig.shared.runCount)",
+        "app_reviewed": "\(AppConfig.shared.reviewed != nil)",
+        "app_rating": "\(AppConfig.shared.rating)",
+        "app_environment": "\(AppConfig.shared.environment)",
+        "app_masterPasswordCustomer": "\(AppConfig.shared.masterPasswordCustomer)",
+        "app_appIcon": "\(AppConfig.shared.appIcon)",
+        "app_colorfulSites": "\(AppConfig.shared.colorfulSites)",
+        "app_allowHandoff": "\(AppConfig.shared.allowHandoff)",
+        "app_theme": "\(AppConfig.shared.theme)",
+        "app_premium": "\(InAppFeature.premium.isEnabled)",
+    ]
 
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                  extensionController: UIViewController? = nil) {
@@ -164,20 +178,7 @@ class Tracker: AppConfigObserver {
                  .didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
 
         self.event( file: file, line: line, function: function, dso: dso,
-                    track: .subject( AppConfig.shared.isApp ? "app" : "autofill", action: "startup", [
-                        "app_version": productVersion,
-                        "app_build": productBuild,
-                        "app_runCount": AppConfig.shared.runCount,
-                        "app_reviewed": AppConfig.shared.reviewed,
-                        "app_rating": AppConfig.shared.rating,
-                        "app_environment": AppConfig.shared.environment,
-                        "app_masterPasswordCustomer": AppConfig.shared.masterPasswordCustomer,
-                        "app_appIcon": AppConfig.shared.appIcon,
-                        "app_colorfulSites": AppConfig.shared.colorfulSites,
-                        "app_allowHandoff": AppConfig.shared.allowHandoff,
-                        "app_theme": AppConfig.shared.theme,
-                        "app_premium": InAppFeature.premium.isEnabled,
-                    ].merging( self.identifiers ) ) )
+                    track: .subject( AppConfig.shared.isApp ? "app" : "autofill", action: "startup" ) )
     }
 
     func appeared(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
@@ -404,10 +405,14 @@ class Tracker: AppConfigObserver {
                     $0.dsn = dsn
                     $0.environment = [ .private: "Private", .pilot: "Pilot", .public: "Public" ][AppConfig.shared.environment]
                     $0.stitchAsyncCode = true
+                    $0.sendDefaultPii = false
+                    $0.attachScreenshot = false
+                    $0.enableUserInteractionTracing = true
+                    $0.enableFileIOTracking = true
                     $0.tracesSampleRate = 0.1
                 }
                 SentrySDK.configureScope {
-                    $0.setTags( self.identifiers )
+                    $0.setTags( self.identifiers.merging( self.tags ) )
                 }
                 self.hasSentryStarted = true
             }

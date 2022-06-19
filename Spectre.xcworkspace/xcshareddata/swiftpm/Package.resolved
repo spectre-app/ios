@@ -11,12 +11,21 @@
         }
       },
       {
+        "package": "Countly",
+        "repositoryURL": "https://github.com/Countly/countly-sdk-ios",
+        "state": {
+          "branch": null,
+          "revision": "51a22dc9c040c4f6fccef7db3edef16d58dead12",
+          "version": "21.11.2"
+        }
+      },
+      {
         "package": "Sentry",
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
-          "revision": "967f04b3cd6989df3f9ced3060481a21646c146d",
-          "version": "7.9.0"
+          "revision": "b34ce9048e6b8b082ea6b15e6b50583d46c936ea",
+          "version": "7.16.0"
         }
       },
       {

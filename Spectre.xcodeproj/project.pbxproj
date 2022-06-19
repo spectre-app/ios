@@ -125,8 +125,6 @@
 		93D39FCF03011CBD98BDA807 /* BaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39845F464F2C86B41E871 /* BaseView.swift */; };
 		93D39FD2F39B2AFE27A88A97 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39B35F97CEFC707FD6D48 /* Secrets.swift */; };
 		93D39FF336ACC2C451C5CFB2 /* CarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39169D757760D11F5D3E4 /* CarouselView.swift */; };
-		DA0DAFAF27383ADE0011BEE0 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA0DAFAE27383ADE0011BEE0 /* Countly */; };
-		DA0DAFB127383AE50011BEE0 /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DA0DAFB027383AE50011BEE0 /* Countly */; };
 		DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAA1D3923C8BA2900F3DF56 /* AuthenticationServices.framework */; };
 		DA0E5566251022EB002B3AB1 /* spectre-algorithm_v1.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D396F918E6470DB846C17F /* spectre-algorithm_v1.c */; };
 		DA0E5567251022EB002B3AB1 /* spectre-types.c in Sources */ = {isa = PBXBuildFile; fileRef = 93D392C5A6572DB0EB5B82C8 /* spectre-types.c */; };
@@ -253,6 +251,7 @@
 		DAC8C7CC27377BC000BC31BA /* Poppins-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAC8C7C427377BC000BC31BA /* Poppins-SemiBold.otf */; };
 		DAC8C7CE27377C9200BC31BA /* SourceCodePro-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAC8C7CD27377C9200BC31BA /* SourceCodePro-ExtraLight.otf */; };
 		DAC8C7CF27377C9200BC31BA /* SourceCodePro-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAC8C7CD27377C9200BC31BA /* SourceCodePro-ExtraLight.otf */; };
+		DAD86373285F64BF00BAAB3D /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DAD86372285F64BF00BAAB3D /* Countly */; };
 		DADBD8D626DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
 		DADBD8D726DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
 		DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */ = {isa = PBXBuildFile; fileRef = DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */; };
@@ -447,7 +446,6 @@
 		93D39FA96542FB5CD60278E4 /* AvatarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarCell.swift; sourceTree = "<group>"; };
 		93D39FFBAB0E1072779FE7D2 /* TipsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TipsView.swift; sourceTree = "<group>"; };
 		DA04E33D14B1E70400ECA4F3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		DA0DAFAD273839EF0011BEE0 /* countly-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "countly-sdk-ios"; path = "../../../local/countly-sdk-ios"; sourceTree = "<group>"; };
 		DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Spectre-AutoFill.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0E5532250D6F7F002B3AB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA0E5533250D6F7F002B3AB1 /* AutoFill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AutoFill.entitlements; sourceTree = "<group>"; };
@@ -596,7 +594,6 @@
 				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
 				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
 				DABB83722826F1C300AEC9E7 /* OrderedCollections in Frameworks */,
-				DA0DAFB127383AE50011BEE0 /* Countly in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */,
 			);
@@ -607,6 +604,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DABB83702826EED000AEC9E7 /* OrderedCollections in Frameworks */,
+				DAD86373285F64BF00BAAB3D /* Countly in Frameworks */,
 				DAF560502393411A000475BA /* libjson-c.a in Frameworks */,
 				DA5DAE8826A624FB00D9EC22 /* TPInAppReceipt in Frameworks */,
 				DAF5605123934134000475BA /* libsodium.a in Frameworks */,
@@ -614,7 +612,6 @@
 				DAAA1D3A23C8BA2900F3DF56 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE7E26A623E300D9EC22 /* Sentry in Frameworks */,
 				DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */,
-				DA0DAFAF27383ADE0011BEE0 /* Countly in Frameworks */,
 				DAAA1D3B23C8BA9700F3DF56 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -777,7 +774,6 @@
 		DA0DAFAC273839EF0011BEE0 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				DA0DAFAD273839EF0011BEE0 /* countly-sdk-ios */,
 				DA704B3B273B921100572C20 /* SwiftLinkPreview */,
 			);
 			name = Packages;
@@ -1130,7 +1126,6 @@
 			name = "Spectre-AutoFill";
 			packageProductDependencies = (
 				DA5DAE7F26A623F000D9EC22 /* Sentry */,
-				DA0DAFB027383AE50011BEE0 /* Countly */,
 				DABB83712826F1C300AEC9E7 /* OrderedCollections */,
 			);
 			productName = "Spectre-AutoFill";
@@ -1160,9 +1155,9 @@
 			packageProductDependencies = (
 				DA5DAE7D26A623E300D9EC22 /* Sentry */,
 				DA5DAE8726A624FB00D9EC22 /* TPInAppReceipt */,
-				DA0DAFAE27383ADE0011BEE0 /* Countly */,
 				DA704B3C273B92AB00572C20 /* SwiftLinkPreview */,
 				DABB836F2826EED000AEC9E7 /* OrderedCollections */,
+				DAD86372285F64BF00BAAB3D /* Countly */,
 			);
 			productName = Spectre;
 			productReference = DA5BFA44147E415C00F98B1E /* Spectre.app */;
@@ -1313,6 +1308,7 @@
 				DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */,
 				DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				DABB836E2826EED000AEC9E7 /* XCRemoteSwiftPackageReference "swift-collections" */,
+				DAD86371285F64BF00BAAB3D /* XCRemoteSwiftPackageReference "countly-sdk-ios" */,
 			);
 			productRefGroup = DA5BFA45147E415C00F98B1E /* Products */;
 			projectDirPath = "";
@@ -2643,6 +2639,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		DAD86371285F64BF00BAAB3D /* XCRemoteSwiftPackageReference "countly-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Countly/countly-sdk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 21.0.0;
+			};
+		};
 		DAF2918D2698B4B5004A16A7 /* XCRemoteSwiftPackageReference "TPInAppReceipt" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tikhop/TPInAppReceipt";
@@ -2662,14 +2666,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DA0DAFAE27383ADE0011BEE0 /* Countly */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Countly;
-		};
-		DA0DAFB027383AE50011BEE0 /* Countly */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Countly;
-		};
 		DA5DAE7D26A623E300D9EC22 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DAF291902698B52D004A16A7 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
@@ -2698,6 +2694,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DABB836E2826EED000AEC9E7 /* XCRemoteSwiftPackageReference "swift-collections" */;
 			productName = OrderedCollections;
+		};
+		DAD86372285F64BF00BAAB3D /* Countly */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAD86371285F64BF00BAAB3D /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
+			productName = Countly;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
