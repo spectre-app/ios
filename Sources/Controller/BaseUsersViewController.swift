@@ -341,9 +341,9 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.borderStyle = .roundedRect
             self.secretField => \.font => Theme.current.font.callout
             self.secretField.placeholder = "Your personal secret"
-            self.secretField.authenticater = { [unowned self] keyFactory in
+            self.secretField.authenticater = { [weak self] keyFactory in
                 let secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
-                return (self.userItem.file?.authenticate( using: keyFactory )
+                return (self?.userItem.file?.authenticate( using: keyFactory )
                         ?? User( userName: keyFactory.userName ).login( using: keyFactory ))
                     .then {
                         secretEvent.end(
@@ -355,16 +355,16 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
                                 ] )
                     }
             }
-            self.secretField.authenticated = { [unowned self] result in
+            self.secretField.authenticated = { [weak self] result in
                 do {
                     let user = try result.get()
-                    if let avatar = self.avatar {
+                    if let avatar = self?.avatar {
                         user.avatar = avatar
                     }
 
                     Feedback.shared.play( .trigger )
-                    self.userEvent?.end( [ "result": result.name, "type": "secret" ] )
-                    self.viewController?.login( user: user )
+                    self?.userEvent?.end( [ "result": result.name, "type": "secret" ] )
+                    self?.viewController?.login( user: user )
                 }
                 catch {
                     mperror( title: "Couldn't unlock user", error: error )
@@ -550,21 +550,21 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             else { return Promise( .failure( AppError.state( title: "Biometrics key not present" ) ) ) }
 
             return keychainKeyFactory.unlock().promising { userFile.authenticate( using: $0 ) }.then( on: .main ) {
-                [unowned self] result in
+                [weak self] result in
 
                 do {
                     let user = try result.get()
                     Feedback.shared.play( .trigger )
-                    self.biometricButton.timing?.end(
+                    self?.biometricButton.timing?.end(
                             [ "result": result.name,
                               "type": "biometric",
                               "factor": KeychainKeyFactory.factor.description,
                             ] )
-                    self.userEvent?.end( [ "result": result.name, "type": "biometric" ] )
-                    self.viewController?.login( user: user )
+                    self?.userEvent?.end( [ "result": result.name, "type": "biometric" ] )
+                    self?.viewController?.login( user: user )
                 }
                 catch {
-                    self.biometricButton.timing?.end(
+                    self?.biometricButton.timing?.end(
                             [ "result": result.name,
                               "type": "biometric",
                               "factor": KeychainKeyFactory.factor.description,
