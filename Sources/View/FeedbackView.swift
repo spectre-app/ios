@@ -79,6 +79,7 @@ class FeedbackView: BaseView, Observable, Updatable, AppConfigObserver {
         self.contactField.autocorrectionType = .no
         self.contactField.keyboardType = .emailAddress
 
+        self.starButtons.spacing = 8
         self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 1 ) } )
         self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 2 ) } )
         self.starButtons.addArrangedSubview( EffectButton( image: .icon( "star", style: .regular ) ) { [unowned self] in self.rate( 3 ) } )

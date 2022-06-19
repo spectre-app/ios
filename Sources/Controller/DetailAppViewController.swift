@@ -221,16 +221,12 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             let premiumLabel = UILabel()
             override var isSelected: Bool {
                 didSet {
-                    self.iconView.isHidden = !self.isSelected
-                    self.premiumLabel.isHidden = self.isSelected
+                    self.update()
                 }
             }
             weak var theme: Theme? = Theme.default {
                 didSet {
-                    DispatchQueue.main.perform {
-                        self.effectView => \.borderColor => self.theme?.color.secondary
-                        self.effectView => \.backgroundColor => self.theme?.color.backdrop
-                    }
+                    self.update()
                 }
             }
 
@@ -245,6 +241,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                 self.premiumLabel => \.font => Theme.current.font.callout
                 self.premiumLabel => \.textColor => Theme.current.color.body
                 self.premiumLabel.text = "🅿︎"
+                self.premiumLabel.alpha = .long
 
                 // - Hierarchy
                 self.contentView.addSubview( self.premiumLabel )
@@ -255,6 +252,23 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                     .constrain( as: .center ).activate()
                 LayoutConfiguration( view: self.iconView )
                     .constrain( as: .center ).activate()
+            }
+
+            override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+                super.traitCollectionDidChange( previousTraitCollection )
+
+                self.update()
+            }
+
+            // - Private
+
+            private func update() {
+                DispatchQueue.main.perform {
+                    self.iconView.isHidden = !self.isSelected
+                    self.premiumLabel.isHidden = self.isSelected
+                    self.effectView => \.backgroundColor => self.theme?.color.panel
+                    self.premiumLabel => \.textColor => self.theme?.color.body
+                }
             }
         }
     }
@@ -277,6 +291,11 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
 
         class Cell: EffectCell {
             let logoView = UIImageView()
+            override var isSelected: Bool {
+                didSet {
+                    self.logoView.alpha = self.isSelected ? .on : .long
+                }
+            }
             var logo: AppIcon = AppIcon.primary {
                 didSet {
                     DispatchQueue.main.perform {
