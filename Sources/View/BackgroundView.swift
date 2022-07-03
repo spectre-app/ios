@@ -77,7 +77,7 @@ class BackgroundView: BaseView, ThemeObserver {
             imageTint?.backgroundColor = ($1.newValue ?? nil).flatMap { $0.alpha == .on ? $0.with( alpha: .long ) : .clear }
         }
 
-        self.addSubview( $0 )
+        self.insertSubview( $0, at: 0 )
 
         LayoutConfiguration( view: $0 )
             .constrain( as: .topBox )
