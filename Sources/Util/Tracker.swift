@@ -255,11 +255,9 @@ class Tracker: AppConfigObserver {
         if let widget = [
             .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
         ][AppConfig.shared.environment]?.feedback.b64Decrypt() {
-            Countly.sharedInstance().submitFeedbackWidget( withID: widget, rating: UInt( rating ), comment: comment, email: contact ) {
-                if let error = $0 {
-                    wrn( "Couldn't submit feedback: %@", error )
-                }
-            }
+            Countly.sharedInstance().recordRatingWidget(
+                    withID: widget, rating: rating, email: contact, comment: comment, userCanBeContacted: contact != nil
+            )
         }
     }
 
@@ -333,7 +331,7 @@ class Tracker: AppConfigObserver {
         if self.hasCountlyStarted {
             Countly.sharedInstance().recordEvent(
                     name, segmentation: eventParameters.mapValues {
-                String( reflecting: $0 )
+                String( describing: $0 )
                     .replacingOccurrences( of: #"\b0x[A-Z0-9]+\b"#, with: "0x?", options: [ .regularExpression, .caseInsensitive ] )
             },
                     count: eventParameters["event.count"] as? UInt ?? 1,
@@ -371,6 +369,7 @@ class Tracker: AppConfigObserver {
                 countlyConfig.pushTestMode = [
                     .private: .development, .pilot: .testFlightOrAdHoc, .public: nil,
                 ][AppConfig.shared.environment] ?? .development
+                countlyConfig.customMetrics = self.identifiers.merging( self.tags )
                 Countly.sharedInstance().start( with: countlyConfig )
                 self.hasCountlyStarted = true
 
@@ -445,7 +444,7 @@ class Tracker: AppConfigObserver {
 
             let eventParameters = [ "file": file.lastPathComponent, "line": "\(line)", "function": function ]
                 .merging( parameters.compactMapValues( { $0 } ), uniquingKeysWith: { $1 } )
-            let stringParameters = eventParameters.mapValues { String( reflecting: $0 ) }
+            let stringParameters = eventParameters.mapValues { String( describing: $0 ) }
 
             // Sentry
             let sentryBreadcrumb = Breadcrumb( level: .info, category: "screen" )

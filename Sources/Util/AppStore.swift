@@ -170,6 +170,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         #endif
 
         let payment = SKMutablePayment( product: product )
+        payment.applicationUsername = Tracker.shared.identifierForOwner
         payment.paymentDiscount = promotion
         payment.quantity = quantity
 

@@ -252,6 +252,7 @@
 		DAC8C7CE27377C9200BC31BA /* SourceCodePro-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAC8C7CD27377C9200BC31BA /* SourceCodePro-ExtraLight.otf */; };
 		DAC8C7CF27377C9200BC31BA /* SourceCodePro-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = DAC8C7CD27377C9200BC31BA /* SourceCodePro-ExtraLight.otf */; };
 		DAD86373285F64BF00BAAB3D /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DAD86372285F64BF00BAAB3D /* Countly */; };
+		DAD86375285F89F100BAAB3D /* Countly in Frameworks */ = {isa = PBXBuildFile; productRef = DAD86374285F89F100BAAB3D /* Countly */; };
 		DADBD8D626DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
 		DADBD8D726DAB7E000111AC5 /* Font Awesome 6.json in Resources */ = {isa = PBXBuildFile; fileRef = DADBD8D526DAB7E000111AC5 /* Font Awesome 6.json */; };
 		DADBD9352627EFAF00314366 /* enwiki-top-30000.txt in Resources */ = {isa = PBXBuildFile; fileRef = DADBD9342627EFAE00314366 /* enwiki-top-30000.txt */; };
@@ -594,6 +595,7 @@
 				DA0E557225102EEA002B3AB1 /* libjson-c.a in Frameworks */,
 				DA0E557125102ED5002B3AB1 /* libsodium.a in Frameworks */,
 				DABB83722826F1C300AEC9E7 /* OrderedCollections in Frameworks */,
+				DAD86375285F89F100BAAB3D /* Countly in Frameworks */,
 				DA0E552B250D6F7F002B3AB1 /* AuthenticationServices.framework in Frameworks */,
 				DA5DAE8026A623F000D9EC22 /* Sentry in Frameworks */,
 			);
@@ -1127,6 +1129,7 @@
 			packageProductDependencies = (
 				DA5DAE7F26A623F000D9EC22 /* Sentry */,
 				DABB83712826F1C300AEC9E7 /* OrderedCollections */,
+				DAD86374285F89F100BAAB3D /* Countly */,
 			);
 			productName = "Spectre-AutoFill";
 			productReference = DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */;
@@ -2696,6 +2699,11 @@
 			productName = OrderedCollections;
 		};
 		DAD86372285F64BF00BAAB3D /* Countly */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAD86371285F64BF00BAAB3D /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
+			productName = Countly;
+		};
+		DAD86374285F89F100BAAB3D /* Countly */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DAD86371285F64BF00BAAB3D /* XCRemoteSwiftPackageReference "countly-sdk-ios" */;
 			productName = Countly;
