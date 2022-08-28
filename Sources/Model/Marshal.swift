@@ -306,9 +306,7 @@ class Marshal: Observable, Updatable, LeakObserver {
                 promise.then { mergeEvent.end( [ "result": $0.name, "error": $0.error ] ) }
 
                 guard let authentication = secretField.authenticate( { keyFactory in
-                    Promise( .success(
-                            (try? importingFile.authenticate( using: keyFactory ).await(),
-                             try? existingFile.authenticate( using: keyFactory ).await()) ) )
+                    importingFile.authenticate( using: keyFactory ).orNil().and( existingFile.authenticate( using: keyFactory ).orNil() )
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.",

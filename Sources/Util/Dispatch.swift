@@ -252,20 +252,20 @@ public class Promise<V>: CustomDebugStringConvertible {
     @discardableResult
     public func then(on queue: DispatchQueue? = nil, _ consumer: @escaping (Result<V, Error>) -> Void)
             -> Self {
-        self.semaphore.await {
-            if let result = self.result {
-                if let queue = queue, !queue.isActive {
-                    queue.perform { consumer( result ) }
-                }
-                else {
-                    consumer( result )
-                }
+        if let result = self.result {
+            if let queue = queue, !queue.isActive {
+                queue.perform { consumer( result ) }
             }
             else {
+                consumer( result )
+            }
+        }
+        else {
+            self.semaphore.await {
                 self.targets.append( (queue: queue, consumer: consumer) )
             }
-            return self
         }
+        return self
     }
 
     /** When this promise is finished, transform its successful result with the given block, yielding a new promise for the block's result. */
@@ -341,6 +341,19 @@ public class Promise<V>: CustomDebugStringConvertible {
                     return self
                 case .failure:
                     return other()
+            }
+        }
+    }
+
+    /** Return a new promise that finishes with a successful result of this promise or nil if this promise fails. */
+    public func orNil()
+            -> Promise<V?> {
+        self.thenPromise {
+            switch $0 {
+                case let .success(value):
+                    return value
+                case .failure:
+                    return nil
             }
         }
     }
