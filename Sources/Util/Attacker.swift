@@ -139,15 +139,15 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
     }
 
     static func permutations(string: String?) -> Decimal? {
-        guard var string = string, let dictionary = dictionary
+        guard var string = string, let vocabulary = vocabulary
         else { return nil }
 
         var stringPermutations: Decimal = 1
 
-        for word in dictionary {
+        for word in vocabulary {
             let newString = string.replacingOccurrences( of: word, with: "" )
             if newString != string {
-                stringPermutations *= Decimal( dictionary.count )
+                stringPermutations *= Decimal( vocabulary.count )
                 string = newString
             }
         }

@@ -12,10 +12,11 @@
 
 import Foundation
 
-private let cache = Cache<NSString, NSObject>( named: "Resources")
+private let cache = Cache<NSString, NSObject>( named: "Resources" )
+private let semaphore = DispatchQueue( label: "Resources", qos: .utility )
 
 private func cachedLinesList(named name: String, extension ext: String = "txt") -> [String]? {
-    if let linesList = cache[name as NSString] as? [String] {
+    if let linesList = semaphore.await(execute: { cache[name as NSString] as? [String] }) {
         return linesList
     }
 
@@ -24,7 +25,7 @@ private func cachedLinesList(named name: String, extension ext: String = "txt") 
        let listLines = String( data: listData, encoding: .utf8 )?.split( separator: "\n" ).filter( {
            !$0.isEmpty && !$0.hasPrefix( "//" )
        } ) {
-        cache[name as NSString] = listLines as NSArray
+        semaphore.await { cache[name as NSString] = listLines as NSArray }
         return listLines.map { String( $0 ) }
     }
 
@@ -33,14 +34,14 @@ private func cachedLinesList(named name: String, extension ext: String = "txt") 
 }
 
 private func cachedMap(named name: String, extension ext: String = "json") -> [String: String]? {
-    if let map = cache[name as NSString] as? [String: String] {
+    if let map = semaphore.await(execute: { cache[name as NSString] as? [String: String] }) {
         return map
     }
 
     if let mapURL = Bundle.main.url( forResource: name, withExtension: ext ),
        let mapData = try? Data( contentsOf: mapURL ),
        let map = try? JSONDecoder().decode( [ String: String].self, from: mapData ) {
-        cache[name as NSString] = map as NSObject
+        semaphore.await { cache[name as NSString] = map as NSObject }
         return map
     }
 
@@ -48,7 +49,7 @@ private func cachedMap(named name: String, extension ext: String = "json") -> [S
     return nil
 }
 
-var dictionary:     [String]? {
+var vocabulary:     [String]? {
     cachedLinesList( named: "enwiki-top-30000" )
 }
 var publicSuffixes: [String]? {
