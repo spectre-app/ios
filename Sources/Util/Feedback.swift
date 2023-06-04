@@ -1,27 +1,26 @@
-// =============================================================================
-// Created by Maarten Billemont on 2019-11-05.
-// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
-import Foundation
 import CoreHaptics
+import Foundation
 
 public class Feedback {
-    public static let `shared`: Feedback = Feedback()
+    public static let shared = Feedback()
 
     public enum Effect: Int, CaseIterable {
-        case flick, activate, trigger, error
+        /// Gesture
+        case flick
+        /// Interface action
+        case activate
+        /// Significant action
+        case trigger
+        /// Alert
+        case error
     }
 
     private var hapticEngine: CHHapticEngine?
-    private var players = [ Effect: CHHapticPatternPlayer ]()
+    private var players = [Effect: CHHapticPatternPlayer]()
 
     private init() {
         do {
@@ -31,41 +30,40 @@ public class Feedback {
             for effect in Effect.allCases {
                 switch effect {
                     case .flick:
-                        self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
-                            CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .off ),
-                                CHHapticEventParameter( parameterID: .hapticIntensity, value: .long ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
-                        ], parameters: [] ) )
+                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
+                            CHHapticEvent(eventType: .hapticTransient, parameters: [
+                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .off),
+                                CHHapticEventParameter(parameterID: .hapticIntensity, value: .long),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
+                        ], parameters: []))
 
                     case .activate:
-                        self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
-                            CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .off ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
-                        ], parameters: [] ) )
+                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
+                            CHHapticEvent(eventType: .hapticTransient, parameters: [
+                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .off),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
+                        ], parameters: []))
 
                     case .trigger:
-                        self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
-                            CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .on ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
-                        ], parameters: [] ) )
+                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
+                            CHHapticEvent(eventType: .hapticTransient, parameters: [
+                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .on),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
+                        ], parameters: []))
 
                     case .error:
-                        // TODO
-                        self.players[effect] = try hapticEngine.makePlayer( with: CHHapticPattern( events: [
-                            CHHapticEvent( eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter( parameterID: .hapticSharpness, value: .on ),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate ),
-                        ], parameters: [] ) )
+                        // TODO:
+                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
+                            CHHapticEvent(eventType: .hapticTransient, parameters: [
+                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .on),
+                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
+                        ], parameters: []))
                 }
             }
             self.hapticEngine = hapticEngine
         }
         catch {
-            wrn( "Haptics not available: %@ [>PII]", error.localizedDescription )
-            pii( "[>] Error: %@", error )
+            wrn("Haptics not available.", data: error)
 
             self.hapticEngine = nil
             self.players.removeAll()
@@ -75,16 +73,15 @@ public class Feedback {
     public func play(_ effect: Effect) {
         self.hapticEngine?.start { error in
             do {
-                if let error = error {
+                if let error {
                     throw error
                 }
                 else {
-                    try self.players[effect]?.start( atTime: .immediate )
+                    try self.players[effect]?.start(atTime: .immediate)
                 }
             }
             catch {
-                err( "Couldn't play haptic: %@ [>PII]", error.localizedDescription )
-                pii( "[>] Error: %@", error )
+                err("Couldn't play haptic.", data: error)
             }
         }
     }

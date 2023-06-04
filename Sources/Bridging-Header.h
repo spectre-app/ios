@@ -10,12 +10,10 @@
 // Note: this grant does not include any rights for use of Spectre's trademarks.
 // =============================================================================
 
-#import <Foundation/Foundation.h>
+#import <CoreFoundation/CoreFoundation.h>
 #import <os/proc.h>
 
 #import "spectre-algorithm.h"
 #import "spectre-util.h"
 #import "spectre-marshal.h"
 #import "spectre-marshal-util.h"
-
-#import "UIView+Spectre.h"

@@ -1,9 +1,9 @@
-[submodule "lib/libsodium"]
-	path = lib/libsodium
-	url = https://github.com/jedisct1/libsodium.git
-[submodule "lib/libjson-c"]
-	path = lib/libjson-c
-	url = https://github.com/json-c/json-c.git
 [submodule "api"]
 	path = api
 	url = git@gitlab.com:spectre.app/api.git
+[submodule "libsodium/upstream"]
+	path = libsodium/upstream
+	url = https://github.com/jedisct1/libsodium.git
+[submodule "libjson-c/upstream"]
+	path = libjson-c/upstream
+	url = https://github.com/json-c/json-c.git

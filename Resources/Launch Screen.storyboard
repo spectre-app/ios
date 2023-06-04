@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23094" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
     <device id="retina4_7" orientation="portrait" appearance="dark"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19144"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -17,28 +16,21 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="30S-Ez-3is">
-                                <rect key="frame" x="0.0" y="333" width="375" height="1"/>
-                                <color key="backgroundColor" name="tint"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="1" id="F1E-52-XDW"/>
-                                </constraints>
-                            </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QPY-qQ-gI6">
-                                <rect key="frame" x="16" y="605" width="343" height="54"/>
+                                <rect key="frame" x="16" y="539" width="343" height="128"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Logo" translatesAutoresizingMaskIntoConstraints="NO" id="OKb-Qj-xrH">
-                                        <rect key="frame" x="155.5" y="11" width="32" height="32"/>
+                                        <rect key="frame" x="139.5" y="32" width="64" height="64"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="OKb-Qj-xrH" secondAttribute="height" id="euF-TI-u6Z"/>
-                                            <constraint firstAttribute="height" constant="32" id="iVw-js-VTO"/>
+                                            <constraint firstAttribute="height" constant="64" id="iVw-js-VTO"/>
                                         </constraints>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="OKb-Qj-xrH" firstAttribute="centerY" secondItem="QPY-qQ-gI6" secondAttribute="centerY" id="Xmp-Pr-KwU"/>
-                                    <constraint firstAttribute="height" constant="54" id="aOT-oe-c5f"/>
+                                    <constraint firstAttribute="height" constant="128" id="aOT-oe-c5f"/>
                                     <constraint firstItem="OKb-Qj-xrH" firstAttribute="centerX" secondItem="QPY-qQ-gI6" secondAttribute="centerX" id="nuf-Lg-oRG"/>
                                 </constraints>
                             </view>
@@ -47,12 +39,9 @@
                         <color key="backgroundColor" name="backdrop"/>
                         <color key="tintColor" name="tint"/>
                         <constraints>
-                            <constraint firstItem="30S-Ez-3is" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="Ayu-ud-gFY"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="QPY-qQ-gI6" secondAttribute="bottom" id="L3W-Gl-0ci"/>
-                            <constraint firstAttribute="trailing" secondItem="30S-Ez-3is" secondAttribute="trailing" id="Z3l-ud-4LP"/>
+                            <constraint firstAttribute="bottom" secondItem="QPY-qQ-gI6" secondAttribute="bottom" id="L3W-Gl-0ci"/>
                             <constraint firstItem="QPY-qQ-gI6" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" id="h51-Sm-jMB"/>
                             <constraint firstAttribute="trailingMargin" secondItem="QPY-qQ-gI6" secondAttribute="trailing" id="hGQ-5l-e3b"/>
-                            <constraint firstItem="30S-Ez-3is" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="tCG-3y-OeP"/>
                         </constraints>
                     </view>
                 </viewController>

@@ -13,21 +13,20 @@ identifier_name:
 switch_case_alignment:
   indented_cases: true
 function_parameter_count: 8
-file_length: 1000
+file_length: 1600
 type_body_length: 400
 large_tuple: 4
 cyclomatic_complexity:
   warning: 15
   ignores_case_statements: true
-function_body_length: 60
+function_body_length: 100
 trailing_comma:
   mandatory_comma: true
 nesting:
   type_level: 2
+statement_position:
+  statement_mode: uncuddled_else
 disabled_rules:
-  - statement_position
-  - closure_parameter_position
-  - comment_spacing
-  - closing_brace # https://github.com/realm/SwiftLint/issues/3686
-  - opening_brace # https://youtrack.jetbrains.com/issue/OC-21982
-  - inert_defer # https://github.com/realm/SwiftLint/issues/3687
+  - todo                # TODOs are permitted as annotated markers for future improvements.
+  - closure_parameter_position # We allow starting closure parameter lists on the next line when long or preceded by capture declarations.
+  - type_body_length    # https://github.com/realm/SwiftLint/issues/4631

@@ -1,32 +1,30 @@
-// =============================================================================
-// Created by Maarten Billemont on 2019-06-07.
-// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
 import Foundation
 
-public protocol Observable {
+public protocol Observed {
     associatedtype O: Any
     var observers: Observers<O> { get }
 }
 
 public class Observers<O> {
-    private var observers = [ WeakBox<O> ]()
+    private var observers = [WeakBox<O>]()
+    private let registration: (O) -> Void
+
+    public init(registration: @escaping (O) -> Void = { _ in }) {
+        self.registration = registration
+    }
 
     @discardableResult
     public func register(observer: O) -> O? {
-        let box = WeakBox( observer )
-        if self.observers.contains( box ) {
+        let box = WeakBox(observer)
+        if self.observers.contains(box) {
             return nil
         }
-        self.observers.append( box )
+        self.observers.append(box)
+        self.registration(observer)
         return observer
     }
 
@@ -45,8 +43,8 @@ public class Observers<O> {
     public func notify(event: (O) -> Void) -> Bool {
         var notified = false
 
-        for observer in self.observers.compactMap( { $0.value } ) {
-            event( observer )
+        for observer in self.observers.compactMap(\.value) {
+            event(observer)
             notified = true
         }
 

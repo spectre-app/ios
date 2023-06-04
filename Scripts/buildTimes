@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+cd "${BASH_SOURCE%/*}/.."
+
+(
+time xcodebuild \
+    -workspace Spectre.xcworkspace \
+    -scheme 'Spectre-iOS' \
+    -destination 'generic/platform=iOS' \
+    -configuration Development \
+    -showBuildTimingSummary \
+    OTHER_SWIFT_FLAGS='-Xfrontend -debug-time-function-bodies -Xfrontend -debug-time-expression-type-checking' \
+    clean build \
+    | grep '[0-9]ms\t' \
+    | sort -nr
+) |& less

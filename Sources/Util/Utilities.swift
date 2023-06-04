@@ -1,32 +1,33 @@
-// =============================================================================
-// Created by Maarten Billemont on 2018-04-08.
-// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
 import UIKit
 
-let productName       = Bundle.main.object( forInfoDictionaryKey: "CFBundleDisplayName" ) as? String ?? "Spectre"
-let productBuild      = Bundle.main.object( forInfoDictionaryKey: "CFBundleVersion" ) as? String ?? "0"
-let productVersion    = Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as? String ?? "0"
+let productName       = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Spectre"
+let productBuild      = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+let productVersion    = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
 let productIdentifier = Bundle.main.bundleIdentifier ?? "app.spectre"
 let productGroup      = "group.app.spectre"
-let productAppleID    = 1526402806
+let productAppleID    = 1_526_402_806
 
 @discardableResult
-func using<V>(_ value: V, _ initializer: (V) -> Void) -> V {
-    initializer( value )
+func using<V>(_ value: V, do: (inout V) -> Void) -> V {
+    var value = value
+    `do`(&value)
     return value
 }
 
+func none<V: Equatable>(if lhs: V, is rhs: V) -> V? {
+    none(if: lhs) { $0 == rhs }
+}
+
+func none<V>(if value: V, where: (V) -> Bool) -> V? {
+    `where`(value) ? nil : value
+}
+
 func scale(int value: UInt8, into: Range<Double>) -> Double {
-    scale( value: Double( value ), from: 0..<Double( UInt8.max ), into: into )
+    scale(value: Double(value), from: .zero ..< Double(UInt8.max), into: into)
 }
 
 func scale(value: Double, from: Range<Double>, into: Range<Double>) -> Double {
@@ -37,9 +38,9 @@ func scale(value: Double, from: Range<Double>, into: Range<Double>) -> Double {
 // 0 -> 0, center -> max, max -> 0
 func mirror(ratio: Int, center: Int, max: Int) -> Int {
     if ratio < center {
-        return max * ratio / center
+        max * ratio / center
     }
     else {
-        return max - max * (ratio - center) / (max - center)
+        max - max * (ratio - center) / (max - center)
     }
 }

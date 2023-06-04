@@ -1,196 +1,193 @@
-// =============================================================================
-// Created by Maarten Billemont on 2020-09-20.
-// Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
 import AuthenticationServices
+import OrderedCollections
 
-final class AutoFill {
+final actor AutoFill {
     public static let shared = AutoFill()
 
-    private let semaphore = DispatchQueue( label: "\(productName): AutoFill", qos: .utility )
+    private let semaphore = DispatchQueue(label: "\(productName): AutoFill", qos: .utility)
     private var credentials: Set<Credential> {
         didSet {
             guard oldValue != self.credentials
             else { return }
 
             ASCredentialIdentityStore.shared.getState { state in
-                self.semaphore.await { [unowned self] in
-                    // If extension is disabled credentials in the store got purged by the system: reflect that in our cache.
-                    guard state.isEnabled
-                    else {
-                        // dbg( "autofill: clearing" )
-                        ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
-                        UserDefaults.shared.removeObject( forKey: "autofill.credentials" )
-                        self.credentials.removeAll()
-                        return
-                    }
-
-                    if !state.supportsIncrementalUpdates {
-                        let allCredentials = self.credentials.flatMap { $0.identities() }
-                        // dbg( "autofill: replacing:\n%@", allCredentials )
-                        ASCredentialIdentityStore.shared.replaceCredentialIdentities( with: allCredentials ) { success, error in
-                            if !success || error != nil {
-                                mperror( title: "Cannot reset autofill credentials", details: allCredentials, error: error )
-                            }
-                        }
-                        return
-                    }
-                    else {
-                        let expiredCredentials = oldValue.subtracting( self.credentials ).flatMap { $0.identities() }
-                        if !expiredCredentials.isEmpty {
-                            // dbg( "autofill: removing:\n%@", expiredCredentials )
-                            ASCredentialIdentityStore.shared.removeCredentialIdentities( expiredCredentials ) { success, error in
-                                if !success || error != nil {
-                                    mperror( title: "Cannot purge autofill credentials", details: expiredCredentials, error: error )
-                                }
-                            }
-                        }
-
-                        let insertedCredentials = self.credentials.subtracting( oldValue ).flatMap { $0.identities() }
-                        if !insertedCredentials.isEmpty {
-                            // dbg( "autofill: inserting:\n%@", insertedCredentials )
-                            ASCredentialIdentityStore.shared.saveCredentialIdentities( insertedCredentials ) { success, error in
-                                if !success || error != nil {
-                                    mperror( title: "Cannot save autofill credentials", details: insertedCredentials, error: error )
-                                }
-                            }
-                        }
-                    }
-
-                    UserDefaults.shared.set( self.credentials.map { $0.dictionary() }, forKey: "autofill.credentials" )
+                // If extension is disabled credentials in the store got purged by the system: reflect that in our cache.
+                guard state.isEnabled
+                else {
+                    dbg("autofill: clearing")
+                    ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
+                    UserDefaults.shared.removeObject(forKey: "autofill.credentials")
+                    self.credentials.removeAll()
+                    return
                 }
+
+                if !state.supportsIncrementalUpdates {
+                    let allCredentials = self.credentials
+                    dbg("autofill: replacing: \(allCredentials.count)")
+                    ASCredentialIdentityStore.shared.replaceCredentialIdentities(allCredentials.flatMap(\.identities)) { success, error in
+                        if !success || error != nil {
+                            err("Cannot reset autofill credentials", data: allCredentials, error)
+                        }
+                    }
+                    return
+                }
+                else {
+                    let expiredCredentials = oldValue.subtracting(self.credentials)
+                    if !expiredCredentials.isEmpty {
+                        dbg("autofill: removing: \(expiredCredentials.count)")
+                        ASCredentialIdentityStore.shared
+                            .removeCredentialIdentities(expiredCredentials.flatMap(\.identities)) { success, error in
+                                if !success || error != nil {
+                                    err("Cannot purge autofill credentials", data: expiredCredentials, error)
+                                }
+                            }
+                    }
+
+                    let insertedCredentials = self.credentials.subtracting(oldValue)
+                    if !insertedCredentials.isEmpty {
+                        dbg("autofill: inserting: \(insertedCredentials.count)")
+                        ASCredentialIdentityStore.shared
+                            .saveCredentialIdentities(insertedCredentials.flatMap(\.identities)) { success, error in
+                                if !success || error != nil {
+                                    err("Cannot save autofill credentials", data: insertedCredentials, error)
+                                }
+                            }
+                    }
+                }
+
+                UserDefaults.shared.set(self.credentials.map(\.dictionary), forKey: "autofill.credentials")
             }
         }
     }
 
     init() {
-        self.credentials = Set<Credential>( UserDefaults.shared.array( forKey: "autofill.credentials" )?.compactMap( {
-            Credential( dictionary: $0 as? [String: String] )
-        } ) ?? [] )
+        self.credentials = Set(UserDefaults.shared.array(forKey: "autofill.credentials")?.compactMap {
+            Credential(dictionary: $0 as? [String: Any])
+        } ?? [])
 
-        ASCredentialIdentityStore.shared.getState { state in
-            self.semaphore.await { [unowned self] in
-                guard state.isEnabled
-                else {
-                    // dbg( "autofill: clearing" )
-                    ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
-                    UserDefaults.shared.removeObject( forKey: "autofill.credentials" )
-                    self.credentials.removeAll()
-                    return
-                }
-
-                let allCredentials = self.credentials.flatMap { $0.identities() }
-                // dbg( "autofill: replacing:\n%@", allCredentials )
-                ASCredentialIdentityStore.shared.replaceCredentialIdentities( with: allCredentials ) { success, error in
-                    if !success || error != nil {
-                        mperror( title: "Cannot reset autofill credentials", details: allCredentials, error: error )
-                    }
-                }
-            }
+        Task.detached {
+            await self.restoreCredentials()
         }
     }
 
-    public func seed<S: Sequence>(_ suppliers: S) where S.Element == CredentialSupplier {
-        self.semaphore.await { [unowned self] in
-            self.credentials = Set( suppliers.flatMap { $0.credentials ?? [] } )
+    private func restoreCredentials() async {
+        let state = await ASCredentialIdentityStore.shared.state()
+
+        guard state.isEnabled
+        else {
+            dbg("autofill: clearing")
+            UserDefaults.shared.removeObject(forKey: "autofill.credentials")
+            self.credentials.removeAll()
+            return
         }
+
+        let allCredentials = self.credentials
+        dbg("autofill: replacing: \(allCredentials.count)")
+        // swiftlint:disable:next statement_position - FIXME: https://github.com/realm/SwiftLint/issues/4632
+        do { try await ASCredentialIdentityStore.shared.replaceCredentialIdentities(allCredentials.flatMap(\.identities)) }
+        catch { err("Cannot restore autofill credentials", data: allCredentials, error) }
+    }
+
+    public func seed(_ suppliers: some Sequence<CredentialSupplier>) {
+        self.credentials = Set(suppliers.flatMap { $0.credentials ?? [] })
     }
 
     public func update(for supplier: CredentialSupplier) {
-        self.semaphore.await { [unowned self] in
-            self.credentials = self.credentials.filter { !$0.isSupplied( by: supplier ) }.union((supplier.credentials ?? []))
-        }
+        self.credentials = self.credentials.filter { !$0.isSupplied(by: supplier) }.union(supplier.credentials ?? [])
     }
 
     // MARK: - Types
 
     struct Credential: Hashable, CustomDebugStringConvertible {
+        let userRank: Int
         let userName: String
         let siteName: String
-        let variants: [String]?
+        private let variants: OrderedSet<String>
 
         var debugDescription: String {
-            "<Credential: \(self.userName) :: \(self.siteName)>"
+            "<Credential: \(self.userName) :: \(self.siteName) -> \(self.variants)>"
         }
 
-        init(supplier: CredentialSupplier, siteName: String, url: String?) {
-            self.userName = supplier.credentialOwner
+        init(supplier: CredentialSupplier, siteName: String, url: String?, domains: some Collection<String>) {
+            self.userRank = supplier.credentialOwnerRank
+            self.userName = supplier.credentialOwnerName
             self.siteName = siteName
-
-            var variants = Set<String>( [ siteName.domainName( .host ), siteName.domainName( .topPrivate ) ] )
-            if let url = url {
-                variants.formUnion( [ url, url.domainName( .host ), url.domainName( .topPrivate ) ] )
-            }
-            variants.remove( siteName )
-            self.variants = Array( variants )
+            self.variants = .init(
+                siteName.variantNames
+                    .union(url?.variantNames ?? [])
+                    .union(domains.flatMap(\.variantNames))
+                    .sorted()
+            )
         }
 
-        init?(dictionary: [String: Any?]?) {
-            guard let user = dictionary?["user"] as? String, let site = dictionary?["site"] as? String
+        init?(dictionary: [String: Any]?) {
+            guard let rank = dictionary?["rank"] as? Int, let user = dictionary?["user"] as? String,
+                  let site = dictionary?["site"] as? String
             else { return nil }
 
+            self.userRank = rank
             self.userName = user
             self.siteName = site
-            self.variants = dictionary?["variants"] as? [String]
+            self.variants = .init(dictionary?["variants"] as? [String] ?? [])
         }
 
         func isSupplied(by supplier: CredentialSupplier) -> Bool {
-            self.userName == supplier.credentialOwner
+            self.userName == supplier.credentialOwnerName
         }
 
-        func identities() -> [ASPasswordCredentialIdentity] {
-            var identities = [ ASPasswordCredentialIdentity(
-                    serviceIdentifier: ASCredentialServiceIdentifier( identifier: self.siteName, type: .domain ),
-                    user: self.userName, recordIdentifier: self.userName ) ]
-            if let variants = self.variants {
-                identities.append( contentsOf: variants.map {
-                    ASPasswordCredentialIdentity(
-                            serviceIdentifier: ASCredentialServiceIdentifier( identifier: $0, type: $0.contains( "://" ) ? .URL : .domain ),
-                            user: self.userName, recordIdentifier: self.userName )
-                } )
+        func matchesService(name: String) -> Bool {
+            name.variantNames.contains {
+                self.variants.contains($0)
             }
-            return identities
         }
 
-        func dictionary() -> [String: Any?] {
+        var identities: [ASCredentialIdentity] {
+            self.variants.map {
+                using(ASPasswordCredentialIdentity(
+                    serviceIdentifier: ASCredentialServiceIdentifier(identifier: $0, type: $0.contains("://") ? .URL : .domain),
+                    user: self.userName, recordIdentifier: self.userName
+                )) { $0.rank = self.userRank }
+            }
+        }
+
+        var dictionary: [String: Any] {
             [
+                "rank": self.userRank,
                 "user": self.userName,
                 "site": self.siteName,
-                "variants": self.variants,
+                "variants": Array(self.variants),
             ]
         }
 
         // MARK: - Hashable
 
         func hash(into hasher: inout Hasher) {
-            hasher.combine( self.userName )
-            hasher.combine( self.siteName )
-            hasher.combine( self.variants )
+            hasher.combine(self.userRank)
+            hasher.combine(self.userName)
+            hasher.combine(self.siteName)
+            hasher.combine(self.variants)
         }
 
         static func == (lhs: Credential, rhs: Credential) -> Bool {
-            lhs.userName == rhs.userName && lhs.siteName == rhs.siteName && lhs.variants == rhs.variants
+            lhs.userRank == rhs.userRank && lhs.userName == rhs.userName && lhs.siteName == rhs.siteName && lhs.variants == rhs.variants
         }
     }
 }
 
 protocol CredentialSupplier {
-    var credentialOwner: String { get }
-    var credentials:     [AutoFill.Credential]? { get }
+    var credentialOwnerName: String { get }
+    var credentialOwnerRank: Int { get }
+    var credentials:         [AutoFill.Credential]? { get }
 }
 
 extension CredentialSupplier {
     func credential(for serviceIdentifier: ASCredentialServiceIdentifier) -> AutoFill.Credential? {
         self.credentials?.first {
-            $0.identities().contains { $0.serviceIdentifier.identifier == serviceIdentifier.identifier }
+            $0.matchesService(name: serviceIdentifier.identifier)
         }
     }
 }

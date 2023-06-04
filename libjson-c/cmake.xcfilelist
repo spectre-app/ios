@@ -1,0 +1,7 @@
+$(SRCROOT)/libjson-c/upstream/CMakeLists.txt
+$(SRCROOT)/libjson-c/upstream/doc/CMakeLists.txt
+$(SRCROOT)/libjson-c/upstream/cmake/config.h.in
+$(SRCROOT)/libjson-c/upstream/cmake/json_config.h.in
+$(SRCROOT)/libjson-c/upstream/json.h.cmakein
+$(SRCROOT)/libjson-c/upstream/cmake/Config.cmake.in
+$(SRCROOT)/libjson-c/upstream/json-c.pc.in

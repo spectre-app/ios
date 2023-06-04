@@ -1,60 +1,63 @@
-// =============================================================================
-// Created by Maarten Billemont on 2021-05-20.
-// Copyright (c) 2021 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
 import Foundation
 
-private let cache = Cache<NSString, NSObject>( named: "Resources" )
-private let semaphore = DispatchQueue( label: "Resources", qos: .utility )
+class Resources {
+    static let shared = Resources()
 
-private func cachedLinesList(named name: String, extension ext: String = "txt") -> [String]? {
-    if let linesList = semaphore.await(execute: { cache[name as NSString] as? [String] }) {
-        return linesList
+    var vocabulary:     [String]? {
+        self.cachedLinesList(named: "enwiki-top-30000")
     }
 
-    if let listURL = Bundle.main.url( forResource: name, withExtension: ext ),
-       let listData = try? Data( contentsOf: listURL ),
-       let listLines = String( data: listData, encoding: .utf8 )?.split( separator: "\n" ).filter( {
-           !$0.isEmpty && !$0.hasPrefix( "//" )
-       } ) {
-        semaphore.await { cache[name as NSString] = listLines as NSArray }
-        return listLines.map { String( $0 ) }
+    var publicSuffixes: [String]? {
+        self.cachedLinesList(named: "public-suffix-list")
     }
 
-    wrn( "Couldn't load resource for: %@", name )
-    return nil
-}
-
-private func cachedMap(named name: String, extension ext: String = "json") -> [String: String]? {
-    if let map = semaphore.await(execute: { cache[name as NSString] as? [String: String] }) {
-        return map
+    var countryCode3to2: [String: String]? {
+        self.cachedMap(named: "country-codes")
     }
 
-    if let mapURL = Bundle.main.url( forResource: name, withExtension: ext ),
-       let mapData = try? Data( contentsOf: mapURL ),
-       let map = try? JSONDecoder().decode( [ String: String].self, from: mapData ) {
-        semaphore.await { cache[name as NSString] = map as NSObject }
-        return map
+    private let cache = SingleLockBox(value: Cache<NSString, NSObject>(named: "Resources"))
+
+    private init() {}
+
+    private func cachedLinesList(named name: String, extension ext: String = "txt") -> [String]? {
+        self.cache.use { cache in
+            if let linesList = cache[name as NSString] as? [String] {
+                return linesList
+            }
+
+            if let listURL = Bundle.main.url(forResource: name, withExtension: ext),
+               let listData = try? Data(contentsOf: listURL),
+               let listLines = String(data: listData, encoding: .utf8)?.split(separator: "\n").filter({
+                   !$0.isEmpty && !$0.hasPrefix("//")
+               }) {
+                cache[name as NSString] = listLines as NSArray
+                return listLines.map { String($0) }
+            }
+
+            wrn("Couldn't load resource for: \(name)")
+            return nil
+        }
     }
 
-    wrn( "Couldn't load resource for: %@", name )
-    return nil
-}
+    private func cachedMap(named name: String, extension ext: String = "json") -> [String: String]? {
+        self.cache.use { cache in
+            if let map = cache[name as NSString] as? [String: String] {
+                return map
+            }
 
-var vocabulary:     [String]? {
-    cachedLinesList( named: "enwiki-top-30000" )
-}
-var publicSuffixes: [String]? {
-    cachedLinesList( named: "public-suffix-list" )
-}
-var countryCode3to2: [String: String]? {
-    cachedMap( named: "country-codes" )
+            if let mapURL = Bundle.main.url(forResource: name, withExtension: ext),
+               let mapData = try? Data(contentsOf: mapURL),
+               let map = try? JSONDecoder().decode([String: String].self, from: mapData) {
+                cache[name as NSString] = map as NSObject
+                return map
+            }
+
+            wrn("Couldn't load resource for: \(name)")
+            return nil
+        }
+    }
 }

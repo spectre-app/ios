@@ -1,77 +1,72 @@
-// =============================================================================
-// Created by Maarten Billemont on 2020-09-11.
-// Copyright (c) 2020 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
 import Foundation
+import RegexBuilder
+import SwiftUI
 
 public enum AppError: LocalizedError {
-    case cancelled
-    case `issue`(_ error: Error? = nil, title: String, details: CustomStringConvertible? = nil)
-    case `internal`(cause: String, details: CustomStringConvertible? = nil)
-    case `state`(title: String, details: CustomStringConvertible? = nil)
-    case `marshal`(SpectreMarshalError, title: String, details: CustomStringConvertible? = nil)
+    case issue(_ title: String, reason: CustomStringConvertible? = nil, suggestion: String? = nil, cause: Error? = nil)
+    case `internal`(reason: String, details: CustomStringConvertible? = nil)
+//    case `state`(title: String, details: CustomStringConvertible? = nil, suggestion: String? = nil)
+    case marshal(SpectreMarshalError, title: String, details: CustomStringConvertible? = nil)
 
     public var errorDescription: String? {
         switch self {
-            case .cancelled:
-                return "Operation Cancelled"
-            case .issue(let error, title: let title, _):
-                return [ title, error?.localizedDescription ]
-                    .compactMap( { $0 } ).joined( separator: ": " ).nonEmpty
-            case .internal( _, _ ):
-                return "Internal Inconsistency"
-            case .state(let title, _):
-                return title
-            case .marshal(let error, let title, _):
-                return [ title, error.localizedDescription ]
-                    .compactMap( { $0 } ).joined( separator: ": " ).nonEmpty
+            case let .issue(title, _, _, cause):
+                [title, cause?.localizedDescription]
+                    .compactMap { $0 }.joined(separator: ": ").nonEmpty
+            case .internal:
+                "Internal Inconsistency"
+//            case .state(let title, _, _):
+//                return title
+            case let .marshal(error, title, _):
+                [title, error.localizedDescription]
+                    .compactMap { $0 }.joined(separator: ": ").nonEmpty
         }
     }
+
     public var failureReason: String? {
         switch self {
-            case .cancelled:
-                return nil
-            case .issue(let error, _, let details):
-                return [ (error as NSError?)?.localizedFailureReason, details?.description ]
-                    .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
-            case .internal(let cause, let details):
-                return [ cause, details?.description ]
-                    .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
-            case .state(_, let details):
-                return details?.description
-            case .marshal(let error, _, let details):
-                return [ (error as NSError).localizedFailureReason, details?.description ]
-                    .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
+            case let .issue(_, reason, _, cause):
+                [reason?.description, (cause as NSError?)?.localizedFailureReason]
+                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
+            case let .internal(cause, details):
+                [cause, details?.description]
+                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
+//            case .state(_, let details, _):
+//                return details?.description
+            case let .marshal(error, _, details):
+                [(error as NSError).localizedFailureReason, details?.description]
+                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
         }
     }
+
     public var recoverySuggestion: String? {
         switch self {
-            case .issue(let error, _, _):
-                return (error as NSError?)?.localizedRecoverySuggestion
-            case .marshal(let error, _, _):
-                return (error as NSError).localizedRecoverySuggestion
+            case let .issue(_, _, suggestion, cause):
+                [suggestion, (cause as NSError?)?.localizedRecoverySuggestion]
+                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
+            case let .marshal(error, _, _):
+                (error as NSError).localizedRecoverySuggestion
+//            case .state(_, _, let suggestion):
+//                return suggestion
             default:
-                return nil
+                nil
         }
     }
 }
 
-extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ SpectreAlgorithm ]( (.first)...(.last) )
+extension SpectreAlgorithm: Strideable, CaseIterable, Identifiable, CustomStringConvertible {
+    public static let allCases = [Self](.first ... .last)
 
     public var description:          String {
-        String.valid( spectre_algorithm_short_name( self ) ) ?? "?"
+        String.valid(spectre_algorithm_short_name(self)) ?? "?"
     }
+
     public var localizedDescription: String {
-        String.valid( spectre_algorithm_long_name( self ) ) ?? "?"
+        String.valid(spectre_algorithm_long_name(self)) ?? "?"
     }
 }
 
@@ -81,10 +76,48 @@ extension SpectreCounter: Strideable, CustomStringConvertible {
     }
 }
 
-extension SpectreIdenticon: Equatable {
-    public static func == (lhs: SpectreIdenticon, rhs: SpectreIdenticon) -> Bool {
-        lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
-        lhs.accessory == rhs.accessory && lhs.color == rhs.color
+extension SpectreIdenticon: Hashable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.leftArm == rhs.leftArm &&
+            lhs.body == rhs.body &&
+            lhs.rightArm == rhs.rightArm &&
+            lhs.accessory == rhs.accessory &&
+            lhs.color == rhs.color
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(leftArm)
+        hasher.combine(body)
+        hasher.combine(rightArm)
+        hasher.combine(accessory)
+        hasher.combine(color)
+    }
+
+    public static func from(_ identicon: String, color: SpectreIdenticonColor) -> Self? {
+        let regex = Regex {
+            Capture(.anyNonNewline)
+            Capture(.anyNonNewline)
+            Capture(.anyNonNewline)
+            Capture(.anyNonNewline)
+        }
+        guard let match = try? regex.firstMatch(in: identicon)
+        else { return nil }
+
+        return match.output.1.withCString { leftArm in
+            match.output.2.withCString { body in
+                match.output.3.withCString { rightArm in
+                    match.output.4.withCString { accessory in
+                        self.init(
+                            leftArm: spectre_strdup(leftArm),
+                            body: spectre_strdup(body),
+                            rightArm: spectre_strdup(rightArm),
+                            accessory: spectre_strdup(accessory),
+                            color: color
+                        )
+                    }
+                }
+            }
+        }
     }
 
     public var isUnset: Bool {
@@ -92,373 +125,423 @@ extension SpectreIdenticon: Equatable {
     }
 
     public func encoded() -> String? {
-        self.isUnset ? nil : .valid( spectre_identicon_encode( self ), consume: true )
+        self.isUnset ? nil : .valid(spectre_identicon_encode(self), consume: true)
     }
 
     public func text() -> String? {
-        self.isUnset ? nil : [
-            String( cString: self.leftArm ),
-            String( cString: self.body ),
-            String( cString: self.rightArm ),
-            String( cString: self.accessory ),
-        ].joined()
+        self.isUnset
+            ? nil
+            : [
+                String(cString: self.leftArm),
+                String(cString: self.body),
+                String(cString: self.rightArm),
+                String(cString: self.accessory),
+            ].joined()
     }
 
-    public func attributedText() -> NSAttributedString? {
-        if self.isUnset {
-            return nil
-        }
-
-        let shadow = NSShadow()
-        shadow.shadowColor = Theme.current.color.shadow.get(forTraits: .current) // TODO: Update on theme change.
-        shadow.shadowOffset = CGSize( width: 0, height: 1 )
-        return self.text().flatMap {
-            NSAttributedString( string: $0, attributes: [
-                .foregroundColor: self.color.ui(),
-                .shadow: shadow,
-            ] )
-        }
-    }
+//    public func attributedText() -> NSAttributedString? {
+//        if self.isUnset {
+//            return nil
+//        }
+//
+//        let shadow = NSShadow()
+//        shadow.shadowColor = Theme.current.color.shadow.get(forTraits: .current) // TODO: Update on theme change.
+//        shadow.shadowOffset = CGSize( width: 0, height: 1 )
+//        return self.text().flatMap {
+//            NSAttributedString( string: $0, attributes: [
+//                .foregroundColor: self.color.ui(),
+//                .shadow: shadow,
+//            ] )
+//        }
+//    }
 }
 
+extension UnsafePointer: @unchecked @retroactive Sendable where Self.Pointee == SpectreUserKey {}
+
 extension SpectreKeyID: Hashable, CustomStringConvertible {
+    public static var unset = SpectreKeyIDUnset
+
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, lhs.elementsEqual ) } )
+        withUnsafeBytes(of: lhs.bytes) { lhs in withUnsafeBytes(of: rhs.bytes, lhs.elementsEqual) }
     }
 
     public func hash(into hasher: inout Hasher) {
-        withUnsafeBytes( of: self.bytes, { hasher.combine( bytes: $0 ) } )
+        withUnsafeBytes(of: self.bytes) { hasher.combine(bytes: $0) }
     }
 
     public var description: String {
-        withUnsafeBytes( of: self.hex, { String.valid( $0 ) ?? "-" } )
+        withUnsafeBytes(of: self.hex) { String.valid($0) ?? "-" }
     }
 }
 
 extension SpectreIdenticonColor {
-    public func ui() -> UIColor {
+    public func ui() -> Color {
         switch self {
-            case .unset:
-                return .clear
-            case .red:
-                return .red
-            case .green:
-                return .green
-            case .yellow:
-                return .yellow
-            case .blue:
-                return .blue
-            case .magenta:
-                return .magenta
-            case .cyan:
-                return .cyan
-            case .mono:
-                return .label
-            default:
-                fatalError( "Unsupported color: \(self)" )
+            case .unset: .clear
+            case .red: .red
+            case .green: .green
+            case .yellow: .yellow
+            case .blue: .blue
+            case .purple: .purple
+            case .cyan: .cyan
+            case .mono: .primary
+            default: fatalError("Unsupported color: \(self)")
         }
     }
 }
 
-extension SpectreKeyPurpose: CustomStringConvertible {
+extension SpectreKeyPurpose: CustomStringConvertible, CaseIterable, Identifiable {
+    public static let allCases: [Self] = [.authentication, .identification, .recovery]
+
     public var description: String {
         switch self {
-            case .authentication:
-                return "password"
-            case .identification:
-                return "login name"
-            case .recovery:
-                return "security answer"
-            @unknown default:
-                return ""
+            case .authentication: "password"
+            case .identification: "login name"
+            case .recovery: "security answer"
+            @unknown default: ""
         }
     }
 
     public var scope: String? {
-        .valid( spectre_purpose_scope( .authentication ) )
+        .valid(spectre_purpose_scope(.authentication))
     }
 }
 
-extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ SpectreFormat ]( (.first)...(.last) )
+extension SpectreFormat: Strideable, CaseIterable, Identifiable, CustomStringConvertible {
+    public static let allCases = [Self](.first ... .last)
 
     public var name: String? {
-        .valid( spectre_format_name( self ) )
+        .valid(spectre_format_name(self))
     }
 
     public var uti:         String? {
         switch self {
-            case .none:
-                return nil
-            case .flat:
-                return "app.spectre.user.mpsites"
-            case .JSON:
-                return "app.spectre.user.json"
-            default:
-                fatalError( "Unsupported format: \(self)" )
+            case .none: nil
+            case .flat: "app.spectre.user.mpsites"
+            case .JSON: "app.spectre.user.json"
+            default: fatalError("Unsupported format: \(self)")
         }
     }
+
     public var description: String {
         switch self {
-            case .none:
-                return "No Output"
-            case .flat:
-                return "v1 (sites)"
-            case .JSON:
-                return "v2 (json)"
-            default:
-                fatalError( "Unsupported format: \(self.rawValue)" )
+            case .none: "No Output"
+            case .flat: "v1 (sites)"
+            case .JSON: "v2 (json)"
+            default: fatalError("Unsupported format: \(self.rawValue)")
         }
     }
 
     public func `is`(url: URL) -> Bool {
-        var count      = 0
-        let extensions = UnsafeBufferPointer( start: spectre_format_extensions( self, &count ), count: count )
+        var count: size_t = .zero
+        let extensions = UnsafeBufferPointer(start: spectre_format_extensions(self, &count), count: count)
         defer {
             extensions.deallocate()
         }
 
-        return extensions.map { String.valid( $0 ) }.contains( url.pathExtension )
+        return extensions.map { String.valid($0) }.contains(url.pathExtension)
     }
 }
 
-extension SpectreResultType: CustomStringConvertible, CaseIterable {
-    public static let allCases: [SpectreResultType] = [
+extension SpectreResultType: CustomStringConvertible, CaseIterable, Identifiable {
+    public static let allCases: [Self] = [
         .templateMaximum, .templateLong, .templateMedium, .templateShort,
         .templateBasic, .templatePIN, .templateName, .templatePhrase,
         .statePersonal, .stateDevice, .deriveKey,
     ]
     static let recommendedTypes: [SpectreKeyPurpose: [SpectreResultType]] = [
-        .authentication: [ .templateMaximum, .templatePhrase, .templateLong, .templateBasic, .templatePIN ],
-        .identification: [ .templateName, .templateBasic, .templateShort ],
-        .recovery: [ .templatePhrase ],
+        .authentication: [.templateMaximum, .templatePhrase, .templateLong, .templateBasic, .templatePIN],
+        .identification: [.templateName, .templateBasic, .templateShort],
+        .recovery: [.templatePhrase],
     ]
 
     public var abbreviation:         String {
-        String.valid( spectre_type_abbreviation( self ) ) ?? "?"
+        String.valid(spectre_type_abbreviation(self)) ?? "?"
     }
+
     public var description:          String {
-        String.valid( spectre_type_short_name( self ) ) ?? "?"
+        String.valid(spectre_type_short_name(self)) ?? "?"
     }
+
     public var localizedDescription: String {
-        String.valid( spectre_type_long_name( self ) ) ?? "?"
+        String.valid(spectre_type_long_name(self)) ?? "?"
     }
 
     public var nonEmpty: Self? {
         self == .none ? nil : self
     }
 
+    public var `class`: SpectreResultClass? {
+        for `class` in SpectreResultClass.allCases
+            where self.in(class: `class`) {
+            return `class`
+        }
+
+        return nil
+    }
+
     func `in`(class: SpectreResultClass) -> Bool {
-        self.rawValue & UInt32( `class`.rawValue ) == UInt32( `class`.rawValue )
+        self.rawValue & UInt32(`class`.rawValue) == UInt32(`class`.rawValue)
     }
 
     func has(feature: SpectreResultFeature) -> Bool {
-        self.rawValue & UInt32( feature.rawValue ) == UInt32( feature.rawValue )
+        self.rawValue & UInt32(feature.rawValue) == UInt32(feature.rawValue)
+    }
+}
+
+extension SpectreResultClass: CustomStringConvertible, CaseIterable, Identifiable {
+    public static let allCases: [Self] = [
+        .template, .stateful, .derive,
+    ]
+
+    public var description: String {
+        switch self {
+            case .template: "Generated"
+            case .stateful: "Saved"
+            case .derive: "Derived"
+            default: "\(self.rawValue)"
+        }
+    }
+
+    public var id: RawValue {
+        self.rawValue
     }
 }
 
 extension UnsafeMutablePointer where Pointee == SpectreMarshalledFile {
+    public func spectre_get(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        self.pointee.data.spectre_get(path: path)
+    }
+
     public func spectre_get(path: String...) -> Bool? {
-        self.pointee.data.spectre_get( path: path )
+        self.pointee.data.spectre_get(path: path)
     }
 
     public func spectre_get(path: String...) -> Double? {
-        self.pointee.data.spectre_get( path: path )
+        self.pointee.data.spectre_get(path: path)
     }
 
     public func spectre_get(path: String...) -> String? {
-        self.pointee.data.spectre_get( path: path )
+        self.pointee.data.spectre_get(path: path)
     }
 
     public func spectre_get(path: String...) -> Date? {
-        self.pointee.data.spectre_get( path: path )
+        self.pointee.data.spectre_get(path: path)
+    }
+
+    @discardableResult
+    public func spectre_unset(path: String...) -> Bool {
+        self.pointee.data.spectre_unset(path: path)
     }
 
     @discardableResult
     public func spectre_set(_ value: Bool, path: String...) -> Bool {
-        self.pointee.data.spectre_set( value, path: path )
+        self.pointee.data.spectre_set(value, path: path)
     }
 
     @discardableResult
     public func spectre_set(_ value: Double, path: String...) -> Bool {
-        self.pointee.data.spectre_set( value, path: path )
+        self.pointee.data.spectre_set(value, path: path)
     }
 
     @discardableResult
     public func spectre_set(_ value: String?, path: String...) -> Bool {
-        self.pointee.data.spectre_set( value, path: path )
+        self.pointee.data.spectre_set(value, path: path)
     }
 
-    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
-        self.pointee.data.spectre_find( path: path )
+    @discardableResult
+    public func spectre_set(_ value: Date, path: String...) -> Bool {
+        self.pointee.data.spectre_set(value, path: path)
     }
 }
 
 extension SpectreMarshalledData {
+    public func spectre_get(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        withUnsafePointer(to: self) {
+            Optional($0).spectre_get(path: path)
+        }
+    }
+
     public func spectre_get(path: String...) -> Bool? {
-        withUnsafePointer( to: self ) {
-            Optional( $0 ).spectre_get( path: path )
+        withUnsafePointer(to: self) {
+            Optional($0).spectre_get(path: path)
         }
     }
 
     public func spectre_get(path: String...) -> Double? {
-        withUnsafePointer( to: self ) {
-            Optional( $0 ).spectre_get( path: path )
+        withUnsafePointer(to: self) {
+            Optional($0).spectre_get(path: path)
         }
     }
 
     public func spectre_get(path: String...) -> String? {
-        withUnsafePointer( to: self ) {
-            Optional( $0 ).spectre_get( path: path )
+        withUnsafePointer(to: self) {
+            Optional($0).spectre_get(path: path)
         }
     }
 
     public func spectre_get(path: String...) -> Date? {
-        withUnsafePointer( to: self ) {
-            Optional( $0 ).spectre_get( path: path )
+        withUnsafePointer(to: self) {
+            Optional($0).spectre_get(path: path)
         }
     }
 
     @discardableResult
     public mutating func spectre_set(_ value: Bool, path: String...) -> Bool {
-        withUnsafeMutablePointer( to: &self ) {
-            Optional( $0 ).spectre_set( value, path: path )
+        withUnsafeMutablePointer(to: &self) {
+            Optional($0).spectre_set(value, path: path)
         }
     }
 
     @discardableResult
     public mutating func spectre_set(_ value: Double, path: String...) -> Bool {
-        withUnsafeMutablePointer( to: &self ) {
-            Optional( $0 ).spectre_set( value, path: path )
+        withUnsafeMutablePointer(to: &self) {
+            Optional($0).spectre_set(value, path: path)
         }
     }
 
     @discardableResult
     public mutating func spectre_set(_ value: String?, path: String...) -> Bool {
-        withUnsafeMutablePointer( to: &self ) {
-            Optional( $0 ).spectre_set( value, path: path )
+        withUnsafeMutablePointer(to: &self) {
+            Optional($0).spectre_set(value, path: path)
         }
     }
 
-    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
-        withUnsafePointer( to: self ) {
-            Optional( $0 ).spectre_find( path: path )
+    @discardableResult
+    public mutating func spectre_set(_ value: Date, path: String...) -> Bool {
+        withUnsafeMutablePointer(to: &self) {
+            Optional($0).spectre_set(value, path: path)
         }
     }
 }
 
-extension Optional where Wrapped == UnsafeMutablePointer<SpectreMarshalledData> {
+extension SpectreMarshalError: @unchecked Sendable {}
+
+extension UnsafeMutablePointer<SpectreMarshalledData>? {
+    public func spectre_get(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        self.spectre_get(path: path)
+    }
+
     public func spectre_get(path: String...) -> Bool? {
-        self.spectre_get( path: path )
+        self.spectre_get(path: path)
     }
 
     public func spectre_get(path: String...) -> Double? {
-        self.spectre_get( path: path )
+        self.spectre_get(path: path)
     }
 
     public func spectre_get(path: String...) -> String? {
-        self.spectre_get( path: path )
+        self.spectre_get(path: path)
     }
 
     public func spectre_get(path: String...) -> Date? {
-        self.spectre_get( path: path )
+        self.spectre_get(path: path)
     }
 
     @discardableResult
     public func spectre_set(_ value: Bool, path: String...) -> Bool {
-        self.spectre_set( value, path: path )
+        self.spectre_set(value, path: path)
     }
 
     @discardableResult
     public func spectre_set(_ value: Double, path: String...) -> Bool {
-        self.spectre_set( value, path: path )
+        self.spectre_set(value, path: path)
     }
 
     @discardableResult
     public func spectre_set(_ value: String?, path: String...) -> Bool {
-        self.spectre_set( value, path: path )
+        self.spectre_set(value, path: path)
     }
 
-    public func spectre_find(path: String...) -> UnsafeBufferPointer<SpectreMarshalledData>? {
-        self.spectre_find( path: path )
+    @discardableResult
+    public func spectre_set(_ value: Date, path: String...) -> Bool {
+        self.spectre_set(value, path: path)
     }
 }
 
-extension Optional where Wrapped == UnsafePointer<SpectreMarshalledData> {
-    public func spectre_get(path: [String]) -> Bool? {
-        path.withCStringVaList { spectre_marshal_data_vget_bool( self, $0 ) }
-    }
-
-    public func spectre_get(path: [String]) -> Double? {
-        path.withCStringVaList { spectre_marshal_data_vget_num( self, $0 ) }
-    }
-
-    public func spectre_get(path: [String]) -> String? {
-        path.withCStringVaList { .valid( spectre_marshal_data_vget_str( self, $0 ) ) }
-    }
-
-    public func spectre_get(path: [String]) -> Date? {
-        path.withCStringVaList {
-            let time = spectre_get_timegm( spectre_marshal_data_vget_str( self, $0 ) )
-            if time == ERR {
-                return nil
-            }
-
-            return Date( timeIntervalSince1970: TimeInterval( time ) )
+extension UnsafePointer<SpectreMarshalledData>? {
+    public func spectre_get(path: [String]) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        path.withCStringVaList { spectre_marshal_data_vget(self, $0) }.flatMap {
+            UnsafeBufferPointer(start: $0.pointee.children, count: $0.pointee.children_count)
         }
     }
 
-    public func spectre_find(path: [String]) -> UnsafeBufferPointer<SpectreMarshalledData>? {
-        guard let found = path.withCStringVaList( body: { spectre_marshal_data_vfind( self, $0 ) } )
-        else { return nil }
-
-        return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )
-    }
-}
-
-extension Optional where Wrapped == UnsafeMutablePointer<SpectreMarshalledData> {
     public func spectre_get(path: [String]) -> Bool? {
-        path.withCStringVaList { spectre_marshal_data_vget_bool( self, $0 ) }
+        path.withCStringVaList { spectre_marshal_data_vget_bool(self, $0) }
     }
 
     public func spectre_get(path: [String]) -> Double? {
-        path.withCStringVaList { spectre_marshal_data_vget_num( self, $0 ) }
+        path.withCStringVaList { spectre_marshal_data_vget_num(self, $0) }
     }
 
     public func spectre_get(path: [String]) -> String? {
-        path.withCStringVaList { .valid( spectre_marshal_data_vget_str( self, $0 ) ) }
+        path.withCStringVaList { .valid(spectre_marshal_data_vget_str(self, $0)) }
     }
 
     public func spectre_get(path: [String]) -> Date? {
         path.withCStringVaList {
-            let time = spectre_get_timegm( spectre_marshal_data_vget_str( self, $0 ) )
+            let time = spectre_get_timegm(spectre_marshal_data_vget_str(self, $0))
             if time == ERR {
                 return nil
             }
 
-            return Date( timeIntervalSince1970: TimeInterval( time ) )
+            return Date(timeIntervalSince1970: TimeInterval(time))
+        }
+    }
+}
+
+extension UnsafeMutablePointer<SpectreMarshalledData>? {
+    public func spectre_get(path: [String]) -> UnsafeBufferPointer<SpectreMarshalledData>? {
+        path.withCStringVaList { spectre_marshal_data_vget(self, $0) }.flatMap {
+            UnsafeBufferPointer(start: $0.pointee.children, count: $0.pointee.children_count)
+        }
+    }
+
+    public func spectre_get(path: [String]) -> Bool? {
+        path.withCStringVaList { spectre_marshal_data_vget_bool(self, $0) }
+    }
+
+    public func spectre_get(path: [String]) -> Double? {
+        path.withCStringVaList { spectre_marshal_data_vget_num(self, $0) }
+    }
+
+    public func spectre_get(path: [String]) -> String? {
+        path.withCStringVaList { .valid(spectre_marshal_data_vget_str(self, $0)) }
+    }
+
+    public func spectre_get(path: [String]) -> Date? {
+        path.withCStringVaList {
+            let time = spectre_get_timegm(spectre_marshal_data_vget_str(self, $0))
+            if time == ERR {
+                return nil
+            }
+
+            return Date(timeIntervalSince1970: TimeInterval(time))
         }
     }
 
     @discardableResult
-    public func spectre_set(_ value: Bool, path: [String]) -> Bool {
-        path.withCStringVaList { spectre_marshal_data_vset_bool( value, self, $0 ) }
+    func spectre_unset(path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_null(self, $0) }
+    }
+
+    @discardableResult
+    func spectre_set(_ value: Bool, path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_bool(value, self, $0) }
     }
 
     @discardableResult
     public func spectre_set(_ value: Double, path: [String]) -> Bool {
-        path.withCStringVaList { spectre_marshal_data_vset_num( value, self, $0 ) }
+        path.withCStringVaList { spectre_marshal_data_vset_num(value, self, $0) }
     }
 
     @discardableResult
     public func spectre_set(_ value: String?, path: [String]) -> Bool {
-        path.withCStringVaList { spectre_marshal_data_vset_str( value, self, $0 ) }
+        path.withCStringVaList { spectre_marshal_data_vset_str(value, self, $0) }
     }
 
-    public func spectre_find(path: [String]) -> UnsafeBufferPointer<SpectreMarshalledData>? {
-        guard let found = path.withCStringVaList( body: { spectre_marshal_data_vfind( self, $0 ) } )
-        else { return nil }
-
-        return UnsafeBufferPointer( start: found.pointee.children, count: found.pointee.children_count )
+    @discardableResult
+    public func spectre_set(_ value: Date, path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_str(spectre_set_timegm(time_t(value.timeIntervalSince1970)), self, $0) }
     }
 }

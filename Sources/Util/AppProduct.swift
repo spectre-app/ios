@@ -1,262 +1,253 @@
-// =============================================================================
-// Created by Maarten Billemont on 2019-07-18.
-// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
-import UIKit
 import StoreKit
+import UIKit
 
-enum InAppFeature: String, CaseIterable {
-    static let observers = Observers<InAppFeatureObserver>()
+enum AppFeature: String, CaseIterable {
+    case notifications, diagnostics, offline, handoff, style, icons, incognito, sharing
+    case biometrics, autofill, logins, answers, strength
 
-    case answers, logins, biometrics, premium
+    /// Can the user access this feature's capabilities?
+    var isEnabled: Bool {
+        if self.isPurchaseNeeded {
+            return false
+        }
+
+        switch self {
+            case .notifications: return AppConfig.shared.notifications
+            case .diagnostics: return AppConfig.shared.diagnostics && !Self.offline.isEnabled
+            case .offline: return AppConfig.shared.offline
+            case .handoff: return AppConfig.shared.allowHandoff && !Self.offline.isEnabled
+            case .style: return true
+            case .icons: return true
+            case .incognito: return true
+            case .sharing: return true
+            case .biometrics: return true
+            case .autofill: return true
+            case .logins: return true
+            case .answers: return true
+            case .strength: return true
+        }
+    }
+
+    /// Does the user need to make a purchase in order to unlock this feature's capabilities?
+    var isPurchaseNeeded: Bool {
+        switch self {
+            case .notifications: false
+            case .diagnostics: false
+            case .offline: false
+            case .handoff: !StoreFeature.integrations.isEnabled
+            case .style: !StoreFeature.themes.isEnabled
+            case .icons: !StoreFeature.themes.isEnabled
+            case .incognito: false
+            case .sharing: !StoreFeature.integrations.isEnabled
+            case .biometrics: !StoreFeature.biometrics.isEnabled
+            case .autofill: !StoreFeature.autofill.isEnabled
+            case .logins: !StoreFeature.logins.isEnabled
+            case .answers: !StoreFeature.answers.isEnabled
+            case .strength: !StoreFeature.strength.isEnabled
+        }
+    }
+}
+
+enum StoreFeature: String, CaseIterable {
+    case biometrics, autofill, logins, answers, strength, themes, integrations, support
+
+    var enabled: UserDefault<Bool> {
+        AppConfig.for(self.rawValue)
+    }
 
     var isEnabled: Bool {
-        UserDefaults.shared.bool( forKey: self.rawValue )
+        self.enabled.wrappedValue
     }
 
     func enable(_ enabled: Bool) {
-        UserDefaults.shared.set( enabled, forKey: self.rawValue )
-        InAppFeature.observers.notify { $0.didChange( feature: self ) }
+        if enabled != self.isEnabled {
+            dbg("Feature \(self.rawValue) -> \(enabled)")
+            self.enabled.wrappedValue = enabled
+        }
     }
 }
 
-enum InAppSubscription: String, CaseIterable {
-    case premium = "20670397"
+enum StoreSubscription: String, CaseIterable {
+    case premium
+
+    var enabled: UserDefault<Bool> {
+        AppConfig.for(self.rawValue)
+    }
+
+    var isEnabled: Bool {
+        self.enabled.wrappedValue
+    }
+
+    func enable(_ enabled: Bool) {
+        if enabled != self.isEnabled {
+            dbg("Subscription \(self.rawValue) -> \(enabled)")
+            self.enabled.wrappedValue = enabled
+        }
+    }
 
     var subscriptionGroupIdentifier: String {
-        self.rawValue
+        [
+            .premium: "20670397",
+        ][self] ?? ""
     }
 }
 
-enum InAppProduct: String, CaseIterable {
+enum StoreProduct: String, CaseIterable {
     case premiumAnnual         = "app.spectre.premium.annual"
     case premiumMonthly        = "app.spectre.premium.monthly"
     case premiumMasterPassword = "app.spectre.premium.masterpassword" // swiftlint:disable:this inclusive_language
     case legacyMasterPassword  = "app.spectre.legacy.masterpassword" // swiftlint:disable:this inclusive_language
 
-    static func find(_ productIdentifier: String) -> InAppProduct? {
-        self.allCases.first( where: { $0.productIdentifier == productIdentifier } )
+    static func find(_ productIdentifier: String) -> StoreProduct? {
+        self.allCases.first(where: { $0.productIdentifier == productIdentifier })
     }
 
     var productIdentifier: String {
         self.rawValue
     }
+
     var isPublic:          Bool {
-        [ InAppProduct.premiumAnnual,
-          InAppProduct.premiumMonthly,
-        ].contains( self )
+        [
+            StoreProduct.premiumAnnual,
+            StoreProduct.premiumMonthly,
+        ].contains(self)
     }
+
     var isInStore:         Bool {
-        ![ InAppProduct.legacyMasterPassword,
-        ].contains( self )
+        ![
+            StoreProduct.legacyMasterPassword,
+        ].contains(self)
     }
-    var features:          [InAppFeature] {
-        [ .premiumAnnual: [ .answers, .logins, .biometrics, .premium ],
-          .premiumMonthly: [ .answers, .logins, .biometrics, .premium ],
-          .premiumMasterPassword: [ .answers, .logins, .biometrics, .premium ],
-          .legacyMasterPassword: [ .answers, .logins, .biometrics ],
+
+    var features:          [StoreFeature] {
+        [
+            .premiumAnnual: [.biometrics, .autofill, .logins, .answers, .strength, .themes, .integrations, .support],
+            .premiumMonthly: [.biometrics, .autofill, .logins, .answers, .strength, .themes, .integrations, .support],
+            .premiumMasterPassword: [.biometrics, .autofill, .logins, .answers, .strength, .themes, .integrations, .support],
+            .legacyMasterPassword: [.biometrics, .logins, .answers],
         ][self] ?? []
     }
-}
 
-extension SKProduct {
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let object = object as? SKProduct
-        else { return false }
-        if #available( iOS 14.0, * ) {
-            guard self.isFamilyShareable == object.isFamilyShareable
-            else { return false }
-        }
-
-        return self.localizedDescription == object.localizedDescription &&
-               self.localizedTitle == object.localizedTitle &&
-               self.price == object.price &&
-               self.priceLocale == object.priceLocale &&
-               self.productIdentifier == object.productIdentifier &&
-               self.isDownloadable == object.isDownloadable &&
-               self.downloadContentLengths == object.downloadContentLengths &&
-               self.contentVersion == object.contentVersion &&
-               self.downloadContentVersion == object.downloadContentVersion &&
-               self.subscriptionPeriod == object.subscriptionPeriod &&
-               self.introductoryPrice == object.introductoryPrice &&
-               self.subscriptionGroupIdentifier == object.subscriptionGroupIdentifier &&
-               self.discounts == object.discounts
-    }
-
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine( self.localizedDescription )
-        hasher.combine( self.localizedTitle )
-        hasher.combine( self.price )
-        hasher.combine( self.priceLocale )
-        hasher.combine( self.productIdentifier )
-        hasher.combine( self.isDownloadable )
-        hasher.combine( self.downloadContentLengths )
-        hasher.combine( self.contentVersion )
-        hasher.combine( self.downloadContentVersion )
-        hasher.combine( self.subscriptionPeriod )
-        hasher.combine( self.introductoryPrice )
-        hasher.combine( self.subscriptionGroupIdentifier )
-        hasher.combine( self.discounts )
-        return hasher.finalize()
-    }
-
-    func localizedPrice(quantity: Int = 1) -> String {
-        let price = self.price.doubleValue * Double( quantity )
-        return "\(number: price, locale: self.priceLocale, .currency)"
-    }
-
-    func localizedDuration(quantity: Int = 1) -> String? {
-        self.subscriptionPeriod?.localizedDescription( periods: quantity, context: self.isAutoRenewing ? .frequency : .quantity )
-    }
-
-    func localizedOffer(quantity: Int = 1) -> String {
-        if let amount = self.localizedDuration( quantity: quantity ) {
-            return "\(self.localizedPrice( quantity: quantity )) \(self.isAutoRenewing ? "/" : "for") \(amount)"
-        }
-        else {
-            return self.localizedPrice( quantity: quantity )
-        }
-    }
-
-    var isAutoRenewing: Bool {
-        self.subscriptionGroupIdentifier != nil
+    var subscription:      StoreSubscription? {
+        [
+            .premiumAnnual: .premium,
+            .premiumMonthly: .premium,
+            .premiumMasterPassword: .premium,
+        ][self]
     }
 }
 
-extension SKProductDiscount {
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let object = object as? SKProductDiscount
-        else { return false }
+@MainActor
+func updateStoreFeatures(deliver delivered: VerificationResult<StoreKit.Transaction>? = nil) async {
+    var enabledProducts = [StoreProduct]()
 
-        return self.price == object.price &&
-               self.priceLocale == object.priceLocale &&
-               self.identifier == object.identifier &&
-               self.subscriptionPeriod == object.subscriptionPeriod &&
-               self.numberOfPeriods == object.numberOfPeriods &&
-               self.paymentMode == object.paymentMode &&
-               self.type == object.type
+    // Master Password customers automatically get all legacy in-app purchases for free.
+    if AppConfig.shared.masterPasswordCustomer {
+        trc("Product is active: \(StoreProduct.legacyMasterPassword.productIdentifier)")
+        enabledProducts += [.legacyMasterPassword]
     }
-
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine( self.price )
-        hasher.combine( self.priceLocale )
-        hasher.combine( self.identifier )
-        hasher.combine( self.subscriptionPeriod )
-        hasher.combine( self.numberOfPeriods )
-        hasher.combine( self.paymentMode )
-        hasher.combine( self.type )
-        return hasher.finalize()
+    #if !PUBLIC
+    // Enable testing of the premium subscription capabilities without actually purchasing.
+    if AppConfig.shared.testingPremium {
+        trc("Product is active: \(StoreProduct.legacyMasterPassword.productIdentifier)")
+        enabledProducts += [.premiumMonthly]
     }
+    #endif
 
-    var localizedOffer: String {
-        switch self.paymentMode {
-            case .freeTrial:
-                return "Free"
-            case .payAsYouGo:
-                return "\(self.localizedPrice) / \(self.subscriptionPeriod.localizedDescription( context: .frequency ))"
-            case .payUpFront:
-                fallthrough
-            @unknown default:
-                return self.localizedPrice
+    // Handle all currently active subscriptions and non-consumables.
+    for await current in Transaction.currentEntitlements {
+        switch current {
+            case let .unverified(transaction, error):
+                // Illegal transaction.
+                err("Couldn't verify: \(transaction.productID)", data: transaction, error)
+
+            case let .verified(transaction):
+                if let expirationDate = transaction.expirationDate, expirationDate < .now {
+                    // Expired subscription.
+                    dbg("Skipping expired product: \(transaction.productID) (\(expirationDate))")
+                }
+                else if let revocationDate = transaction.revocationDate, revocationDate < .now {
+                    // Expired subscription.
+                    dbg(
+                        "Skipping revoked product: \(transaction.productID) (\(revocationDate), reason: \(String(describing: transaction.revocationReason)))"
+                    )
+                }
+                else if let product = StoreProduct.find(transaction.productID) {
+                    // Active product subscription.
+                    trc("Product is active: \(product.productIdentifier)")
+                    enabledProducts += [product]
+                }
+                else {
+                    // Active subscription for an unknown product.
+                    wrn("No product for: \(transaction.productID)")
+                }
         }
     }
+    switch delivered {
+        case .none: ()
 
-    var localizedValidity: String {
-        self.subscriptionPeriod.localizedDescription( periods: self.numberOfPeriods, context: .quantity )
+        case let .unverified(transaction, error):
+            err("Couldn't verify: \(transaction.productID)", data: transaction, error)
+
+        case let .verified(transaction):
+            // Handle the delivered consumable.
+            if transaction.productType == .consumable {
+                if transaction.revocationDate == nil {
+                    // Purchased consumable.
+                    // inf( "Consumable delivered: \(transaction.productID )
+                    // await transaction.finish()
+                }
+                else {
+                    // Refunded consumable.
+                    // inf( "Consumable refunded: \(transaction.productID )
+                    // await transaction.finish()
+                }
+            }
+            // Handle the delivered non-consumable.
+            else if enabledProducts.map(\.productIdentifier).contains(transaction.productID) {
+                // Non-consumable enabled.
+                inf("Non-consumable delivery is enabled: \(transaction.productID)")
+                await transaction.finish()
+            }
+            else {
+                err("Non-consumable delivery is unsupported: \(transaction.productID)")
+            }
     }
 
-    var localizedPrice: String {
-        let pricePeriods: Int
-        switch self.paymentMode {
-            case .freeTrial:
-                return "Free"
-            case .payAsYouGo:
-                pricePeriods = 1
-            case .payUpFront:
-                fallthrough
-            @unknown default:
-                pricePeriods = self.numberOfPeriods
-        }
-
-        let price = self.price.doubleValue * Double( pricePeriods )
-        return "\(number: price, locale: self.priceLocale, .currency)"
+    // Enable only those features and subscriptions supported by an enabled product.
+    let enabledFeatures = enabledProducts.reduce(Set<StoreFeature>()) { $0.union($1.features) }
+    for item in StoreFeature.allCases {
+        item.enable(enabledFeatures.contains(item))
     }
-}
-
-extension SKProductSubscriptionPeriod {
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let object = object as? SKProductSubscriptionPeriod
-        else { return false }
-
-        return self.numberOfUnits == object.numberOfUnits &&
-               self.unit == object.unit
+    let enabledSubscriptions = Set(enabledProducts.compactMap(\.subscription))
+    for item in StoreSubscription.allCases {
+        item.enable(enabledSubscriptions.contains(item))
     }
 
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine( self.numberOfUnits )
-        hasher.combine( self.unit )
-        return hasher.finalize()
-    }
-
-    func localizedDescription(periods: Int = 1, context: LocalizedContext) -> String {
-        let units = Decimal( self.numberOfUnits * periods )
-
-        return context == .frequency && units == 1 ? self.unit.localizedDescription( units: .nan )
-                                                   : self.unit.localizedDescription( units: units )
-    }
-
-    enum LocalizedContext {
-        case frequency, quantity
-    }
-}
-
-extension SKProduct.PeriodUnit {
-    func localizedDescription(units: Decimal) -> String {
-        switch self {
-            case .day:
-                return Period.days( units ).localizedDescription
-            case .week:
-                return Period.weeks( units ).localizedDescription
-            case .month:
-                return Period.months( units ).localizedDescription
-            case .year:
-                return Period.years( units ).localizedDescription
-            @unknown default:
-                return "\(units)  <\(self.rawValue)>"
-        }
-    }
-}
-
-extension SKPaymentTransactionState: CustomStringConvertible {
-    public var description: String {
-        switch self {
-            case .purchasing:
-                return "purchasing"
-            case .purchased:
-                return "purchased"
-            case .failed:
-                return "failed"
-            case .restored:
-                return "restored"
-            case .deferred:
-                return "deferred"
-            @unknown default:
-                return "unknown"
-        }
-    }
-}
-
-protocol InAppFeatureObserver {
-    func didChange(feature: InAppFeature)
+//            let originalPremiumPurchase =
+//                    StoreProduct.allCases.filter { $0.features.contains( .premium ) }
+//                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+//                        .sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
+//            let currentPremiumPurchase =
+//                    StoreProduct.allCases.filter { $0.features.contains( .premium ) }
+//                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+//                        .sorted( by: {
+//                            $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
+//                            $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
+//                        } ).last
+//            let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
+//            Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
+//                "answers_active": StoreFeature.answers.isEnabled,
+//                "logins_active": StoreFeature.logins.isEnabled,
+//                "biometrics_active": StoreFeature.biometrics.isEnabled,
+//                "premium_active": StoreFeature.premium.isEnabled,
+//                "premium_in_trial": currentPremiumPurchase?.subscriptionTrialPeriod ?? false,
+//                "premium_in_intro": currentPremiumPurchase?.subscriptionIntroductoryPricePeriod ?? false,
+//                "premium_months_age": originalPremiumPurchase?.originalPurchaseDate.flatMap { months( $0, Date() ) } ?? -1,
+//                "premium_months_left": currentPremiumPurchase?.subscriptionExpirationDate.flatMap { months( Date(), $0 ) } ?? -1,
+//            ] ) )
 }

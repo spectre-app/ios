@@ -1,222 +1,49 @@
-// =============================================================================
-// Created by Maarten Billemont on 2019-11-04.
-// Copyright (c) 2019 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
 import Foundation
+import SwiftUI
 
-public class AppConfig: Observable {
-    public static let shared = AppConfig()
+final class AppConfig: ObservableObject {
+    static let shared = AppConfig()
 
-    public let observers = Observers<AppConfigObserver>()
+    var isApp:       Bool
+    let isDebug:     Bool
+    var environment: AppConfiguration
 
-    public var isEnabled = true
-    public var isApp:       Bool
-    public let isDebug:     Bool
-    public var environment: AppConfiguration
-    public var runCount: Int {
-        get {
-            UserDefaults.shared.integer( forKey: #function )
-        }
-        set {
-            if newValue != self.runCount {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.runCount ) }
-            }
-        }
-    }
-    public var diagnostics: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.diagnostics {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.diagnostics ) }
-            }
-        }
-    }
-    public var memoryProfiler: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.memoryProfiler {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.memoryProfiler ) }
-            }
-        }
-    }
-    public var diagnosticsDecided: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.diagnosticsDecided {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.diagnosticsDecided ) }
-            }
-        }
-    }
-    public var notificationsDecided: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.notificationsDecided {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.notificationsDecided ) }
-            }
-        }
-    }
+    @UserDefault("runCount") var runCount: Int = .zero
+    @UserDefault("diagnostics") var diagnostics = false
+    @UserDefault("notifications") var notifications = false
+    @UserDefault("memoryProfiler") var memoryProfiler = false
+    @UserDefault("diagnosticsDecided") var diagnosticsDecided = false
+    @UserDefault("notificationsDecided") var notificationsDecided = false
+//    #if !PUBLIC
+//    @UserDefault("sandboxStore") var sandboxStore: Bool = false
+//    #endif
+    @UserDefault("appIcon") var appIcon: AppIcon = .primary
+    @UserDefault("theme") var theme: Color.Spectre.Theme = .spectre
+    @UserDefault("colorfulSites") var colorfulSites = true
+    @UserDefault("allowHandoff") var allowHandoff = true
+    @UserDefault("offline") var offline = false
+    @UserDefault("masterPasswordCustomer") var masterPasswordCustomer = false // swiftlint:disable:this inclusive_language
     #if !PUBLIC
-    public var sandboxStore: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.sandboxStore {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.sandboxStore ) }
-            }
+    @UserDefault("testingPremium") var testingPremium = false {
+        didSet {
+            Task.detached { await updateStoreFeatures() }
         }
     }
     #endif
-    public var appIcon: AppIcon {
-        get {
-            UserDefaults.shared.string( forKey: #function ).flatMap { appIcon in
-                AppIcon.allCases.first { $0.rawValue == appIcon }
-            } ?? AppIcon.primary
-        }
-        set {
-            if newValue != self.appIcon {
-                UserDefaults.shared.set( newValue.rawValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.appIcon ) }
-            }
-        }
-    }
-    public var theme: String {
-        get {
-            let theme = UserDefaults.shared.string( forKey: #function ) ?? Theme.default.path
-            if !InAppFeature.premium.isEnabled, Theme.with( path: theme )?.pattern?.isPremium ?? false {
-                return Theme.default.path
-            }
-            return theme
-        }
-        set {
-            if newValue != self.theme {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                Theme.current.parent = Theme.with( path: self.theme ) ?? .default
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.theme ) }
-            }
-        }
-    }
-    public var colorfulSites: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.colorfulSites {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.colorfulSites ) }
-            }
-        }
-    }
-    public var allowHandoff: Bool {
-        get {
-            InAppFeature.premium.isEnabled && UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.allowHandoff {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.allowHandoff ) }
-            }
-        }
-    }
-    public var offline: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.offline {
-                if self.offline {
-                    #if TARGET_APP
-                    SitePreview.linkPreview.unset()
-                    #endif
-                    URLSession.optional.unset()
-                    URLSession.required.unset()
-                }
-
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.offline ) }
-            }
-        }
-    }
-    public var masterPasswordCustomer: Bool { // swiftlint:disable:this inclusive_language
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            // swiftlint:disable:next inclusive_language
-            if newValue != self.masterPasswordCustomer {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                // swiftlint:disable:next inclusive_language
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.masterPasswordCustomer ) }
-            }
-        }
-    }
-    #if !PUBLIC
-    public var testingPremium: Bool {
-        get {
-            UserDefaults.shared.bool( forKey: #function )
-        }
-        set {
-            if newValue != self.testingPremium {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.testingPremium ) }
-            }
-        }
-    }
-    #endif
-    public var rating: Int {
-        get {
-            UserDefaults.shared.integer( forKey: #function )
-        }
-        set {
-            if newValue != self.rating {
-                UserDefaults.shared.set( newValue, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.rating ) }
-            }
-        }
-    }
-    public var reviewed: Date? {
-        get {
-            UserDefaults.shared.double( forKey: #function ).nonEmpty.flatMap {
-                Date( timeIntervalSince1970: $0 )
-            }
-        }
-        set {
-            if newValue != self.reviewed {
-                UserDefaults.shared.set( newValue?.timeIntervalSince1970, forKey: #function )
-                self.observers.notify { $0.didChange( appConfig: self, at: \AppConfig.reviewed ) }
-            }
-        }
-    }
+    @UserDefault("rating") var rating: Int = .zero
+    @UserDefault("reviewed") var reviewed: Date = .distantPast
 
     // MARK: - Life
 
     init() {
-        UserDefaults.shared.register( defaults: [
+        UserDefaults.shared.register(defaults: [
             "colorfulSites": true,
             "allowHandoff": true,
-        ] )
+        ])
 
         #if TARGET_APP
         self.isApp = true
@@ -235,18 +62,187 @@ public class AppConfig: Observable {
         #elseif PUBLIC
         self.environment = .public
         #else
-        #error( "Build should define a configuration, either PRIVATE, PILOT or PUBLIC." )
+        #error("Build should define a configuration, either PRIVATE, PILOT or PUBLIC.")
         #endif
+
         self.runCount += 1
 
-        Theme.current.parent = Theme.with( path: self.theme ) ?? .default
+        withObservationTracking {
+            if self.offline {
+                URLSession.optional.unset()
+                URLSession.required.unset()
+            }
+            if self.theme.isPremium, !AppFeature.style.isEnabled {
+                self.theme = .spectre
+            }
+        }
+        #if TARGET_APP
+        UNUserNotificationCenter.current().getNotificationSettings {
+            self.notifications = $0.authorizationStatus != .denied
+        }
+        #endif
+    }
+
+    private static var toggles = SingleLockBox(value: [String: UserDefault<Bool>]())
+
+    static func `for`(_ key: String, default: Bool = false) -> UserDefault<Bool> {
+        self.toggles.use { $0[key, defaultSet: UserDefault(wrappedValue: `default`, key)] }
     }
 }
 
-public enum AppConfiguration: String, CustomStringConvertible {
-    case `private`, `pilot`, `public`
+extension Date: @retroactive RawRepresentable {
+    public var rawValue: Int {
+        Int(self.timeIntervalSince1970)
+    }
+
+    public init?(rawValue: Int) {
+        self = Date(timeIntervalSince1970: TimeInterval(rawValue))
+    }
 }
 
-public protocol AppConfigObserver {
-    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>)
+@propertyWrapper
+@Observable
+class UserDefault<T: Equatable>: NSObject {
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T: RawRepresentable, T.RawValue == Int {
+        self.init(wrappedValue: wrappedValue, key, defaultValue: wrappedValue.rawValue) {
+            store.set($0.rawValue, forKey: key)
+        } load: {
+            T(rawValue: store.integer(forKey: key)) ?? wrappedValue
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T: RawRepresentable, T.RawValue == String {
+        self.init(wrappedValue: wrappedValue, key, defaultValue: wrappedValue.rawValue) {
+            store.set($0.rawValue, forKey: key)
+        } load: {
+            store.string(forKey: key).flatMap(T.init(rawValue:)) ?? wrappedValue
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == String {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.string(forKey: key) ?? wrappedValue
+        }
+    }
+
+    public convenience init<E: Equatable>(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [E] {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.array(forKey: key) as? [E] ?? wrappedValue
+        }
+    }
+
+    public convenience init<E: Equatable>(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [String: E] {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.dictionary(forKey: key) as? [String: E] ?? wrappedValue
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Data {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.data(forKey: key) ?? wrappedValue
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [String] {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.stringArray(forKey: key) ?? wrappedValue
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Int {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.integer(forKey: key)
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Float {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.float(forKey: key)
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Double {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.double(forKey: key)
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Bool {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.bool(forKey: key)
+        }
+    }
+
+    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == URL {
+        self.init(wrappedValue: wrappedValue, key) {
+            store.set($0, forKey: key)
+        } load: {
+            store.url(forKey: key) ?? wrappedValue
+        }
+    }
+
+    public init(
+        wrappedValue: T, _ key: String, store: UserDefaults = .shared,
+        defaultValue: Any? = nil, save: @escaping (T) -> Void, load: @escaping () -> T
+    ) {
+        self.key = key
+        self.store = store
+        self.store.register(defaults: [self.key: defaultValue ?? wrappedValue])
+        self.save = save
+        self.load = load
+        super.init()
+
+        self.store.addObserver(self, forKeyPath: self.key, context: nil)
+    }
+
+    deinit {
+        self.store.removeObserver(self, forKeyPath: self.key)
+    }
+
+    var wrappedValue: T {
+        get {
+            self.access(keyPath: \.wrappedValue)
+            return self.load()
+        }
+        set {
+            self.withMutation(keyPath: \.wrappedValue) {
+                self.save(newValue)
+            }
+        }
+    }
+
+    private let key: String
+    private let store: UserDefaults
+    private let save: (T) -> Void
+    private let load: () -> T
+
+    // swiftlint:disable:next block_based_kvo
+    override public func observeValue(
+        forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?
+    ) {
+        // trc("change to: %@: %@", keyPath ?? "", change ?? [:])
+        self.withMutation(keyPath: \.wrappedValue) {}
+    }
+}
+
+enum AppConfiguration: String, CustomStringConvertible {
+    case `private`, pilot, `public`
 }

@@ -1,48 +1,45 @@
 //
-// Created by Maarten Billemont on 2022-05-25.
-// Copyright (c) 2022 Lyndir. All rights reserved.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
-import Foundation
+import SwiftUI
 
-class LeakRegistry: LeakObserver, AppConfigObserver {
+class LeakRegistry: LeakObserver {
     static let shared = LeakRegistry()
 
     let observers = Observers<LeakObserver>()
-    private let semaphore = DispatchQueue( label: "LeakRegistry" )
-    private var members   = [ ObjectIdentifier: Registration ]()
+    var isSuspended = false
+    private let semaphore = DispatchQueue(label: "LeakRegistry")
+    private var members   = [ObjectIdentifier: Registration]()
+    private var isEnabled: Bool { UserDefaults.shared.bool(forKey: "memoryProfiler") }
 
     init() {
-        self.observers.register( observer: self )
-        AppConfig.shared.observers.register( observer: self )?.didChange( appConfig: AppConfig.shared, at: \.memoryProfiler )
+        self.observers.register(observer: self)
     }
 
     @discardableResult
     func register<O: AnyObject>(_ value: O) -> O {
         self.semaphore.sync {
-            if AppConfig.shared.memoryProfiler {
-                self.members[ObjectIdentifier( value )] = Registration( value: value )
+            if self.isEnabled {
+                self.members[ObjectIdentifier(value)] = Registration(value: value)
             }
+
             return value
         }
     }
 
     func setDebugging(_ value: AnyObject) {
         self.semaphore.sync {
-            self.members[ObjectIdentifier( value )]?.isDebugging = true
+            self.members[ObjectIdentifier(value)]?.isDebugging = true
         }
     }
 
     @discardableResult
     func unregister<O: AnyObject>(_ value: O) -> O {
         self.semaphore.sync {
-            self.members[ObjectIdentifier( value )] = nil
+            self.members[ObjectIdentifier(value)] = nil
             return value
         }
-    }
-
-    func reportViewController() -> UIViewController {
-        ViewController()
     }
 
     func reportLeaks() -> String {
@@ -50,35 +47,38 @@ class LeakRegistry: LeakObserver, AppConfigObserver {
 
         return self.semaphore.sync {
             var report = String(format: "Monitored Objects: %d\n", self.members.count)
-            report += String(format: "Memory Remaining: %0.3f Mb\n", Double(os_proc_available_memory()) / 1024 / 1024 )
+            report += String(format: "Memory Remaining: %0.3f Mb\n", Double(os_proc_available_memory()) / 1024 / 1024)
 
-            var released = [ String: [ Registration ] ]()
-            var leaked   = [ String: [ Registration ] ](), leaks = 0
+            var released = [String: [Registration]]()
+            var leaked   = [String: [Registration]](), leaks = 0
             for member in self.members.values {
                 if member.value == nil {
-                    released[member.shortType, defaultSet: []].append( member )
+                    released[member.shortType, defaultSet: []].append(member)
                 }
                 else {
-                    leaked[member.shortType, defaultSet: []].append( member )
+                    leaked[member.shortType, defaultSet: []].append(member)
                     leaks += 1
                 }
             }
 
             if leaked.isEmpty {
                 report += "\n\nNO LEAKS :-)\n"
-            } else {
+            }
+            else {
                 report += "\n\n\(leaks) LEAKED OBJECTS:\n"
                 report += "==================\n"
                 for (type, members) in leaked.sorted(by: { $0.key < $1.key }) {
-                    report += String( format: "%dx %@ %@\n", members.count, type,
-                                      String( repeating: "*", count: members.filter { $0.isDebugging }.count ) )
+                    report += String(
+                        format: "%dx %@ %@\n", members.count, type,
+                        String(repeating: "*", count: members.filter(\.isDebugging).count)
+                    )
                 }
 
                 report += "\nLEAK DETAILS:\n"
                 report += "-------------\n"
                 for (_, members) in leaked.sorted(by: { $0.key < $1.key }) {
-                    for member in members.sorted( by: { $0.registered < $1.registered } ) {
-                        report += String(format: (member.isDebugging ? "*" : "-") + " [%@] %@\n", member.detailType, member.description )
+                    for member in members.sorted(by: { $0.registered < $1.registered }) {
+                        report += String(format: (member.isDebugging ? "*" : "-") + " [%@] %@\n", member.detailType, member.description)
                     }
                 }
             }
@@ -87,22 +87,14 @@ class LeakRegistry: LeakObserver, AppConfigObserver {
                 report += "\n\nReleased Objects:\n"
                 report += "=================\n"
                 for (type, members) in released.sorted(by: { $0.key < $1.key }) {
-                    report += String(format: "%dx %@ %@\n", members.count, type,
-                                     String( repeating: "*", count: members.filter { $0.isDebugging }.count ) )
+                    report += String(
+                        format: "%dx %@ %@\n", members.count, type,
+                        String(repeating: "*", count: members.filter(\.isDebugging).count)
+                    )
                 }
             }
 
             return report
-        }
-    }
-
-    // MARK: - AppConfigObserver
-
-    func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
-        if change == \.memoryProfiler {
-            if appConfig.memoryProfiler {
-                inf( "Will start tracing memory usage." )
-            }
         }
     }
 
@@ -111,10 +103,10 @@ class LeakRegistry: LeakObserver, AppConfigObserver {
     func willReportLeaks() {}
 
     func shouldCancelOperations() {
-        AppConfig.shared.isEnabled = false
-        #if TARGET_APP
-        SitePreview.linkPreview.unset()
-        #endif
+        self.isSuspended = true
+//        #if TARGET_APP
+//        SitePreview.linkPreview.unset()
+//        #endif
         URLSession.required.unset()
         URLSession.optional.unset()
     }
@@ -134,66 +126,70 @@ class LeakRegistry: LeakObserver, AppConfigObserver {
             #else
             self.isDebugging = false
             #endif
-            self.shortType = _describe( Swift.type( of: value ), details: false )
-            self.detailType = _describe( Swift.type( of: value ), details: true )
+            self.shortType = _describe(Swift.type(of: value), details: false)
+            self.detailType = _describe(Swift.type(of: value), details: true)
             self.description = value.debugDescription
         }
     }
+}
 
-    private class ViewController: UIViewController {
-        let textView      = UITextView()
-        let refreshButton = UIButton(type: .roundedRect)
-        let cleanButton = UIButton(type: .roundedRect)
+extension EnvironmentValues {
+    var reportMemoryLeaks: () -> Void {
+        get { self[ReportMemoryLeaksKey.self] }
+        set { self[ReportMemoryLeaksKey.self] = newValue }
+    }
 
-        override func loadView() {
-            self.view = using(UIStackView( arrangedSubviews: [
-                self.textView,
-                UIStackView( arrangedSubviews: [ self.refreshButton, self.cleanButton ], distribution: .fillEqually )
-            ], axis: .vertical, spacing: 8 )) {
-                $0.isLayoutMarginsRelativeArrangement = true
+    private struct ReportMemoryLeaksKey: EnvironmentKey {
+        static let defaultValue: () -> Void = {}
+    }
+}
+
+struct LeakReporter: ViewModifier {
+    @State
+    private var isReportingMemoryLeaks = false
+
+    func body(content: Content) -> some View {
+        if self.isReportingMemoryLeaks {
+            LeaksScreen()
+        }
+        else {
+            content.environment(\.reportMemoryLeaks) { self.isReportingMemoryLeaks = true }
+        }
+    }
+
+    private struct LeaksScreen: View {
+        @State
+        private var report = LeakRegistry.shared.reportLeaks()
+        @State
+        private var background: Color = .red
+
+        var body: some View {
+            ScrollView {
+                Text(verbatim: self.report)
+                    .multilineTextAlignment(.leading)
             }
-            self.view.backgroundColor = .red
-
-            self.textView.font = UIFont.monospacedSystemFont( ofSize: UIFont.systemFontSize, weight: .medium )
-
-            self.refreshButton.setTitleColor(.black, for: .normal)
-            self.refreshButton.setTitle( "Refresh Report", for: .normal )
-            self.refreshButton.addTarget( self, action: #selector( update ), for: .primaryActionTriggered )
-            self.cleanButton.setTitleColor(.black, for: .normal)
-            self.cleanButton.setTitle( "Cancel Operations", for: .normal )
-            self.cleanButton.addTarget( self, action: #selector( clean ), for: .primaryActionTriggered )
+            .safeAreaInset(edge: .bottom) {
+                ControlGroup {
+                    Button("Refresh", action: self.update)
+                    Button("Clean", action: self.clean)
+                }
+            }
+            .background(self.background, ignoresSafeAreaEdges: .all)
         }
 
-        override func viewDidAppear(_ animated: Bool) {
-            super.viewDidAppear( animated )
+        private func update() {
+            self.background = .red
 
-            self.update()
-        }
-
-        override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
-            if event?.type == .motion, motion == .motionShake {
-                self.update()
-            }
-            else {
-                super.motionEnded( motion, with: event )
+            DispatchQueue.main.async {
+                self.report = LeakRegistry.shared.reportLeaks()
+                self.background = .green
             }
         }
 
-        @objc
-        func update() {
-            self.view.backgroundColor = .red
+        private func clean() {
+            self.background = .yellow
 
-            DispatchQueue.main.perform(deadline: .now() + .seconds(1)) {
-                self.textView.text = LeakRegistry.shared.reportLeaks()
-                self.view.backgroundColor = .green
-            }
-        }
-
-        @objc
-        func clean() {
-            self.view.backgroundColor = .yellow
-
-            OperationQueue.main.addOperation {
+            DispatchQueue.main.async {
                 LeakRegistry.shared.observers.notify { $0.shouldCancelOperations() }
                 self.update()
             }

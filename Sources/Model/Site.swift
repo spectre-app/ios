@@ -1,18 +1,12 @@
-// =============================================================================
-// Created by Maarten Billemont on 2018-03-25.
-// Copyright (c) 2018 Maarten Billemont. All rights reserved.
 //
-// This file is part of Spectre.
-// Spectre is free software. You can modify it under the terms of
-// the GNU General Public License, either version 3 or any later version.
-// See the LICENSE file for details or consult <http://www.gnu.org/licenses/>.
+// Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
-// Note: this grant does not include any rights for use of Spectre's trademarks.
-// =============================================================================
 
+import OrderedCollections
 import UIKit
 
-class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, SiteObserver, QuestionObserver {
+@Observable
+class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, QuestionObserver {
     public let observers = Observers<SiteObserver>()
 
     public weak var user:     User?
@@ -21,31 +15,34 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.algorithm ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.algorithm) }
             }
         }
     }
+
     public var counter: SpectreCounter = .default {
         didSet {
             if oldValue != self.counter {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.counter ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.counter) }
             }
         }
     }
+
     public var resultType: SpectreResultType {
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.resultType ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.resultType) }
             }
         }
     }
+
     public var loginType: SpectreResultType {
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.loginType ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.loginType) }
             }
         }
     }
@@ -54,15 +51,16 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         didSet {
             if oldValue != self.resultState {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.resultState ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.resultState) }
             }
         }
     }
+
     public var loginState: String? {
         didSet {
             if oldValue != self.loginState {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.loginState ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.loginState) }
             }
         }
     }
@@ -70,42 +68,58 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     public var url: String? {
         didSet {
             if oldValue != self.url {
-                self.preview.url = self.url
+//                self.preview.url = self.url
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.url ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.url) }
             }
         }
     }
-    public var uses: UInt32 = 0 {
+
+    public var domains: OrderedSet<String> {
+        didSet {
+            if oldValue != self.domains {
+//                self.preview.domains = self.domains
+                self.dirty = true
+                self.observers.notify { $0.didChange(site: self, at: \Site.domains) }
+            }
+        }
+    }
+
+    public var uses: UInt32 = .zero {
         didSet {
             if oldValue != self.uses {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.uses ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.uses) }
             }
         }
     }
+
     public var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
                 self.dirty = true
-                self.observers.notify { $0.didChange( site: self, at: \Site.lastUsed ) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.lastUsed) }
             }
         }
     }
-    public lazy var preview: SitePreview = SitePreview.for( self.siteName, withURL: self.url ) {
-        didSet {
-            if oldValue != self.preview {
-                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
-            }
-        }
-    }
-    public var questions = [ Question ]() {
+
+//    @ObservationIgnored
+//    public lazy var preview: SitePreview = SitePreview.for( self.siteName, withURL: self.url ) {
+//        didSet {
+//            if oldValue != self.preview {
+//                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
+//            }
+//        }
+//    }
+    public var questions = [Question]() {
         didSet {
             if oldValue != self.questions {
                 self.dirty = true
-                Set( oldValue ).subtracting( self.questions ).forEach { $0.observers.unregister( observer: self ) }
-                self.questions.forEach { question in question.observers.register( observer: self ) }
-                self.observers.notify { $0.didChange( site: self, at: \Site.questions ) }
+                for oldQuestion in oldValue where !self.questions.contains(oldQuestion) {
+                    oldQuestion.observers.unregister(observer: self)
+                }
+                self.questions.forEach { question in question.observers.register(observer: self) }
+                self.observers.notify { $0.didChange(site: self, at: \Site.questions) }
             }
         }
     }
@@ -113,6 +127,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     var description: String {
         self.siteName
     }
+
     var dirty = false {
         didSet {
             if self.dirty {
@@ -125,6 +140,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             }
         }
     }
+
     private var initializing = true {
         didSet {
             self.dirty = false
@@ -136,46 +152,27 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
     init(user: User?, siteName: String, algorithm: SpectreAlgorithm? = nil, counter: SpectreCounter? = nil,
          resultType: SpectreResultType? = nil, resultState: String? = nil,
          loginType: SpectreResultType? = nil, loginState: String? = nil,
-         url: String? = nil, uses: UInt32 = 0, lastUsed: Date? = nil, questions: [Question] = [],
+         url: String? = nil, domains: OrderedSet<String> = [], uses: UInt32 = .zero, lastUsed: Date? = nil, questions: [Question] = [],
          initialize: (Site) -> Void = { _ in }) {
         self.user = user
         self.siteName = siteName
         self.algorithm = algorithm ?? user?.algorithm ?? .current
         self.counter = counter ?? SpectreCounter.default
-        self.resultType = resultType ?? user?.defaultType ?? .defaultResult
+        self.resultType = resultType ?? user?.resultType ?? .defaultResult
         self.resultState = resultState
         self.loginType = loginType ?? .none
         self.loginState = loginState
         self.url = url
+        self.domains = domains
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
         self.questions = questions
-        LeakRegistry.shared.register( self )
+        LeakRegistry.shared.register(self)
 
         defer {
-            initialize( self )
+            initialize(self)
             self.initializing = false
         }
-    }
-
-    // MARK: Hashable
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine( self.siteName )
-    }
-
-    static func == (lhs: Site, rhs: Site) -> Bool {
-        lhs.siteName == rhs.siteName
-    }
-
-    // MARK: Comparable
-
-    public static func < (lhs: Site, rhs: Site) -> Bool {
-        if lhs.lastUsed != rhs.lastUsed {
-            return lhs.lastUsed > rhs.lastUsed
-        }
-
-        return lhs.siteName > rhs.siteName
     }
 
     // MARK: - Interface
@@ -186,39 +183,34 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         self.user?.use()
     }
 
-    #if TARGET_APP
-    public func refresh() {
-        self.preview.updateTask.request().success { [weak self] updated in
-            if updated, let self = self {
-                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
-            }
-        }.failure { [weak self] in
-            wrn("Couldn't refresh preview for %@: %@", self?.siteName ?? "[gone]", $0.localizedDescription)
-        }
-    }
-    #endif
-
     public func copy(to user: User? = nil) -> Site {
         // TODO: do we need to re-encode state?
-        let site = Site( user: user ?? self.user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
-                         resultType: self.resultType, resultState: self.resultState,
-                         loginType: self.loginType, loginState: self.loginState,
-                         url: self.url, uses: self.uses, lastUsed: self.lastUsed )
-        site.questions = self.questions.map { $0.copy( to: site ) }
+        let site = Site(
+            user: user ?? self.user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
+            resultType: self.resultType, resultState: self.resultState,
+            loginType: self.loginType, loginState: self.loginState,
+            url: self.url, domains: self.domains, uses: self.uses, lastUsed: self.lastUsed
+        )
+        site.questions = self.questions.map { $0.copy(to: site) }
         return site
     }
 
     // MARK: - SiteObserver
 
     func didChange(site: Site, at change: PartialKeyPath<Site>) {
-        if change == \Site.url, let user = self.user {
-            AutoFill.shared.update( for: user )
+        if change == \Site.siteName || change == \Site.url || change == \Site.domains, let user = self.user {
+            Task.detached { await AutoFill.shared.update(for: user) }
         }
     }
 
     // MARK: - QuestionObserver
 
-    func didChange(question: Question) {
+    func didChange(question: Question) {}
+
+    // MARK: - Credential
+
+    var credential: AutoFill.Credential? {
+        self.user.flatMap { .init(supplier: $0, siteName: self.siteName, url: self.url, domains: self.domains) }
     }
 
     // MARK: - Operand
@@ -227,30 +219,41 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                        resultType: SpectreResultType? = nil, resultParam: String? = nil,
                        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-            -> SpectreOperation? {
+        -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
-                return self.user?.result( for: name ?? self.siteName, counter: counter ?? self.counter,
-                                         keyPurpose: keyPurpose, keyContext: keyContext,
-                                         resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
-                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.user?.result(
+                    for: name ?? self.siteName, counter: counter ?? self.counter,
+                    keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                )
 
             case .identification:
-                return self.user?.result( for: name ?? self.siteName, counter: counter,
-                                         keyPurpose: keyPurpose, keyContext: keyContext,
-                                         resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.user?.result(
+                    for: name ?? self.siteName, counter: counter,
+                    keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                )
 
             case .recovery:
-                return self.user?.result( for: name ?? self.siteName, counter: counter,
-                                         keyPurpose: keyPurpose, keyContext: keyContext,
-                                         resultType: resultType ?? .templatePhrase, resultParam: resultParam,
-                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.user?.result(
+                    for: name ?? self.siteName, counter: counter,
+                    keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType ?? .templatePhrase, resultParam: resultParam,
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                )
 
             @unknown default:
-                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
+                return SpectreOperation(
+                    siteName: name ?? self.siteName, counter: counter ?? .initial, type: resultType ?? .none,
+                    param: resultParam, purpose: keyPurpose, context: keyContext,
+                    identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task:
+                    Task.detached {
+                        throw AppError.internal(reason: "Unsupported key purpose", details: keyPurpose)
+                    }
+                )
         }
     }
 
@@ -258,31 +261,87 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
                       resultType: SpectreResultType? = nil, resultParam: String,
                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
-            -> SpectreOperation? {
+        -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
-                return self.user?.state( for: name ?? self.siteName, counter: counter ?? self.counter,
-                                        keyPurpose: keyPurpose, keyContext: keyContext,
-                                        resultType: resultType ?? self.resultType, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.user?.state(
+                    for: name ?? self.siteName, counter: counter ?? self.counter,
+                    keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType ?? self.resultType, resultParam: resultParam,
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                )
 
             case .identification:
-                return self.user?.state( for: name ?? self.siteName, counter: counter,
-                                        keyPurpose: keyPurpose, keyContext: keyContext,
-                                        resultType: resultType ?? self.loginType, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.user?.state(
+                    for: name ?? self.siteName, counter: counter,
+                    keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType ?? self.loginType, resultParam: resultParam,
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                )
 
             case .recovery:
-                return self.user?.state( for: name ?? self.siteName, counter: counter,
-                                        keyPurpose: keyPurpose, keyContext: keyContext,
-                                        resultType: resultType ?? .templatePhrase, resultParam: resultParam,
-                                        algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
+                return self.user?.state(
+                    for: name ?? self.siteName, counter: counter,
+                    keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType ?? .templatePhrase, resultParam: resultParam,
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                )
 
             @unknown default:
-                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
+                return SpectreOperation(
+                    siteName: name ?? self.siteName, counter: counter ?? .initial, type: resultType ?? .none,
+                    param: resultParam, purpose: keyPurpose, context: keyContext,
+                    identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task:
+                    Task.detached {
+                        throw AppError.internal(reason: "Unsupported key purpose", details: keyPurpose)
+                    }
+                )
         }
+    }
+}
+
+extension Site: Identifiable {
+    public var id: String { self.siteName }
+}
+
+extension Site: Hashable {
+    public static func == (lhs: Site, rhs: Site) -> Bool {
+        lhs.siteName == rhs.siteName &&
+            lhs.algorithm == rhs.algorithm &&
+            lhs.counter == rhs.counter &&
+            lhs.resultType == rhs.resultType &&
+            lhs.loginType == rhs.loginType &&
+            lhs.resultState == rhs.resultState &&
+            lhs.loginState == rhs.loginState &&
+            lhs.url == rhs.url &&
+            lhs.uses == rhs.uses &&
+            lhs.lastUsed == rhs.lastUsed &&
+            lhs.questions == rhs.questions
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.siteName)
+        hasher.combine(self.algorithm)
+        hasher.combine(self.counter)
+        hasher.combine(self.resultType)
+        hasher.combine(self.loginType)
+        hasher.combine(self.resultState)
+        hasher.combine(self.loginState)
+        hasher.combine(self.url)
+        hasher.combine(self.domains)
+        hasher.combine(self.uses)
+        hasher.combine(self.lastUsed)
+        hasher.combine(self.questions)
+    }
+}
+
+extension Site: Comparable {
+    public static func < (lhs: Site, rhs: Site) -> Bool {
+        if lhs.lastUsed != rhs.lastUsed {
+            return lhs.lastUsed > rhs.lastUsed
+        }
+
+        return lhs.siteName < rhs.siteName
     }
 }
 
