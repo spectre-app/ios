@@ -12,49 +12,52 @@
 
 import Foundation
 
-private let cache = Cache<NSString, NSObject>( named: "Resources" )
-private let semaphore = DispatchQueue( label: "Resources", qos: .utility )
+actor Resources {
+    static let shared = Resources()
 
-private func cachedLinesList(named name: String, extension ext: String = "txt") -> [String]? {
-    if let linesList = semaphore.await(execute: { cache[name as NSString] as? [String] }) {
-        return linesList
+    private let cache = Cache<NSString, NSObject>( named: "Resources" )
+
+    private func cachedLinesList(named name: String, extension ext: String = "txt") -> [String]? {
+        if let linesList = self.cache[name as NSString] as? [String] {
+            return linesList
+        }
+
+        if let listURL = Bundle.main.url( forResource: name, withExtension: ext ),
+           let listData = try? Data( contentsOf: listURL ),
+           let listLines = String( data: listData, encoding: .utf8 )?.split( separator: "\n" ).filter( {
+               !$0.isEmpty && !$0.hasPrefix( "//" )
+           } ) {
+            self.cache[name as NSString] = listLines as NSArray
+            return listLines.map { String( $0 ) }
+        }
+
+        wrn( "Couldn't load resource for: %@", name )
+        return nil
     }
 
-    if let listURL = Bundle.main.url( forResource: name, withExtension: ext ),
-       let listData = try? Data( contentsOf: listURL ),
-       let listLines = String( data: listData, encoding: .utf8 )?.split( separator: "\n" ).filter( {
-           !$0.isEmpty && !$0.hasPrefix( "//" )
-       } ) {
-        semaphore.await { cache[name as NSString] = listLines as NSArray }
-        return listLines.map { String( $0 ) }
+    private func cachedMap(named name: String, extension ext: String = "json") -> [String: String]? {
+        if let map = self.cache[name as NSString] as? [String: String] {
+            return map
+        }
+
+        if let mapURL = Bundle.main.url( forResource: name, withExtension: ext ),
+           let mapData = try? Data( contentsOf: mapURL ),
+           let map = try? JSONDecoder().decode( [ String: String].self, from: mapData ) {
+            self.cache[name as NSString] = map as NSObject
+            return map
+        }
+
+        wrn( "Couldn't load resource for: %@", name )
+        return nil
     }
 
-    wrn( "Couldn't load resource for: %@", name )
-    return nil
-}
-
-private func cachedMap(named name: String, extension ext: String = "json") -> [String: String]? {
-    if let map = semaphore.await(execute: { cache[name as NSString] as? [String: String] }) {
-        return map
+    var vocabulary:     [String]? {
+        self.cachedLinesList( named: "enwiki-top-30000" )
     }
-
-    if let mapURL = Bundle.main.url( forResource: name, withExtension: ext ),
-       let mapData = try? Data( contentsOf: mapURL ),
-       let map = try? JSONDecoder().decode( [ String: String].self, from: mapData ) {
-        semaphore.await { cache[name as NSString] = map as NSObject }
-        return map
+    var publicSuffixes: [String]? {
+        self.cachedLinesList( named: "public-suffix-list" )
     }
-
-    wrn( "Couldn't load resource for: %@", name )
-    return nil
-}
-
-var vocabulary:     [String]? {
-    cachedLinesList( named: "enwiki-top-30000" )
-}
-var publicSuffixes: [String]? {
-    cachedLinesList( named: "public-suffix-list" )
-}
-var countryCode3to2: [String: String]? {
-    cachedMap( named: "country-codes" )
+    var countryCode3to2: [String: String]? {
+        self.cachedMap( named: "country-codes" )
+    }
 }

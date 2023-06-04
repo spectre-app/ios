@@ -70,7 +70,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
             SiteCell.dequeue( from: tableView, indexPath: indexPath ) { (cell: SiteCell) in
                 cell.sitesView = tableView as? SitesTableView
                 cell.result = item
-                cell.updateTask.request( now: true )
+                cell.updateTask.request()
             }
         } editor: { item in
             guard !item.isNew
@@ -97,7 +97,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     override func didMoveToWindow() {
         if self.window != nil {
-            self.updateTask.request( now: true )
+            self.updateTask.request()
         }
 
         super.didMoveToWindow()
@@ -107,7 +107,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
     var updatesRejected: Bool {
         // Updates prior to attachment may result in an incorrect initial content offset.
-        DispatchQueue.main.await { self.window == nil }
+        self.window == nil
     }
 
     lazy var updateTask = DispatchTask.update( self ) { [weak self] in
@@ -233,7 +233,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.previewEvents[indexPath] = Tracker.shared.begin( track: .subject( "sites.site", action: "menu" ) )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.sitesDataSource.item( for: indexPath )?.site.preview.color?.with( alpha: .long )
+        parameters.backgroundColor = self.sitesDataSource.item( for: indexPath )?.site.preview.color.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
 
@@ -245,7 +245,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.previewEvents[indexPath]?.end( [ "action": "none" ] )
 
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = self.sitesDataSource.item( for: indexPath )?.site.preview.color?.with( alpha: .long )
+        parameters.backgroundColor = self.sitesDataSource.item( for: indexPath )?.site.preview.color.with( alpha: .long )
         return UITargetedPreview( view: view, parameters: parameters )
     }
     #endif
@@ -702,7 +702,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         override func setSelected(_ selected: Bool, animated: Bool) {
             if self.isSelected != selected {
                 super.setSelected( selected, animated: animated )
-                self.updateTask.request( now: true )
+                self.updateTask.request()
             }
         }
 
@@ -817,13 +817,11 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
             self.nameLabel => \.font => (self.resultLabel.isSecureTextEntry ? Theme.current.font.title3 : Theme.current.font.callout)
 
-            self.site?.result( keyPurpose: self.purpose )?.token.then( on: .main ) { [weak self] in
-                do {
-                    self?.resultLabel.text = try $0.get()
-                }
-                catch {
-                    mperror( title: "Couldn't update site cell", error: error )
-                }
+            do {
+                self.resultLabel.text = try await self.site?.result( keyPurpose: self.purpose )?.task.value
+            }
+            catch {
+                mperror( title: "Couldn't update site cell", error: error )
             }
         }
     }

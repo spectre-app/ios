@@ -12,7 +12,7 @@
 
 import UIKit
 
-class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, SiteObserver, QuestionObserver {
+@Observable class Site: SpectreOperand, CustomStringConvertible, Observed, Persisting, SiteObserver, QuestionObserver {
     public let observers = Observers<SiteObserver>()
 
     public weak var user:     User?
@@ -92,18 +92,23 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
             }
         }
     }
-    public lazy var preview: SitePreview = SitePreview.for( self.siteName, withURL: self.url ) {
+    @ObservationIgnored
+    public lazy var preview: SitePreview = SitePreview.for( self.siteName, withURL: self.url ) /*{
         didSet {
             if oldValue != self.preview {
                 self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
             }
         }
-    }
+    }*/
     public var questions = [ Question ]() {
         didSet {
             if oldValue != self.questions {
                 self.dirty = true
-                Set( oldValue ).subtracting( self.questions ).forEach { $0.observers.unregister( observer: self ) }
+                oldValue.forEach { oldQuestion in
+                    if !self.questions.contains(oldQuestion) {
+                        oldQuestion.observers.unregister(observer: self)
+                    }
+                }
                 self.questions.forEach { question in question.observers.register( observer: self ) }
                 self.observers.notify { $0.didChange( site: self, at: \Site.questions ) }
             }
@@ -158,26 +163,6 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
         }
     }
 
-    // MARK: Hashable
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine( self.siteName )
-    }
-
-    static func == (lhs: Site, rhs: Site) -> Bool {
-        lhs.siteName == rhs.siteName
-    }
-
-    // MARK: Comparable
-
-    public static func < (lhs: Site, rhs: Site) -> Bool {
-        if lhs.lastUsed != rhs.lastUsed {
-            return lhs.lastUsed > rhs.lastUsed
-        }
-
-        return lhs.siteName > rhs.siteName
-    }
-
     // MARK: - Interface
 
     public func use() {
@@ -188,12 +173,14 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
 
     #if TARGET_APP
     public func refresh() {
-        self.preview.updateTask.request().success { [weak self] updated in
-            if updated, let self = self {
-                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
+        Task.detached {
+            do {
+                if try await self.preview.updateTask.request().value {
+                    self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
+                }
+            } catch {
+                wrn("Couldn't refresh preview for %@: %@", self.siteName, error.localizedDescription)
             }
-        }.failure { [weak self] in
-            wrn("Couldn't refresh preview for %@: %@", self?.siteName ?? "[gone]", $0.localizedDescription)
         }
     }
     #endif
@@ -212,7 +199,7 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
 
     func didChange(site: Site, at change: PartialKeyPath<Site>) {
         if change == \Site.url, let user = self.user {
-            AutoFill.shared.update( for: user )
+            Task.detached { await AutoFill.shared.update( for: user ) }
         }
     }
 
@@ -248,9 +235,12 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                                          algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
-                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
+                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, type: resultType ?? .none,
+                                         param: resultParam, purpose: keyPurpose, context: keyContext,
+                                         identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task:
+                                         Task.detached {
+                                             throw AppError.internal( cause: "Unsupported key purpose", details: keyPurpose )
+                                         } )
         }
     }
 
@@ -279,10 +269,57 @@ class Site: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Obser
                                         algorithm: algorithm ?? self.algorithm, operand: operand ?? self )
 
             @unknown default:
-                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, purpose: keyPurpose,
-                                         type: resultType ?? .none, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, token:
-                                         Promise( .failure( AppError.internal( cause: "Unsupported key purpose", details: keyPurpose ) ) ) )
+                return SpectreOperation( siteName: name ?? self.siteName, counter: counter ?? .initial, type: resultType ?? .none,
+                                         param: resultParam, purpose: keyPurpose, context: keyContext,
+                                         identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task:
+                                         Task.detached {
+                                             throw AppError.internal( cause: "Unsupported key purpose", details: keyPurpose )
+                                         } )
         }
+    }
+}
+
+extension Site: Identifiable {
+    public var id: String { self.siteName }
+}
+
+extension Site: Hashable {
+    public static func == (lhs: Site, rhs: Site) -> Bool {
+        lhs.siteName == rhs.siteName &&
+            lhs.algorithm == rhs.algorithm &&
+            lhs.counter == rhs.counter &&
+            lhs.resultType == rhs.resultType &&
+            lhs.loginType == rhs.loginType &&
+            lhs.resultState == rhs.resultState &&
+            lhs.loginState == rhs.loginState &&
+            lhs.url == rhs.url &&
+            lhs.uses == rhs.uses &&
+            lhs.lastUsed == rhs.lastUsed &&
+            lhs.questions == rhs.questions
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.siteName)
+        hasher.combine(self.algorithm)
+        hasher.combine(self.counter)
+        hasher.combine(self.resultType)
+        hasher.combine(self.loginType)
+        hasher.combine(self.resultState)
+        hasher.combine(self.loginState)
+        hasher.combine(self.url)
+        hasher.combine(self.uses)
+        hasher.combine(self.lastUsed)
+        hasher.combine(self.questions)
+    }
+}
+
+extension Site: Comparable {
+    public static func < (lhs: Site, rhs: Site) -> Bool {
+        if lhs.lastUsed != rhs.lastUsed {
+            return lhs.lastUsed > rhs.lastUsed
+        }
+
+        return lhs.siteName < rhs.siteName
     }
 }
 

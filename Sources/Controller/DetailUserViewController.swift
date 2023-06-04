@@ -101,7 +101,7 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class LoginResultItem: FieldItem<User> {
         init() {
             super.init( title: nil, placeholder: "enter a login name", contentType: .username,
-                        value: { try? $0.result( keyPurpose: .identification )?.token.await() },
+                        value: { try? await $0.result( keyPurpose: .identification )?.task.value },
                         update: { item, login in
                             guard let user = item.model
                             else { return }
@@ -109,13 +109,11 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                             Tracker.shared.event( track: .subject( "user", action: "login", [
                                 "type": "\(user.loginType)",
                                 "length": login.count,
-                                "entropy": Attacker.entropy( string: login ),
+                                "entropy": await Attacker.entropy( string: login ),
                             ] ) )
 
-                            user.state( keyPurpose: .identification, resultParam: login )?.token.then {
-                                do { user.loginState = try $0.get() }
-                                catch { mperror( title: "Couldn't update login name", error: error ) }
-                            }
+                            do { user.loginState = try await user.state( keyPurpose: .identification, resultParam: login )?.task.value }
+                            catch { mperror( title: "Couldn't update login name", error: error ) }
                         } )
 
             self.addBehaviour( FeatureConditionalBehaviour( feature: .logins, effect: .reveals ) )
@@ -129,8 +127,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             return view
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
         }
@@ -179,18 +177,16 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
         class Cell: EffectClassifiedCell {
             var attacker: Attacker? {
                 didSet {
-                    DispatchQueue.main.perform {
-                        if let attacker = self.attacker {
-                            self.name = """
-                                        \(number: attacker.fixed_budget + attacker.monthly_budget * 12,
-                                                decimals: 0...0, locale: .C, .currency, .abbreviated)
-                                        """
-                            self.class = "\(attacker)"
-                        }
-                        else {
-                            self.name = "Off"
-                            self.class = nil
-                        }
+                    if let attacker = self.attacker {
+                        self.name = """
+                                    \(number: attacker.fixed_budget + attacker.monthly_budget * 12,
+                                            decimals: 0...0, locale: .C, .currency, .abbreviated)
+                                    """
+                        self.class = "\(attacker)"
+                    }
+                    else {
+                        self.name = "Off"
+                        self.class = nil
                     }
                 }
             }
@@ -313,38 +309,47 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
                     let upgrade = user.algorithm.advanced( by: 1 )
                     alertController.addAction( UIAlertAction(
                             title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
-                        user.userKeyFactory?.newKey( for: upgrade ).or(
-                                UIAlertController.authenticate(
-                                        userName: user.userName, title: "Upgrade",
-                                        message: "Your personal secret is required to perform the upgrade.",
-                                        action: "Authenticate", in: viewController ) { $0.newKey( for: upgrade ) } )
-                            .success { upgradedKey in
+                        Task {
+                            do {
+                                let upgradedKey = try await user.userKeyFactory?.newKey( for: upgrade ) ???
+                                                            (try await UIAlertController.authenticate(
+                                                                    userName: user.userName, title: "Upgrade",
+                                                                    message: "Your personal secret is required to perform the upgrade.",
+                                                                    action: "Authenticate", in: viewController ) {
+                                                                try await $0.newKey( for: upgrade )
+                                                            })
                                 defer { upgradedKey.deallocate() }
                                 user.algorithm = upgradedKey.pointee.algorithm
                                 user.userKeyID = upgradedKey.pointee.keyID
                             }
-                            .failure {
-                                mperror( title: "Couldn't upgrade user algorithm", error: $0 )
+                            catch {
+                                mperror( title: "Couldn't upgrade user algorithm", error: error )
                             }
+                        }
                     } )
                 }
                 if user.algorithm > .first {
                     let downgrade = user.algorithm.advanced( by: -1 )
                     alertController.addAction( UIAlertAction(
                             title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
-                        user.userKeyFactory?.newKey( for: downgrade ).or(
-                                UIAlertController.authenticate(
-                                        userName: user.userName, title: "Downgrade",
-                                        message: "Your personal secret is required to perform the downgrade.",
-                                        action: "Authenticate", in: viewController ) { $0.newKey( for: downgrade ) } )
-                            .success { downgradedKey in
+                        Task {
+                            do {
+                                let downgradedKey = try await user.userKeyFactory?.newKey( for: downgrade ) ???
+                                                              (try await
+                                                              UIAlertController.authenticate(
+                                                                      userName: user.userName, title: "Downgrade",
+                                                                      message: "Your personal secret is required to perform the downgrade.",
+                                                                      action: "Authenticate", in: viewController ) {
+                                                                  try await $0.newKey( for: downgrade )
+                                                              })
                                 defer { downgradedKey.deallocate() }
                                 user.algorithm = downgradedKey.pointee.algorithm
                                 user.userKeyID = downgradedKey.pointee.keyID
                             }
-                            .failure {
-                                mperror( title: "Couldn't downgrade user algorithm", error: $0 )
+                            catch {
+                                mperror( title: "Couldn't downgrade user algorithm", error: error )
                             }
+                        }
                     } )
                 }
                 alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) )
@@ -352,8 +357,8 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
             } )
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             if let itemView = self.view as? LabelItemView {
                 if self.model?.algorithm == .current {
@@ -370,17 +375,22 @@ class DetailUserViewController: ItemsViewController<User>, UserObserver {
     class IdentifierItem: Item<User> {
         init() {
             super.init( title: "Private User Identifier",
-                        caption: { (try? $0.authenticatedIdentifier.await()).flatMap { "\($0)" } } )
+                        caption: { (try? await $0.authenticatedIdentifier).flatMap { "\($0)" } } )
 
             self.addBehaviour( BlockTapBehaviour { user in
-                _ = user.model.flatMap { user in
-                    user.userKeyFactory?.authenticatedIdentifier( for: user.algorithm ).promise { identifier in
-                        if let identifier = identifier {
-                            inf( "Copying private user identifier: %@, for: %@", identifier, user.userName )
-                            UIPasteboard.general.setObjects(
-                                    [ identifier as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
-                        }
+                guard let user = user.model
+                else { return }
+
+                do {
+                    let identifier = try await user.userKeyFactory?.authenticatedIdentifier( for: user.algorithm )
+                    if let identifier = identifier {
+                        inf( "Copying private user identifier: %@, for: %@", identifier, user.userName )
+                        UIPasteboard.general.setObjects(
+                                [ identifier as NSString ], localOnly: !AppConfig.shared.allowHandoff, expirationDate: nil )
                     }
+                }
+                catch {
+                    mperror( title: "Couldn't copy private user identifier.", error: error )
                 }
             } )
         }

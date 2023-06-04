@@ -12,6 +12,34 @@
 
 import Swift
 
+// TODO: Remove me when https://github.com/apple/swift/pull/36830 merges.
+infix operator ??? : NilCoalescingPrecedence
+public func ??? <T>(optional: T?, defaultValue: @autoclosure () async throws -> T) async rethrows -> T {
+    switch optional {
+        case .some(let value):
+            return value
+        case .none:
+            return try await defaultValue()
+    }
+}
+public func ??? <T>(optional: T?, defaultValue: @autoclosure () async throws -> T?) async rethrows -> T? {
+    switch optional {
+        case .some(let value):
+            return value
+        case .none:
+            return try await defaultValue()
+    }
+}
+
+public extension Optional {
+    @inlinable func flatMap<U>(_ transform: (Wrapped) async throws -> U?) async rethrows -> U? {
+        guard let value = self
+        else { return nil }
+
+        return try await transform(value)
+    }
+}
+
 extension Array {
     static func joined<E: Equatable>(separator: E? = nil, _ elements: [E]?...) -> [E] {
         if let separator = separator {
@@ -169,6 +197,12 @@ public extension RawRepresentable where Self: CustomStringConvertible, RawValue:
     }
 }
 
+public extension RawRepresentable where Self: Identifiable, RawValue: Hashable {
+    var id: Self {
+        self
+    }
+}
+
 extension Result {
     var error:       Failure? {
         guard case .failure(let error) = self
@@ -177,14 +211,7 @@ extension Result {
         return error
     }
     var isCancelled: Bool {
-        guard let error = self.error
-        else { return false }
-
-        if let error = error as? AppError, case AppError.cancelled = error {
-            return true
-        }
-
-        return false
+        self.error is CancellationError
     }
     var name:        String {
         if self.isCancelled {
@@ -198,10 +225,6 @@ extension Result {
                 return "failure"
         }
     }
-}
-
-public enum DomainNameType {
-    case host, topPrivate
 }
 
 extension String {
@@ -311,35 +334,37 @@ extension String {
         return self
     }
 
-    public func domainName(_ mode: DomainNameType = .host) -> String {
-        let hostname = self.replacingOccurrences( of: "^[^/]*://", with: "", options: .regularExpression )
-                           .replacingOccurrences( of: "/.*$", with: "", options: .regularExpression )
-                           .replacingOccurrences( of: "^[^:]*:", with: "", options: .regularExpression )
-                           .replacingOccurrences( of: "^[^@]*@", with: "", options: .regularExpression )
+    public var hostName: String {
+        self.replacingOccurrences( of: "^[^/]*://", with: "", options: .regularExpression )
+            .replacingOccurrences( of: "/.*$", with: "", options: .regularExpression )
+            .replacingOccurrences( of: "^[^:]*:", with: "", options: .regularExpression )
+            .replacingOccurrences( of: "^[^@]*@", with: "", options: .regularExpression )
+    }
 
-        guard mode == .topPrivate, let publicSuffixes = publicSuffixes
-        else { return hostname }
-
-        for publicSuffix in publicSuffixes {
-            if hostname.hasSuffix( ".\(publicSuffix)" ) {
-                var privateDomain = hostname.prefix( upTo: hostname.index( hostname.endIndex, offsetBy: -publicSuffix.count - 1 ) )
-                if let lastDot = privateDomain.lastIndex( of: "." ) {
-                    privateDomain = privateDomain.suffix( from: privateDomain.index( after: lastDot ) )
+    public var privateName: String {
+        get {
+            let hostname = self.hostName
+            for publicSuffix in Task.unsafeAwait(task: { await Resources.shared.publicSuffixes }) ?? [] {
+                if hostname.hasSuffix( ".\(publicSuffix)" ) {
+                    var privateDomain = hostname.prefix( upTo: hostname.index( hostname.endIndex, offsetBy: -publicSuffix.count - 1 ) )
+                    if let lastDot = privateDomain.lastIndex( of: "." ) {
+                        privateDomain = privateDomain.suffix( from: privateDomain.index( after: lastDot ) )
+                    }
+                    return "\(privateDomain).\(publicSuffix)"
                 }
-                return "\(privateDomain).\(publicSuffix)"
             }
-        }
 
-        return hostname
+            return hostname
+        }
     }
 
     public var lastPathComponent: String {
         (self as NSString).lastPathComponent
     }
 
-    func color() -> UIColor? {
+    func color() -> UIColor {
         guard let digest = self.digest()
-        else { return nil }
+        else { return .clear }
 
         let hue        = CGFloat( scale( int: digest[0], into: 0..<1 ) )
         let saturation = CGFloat( scale( int: digest[1], into: 0.3..<1 ) )

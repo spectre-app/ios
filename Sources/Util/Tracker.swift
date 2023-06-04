@@ -45,7 +45,7 @@ class Tracker: AppConfigObserver {
     func enableNotifications(consented: Bool = true, completion: @escaping (Bool) -> Void = { _ in }) {
         UNUserNotificationCenter.current().getNotificationSettings {
             if $0.authorizationStatus == .authorized {
-                DispatchQueue.main.perform {
+                Task.detached {
                     AppConfig.shared.notificationsDecided = true
                     if self.hasCountlyStarted {
                         Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
@@ -57,7 +57,7 @@ class Tracker: AppConfigObserver {
             }
 
             UNUserNotificationCenter.current().requestAuthorization( options: [ .alert, .badge, .sound ] ) { granted, error in
-                DispatchQueue.main.perform {
+                Task.detached {
                     AppConfig.shared.notificationsDecided = true
 
                     if let error = error {
@@ -73,12 +73,12 @@ class Tracker: AppConfigObserver {
                         return
                     }
 
-                    if consented, let settingsURL = URL( string: UIApplication.openSettingsURLString ) {
+                    if consented, let settingsURL = URL( string: await UIApplication.openSettingsURLString ) {
                         if self.hasCountlyStarted {
                             Countly.sharedInstance().giveConsent( forFeature: .pushNotifications )
                         }
                         self.observers.notify { $0.didChange( tracker: self ) }
-                        UIApplication.shared.open( settingsURL )
+                        await UIApplication.shared.open( settingsURL )
                         completion( true )
                         return
                     }
@@ -135,12 +135,13 @@ class Tracker: AppConfigObserver {
         "app_premium": "\(InAppFeature.premium.isEnabled)",
     ]
 
+    @MainActor
     func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                 extensionController: UIViewController? = nil) {
+                 extensionController: UIViewController? = nil) async {
         inf( "Startup [identifiers: %@]", self.identifiers )
 
         // Breadcrumbs & errors
-        spectre_log_sink_register( { logPointer in
+        _ = await Spectre.shared.log_sink_register { logPointer in
             guard let logEvent = logPointer?.pointee, logEvent.level <= .info
             else { return false }
 
@@ -172,7 +173,7 @@ class Tracker: AppConfigObserver {
             }
 
             return true
-        } )
+        }
 
         AppConfig.shared.observers.register( observer: self )?
                  .didChange( appConfig: AppConfig.shared, at: \AppConfig.diagnostics )
@@ -191,8 +192,8 @@ class Tracker: AppConfigObserver {
     }
 
     func login(user: User) {
-        user.authenticatedIdentifier.then {
-            guard let userId = try? $0.get()
+        Task.detached {
+            guard let userId = try? await user.authenticatedIdentifier
             else {
                 wrn( "Login [user: unknown]" )
                 return
@@ -504,7 +505,9 @@ class Tracker: AppConfigObserver {
             guard !self.ended
             else { return }
 
-            trc( file: file, line: line, function: function, dso: dso, "> %@ X%@", self.tracking.subject, self.tracking.action )
+            Tracker.shared.event( file: file, line: line, function: function, dso: dso,
+                                  named: "\(self.tracking.subject) !\(self.tracking.action)",
+                                  self.tracking.parameters.merging( [ "result": "cancelled" ] ), timing: self )
             self.ended = true
         }
     }

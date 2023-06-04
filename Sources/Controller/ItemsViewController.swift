@@ -87,7 +87,9 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
             .constrain { $1.heightAnchor.constraint( equalToConstant: 0 ).with( priority: .fittingSizeLevel ) }
             .activate()
 
-        self.items.forEach { $0.view.didLoad() }
+        for item in self.items {
+            item.view.didLoad()
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -126,8 +128,8 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
 
     // MARK: - Updatable
 
-    override func doUpdate() {
-        super.doUpdate()
+    override func doUpdate() async {
+        await super.doUpdate()
 
         if let color = self.color {
             self.backgroundView.mode = .custom( color: { [unowned self] in
@@ -143,6 +145,8 @@ class ItemsViewController<M>: BaseViewController, ThemeObserver {
         self.backgroundView.imageColor = self.color
         self.imageSpacer.isHidden = self.image == nil
 
-        self.items.forEach { $0.updateTask.request( now: true ) }
+        for item in self.items {
+            try? await item.updateTask.requestNow()
+        }
     }
 }

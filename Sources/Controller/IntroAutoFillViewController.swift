@@ -151,14 +151,14 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
 
     // MARK: - Updatable
 
-    override func doUpdate() {
-        super.doUpdate()
+    override func doUpdate() async {
+        await super.doUpdate()
 
         if self.autoFillState?.isEnabled ?? false && self.model.autofill {
             self.hide {
                 AlertController( title: "AutoFill Enabled",
                                  message: "\(self.model.userName)'s sites are now available from AutoFill." )
-                    .show()
+                    .show( in: self.view )
             }
         }
     }
@@ -186,7 +186,7 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
     class LoginResultItem: FieldItem<User> {
         init() {
             super.init( title: nil, placeholder: "enter a login name", contentType: .username,
-                        value: { try? $0.result( keyPurpose: .identification )?.token.await() },
+                        value: { try? await $0.result( keyPurpose: .identification )?.task.value },
                         update: { item, login in
                             guard let user = item.model
                             else { return }
@@ -194,13 +194,11 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
                             Tracker.shared.event( track: .subject( "autofill_setup", action: "login", [
                                 "type": "\(user.loginType)",
                                 "length": login.count,
-                                "entropy": Attacker.entropy( string: login ),
+                                "entropy": await Attacker.entropy( string: login ),
                             ] ) )
 
-                            user.state( keyPurpose: .identification, resultParam: login )?.token.then {
-                                do { user.loginState = try $0.get() }
-                                catch { mperror( title: "Couldn't update login name", error: error ) }
-                            }
+                            do { user.loginState = try await user.state( keyPurpose: .identification, resultParam: login )?.task.value }
+                            catch { mperror( title: "Couldn't update login name", error: error ) }
                         } )
         }
 
@@ -210,8 +208,8 @@ class IntroAutoFillViewController: ItemsViewController<User>, DetailViewControll
             return view
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.loginType.in( class: .stateful ) ?? false
         }

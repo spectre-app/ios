@@ -300,24 +300,23 @@ extension UICollectionView {
         guard !self.bounds.isEmpty
         else { return }
 
+        let delegate = delegation ? self.delegate : nil
         let selectionPaths = Set(
                 // Select all requested items that are allowed to be selected.
                 requestedPaths.filter {
                     $0.section < self.numberOfSections && $0.item < self.numberOfItems( inSection: $0.section ) &&
-                    !delegation || self.delegate?.collectionView?( self, shouldSelectItemAt: $0 ) ?? true
+                    (delegate?.collectionView?( self, shouldSelectItemAt: $0 ) ?? true)
                 }
         )
                 // And all currently selected items that are not allowed to be deselected.
             .union( (self.indexPathsForSelectedItems ?? []).filter {
-                !(!delegation || self.delegate?.collectionView?( self, shouldDeselectItemAt: $0 ) ?? true)
+                !(delegate?.collectionView?( self, shouldDeselectItemAt: $0 ) ?? true)
             } )
 
         // Deselect currently selected items that are no longer selected.
         for itemPath in Set( self.indexPathsForSelectedItems ?? [] ).subtracting( selectionPaths ) {
             self.deselectItem( at: itemPath, animated: animated )
-            if delegation, let delegate = self.delegate {
-                delegate.collectionView?( self, didDeselectItemAt: itemPath )
-            }
+            delegate?.collectionView?( self, didDeselectItemAt: itemPath )
         }
 
         if (self.indexPathsForSelectedItems ?? []).elementsEqual( selectionPaths ),
@@ -329,9 +328,7 @@ extension UICollectionView {
             // Select newly selected items.
             for itemPath in selectionPaths.subtracting( self.indexPathsForSelectedItems ?? [] ) {
                 self.selectItem( at: itemPath, animated: animated, scrollPosition: scrollPosition )
-                if delegation, let delegate = self.delegate {
-                    delegate.collectionView?( self, didSelectItemAt: itemPath )
-                }
+                delegate?.collectionView?( self, didSelectItemAt: itemPath )
             }
         }
     }
@@ -686,7 +683,35 @@ extension UITraitCollection {
     }
 }
 
-extension UIView {
+protocol _Animate {
+    @MainActor
+    static func _animate<V>(_ update: @escaping @MainActor () async throws -> V) async rethrows -> V
+
+    @MainActor
+    static func _performWithoutAnimation<V>(_ update: @escaping @MainActor () async throws -> V) async rethrows -> V
+}
+
+extension _Animate {
+    @MainActor
+    @available(iOS, deprecated: 13.0)
+    static func _animate<V>(_ update: @escaping @MainActor () async throws -> V) async rethrows -> V {
+        UIView.beginAnimations(nil, context: nil)
+        UIView.setAnimationDuration(.short)
+        defer { UIView.commitAnimations() }
+        return try await update()
+    }
+
+    @MainActor
+    @available(iOS, deprecated: 13.0)
+    static func _performWithoutAnimation<V>(_ update: @escaping @MainActor () async throws -> V) async rethrows -> V {
+        let wasEnabled = UIView.areAnimationsEnabled
+        UIView.setAnimationsEnabled(false)
+        defer { UIView.setAnimationsEnabled(wasEnabled) }
+        return try await update()
+    }
+}
+
+extension UIView: _Animate {
     public func findSuperview<V: UIView>(ofType type: V.Type? = nil, where filter: ((V) -> Bool)? = nil) -> V? {
         var superview = self.superview
         while superview != nil {
@@ -721,5 +746,15 @@ extension UIView {
         }
 
         return nil
+    }
+
+    @MainActor
+    public static func animate<V>(_ update: @escaping @MainActor () async throws -> V) async rethrows -> V {
+        try await (UIView.self as _Animate.Type)._animate(update)
+    }
+
+    @MainActor
+    public static func performWithoutAnimation<V>(_ update: @escaping @MainActor () async throws -> V) async rethrows -> V {
+        try await (UIView.self as _Animate.Type)._performWithoutAnimation(update)
     }
 }

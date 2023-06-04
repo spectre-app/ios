@@ -18,10 +18,8 @@ class EffectCell: UICollectionViewCell {
 
     override var isSelected: Bool {
         didSet {
-            DispatchQueue.main.perform {
-                UIView.animate( withDuration: .short ) {
-                    self.effectView.isSelected = self.isSelected
-                }
+            UIView.animate( withDuration: .short ) {
+                self.effectView.isSelected = self.isSelected
             }
 
             if self.isSelected != oldValue, self.isSelected, UIView.areAnimationsEnabled {

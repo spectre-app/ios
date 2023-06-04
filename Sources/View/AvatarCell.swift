@@ -15,9 +15,7 @@ import UIKit
 class AvatarCell: EffectCell {
     public var avatar: User.Avatar = .avatar_0 {
         didSet {
-            DispatchQueue.main.perform {
-                self.avatarImage.image = self.avatar.image
-            }
+            self.avatarImage.image = self.avatar.image
         }
     }
 

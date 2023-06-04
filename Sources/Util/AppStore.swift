@@ -92,7 +92,7 @@ extension InAppProduct {
     }
 }
 
-class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, SKStoreProductViewControllerDelegate, Observable, AppConfigObserver {
+class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, SKStoreProductViewControllerDelegate, Observed, AppConfigObserver {
     public static let shared = AppStore()
 
     let observers = Observers<InAppStoreObserver>()
@@ -102,17 +102,6 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
         #else
         return AppConfig.shared.sandboxStore && SKPaymentQueue.canMakePayments() && !self.products.isEmpty
         #endif
-    }
-    var country: Promise<String?> {
-        if let countryCode = SKPaymentQueue.default().storefront?.countryCode {
-            return Promise( .success( countryCode3to2?[countryCode] ) )
-        }
-
-        if #available(iOS 15, *) {
-            return Promise { await Storefront.current?.countryCode }
-        }
-
-        return Promise(.success(nil))
     }
     var products = [ SKProduct ]() {
         didSet {
@@ -128,7 +117,7 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
     var receipt: InAppReceipt?
 
-    private var updatePromise: Promise<Bool>?
+    private var updatePromise: CheckedContinuation<Bool, Error>?
     private var purchaseEvent: Tracker.TimedEvent?
     private var restoreEvent:  Tracker.TimedEvent?
 
@@ -140,24 +129,28 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     @discardableResult
-    func update(active: Bool = false) -> Promise<Bool> {
-        self.updatePromise ?? using( Promise<Bool>() ) { updatePromise in
-            self.updatePromise = updatePromise
+    func update(active: Bool = false) async throws -> Bool {
+        defer { self.updatePromise = nil }
+        return try await withCheckedThrowingContinuation { continuation in
+            self.updatePromise?.resume(throwing: CancellationError())
+            self.updatePromise = continuation
 
-            self.updateReceipt( allowRefresh: active ).then { _ in
-                if active || self.products.isEmpty {
-                    let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
-                    productsRequest.delegate = self
-                    productsRequest.start()
+            Task.detached {
+                do {
+                    try await self.updateReceipt( allowRefresh: active )
+
+                    if active || self.products.isEmpty {
+                        let productsRequest = SKProductsRequest( productIdentifiers: Set( InAppProduct.allCases.map { $0.productIdentifier } ) )
+                        productsRequest.delegate = self
+                        productsRequest.start()
+                    }
+                    else {
+                        continuation.resume(returning: true)
+                    }
                 }
-                else {
-                    self.updatePromise?.finish( .success( true ) )
-                }
+                catch { continuation.resume(throwing: error) }
             }
         }
-            .finally {
-                self.updatePromise = nil
-            }
     }
 
     func purchase(product: SKProduct, promotion: SKPaymentDiscount? = nil, quantity: Int = 1) {
@@ -203,32 +196,28 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     }
 
     func isUpToDate(appleID: Int? = nil, buildVersion: String? = nil)
-            -> Promise<(upToDate: Bool, buildVersion: String, storeVersion: String)> {
-        self.country
-            .promise { "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\($0 ?? "US")&limit=1" }
-            .promising { (url: String?) -> Promise<(data: Data, response: URLResponse)> in
-                guard let url = url, let searchURL = URL( string: url )
-                else { throw AppError.internal( cause: "Couldn't resolve store URL", details: url ) }
-                guard let urlSession = URLSession.required.get()
-                else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
+            async throws -> (upToDate: Bool, buildVersion: String, storeVersion: String) {
+        guard let country = await Storefront.current?.countryCode,
+              let searchURL = URL( string: "https://itunes.apple.com/lookup?id=\(appleID ?? productAppleID)&country=\(country)&limit=1" )
+        else { throw AppError.internal( cause: "No storefront" ) }
 
-                return urlSession.promise( with: URLRequest( url: searchURL ) )
-            }
-            .promise {
-                let json = try JSONSerialization.jsonObject( with: $0.data ) as? [String: Any]
-                if let error = json?["errorMessage"] as? String {
-                    throw AppError.issue( title: "iTunes store lookup issue", details: error )
-                }
+        guard let urlSession = URLSession.required.get()
+        else { throw AppError.state( title: "App is in offline mode" ) }
 
-                guard let metadata = ((json?["results"] as? [Any])?.first as? [String: Any])
-                else { throw AppError.state( title: "Missing iTunes application metadata" ) }
-                guard let storeVersion = metadata["version"] as? String
-                else { throw AppError.state( title: "Missing version in iTunes metadata" ) }
-
-                let buildVersion = buildVersion ?? productVersion
-                return (upToDate: !buildVersion.isVersionOutdated( by: storeVersion ),
-                        buildVersion: buildVersion, storeVersion: storeVersion)
+        let data = try await urlSession.data( for: URLRequest( url: searchURL ) ).0
+        let json = try JSONSerialization.jsonObject( with: data ) as? [String: Any]
+        if let error = json?["errorMessage"] as? String {
+            throw AppError.issue( title: "iTunes store lookup issue", details: error )
         }
+
+        guard let metadata = ((json?["results"] as? [Any])?.first as? [String: Any])
+        else { throw AppError.state( title: "Missing iTunes application metadata" ) }
+        guard let storeVersion = metadata["version"] as? String
+        else { throw AppError.state( title: "Missing version in iTunes metadata" ) }
+
+        let buildVersion = buildVersion ?? productVersion
+        return (upToDate: !buildVersion.isVersionOutdated( by: storeVersion ),
+                buildVersion: buildVersion, storeVersion: storeVersion)
     }
 
     func presentStore(appleID: Int? = nil, in viewController: UIViewController) {
@@ -253,111 +242,106 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
 
     // MARK: - Private
 
-    private func refreshReceipt() -> Promise<InAppReceipt?> {
-        using( Promise<InAppReceipt?>() ) { promise in
+    private func refreshReceipt() async throws -> InAppReceipt? {
+        try await withCheckedThrowingContinuation { continuation in
             #if !PUBLIC
             if !AppConfig.shared.sandboxStore {
                 inf( "Sandbox store disabled, skipping receipt refresh." )
-                self.updateReceipt( allowRefresh: false ).finishes( promise )
+                continuation.resume { try await self.updateReceipt( allowRefresh: false ) }
                 return
             }
             #endif
 
             InAppReceipt.refresh { error in
                 if let error = error {
-                    promise.finish( .failure( error ) )
-                    return
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume { try await self.updateReceipt( allowRefresh: false ) }
                 }
-
-                self.updateReceipt( allowRefresh: false ).finishes( promise )
             }
         }
     }
 
     @discardableResult
-    private func updateReceipt(allowRefresh: Bool = true) -> Promise<InAppReceipt?> {
-        using( Promise<InAppReceipt?>() ) { promise in
-            // Decode and validate the application's App Store receipt.
-            do {
-                let receipt = try InAppReceipt.localReceipt()
-                try receipt.validate()
-                self.receipt = receipt
-            }
-            catch {
-                wrn( "App Store receipt unavailable: %@ [>PII]", error.localizedDescription )
-                pii( "[>] Error: %@", error )
-                self.receipt = nil
-            }
-
-            // If no (valid) App Store receipt is present, try requesting one from the store.
-            if self.receipt == nil {
-                if allowRefresh {
-                    inf( "No receipt, requesting one." )
-                    self.refreshReceipt().finishes( promise )
-                    return
-                }
-
-                wrn( "Couldn't obtain a receipt." )
-            }
-
-            // Discover feature status based on which subscription products are currently active.
-            var missingFeatures    = Set<InAppFeature>( InAppFeature.allCases )
-            var subscribedFeatures = Set<InAppFeature>()
-            for product in InAppProduct.allCases {
-                if !product.isActive, product.isInStore {
-                    if allowRefresh && product.wasActiveButExpired {
-                        inf( "Subscription expired, checking for renewal." )
-                        self.refreshReceipt().finishes( promise )
-                        return
-                    }
-                    continue
-                }
-
-                inf( "Active product: %@", product )
-                missingFeatures.subtract( product.features )
-                subscribedFeatures.formUnion( product.features )
-            }
-
-            // Enable features with an active subscription and disable those missing one.
-            missingFeatures.forEach { $0.enable( false ) }
-            subscribedFeatures.forEach { $0.enable( true ) }
-
-            let originalPremiumPurchase =
-                    InAppProduct.allCases.filter { $0.features.contains( .premium ) }
-                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
-                        .sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
-            let currentPremiumPurchase =
-                    InAppProduct.allCases.filter { $0.features.contains( .premium ) }
-                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
-                        .sorted( by: {
-                            $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
-                            $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
-                        } ).last
-            let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
-            Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
-                "answers_active": InAppFeature.answers.isEnabled,
-                "logins_active": InAppFeature.logins.isEnabled,
-                "biometrics_active": InAppFeature.biometrics.isEnabled,
-                "premium_active": InAppFeature.premium.isEnabled,
-                "premium_in_trial": currentPremiumPurchase?.subscriptionTrialPeriod ?? false,
-                "premium_in_intro": currentPremiumPurchase?.subscriptionIntroductoryPricePeriod ?? false,
-                "premium_months_age": originalPremiumPurchase?.originalPurchaseDate.flatMap { months( $0, Date() ) } ?? -1,
-                "premium_months_left": currentPremiumPurchase?.subscriptionExpirationDate.flatMap { months( Date(), $0 ) } ?? -1,
-            ] ) )
-
-            promise.finish( .success( self.receipt ) )
+    private func updateReceipt(allowRefresh: Bool = true) async throws -> InAppReceipt? {
+        // Decode and validate the application's App Store receipt.
+        do {
+            let receipt = try InAppReceipt.localReceipt()
+            try receipt.validate()
+            self.receipt = receipt
         }
+        catch {
+            wrn( "App Store receipt unavailable: %@ [>PII]", error.localizedDescription )
+            pii( "[>] Error: %@", error )
+            self.receipt = nil
+        }
+
+        // If no (valid) App Store receipt is present, try requesting one from the store.
+        if self.receipt == nil {
+            if allowRefresh {
+                inf( "No receipt, requesting one." )
+                return try await self.refreshReceipt()
+            }
+
+            wrn( "Couldn't obtain a receipt." )
+        }
+
+        // Discover feature status based on which subscription products are currently active.
+        var missingFeatures    = Set<InAppFeature>( InAppFeature.allCases )
+        var subscribedFeatures = Set<InAppFeature>()
+        for product in InAppProduct.allCases {
+            if !product.isActive, product.isInStore {
+                if allowRefresh && product.wasActiveButExpired {
+                    inf( "Subscription expired, checking for renewal." )
+                    return try await self.refreshReceipt()
+                }
+                continue
+            }
+
+            inf( "Active product: %@", product )
+            missingFeatures.subtract( product.features )
+            subscribedFeatures.formUnion( product.features )
+        }
+
+        // Enable features with an active subscription and disable those missing one.
+        missingFeatures.forEach { $0.enable( false ) }
+        subscribedFeatures.forEach { $0.enable( true ) }
+
+        let originalPremiumPurchase =
+                InAppProduct.allCases.filter { $0.features.contains( .premium ) }
+                    .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+                    .sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
+        let currentPremiumPurchase =
+                InAppProduct.allCases.filter { $0.features.contains( .premium ) }
+                    .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+                    .sorted( by: {
+                        $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
+                        $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
+                    } ).last
+        let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
+        Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
+            "answers_active": InAppFeature.answers.isEnabled,
+            "logins_active": InAppFeature.logins.isEnabled,
+            "biometrics_active": InAppFeature.biometrics.isEnabled,
+            "premium_active": InAppFeature.premium.isEnabled,
+            "premium_in_trial": currentPremiumPurchase?.subscriptionTrialPeriod ?? false,
+            "premium_in_intro": currentPremiumPurchase?.subscriptionIntroductoryPricePeriod ?? false,
+            "premium_months_age": originalPremiumPurchase?.originalPurchaseDate.flatMap { months( $0, Date() ) } ?? -1,
+            "premium_months_left": currentPremiumPurchase?.subscriptionExpirationDate.flatMap { months( Date(), $0 ) } ?? -1,
+        ] ) )
+
+        return self.receipt
     }
 
     // MARK: - AppConfigObserver
 
     func didChange(appConfig: AppConfig, at change: PartialKeyPath<AppConfig>) {
         if change == \AppConfig.masterPasswordCustomer {
-            self.update()
+            Task.detached { try? await self.update() }
         }
         #if !PUBLIC
         if change == \AppConfig.testingPremium {
-            self.update()
+            Task.detached { try? await self.update() }
         }
         #endif
     }
@@ -387,9 +371,9 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
                     ()
 
                 case .purchased, .restored:
-                    self.updateReceipt().then {
+                    Task.detached {
                         do {
-                            guard let receipt = try $0.get()
+                            guard let receipt = try await self.updateReceipt()
                             else { throw AppError.state( title: "Receipt missing" ) }
 
                             let originalIdentifier = transaction.original?.transactionIdentifier ?? transaction.transactionIdentifier
@@ -434,14 +418,14 @@ class AppStore: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserve
     // MARK: - SKRequestDelegate
 
     func requestDidFinish(_ request: SKRequest) {
-        self.updatePromise?.finish( .success( true ) )
+        self.updatePromise?.resume(returning: true)
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
         mperror( title: "App Store request issue", message:
         "Ensure you are online and try logging out and back into your Apple ID from Settings.",
                  error: error )
-        self.updatePromise?.finish( .success( false ) )
+        self.updatePromise?.resume(returning: false)
     }
 }
 

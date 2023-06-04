@@ -15,8 +15,11 @@ import CoreServices
 import Network
 import StoreKit
 import SafariServices
+import UniformTypeIdentifiers
 
-@UIApplicationMain
+import SwiftUI
+
+//@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     static weak var shared: AppDelegate?
 
@@ -48,14 +51,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
 
-        LogSink.shared.register()
-        Tracker.shared.startup()
-        Migration.shared.perform()
-        KeyboardMonitor.shared.install()
+        Task { @MainActor in
+            await LogSink.shared.register()
+            await Tracker.shared.startup()
+            Migration.shared.perform()
+            KeyboardMonitor.shared.install()
 
-        self.window! => \.tintColor => Theme.current.color.tint
-        self.window!.rootViewController = MainNavigationController( rootViewController: MainUsersViewController() )
-        self.window!.makeKeyAndVisible()
+            alertWindow = self.window
+            self.window! => \.tintColor => Theme.current.color.tint
+            self.window!.rootViewController = MainNavigationController( rootViewController: MainUsersViewController() )
+            self.window!.makeKeyAndVisible()
+        }
 
         return true
     }
@@ -67,19 +73,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // Automatic subscription renewal (only if user is logged in to App Store and capable).
-        AppStore.shared.update( active: true )
+        Task.detached { try? await AppStore.shared.update( active: true ) }
 
         return true
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-        Marshal.shared.updateTask.request()
+        Task.detached { await Marshal.shared.updateUserFiles() }
     }
 
+    @available(iOS, deprecated: 15.0)
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
         guard let viewController = app.windows.first?.rootViewController
         else { return false }
-        let navigationController = viewController as? UINavigationController ?? viewController.navigationController
 
         // spectre:action
         if Action.open( url: url, in: viewController ) {
@@ -87,94 +93,99 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // file share
-        else if let utisValue = UTTypeCreateAllIdentifiersForTag(
-                kUTTagClassFilenameExtension, url.pathExtension as CFString, nil )?.takeRetainedValue(),
-                let utis = utisValue as? [String?] {
-            if let format = SpectreFormat.allCases.first( where: { utis.contains( $0.uti ) } ) {
-                let securityScoped = url.startAccessingSecurityScopedResource()
-                let promise = Promise<Marshal.UserFile>()
-                    .failure {
-                        if let error = $0 as? AppError, case AppError.cancelled = error {
-                            return
-                        }
-                        mperror( title: "Couldn't import user", error: $0 )
-                    }
-                    .success {
-                        guard $0.format == format
-                        else {
-                            wrn( "Imported user format: %@, doesn't match format: %@. [>PII]", $0.format, format )
-                            pii( "[>] URL: %@, UTIs: %@", url, utis )
-                            return
-                        }
-                    }
-                    .finally {
+        else {
+            let urlUTIs = UTType.types( tag: url.pathExtension, tagClass: .filenameExtension, conformingTo: nil )
+            if let format = SpectreFormat.allCases.first( where: { format in urlUTIs.contains { $0.identifier == format.uti } } ) {
+                Task.detached {
+                    let securityScoped = url.startAccessingSecurityScopedResource()
+                    defer {
                         if securityScoped {
                             url.stopAccessingSecurityScopedResource()
                         }
                     }
 
-                var error: NSError?
-                NSFileCoordinator().coordinate( readingItemAt: url, error: &error ) { url in
-                    guard let importData = FileManager.default.contents( atPath: url.path )
-                    else {
-                        promise.finish( .failure( AppError.state( title: "Couldn't read import", details: url ) ) )
-                        return
-                    }
-
-                    // Not In-Place: import the user from the file.
-                    guard (options[.openInPlace] as? Bool) ?? false, InAppFeature.premium.isEnabled
-                    else {
-                        Marshal.shared.import( data: importData, viewController: viewController ).finishes( promise )
-                        return
-                    }
-
-                    // In-Place: allow choice between editing in-place or importing.
                     do {
-                        let importFile = try Marshal.UserFile( data: importData, origin: url )
+                        let user = try await self.user(from: url, options: options, in: viewController)
 
-                        DispatchQueue.main.perform {
-                            let alertController = UIAlertController( title: importFile.userName, message:
-                            """
-                            Import this user into Spectre or sign-in from its current location?
-                            """, preferredStyle: .alert )
-                            alertController.addAction( UIAlertAction( title: "Import", style: .default ) { _ in
-                                Marshal.shared.import( data: importData, viewController: viewController ).finishes( promise )
-                            } )
-                            alertController.addAction( UIAlertAction( title: "Sign In (In-Place)", style: .default ) { _ in
-                                UIAlertController.authenticate( userFile: importFile, title: importFile.userName,
-                                                                action: "Log In", in: viewController )
-                                                 .success( on: .main ) {
-                                                     navigationController?.pushViewController(
-                                                             MainSitesViewController( user: $0 ), animated: true )
-                                                 }
-                                                 .promise { _ in importFile }
-                                                 .finishes( promise )
-                            } )
-                            alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                                promise.finish( .failure( AppError.cancelled ) )
-                            } )
-                            viewController.present( alertController, animated: true )
+                        guard user.format == format
+                        else {
+                            wrn( "Imported user format: %@, doesn't match format: %@. [>PII]", user.format, format )
+                            pii( "[>] URL: %@, UTIs: %@", url, urlUTIs )
+                            return
                         }
                     }
                     catch {
-                        promise.finish( .failure( error ) )
+                        if !(error is CancellationError) {
+                            mperror( title: "Couldn't import user", error: error )
+                        }
                     }
-                }
-                if let error = error {
-                    promise.finish( .failure( error ) )
                 }
                 return true
             }
 
             wrn( "Import UTI not supported. [>PII]" )
-            pii( "[>] URL: %@, UTIs: %@", url, utis )
-        }
-        else {
-            wrn( "Open URL not supported. [>PII]" )
-            pii( "[>] URL: %@", url )
+            pii( "[>] URL: %@, UTIs: %@", url, urlUTIs )
         }
 
         return false
+    }
+
+    private func user(from url: URL, options: [UIApplication.OpenURLOptionsKey: Any], in viewController: UIViewController) async throws
+            -> Marshal.UserFile {
+        try await withCheckedThrowingContinuation { continuation in
+            var error: NSError?
+            let navigationController = viewController as? UINavigationController ?? viewController.navigationController
+
+            NSFileCoordinator().coordinate( readingItemAt: url, error: &error ) { url in
+                guard let importData = FileManager.default.contents( atPath: url.path )
+                else {
+                    continuation.resume(throwing: AppError.state( title: "Couldn't read import", details: url ) )
+                    return
+                }
+
+                // Not In-Place: import the user from the file.
+                guard (options[.openInPlace] as? Bool) ?? false, InAppFeature.premium.isEnabled
+                else {
+                    continuation.resume { try await Marshal.shared.import( data: importData, viewController: viewController ) }
+                    return
+                }
+
+                // In-Place: allow choice between editing in-place or importing.
+                do {
+                    let importFile = try Marshal.UserFile( data: importData, origin: url )
+                    let alertController = UIAlertController( title: importFile.userName, message:
+                    """
+                    Import this user into Spectre or sign-in from its current location?
+                    """, preferredStyle: .alert )
+                    alertController.addAction( UIAlertAction( title: "Import", style: .default ) { _ in
+                        continuation.resume { try await Marshal.shared.import( data: importData, viewController: viewController ) }
+                    } )
+                    alertController.addAction( UIAlertAction( title: "Sign In (In-Place)", style: .default ) { _ in
+                        Task {
+                            do {
+                                let user = try await UIAlertController.authenticate( userFile: importFile, title: importFile.userName,
+                                                                                     action: "Log In", in: viewController )
+                                navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
+                                continuation.resume( returning: importFile )
+                            } catch {
+                                mperror(title: "Couldn't authenticate \(importFile.userName)", error: error)
+                            }
+                        }
+                    } )
+                    alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                        continuation.resume(throwing: CancellationError() )
+                    } )
+                    viewController.present( alertController, animated: true )
+                }
+                catch {
+                    continuation.resume(throwing: error )
+                }
+            }
+
+            if let error = error {
+                continuation.resume(throwing: error )
+            }
+        }
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {

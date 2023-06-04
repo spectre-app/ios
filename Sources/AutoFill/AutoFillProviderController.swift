@@ -21,8 +21,17 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         super.init( nibName: nibNameOrNil, bundle: nibBundleOrNil )
 
         Self.shared = self
-        LogSink.shared.register()
-        Tracker.shared.startup( extensionController: self )
+        alertWindow = self.view.window
+
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (_: Self, _) in
+            Theme.current.updateTask.request()
+        }
+
+        // TODO: block flow?
+        Task { @MainActor in
+            await LogSink.shared.register()
+            await Tracker.shared.startup( extensionController: self )
+        }
     }
 
     // MARK: - Public
@@ -56,14 +65,6 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         Tracker.shared.appeared()
     }
 
-    // MARK: - UITraitEnvironment
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange( previousTraitCollection )
-
-        Theme.current.updateTask.request( now: true, await: true )
-    }
-
     // MARK: - ASCredentialProviderViewController
 
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
@@ -76,63 +77,61 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         AutoFillModel.shared.context = AutoFillModel.Context( credentialIdentity: credentialIdentity )
 
         self.rootViewController = nil
+        Task.detached {
+            do {
+                let userFiles = await Marshal.shared.updateUserFiles()
+                let user = try await {
+                    if let user = AutoFillModel.shared.cachedUser( userName: credentialIdentity.recordIdentifier ) {
+                        return user
+                    }
 
-        Marshal.shared.updateTask.request( now: true )
-               .promising( on: .api ) { userFiles in
-                   if let user = AutoFillModel.shared.cachedUser( userName: credentialIdentity.recordIdentifier ) {
-                       return Promise( .success( user ) )
-                   }
+                    guard let userFile = userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
+                    else {
+                        throw ASExtensionError(
+                                .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" )
+                    }
 
-                   guard let userFile = userFiles.first( where: { $0.userName == credentialIdentity.recordIdentifier } )
-                   else {
-                       throw ASExtensionError(
-                               .credentialIdentityNotFound, "No user named: \(credentialIdentity.recordIdentifier ?? "-")" )
-                   }
+                    let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName, expiry: .minutes( 5 ) )
+                    guard await keychainKeyFactory.isKeyAvailable( for: userFile.algorithm )
+                    else {
+                        throw ASExtensionError(
+                                .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" )
+                    }
 
-                   let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
-                   guard keychainKeyFactory.isKeyAvailable( for: userFile.algorithm )
-                   else {
-                       throw ASExtensionError(
-                               .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)" )
-                   }
+                    let user = try await userFile.authenticate( using: keychainKeyFactory )
+                    AutoFillModel.shared.cacheUser( user )
+                    return user
+                }()
 
-                   keychainKeyFactory.expiry = .minutes( 5 )
-                   return userFile.authenticate( using: keychainKeyFactory )
-               }
-               .promising { (user: User) in
-                   AutoFillModel.shared.cacheUser( user )
+                guard let siteName = user.credential( for: credentialIdentity.serviceIdentifier )?.siteName,
+                      let site = user.sites.first( where: { $0.siteName == siteName } )
+                else {
+                    throw ASExtensionError(
+                            .credentialIdentityNotFound,
+                            "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
+                }
 
-                   guard let siteName = user.credential( for: credentialIdentity.serviceIdentifier )?.siteName,
-                         let site = user.sites.first( where: { $0.siteName == siteName } )
-                   else {
-                       throw ASExtensionError(
-                               .credentialIdentityNotFound,
-                               "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
-                   }
+                guard let login = try await site.result( keyPurpose: .identification )?.task.value,
+                      let password = try await site.result( keyPurpose: .authentication )?.task.value
+                else {
+                    throw ASExtensionError(
+                            .userInteractionRequired, "Unauthenticated user: \(user.userName)" )
+                }
 
-                   guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
-                   else {
-                       throw ASExtensionError(
-                               .userInteractionRequired, "Unauthenticated user: \(user.userName)" )
-                   }
+                let credential = ASPasswordCredential( user: login, password: password )
+                inf( "Autofilling non-interactively: %@, for service: %@", credential.user, credentialIdentity.serviceIdentifier )
+                Feedback.shared.play( .activate )
 
-                   return login.token.and( password.token ).promise {
-                       ASPasswordCredential( user: $0.0, password: $0.1 )
-                   }
-               }
-               .success( on: .main ) { (credential: ASPasswordCredential) in
-                   inf( "Autofilling non-interactively: %@, for service: %@", credential.user, credentialIdentity.serviceIdentifier )
-                   Feedback.shared.play( .activate )
+                await self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
+            }
+            catch {
+                wrn( "Autofill unsuccessful: %@ [>PII]", error.localizedDescription )
+                pii( "[>] Error: %@", error )
+                Feedback.shared.play( .error )
 
-                   self.extensionContext.completeRequest( withSelectedCredential: credential, completionHandler: nil )
-               }
-               .failure( on: .main ) { error in
-                   wrn( "Autofill unsuccessful: %@ [>PII]", error.localizedDescription )
-                   pii( "[>] Error: %@", error )
-                   Feedback.shared.play( .error )
-
-                   self.extensionContext.cancelRequest( withError: ASExtensionError(for: error ) )
-               }
+                await self.extensionContext.cancelRequest( withError: ASExtensionError( for: error ) )
+            }
+        }
     }
 
     override func prepareInterfaceToProvideCredential(for credentialIdentity: ASPasswordCredentialIdentity) {
@@ -187,7 +186,7 @@ extension ASExtensionError: Error {
             case let extensionError as ASExtensionError:
                 self = extensionError
 
-            case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel:
+            case LAError.userCancel, LAError.systemCancel, LAError.appCancel:
                 self = ASExtensionError( .userCanceled, "Local authentication cancelled.", error: error )
 
             case let error as LAError:

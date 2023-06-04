@@ -12,7 +12,7 @@
 
 import UIKit
 
-class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, Observable, Persisting, QuestionObserver {
+@Observable class Question: SpectreOperand, CustomStringConvertible, Observed, Persisting, QuestionObserver {
     public let observers = Observers<QuestionObserver>()
 
     public weak var site: Site?
@@ -67,22 +67,6 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
         Question( site: site, keyword: self.keyword, resultType: self.resultType, resultState: self.resultState )
     }
 
-    // MARK: Hashable
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine( self.keyword )
-    }
-
-    static func == (lhs: Question, rhs: Question) -> Bool {
-        lhs.keyword == rhs.keyword
-    }
-
-    // MARK: Comparable
-
-    public static func < (lhs: Question, rhs: Question) -> Bool {
-        lhs.keyword > rhs.keyword
-    }
-
     // MARK: - QuestionObserver
 
     func didChange(question: Question) {
@@ -114,6 +98,30 @@ class Question: SpectreOperand, Hashable, Comparable, CustomStringConvertible, O
                          keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
                          resultType: resultType, resultParam: resultParam,
                          algorithm: algorithm, operand: operand ?? self )
+    }
+}
+
+extension Question: Identifiable {
+    public var id: String { self.keyword }
+}
+
+extension Question: Hashable {
+    public static func == (lhs: Question, rhs: Question) -> Bool {
+        lhs.keyword == rhs.keyword &&
+            lhs.resultType == rhs.resultType &&
+            lhs.resultState == rhs.resultState
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine( self.keyword )
+        hasher.combine( self.resultType )
+        hasher.combine( self.resultState )
+    }
+}
+
+extension Question: Comparable {
+    public static func < (lhs: Question, rhs: Question) -> Bool {
+        lhs.keyword < rhs.keyword
     }
 }
 

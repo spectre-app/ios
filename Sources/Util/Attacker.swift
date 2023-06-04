@@ -106,95 +106,110 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible {
         Attacker.allCases.first { $0.description == identifier } ?? .private
     }
 
-    static func permutations(type: SpectreResultType) -> Decimal? {
-        guard type.in( class: .template )
-        else { return nil }
+    static func permutations(type: SpectreResultType) async -> Decimal? {
+        await Task.detached {
+            guard type.in( class: .template )
+            else { return nil }
 
-        var count     = 0
-        let templates = UnsafeBufferPointer( start: spectre_type_templates( type, &count ), count: count )
-        defer { templates.deallocate() }
+            var count     = 0
+            let templates = UnsafeBufferPointer( start: spectre_type_templates( type, &count ), count: count )
+            defer { templates.deallocate() }
 
-        var typePermutations: Decimal = 0
-        for template in templates {
-            guard let template = template
-            else { continue }
-
-            var templatePermutations: Decimal = 1
-            for c in 0..<strlen( template ) {
-                templatePermutations *= Decimal( strlen( spectre_class_characters( template[c] ) ) )
-            }
-
-            typePermutations += templatePermutations
-        }
-
-        return typePermutations
-    }
-
-    static func entropy(type: SpectreResultType) -> Int? {
-        self.permutations( type: type ).flatMap { self.entropy( permutations: $0 ) }
-    }
-
-    func timeToCrack(type: SpectreResultType, hash: Hash = .bcrypt10) -> TimeToCrack? {
-        Attacker.permutations( type: type ).flatMap { self.timeToCrack( permutations: $0, hash: hash ) }
-    }
-
-    static func permutations(string: String?) -> Decimal? {
-        guard var string = string, let vocabulary = vocabulary
-        else { return nil }
-
-        var stringPermutations: Decimal = 1
-
-        for word in vocabulary {
-            let newString = string.replacingOccurrences( of: word, with: "" )
-            if newString != string {
-                stringPermutations *= Decimal( vocabulary.count )
-                string = newString
-            }
-        }
-
-        var previousCharacter: Int32 = 0
-        for passwordCharacter in string.utf8CString.map( Int32.init ) {
-            defer {
-                previousCharacter = passwordCharacter
-            }
-
-            // Skip terminator and repeating characters.
-            if passwordCharacter == 0 || abs( passwordCharacter - previousCharacter ) < 2 {
-                continue
-            }
-
-            var characterEntropy: Decimal = 256 /* a byte */
-            for characterClass in [ "v", "c", "a", "n", "x" ] {
-                guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
+            var typePermutations: Decimal = 0
+            for template in templates {
+                guard let template = template
                 else { continue }
 
-                if (strchr( charactersForClass, passwordCharacter )) != nil {
-                    // Found class for password character.
-                    characterEntropy = Decimal( strlen( charactersForClass ) )
-                    break
+                var templatePermutations: Decimal = 1
+                for c in 0..<strlen( template ) {
+                    templatePermutations *= Decimal( strlen( spectre_class_characters( template[c] ) ) )
+                }
+
+                typePermutations += templatePermutations
+            }
+
+            return typePermutations
+        }.value
+    }
+
+    static func entropy(type: SpectreResultType) async -> Int? {
+        guard let permutations = await self.permutations( type: type )
+        else { return nil }
+
+        return await self.entropy( permutations: permutations )
+    }
+
+    func timeToCrack(type: SpectreResultType, hash: Hash = .bcrypt10) async -> TimeToCrack? {
+        guard let permutations = await Self.permutations( type: type )
+        else { return nil }
+
+        return await self.timeToCrack( permutations: permutations, hash: hash )
+    }
+
+    static func permutations(string: String?) async -> Decimal? {
+        await Task.detached {
+            guard var string = string, let vocabulary = await Resources.shared.vocabulary
+            else { return nil }
+
+            var stringPermutations: Decimal = 1
+
+            for word in vocabulary {
+                let newString = string.replacingOccurrences( of: word, with: "" )
+                if newString != string {
+                    stringPermutations *= Decimal( vocabulary.count )
+                    string = newString
                 }
             }
 
-            stringPermutations *= characterEntropy
-        }
+            var previousCharacter: Int32 = 0
+            for passwordCharacter in string.utf8CString.map( Int32.init ) {
+                defer {
+                    previousCharacter = passwordCharacter
+                }
 
-        return stringPermutations
+                // Skip terminator and repeating characters.
+                if passwordCharacter == 0 || abs( passwordCharacter - previousCharacter ) < 2 {
+                    continue
+                }
+
+                var characterEntropy: Decimal = 256 /* a byte */
+                for characterClass in [ "v", "c", "a", "n", "x" ] {
+                    guard let charactersForClass = spectre_class_characters( characterClass.utf8CString[0] )
+                    else { continue }
+
+                    if (strchr( charactersForClass, passwordCharacter )) != nil {
+                        // Found class for password character.
+                        characterEntropy = Decimal( strlen( charactersForClass ) )
+                        break
+                    }
+                }
+
+                stringPermutations *= characterEntropy
+            }
+
+            return stringPermutations
+        }.value
     }
 
-    static func entropy(string: String?) -> Int? {
-        self.permutations( string: string ).flatMap { self.entropy( permutations: $0 ) }
+    static func entropy(string: String?) async -> Int? {
+        guard let permutations = await self.permutations( string: string )
+        else { return nil }
+
+        return await self.entropy( permutations: permutations )
     }
 
-    func timeToCrack(string: String?, hash: Hash = .bcrypt10) -> TimeToCrack? {
-        Attacker.permutations( string: string ).flatMap { self.timeToCrack( permutations: $0, hash: hash ) }
+    func timeToCrack(string: String?, hash: Hash = .bcrypt10) async -> TimeToCrack? {
+        guard let permutations = await Self.permutations( string: string )
+        else { return nil }
+
+        return await self.timeToCrack( permutations: permutations, hash: hash )
     }
 
-    static func entropy(permutations: Decimal) -> Int {
+    static func entropy(permutations: Decimal) async -> Int {
         Int( truncating: permutations.log( base: 2 ).rounded( 0, .down ) as NSNumber )
     }
 
-    func timeToCrack(permutations: Decimal, hash: Hash = .bcrypt10) -> TimeToCrack {
-
+    func timeToCrack(permutations: Decimal, hash: Hash = .bcrypt10) async -> TimeToCrack {
         // Amount of seconds to search half the permutations (average hit chance)
         var secondsToCrack = (permutations / 2) / self.rig.attempts_per_second( for: hash )
 

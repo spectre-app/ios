@@ -16,26 +16,30 @@ import SwiftLinkPreview
 import UIKit
 #endif
 
-class SitePreview: Equatable {
+@Observable class SitePreview {
     private static var previews = Cache<NSString, SitePreview>(named: "SitePreview")
 
     // MARK: - Life
 
-    var name:  String {
+    var name: String {
+        self.data.manifest.siteName
+    }
+
+    var url: String? {
         didSet {
             #if TARGET_APP
             self.updateTask.request()
             #endif
         }
     }
-    var url:   String? {
+
+    var data: PreviewData {
         didSet {
             #if TARGET_APP
             self.updateTask.request()
             #endif
         }
     }
-    var data:  PreviewData
     #if TARGET_APP
     var image: UIImage? {
         self.data.image
@@ -43,12 +47,12 @@ class SitePreview: Equatable {
     #else
     let image: UIImage? = nil
     #endif
-    var color: UIColor? {
-        self.data.color?.uiColor
+    var color: UIColor {
+        self.data.manifest.color.uiColor
     }
 
     static func `for`(_ siteName: String, withURL url: String?) -> SitePreview {
-        let previewName = siteName.domainName( .host )
+        let previewName = siteName.hostName
 
         // If a cached preview is known, use it.
         if let preview = self.previews[previewName as NSString] {
@@ -59,32 +63,28 @@ class SitePreview: Equatable {
         if let previewFile = SitePreview.previewDataFile( for: previewName ),
            FileManager.default.fileExists( atPath: previewFile.path ) {
             do {
-                return SitePreview( name: previewName, url: url, data:
-                try JSONDecoder().decode( PreviewData.self, from: Data( contentsOf: previewFile ) ) )
-            }
-            catch {
-                mperror( title: "Couldn't load site preview", error: error )
+                return try SitePreview(
+                    url: url, data:
+                    PreviewData(manifest: JSONDecoder().decode(PreviewData.Manifest.self, from: Data(contentsOf: previewFile)))
+                )
+            } catch {
+                mperror(title: "Couldn't load site preview", error: error)
             }
         }
 
         // Create & cache a stub preview based on the site name.
-        return SitePreview( name: previewName, url: url, data:
-        PreviewData( color: ColorData( uiColor: previewName.color() ), siteName: previewName, siteURL: url ) )
+        return SitePreview(
+            url: url, data:
+            PreviewData(manifest: .init(color: ColorData(uiColor: previewName.color()), siteName: previewName, siteURL: url))
+        )
     }
 
-    private init(name: String, url: String?, data: PreviewData) {
-        self.name = name
+    private init(url: String?, data: PreviewData) {
         self.url = url
         self.data = data
 
-        SitePreview.previews[name as NSString, cost: self.data.imageSize] = self
-        LeakRegistry.shared.register( self )
-    }
-
-    // MARK: - Equatable
-
-    static func == (lhs: SitePreview, rhs: SitePreview) -> Bool {
-        lhs.data == rhs.data
+        SitePreview.previews[name as NSString, cost: self.data.manifest.imageSize] = self
+        LeakRegistry.shared.register(self)
     }
 
     // MARK: - Private
@@ -98,75 +98,80 @@ class SitePreview: Equatable {
     }
 
     #if TARGET_APP
-    lazy var updateTask: DispatchTask<Bool> = DispatchTask.update( self, queue: Self.taskQueue ) { [weak self] in
+    @ObservationIgnored
+    lazy var updateTask: DispatchTask<Bool> = DispatchTask( named: "SitePreview: \(self.name)" ) { [weak self] in
         // If a preview exists with identical metadata and a known image < 30 days old, don't refresh it yet.
-        if self?.name == self?.data.siteName, self?.url == self?.data.siteURL,
-           let date = self?.data.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
+        if self?.url == self?.data.manifest.siteURL,
+           let date = self?.data.manifest.imageDate, date < Date().addingTimeInterval( .days( 30 ) ) {
             return false
         }
 
         // Resolve candidate image URLs for the site.
         // If the site URL is not a pure domain, install a fallback resolver for the site domain.
-        let candidates = Set(
-                [ self?.name, self?.url?.nonEmpty ]
-                    .compactMap { $0 }
-                    .flatMap {
-                        [
-                            $0,
-                            $0.domainName( .host ),
-                            $0.domainName( .topPrivate ),
-                            "www.\($0.domainName( .topPrivate ))",
-                        ]
-                    }
-                    .map { "https://\($0.replacingOccurrences( of: "^[^:/]*:/*", with: "", options: .regularExpression ))" }
-        )
+        var candidates = Set<String>()
+        for candidate in [ self?.name, self?.url?.nonEmpty ].compactMap( { $0 }) {
+            candidates.insert(candidate)
+            candidates.insert(candidate.hostName)
+            candidates.insert(candidate.privateName)
+            candidates.insert("www.\(candidate.privateName)")
+        }
+        candidates = Set( candidates.map {
+            "https://\($0.replacingOccurrences( of: "^[^:/]*:/*", with: "", options: .regularExpression ))"
+        } )
 
-        return try candidates
-            .map { Self.preview( forURL: $0 ) }.compactPromise()
-            .promising { Self.bestImage( fromPreviews: $0.compactMap { $0 } ) }
-            .finally { self?.data.imageDate = Date() }
-            .promise { [weak self] in
+        do {
+            defer { self?.data.manifest.imageDate = Date() }
+            return try await withThrowingTaskGroup(of: Response?.self) { group in
+                for candidate in candidates {
+                    group.addTask { try await Self.preview( forURL: candidate ) }
+                }
+
+                let best = try await Self.bestImage( fromPreviews: group.compactMap { $0 }.reduce( [] ) { $0 + [ $1 ] } )
                 guard let self = self
                 else { return false }
 
-                self.data.imageURL = $0.response.url?.absoluteString
-                self.data.imageData = $0.data
-
-                SitePreview.previews[self.name as NSString, cost: self.data.imageSize] = self
+                self.data.imageData = best.data
+                self.data.manifest.imageURL = best.response.url?.absoluteString
+                SitePreview.previews[self.name as NSString, cost: self.data.manifest.imageSize] = self
                 if let previewFile = SitePreview.previewDataFile( for: self.name ) {
-                    try JSONEncoder().encode( self.data ).write( to: previewFile )
+                    try JSONEncoder().encode( self.data.manifest ).write( to: previewFile )
                 }
 
                 return true
             }
-            .failure { [weak self] in
-                wrn( "Preview issue for %@: %@ [>PII]", self?.name, $0.localizedDescription )
-                pii( "[>] Candidates: %@, Error: %@", candidates, $0 )
-            }
-            .await()
+        }
+        catch {
+            wrn( "Preview issue for %@: %@ [>PII]", self?.name, error.localizedDescription )
+            pii( "[>] Candidates: %@, Error: %@", candidates, error )
+            throw error
+        }
     }
 
     private static let previewQueue = DispatchQueue( label: "SwiftLinkPreview", qos: .background, attributes: [ .concurrent ] )
-    private static let taskQueue    = DispatchQueue( label: "\(productName): SitePreview", qos: .utility, attributes: [ .concurrent ] )
     public static let linkPreview = LazyBox {
         URLSession.optional.get().flatMap {
             SwiftLinkPreview( session: $0, workQueue: previewQueue, responseQueue: previewQueue, cache: InMemoryCache() )
         }
     }
 
-    private static func byImageSize(_ urls: [String?], in session: URLSession) -> Promise<[URL]> {
+    private static func byImageSize(_ urls: [String?], in session: URLSession) async -> [URL] {
         // Perform a HEAD request for each candidate URL
-        urls.compactMap { self.validURL( $0 ) }.map { url in
-                session.promise( with: URLRequest( method: .head, url: url ) ).promise { $0.1 }.failure {
-                    pii( "Cannot preview %@: %@", url, $0 )
+        await withTaskGroup( of: URLResponse?.self ) { group in
+            for url in urls.compactMap( { self.validURL( $0 ) } ) {
+                group.addTask {
+                    do { return try await session.data( for: URLRequest( method: .head, url: url ) ).1 }
+                    catch { pii( "Cannot preview %@: %@", url, error ); return nil }
                 }
             }
-            .compactPromise().promise {
-                // Return all URLs that resulted in image responses, sorted by content length.
-                $0.filter { $0.mimeType?.contains( "image/" ) ?? false }
-                  .sorted { $0.expectedContentLength > $1.expectedContentLength }
-                  .compactMap { $0.url }
-            }
+
+            // Return all URLs that resulted in image responses, sorted by content length.
+            return await group
+                .compactMap { $0 }
+                .filter { $0.mimeType?.contains( "image/" ) ?? false }
+                .reduce( [] ) { $0 + [ $1 ] }
+                .sorted { $0.expectedContentLength > $1.expectedContentLength }
+                .compactMap { $0.url }
+        }
     }
 
     private static func validURL(_ string: String?) -> URL? {
@@ -176,87 +181,87 @@ class SitePreview: Equatable {
         return URL( string: "https://\(string.replacingOccurrences( of: "^[^:/]*:/*", with: "", options: .regularExpression ))" )
     }
 
-    private static func preview(forURL url: String) -> Promise<Response?> {
+    private static func preview(forURL url: String) async throws -> Response? {
         guard let linkPreview = SitePreview.linkPreview.get()
-        else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
+        else { throw AppError.state( title: "App is in offline mode" ) }
 
-        let promise = Promise<Response?>()
-        linkPreview.preview( url, onSuccess: {
-            promise.finish( .success( $0 ) )
-        }, onError: {
-            pii( "Cannot preview %@: %@", url, $0 )
-            promise.finish( .success( nil ) )
-        } )
-        return promise
+        return try await withCheckedThrowingContinuation { continuation in
+            linkPreview.preview( url, onSuccess: {
+                continuation.resume( returning: $0 )
+            }, onError: {
+                pii( "Cannot preview %@: %@", url, $0 )
+                continuation.resume( returning: nil )
+            } )
+        }
     }
 
-    private static func bestImage(fromPreviews previews: [Response]) -> Promise<(data: Data, response: URLResponse)> {
+    private static func bestImage(fromPreviews previews: [Response]) async throws -> (data: Data, response: URLResponse) {
         // Use SVG icons if available, otherwise use the largest bitmap, preferably non-GIF (to avoid large low-res animations)
-        let imageURL: Promise<URL?>
+        let imageURL: URL?
         if let svgImageURL = previews.flatMap( { [ $0.image, $0.icon ] } ).compactMap( { SitePreview.validURL( $0 ) } )
                                      .filter( { $0.pathExtension == "svg" } ).first {
-            imageURL = Promise( .success( svgImageURL ) )
-        }
-        else {
-            guard let session = URLSession.optional.get()
-            else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
+            imageURL = svgImageURL
+            } else {
+                guard let session = URLSession.optional.get()
+                else { throw AppError.state(title: "App is in offline mode") }
 
-            let candidates = previews.flatMap( { [ $0.image, $0.icon ] + ($0.images ?? []) } )
-            imageURL = SitePreview.byImageSize( candidates, in: session ).promise {
-                $0.reordered( last: { $0.pathExtension == "gif" } ).first
+                let candidates = previews.flatMap { [$0.image, $0.icon] + ($0.images ?? []) }
+                imageURL = await SitePreview.byImageSize(candidates, in: session).reordered(last: { $0.pathExtension == "gif" }).first
             }
-        }
 
-        // Fetch the image's data.
-        return imageURL.promising {
-            guard let imageURL = $0
-            else { throw AppError.issue( title: "No candidate images on site", details: String( describing: previews ) ) }
+            // Fetch the image's data.
+            guard let imageURL
+            else { throw AppError.issue(title: "No candidate images on site", details: String(describing: previews)) }
             guard let session = URLSession.optional.get()
-            else { return Promise( .failure( AppError.state( title: "App is in offline mode" ) ) ) }
+            else { throw AppError.state( title: "App is in offline mode" ) }
 
-            return session.promise( with: URLRequest( url: imageURL ) )
+            return try await session.data(for: URLRequest(url: imageURL))
         }
-    }
     #endif
 }
 
-#if TARGET_APP
-extension SitePreview: Updatable {
-}
-#endif
-
-struct PreviewData: Codable, Equatable {
-    var color:     ColorData?
-    var siteName:  String
-    var siteURL:   String?
-    var imageURL:  String?
-    var imageDate: Date?
-    var imageSize: Int = 0
+@Observable class PreviewData {
+    var manifest: Manifest
 
     #if TARGET_APP
-    lazy var image: UIImage? = .load( data: self.imageData )
-    lazy var imageData: Data? = SitePreview.previewImageFile( for: self.siteName ).flatMap {
-        let data = try? Data( contentsOf: $0 )
-        self.imageSize = data?.count ?? 0
-        return data
-    } {
-        didSet {
-            if oldValue != self.imageData {
-                self.image = .load( data: self.imageData )
-                self.imageSize = self.imageData?.count ?? 0
-                self.color = .load( image: self.image )
+        @ObservationIgnored
+        lazy var image: UIImage? = .load(data: self.imageData)
+        @ObservationIgnored
+        lazy var imageData: Data? = SitePreview.previewImageFile(for: self.manifest.siteName).flatMap {
+            let data = try? Data(contentsOf: $0)
+            self.manifest.imageSize = data?.count ?? 0
+            return data
+        } {
+            didSet {
+                if oldValue != self.imageData {
+                    self.image = .load(data: self.imageData)
+                    self.manifest.imageSize = self.imageData?.count ?? 0
+                    self.manifest.color = .load(image: self.image) ?? ColorData(uiColor: self.manifest.siteName.color())
 
-                if let imageData = self.imageData, let imageFile = SitePreview.previewImageFile( for: self.siteName ) {
-                    do { try imageData.write( to: imageFile ) }
-                    catch {
-                        wrn( "Couldn't save site preview image: %@ [>PII]", error.localizedDescription )
-                        pii( "[>] %@: error: %@", self.siteName, error )
+                    if let imageData = self.imageData, let imageFile = SitePreview.previewImageFile(for: self.manifest.siteName) {
+                        do { try imageData.write(to: imageFile) }
+                        catch {
+                            wrn("Couldn't save site preview image: %@ [>PII]", error.localizedDescription)
+                            pii("[>] %@: error: %@", self.manifest.siteName, error)
+                        }
                     }
                 }
             }
         }
-    }
     #endif
+
+    init(manifest: Manifest) {
+        self.manifest = manifest
+    }
+
+    struct Manifest: Codable, Hashable {
+        var color: ColorData = .init()
+        var siteName: String
+        var siteURL: String?
+        var imageURL: String?
+        var imageDate: Date?
+        var imageSize: Int = .zero
+    }
 }
 
 struct ColorData: Codable, Equatable, Hashable {
@@ -269,17 +274,14 @@ struct ColorData: Codable, Equatable, Hashable {
                  alpha: CGFloat( self.alpha ) / CGFloat( UInt8.max ) )
     }
 
-    init(red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8) {
+    init(red: UInt8 = .zero, green: UInt8 = .zero, blue: UInt8 = .zero, alpha: UInt8 = .zero) {
         self.red = red
         self.green = green
         self.blue = blue
         self.alpha = alpha
     }
 
-    init?(uiColor: UIColor?) {
-        guard let uiColor = uiColor
-        else { return nil }
-
+    init(uiColor: UIColor) {
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
         uiColor.getRed( &red, green: &green, blue: &blue, alpha: &alpha )
         self.init( red: UInt8( red * 255 ), green: UInt8( green * 255 ), blue: UInt8( blue * 255 ), alpha: UInt8( alpha * 255 ) )
@@ -316,8 +318,8 @@ struct ColorData: Codable, Equatable, Hashable {
     }
 }
 
-extension ColorData {
-    fileprivate static func load(image: UIImage?) -> ColorData? {
+private extension ColorData {
+    static func load(image: UIImage?) -> ColorData? {
         guard let cgImage = image?.cgImage,
               let cgContext = CGContext( data: nil, width: Int( cgImage.width ), height: Int( cgImage.height ),
                                          bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),

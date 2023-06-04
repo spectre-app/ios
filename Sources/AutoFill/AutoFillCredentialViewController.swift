@@ -31,8 +31,8 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
     override func login(user: User) {
         super.login( user: user )
 
-        Promise(.success(()))
-            .promise {
+        Task {
+            do {
                 guard let credentialIdentity = AutoFillModel.shared.context.credentialIdentity
                 else {
                     throw ASExtensionError(
@@ -47,30 +47,26 @@ class AutoFillCredentialViewController: AutoFillBaseUsersViewController {
                             "No site named: \(credentialIdentity.serviceIdentifier.identifier), for user: \(user.userName)" )
                 }
 
-                return site
-            }
-            .promising { (site: Site) -> Promise<(String, (String, String))> in
-                guard let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication )
+                guard let login = try await site.result( keyPurpose: .identification )?.task.value,
+                      let password = try await site.result( keyPurpose: .authentication )?.task.value
                 else {
                     throw ASExtensionError(
                             .userInteractionRequired, "Unauthenticated user: \(user.userName)" )
                 }
 
-                return Promise(.success(site.siteName)).and(login.token.and( password.token ))
-            }
-             .success {
-                 inf( "Autofilling interactively: %@, for site: %@", $0.1.0, $0.0 )
+                 inf( "Autofilling interactively: %@, for site: %@", login, site.siteName )
                  Feedback.shared.play( .activate )
 
                  (self.extensionContext as? ASCredentialProviderExtensionContext)?.completeRequest(
-                         withSelectedCredential: ASPasswordCredential( user: $0.1.0, password: $0.1.1 ), completionHandler: nil )
+                         withSelectedCredential: ASPasswordCredential( user: login, password: password ), completionHandler: nil )
              }
-             .failure { error in
+             catch {
                  wrn( "Autofill unsuccessful: %@ [>PII]", error.localizedDescription )
                  pii( "[>] Error: %@", error )
                  Feedback.shared.play( .error )
 
                  self.extensionContext?.cancelRequest( withError: ASExtensionError(for: error ) )
              }
+        }
     }
 }

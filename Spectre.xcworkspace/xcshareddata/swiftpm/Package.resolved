@@ -45,6 +45,15 @@
           "revision": "2b9946f8fe2dd74ed87dfcb5dbedc3be06c5ccab",
           "version": "3.3.3"
         }
+      },
+      {
+        "package": "WrappingHStack",
+        "repositoryURL": "https://github.com/ksemianov/WrappingHStack.git",
+        "state": {
+          "branch": null,
+          "revision": "2638bc5258607e8a32f2e5675d075896c2401678",
+          "version": "0.1.3"
+        }
       }
     ]
   },

@@ -18,9 +18,9 @@ protocol Updates: AnyObject {
 
 protocol Updatable: AnyObject {
     associatedtype V = Void
-    var updatesPostponed: Bool { get }
-    var updatesRejected:  Bool { get }
-    var updateTask:       DispatchTask<V> { get }
+    nonisolated var updatesPostponed: Bool { get }
+    nonisolated var updatesRejected:  Bool { get }
+    nonisolated var updateTask:       DispatchTask<V> { get }
 }
 
 extension Updatable {
@@ -33,13 +33,13 @@ extension Updatable {
 }
 
 extension DispatchTask {
-    static func update<U>(_ updatable: U, queue: DispatchQueue = .main,
-                          deadline: @escaping @autoclosure () -> DispatchTime = DispatchTime.now() + .seconds( .short * .short ),
-                          group: DispatchGroup? = nil, qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [],
-                          animated: Bool = false, update: @escaping () throws -> V)
+    static func update<U>(_ updatable: U, //queue: DispatchQueue = .main,
+                          deadline: @escaping @autoclosure () -> TimeInterval = .short * .short,
+                          //group: DispatchGroup? = nil, qos: DispatchQoS = .utility, flags: DispatchWorkItemFlags = [],
+                          animated: Bool = false, update: @escaping @MainActor () async throws -> V)
             -> DispatchTask<V> where U: Updatable, U.V == V {
-        DispatchTask( named: "Update: \(type( of: updatable ))", queue: queue,
-                      deadline: deadline(), group: group, qos: qos, flags: flags ) { [weak updatable] in
+        DispatchTask( named: "Update: \(type( of: updatable ))", //queue: queue,
+                      deadline: deadline()/*, group: group, qos: qos, flags: flags*/ ) { @MainActor [weak updatable] in
             if let updatable = updatable {
                 if updatable.updatesRejected {
                     throw Interruption.rejected
@@ -52,22 +52,12 @@ extension DispatchTask {
                 throw Interruption.invalidated
             }
 
-            var result: V?
             if animated {
-                var _error: Error?
-                UIView.animate( withDuration: .short ) {
-                    do { result = try update() }
-                    catch { _error = error }
-                }
-                if let error = _error {
-                    throw error
-                }
+                return try await UIView.animate(update)
             }
             else {
-                result = try update()
+                return try await update()
             }
-
-            return result!
         }
     }
 }

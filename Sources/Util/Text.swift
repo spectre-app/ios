@@ -12,7 +12,7 @@
 
 import Foundation
 
-struct Text: CustomStringConvertible, ExpressibleByStringInterpolation {
+struct Message: CustomStringConvertible, ExpressibleByStringInterpolation {
     var description: String {
         self.attributedString.string
     }
@@ -86,19 +86,19 @@ struct Text: CustomStringConvertible, ExpressibleByStringInterpolation {
 }
 
 extension UILabel {
-    func applyText(_ text: Text?) {
+    func applyText(_ text: Message?) {
         self.attributedText = text?.attributedString( textColor: self.textColor, textSize: self.font.pointSize )
     }
 }
 
 extension UITextField {
-    func applyText(_ text: Text?) {
+    func applyText(_ text: Message?) {
         self.attributedText = text?.attributedString( textColor: self.textColor, textSize: self.font?.pointSize )
     }
 }
 
 extension UIButton {
-    func applyText(_ text: Text?) {
+    func applyText(_ text: Message?) {
         self.setAttributedTitle(
                 text?.attributedString( textColor: self.currentTitleColor, textSize: self.titleLabel?.font.pointSize ),
                 for: .normal )

@@ -7,7 +7,7 @@ import Foundation
 import SafariServices
 import StoreKit
 
-class FeedbackView: BaseView, Observable, Updatable, AppConfigObserver {
+class FeedbackView: BaseView, Observed, Updatable, AppConfigObserver {
     let observers = Observers<FeedbackObserver>()
 
     let promptLabel  = UILabel()
@@ -103,7 +103,7 @@ class FeedbackView: BaseView, Observable, Updatable, AppConfigObserver {
 
     override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove( toSuperview: newSuperview )
-        self.updateTask.request( now: true )
+        self.updateTask.request()
     }
 
     func show(in viewController: UIViewController) {
@@ -148,8 +148,10 @@ class FeedbackView: BaseView, Observable, Updatable, AppConfigObserver {
                 viewController.present( controller, animated: true )
             }
             else {
-                SKStoreReviewController.requestReview()
-                AppConfig.shared.reviewed = Date()
+                (self.window?.windowScene).flatMap {
+                    SKStoreReviewController.requestReview( in: $0 )
+                    AppConfig.shared.reviewed = Date()
+                }
             }
         }
     }
@@ -226,10 +228,10 @@ class FeedbackItem<M>: Item<M> {
             }
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            self.feedbackView.updateTask.request( now: true )
+            try? await self.feedbackView.updateTask.requestNow()
         }
 
         // - FeedbackObserver

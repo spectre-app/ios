@@ -174,31 +174,27 @@ class DetailHostController: BaseViewController, UIScrollViewDelegate, UIGestureR
     @discardableResult
     public func hide(completion: (() -> Void)? = nil) -> Bool {
         if let detailsController = self.activeController {
-            DispatchQueue.main.perform {
-                detailsController.willMove( toParent: nil )
-                detailsController.beginAppearanceTransition( false, animated: true )
-                UIView.animate( withDuration: .short, animations: {
-                    self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
-                    self.popupConfiguration.deactivate()
-                    self.closeButton.alpha = .off
-                }, completion: { _ in
-                    detailsController.viewIfLoaded?.removeFromSuperview()
-                    detailsController.endAppearanceTransition()
-                    detailsController.removeFromParent()
-                    self.contentView.layoutIfNeeded()
-                    self.activeController = nil
-                    self.view.isHidden = true
-                    completion?()
-                } )
-            }
+            detailsController.willMove( toParent: nil )
+            detailsController.beginAppearanceTransition( false, animated: true )
+            UIView.animate( withDuration: .short, animations: {
+                self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
+                self.popupConfiguration.deactivate()
+                self.closeButton.alpha = .off
+            }, completion: { _ in
+                detailsController.viewIfLoaded?.removeFromSuperview()
+                detailsController.endAppearanceTransition()
+                detailsController.removeFromParent()
+                self.contentView.layoutIfNeeded()
+                self.activeController = nil
+                self.view.isHidden = true
+                completion?()
+            } )
             return true
         }
         else {
-            DispatchQueue.main.perform {
-                self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
-                self.view.isHidden = true
-                completion?()
-            }
+            self.scrollView.contentOffset = CGPoint( x: 0, y: -self.scrollView.adjustedContentInset.top )
+            self.view.isHidden = true
+            completion?()
             return false
         }
     }

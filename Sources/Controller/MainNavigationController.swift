@@ -22,6 +22,10 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
         super.viewDidLoad()
         LeakRegistry.shared.register( self )
 
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (_: Self, _) in
+            Theme.current.updateTask.request()
+        }
+
         self.delegate = self
         self.isNavigationBarHidden = true
 
@@ -37,12 +41,6 @@ class MainNavigationController: UINavigationController, UINavigationControllerDe
         super.viewDidAppear( animated )
 
         Tracker.shared.appeared()
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange( previousTraitCollection )
-
-        Theme.current.updateTask.request( now: true, await: true )
     }
 
     // MARK: - UINavigationControllerDelegate

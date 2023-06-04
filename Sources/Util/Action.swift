@@ -28,10 +28,9 @@ enum Action: String, CaseIterable {
                     return false
                 }
 
-                Marshal.shared.import( data: data, viewController: viewController ).then {
-                    if case .failure(let error) = $0 {
-                        mperror( title: "Couldn't import user", error: error )
-                    }
+                Task.detached {
+                    do { _ = try await Marshal.shared.import( data: data, viewController: viewController ) }
+                    catch { mperror( title: "Couldn't import user", error: error ) }
                 }
                 return true
 
@@ -62,7 +61,9 @@ enum Action: String, CaseIterable {
                     return false
                 }
 
-                SKStoreReviewController.requestReview()
+                (viewController.view.window?.windowScene).flatMap {
+                    SKStoreReviewController.requestReview( in: $0 )
+                }
                 return true
 
             case .store:
@@ -89,11 +90,11 @@ enum Action: String, CaseIterable {
 
                 let id = (components.queryItems?.first( where: { $0.name == "id" } )?.value as NSString?)?.integerValue
                 let build = components.queryItems?.first( where: { $0.name == "build" } )?.value
-                AppStore.shared.isUpToDate( appleID: id, buildVersion: build ).then {
+                Task.detached {
                     do {
-                        let result = try $0.get()
+                        let result = try await AppStore.shared.isUpToDate( appleID: id, buildVersion: build )
                         if result.upToDate {
-                            AlertController( title: "Your \(productName) app is up-to-date!", message: result.buildVersion,
+                            await AlertController( title: "Your \(productName) app is up-to-date!", message: result.buildVersion,
                                              details: "build[\(result.buildVersion)] > store[\(result.storeVersion)]" )
                                 .show()
                         }

@@ -44,7 +44,7 @@ class AutoFillSitesViewController: BaseSitesViewController {
             } )
         }
         self.sitesTableView.proposedSite = allServiceIdentifiers.first.flatMap {
-            (URL( string: $0.identifier )?.host ?? $0.identifier).domainName( .topPrivate )
+            (URL( string: $0.identifier )?.host ?? $0.identifier).privateName
         }
         self.sitesTableView.siteActions = [
             .init( tracking: nil, title: "", icon: nil, appearance: [ .cell ], action: { _, _, _ in } ),
@@ -74,42 +74,42 @@ class AutoFillSitesViewController: BaseSitesViewController {
     // MARK: - Private
 
     func completeRequest(site: Site, trackingFrom: String) {
-        guard let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext
-        else { return }
+        Task {
+            guard let extensionContext = self.extensionContext as? ASCredentialProviderExtensionContext
+            else { return }
 
-        let event = Tracker.shared.begin( track: .subject( "site", action: "use" ) )
-        if let login = site.result( keyPurpose: .identification ), let password = site.result( keyPurpose: .authentication ) {
-            login.token.and( password.token ).then( on: .main ) {
-                do {
+            let event = Tracker.shared.begin( track: .subject( "site", action: "use" ) )
+            do {
+                if let login = try await site.result( keyPurpose: .identification )?.task.value,
+                   let password = try await site.result( keyPurpose: .authentication )?.task.value {
                     inf( "Autofilling manually: %@, for site: %@", login, site.siteName )
                     Feedback.shared.play( .activate )
 
-                    let (login, password) = try $0.get()
                     site.use()
                     event.end(
-                            [ "result": $0.name,
+                            [ "result": "success",
                               "from": trackingFrom,
                               "action": "fill",
                               "counter": "\(site.counter)",
                               "purpose": "\(SpectreKeyPurpose.identification)",
                               "type": "\(site.resultType)",
                               "algorithm": "\(site.algorithm)",
-                              "entropy": Attacker.entropy( type: site.resultType ) ?? Attacker.entropy( string: password ),
+                              "entropy": await Attacker.entropy( type: site.resultType ) ??? (await Attacker.entropy( string: password )),
                             ] )
 
                     extensionContext.completeRequest( withSelectedCredential: .init( user: login, password: password ) ) { _ in
-                        site.user?.save( onlyIfDirty: true, await: true )
+                        site.user?.save()
                     }
                 }
-                catch {
-                    mperror( title: "Couldn't compute site result", error: error )
-                    event.end( [
-                                   "result": $0.name,
-                                   "from": trackingFrom,
-                                   "action": "fill",
-                                   "error": error.localizedDescription,
-                               ] )
-                }
+            }
+            catch {
+                mperror( title: "Couldn't compute site result", error: error )
+                event.end( [
+                               "result": "failure",
+                               "from": trackingFrom,
+                               "action": "fill",
+                               "error": error.localizedDescription,
+                           ] )
             }
         }
     }

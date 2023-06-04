@@ -14,7 +14,7 @@ import UIKit
 
 class EffectButton: EffectView {
     var tracking:        Tracking?
-    var action:          ((EffectButton) -> Void)?
+    var action:          (@MainActor (EffectButton) async -> Void)?
     var image:           UIImage? {
         didSet {
             if self.image != oldValue {
@@ -24,18 +24,18 @@ class EffectButton: EffectView {
     }
     var title:           String? {
         get {
-            self.button.currentTitle
+            self.buttonConfiguration.title
         }
         set {
-            self.button.setTitle( newValue, for: .normal )
+            self.buttonConfiguration.title = newValue
         }
     }
     var attributedTitle: NSAttributedString? {
         get {
-            self.button.currentAttributedTitle
+            self.buttonConfiguration.attributedTitle.flatMap(NSAttributedString.init)
         }
         set {
-            self.button.setAttributedTitle( newValue, for: .normal )
+            self.buttonConfiguration.attributedTitle = newValue.flatMap(AttributedString.init)
         }
     }
     override var debugDescription: String { "EffectButton{title: \(self.title ?? ""), action: \(self.tracking?.action ?? "")}" }
@@ -49,7 +49,12 @@ class EffectButton: EffectView {
     }
     var tapEffect = true
 
-    let button = UIButton( type: .custom )
+    lazy var button = UIButton(configuration: self.buttonConfiguration)
+    lazy var buttonConfiguration = UIButton.Configuration.plain() {
+        didSet {
+            self.button.configuration = self.buttonConfiguration
+        }
+    }
 
     private var stateObserver: Any?
     private lazy var squareButtonConstraint = self.button.widthAnchor.constraint( equalTo: self.button.heightAnchor )
@@ -63,15 +68,15 @@ class EffectButton: EffectView {
 
     convenience init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
                      border: CGFloat = 0, background: Bool = true, square: Bool = false, circular: Bool = false, rounding: CGFloat = 12,
-                     dims: Bool = false, action: @escaping () -> Void) {
+                     dims: Bool = false, action: @escaping @MainActor () async -> Void) {
         self.init( track: track, image: image, title: title, attributedTitle: attributedTitle,
                    border: border, background: background, square: square, circular: circular, rounding: rounding,
-                   dims: dims ) { _ in action() }
+                   dims: dims ) { _ in await action() }
     }
 
     init(track: Tracking? = nil, image: UIImage? = nil, title: String? = nil, attributedTitle: NSAttributedString? = nil,
          border: CGFloat = 1, background: Bool = true, square: Bool = false, circular: Bool = false, rounding: CGFloat = 12,
-         dims: Bool = false, action: ((EffectButton) -> Void)? = nil) {
+         dims: Bool = false, action: (@MainActor (EffectButton) async -> Void)? = nil) {
         self.tracking = track
         self.action = action
         super.init( border: border, background: background, circular: circular, rounding: rounding, dims: dims )
@@ -83,7 +88,6 @@ class EffectButton: EffectView {
 
         // - View
         self.layoutMargins = .zero
-        self.button.titleLabel?.textAlignment = .center
         self.button.titleLabel?.allowsDefaultTighteningForTruncation = true
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.activate()
@@ -101,7 +105,7 @@ class EffectButton: EffectView {
         self.addContentView( self.button )
 
         // - Layout
-        LayoutConfiguration( view: self.button )
+        LayoutConfiguration( view: button )
             .constrain( as: .box, margin: true ).activate()
     }
 
@@ -110,13 +114,15 @@ class EffectButton: EffectView {
     }
 
     func activate() {
-        self.track()
+        Task {
+            self.track()
 
-        if self.tapEffect {
-            TapEffectView().run( for: self )
+            if self.tapEffect {
+                TapEffectView().run( for: self )
+            }
+
+            await self.action?( self )
         }
-
-        self.action?( self )
     }
 
     func track() {
@@ -125,34 +131,33 @@ class EffectButton: EffectView {
         }
     }
 
-    func action(for controlEvents: UIControl.Event, _ action: @escaping () -> Void) {
-        self.action = { _ in action() }
+    func action(for controlEvents: UIControl.Event, _ action: @MainActor @escaping () async -> Void) {
+        self.action = { _ in await action() }
     }
 
-    func action(for controlEvents: UIControl.Event, _ action: @escaping (EffectButton) -> Void) {
+    func action(for controlEvents: UIControl.Event, _ action: @MainActor @escaping (EffectButton) async -> Void) {
         self.action = action
     }
 
     private func update() {
-        DispatchQueue.main.perform {
-            if !self.padded {
-                self.button.contentEdgeInsets = .zero
-            }
-            else if self.squareButtonConstraint.isActive {
-                self.button.contentEdgeInsets = .border( 12 )
-            }
-            else {
-                self.button.contentEdgeInsets = UIEdgeInsets( top: 6, left: 12, bottom: 6, right: 12 )
-            }
-
-            self.button.setImage( self.image, for: .normal )
-            self.button => \.titleLabel!.font => Theme.current.font.callout
-            //self.button => \.currentAttributedTitle => .font => Theme.current.font.callout
-            self.button => \.currentAttributedTitle => .foregroundColor => Theme.current.color.body
-            self.button => \.currentAttributedTitle => .strokeColor => Theme.current.color.secondary
-            self.button => \.currentTitleColor => Theme.current.color.body
-            self.button.sizeToFit()
+        self.buttonConfiguration.titleAlignment = .center
+        if !self.padded {
+            self.buttonConfiguration.contentInsets = .zero
         }
+        else if self.squareButtonConstraint.isActive {
+            self.buttonConfiguration.contentInsets = .init( top: 12, leading: 12, bottom: 12, trailing: 12 )
+        }
+        else {
+            self.buttonConfiguration.contentInsets = .init( top: 6, leading: 12, bottom: 6, trailing: 12 )
+        }
+
+        self.buttonConfiguration.image = self.image
+//        self => \.buttonConfiguration.titleLabel!.font => Theme.current.font.callout
+        self => \.buttonConfiguration.attributedTitle => .font => Theme.current.font.callout
+        self => \.buttonConfiguration.attributedTitle => .foregroundColor => Theme.current.color.body
+        self => \.buttonConfiguration.attributedTitle => .strokeColor => Theme.current.color.secondary
+//        self => \.buttonConfiguration.titleColor => Theme.current.color.body
+        self.button.sizeToFit()
     }
 }
 

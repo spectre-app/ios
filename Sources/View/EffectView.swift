@@ -199,23 +199,21 @@ class EffectView: BaseView, ThemeObserver {
     // MARK: - Updatable
 
     private func update() {
-        DispatchQueue.main.perform {
-            if self.isBackground {
-                self.innerShadowLayer.opacity = .on
-                self.blurEffect = UIBlurEffect( style: self.isDimmed ? .systemUltraThinMaterial : .systemThinMaterial )
-            }
-            else {
-                self.innerShadowLayer.opacity = .off
-                self.blurEffect = nil
-            }
-
-            self.layer.cornerCurve = self.isCircular ? .circular : .continuous
-            self.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2 : self.rounding
-            self.layer.borderWidth = self.borderWidth
-            self.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor :
-                                      Theme.current.color.body.get(forTraits: self.traitCollection))?.cgColor
-            self.blurEffectView.alpha = self.isDimmed ? .long : .on
-            self.innerShadowLayer.cornerRadius = self.layer.cornerRadius
+        if self.isBackground {
+            self.innerShadowLayer.opacity = .on
+            self.blurEffect = UIBlurEffect( style: self.isDimmed ? .systemUltraThinMaterial : .systemThinMaterial )
         }
+        else {
+            self.innerShadowLayer.opacity = .off
+            self.blurEffect = nil
+        }
+
+        self.layer.cornerCurve = self.isCircular ? .circular : .continuous
+        self.layer.cornerRadius = self.isCircular ? min( self.bounds.width, self.bounds.height ) / 2 : self.rounding
+        self.layer.borderWidth = self.borderWidth
+        self.layer.borderColor = (!self.isDimmedBySelection || self.isDimmed ? self.borderColor :
+                                  Theme.current.color.body.get(forTraits: self.traitCollection))?.cgColor
+        self.blurEffectView.alpha = self.isDimmed ? .long : .on
+        self.innerShadowLayer.cornerRadius = self.layer.cornerRadius
     }
 }

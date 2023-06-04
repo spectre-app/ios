@@ -11,9 +11,9 @@
 // =============================================================================
 
 import Foundation
+import RegexBuilder
 
 public enum AppError: LocalizedError {
-    case cancelled
     case `issue`(_ error: Error? = nil, title: String, details: CustomStringConvertible? = nil)
     case `internal`(cause: String, details: CustomStringConvertible? = nil)
     case `state`(title: String, details: CustomStringConvertible? = nil)
@@ -21,8 +21,6 @@ public enum AppError: LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-            case .cancelled:
-                return "Operation Cancelled"
             case .issue(let error, title: let title, _):
                 return [ title, error?.localizedDescription ]
                     .compactMap( { $0 } ).joined( separator: ": " ).nonEmpty
@@ -37,8 +35,6 @@ public enum AppError: LocalizedError {
     }
     public var failureReason: String? {
         switch self {
-            case .cancelled:
-                return nil
             case .issue(let error, _, let details):
                 return [ (error as NSError?)?.localizedFailureReason, details?.description ]
                     .compactMap( { $0 } ).joined( separator: "\n" ).nonEmpty
@@ -64,8 +60,8 @@ public enum AppError: LocalizedError {
     }
 }
 
-extension SpectreAlgorithm: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ SpectreAlgorithm ]( (.first)...(.last) )
+extension SpectreAlgorithm: Strideable, CaseIterable, Identifiable, CustomStringConvertible {
+    public static let allCases = [Self](.first ... .last)
 
     public var description:          String {
         String.valid( spectre_algorithm_short_name( self ) ) ?? "?"
@@ -81,10 +77,48 @@ extension SpectreCounter: Strideable, CustomStringConvertible {
     }
 }
 
-extension SpectreIdenticon: Equatable {
-    public static func == (lhs: SpectreIdenticon, rhs: SpectreIdenticon) -> Bool {
-        lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm &&
-        lhs.accessory == rhs.accessory && lhs.color == rhs.color
+extension SpectreIdenticon: Hashable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.leftArm == rhs.leftArm &&
+            lhs.body == rhs.body &&
+            lhs.rightArm == rhs.rightArm &&
+            lhs.accessory == rhs.accessory &&
+            lhs.color == rhs.color
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(leftArm)
+        hasher.combine(body)
+        hasher.combine(rightArm)
+        hasher.combine(accessory)
+        hasher.combine(color)
+    }
+
+    public static func from(_ identicon: String, color: SpectreIdenticonColor) -> Self? {
+        let regex = Regex {
+            Capture(.anyNonNewline)
+            Capture(.anyNonNewline)
+            Capture(.anyNonNewline)
+            Capture(.anyNonNewline)
+        }
+        guard let match = try? regex.firstMatch( in: identicon )
+        else { return nil }
+
+        return match.output.1.withCString { leftArm in
+            match.output.2.withCString { body in
+                match.output.3.withCString { rightArm in
+                    match.output.4.withCString { accessory in
+                        self.init(
+                                leftArm: spectre_strdup( leftArm ),
+                                body: spectre_strdup( body ),
+                                rightArm: spectre_strdup( rightArm ),
+                                accessory: spectre_strdup( accessory ),
+                                color: color
+                        )
+                    }
+                }
+            }
+        }
     }
 
     public var isUnset: Bool {
@@ -122,6 +156,8 @@ extension SpectreIdenticon: Equatable {
 }
 
 extension SpectreKeyID: Hashable, CustomStringConvertible {
+    public static var unset = SpectreKeyIDUnset
+
     public static func == (lhs: Self, rhs: Self) -> Bool {
         withUnsafeBytes( of: lhs.bytes, { lhs in withUnsafeBytes( of: rhs.bytes, lhs.elementsEqual ) } )
     }
@@ -160,7 +196,9 @@ extension SpectreIdenticonColor {
     }
 }
 
-extension SpectreKeyPurpose: CustomStringConvertible {
+extension SpectreKeyPurpose: CustomStringConvertible, CaseIterable, Identifiable {
+    public static let allCases: [Self] = [.authentication, .identification, .recovery]
+
     public var description: String {
         switch self {
             case .authentication:
@@ -179,8 +217,8 @@ extension SpectreKeyPurpose: CustomStringConvertible {
     }
 }
 
-extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
-    public static let allCases = [ SpectreFormat ]( (.first)...(.last) )
+extension SpectreFormat: Strideable, CaseIterable, Identifiable, CustomStringConvertible {
+    public static let allCases = [Self](.first ... .last)
 
     public var name: String? {
         .valid( spectre_format_name( self ) )
@@ -222,8 +260,8 @@ extension SpectreFormat: Strideable, CaseIterable, CustomStringConvertible {
     }
 }
 
-extension SpectreResultType: CustomStringConvertible, CaseIterable {
-    public static let allCases: [SpectreResultType] = [
+extension SpectreResultType: CustomStringConvertible, CaseIterable, Identifiable {
+    public static let allCases: [Self] = [
         .templateMaximum, .templateLong, .templateMedium, .templateShort,
         .templateBasic, .templatePIN, .templateName, .templatePhrase,
         .statePersonal, .stateDevice, .deriveKey,
@@ -272,6 +310,11 @@ extension UnsafeMutablePointer where Pointee == SpectreMarshalledFile {
 
     public func spectre_get(path: String...) -> Date? {
         self.pointee.data.spectre_get( path: path )
+    }
+
+    @discardableResult
+    public func spectre_unset(path: String...) -> Bool {
+        self.pointee.data.spectre_unset( path: path )
     }
 
     @discardableResult
@@ -441,8 +484,13 @@ extension Optional where Wrapped == UnsafeMutablePointer<SpectreMarshalledData> 
     }
 
     @discardableResult
-    public func spectre_set(_ value: Bool, path: [String]) -> Bool {
-        path.withCStringVaList { spectre_marshal_data_vset_bool( value, self, $0 ) }
+    func spectre_unset(path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_null(self, $0) }
+    }
+
+    @discardableResult
+    func spectre_set(_ value: Bool, path: [String]) -> Bool {
+        path.withCStringVaList { spectre_marshal_data_vset_bool(value, self, $0) }
     }
 
     @discardableResult

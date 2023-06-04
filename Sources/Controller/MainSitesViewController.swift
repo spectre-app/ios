@@ -19,10 +19,8 @@ class MainSitesViewController: BaseSitesViewController {
 
     override var user: User? {
         didSet {
-            DispatchQueue.main.perform {
-                self.userButton.title = self.user?.userName.name( style: .abbreviated )
-                self.userButton.sizeToFit()
-            }
+            self.userButton.title = self.user?.userName.name( style: .abbreviated )
+            self.userButton.sizeToFit()
         }
     }
 

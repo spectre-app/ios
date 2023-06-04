@@ -71,14 +71,13 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear( animated )
 
-        Marshal.shared.observers.register( observer: self )?
-               .didChange( userFiles: Marshal.shared.userFiles )
+        Marshal.shared.observers.register( observer: self )
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        Marshal.shared.updateTask.request( now: true, await: true )
+        Task.detached { await Marshal.shared.updateUserFiles() }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -124,9 +123,12 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         if let selectedCell = self.usersCarousel.cellForItem( at: indexPath ) as? UserCell {
             selectedCell.userEvent = self.userEvent
-            selectedCell.attemptBiometrics().failure { error in
-                inf( "Skipping biometrics: %@ [>PII]", error.localizedDescription )
-                pii( "[>] Error: %@", error )
+            Task.detached {
+                do { try await selectedCell.attemptBiometrics() }
+                catch {
+                    inf( "Skipping biometrics: %@ [>PII]", error.localizedDescription )
+                    pii( "[>] Error: %@", error )
+                }
             }
         }
         self.usersCarousel.visibleCells.forEach { ($0 as? UserCell)?.hasSelected = true }
@@ -331,7 +333,8 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             }
 
             self.biometricButton.action( for: .primaryActionTriggered ) { [unowned self] in
-                self.attemptBiometrics().failure { error in
+                do { try await self.attemptBiometrics() }
+                catch {
                     err( "Failed biometrics: %@ [>PII]", error.localizedDescription )
                     pii( "[>] Error: %@", error )
                 }
@@ -343,17 +346,27 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.placeholder = "Your personal secret"
             self.secretField.authenticater = { [weak self] keyFactory in
                 let secretEvent = Tracker.shared.begin( track: .subject( "users.user", action: "auth" ) )
-                return (self?.userItem.file?.authenticate( using: keyFactory )
-                        ?? User( userName: keyFactory.userName ).login( using: keyFactory ))
-                    .then {
-                        secretEvent.end(
-                                [ "result": $0.name,
-                                  "type": "secret",
-                                  "length": keyFactory.metadata.length,
-                                  "entropy": keyFactory.metadata.entropy,
-                                  "error": $0.error
-                                ] )
-                    }
+                do {
+                    let user = try await self?.userItem.file?.authenticate( using: keyFactory )
+                                         ??? (await User( userName: keyFactory.userName ).login( using: keyFactory ))
+                    secretEvent.end(
+                            [ "result": "success",
+                              "type": "secret",
+                              "length": keyFactory.metadata.length,
+                              "entropy": keyFactory.metadata.entropy,
+                            ] )
+                    return user
+                }
+                catch {
+                    secretEvent.end(
+                            [ "result": "failure",
+                              "type": "secret",
+                              "length": keyFactory.metadata.length,
+                              "entropy": keyFactory.metadata.entropy,
+                              "error": error
+                            ] )
+                    throw error
+                }
             }
             self.secretField.authenticated = { [weak self] result in
                 do {
@@ -373,15 +386,15 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.secretField.action( for: .editingChanged ) { [unowned self] in
                 let secretText = self.secretField.text
 
-                DispatchQueue.api.perform {
-                    var strengthText: Text?, strengthProgress: Double = 0
-                    if let timeToCrack = Attacker.single.timeToCrack( string: secretText, hash: .spectre ) {
+                Task.detached {
+                    var strengthText: Message?, strengthProgress: Double = 0
+                    if let timeToCrack = await Attacker.single.timeToCrack( string: secretText, hash: .spectre ) {
                         strengthProgress = ((timeToCrack.period.seconds / age_of_the_universe) as NSDecimalNumber).doubleValue
                         strengthProgress = pow( 1 - pow( strengthProgress - 1, 30 ), 1 / 30.0 )
                         strengthText = "\(.icon( "shield-slash" )) \(timeToCrack.period.normalize.brief)︎"
                     }
 
-                    DispatchQueue.main.perform {
+                    await MainActor.run { [strengthText, strengthProgress] in
                         self.strengthMeter.progress = Float( strengthProgress )
                         self.strengthMeter.progressTintColor = .systemGreen
                         self.strengthMeter.trackTintColor = strengthProgress < 0.5 ? .systemRed : .systemOrange
@@ -518,7 +531,7 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.userItem = userItem
             self.userActions = userActions
             self.viewController = viewController
-            self.updateTask.request( now: true )
+            self.updateTask.request()
         }
 
         override func willMove(toWindow newWindow: UIWindow?) {
@@ -540,44 +553,40 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
 
         // MARK: - Private
 
-        func attemptBiometrics() -> Promise<User> {
+        func attemptBiometrics() async throws {
             guard InAppFeature.biometrics.isEnabled
-            else { return Promise( .failure( AppError.state( title: "Biometrics not available" ) ) ) }
+            else { throw AppError.state( title: "Biometrics not available" ) }
             guard let userFile = self.userItem.file, userFile.biometricLock
-            else { return Promise( .failure( AppError.state( title: "Biometrics not enabled", details: self.userItem.file ) ) ) }
+            else { throw AppError.state( title: "Biometrics not enabled", details: self.userItem.file ) }
             let keychainKeyFactory = KeychainKeyFactory( userName: userFile.userName )
-            guard keychainKeyFactory.isKeyPresent( for: userFile.algorithm )
-            else { return Promise( .failure( AppError.state( title: "Biometrics key not present" ) ) ) }
+            guard await keychainKeyFactory.isKeyPresent( for: userFile.algorithm )
+            else { throw AppError.state( title: "Biometrics key not present" ) }
 
-            return keychainKeyFactory.unlock().promising { userFile.authenticate( using: $0 ) }.then( on: .main ) {
-                [weak self] result in
+            do {
+                let user = try await userFile.authenticate( using: keychainKeyFactory.unlock() )
+                Feedback.shared.play( .trigger )
+                self.biometricButton.timing?.end(
+                        [ "result": "success",
+                          "type": "biometric",
+                          "factor": KeychainKeyFactory.factor.description,
+                        ] )
+                self.userEvent?.end( [ "result": "success", "type": "biometric" ] )
+                self.viewController?.login( user: user )
+            }
+            catch {
+                self.biometricButton.timing?.end(
+                        [ "result": "failure",
+                          "type": "biometric",
+                          "factor": KeychainKeyFactory.factor.description,
+                          "error": error,
+                        ] )
 
-                do {
-                    let user = try result.get()
-                    Feedback.shared.play( .trigger )
-                    self?.biometricButton.timing?.end(
-                            [ "result": result.name,
-                              "type": "biometric",
-                              "factor": KeychainKeyFactory.factor.description,
-                            ] )
-                    self?.userEvent?.end( [ "result": result.name, "type": "biometric" ] )
-                    self?.viewController?.login( user: user )
-                }
-                catch {
-                    self?.biometricButton.timing?.end(
-                            [ "result": result.name,
-                              "type": "biometric",
-                              "factor": KeychainKeyFactory.factor.description,
-                              "error": error,
-                            ] )
-
-                    switch error {
-                        case LAError.userCancel, LAError.userCancel, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
-                            wrn( "Biometrics cancelled: %@ [>PII]", error.localizedDescription )
-                            pii( "[>] Error: %@", error )
-                        default:
-                            mperror( title: "Couldn't unlock user", error: error )
-                    }
+                switch error {
+                    case LAError.userCancel, LAError.userFallback, LAError.systemCancel, LAError.appCancel, LAError.notInteractive:
+                        wrn( "Biometrics cancelled: %@ [>PII]", error.localizedDescription )
+                        pii( "[>] Error: %@", error )
+                    default:
+                        mperror( title: "Couldn't unlock user", error: error )
                 }
             }
         }
@@ -601,9 +610,13 @@ class BaseUsersViewController: BaseViewController, UICollectionViewDelegate, Mar
             self.strengthTips.isHidden = !self.isSelected || self.userItem.file != nil
             self.strengthMeter.isHidden = !self.isSelected || self.userItem.file != nil
             self.strengthLabel.isHidden = !self.isSelected || self.userItem.file != nil
-            self.biometricButton.isHidden = !InAppFeature.biometrics.isEnabled || !(self.userItem.file?.biometricLock ?? false)
-            || !(self.userItem.file?.keychainKeyFactory.isKeyPresent( for: self.userItem.file?.algorithm ?? .current ) ?? false)
             self.biometricButton.image = .icon( KeychainKeyFactory.factor.iconName )
+
+            if InAppFeature.biometrics.isEnabled, let file = self.userItem.file, file.biometricLock {
+                self.biometricButton.isHidden = !(await file.keychainKeyFactory.isKeyPresent( for: file.algorithm ))
+            } else {
+                self.biometricButton.isHidden = true
+            }
 
             if self.secretField.text?.isEmpty ?? true {
                 self.strengthMeter.progress = 0

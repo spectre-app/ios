@@ -17,7 +17,7 @@ class TipsView: BaseView {
     private let tipProgress = UIView()
     private var tipExpiryConfiguration: LayoutConfiguration<UIView>!
 
-    var tips:     [Text] {
+    var tips:     [Message] {
         didSet {
             self.cycle()
         }
@@ -33,7 +33,7 @@ class TipsView: BaseView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(tips: [Text], first: Int? = nil, random: Bool = false, duration: TimeInterval = 10) {
+    init(tips: [Message], first: Int? = nil, random: Bool = false, duration: TimeInterval = 10) {
         self.tips = tips
         self.nextTip = first
         self.random = random
@@ -76,39 +76,40 @@ class TipsView: BaseView {
     // MARK: - Interface
 
     func cycle() {
-        DispatchQueue.main.perform {
-            guard self.window != nil
-            else { return }
+        guard self.window != nil
+        else { return }
 
-            var tip: Text?
-            if let nextTip = self.nextTip {
-                tip = self.tips[nextTip]
-                self.nextTip = nil
+        var tip: Message?
+        if let nextTip = self.nextTip {
+            tip = self.tips[nextTip]
+            self.nextTip = nil
+        }
+        else if self.random {
+            tip = self.tips.randomElement()
+            while self.tips.count > 1 && tip?.description == self.tipLabel.text {
+                tip = self.tips.randomElement() ?? ""
             }
-            else if self.random {
-                tip = self.tips.randomElement()
-                while self.tips.count > 1 && tip?.description == self.tipLabel.text {
-                    tip = self.tips.randomElement() ?? ""
-                }
-            }
-            else {
-                self.currentTip = (self.currentTip + 1) % self.tips.count
-                tip = self.tips[self.currentTip]
-            }
+        }
+        else {
+            self.currentTip = (self.currentTip + 1) % self.tips.count
+            tip = self.tips[self.currentTip]
+        }
+
+        UIView.animate( withDuration: .short, animations: {
+            self.tipLabel.alpha = .off
+        }, completion: { _ in
+            self.tipLabel.applyText( tip ?? "" )
 
             UIView.animate( withDuration: .short, animations: {
-                self.tipLabel.alpha = .off
-            }, completion: { _ in
-                self.tipLabel.applyText( tip ?? "" )
-
-                UIView.animate( withDuration: .short, animations: {
-                    self.tipLabel.alpha = .on
-                } )
+                self.tipLabel.alpha = .on
             } )
+        } )
 
-            self.tipExpiryConfiguration.deactivate( animationDuration: 0 )
-            self.tipExpiryConfiguration.activate( animationDuration: self.duration )
-            DispatchQueue.main.perform( deadline: .now() + .seconds( self.duration ) ) { [weak self] in self?.cycle() }
+        self.tipExpiryConfiguration.deactivate( animationDuration: .zero )
+        self.tipExpiryConfiguration.activate( animationDuration: self.duration )
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64( (self?.duration ?? .zero) * Double( NSEC_PER_SEC ) ))
+            self?.cycle()
         }
     }
 }

@@ -12,6 +12,17 @@
 
 import Foundation
 
+public extension Sequence {
+    var async: AsyncStream<Element> {
+        .init { continuation in
+            for element in self {
+                continuation.yield(element)
+            }
+            continuation.finish()
+        }
+    }
+}
+
 extension Array {
     subscript(maybe index: Index) -> Element? {
         index < self.underestimatedCount || index < self.count ? self[index] : nil
@@ -370,20 +381,20 @@ extension URLSession {
         return configuration
     }
 
-    public func promise(with request: URLRequest) -> Promise<(data: Data, response: URLResponse)> {
-        let promise = Promise<(data: Data, response: URLResponse)>()
-        self.dataTask( with: request ) {
-                if let error = $2 {
-                    promise.finish( .failure( error ) )
-                }
-                else if let data = $0, let response = $1 {
-                    promise.finish( .success( (data, response) ) )
-                }
-                else {
-                    promise.finish( .failure( AppError.internal( cause: "Missing error, data or response to URL request", details: request ) ) )
-                }
-            }
-            .resume()
-        return promise
-    }
+//    public func promise(with request: URLRequest) async -> (data: Data, response: URLResponse) {
+//        let promise = Promise<(data: Data, response: URLResponse)>()
+//        self.dataTask( with: request ) {
+//                if let error = $2 {
+//                    promise.finish( .failure( error ) )
+//                }
+//                else if let data = $0, let response = $1 {
+//                    promise.finish( .success( (data, response) ) )
+//                }
+//                else {
+//                    promise.finish( .failure( AppError.internal( cause: "Missing error, data or response to URL request", details: request ) ) )
+//                }
+//            }
+//            .resume()
+//        return promise
+//    }
 }

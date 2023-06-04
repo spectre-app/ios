@@ -91,6 +91,7 @@ public struct LayoutTarget<T: UIView>: CustomStringConvertible {
 /**
  * A layout configuration holds a set of operations that will be performed on the target when the configuration's active state changes.
  */
+@MainActor
 public protocol AnyLayoutConfiguration: AnyObject, CustomStringConvertible, CustomDebugStringConvertible {
     var isActive: Bool { get set }
 
@@ -459,20 +460,15 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         else { return self }
 
         if duration > 0 {
-            DispatchQueue.main.perform {
                 UIView.animate( withDuration: duration ) { self.activate( parent: parent ) }
-            }
             return self
         }
         else if duration == 0 {
-            DispatchQueue.main.perform {
                 UIView.performWithoutAnimation { self.activate( parent: parent ) }
-            }
             return self
         }
         //dbg( "%@: activate: %@", parent, self )
 
-        DispatchQueue.main.perform {
             let targetView = self.target.view
 
             self.inactiveConfigurations.forEach {
@@ -506,7 +502,9 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             }
 
             if !self.constrainers.isEmpty {
-                self.constrainers.forEach( self.activate )
+                for constrainers in self.constrainers {
+                    self.activate(constrainers: constrainers)
+                }
             }
 
             self.properties.forEach { $0.activate( self.target.view ) }
@@ -527,7 +525,6 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             if parent == nil {
                 self.layoutIfNeeded()
             }
-        }
 
         return self
     }
@@ -552,20 +549,15 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
         guard self.activated
         else { return self }
         if duration > 0 {
-            DispatchQueue.main.perform {
                 UIView.animate( withDuration: duration ) { self.deactivate( parent: parent ) }
-            }
             return self
         }
         else if duration == 0 {
-            DispatchQueue.main.perform {
                 UIView.performWithoutAnimation { self.deactivate( parent: parent ) }
-            }
             return self
         }
         //dbg( "%@: deactivate: %@", parent, self )
 
-        DispatchQueue.main.perform {
             let targetView = self.target.view
 
             self.activeConfigurations.forEach {
@@ -614,7 +606,6 @@ public class LayoutConfiguration<T: UIView>: AnyLayoutConfiguration, ThemeObserv
             if parent == nil {
                 self.layoutIfNeeded()
             }
-        }
 
         return self
     }

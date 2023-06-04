@@ -49,11 +49,11 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
         self.model.observers.unregister( observer: self )
     }
 
-    override func doUpdate() {
+    override func doUpdate() async {
         self.color = AppConfig.shared.colorfulSites ? self.model.preview.color : nil
         self.image = self.model.preview.image
 
-        super.doUpdate()
+        await super.doUpdate()
     }
 
     // MARK: - SiteObserver
@@ -78,7 +78,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         value: { $0.counter },
                         update: { item, counter in
                             if let site = item.model, let viewController = item.viewController {
-                                AlertController.showChange( to: site, in: viewController ) {
+                                await AlertController.showChange( to: site, in: viewController ) {
                                     site.counter = counter
                                 }
                             }
@@ -105,7 +105,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         value: { $0.resultType },
                         update: { item, resultType in
                             if let site = item.model, let viewController = item.viewController {
-                                AlertController.showChange( to: site, in: viewController ) {
+                                await AlertController.showChange( to: site, in: viewController ) {
                                     site.resultType = resultType
                                 }
                             }
@@ -114,8 +114,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         caption: {
                             let attacker = $0.user?.attacker ?? .default
                             if InAppFeature.premium.isEnabled,
-                               let timeToCrack = attacker.timeToCrack( type: $0.resultType ) ??
-                                                 attacker.timeToCrack( string: try? $0.result()?.token.await() ) {
+                               let timeToCrack = await attacker.timeToCrack( type: $0.resultType ) ???
+                                                       (await attacker.timeToCrack( string: try? $0.result()?.task.value )) {
                                 return "\(.icon( "shield-slash" )) Time to crack: \(timeToCrack) 🅿︎"
                             }
                             else {
@@ -132,29 +132,27 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
     class PasswordResultItem: FieldItem<Site> {
         init() {
             super.init( title: nil, placeholder: "enter a password", contentType: .password,
-                        value: { try? $0.result()?.token.await() },
+                        value: { try? await $0.result()?.task.value },
                         update: { item, password in
                             guard let site = item.model, let viewController = item.viewController
                             else { return }
 
                             Tracker.shared.event( track: .subject( "site", action: "result", [
                                 "type": "\(site.resultType)",
-                                "entropy": Attacker.entropy( string: password ),
+                                "entropy": await Attacker.entropy( string: password ),
                             ] ) )
 
-                            site.state( resultParam: password )?.token.then { result in
-                                do {
-                                    try AlertController.showChange( to: site, in: viewController ) {
-                                        site.resultState = try result.get()
-                                    }
+                            do {
+                                try await AlertController.showChange( to: site, in: viewController ) {
+                                    site.resultState = try await site.state( resultParam: password )?.task.value
                                 }
-                                catch { mperror( title: "Couldn't update site password", error: error ) }
                             }
+                            catch { mperror( title: "Couldn't update site password", error: error ) }
                         } )
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             (self.view as? FieldItemView)?.valueField.isEnabled = self.model?.resultType.in( class: .stateful ) ?? false
         }
@@ -174,7 +172,7 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                         value: { $0.loginType },
                         update: { item, loginType in
                             if let site = item.model, let viewController = item.viewController {
-                                AlertController.showChange( to: site, in: viewController ) {
+                                await AlertController.showChange( to: site, in: viewController ) {
                                     site.loginType = loginType
                                 }
                             }
@@ -204,24 +202,22 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
         init() {
             super.init( title: nil, placeholder: "enter a login name", contentType: .username,
-                        value: { try? $0.result( keyPurpose: .identification )?.token.await() },
+                        value: { try? await $0.result( keyPurpose: .identification )?.task.value },
                         update: { item, login in
                             guard let site = item.model, let viewController = item.viewController
                             else { return }
 
                             Tracker.shared.event( track: .subject( "site", action: "login", [
                                 "type": "\(site.loginType)",
-                                "entropy": Attacker.entropy( string: login ),
+                                "entropy": await Attacker.entropy( string: login ),
                             ] ) )
 
-                            site.state( keyPurpose: .identification, resultParam: login )?.token.then { result in
-                                do {
-                                    try AlertController.showChange( to: site, in: viewController ) {
-                                        site.loginState = try result.get()
-                                    }
+                            do {
+                                try await AlertController.showChange( to: site, in: viewController ) {
+                                    site.loginState = try await site.state( keyPurpose: .identification, resultParam: login )?.task.value
                                 }
-                                catch { mperror( title: "Couldn't update login name", error: error ) }
                             }
+                            catch { mperror( title: "Couldn't update login name", error: error ) }
                         } )
 
             self.addBehaviour( FeatureConditionalBehaviour( feature: .logins, effect: .reveals ) )
@@ -247,8 +243,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             super.textFieldShouldBeginEditing( textField ) && (self.model?.loginType.in( class: .stateful ) ?? false)
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             self.userButton.title = self.model?.user?.userName.name( style: .abbreviated )
             self.userButton.sizeToFit()
@@ -257,15 +253,12 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
         }
     }
 
-    class SecurityAnswerItem: ListItem<Site, Question, SecurityAnswerItem.Cell> {
+    class SecurityAnswerItem: ListItem<Site, Question.ID, SecurityAnswerItem.Cell> {
         // swiftlint:disable:next function_body_length
         init() {
             super.init( title: "Security Answers 🅿︎",
                         values: {
-                            $0.questions.reduce( [ "": Question( site: $0, keyword: "" ) ] ) {
-                                  $0.merging( [ $1.keyword: $1 ], uniquingKeysWith: { $1 } )
-                              }
-                              .values.sorted()
+                            Set($0.questions.map(\.id)).union([""]).sorted()
                         },
                         subitems: [
                             ButtonItem( track: .subject( "site.question", action: "add" ),
@@ -334,14 +327,18 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             self.addBehaviour( FeatureConditionalBehaviour( feature: .answers, effect: .enables ) )
         }
 
-        override func populate(_ cell: Cell, indexPath: IndexPath, value: Question) {
-            cell.question = value
+        override func populate(_ cell: Cell, indexPath: IndexPath, value: Question.ID) {
+            var question = model?.questions.first { $0.id == value }
+            if question == nil, value == "", let model {
+                question = Question(site: model, keyword: value)
+            }
+            cell.question = question
         }
 
-        override func delete(value: Question) {
+        override func delete(value: Question.ID) {
             trc( "Trashing security question: %@", value )
 
-            self.model?.questions.removeAll { $0 === value }
+            self.model?.questions.removeAll { $0.id == value }
         }
 
         class Cell: UITableViewCell {
@@ -354,9 +351,9 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
 
             weak var question: Question? {
                 didSet {
-                    self.question?.result()?.token.then( on: .main ) {
+                    Task {
                         do {
-                            self.resultLabel.text = try $0.get()
+                            self.resultLabel.text = try await self.question?.result()?.task.value
                             self.keywordLabel.text = self.question?.keyword.nonEmpty ?? "(generic)"
                         }
                         catch {
@@ -471,16 +468,20 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
                 if site.algorithm < .last {
                     let upgrade = site.algorithm.advanced( by: 1 )
                     alertController.addAction( UIAlertAction( title: "Upgrade to \(upgrade.localizedDescription)", style: .default ) { _ in
-                        AlertController.showChange( to: site, in: viewController ) {
-                            site.algorithm = upgrade
+                        Task {
+                            await AlertController.showChange( to: site, in: viewController ) {
+                                site.algorithm = upgrade
+                            }
                         }
                     } )
                 }
                 if site.algorithm > .first {
                     let downgrade = site.algorithm.advanced( by: -1 )
                     alertController.addAction( UIAlertAction( title: "Downgrade to \(downgrade.localizedDescription)", style: .default ) { _ in
-                        AlertController.showChange( to: site, in: viewController ) {
-                            site.algorithm = downgrade
+                        Task {
+                            await AlertController.showChange( to: site, in: viewController ) {
+                                site.algorithm = downgrade
+                            }
                         }
                     } )
                 }
@@ -489,8 +490,8 @@ class DetailSiteViewController: ItemsViewController<Site>, SiteObserver, AppConf
             } )
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             if let itemView = self.view as? LabelItemView {
                 if self.model?.algorithm == .current {

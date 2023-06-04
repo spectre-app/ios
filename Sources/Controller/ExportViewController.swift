@@ -30,9 +30,7 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
 
     override var user: User? {
         didSet {
-            DispatchQueue.main.perform {
-                self.subtitleLabel.text = self.user?.userName
-            }
+            self.subtitleLabel.text = self.user?.userName
         }
     }
     var format:   SpectreFormat {
@@ -91,19 +89,23 @@ class ExportViewController: BaseUserViewController, UIPopoverPresentationControl
             else { return }
 
             trc( "Requested export of %@, format: %@, redacted: %d", user, self.format, self.redacted )
+            do {
+                let item               = try await Marshal.ActivityItem( user: user, format: self.format, redacted: self.redacted )
+                let activityController = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
+                activityController.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
+                    pii( "Export activity completed: %d, error: %@", completed, activityError )
 
-            let item               = Marshal.ActivityItem( user: user, format: self.format, redacted: self.redacted )
-            let activityController = UIActivityViewController( activityItems: [ item, item.text() ], applicationActivities: nil )
-            activityController.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
-                pii( "Export activity completed: %d, error: %@", completed, activityError )
-
-                item.activityViewController( activityController, completed: completed, forActivityType: activityType,
-                                             returnedItems: returnedItems, activityError: activityError )
-                self.dismiss( animated: true )
+                    item.activityViewController( activityController, completed: completed, forActivityType: activityType,
+                                                 returnedItems: returnedItems, activityError: activityError )
+                    self.dismiss( animated: true )
+                }
+                activityController.popoverPresentationController?.sourceView = self.exportButton
+                activityController.popoverPresentationController?.sourceRect = self.exportButton.bounds
+                self.present( activityController, animated: true )
             }
-            activityController.popoverPresentationController?.sourceView = self.exportButton
-            activityController.popoverPresentationController?.sourceRect = self.exportButton.bounds
-            self.present( activityController, animated: true )
+            catch {
+                mperror( title: "Couldn't export user document", details: self.user, error: error, in: self.view )
+            }
         }
 
         self.contentView.axis = .vertical

@@ -12,41 +12,33 @@
 
 import UIKit
 
+var alertWindow: UIWindow?
+
 #if TARGET_APP
 extension AlertController {
-    static func showChange(to site: Site, in viewController: UIViewController, by operation: () throws -> Void) rethrows {
+    static func showChange(to site: Site, in viewController: UIViewController, by operation: @escaping () async throws -> Void) async rethrows {
         let oldSite = site.copy()
-        try operation()
+        try await operation()
 
-        if let oldPassword = oldSite.result( keyPurpose: .authentication ),
-           let newPassword = site.result( keyPurpose: .authentication ) {
-            oldPassword.token.and( newPassword.token ).success {
-                if $0.0 != $0.1 {
-                    self.forSite( site, in: viewController, changedFrom: oldSite )
-                }
-                else if let oldLogin = oldSite.result( keyPurpose: .identification ),
-                        let newLogin = site.result( keyPurpose: .identification ) {
-                    oldLogin.token.and( newLogin.token ).success {
-                        if $0.0 != $0.1 {
-                            self.forSite( site, in: viewController, changedFrom: oldSite )
-                        }
-                        else if let oldAnswer = oldSite.result( keyPurpose: .recovery ),
-                                let newAnswer = site.result( keyPurpose: .recovery ) {
-                            oldAnswer.token.and( newAnswer.token ).success {
-                                if $0.0 != $0.1 {
-                                    self.forSite( site, in: viewController, changedFrom: oldSite )
-                                }
-                            }.failure {
-                                mperror( title: "Couldn't show site change", error: $0 )
-                            }
-                        }
-                    }.failure {
-                        mperror( title: "Couldn't show site change", error: $0 )
-                    }
-                }
-            }.failure {
-                mperror( title: "Couldn't show site change", error: $0 )
+        do {
+            if let oldPassword = try await oldSite.result( keyPurpose: .authentication )?.task.value,
+               let newPassword = try await site.result( keyPurpose: .authentication )?.task.value,
+               oldPassword != newPassword {
+                self.forSite( site, in: viewController, changedFrom: oldSite )
             }
+            else if let oldLogin = try await oldSite.result( keyPurpose: .identification )?.task.value,
+                    let newLogin = try await site.result( keyPurpose: .identification )?.task.value,
+                    oldLogin != newLogin {
+                self.forSite( site, in: viewController, changedFrom: oldSite )
+            }
+            else if let oldAnswer = try await oldSite.result( keyPurpose: .recovery )?.task.value,
+                    let newAnswer = try await site.result( keyPurpose: .recovery )?.task.value,
+                    oldAnswer != newAnswer {
+                self.forSite( site, in: viewController, changedFrom: oldSite )
+            }
+        }
+        catch {
+            mperror( title: "Couldn't show site change", error: error )
         }
     }
 
@@ -64,6 +56,7 @@ extension AlertController {
 }
 #endif
 
+@MainActor
 class AlertController {
     // The view owns the AlertController instead of the other way around since the controller's lifetime depends on the alert presence in the view.
     private weak var view: UIView?
@@ -86,23 +79,19 @@ class AlertController {
 
     // MARK: - Life
 
-    private lazy var title   = self.titleFactory()
-    private lazy var message = self.messageFactory()
-    private lazy var details = self.detailsFactory()
-    private lazy var content = self.contentFactory()
-    private let titleFactory:   () -> String?
-    private let messageFactory: () -> String?
-    private let detailsFactory: () -> String?
-    private let contentFactory: () -> UIView?
+    private let title:   String?
+    private let message: String?
+    private let details: String?
+    private let content: UIView?
     private let level:          SpectreLogLevel
 
-    init(title: @escaping @autoclosure () -> String?, message: @escaping @autoclosure () -> String? = nil,
-         details: @escaping @autoclosure () -> String? = nil, content: @escaping @autoclosure () -> UIView? = nil,
+    init(title: String?, message: String? = nil,
+         details: String? = nil, content: UIView? = nil,
          level: SpectreLogLevel = .info) {
-        self.titleFactory = title
-        self.messageFactory = message
-        self.detailsFactory = details
-        self.contentFactory = content
+        self.title = title
+        self.message = message
+        self.details = details
+        self.content = content
         self.level = level
         LeakRegistry.shared.register( self )
     }
@@ -110,7 +99,7 @@ class AlertController {
     // MARK: - Interface
 
     @discardableResult
-    public func show(in host: @escaping @autoclosure () -> UIView? = nil, dismissAutomatically: Bool = true,
+    public func show(in host: UIView? = nil, dismissAutomatically: Bool = true,
                      file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) -> Self {
         if let details = self.details {
             log( file: file, line: line, function: function, dso: dso, level: self.level, "%@: %@ [>PII]", [ self.title, self.message ] )
@@ -121,40 +110,32 @@ class AlertController {
         }
 
         // TODO: Stack multiple alerts
-        DispatchQueue.main.perform {
-            let host   = host()
-            var window = host?.window ?? host as? UIWindow
-            #if TARGET_APP
-            window = window ?? UIApplication.shared.windows.first
-            #endif
-            guard let window = window
-            else {
-                wrn( "No view to present alert: %@", self.title )
-                return
-            }
+        guard let window = host as? UIWindow ?? host?.window ?? alertWindow
+        else {
+            wrn( "No view to present alert: %@", self.title )
+            return self
+        }
 
-            let view = self.loadView()
-            window.addSubview( view )
-            self.view = view
+        let view = self.loadView()
+        window.addSubview( view )
+        self.view = view
 
-            LayoutConfiguration( view: view )
-                .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
-                .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
-                .activate()
-            self.appearanceConfiguration.deactivate()
-            self.activationConfiguration.deactivate()
-            UIView.animate( withDuration: .long) { self.appearanceConfiguration.activate() } completion: { _ in
-                if dismissAutomatically {
-                    self.dismissTask.request()
-                }
+        LayoutConfiguration( view: view )
+            .constrain { $1.leadingAnchor.constraint( equalTo: $0.leadingAnchor, constant: -2 ) }
+            .constrain { $1.trailingAnchor.constraint( equalTo: $0.trailingAnchor, constant: 2 ) }
+            .activate()
+        self.appearanceConfiguration.deactivate()
+        self.activationConfiguration.deactivate()
+        UIView.animate( withDuration: .long) { self.appearanceConfiguration.activate() } completion: { _ in
+            if dismissAutomatically {
+                self.dismissTask.request()
             }
         }
 
         return self
     }
 
-    private lazy var dismissTask = DispatchTask( named: "Dismiss: \(self.title ?? "-")",
-                                                 queue: .main, deadline: .now() + .seconds( 5 ) ) { [weak self] in
+    private lazy var dismissTask = DispatchTask( named: "Dismiss: \(self.title ?? "-")", deadline: 5 ) { @MainActor [weak self] in
         guard let self = self, let view = self.view, view.superview != nil
         else { return }
 
@@ -164,27 +145,24 @@ class AlertController {
     }
 
     public func dismiss() {
-        self.dismissTask.request( now: true )
+        self.dismissTask.request()
     }
 
     public func activate() {
         self.dismissTask.cancel()
 
-        DispatchQueue.main.perform {
-            UIView.animate( withDuration: .long ) { self.activationConfiguration.activate() }
-        }
+        UIView.animate( withDuration: .long ) { self.activationConfiguration.activate() }
     }
 
     // MARK: - Private
 
     private func loadView() -> UIView {
-        let content = self.contentFactory()
-        if let spinner = content as? UIActivityIndicatorView {
+        if let spinner = self.content as? UIActivityIndicatorView {
             spinner.startAnimating()
         }
 
         let contentStack = UIStackView( arrangedSubviews: [
-            self.expandChevron, self.titleLabel, self.messageLabel, content, self.detailLabel,
+            self.expandChevron, self.titleLabel, self.messageLabel, self.content, self.detailLabel,
         ].compactMap { $0 } )
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.axis = .vertical
@@ -242,6 +220,8 @@ public func mperror(title: String, message: CustomStringConvertible? = nil,
                     error?.underlying.joined( separator: "\n" ), ]
         .compactMap( { $0 } ).joined( separator: "\n" )
 
-    AlertController( title: title, message: message, details: details, level: .error )
-        .show( in: view, file: file, line: line, function: function, dso: dso )
+    Task { @MainActor in
+        AlertController( title: title, message: message, details: details, level: .error )
+            .show( in: view, file: file, line: line, function: function, dso: dso )
+    }
 }

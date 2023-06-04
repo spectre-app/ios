@@ -12,13 +12,18 @@
 
 import Foundation
 
-public protocol Observable {
+public protocol Observed {
     associatedtype O: Any
     var observers: Observers<O> { get }
 }
 
 public class Observers<O> {
     private var observers = [ WeakBox<O> ]()
+    private let registration: (O) -> Void
+
+    public init(registration: @escaping (O) -> Void = { _ in }) {
+        self.registration = registration
+    }
 
     @discardableResult
     public func register(observer: O) -> O? {
@@ -27,6 +32,7 @@ public class Observers<O> {
             return nil
         }
         self.observers.append( box )
+        self.registration(observer)
         return observer
     }
 

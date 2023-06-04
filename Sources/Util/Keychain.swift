@@ -13,8 +13,10 @@
 import UIKit
 import LocalAuthentication
 
-public class Keychain {
-    private static func keyQuery(for userName: String, algorithm: SpectreAlgorithm, context: LAContext?) throws
+public actor Keychain {
+    public static let shared = Keychain()
+
+    private func keyQuery(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) throws
             -> [CFString: Any] {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
@@ -31,35 +33,24 @@ public class Keychain {
             kSecAttrAccount: userName,
             kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
-            kSecUseOperationPrompt: "Access \(userName)'s user key.",
             kSecUseDataProtectionKeychain: true,
+            kSecUseAuthenticationContext: context,
         ]
         #if targetEnvironment(simulator)
         // FIXME: https://developer.apple.com/forums/thread/685773
         query.removeValue(forKey: kSecAttrAccessControl)
         #endif
 
-        if let context = context {
-            var error: NSError?
-            guard context.canEvaluatePolicy( .deviceOwnerAuthenticationWithBiometrics, error: &error ), error == nil
-            else {
-                throw AppError.issue( error, title: "Biometrics unavailable",
-                                      details: "Biometrics authentication is not available at this time." )
-            }
-
-            query[kSecUseAuthenticationContext] = context
-        }
-
         return query
     }
 
-    public static func keyStatus(for userName: String, algorithm: SpectreAlgorithm, context: LAContext?)
+    public func keyStatus(for userName: String, algorithm: SpectreAlgorithm, context: LAContext)
             -> (present: Bool, available: Bool, status: OSStatus) {
+        context.interactionNotAllowed = false
         guard var query = try? self.keyQuery( for: userName, algorithm: algorithm, context: context )
         else {
             return (present: false, available: false, status: errSecBadReq)
         }
-        query[kSecUseAuthenticationUI] = kSecUseAuthenticationUIFail
         query[kSecReturnAttributes] = false
         query[kSecReturnData] = false
 
@@ -72,67 +63,58 @@ public class Keychain {
         return (present: status != errSecItemNotFound, available: status == errSecSuccess, status: status)
     }
 
-    @discardableResult
-    public static func deleteKey(for userName: String, algorithm: SpectreAlgorithm)
-            -> Promise<Void> {
-        DispatchQueue.api.promise {
-            let query = try self.keyQuery( for: userName, algorithm: algorithm, context: nil )
+    public func deleteKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) throws {
+        let query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
 
-            let status = SecItemDelete( query as CFDictionary )
-            guard status == errSecSuccess || status == errSecItemNotFound
-            else { throw AppError.issue( status, title: "Biometrics key not deleted", details: userName ) }
-        }
+        let status = SecItemDelete( query as CFDictionary )
+        guard status == errSecSuccess || status == errSecItemNotFound
+        else { throw AppError.issue( status, title: "Biometrics key not deleted", details: userName ) }
     }
 
-    public static func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext)
-            -> Promise<UnsafePointer<SpectreUserKey>> {
-        let spinner = AlertController( title: "Biometrics Authentication",
+    public func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) async throws
+            -> UnsafePointer<SpectreUserKey> {
+        let spinner = await AlertController( title: "Biometrics Authentication",
                                        message: "Please authenticate to access user key for:\n\(userName)",
                                        content: UIActivityIndicatorView( style: .medium ) )
-        spinner.show( dismissAutomatically: false )
+        await spinner.show( dismissAutomatically: false )
+        defer { Task { @MainActor in spinner.dismiss() } }
 
-        return DispatchQueue.api.promise {
-                                var query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
-                                query[kSecReturnData] = true
+        context.interactionNotAllowed = false
+        var query = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
+        query[kSecReturnData] = true
 
-                                var result: CFTypeRef?
-                                let status = SecItemCopyMatching( query as CFDictionary, &result )
-                                guard status == errSecSuccess
-                                else { throw AppError.issue( status, title: "Biometrics key denied", details: userName ) }
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching( query as CFDictionary, &result )
+        guard status == errSecSuccess
+        else { throw AppError.issue( status, title: "Biometrics key denied", details: userName ) }
 
-                                guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
-                                else { throw AppError.internal( cause: "Biometrics key not valid", details: userName ) }
+        guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
+        else { throw AppError.internal( cause: "Biometrics key not valid", details: userName ) }
 
-                                let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
-                                data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: SpectreUserKey.self ) ) }
-                                return UnsafePointer( userKeyBytes )
-                            }
-                            .finally {
-                                spinner.dismiss()
-                            }
+        let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate( capacity: 1 )
+        data.withUnsafeBytes { userKeyBytes.initialize( to: $0.load( as: SpectreUserKey.self ) ) }
+        return UnsafePointer( userKeyBytes )
     }
 
-    @discardableResult
-    public static func saveKey(for userName: String, algorithm: SpectreAlgorithm, keyFactory: KeyFactory, context: LAContext)
-            -> Promise<Void> {
-        keyFactory.newKey( for: algorithm ).promise( on: .api ) { userKey in
-            defer { userKey.deallocate() }
+    public func saveKey(for userName: String, algorithm: SpectreAlgorithm, keyFactory: KeyFactory, context: LAContext) async throws {
+        let userKey = try await keyFactory.newKey( for: algorithm )
+        defer { userKey.deallocate() }
 
-            let attributes: [CFString: Any] = [
-                kSecValueData: Data( buffer: UnsafeBufferPointer( start: userKey, count: 1 ) ),
-                kSecAttrSynchronizable: false,
-                kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(userName)",
-                kSecAttrDescription: "\(productName) user key (\(algorithm))",
-            ]
+        let attributes: [CFString: Any] = [
+            kSecValueData: Data( buffer: UnsafeBufferPointer( start: userKey, count: 1 ) ),
+            kSecAttrSynchronizable: false,
+            kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(userName)",
+            kSecAttrDescription: "\(productName) user key (\(algorithm))",
+        ]
 
-            let query  = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
-            var status = SecItemUpdate( query as CFDictionary, attributes as CFDictionary )
-            if status == errSecItemNotFound {
-                status = SecItemAdd( query.merging( attributes, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
-            }
-            guard status == errSecSuccess
-            else { throw AppError.issue( status, title: "Biometrics key not saved", details: userName ) }
+        context.interactionNotAllowed = false
+        let query  = try self.keyQuery( for: userName, algorithm: algorithm, context: context )
+        var status = SecItemUpdate( query as CFDictionary, attributes as CFDictionary )
+        if status == errSecItemNotFound {
+            status = SecItemAdd( query.merging( attributes, uniquingKeysWith: { $1 } ) as CFDictionary, nil )
         }
+        guard status == errSecSuccess
+        else { throw AppError.issue( status, title: "Biometrics key not saved", details: userName ) }
     }
 }
 

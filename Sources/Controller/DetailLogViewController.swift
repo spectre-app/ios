@@ -146,9 +146,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
         class Cell: EffectCell {
             var level = SpectreLogLevel.trace {
                 didSet {
-                    DispatchQueue.main.perform {
-                        self.titleLabel.text = self.level.description
-                    }
+                    self.titleLabel.text = self.level.description
                 }
             }
 
@@ -189,7 +187,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
             super.init( value: {
                 let font = Theme.current.font.mono.get(forTraits: .current)?.withSize( 11 )
                 let boldFont = font?.withSymbolicTraits( .traitBold )
-                return LogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
+                return await LogSink.shared.enumerate( level: $0.logbookLevel ).reduce( NSMutableAttributedString() ) { logs, record in
                     logs.append( NSAttributedString(
                             string: "\(dateFormatter.string( from: record.occurrence )) \(record.level) | \(record.source)\n",
                             attributes: [
@@ -205,8 +203,8 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
                     return logs
                 }
             }, subitems: [
-                ButtonItem( track: .subject( "logbook", action: "copy" ), value: { _ in (label: "Copy Logs", image: nil) }, action: {
-                    let logs = LogSink.shared.enumerate( level: $0.model?.logbookLevel ?? .info ).reduce( "" ) { logs, log in
+                ButtonItem( track: .subject( "logbook", action: "copy" ), value: { _ in (label: "Copy Logs", image: nil) }, action: { item in
+                    let logs = await LogSink.shared.enumerate( level: item.model?.logbookLevel ?? .info ).reduce( "" ) { logs, log in
                         "\(logs)[\(dateFormatter.string( from: log.occurrence )) \(log.level) | \(log.source)] \(log.message)\n"
                     }
 
@@ -244,7 +242,7 @@ class DetailLogViewController: ItemsViewController<DetailLogViewController.Model
         }
     }
 
-    class Model: Observable {
+    class Model: Observed {
         let observers = Observers<ModelObserver>()
 
         var logbookLevel = LogSink.shared.level {

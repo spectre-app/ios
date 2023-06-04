@@ -31,6 +31,12 @@ func => <E: NSObject & UITraitEnvironment, V>(target: E, keyPath: KeyPath<E, V?>
     .for( target: target, nonnullKeyPath: nil, nullableKeyPath: keyPath, attribute: nil )
 }
 
+func => <E: NSObject & UITraitEnvironment>(propertyPath: PropertyPath<E, AttributedString>, attribute: NSAttributedString.Key)
+        -> PropertyPath<E, AttributedString> {
+    .for( target: propertyPath.target!, nonnullKeyPath: propertyPath.nonnullKeyPath,
+          nullableKeyPath: propertyPath.nullableKeyPath, attribute: attribute )
+}
+
 func => <E: NSObject & UITraitEnvironment>(propertyPath: PropertyPath<E, NSAttributedString>, attribute: NSAttributedString.Key)
         -> PropertyPath<E, NSAttributedString> {
     .for( target: propertyPath.target!, nonnullKeyPath: propertyPath.nonnullKeyPath,
@@ -52,6 +58,17 @@ func => <E, V>(propertyPath: PropertyPath<E, V>, property: Property<V>?) {//}
 }
 
 func => <E>(propertyPath: PropertyPath<E, CGColor>, property: Property<UIColor>?) {
+    guard let property = property
+    else {
+        propertyPath.unbind()
+        propertyPath.assign( value: nil )
+        return
+    }
+
+    propertyPath.bind( property: property )
+}
+
+func => <E, V>(propertyPath: PropertyPath<E, AttributedString>, property: Property<V>?) {
     guard let property = property
     else {
         propertyPath.unbind()
@@ -379,15 +396,14 @@ public enum AppIcon: String, CaseIterable {
     }
 
     #if TARGET_APP
+    @MainActor
     func activate() {
-        DispatchQueue.main.perform {
-            UIApplication.shared.setAlternateIconName( self == .primary ? nil : self.rawValue ) { error in
-                if let error = error {
-                    mperror( title: "Couldn't change app icon.", error: error )
-                }
-                else {
-                    AppConfig.shared.appIcon = self
-                }
+        UIApplication.shared.setAlternateIconName( self == .primary ? nil : self.rawValue ) { error in
+            if let error = error {
+                mperror( title: "Couldn't change app icon.", error: error )
+            }
+            else {
+                AppConfig.shared.appIcon = self
             }
         }
     }

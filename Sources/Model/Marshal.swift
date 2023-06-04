@@ -13,24 +13,25 @@
 import UIKit
 
 // swiftlint:disable:next type_body_length
-class Marshal: Observable, Updatable, LeakObserver {
+
+actor Marshal: Observed, LeakObserver {
     public static let shared = Marshal()
 
-    public let observers = Observers<MarshalObserver>()
+    public nonisolated lazy var observers = Observers<MarshalObserver>( registration: { [unowned self] observer in
+        Task { observer.didChange( userFiles: await self.userFiles ) }
+    } )
+
     public lazy var userFiles: [UserFile] = self.loadUserFiles() {
         didSet {
             self.observers.notify { $0.didChange( userFiles: self.userFiles ) }
 
-            AutoFill.shared.seed( self.userFiles )
+            Task.detached { await AutoFill.shared.seed( self.userFiles ) }
         }
     }
-
-    private let marshalQueue = DispatchQueue( label: "\(productName): Marshal", qos: .utility )
 
     // MARK: - Life
 
     private init() {
-        LeakRegistry.shared.unregister( self.updateTask )
         LeakRegistry.shared.observers.register( observer: self )
     }
 
@@ -49,30 +50,26 @@ class Marshal: Observable, Updatable, LeakObserver {
         }
     }
 
-    public func save(user: User) -> Promise<URL> {
+    public func save(user: User) async throws -> URL {
         let redacted = user.file?.pointee.info?.pointee.redacted ?? true
         let format = user.file.flatMap { $0.pointee.info?.pointee.format ?? .default } ?? .none
         guard let userURL = user.origin.flatMap( { format.is( url: $0 ) ? $0 : nil } ) ?? self.createURL( for: user, format: format )
-        else {
-            return Promise( .failure( AppError.internal( cause: "No path to marshal user", details: user ) ) )
-        }
+        else { throw AppError.internal( cause: "No path to marshal user", details: user ) }
 
-        return self.save( user: user, to: userURL, format: format, redacted: redacted )
+        return try await self.save( user: user, to: userURL, format: format, redacted: redacted )
     }
 
-    private func save(user: User, in directory: URL?, format: SpectreFormat, redacted: Bool) -> Promise<URL> {
+    private func save(user: User, in directory: URL?, format: SpectreFormat, redacted: Bool) async throws -> URL {
         guard let userURL = self.createURL( for: user, in: directory, format: format )
-        else {
-            return Promise( .failure( AppError.internal( cause: "No path to marshal user", details: user ) ) )
-        }
+        else { throw AppError.internal( cause: "No path to marshal user", details: user ) }
 
-        return self.save( user: user, to: userURL, format: format, redacted: redacted )
+        return try await self.save( user: user, to: userURL, format: format, redacted: redacted )
     }
 
-    private func save(user: User, to userURL: URL, format: SpectreFormat, redacted: Bool) -> Promise<URL> {
+    private func save(user: User, to userURL: URL, format: SpectreFormat, redacted: Bool) async throws -> URL {
         let saveEvent = Tracker.shared.begin( track: .subject( "user", action: "save" ) )
 
-        return self.marshalQueue.promising {
+        do {
             guard !userURL.hasDirectoryPath
             else {
                 saveEvent.end( [ "result": "!dir" ] )
@@ -90,155 +87,153 @@ class Marshal: Observable, Updatable, LeakObserver {
                 throw AppError.issue( error, title: "Cannot create document path", details: userURL )
             }
 
-            return self.export( user: user, format: format, redacted: redacted ).thenPromise { result in
-                saveEvent.end( [ "result": result.name, "error": result.error ] )
-                let exportData = try result.get()
+            let exportData = try await self.export( user: user, format: format, redacted: redacted )
 
-                // Save export data to user's origin.
-                var coordinateError: NSError?, saveError: Error?
-                NSFileCoordinator().coordinate( writingItemAt: userURL, error: &coordinateError ) { userURL in
-                    let securityScoped = userURL.startAccessingSecurityScopedResource()
-                    if !FileManager.default.createFile( atPath: userURL.path, contents: exportData ) {
-                        saveError = AppError.internal( cause: "Couldn't create file", details: userURL )
-                    }
-                    if securityScoped {
-                        userURL.stopAccessingSecurityScopedResource()
-                    }
+            // Save export data to user's origin.
+            var coordinateError: NSError?, saveError: Error?
+            NSFileCoordinator().coordinate( writingItemAt: userURL, error: &coordinateError ) { userURL in
+                let securityScoped = userURL.startAccessingSecurityScopedResource()
+                if !FileManager.default.createFile( atPath: userURL.path, contents: exportData ) {
+                    saveError = AppError.internal( cause: "Couldn't create file", details: userURL )
                 }
-                if let error = coordinateError ?? saveError {
-                    throw error
+                if securityScoped {
+                    userURL.stopAccessingSecurityScopedResource()
                 }
-
-                // If user sharing is enabled, share the export through the app's public documents as well.
-                if user.sharing {
-                    if let sharingURL = self.createURL( for: user, in: FileManager.appDocuments, format: format ) {
-                        if !FileManager.default.createFile( atPath: sharingURL.path, contents: exportData ) {
-                            wrn( "Issue sharing user: Couldn't create user file. [>PII]" )
-                            pii( "[>] URL: %@", sharingURL )
-                        }
-                    }
-                    else {
-                        wrn( "Issue sharing user: No application document path available." )
-                    }
-                }
-
-                self.updateTask.request()
-                return userURL
             }
+            if let error = coordinateError ?? saveError {
+                throw error
+            }
+
+            // If user sharing is enabled, share the export through the app's public documents as well.
+            if user.sharing {
+                if let sharingURL = self.createURL( for: user, in: FileManager.appDocuments, format: format ) {
+                    if !FileManager.default.createFile( atPath: sharingURL.path, contents: exportData ) {
+                        wrn( "Issue sharing user: Couldn't create user file. [>PII]" )
+                        pii( "[>] URL: %@", sharingURL )
+                    }
+                }
+                else {
+                    wrn( "Issue sharing user: No application document path available." )
+                }
+            }
+            saveEvent.end( [ "result": "success" ] )
+
+            self.updateUserFiles()
+            return userURL
+        }
+        catch {
+            saveEvent.end( [ "result": "failure", "error": error ] )
+            throw error
         }
     }
 
-    public func export(user: User, format: SpectreFormat, redacted: Bool) -> Promise<Data> {
+    public func export(user: User, format: SpectreFormat, redacted: Bool) async throws -> Data {
         let exportEvent = Tracker.shared.begin( track: .subject( "user", action: "export" ) )
 
-        return DispatchQueue.api.promising {
-                                guard let keyFactory = user.userKeyFactory
-                                else {
-                                    exportEvent.end( [ "result": "!keyFactory" ] )
-                                    throw AppError.state( title: "Not authenticated", details: user )
-                                }
+        guard let keyFactory = user.userKeyFactory
+        else {
+            exportEvent.end( [ "result": "!keyFactory" ] )
+            throw AppError.state( title: "Not authenticated", details: user )
+        }
 
-                                return keyFactory.provide()
-                            }
-                            .promise( on: .api ) { (keyProvider: @escaping SpectreKeyProvider) in
-                                guard let marshalledUser = spectre_marshal_user( user.userName, keyProvider, user.algorithm )
-                                else {
-                                    exportEvent.end( [ "result": "!marshal_user" ] )
-                                    throw AppError.internal( cause: "Couldn't marshal user", details: user )
-                                }
+        let keyProvider = keyFactory.provide()
+        guard let marshalledUser = spectre_marshal_user( user.userName, keyProvider, user.algorithm )
+        else {
+            exportEvent.end( [ "result": "!marshal_user" ] )
+            throw AppError.internal( cause: "Couldn't marshal user", details: user )
+        }
 
-                                marshalledUser.pointee.redacted = redacted
-                                marshalledUser.pointee.avatar = user.avatar.rawValue
-                                marshalledUser.pointee.identicon = user.identicon
-                                marshalledUser.pointee.keyID = user.userKeyID
-                                marshalledUser.pointee.defaultType = user.defaultType
-                                marshalledUser.pointee.loginType = user.loginType
-                                marshalledUser.pointee.loginState = spectre_strdup( user.loginState )
-                                marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
+        marshalledUser.pointee.redacted = redacted
+        marshalledUser.pointee.avatar = user.avatar.rawValue
+        marshalledUser.pointee.identicon = user.identicon
+        marshalledUser.pointee.keyID = user.userKeyID
+        marshalledUser.pointee.defaultType = user.defaultType
+        marshalledUser.pointee.loginType = user.loginType
+        marshalledUser.pointee.loginState = spectre_strdup( user.loginState )
+        marshalledUser.pointee.lastUsed = time_t( user.lastUsed.timeIntervalSince1970 )
 
-                                for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
-                                    guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType,
-                                                                                     site.counter, site.algorithm )
-                                    else {
-                                        exportEvent.end( [ "result": "!marshal_site" ] )
-                                        throw AppError.internal( cause: "Couldn't marshal site", details: [ user, site ] )
-                                    }
+        for site in user.sites.sorted( by: { $0.siteName < $1.siteName } ) {
+            guard let marshalledSite = spectre_marshal_site( marshalledUser, site.siteName, site.resultType, site.counter, site.algorithm )
+            else {
+                exportEvent.end( [ "result": "!marshal_site" ] )
+                throw AppError.internal( cause: "Couldn't marshal site", details: [ user, site ] as [Any] )
+            }
 
-                                    marshalledSite.pointee.resultState = spectre_strdup( site.resultState )
-                                    marshalledSite.pointee.loginType = site.loginType
-                                    marshalledSite.pointee.loginState = spectre_strdup( site.loginState )
-                                    marshalledSite.pointee.url = spectre_strdup( site.url )
-                                    marshalledSite.pointee.uses = site.uses
-                                    marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
+            marshalledSite.pointee.resultState = spectre_strdup( site.resultState )
+            marshalledSite.pointee.loginType = site.loginType
+            marshalledSite.pointee.loginState = spectre_strdup( site.loginState )
+            marshalledSite.pointee.url = spectre_strdup( site.url )
+            marshalledSite.pointee.uses = site.uses
+            marshalledSite.pointee.lastUsed = time_t( site.lastUsed.timeIntervalSince1970 )
 
-                                    for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
-                                        guard let marshalledQuestion = spectre_marshal_question( marshalledSite, question.keyword )
-                                        else {
-                                            exportEvent.end( [ "result": "!marshal_question" ] )
-                                            throw AppError.internal( cause: "Couldn't marshal question", details: [ user, site, question ] )
-                                        }
+            for question in site.questions.sorted( by: { $0.keyword < $1.keyword } ) {
+                guard let marshalledQuestion = spectre_marshal_question( marshalledSite, question.keyword )
+                else {
+                    exportEvent.end( [ "result": "!marshal_question" ] )
+                    throw AppError.internal( cause: "Couldn't marshal question", details: [ user, site, question ] as [Any] )
+                }
 
-                                        marshalledQuestion.pointee.type = question.resultType
-                                        marshalledQuestion.pointee.state = spectre_strdup( question.resultState )
-                                    }
-                                }
+                marshalledQuestion.pointee.type = question.resultType
+                marshalledQuestion.pointee.state = spectre_strdup( question.resultState )
+            }
+        }
 
-                                if let data = String.valid( spectre_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
-                                   user.file?.pointee.error.type == .success {
-                                    exportEvent.end( [ "result": "success" ] )
-                                    return data
-                                }
+        guard let data = String.valid( spectre_marshal_write( format, &user.file, marshalledUser ), consume: true )?.data( using: .utf8 ),
+              user.file?.pointee.error.type == .success
+        else {
+            exportEvent.end( [ "result": "!marshal_write" ] )
+            throw AppError.marshal( user.file?.pointee.error ?? SpectreMarshalError( type: .errorInternal, message: nil ),
+                                    title: "Issue writing user", details: user )
+        }
 
-                                exportEvent.end( [ "result": "!marshal_write" ] )
-                                throw AppError.marshal( user.file?.pointee.error ?? SpectreMarshalError( type: .errorInternal, message: nil ),
-                                                        title: "Issue writing user", details: user )
-                            }
+        exportEvent.end( [ "result": "success" ] )
+        return data
     }
 
     #if TARGET_APP
-    public func `import`(data: Data, viewController: UIViewController)
-            -> Promise<UserFile> {
+    public func `import`(data: Data, viewController: UIViewController) async throws -> UserFile {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "from-data" ) )
 
-        return DispatchQueue.api.promising {
-                                let importingFile = try UserFile( data: data )
-                                guard let importingURL = self.createURL( for: importingFile.userName, format: importingFile.format )
-                                else {
-                                    importEvent.end( [ "result": "!url" ] )
-                                    throw AppError.issue( title: "User not savable", details: importingFile )
-                                }
+        do {
+            let importingFile = try UserFile( data: data )
+            guard let importingURL = self.createURL( for: importingFile.userName, format: importingFile.format )
+            else {
+                importEvent.end( [ "result": "!url" ] )
+                throw AppError.issue( title: "User not savable", details: importingFile )
+            }
 
-                                if let existingFile = try UserFile( origin: importingURL ) {
-                                    return self.import( data: data, from: importingFile, into: existingFile, viewController: viewController ).then {
-                                        importEvent.end( [ "result": $0.name ] )
-                                    }
-                                }
-                                else {
-                                    return self.import( data: data, from: importingFile, into: importingURL, viewController: viewController ).then {
-                                        importEvent.end( [ "result": $0.name ] )
-                                    }
-                                }
-                            }
-                            .success( on: .main ) { _ in
-                                // Master Password purchase migration
-                                if AppConfig.shared.masterPasswordCustomer, !InAppFeature.premium.isEnabled {
-                                    viewController.present( DialogMasterPasswordViewController(), animated: true )
-                                }
-                            }
+            let importedFile: UserFile
+            if let existingFile = try UserFile( origin: importingURL ) {
+                importedFile = try await self.import( data: data, from: importingFile, into: existingFile, viewController: viewController )
+            }
+            else {
+                importedFile = try await self.import( data: data, from: importingFile, into: importingURL, viewController: viewController )
+            }
+
+            // Master Password purchase migration
+            if AppConfig.shared.masterPasswordCustomer, !InAppFeature.premium.isEnabled {
+                await viewController.present( DialogMasterPasswordViewController(), animated: true )
+            }
+
+            importEvent.end( [ "result": "success" ] )
+            return importedFile
+        }
+        catch {
+            importEvent.end( [ "result": "failure" ] )
+            throw error
+        }
     }
     #endif
 
     // MARK: - Private
 
     // swiftlint:disable:next function_body_length
-    private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile, viewController: UIViewController)
-            -> Promise<UserFile> {
+    @MainActor
+    private func `import`(data: Data, from importingFile: UserFile, into existingFile: UserFile, viewController: UIViewController) async throws
+            -> UserFile {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-file" ) )
 
-        return DispatchQueue.main.promising {
-            let promise = Promise<UserFile>()
-            promise.then { importEvent.end( [ "result": $0.name, "error": $0.error ] ) }
-
+        return try await withCheckedThrowingContinuation { continuation in
             let spinner         = AlertController( title: "Unlocking", message: importingFile.description,
                                                    content: UIActivityIndicatorView( style: .large ) )
             let secretField     = UserSecretField<User>( userName: existingFile.userName, identicon: existingFile.identicon )
@@ -252,14 +247,14 @@ class Marshal: Observable, Updatable, LeakObserver {
             """, preferredStyle: .alert )
             alertController.addTextField { secretField.passwordField = $0 }
             alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-                promise.finish( .failure( AppError.cancelled ) )
+                importEvent.end( [ "result": "cancelled" ] )
+                continuation.resume( throwing: CancellationError() )
             } )
             alertController.addAction( UIAlertAction( title: "Replace", style: .destructive ) { _ in
                 let replaceEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "replace" ) )
-                promise.then { replaceEvent.end( [ "result": $0.name, "error": $0.error ] ) }
 
                 guard let authentication = secretField.authenticate( { keyFactory in
-                    importingFile.authenticate( using: keyFactory )
+                    try await importingFile.authenticate( using: keyFactory )
                 } )
                 else {
                     mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.",
@@ -269,13 +264,13 @@ class Marshal: Observable, Updatable, LeakObserver {
                     return
                 }
 
-                spinner.show( in: viewController.view, dismissAutomatically: false )
-                authentication.then( on: .main ) { result in
-                    trc( "Import replace authentication: %@", result )
-                    spinner.dismiss()
+                Task {
+                    trc( "Import replace authentication" )
+                    spinner.show( in: viewController.view, dismissAutomatically: false )
 
                     do {
-                        _ = try result.get()
+                        _ = try await authentication.value
+                        spinner.dismiss()
 
                         if let existingURL = existingFile.origin {
                             if FileManager.default.fileExists( atPath: existingURL.path ) {
@@ -286,14 +281,26 @@ class Marshal: Observable, Updatable, LeakObserver {
                                 }
                             }
 
-                            self.import( data: data, from: importingFile, into: existingURL, viewController: viewController )
-                                .finishes( promise )
+                            do {
+                                continuation.resume( returning: try await self.import(
+                                        data: data, from: importingFile, into: existingURL, viewController: viewController
+                                ) )
+                                replaceEvent.end( [ "result": "success" ] )
+                                importEvent.end( [ "result": "success" ] )
+                            } catch {
+                                replaceEvent.end( [ "result": "failure", "error": error ] )
+                                importEvent.end( [ "result": "failure", "error": error ] )
+                                continuation.resume( throwing: error )
+                            }
                         }
                         else {
-                            promise.finish( .failure( AppError.internal( cause: "Target user has no document", details: existingFile ) ) )
+                            replaceEvent.end( [ "result": "!existingURL" ] )
+                            importEvent.end( [ "result": "!existingURL" ] )
+                            continuation.resume( throwing: AppError.internal( cause: "Target user has no document", details: existingFile ) )
                         }
                     }
                     catch {
+                        spinner.dismiss()
                         mperror( title: "Couldn't import user", message: "User could not be unlocked.",
                                  error: error, in: viewController.view )
                         replaceEvent.end( [ "result": "!userKey" ] )
@@ -302,59 +309,62 @@ class Marshal: Observable, Updatable, LeakObserver {
                 }
             } )
             alertController.addAction( UIAlertAction( title: "Merge", style: .default ) { _ in
-                let mergeEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "merge" ) )
-                promise.then { mergeEvent.end( [ "result": $0.name, "error": $0.error ] ) }
+                Task {
+                    let mergeEvent = Tracker.shared.begin( track: .subject( "import.to-file", action: "merge" ) )
 
-                guard let authentication = secretField.authenticate( { keyFactory in
-                    importingFile.authenticate( using: keyFactory ).orNil().and( existingFile.authenticate( using: keyFactory ).orNil() )
-                } )
-                else {
-                    mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.",
-                             in: viewController.view )
-                    mergeEvent.end( [ "result": "!userSecret" ] )
-                    viewController.present( alertController, animated: true )
-                    return
-                }
+                    guard let authentication = secretField.authenticate( { keyFactory in
+                        await (try? importingFile.authenticate( using: keyFactory ), try? existingFile.authenticate( using: keyFactory ))
+                    } )
+                    else {
+                        mperror( title: "Couldn't import user", message: "Authentication information cannot be left empty.",
+                                 in: viewController.view )
+                        mergeEvent.end( [ "result": "!userSecret" ] )
+                        viewController.present( alertController, animated: true )
+                        return
+                    }
 
-                spinner.show( in: viewController.view, dismissAutomatically: false )
-                authentication.then( on: .main ) { result in
-                    trc( "Import merge authentication: %@", result )
-                    spinner.dismiss()
+                    trc( "Import merge authentication" )
+                    spinner.show( in: viewController.view, dismissAutomatically: false )
 
                     do {
-                        let (importedUser, existedUser) = try result.get()
+                        let (importedUser, existedUser) = try await authentication.value
+                        spinner.dismiss()
 
                         if let importedUser = importedUser, let existedUser = existedUser {
-                            self.import( from: importedUser, into: existedUser, viewController: viewController )
-                                .promise { _ in existingFile }.finishes( promise )
+                            _ = await self.import( from: importedUser, into: existedUser, viewController: viewController )
+                            mergeEvent.end( [ "result": "success" ] )
+                            importEvent.end( [ "result": "success" ] )
+                            continuation.resume( returning: existingFile )
                         }
                         else if let importedUser = importedUser {
-                            UIAlertController.authenticate( userFile: existingFile, title: "Unlock Existing User", message:
-                                             """
-                                             The existing user is locked with a different personal secret.
+                            let existingUser = try await UIAlertController.authenticate(
+                                    userFile: existingFile, title: "Unlock Existing User", message:
+                            """
+                            The existing user is locked with a different personal secret.
 
-                                             To continue merging, also provide the existing user's personal secret.
+                            To continue merging, also provide the existing user's personal secret.
 
-                                             Replacing will delete the existing user and replace it with the imported user.
-                                             """, action: "Unlock", in: viewController,
-                                                            track: .subject( "import.to-file.merge", action: "unlockUser" ) )
-                                             .promising { existingUser in
-                                                 self.import( from: importedUser, into: existingUser, viewController: viewController )
-                                             }
-                                             .promise { _ in existingFile }.finishes( promise )
+                            Replacing will delete the existing user and replace it with the imported user.
+                            """, action: "Unlock", in: viewController,
+                                    track: .subject( "import.to-file.merge", action: "unlockUser" ) )
+                            _ = await self.import( from: importedUser, into: existingUser, viewController: viewController )
+                            mergeEvent.end( [ "result": "success" ] )
+                            importEvent.end( [ "result": "success" ] )
+                            continuation.resume( returning: existingFile )
                         }
                         else if let existedUser = existedUser {
-                            UIAlertController.authenticate( userFile: importingFile, title: "Unlock Import", message:
-                                             """
-                                             The import user is locked with a different personal secret.
+                            let importingUser = try await UIAlertController.authenticate(
+                                    userFile: importingFile, title: "Unlock Import", message:
+                            """
+                            The import user is locked with a different personal secret.
 
-                                             The continue merging, also provide the imported user's personal secret.
-                                             """, action: "Unlock", in: viewController,
-                                                            track: .subject( "import.to-file.merge", action: "unlockImport" ) )
-                                             .promising { importingUser in
-                                                 self.import( from: importingUser, into: existedUser, viewController: viewController )
-                                             }
-                                             .promise { _ in existingFile }.finishes( promise )
+                            The continue merging, also provide the imported user's personal secret.
+                            """, action: "Unlock", in: viewController,
+                                    track: .subject( "import.to-file.merge", action: "unlockImport" ) )
+                            _ = await self.import( from: importingUser, into: existedUser, viewController: viewController )
+                            mergeEvent.end( [ "result": "success" ] )
+                            importEvent.end( [ "result": "success" ] )
+                            continuation.resume( returning: existingFile )
                         }
                         else {
                             mperror( title: "Couldn't import user", message: "Couldn't unlock the user.", in: viewController.view )
@@ -363,134 +373,128 @@ class Marshal: Observable, Updatable, LeakObserver {
                         }
                     }
                     catch {
-                        promise.finish( .failure( AppError.internal( cause: "No known path for promise to fail" ) ) )
+                        spinner.dismiss()
+                        mergeEvent.end( [ "result": "failed", "error": error ] )
+                        importEvent.end( [ "result": "failed", "error": error ] )
+                        continuation.resume( throwing: AppError.internal( cause: "No known path for promise to fail" ) )
                     }
                 }
             } )
 
             viewController.present( alertController, animated: true )
-            return promise
         }
     }
 
-    private func `import`(from importedUser: User, into existedUser: User, viewController: UIViewController)
-            -> Promise<User> {
+    private func `import`(from importedUser: User, into existedUser: User, viewController: UIViewController) async
+            -> User {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-user" ) )
 
-        let spinner = AlertController( title: "Merging", message: existedUser.description,
-                                       content: UIActivityIndicatorView( style: .large ) )
+        let spinner = await AlertController( title: "Merging", message: existedUser.description,
+                                             content: UIActivityIndicatorView( style: .large ) )
+        await spinner.show( in: viewController.view, dismissAutomatically: false )
 
-        spinner.show( in: viewController.view, dismissAutomatically: false )
-
-        return DispatchQueue.api.promising {
-            var replacedSites = 0, newSites = 0
-            for importedSite in importedUser.sites {
-                if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
-                    if importedSite.lastUsed <= existedSite.lastUsed {
-                        continue
-                    }
-
-                    existedUser.sites.removeAll { $0 === existedSite }
-                    replacedSites += 1
-                }
-                else {
-                    newSites += 1
+        var replacedSites = 0, newSites = 0
+        for importedSite in importedUser.sites {
+            if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
+                if importedSite.lastUsed <= existedSite.lastUsed {
+                    continue
                 }
 
-                existedUser.sites.append( importedSite.copy( to: existedUser ) )
+                existedUser.sites.removeAll { $0 === existedSite }
+                replacedSites += 1
+            }
+            else {
+                newSites += 1
             }
 
-            var updatedUser = false
-            if importedUser.lastUsed >= existedUser.lastUsed {
-                existedUser.algorithm = importedUser.algorithm
-                existedUser.avatar = importedUser.avatar
-                existedUser.identicon = importedUser.identicon
-                existedUser.userKeyID = importedUser.userKeyID
-                existedUser.defaultType = importedUser.defaultType
-                existedUser.loginType = importedUser.loginType
-                existedUser.loginState = importedUser.loginState
-                existedUser.lastUsed = importedUser.lastUsed
-                existedUser.maskPasswords = importedUser.maskPasswords
-                existedUser.biometricLock = importedUser.biometricLock
-                existedUser.autofill = importedUser.autofill
-                existedUser.attacker = importedUser.attacker
-                updatedUser = true
-            }
-
-            return DispatchQueue.main.promise {
-                spinner.dismiss()
-
-                if !updatedUser && replacedSites + newSites == 0 {
-                    importEvent.end( [ "result": "success", "type": "skipped" ] )
-                    AlertController( title: "Import Skipped", message: existedUser.description, details:
-                    """
-                    The import into \(existedUser) was skipped.
-
-                    This merge import contained no information that was either new or missing for the existing user.
-                    """ ).show( in: viewController.view )
-                }
-                else {
-                    importEvent.end( [ "result": "success", "type": "merged" ] )
-                    AlertController( title: "Import Complete", message: existedUser.description, details:
-                    """
-                    Completed the import of sites into \(existedUser).
-
-                    This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
-                    \(updatedUser ? "The user settings were updated from the import."
-                                  : "The existing user's settings were more recent than the import.")
-                    """ ).show( in: viewController.view )
-                }
-
-                self.updateTask.request()
-                return existedUser
-            }
+            existedUser.sites.append( importedSite.copy( to: existedUser ) )
         }
+
+        var updatedUser = false
+        if importedUser.lastUsed >= existedUser.lastUsed {
+            existedUser.algorithm = importedUser.algorithm
+            existedUser.avatar = importedUser.avatar
+            existedUser.identicon = importedUser.identicon
+            existedUser.userKeyID = importedUser.userKeyID
+            existedUser.defaultType = importedUser.defaultType
+            existedUser.loginType = importedUser.loginType
+            existedUser.loginState = importedUser.loginState
+            existedUser.lastUsed = importedUser.lastUsed
+            existedUser.maskPasswords = importedUser.maskPasswords
+            existedUser.biometricLock = importedUser.biometricLock
+            existedUser.autofill = importedUser.autofill
+            existedUser.attacker = importedUser.attacker
+            updatedUser = true
+        }
+
+        await spinner.dismiss()
+
+        if !updatedUser && replacedSites + newSites == 0 {
+            importEvent.end( [ "result": "success", "type": "skipped" ] )
+            await AlertController( title: "Import Skipped", message: existedUser.description, details:
+            """
+            The import into \(existedUser) was skipped.
+
+            This merge import contained no information that was either new or missing for the existing user.
+            """ ).show( in: viewController.view )
+        }
+        else {
+            importEvent.end( [ "result": "success", "type": "merged" ] )
+            await AlertController( title: "Import Complete", message: existedUser.description, details:
+            """
+            Completed the import of sites into \(existedUser).
+
+            This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
+            \(updatedUser ? "The user settings were updated from the import."
+                          : "The existing user's settings were more recent than the import.")
+            """ ).show( in: viewController.view )
+        }
+
+        self.updateUserFiles()
+        return existedUser
     }
 
-    private func `import`(data: Data, from importingFile: UserFile, into documentURL: URL, viewController: UIViewController)
-            -> Promise<UserFile> {
+    @MainActor
+    private func `import`(data: Data, from importingFile: UserFile, into documentURL: URL, viewController: UIViewController) async throws
+            -> UserFile {
         let importEvent = Tracker.shared.begin( track: .subject( "import", action: "to-url" ) )
 
         let spinner = AlertController( title: "Replacing", message: documentURL.lastPathComponent,
-                                       content: UIActivityIndicatorView( style: .large ) )
+                                             content: UIActivityIndicatorView( style: .large ) )
         spinner.show( in: viewController.view, dismissAutomatically: false )
+        defer { spinner.dismiss() }
 
-        return DispatchQueue.api.promise {
-                                guard !documentURL.hasDirectoryPath
-                                else { throw AppError.internal( cause: "Cannot save to a directory URL", details: documentURL ) }
-                                do {
-                                    let documentDirectory = documentURL.deletingLastPathComponent()
-                                    if documentDirectory.hasDirectoryPath {
-                                        try FileManager.default.createDirectory(
-                                                at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
-                                    }
-                                }
-                                catch {
-                                    importEvent.end( [ "result": "!createPath" ] )
-                                    throw AppError.issue( error, title: "Cannot create document path", details: documentURL )
-                                }
+        guard !documentURL.hasDirectoryPath
+        else { throw AppError.internal( cause: "Cannot save to a directory URL", details: documentURL ) }
+        do {
+            let documentDirectory = documentURL.deletingLastPathComponent()
+            if documentDirectory.hasDirectoryPath {
+                try FileManager.default.createDirectory(
+                        at: documentURL.deletingLastPathComponent(), withIntermediateDirectories: true )
+            }
+        }
+        catch {
+            importEvent.end( [ "result": "!createPath" ] )
+            throw AppError.issue( error, title: "Cannot create document path", details: documentURL )
+        }
 
-                                if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
-                                    importEvent.end( [ "result": "!createFile" ] )
-                                    throw AppError.issue( title: "Cannot write user document", details: documentURL )
-                                }
-                                importingFile.origin = documentURL
+        if !FileManager.default.createFile( atPath: documentURL.path, contents: data ) {
+            importEvent.end( [ "result": "!createFile" ] )
+            throw AppError.issue( title: "Cannot write user document", details: documentURL )
+        }
+        importingFile.origin = documentURL
 
-                                importEvent.end( [ "result": "success", "type": "created" ] )
-                                AlertController( title: "Import Complete", message: documentURL.lastPathComponent, details:
-                                """
-                                Completed the import of \(importingFile) (\(importingFile.format)).
-                                This export file was created on \(importingFile.exportDate).
+        importEvent.end( [ "result": "success", "type": "created" ] )
+        AlertController( title: "Import Complete", message: documentURL.lastPathComponent, details:
+        """
+        Completed the import of \(importingFile) (\(importingFile.format)).
+        This export file was created on \(importingFile.exportDate).
 
-                                This was a direct installation of the import data, not a merge import.
-                                """ ).show( in: viewController.view )
+        This was a direct installation of the import data, not a merge import.
+        """ ).show( in: viewController.view )
 
-                                self.updateTask.request()
-                                return importingFile
-                            }
-                            .finally {
-                                spinner.dismiss()
-                            }
+        await self.updateUserFiles()
+        return importingFile
     }
 
     private func userDocuments() throws -> [URL] {
@@ -516,17 +520,15 @@ class Marshal: Observable, Updatable, LeakObserver {
                         .appendingPathExtension( formatExtension )
     }
 
-    // MARK: - Updatable
+    @discardableResult
+    public func updateUserFiles() -> [UserFile] {
+        self.userFiles = self.loadUserFiles()
+        return self.userFiles
+    }
 
-    private var isEnabled = true
-    lazy var updateTask: DispatchTask<[UserFile]> = LeakRegistry.shared.unregister(
-            DispatchTask.update( self, queue: self.marshalQueue ) { [weak self] in
-                guard let self = self, self.isEnabled
-                else { return [] }
-
-                self.userFiles = self.loadUserFiles()
-                return self.userFiles
-            } )
+    private func clearUserFiles() {
+        self.userFiles.removeAll()
+    }
 
     private func loadUserFiles() -> [UserFile] {
         do {
@@ -540,12 +542,11 @@ class Marshal: Observable, Updatable, LeakObserver {
 
     // MARK: - LeakObserver
 
-    func willReportLeaks() {
-        self.userFiles.removeAll()
+    nonisolated func willReportLeaks() {
+        Task { await self.clearUserFiles() }
     }
 
-    func shouldCancelOperations() {
-        self.isEnabled = false
+    nonisolated func shouldCancelOperations() {
     }
 
     // MARK: - Types
@@ -554,12 +555,16 @@ class Marshal: Observable, Updatable, LeakObserver {
         let user:     User
         let format:   SpectreFormat
         let redacted: Bool
-        var cleanup = [ URL ]()
+        let exportFile: URL
 
-        init(user: User, format: SpectreFormat, redacted: Bool) {
+        init(user: User, format: SpectreFormat, redacted: Bool) async throws {
             self.user = user
             self.format = format
             self.redacted = redacted
+            self.exportFile = try await Marshal.shared.save(
+                    user: self.user, in: URL( fileURLWithPath: NSTemporaryDirectory() ),
+                    format: self.format, redacted: self.redacted
+            )
         }
 
         func text() -> String {
@@ -591,17 +596,7 @@ class Marshal: Observable, Updatable, LeakObserver {
         func activityViewController(_ activityViewController: UIActivityViewController,
                                     itemForActivityType activityType: UIActivity.ActivityType?)
                 -> Any? {
-            do {
-                // FIXME: possible deadlock if await needs main thread?
-                let exportFile = try Marshal.shared.save( user: self.user, in: URL( fileURLWithPath: NSTemporaryDirectory() ),
-                                                          format: self.format, redacted: self.redacted ).await()
-                self.cleanup.append( exportFile )
-                return exportFile
-            }
-            catch {
-                mperror( title: "Couldn't export user document", details: self.user, error: error, in: activityViewController.view )
-                return nil
-            }
+            self.exportFile
         }
 
         func activityViewController(_ activityViewController: UIActivityViewController,
@@ -625,9 +620,7 @@ class Marshal: Observable, Updatable, LeakObserver {
         func activityViewController(_ activityViewController: UIActivityViewController,
                                     completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?,
                                     activityError error: Swift.Error?) {
-            self.cleanup.removeAll {
-                nil != (try? FileManager.default.removeItem( at: $0 ))
-            }
+            try? FileManager.default.removeItem( at: self.exportFile )
         }
     }
 
@@ -635,7 +628,7 @@ class Marshal: Observable, Updatable, LeakObserver {
         public lazy var keychainKeyFactory = KeychainKeyFactory( userName: self.userName )
 
         public var origin: URL?
-        public var file:   UnsafeMutablePointer<SpectreMarshalledFile>
+        public var file:   UnsafeMutablePointer<SpectreMarshalledFile>?
 
         public let format:     SpectreFormat
         public let exportDate: Date
@@ -645,13 +638,11 @@ class Marshal: Observable, Updatable, LeakObserver {
         public let avatar:    User.Avatar
         public let userName:  String
         public let identicon: SpectreIdenticon
-        public let userKeyID: SpectreKeyID
+        public var userKeyID: SpectreKeyID
         public let lastUsed:  Date
 
         public let biometricLock: Bool
         public let autofill:      Bool
-
-        public var resetKey = false
 
         public var id: String {
             self.userName
@@ -695,26 +686,41 @@ class Marshal: Observable, Updatable, LeakObserver {
             try self.init( file: file, origin: origin )
         }
 
-        init(file: UnsafeMutablePointer<SpectreMarshalledFile>, origin: URL? = nil) throws {
+        convenience init(file: UnsafeMutablePointer<SpectreMarshalledFile>, origin: URL? = nil) throws {
             guard file.pointee.error.type == .success
             else { throw AppError.marshal( file.pointee.error, title: "Cannot load user", details: origin ) }
             guard let info = file.pointee.info?.pointee, info.format != .none, let userName = String.valid( info.userName )
             else { throw AppError.state( title: "Corrupted user document", details: origin ) }
 
+            self.init(
+                    file: file, origin: origin,
+                    format: info.format, exportDate: Date( timeIntervalSince1970: TimeInterval( info.exportDate ) ),
+                    redacted: info.redacted, algorithm: info.algorithm, avatar: User.Avatar( rawValue: info.avatar ) ?? .avatar_0,
+                    userName: userName, identicon: info.identicon, userKeyID: info.keyID,
+                    lastUsed: Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) ),
+                    biometricLock: file.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false,
+                    autofill: file.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
+            )
+        }
+
+        init(file: UnsafeMutablePointer<SpectreMarshalledFile>? = nil, origin: URL? = nil,
+             format: SpectreFormat, exportDate: Date, redacted: Bool, algorithm: SpectreAlgorithm,
+             avatar: User.Avatar, userName: String, identicon: SpectreIdenticon, userKeyID: SpectreKeyID,
+             lastUsed: Date, biometricLock: Bool, autofill: Bool) {
             self.origin = origin
             self.file = file
-            self.format = info.format
-            self.exportDate = Date( timeIntervalSince1970: TimeInterval( info.exportDate ) )
-            self.redacted = info.redacted
-            self.algorithm = info.algorithm
-            self.avatar = User.Avatar( rawValue: info.avatar ) ?? .avatar_0
+            self.format = format
+            self.exportDate = exportDate
+            self.redacted = redacted
+            self.algorithm = algorithm
+            self.avatar = avatar
             self.userName = userName
-            self.identicon = info.identicon
-            self.userKeyID = info.keyID
-            self.lastUsed = Date( timeIntervalSince1970: TimeInterval( info.lastUsed ) )
+            self.identicon = identicon
+            self.userKeyID = userKeyID
+            self.lastUsed = lastUsed
 
-            self.biometricLock = self.file.spectre_get( path: "user", "_ext_spectre", "biometricLock" ) ?? false
-            self.autofill = self.file.spectre_get( path: "user", "_ext_spectre", "autofill" ) ?? false
+            self.biometricLock = biometricLock
+            self.autofill = autofill
             LeakRegistry.shared.register( self )
 
             for purchase in [
@@ -722,75 +728,106 @@ class Marshal: Observable, Updatable, LeakObserver {
                 "com.lyndir.masterpassword.products.generateanswers",
                 "com.lyndir.masterpassword.products.touchid",
             ] {
-                if let proof: String = self.file.spectre_get( path: "user", "_ext_mpw", purchase ),
+                if let proof: String = file?.spectre_get( path: "user", "_ext_mpw", purchase ),
                    let purchaseDigest = "\(self.userName)/\(purchase)".digest( salt: secrets.mpw.salt.b64Decrypt() )?.hex().prefix( 16 ),
                    proof == purchaseDigest {
                     AppConfig.shared.masterPasswordCustomer = true
                 }
 
-                self.file.spectre_set( nil, path: "user", "_ext_mpw", purchase )
+                file?.spectre_set( nil, path: "user", "_ext_mpw", purchase )
             }
         }
 
-        public func authenticate(using keyFactory: KeyFactory) -> Promise<User> {
-            (self.resetKey ? Promise( .success( nil ) ) : keyFactory.provide().optional()).promising( on: .api ) {
-                // Check origin for updates.
-                if let origin = self.origin, let file = try UserFile.load( origin: origin ) {
-                    self.file = file
-                }
+        public func resetKey() async throws {
+            if spectre_id_valid([self.userKeyID]) {
+                self.userKeyID = .unset
+                self.file?.spectre_unset(path: "user", "key_id")
 
-                // Authenticate against the file with the given keyFactory.
-                guard let marshalledUser = spectre_marshal_auth( self.file, $0 )?.pointee, self.file.pointee.error.type == .success
-                else { throw AppError.marshal( self.file.pointee.error, title: "Issue authenticating user", details: self.userName ) }
+                if let file, let origin {
+                    guard let data = String.valid(spectre_marshal_write(self.format, &self.file, nil), consume: true)?.data(using: .utf8),
+                          file.pointee.error.type == .success
+                    else {
+                        throw AppError.marshal(file.pointee.error, title: "Issue writing file", details: self)
+                    }
 
-                // Yield a fully authenticated user.
-                return User(
-                        algorithm: marshalledUser.algorithm,
-                        avatar: User.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
-                        userName: String.valid( marshalledUser.userName ) ?? self.userName,
-                        identicon: marshalledUser.identicon,
-                        userKeyID: self.resetKey ? SpectreKeyIDUnset : self.userKeyID,
-                        defaultType: marshalledUser.defaultType,
-                        loginType: marshalledUser.loginType,
-                        loginState: .valid( marshalledUser.loginState ),
-                        lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
-                        origin: self.origin, file: self.file
-                ) { user in
-
-                    for marshalledSite in
-                        UnsafeBufferPointer( start: marshalledUser.sites, count: marshalledUser.sites_count ) {
-                        if let siteName = String.valid( marshalledSite.siteName ) {
-                            user.sites.append( Site(
-                                    user: user,
-                                    siteName: siteName,
-                                    algorithm: marshalledSite.algorithm,
-                                    counter: marshalledSite.counter,
-                                    resultType: marshalledSite.resultType,
-                                    resultState: .valid( marshalledSite.resultState ),
-                                    loginType: marshalledSite.loginType,
-                                    loginState: .valid( marshalledSite.loginState ),
-                                    url: .valid( marshalledSite.url ),
-                                    uses: marshalledSite.uses,
-                                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
-                            ) { site in
-
-                                for marshalledQuestion in
-                                    UnsafeBufferPointer( start: marshalledSite.questions, count: marshalledSite.questions_count ) {
-                                    if let keyword = String.valid( marshalledQuestion.keyword ) {
-                                        site.questions.append( Question(
-                                                site: site,
-                                                keyword: keyword,
-                                                resultType: marshalledQuestion.type,
-                                                resultState: .valid( marshalledQuestion.state )
-                                        ) )
-                                    }
-                                }
-                            } )
+                    // Save export data to user's origin.
+                    var coordinateError: NSError?, saveError: Error?
+                    NSFileCoordinator().coordinate(writingItemAt: origin, error: &coordinateError) { userURL in
+                        let securityScoped = userURL.startAccessingSecurityScopedResource()
+                        if !FileManager.default.createFile(atPath: origin.path, contents: data) {
+                            saveError = AppError.internal(cause: "Couldn't create file", details: userURL)
+                        }
+                        if securityScoped {
+                            userURL.stopAccessingSecurityScopedResource()
                         }
                     }
+                    if let error = coordinateError ?? saveError {
+                        throw error
+                    }
                 }
-                    .login( using: keyFactory )
             }
+        }
+
+        public func authenticate(using keyFactory: KeyFactory) async throws -> User {
+            // Check origin for updates.
+            if let origin = self.origin, let file = try UserFile.load( origin: origin ) {
+                self.file = file
+            }
+            guard let file = self.file
+            else { throw AppError.issue(nil, title: "Missing user data") }
+
+            // Authenticate against the file with the given keyFactory.
+            guard let marshalledUser = spectre_marshal_auth( self.file, keyFactory.provide() )?.pointee, file.pointee.error.type == .success
+            else { throw AppError.marshal( file.pointee.error, title: "Issue authenticating user", details: self.userName ) }
+            // FIXME: marshalledUser is not deallocated?
+
+            // Yield a fully authenticated user.
+            return try await User(
+                    algorithm: marshalledUser.algorithm,
+                    avatar: User.Avatar( rawValue: marshalledUser.avatar ) ?? .avatar_0,
+                    userName: String.valid( marshalledUser.userName ) ?? self.userName,
+                    identicon: marshalledUser.identicon,
+                    userKeyID: self.userKeyID,
+                    defaultType: marshalledUser.defaultType,
+                    loginType: marshalledUser.loginType,
+                    loginState: .valid( marshalledUser.loginState ),
+                    lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledUser.lastUsed ) ),
+                    origin: self.origin, file: file
+            ) { user in
+
+                for marshalledSite in
+                    UnsafeBufferPointer( start: marshalledUser.sites, count: marshalledUser.sites_count ) {
+                    if let siteName = String.valid( marshalledSite.siteName ) {
+                        user.sites.append( Site(
+                                user: user,
+                                siteName: siteName,
+                                algorithm: marshalledSite.algorithm,
+                                counter: marshalledSite.counter,
+                                resultType: marshalledSite.resultType,
+                                resultState: .valid( marshalledSite.resultState ),
+                                loginType: marshalledSite.loginType,
+                                loginState: .valid( marshalledSite.loginState ),
+                                url: .valid( marshalledSite.url ),
+                                uses: marshalledSite.uses,
+                                lastUsed: Date( timeIntervalSince1970: TimeInterval( marshalledSite.lastUsed ) )
+                        ) { site in
+
+                            for marshalledQuestion in
+                                UnsafeBufferPointer( start: marshalledSite.questions, count: marshalledSite.questions_count ) {
+                                if let keyword = String.valid( marshalledQuestion.keyword ) {
+                                    site.questions.append( Question(
+                                            site: site,
+                                            keyword: keyword,
+                                            resultType: marshalledQuestion.type,
+                                            resultState: .valid( marshalledQuestion.state )
+                                    ) )
+                                }
+                            }
+                        } )
+                    }
+                }
+            }
+                .login( using: keyFactory )
         }
 
         // MARK: - Hashable
@@ -863,7 +900,7 @@ class Marshal: Observable, Updatable, LeakObserver {
             guard self.autofill
             else { return nil }
 
-            return self.file.spectre_find( path: "sites" )?.compactMap { site in
+            return self.file?.spectre_find( path: "sites" )?.compactMap { site in
                 String.valid( site.obj_key ).flatMap { siteName in
                     .init( supplier: self, siteName: siteName, url: site.spectre_get( path: "_ext_spectre", "url" ) )
                 }

@@ -105,8 +105,10 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
 
         super.viewWillAppear( animated )
 
-        UIView.performWithoutAnimation {
-            self.updateTask.request( now: true )
+        Task {
+            await UIView.performWithoutAnimation {
+                try? await self.updateTask.requestNow()
+            }
         }
     }
 
@@ -203,9 +205,9 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
         guard let self = self
         else { return }
 
-        self.doUpdate()
+        await self.doUpdate()
     }
 
-    func doUpdate() {
+    func doUpdate() async {
     }
 }

@@ -14,96 +14,97 @@ import UIKit
 
 extension UIAlertController {
     static func authenticate(userFile: Marshal.UserFile, title: String, message: String? = nil, action: String, retryOnError: Bool = true,
-                             in viewController: UIViewController, track: Tracking? = nil) -> Promise<User> {
-        self.authenticate( userName: userFile.userName, identicon: userFile.identicon,
+                             in viewController: UIViewController, track: Tracking? = nil) async throws -> User {
+        try await self.authenticate( userName: userFile.userName, identicon: userFile.identicon,
                            title: title, message: message, action: action, retryOnError: retryOnError,
                            in: viewController, track: track ) {
-            userFile.authenticate( using: $0 )
+            try await userFile.authenticate( using: $0 )
         }
     }
 
     static func authenticate<U>(userName: String? = nil, identicon: SpectreIdenticon = SpectreIdenticonUnset,
                                 title: String, message: String? = nil, action: String, retryOnError: Bool = true,
                                 in viewController: UIViewController, track: Tracking? = nil,
-                                authenticator: @escaping (SecretKeyFactory) throws -> Promise<U>) -> Promise<U> {
-        let promise         = Promise<U>()
-        let spinner         = AlertController( title: "Unlocking", message: userName,
-                                               content: UIActivityIndicatorView( style: .large ) )
-        let alertController = UIAlertController( title: title, message: message, preferredStyle: .alert )
-        var event = track.flatMap { Tracker.shared.begin( track: $0 ) }
+                                authenticator: @escaping (SecretKeyFactory) async throws -> U) async throws -> U {
+        try await withCheckedThrowingContinuation { continuation in
+            let spinner         = AlertController( title: "Unlocking", message: userName,
+                                                   content: UIActivityIndicatorView( style: .large ) )
+            let alertController = UIAlertController( title: title, message: message, preferredStyle: .alert )
+            var event = track.flatMap { Tracker.shared.begin( track: $0 ) }
 
-        var nameField: UITextField?
-        if userName == nil {
-            alertController.addTextField { nameField = $0 }
-        }
+            var nameField: UITextField?
+            if userName == nil {
+                alertController.addTextField { nameField = $0 }
+            }
 
-        let secretField = UserSecretField<U>( userName: userName, identicon: identicon, nameField: nameField )
-        secretField.authenticater = { factory in
-            spinner.show( in: viewController.view, dismissAutomatically: false )
-            return try authenticator( factory ).then {
-                event?.end(
-                        [ "result": $0.name,
-                          "type": "secret",
-                          "length": factory.metadata.length,
-                          "entropy": factory.metadata.entropy,
-                          "error": $0.error,
-                        ] )
-                if case .success = $0 {
-                    event = nil
-                }
-                else {
-                    event = track.flatMap { Tracker.shared.begin( track: $0 ) }
+            let secretField = UserSecretField<U>( userName: userName, identicon: identicon, nameField: nameField )
+            secretField.authenticater = { factory in
+                spinner.show( in: viewController.view, dismissAutomatically: false )
+                do {
+                    let userKey = try await authenticator( factory )
+                    event?.end(
+                            [ "result": "success",
+                              "type": "secret",
+                              "length": factory.metadata.length,
+                              "entropy": factory.metadata.entropy,
+                            ] )
+                    return userKey
+                } catch {
+                    event?.end(
+                            [ "result": "!auth",
+                              "type": "secret",
+                              "length": factory.metadata.length,
+                              "entropy": factory.metadata.entropy,
+                              "error": error,
+                            ] )
+                    throw error
                 }
             }
-        }
-        secretField.authenticated = { [weak alertController] result in
-            spinner.dismiss()
+            secretField.authenticated = { [weak alertController] result in
+                spinner.dismiss()
 
-            guard let alertController = alertController
-            else { return }
+                guard let alertController = alertController
+                else { return }
 
-            alertController.dismiss( animated: true ) {
-                if !retryOnError {
-                    promise.finish( result )
-                    return
+                alertController.dismiss( animated: true ) {
+                    if !retryOnError {
+                        continuation.resume( with: result )
+                        return
+                    }
+
+                    do {
+                        continuation.resume( returning: try result.get() )
+                        Feedback.shared.play( .trigger )
+                    }
+                    catch {
+                        mperror( title: "Couldn't authenticate user", error: error, in: viewController.view )
+                        event = track.flatMap { Tracker.shared.begin( track: $0 ) }
+                        viewController.present( alertController, animated: true )
+                    }
                 }
+            }
 
-                do {
-                    promise.finish( .success( try result.get() ) )
-                    Feedback.shared.play( .trigger )
-                }
-                catch {
-                    mperror( title: "Couldn't authenticate user", error: error, in: viewController.view )
+            alertController.addTextField { secretField.passwordField = $0 }
+            alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
+                event?.end(
+                        [ "result": "cancelled",
+                          "type": "secret",
+                        ] )
+                continuation.resume( throwing: CancellationError() )
+            } )
+            alertController.addAction( UIAlertAction( title: action, style: .default ) { [unowned alertController] _ in
+                if !secretField.try() {
+                    mperror( title: "Couldn't import user", message: "Personal secret cannot be left empty.", in: viewController.view )
 
+                    event?.end(
+                            [ "result": "!userSecret",
+                              "type": "secret",
+                            ] )
+                    event = track.flatMap { Tracker.shared.begin( track: $0 ) }
                     viewController.present( alertController, animated: true )
                 }
-            }
-        }
-
-        alertController.addTextField { secretField.passwordField = $0 }
-        alertController.addAction( UIAlertAction( title: "Cancel", style: .cancel ) { _ in
-            promise.finish( .failure( AppError.cancelled ) )
-        } )
-        alertController.addAction( UIAlertAction( title: action, style: .default ) { [unowned alertController] _ in
-            if !secretField.try() {
-                mperror( title: "Couldn't import user", message: "Personal secret cannot be left empty.", in: viewController.view )
-
-                event?.end(
-                        [ "result": "!userSecret",
-                          "type": "secret",
-                        ] )
-                event = track.flatMap { Tracker.shared.begin( track: $0 ) }
-                viewController.present( alertController, animated: true )
-            }
-        } )
-        viewController.present( alertController, animated: true )
-
-        return promise.then {
-            event?.end(
-                    [ "result": $0.name,
-                      "type": "secret",
-                      "error": $0.error,
-                    ] )
+            } )
+            viewController.present( alertController, animated: true )
         }
     }
 }
@@ -169,7 +170,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
             self.setNeedsIdenticon()
         }
     }
-    var authenticater: ((SecretKeyFactory) throws -> Promise<U>)?
+    var authenticater: ((SecretKeyFactory) async throws -> U)?
     var authenticated: ((Result<U, Error>) -> Void)?
 
     private let activityIndicator = UIActivityIndicatorView( style: .medium )
@@ -228,14 +229,11 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     // MARK: - Interface
 
     public func setNeedsIdenticon() {
-        DispatchQueue.main.perform {
-            if (self.nameField?.text ?? self.userName) == nil || self.passwordField?.text == nil {
-                self.updateTask.cancel()
-                self.identiconLabel.attributedText = nil
-            }
-            else {
-                self.updateTask.request()
-            }
+        if (self.nameField?.text ?? self.userName) == nil || self.passwordField?.text == nil {
+            self.identiconLabel.attributedText = nil
+        }
+        else {
+            self.updateTask.request()
         }
     }
 
@@ -247,57 +245,52 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
         return false
     }
 
-    public func authenticate<U>(_ handler: ((SecretKeyFactory) throws -> Promise<U>)?) -> Promise<U>? {
-        DispatchQueue.main.await {
-            guard let handler = handler,
-                  let userName = self.nameField?.text ?? self.userName, userName.count > 0,
-                  let userSecret = self.passwordField?.text, userSecret.count > 0
-            else { return nil }
+    public func authenticate<UU>(_ handler: ((SecretKeyFactory) async throws -> UU)?) -> Task<UU, Error>? {
+        guard let handler = handler,
+              let userName = self.nameField?.text ?? self.userName, userName.count > 0,
+              let userSecret = self.passwordField?.text, userSecret.count > 0
+        else { return nil }
 
+        return Task {
             self.passwordField?.isEnabled = false
             self.activityIndicator.startAnimating()
 
-            return DispatchQueue.api.promising {
-                                    try handler( SecretKeyFactory( userName: userName, userSecret: userSecret ) )
-                                }
-                                .then( on: .main ) { result in
-                                    self.passwordField?.text = nil
-                                    self.passwordField?.isEnabled = true
-                                    switch result {
-                                        case .success:
-                                            self.passwordField?.resignFirstResponder()
-
-                                        case .failure:
-                                            self.passwordField?.becomeFirstResponder()
-                                            self.passwordField?.shake()
-                                    }
-                                    self.activityIndicator.stopAnimating()
-                                }
+            do {
+                let user = try await handler( SecretKeyFactory( userName: userName, userSecret: userSecret ) )
+                self.passwordField?.text = nil
+                self.passwordField?.isEnabled = true
+                self.passwordField?.resignFirstResponder()
+                self.activityIndicator.stopAnimating()
+                return user
+            }
+            catch {
+                self.passwordField?.becomeFirstResponder()
+                self.passwordField?.shake()
+                self.activityIndicator.stopAnimating()
+                throw error
+            }
         }
     }
 
     // MARK: - Updatable
 
-    lazy var updateTask = DispatchTask.update( self, deadline: .now() + .seconds( .random( in: (.short)..<(.long) ) ) ) { [weak self] in
+    lazy var updateTask = DispatchTask.update( self, deadline: .random( in: (.short)..<(.long) ) ) { [weak self] in
         guard let self = self
         else { return }
 
-        let userName   = self.nameField?.text ?? self.userName
-        let userSecret = self.passwordField?.text
-
-        DispatchQueue.api.perform {
-            let identicon = userSecret?.nonEmpty.flatMap { spectre_identicon( userName, $0 ) } ?? self.identicon
-
-            DispatchQueue.main.perform {
-                self.identiconLabel.attributedText = identicon.attributedText()
-                self.leftMinimumWidth.constant = 0
-                self.rightMinimumWidth.constant = 0
-                let rightWidth = self.rightItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize ).width,
-                    leftWidth  = self.leftItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize ).width
-                self.leftMinimumWidth.constant = rightWidth
-                self.rightMinimumWidth.constant = leftWidth
-            }
+        var identicon = self.identicon
+        let userName  = self.nameField?.text ?? self.userName
+        if let userSecret = self.passwordField?.text?.nonEmpty {
+            identicon = await Spectre.shared.identicon( userName: userName, userSecret: userSecret )
         }
+
+        self.identiconLabel.attributedText = identicon.attributedText()
+        self.leftMinimumWidth.constant = 0
+        self.rightMinimumWidth.constant = 0
+        let rightWidth = self.rightItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize ).width,
+            leftWidth  = self.leftItemView.systemLayoutSizeFitting( UIView.layoutFittingCompressedSize ).width
+        self.leftMinimumWidth.constant = rightWidth
+        self.rightMinimumWidth.constant = leftWidth
     }
 
     // MARK: - UITextFieldDelegate
@@ -315,10 +308,8 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
     @discardableResult
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if let authentication = self.authenticate( self.authenticater ) {
-            authentication.then( on: .main ) { result in
-                textField.resignFirstResponder()
-                self.authenticated?( result )
-            }
+            textField.resignFirstResponder()
+            Task.detached { await self.authenticated?( authentication.result ) }
             return true
         }
 

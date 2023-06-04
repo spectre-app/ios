@@ -44,6 +44,6 @@ class AutoFillConfigurationViewController: BaseViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        Marshal.shared.updateTask.request()
+        Task.detached { await Marshal.shared.updateUserFiles() }
     }
 }

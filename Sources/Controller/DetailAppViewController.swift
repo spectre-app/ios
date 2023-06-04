@@ -237,6 +237,10 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             override init(frame: CGRect) {
                 super.init( frame: frame )
 
+                registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _) in
+                    self.update()
+                }
+
                 // - View
                 self.premiumLabel => \.font => Theme.current.font.callout
                 self.premiumLabel => \.textColor => Theme.current.color.body
@@ -254,21 +258,13 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
                     .constrain( as: .center ).activate()
             }
 
-            override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-                super.traitCollectionDidChange( previousTraitCollection )
-
-                self.update()
-            }
-
             // - Private
 
             private func update() {
-                DispatchQueue.main.perform {
-                    self.iconView.isHidden = !self.isSelected
-                    self.premiumLabel.isHidden = self.isSelected
-                    self.effectView => \.backgroundColor => self.theme?.color.panel
-                    self.premiumLabel => \.textColor => self.theme?.color.body
-                }
+                self.iconView.isHidden = !self.isSelected
+                self.premiumLabel.isHidden = self.isSelected
+                self.effectView => \.backgroundColor => self.theme?.color.panel
+                self.premiumLabel => \.textColor => self.theme?.color.body
             }
         }
     }
@@ -298,9 +294,7 @@ class DetailAppViewController: ItemsViewController<AppConfig>, AppConfigObserver
             }
             var logo: AppIcon = AppIcon.primary {
                 didSet {
-                    DispatchQueue.main.perform {
-                        self.logoView.image = self.logo.image
-                    }
+                    self.logoView.image = self.logo.image
                 }
             }
 

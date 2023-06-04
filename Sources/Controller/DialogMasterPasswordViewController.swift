@@ -62,33 +62,27 @@ class DialogMasterPasswordViewController: DialogViewController { // swiftlint:di
         self.offerTitle.isHidden = true
         self.offerButton.isHidden = true
         self.offerLabel.isHidden = true
-        AppStore.shared.update( active: true )
-                .finally( on: .main ) { self.offerProgress.isHidden = true }
-                .success( on: .main ) {
-                    guard $0, let product = InAppProduct.premiumMasterPassword.product ?? InAppProduct.premiumAnnual.product
-                    else { return }
 
-                    if let introductoryPrice = product.introductoryPrice {
-                        self.offerButton.title = "\(introductoryPrice.localizedOffer) access to Premium for \(introductoryPrice.localizedValidity)"
-                        self.offerLabel.text = "Then \(product.localizedOffer()). \(product.localizedDescription)"
-                    }
-                    else {
-                        self.offerButton.title = product.localizedOffer()
-                        self.offerLabel.text = product.localizedDescription
-                    }
+        guard let product = InAppProduct.premiumMasterPassword.product ?? InAppProduct.premiumAnnual.product
+        else { return }
 
-                    self.offerButton.action( for: .primaryActionTriggered ) {
-                        AppStore.shared.purchase( product: product )
-                    }
+        if let introductoryPrice = product.introductoryPrice {
+            self.offerButton.title = "\(introductoryPrice.localizedOffer) access to Premium for \(introductoryPrice.localizedValidity)"
+            self.offerLabel.text = "Then \(product.localizedOffer()). \(product.localizedDescription)"
+        }
+        else {
+            self.offerButton.title = product.localizedOffer()
+            self.offerLabel.text = product.localizedDescription
+        }
 
-                    self.offerTitle.isHidden = false
-                    self.offerButton.isHidden = false
-                    self.offerLabel.isHidden = false
-                }
-                .failure {
-                    wrn( "App Store unavailable: %@ [>PII]", $0.localizedDescription )
-                    pii( "[>] Error: ", $0 )
-                }
+        self.offerButton.action( for: .primaryActionTriggered ) {
+            AppStore.shared.purchase( product: product )
+        }
+
+        self.offerTitle.isHidden = false
+        self.offerButton.isHidden = false
+        self.offerLabel.isHidden = false
+        self.offerProgress.isHidden = true
 
         stackView.addArrangedSubview( self.offerProgress )
         stackView.addArrangedSubview( self.offerTitle )

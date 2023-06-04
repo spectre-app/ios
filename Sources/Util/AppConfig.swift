@@ -12,7 +12,7 @@
 
 import Foundation
 
-public class AppConfig: Observable {
+public class AppConfig: Observed {
     public static let shared = AppConfig()
 
     public let observers = Observers<AppConfigObserver>()

@@ -183,10 +183,8 @@ class LeakRegistry: LeakObserver, AppConfigObserver {
         func update() {
             self.view.backgroundColor = .red
 
-            DispatchQueue.main.perform(deadline: .now() + .seconds(1)) {
-                self.textView.text = LeakRegistry.shared.reportLeaks()
-                self.view.backgroundColor = .green
-            }
+            self.textView.text = LeakRegistry.shared.reportLeaks()
+            self.view.backgroundColor = .green
         }
 
         @objc

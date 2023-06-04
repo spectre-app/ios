@@ -87,30 +87,34 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
             guard let incognitoButton = $0 as? TimedButton
             else { return }
 
-            UIAlertController.authenticate(
-                    title: "Incognito Login",
-                    message: "While in incognito mode, no user information is kept on the device",
-                    action: "Log In", in: self, track: .subject( "users.user", action: "auth" ),
-                    authenticator: { User( userName: $0.userName, file: nil ).login( using: $0 ) } )
-                             .then( on: .main ) {
-                                 incognitoButton.timing?.end(
-                                         [ "result": $0.name,
-                                           "type": "incognito",
-                                           "error": $0.error,
-                                         ] )
-
-                                 if $0.isCancelled {
-                                     return
-                                 }
-
-                                 do {
-                                     let user = try $0.get()
-                                     self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
-                                 }
-                                 catch {
-                                     mperror( title: "Couldn't unlock user", error: error )
-                                 }
-                             }
+            do {
+                let user = try await UIAlertController.authenticate(
+                        title: "Incognito Login",
+                        message: "While in incognito mode, no user information is kept on the device",
+                        action: "Log In", in: self, track: .subject( "users.user", action: "auth" ),
+                        authenticator: { try await User( userName: $0.userName, file: nil ).login( using: $0 ) } )
+                incognitoButton.timing?.end(
+                        [ "result": "success",
+                          "type": "incognito",
+                        ] )
+                self.navigationController?.pushViewController( MainSitesViewController( user: user ), animated: true )
+            }
+            catch {
+                if error is CancellationError {
+                    incognitoButton.timing?.end(
+                            [ "result": "cancelled",
+                              "type": "incognito",
+                              "error": error,
+                            ] )
+                } else {
+                    mperror( title: "Couldn't unlock user", error: error )
+                    incognitoButton.timing?.end(
+                            [ "result": "failure",
+                              "type": "incognito",
+                              "error": error,
+                            ] )
+                }
+            }
         } )
         self.appToolbar.addArrangedSubview( EffectButton( track: .subject( "users", action: "chat" ), image: .icon( "comments" ),
                                                           border: 0, background: false, square: true ) { [unowned self] _ in
@@ -156,14 +160,9 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear( animated )
 
-        AppStore.shared.isUpToDate().then( on: .main ) { [weak self] in
+        Task {
             do {
-                let result = try $0.get()
-                if !result.upToDate {
-                    inf( "Update available: %@", result )
-                }
-
-                self?.appUpdate.isHidden = result.upToDate
+                self.appUpdate.isHidden = try await AppStore.shared.isUpToDate().upToDate
             }
             catch {
                 wrn( "Application update check failed: %@ [>PII]", error.localizedDescription )
@@ -178,7 +177,7 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
 
     // MARK: - Interface
 
-    override func items(for userFiles: [Marshal.UserFile]) -> [Spectre.BaseUsersViewController.UserItem] {
+    override func items(for userFiles: [Marshal.UserFile]) -> [BaseUsersViewController.UserItem] {
         super.items( for: userFiles ) + [ .newUser ]
     }
 
@@ -223,11 +222,9 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
             else { return }
             trc( "Trashing user: %@", userFile )
 
-            do {
-                try Marshal.shared.delete( userFile: userFile )
-            }
-            catch {
-                mperror( title: "Couldn't delete user", error: error )
+            Task.detached {
+                do { try await Marshal.shared.delete( userFile: userFile ) }
+                catch { mperror( title: "Couldn't delete user", error: error ) }
             }
         } )
         self.present( alertController, animated: true )
@@ -246,7 +243,10 @@ class MainUsersViewController: BaseUsersViewController, FeedbackObserver {
         alertController.addAction( UIAlertAction( title: "Reset", style: .destructive ) { [weak userFile] _ in
             trc( "Resetting user: %@", userFile )
 
-            userFile?.resetKey = true
+            Task.detached { [userFile] in
+                do { try await userFile?.resetKey() }
+                catch { mperror(title: "Couldn't reset user", error: error) }
+            }
         } )
         self.present( alertController, animated: true )
     }

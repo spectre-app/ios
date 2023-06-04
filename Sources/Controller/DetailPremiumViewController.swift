@@ -86,7 +86,9 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
         // Automatic subscription restoration or renewal.
         if !InAppFeature.premium.isEnabled {
             // Start by refreshing the products, receipt and renewals; triggering App Store log-in if necessary.
-            AppStore.shared.update( active: true ).finally {
+            Task.detached {
+                _ = try? await AppStore.shared.update( active: true )
+
                 // Only try to restore premium purchases if not yet present in our receipt.
                 if !InAppSubscription.premium.isActive && !InAppSubscription.premium.wasActiveButExpired {
                     AppStore.shared.restorePurchases()
@@ -304,7 +306,7 @@ class DetailPremiumViewController: ItemsViewController<Void>, AppConfigObserver,
     }
 
     class FeatureItem: ImageItem<Void> {
-        init(name: Text?, icon: String, caption: Text?) {
+        init(name: Message?, icon: String, caption: Message?) {
             super.init( title: name, value: { _ in .icon( icon, withSize: 48 ) }, caption: { _ in caption } )
         }
     }

@@ -50,7 +50,7 @@ class BaseUserViewController: BaseViewController, UserObserver {
     override func willResignActive() {
         super.willResignActive()
 
-        self.user?.save( onlyIfDirty: true, await: true )
+        self.user?.save()
     }
 
     override func didEnterBackground() {
@@ -83,11 +83,9 @@ class BaseUserViewController: BaseViewController, UserObserver {
 
     private func validate() {
         if self.user?.userKeyFactory == nil {
-            DispatchQueue.main.perform {
-                if let navigationController = self.navigationController {
-                    trc( "Dismissing %@ since user logged out.", Self.self )
-                    navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
-                }
+            if let navigationController = self.navigationController {
+                trc( "Dismissing %@ since user logged out.", Self.self )
+                navigationController.setViewControllers( navigationController.viewControllers.filter { $0 !== self }, animated: true )
             }
         }
     }

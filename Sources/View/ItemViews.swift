@@ -14,10 +14,11 @@ import UIKit
 import SafariServices
 
 // swiftlint:disable file_length
+@MainActor
 class AnyItem: NSObject, Updatable {
-    let title: Text?
+    let title: Message?
 
-    init(title: Text? = nil) {
+    init(title: Message? = nil) {
         self.title = title
         super.init()
         LeakRegistry.shared.register( self )
@@ -27,10 +28,11 @@ class AnyItem: NSObject, Updatable {
         guard let self = self
         else { return }
 
-        self.doUpdate()
+        await self.doUpdate()
     }
 
-    func doUpdate() {
+    @MainActor
+    func doUpdate() async {
     }
 }
 
@@ -49,7 +51,7 @@ class Item<M>: AnyItem {
     }
     private var behaviours = [ Behaviour<M> ]()
 
-    private let captionProvider: (M) -> Text?
+    private let captionProvider: (M) async -> Message?
     private let subitems:        [Item<M>]
     private let subitemAxis:     NSLayoutConstraint.Axis
     private (set) lazy var view = createItemView()
@@ -58,9 +60,9 @@ class Item<M>: AnyItem {
         self.viewController?.updatesPostponed ?? true
     }
 
-    init(title: Text? = nil,
+    init(title: Message? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption captionProvider: @escaping (M) -> Text? = { _ in nil }) {
+         caption captionProvider: @escaping (M) async -> Message? = { _ in nil }) {
         self.subitems = subitems
         self.subitemAxis = subitemAxis
         self.captionProvider = captionProvider
@@ -81,12 +83,17 @@ class Item<M>: AnyItem {
 
     // MARK: - Updatable
 
-    override func doUpdate() {
-        super.doUpdate()
+    override func doUpdate() async {
+        await super.doUpdate()
 
-        self.view.doUpdate()
-        self.behaviours.forEach { $0.didUpdate( item: self ) }
-        self.subitems.forEach { $0.updateTask.request( now: true ) }
+        await self.view.doUpdate()
+        for behaviour in self.behaviours {
+            await behaviour.doUpdate( item: self )
+        }
+
+        for item in self.subitems {
+            try? await item.updateTask.requestNow()
+        }
     }
 
     // MARK: - Types
@@ -173,22 +180,24 @@ class Item<M>: AnyItem {
                          .with( priority: .defaultLow + 1 ).isActive = true
             }
 
-            self.item?.subitems.forEach { $0.view.didLoad() }
+            for item in self.item?.subitems ?? [] {
+                item.view.didLoad()
+            }
         }
 
         // MARK: - Updatable
 
-        func doUpdate() {
+        func doUpdate() async {
             guard let item = self.item
             else { return }
 
-            self.updateHidden( item.behaviours.reduce( false ) { $0 || ($1.isHidden( item: item ) ?? $0) } )
-            self.updateEnabled( item.behaviours.reduce( true ) { $0 && ($1.isEnabled( item: item ) ?? $0) } )
+            self.updateHidden( await item.behaviours.async.compactMap { await $0.isHidden(item: item) }.reduce( false ) { $0 || $1 } )
+            self.updateEnabled( await item.behaviours.async.compactMap { await $0.isEnabled(item: item) }.reduce( false ) { $0 && $1 } )
 
             self.titleLabel.applyText( item.title )
             self.titleLabel.isHidden = self.titleLabel.attributedText?.string.nonEmpty == nil
 
-            self.captionLabel.attributedText = item.model.flatMap { item.captionProvider( $0 ) }?.attributedString
+            self.captionLabel.attributedText = await item.model.flatMap { await item.captionProvider( $0 ) }?.attributedString
             self.captionLabel => \.attributedText => .font => Theme.current.font.caption1
             self.captionLabel => \.attributedText => .foregroundColor => Theme.current.color.secondary
             self.captionLabel.isHidden = self.captionLabel.attributedText?.length == .zero
@@ -234,40 +243,40 @@ class Item<M>: AnyItem {
     }
 }
 
+@MainActor
 class Behaviour<M> {
-    private let hiddenProvider:  ((M) -> Bool)?
-    private let enabledProvider: ((M) -> Bool)?
+    private let hiddenProvider:  ((M) async -> Bool)?
+    private let enabledProvider: ((M) async -> Bool)?
     private var items = [ WeakBox<Item<M>> ]()
 
-    init(hidden hiddenProvider: ((M) -> Bool)? = nil, enabled enabledProvider: ((M) -> Bool)? = nil) {
+    init(hidden hiddenProvider: ((M) async -> Bool)? = nil, enabled enabledProvider: ((M) async -> Bool)? = nil) {
         self.hiddenProvider = hiddenProvider
         self.enabledProvider = enabledProvider
         LeakRegistry.shared.register( self )
     }
 
     func didInstall(into item: Item<M>) {
-        self.didUpdate( item: item )
         self.items.append( WeakBox( item ) )
     }
 
-    func didUpdate(item: Item<M>) {
+    func doUpdate(item: Item<M>) async {
     }
 
     func setNeedsUpdate() {
         self.items.forEach { $0.value?.updateTask.request() }
     }
 
-    func isHidden(item: Item<M>) -> Bool? {
+    func isHidden(item: Item<M>) async -> Bool? {
         if let model = item.model, let hiddenProvider = self.hiddenProvider {
-            return hiddenProvider( model )
+            return await hiddenProvider( model )
         }
 
         return nil
     }
 
-    func isEnabled(item: Item<M>) -> Bool? {
+    func isEnabled(item: Item<M>) async -> Bool? {
         if let model = item.model, let enabledProvider = self.enabledProvider {
-            return enabledProvider( model )
+            return await enabledProvider( model )
         }
 
         return nil
@@ -276,18 +285,18 @@ class Behaviour<M> {
 
 class ColorizeBehaviour<M>: Behaviour<M> {
     let color:     UIColor
-    let condition: (M) -> Bool
+    let condition: (M) async -> Bool
 
-    init(color: UIColor, condition: @escaping (M) -> Bool) {
+    init(color: UIColor, condition: @escaping (M) async -> Bool) {
         self.color = color
         self.condition = condition
         super.init()
     }
 
-    override func didUpdate(item: Item<M>) {
-        super.didUpdate( item: item )
+    override func doUpdate(item: Item<M>) async {
+        await super.doUpdate( item: item )
 
-        if let model = item.model, self.condition( model ) {
+        if let model = item.model, await self.condition( model ) {
             item.view.tintColor = self.color
         }
         else {
@@ -338,24 +347,24 @@ class TapBehaviour<M>: Behaviour<M> {
 }
 
 class BlockTapBehaviour<M>: TapBehaviour<M> {
-    let enabled: (Item<M>) -> Bool
-    let tapped:  (Item<M>) -> Void
+    let enabled: @MainActor (Item<M>) async -> Bool
+    let tapped:  @MainActor (Item<M>) async -> Void
 
-    init(enabled: @escaping (Item<M>) -> Bool = { _ in true }, _ tapped: @escaping (Item<M>) -> Void) {
+    init(enabled: @escaping @MainActor (Item<M>) async -> Bool = { _ in true }, _ tapped: @escaping @MainActor (Item<M>) async -> Void) {
         self.enabled = enabled
         self.tapped = tapped
 
         super.init()
     }
 
-    override func didUpdate(item: Item<M>) {
-        super.didUpdate( item: item )
+    override func doUpdate(item: Item<M>) async {
+        await super.doUpdate( item: item )
 
-        self.isEnabled = self.enabled( item )
+        self.isEnabled = await self.enabled( item )
     }
 
     override func doTapped(item: Item<M>) {
-        self.tapped( item )
+        Task { @MainActor in await self.tapped( item ) }
 
         super.doTapped( item: item )
     }
@@ -364,20 +373,20 @@ class BlockTapBehaviour<M>: TapBehaviour<M> {
 /// An item is hidden if any one behaviour is hidden.
 /// An item is disabled if any one behaviour is not enabled.
 class ConditionalBehaviour<M>: Behaviour<M> {
-    init(effect: Effect, condition: @escaping (M) -> Bool) {
+    init(effect: Effect, condition: @escaping (M) async -> Bool) {
         super.init( hidden: { model in
             switch effect {
                 case .enables:
                     return false
                 case .reveals:
-                    return !condition( model )
+                    return await !condition( model )
                 case .hides:
-                    return condition( model )
+                    return await condition( model )
             }
         }, enabled: { model in
             switch effect {
                 case .enables:
-                    return condition( model )
+                    return await condition( model )
                 case .reveals:
                     return true
                 case .hides:
@@ -427,17 +436,19 @@ class SeparatorItem<M>: Item<M> {
 }
 
 class ValueItem<M, V>: Item<M> {
-    let valueProvider: (M) -> V?
+    let valueProvider: (M) async -> V?
     var value: V? {
-        self.model.flatMap { self.valueProvider( $0 ) }
+        get async {
+            await self.model.flatMap { await self.valueProvider( $0 ) }
+        }
     }
-    let update: ((Item<M>, V) -> Void)?
+    let update: (@MainActor (Item<M>, V) async -> Void)?
 
-    init(title: Text? = nil,
-         value valueProvider: @escaping (M) -> V? = { _ in nil },
-         update: ((Item<M>, V) -> Void)? = nil,
+    init(title: Message? = nil,
+         value valueProvider: @escaping (M) async -> V? = { _ in nil },
+         update: (@MainActor (Item<M>, V) async -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> Text? = { _ in nil }) {
+         caption: @escaping (M) async -> Message? = { _ in nil }) {
         self.valueProvider = valueProvider
         self.update = update
         super.init( title: title, subitems: subitems, axis: subitemAxis, caption: caption )
@@ -472,11 +483,11 @@ class LabelItem<M>: ValueItem<M, Any> {
             self.valueLabel.shadowOffset = CGSize( width: 0, height: 1 )
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            let value = self.valueItem?.value
-            if let value = value as? NSAttributedString ?? (value as? Text)?.attributedString {
+            let value = await self.valueItem?.value
+            if let value = value as? NSAttributedString ?? (value as? Message)?.attributedString {
                 self.valueLabel.attributedText = value
                 self.valueLabel.isHidden = false
             }
@@ -513,10 +524,10 @@ class ImageItem<M>: ValueItem<M, UIImage> {
             self.valueImage.setContentHuggingPriority( .defaultHigh, for: .vertical )
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            self.valueImage.image = self.valueItem?.value
+            self.valueImage.image = await self.valueItem?.value
             self.valueImage.isHidden = self.valueImage.image == nil
         }
     }
@@ -524,14 +535,14 @@ class ImageItem<M>: ValueItem<M, UIImage> {
 
 class ToggleItem<M>: ValueItem<M, Bool> {
     let tracking: Tracking
-    let icon:     (M) -> UIImage?
+    let icon:     (M) async -> UIImage?
 
-    init(track: Tracking, title: Text? = nil,
-         icon: @escaping (M) -> UIImage?,
-         value: @escaping (M) -> Bool,
-         update: ((Item<M>, Bool) -> Void)? = nil,
+    init(track: Tracking, title: Message? = nil,
+         icon: @escaping (M) async -> UIImage?,
+         value: @escaping (M) async -> Bool,
+         update: ((Item<M>, Bool) async -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> Text? = { _ in nil }) {
+         caption: @escaping (M) async -> Message? = { _ in nil }) {
         self.tracking = track
         self.icon = icon
 
@@ -547,20 +558,20 @@ class ToggleItem<M>: ValueItem<M, Bool> {
             self.item as? ToggleItem
         }
         lazy var button = EffectToggleButton( track: self.toggleItem?.tracking ) { [unowned self] isSelected in
-            self.toggleItem.flatMap { $0.update?( $0, isSelected ) }
+            await self.toggleItem.flatMap { await $0.update?( $0, isSelected ) }
 
-            return self.toggleItem?.value ?? false
+            return await self.toggleItem?.value ?? false
         }
 
         override func createValueView() -> UIView? {
             self.button
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            self.button.image = self.toggleItem?.model.flatMap { self.toggleItem?.icon( $0 ) }
-            self.button.isSelected = self.toggleItem?.value ?? false
+            self.button.image = await self.toggleItem?.model.flatMap { await self.toggleItem?.icon( $0 ) }
+            self.button.isSelected = await self.toggleItem?.value ?? false
         }
 
         override func updateEnabled(_ enabled: Bool) {
@@ -570,15 +581,15 @@ class ToggleItem<M>: ValueItem<M, Bool> {
     }
 }
 
-class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
+class ButtonItem<M>: ValueItem<M, (label: Message?, image: UIImage?)> {
     let tracking: Tracking
-    let action:   (ButtonItem<M>) -> Void
+    let action:   (ButtonItem<M>) async -> Void
 
-    init(track: Tracking, title: Text? = nil,
-         value: @escaping (M) -> (label: Text?, image: UIImage?),
+    init(track: Tracking, title: Message? = nil,
+         value: @escaping (M) async -> (label: Message?, image: UIImage?),
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> Text? = { _ in nil },
-         action: @escaping (ButtonItem<M>) -> Void = { _ in }) {
+         caption: @escaping (M) async -> Message? = { _ in nil },
+         action: @escaping (ButtonItem<M>) async -> Void = { _ in }) {
         self.tracking = track
         self.action = action
 
@@ -595,17 +606,17 @@ class ButtonItem<M>: ValueItem<M, (label: Text?, image: UIImage?)> {
         }
 
         lazy var button = EffectButton( track: self.buttonItem?.tracking ) { [unowned self] _ in
-            self.buttonItem.flatMap { $0.action( $0 ) }
+            await self.buttonItem.flatMap { await $0.action( $0 ) }
         }
 
         override func createValueView() -> UIView? {
             self.button
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            let value = self.buttonItem?.value
+            let value = await self.buttonItem?.value
             self.button.button.applyText( value?.label )
             self.button.image = value?.image
         }
@@ -639,10 +650,10 @@ class DateItem<M>: ValueItem<M, Date> {
                 .activate()
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            self.dateView.date = self.valueItem?.value
+            self.dateView.date = await self.valueItem?.value
         }
     }
 }
@@ -651,11 +662,11 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     let placeholder: String?
     let contentType: UITextContentType?
 
-    init(title: Text? = nil, placeholder: String?, contentType: UITextContentType? = nil,
-         value: @escaping (M) -> String? = { _ in nil },
-         update: ((Item<M>, String) -> Void)? = nil,
+    init(title: Message? = nil, placeholder: String?, contentType: UITextContentType? = nil,
+         value: @escaping (M) async -> String? = { _ in nil },
+         update: ((Item<M>, String) async -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> Text? = { _ in nil }) {
+         caption: @escaping (M) async -> Message? = { _ in nil }) {
         self.placeholder = placeholder
         self.contentType = contentType
         super.init( title: title, value: value, update: update, subitems: subitems, axis: subitemAxis, caption: caption )
@@ -721,9 +732,10 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
     }
 
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        if let text = textField.text {
-            self.update?( self, text )
-        }
+        guard let text = textField.text
+        else { return }
+
+        Task { await self.update?( self, text ) }
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -750,8 +762,8 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.textAlignment = .center
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             self.valueField.placeholder = self.fieldItem?.placeholder
             self.valueField.autocapitalizationType = self.fieldItem?.autocapitalizationType ?? .sentences
@@ -759,7 +771,7 @@ class FieldItem<M>: ValueItem<M, String>, UITextFieldDelegate {
             self.valueField.textContentType = self.fieldItem?.contentType
             self.valueField.keyboardType = self.fieldItem?.keyboardType ?? .default
             self.valueField.returnKeyType = .done
-            self.valueField.text = self.fieldItem?.value
+            self.valueField.text = await self.fieldItem?.value
         }
     }
 }
@@ -773,12 +785,15 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
     // MARK: UITextViewDelegate
 
     func textViewDidChange(_ textView: UITextView) {
-        if let update = update {
+        guard let update = self.update
+        else { return }
+
+        Task {
             if let value = textView.text as? V {
-                update( self, value )
+                await update( self, value )
             }
             else if let value = textView.attributedText as? V {
-                update( self, value )
+                await update( self, value )
             }
         }
     }
@@ -811,13 +826,13 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
             }
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             self.valueView.isEditable = self.areaItem?.update != nil
 
-            let value = self.areaItem?.value
-            if let value = value as? NSAttributedString ?? (value as? Text)?.attributedString {
+            let value = await self.areaItem?.value
+            if let value = value as? NSAttributedString ?? (value as? Message)?.attributedString {
                 self.valueView.attributedText = value
                 self.valueView.isHidden = false
             }
@@ -837,12 +852,12 @@ class AreaItem<M, V>: ValueItem<M, V>, UITextViewDelegate {
 class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: ValueItem<M, V> {
     let step: V.Stride, min: V, max: V
 
-    init(title: Text? = nil,
-         value: @escaping (M) -> V? = { _ in nil },
-         update: ((Item<M>, V) -> Void)? = nil,
+    init(title: Message? = nil,
+         value: @escaping (M) async -> V? = { _ in nil },
+         update: ((Item<M>, V) async -> Void)? = nil,
          step: V.Stride, min: V, max: V,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> Text? = { _ in nil }) {
+         caption: @escaping (M) async -> Message? = { _ in nil }) {
         self.step = step
         self.min = min
         self.max = max
@@ -860,13 +875,13 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
         let valueView  = UIView()
         let valueLabel = UILabel()
         lazy var downButton = EffectButton( attributedTitle: .icon( "caret-down" ), border: 0, background: false ) { [weak self] _ in
-            if let stepperItem = self?.stepperItem, let value = stepperItem.value, value > stepperItem.min {
-                stepperItem.update?( stepperItem, value.advanced( by: -stepperItem.step ) )
+            if let stepperItem = self?.stepperItem, let value = await stepperItem.value, value > stepperItem.min {
+                await stepperItem.update?( stepperItem, value.advanced( by: -stepperItem.step ) )
             }
         }
         lazy var upButton = EffectButton( attributedTitle: .icon( "caret-up" ), border: 0, background: false ) { [weak self] _ in
-            if let stepperItem = self?.stepperItem, let value = stepperItem.value, value < stepperItem.max {
-                stepperItem.update?( stepperItem, value.advanced( by: stepperItem.step ) )
+            if let stepperItem = self?.stepperItem, let value = await stepperItem.value, value < stepperItem.max {
+                await stepperItem.update?( stepperItem, value.advanced( by: stepperItem.step ) )
             }
         }
 
@@ -905,24 +920,24 @@ class StepperItem<M, V: Strideable & Comparable & CustomStringConvertible>: Valu
                 .activate()
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            self.valueLabel.text = self.stepperItem?.value?.description
+            self.valueLabel.text = await self.stepperItem?.value?.description
         }
     }
 }
 
 class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     let tracking: Tracking?
-    let values:   (M) -> [V?]
+    let values:   @MainActor (M) async -> [V?]
 
-    init(track: Tracking? = nil, title: Text? = nil,
-         values: @escaping (M) -> [V?],
-         value: @escaping (M) -> V,
-         update: ((Item<M>, V) -> Void)? = nil,
+    init(track: Tracking? = nil, title: Message? = nil,
+         values: @escaping (M) async -> [V?],
+         value: @escaping (M) async -> V,
+         update: (@MainActor (Item<M>, V) async -> Void)? = nil,
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> Text? = { _ in nil }) {
+         caption: @escaping (M) async -> Message? = { _ in nil }) {
         self.tracking = track
         self.values = values
 
@@ -937,7 +952,7 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
     }
 
     func tracking(indexPath: IndexPath, value: V) -> Tracking? {
-        if let tracking = self.tracking, let value = (value as? Text)?.description {
+        if let tracking = self.tracking, let value = (value as? Message)?.description {
             return tracking.with( parameters: [ "value": value ] )
         }
 
@@ -967,35 +982,36 @@ class PickerItem<M, V: Hashable, C: UICollectionViewCell>: ValueItem<M, V> {
                 }
             }
 
-            self.updateDataSource()
+            Task { await self.updateDataSource() }
         }
 
-        func updateDataSource() {
+        func updateDataSource() async {
             if let pickerItem = self.pickerItem, let model = pickerItem.model {
-                let values = pickerItem.values( model )
+                let values = await pickerItem.values( model )
                 let sections = values.split( separator: nil ).map { $0.compactMap { $0 } }
-                let selection = pickerItem.valueProvider( model )
+                let selection = await pickerItem.valueProvider( model )
                 self.dataSource?.apply( Dictionary( enumerated: sections ) ) {
                     self.dataSource?.select( item: selection, delegation: false )
                 }
             }
         }
 
-        override func doUpdate() {
-            super.doUpdate()
-
-            self.updateDataSource()
+        override func doUpdate() async {
+            await super.doUpdate()
+            await self.updateDataSource()
         }
 
         // MARK: - UICollectionViewDelegate
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            if let value = self.dataSource?.item( for: indexPath ), let pickerItem = self.pickerItem {
-                if let tracking = pickerItem.tracking( indexPath: indexPath, value: value ) {
-                    Tracker.shared.event( track: tracking )
-                }
+            Task {
+                if let value = self.dataSource?.item( for: indexPath ), let pickerItem = self.pickerItem {
+                    if let tracking = pickerItem.tracking( indexPath: indexPath, value: value ) {
+                        Tracker.shared.event( track: tracking )
+                    }
 
-                pickerItem.update?( pickerItem, value )
+                    await pickerItem.update?( pickerItem, value )
+                }
             }
         }
     }
@@ -1014,38 +1030,36 @@ class PagerItem<M>: ValueItem<M, [Item<M>]> {
 
     class PagerItemView: ValueItemView {
         let pagerView = PagerView()
-        lazy var pageItems: [Item<M>] = self.valueItem?.value ?? []
+        lazy var pageItems: [Item<M>] = [] {
+            didSet {
+                self.pageItems.forEach { $0.model = self.valueItem?.model }
+                self.pagerView.pages = self.pageItems.map { $0.view }
+                self.pageItems.forEach { $0.view.didLoad() }
+                self.pageItems.forEach { $0.updateTask.request() }
+            }
+        }
 
         override func createValueView() -> UIView? {
             self.pagerView
         }
 
-        override func didLoad() {
-            super.didLoad()
+        override func doUpdate() async {
+            await super.doUpdate()
 
-            self.pageItems.forEach { $0.model = self.valueItem?.model }
-            self.pagerView.pages = self.pageItems.map { $0.view }
-            self.pageItems.forEach { $0.view.didLoad() }
-            self.pageItems.forEach { $0.updateTask.request( now: true ) } // TODO: self.doUpdate()?
-        }
-
-        override func doUpdate() {
-            super.doUpdate()
-
-            self.pageItems.forEach { $0.updateTask.request( now: true ) }
+            self.pageItems = await self.valueItem?.value ?? []
         }
     }
 }
 
 class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
-    let values: (M) -> [V]
+    let values: (M) async -> [V]
     var deletable = false
     var animated  = true
 
-    init(title: Text? = nil,
-         values: @escaping (M) -> [V],
+    init(title: Message? = nil,
+         values: @escaping (M) async -> [V],
          subitems: [Item<M>] = [], axis subitemAxis: NSLayoutConstraint.Axis = .horizontal,
-         caption: @escaping (M) -> Text? = { _ in nil }) {
+         caption: @escaping (M) async -> Message? = { _ in nil }) {
         self.values = values
 
         super.init( title: title, subitems: subitems, axis: subitemAxis, caption: caption )
@@ -1097,18 +1111,16 @@ class ListItem<M, V: Hashable, C: UITableViewCell>: Item<M> {
             self.activityIndicator.startAnimating()
         }
 
-        override func doUpdate() {
-            super.doUpdate()
+        override func doUpdate() async {
+            await super.doUpdate()
 
             if let listItem = self.listItem, let model = listItem.model {
                 self.tableView.isHidden = false
                 self.tableView.tableHeaderView = self.activityIndicator
 
-                DispatchQueue.api.perform {
-                    self.dataSource?.apply( [ 0: listItem.values( model ) ], animatingDifferences: listItem.animated ) {
-                        self.tableView.isHidden = self.dataSource?.isEmpty ?? true
-                        self.tableView.tableHeaderView = nil
-                    }
+                await self.dataSource?.apply( [ 0: listItem.values( model ) ], animatingDifferences: listItem.animated ) {
+                    self.tableView.isHidden = self.dataSource?.isEmpty ?? true
+                    self.tableView.tableHeaderView = nil
                 }
             }
         }
@@ -1175,9 +1187,7 @@ class LinksItem<M>: ListItem<M, LinksItem.Link, LinksItem.Cell> {
         weak var item: LinksItem?
         var link: Link? {
             didSet {
-                DispatchQueue.main.perform {
-                    self.button.setTitle( self.link?.title, for: .normal )
-                }
+                self.button.setTitle( self.link?.title, for: .normal )
             }
         }
 

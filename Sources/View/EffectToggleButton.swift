@@ -19,23 +19,21 @@ class EffectToggleButton: BaseView {
 
     var tapEffect = true
     var tracking: Tracking?
-    var action:   (Bool) -> Bool?
+    var action:   (Bool) async -> Bool?
     var isSelected: Bool {
         get {
             self.button.isSelected
         }
         set {
-            DispatchQueue.main.perform {
-                self.button.isSelected = newValue
-                self.contentView.isSelected = newValue
+            self.button.isSelected = newValue
+            self.contentView.isSelected = newValue
 
-                UIView.animate( withDuration: .short ) {
-                    self.button.alpha = self.isSelected ? .on : .long
-                    self.checkLabel => \.textColor => Theme.current.color.body.transform { [unowned self] in
-                        $0?.with( alpha: self.isSelected ? .on : .off )
-                    }
-                    self.checkLabel => \.layer.borderColor => (self.isSelected ? Theme.current.color.body : Theme.current.color.mute)
+            UIView.animate( withDuration: .short ) {
+                self.button.alpha = self.isSelected ? .on : .long
+                self.checkLabel => \.textColor => Theme.current.color.body.transform { [unowned self] in
+                    $0?.with( alpha: self.isSelected ? .on : .off )
                 }
+                self.checkLabel => \.layer.borderColor => (self.isSelected ? Theme.current.color.body : Theme.current.color.mute)
             }
         }
     }
@@ -69,7 +67,7 @@ class EffectToggleButton: BaseView {
         fatalError( "init(coder:) is not supported for this class" )
     }
 
-    init(track: Tracking? = nil, action: @escaping (Bool) -> Bool?) {
+    init(track: Tracking? = nil, action: @escaping (Bool) async -> Bool?) {
         self.tracking = track
         self.action = action
         super.init( frame: .zero )
@@ -87,7 +85,7 @@ class EffectToggleButton: BaseView {
         self.checkLabel => \.attributedText => .font => Theme.current.font.callout
         self.checkLabel => \.attributedText => .foregroundColor => Theme.current.color.body
 
-        self.button.contentEdgeInsets = UIEdgeInsets( top: 8, left: 8, bottom: 20, right: 8 )
+//        self.button.contentEdgeInsets = UIEdgeInsets( top: 8, left: 8, bottom: 20, right: 8 )
         self.button.action( for: .primaryActionTriggered ) { [unowned self] in
             self.activate()
         }
@@ -125,14 +123,16 @@ class EffectToggleButton: BaseView {
     }
 
     func activate() {
-        self.action( !self.isSelected ).flatMap { self.isSelected = $0 }
-        self.track()
+        Task {
+            await self.action( !self.isSelected ).flatMap { self.isSelected = $0 }
+            self.track()
 
-        if self.tapEffect {
-            TapEffectView().run( for: self )
+            if self.tapEffect {
+                TapEffectView().run( for: self )
+            }
+
+            Feedback.shared.play( .trigger )
         }
-
-        Feedback.shared.play( .trigger )
     }
 
     func track() {
