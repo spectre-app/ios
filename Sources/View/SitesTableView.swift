@@ -110,7 +110,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
         self.window == nil
     }
 
-    lazy var updateTask = DispatchTask.update( self ) { [weak self] in
+    lazy var updateTask: DispatchTask<Void> = DispatchTask.update( self ) { [weak self] in
         guard let self = self
         else { return }
 
@@ -738,7 +738,7 @@ class SitesTableView: UITableView, UITableViewDelegate, UserObserver, Updatable 
 
         // MARK: - Private
 
-        lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
+        lazy var updateTask: DispatchTask<Void> = DispatchTask.update( self, animated: true ) { [weak self] in
             guard let self = self
             else { return }
 

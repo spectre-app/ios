@@ -636,7 +636,7 @@ class Theme: Hashable, CustomStringConvertible, Observable, Updatable {
         }
     }
 
-    lazy var updateTask = LeakRegistry.shared.unregister( DispatchTask.update( self ) { [weak self] in
+    lazy var updateTask: DispatchTask<Void> = LeakRegistry.shared.unregister( DispatchTask.update( self ) { [weak self] in
         guard let self = self
         else { return }
 

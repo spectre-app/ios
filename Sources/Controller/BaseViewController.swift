@@ -201,7 +201,7 @@ class BaseViewController: UIViewController, Updatable, KeyboardMonitorObserver {
         !self.isViewLoaded// || self.view.superview == nil
     }
 
-    lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
+    lazy var updateTask: DispatchTask<Void> = DispatchTask.update( self, animated: true ) { [weak self] () -> Void in
         guard let self = self
         else { return }
 

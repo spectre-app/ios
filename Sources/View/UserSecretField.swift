@@ -274,7 +274,7 @@ class UserSecretField<U>: UITextField, UITextFieldDelegate, Updatable {
 
     // MARK: - Updatable
 
-    lazy var updateTask = DispatchTask.update( self, deadline: .random( in: (.short)..<(.long) ) ) { [weak self] in
+    lazy var updateTask: DispatchTask<Void> = DispatchTask.update( self, deadline: .random( in: (.short)..<(.long) ) ) { [weak self] in
         guard let self = self
         else { return }
 

@@ -67,7 +67,7 @@ class EffectClassifiedCell: EffectCell, Updatable {
 
     // MARK: - Updatable
 
-    lazy var updateTask = DispatchTask.update( self ) { [weak self] in
+    lazy var updateTask: DispatchTask<Void> = DispatchTask.update( self ) { [weak self] in
         guard let self = self
         else { return }
 

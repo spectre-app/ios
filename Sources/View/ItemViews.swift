@@ -24,7 +24,7 @@ class AnyItem: NSObject, Updatable {
         LeakRegistry.shared.register( self )
     }
 
-    lazy var updateTask = DispatchTask.update( self, animated: true ) { [weak self] in
+    lazy var updateTask: DispatchTask<Void> = DispatchTask.update( self, animated: true ) { [weak self] in
         guard let self = self
         else { return }
 
