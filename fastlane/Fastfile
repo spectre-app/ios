@@ -38,15 +38,27 @@ def system_silencing(cmd)
 end
 
 platform :ios do
-  desc "Build an application archive and send it to TestFlight"
-  lane :deploy do
-    @dep_start = Time.now.to_i
-    check
 
-    @thr_verify_xcode = system_silenced( 'fastlane run verify_xcode' )
-    gather
-    @thr_notes = system_silencing( '"$EDITOR" ' + Shellwords.escape( File.absolute_path( 'notes.md' ) ) )
-    build
+  ### PUBLIC LANES
+
+  desc "Build an application archive and send it to TestFlight"
+  lane :deploy do |options|
+
+    if options[:resume]
+      gather
+      lane_context[SharedValues::XCODEBUILD_ARCHIVE] = Dir.glob( "/Users/lhunath/Library/Developer/Xcode/Archives/*/Spectre *.xcarchive" ).sort.last
+      lane_context[SharedValues::DSYM_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.app.dSYM.zip"
+      lane_context[SharedValues::IPA_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.ipa"
+    else
+      @dep_start = Time.now.to_i
+      check
+
+      @thr_verify_xcode = system_silenced( 'fastlane run verify_xcode' )
+      gather
+      @thr_notes = system_silencing( '"$EDITOR" ' + Shellwords.escape( File.absolute_path( 'notes.md' ) ) )
+      build
+    end
+
     distribute
     release
     bump
@@ -58,22 +70,8 @@ platform :ios do
     File.delete( 'notes.md' ) if File.exist?( 'notes.md' )
   end
 
-  lane :resume do
-    lane_context[SharedValues::XCODEBUILD_ARCHIVE] = Dir.glob( "/Users/lhunath/Library/Developer/Xcode/Archives/*/Spectre *.xcarchive" ).sort.last
-    lane_context[SharedValues::IPA_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.ipa"
-    lane_context[SharedValues::DSYM_OUTPUT_PATH] = "/Users/lhunath/workspace/lyndir/Spectre/ios/Spectre.app.dSYM.zip"
-
-    @dep_start = Time.now.to_i
-    #check
-    gather
-    #build
-    #distribute
-    release
-    bump
-  end
-
+  desc "Ensure the source code is in a valid state before building"
   lane :check do
-    # Ensure the source code is in a valid state before building.
     ensure_git_status_clean
     ensure_git_branch(
       branch: "^stream/(alpha|beta|probe|public)$",
@@ -84,9 +82,11 @@ platform :ios do
     )
   end
 
+  desc "Collect metadata and product release notes"
   lane :gather do
-    # Prepare product release notes.
-    git_pull( only_tags: true )
+    git_pull(
+      only_tags: true,
+    )
     git_branch
     @dep_stream = git_branch.split( "/" )[-1]
     @app_version = get_version_number( target: "Spectre" )
@@ -132,8 +132,22 @@ platform :ios do
     File.write( 'notes.md', @dep_notes )
   end
 
-  lane :build do
-    # Build and verify the product.
+  desc "Prepare for the next milestone"
+  lane :bump do
+    clean_build_artifacts
+    increment_build_number_in_xcodeproj
+    increment_version_number_in_xcodeproj(
+      scheme: 'Spectre-iOS',
+    )
+    commit_version_bump(
+      message: "Bump project version post release.",
+    )
+  end
+
+  ### PRIVATE LANES
+
+  desc "Build and verify the product"
+  private_lane :build do
     build_app(
       scheme: "Spectre-iOS",
       configuration: @dep_stream == "public" ? "Public" : "Pilot",
@@ -177,8 +191,8 @@ platform :ios do
     end
   end
 
-  lane :distribute do
-    # Distribute the product.
+  desc "Distribute the product"
+  private_lane :distribute do
     build_app(
       scheme: "Spectre-iOS",
       configuration: @dep_stream == "public" ? "Public" : "Pilot",
@@ -194,6 +208,11 @@ platform :ios do
       skip_package_dependencies_resolution: true,
       archive_path: lane_context[SharedValues::XCODEBUILD_ARCHIVE],
     )
+    app_store_connect_api_key(
+      key_id: "T9BBS5QFZF",
+      issuer_id: "69a6de6e-8b94-47e3-e053-5b8c7c11a4d1",
+      key_filepath: "fastlane/appstore-connect-api.p8",
+    )
     upload_to_testflight(
       changelog: @dep_notes,
       #distribute_external: true,
@@ -201,7 +220,8 @@ platform :ios do
     )
   end
 
-  lane :release do
+  desc "Record the product delivery"
+  private_lane :release do
     add_git_tag(
       grouping: "build",
       includes_lane: false,
@@ -270,18 +290,6 @@ platform :ios do
       app_identifier: 'app.spectre.autofill',
       version: @app_version,
       build: @app_build,
-    )
-  end
-
-  lane :bump do
-    # Advance the source state beyond the released product.
-    clean_build_artifacts
-    increment_build_number_in_xcodeproj
-    increment_version_number_in_xcodeproj(
-      scheme: 'Spectre-iOS'
-    )
-    commit_version_bump(
-      message: "Bump project version post release.",
     )
   end
 end

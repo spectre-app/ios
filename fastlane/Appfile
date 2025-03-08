@@ -1,5 +1,2 @@
-app_identifier("app.spectre")
+#!/usr/bin/env ruby
 
-apple_id("lhunath@lyndir.com")
-itc_team_id("153897")
-team_id("HL3Q45LX9N")
