@@ -151,7 +151,12 @@ class LogSink {
                     .warning: .default, .error: .error, .fatal: .fault,
                 ][record.level] ?? .debug
                 Logger(subsystem: productIdentifier, category: "\(record.fileStem):\(record.line)")
-                    .log(level: osLevel, "\(record.message)")
+                    .log(level: osLevel,
+                    """
+                    \("\(let: record.action?.tracking, "({}) ")")\
+                    \(record.message)\
+                    \("\(let: record.data.nonEmpty, "\n{}")", privacy: .sensitive(mask: .none))
+                    """)
                 Task {
                     await LogState.shared.record(record)
                 }

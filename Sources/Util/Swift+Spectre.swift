@@ -320,6 +320,12 @@ extension String {
         return self.valid(spectre_unhex(hex, &length), length: length, consume: true)
     }
 
+    public init(dump value: Any) {
+        var dumped = ""
+        dump(value, to: &dumped)
+        self = dumped
+    }
+
     subscript(_ pattern: String) -> [[Substring?]] {
         do {
             let regex = try NSRegularExpression(pattern: pattern)
@@ -437,6 +443,15 @@ extension String {
             UnsafeBufferPointer(start: $0, count: self.lengthOfBytes(using: .utf8)).digest(salt: salt)
         }
     }
+
+    func indent(spaces: Int = 4) -> String {
+        if self.isEmpty {
+            self
+        } else {
+            String(repeating: " ", count: spaces)
+                + self.replacingOccurrences(of: "\n", with: "\n\(String(repeating: " ", count: spaces))")
+        }
+    }
 }
 
 extension UnsafeBufferPointer where Element == UInt8 {
@@ -476,7 +491,9 @@ extension StringInterpolationProtocol where StringLiteralType == String {
     }
 
     mutating func appendInterpolation(`let` value: (some Any)?, _ then: String = "{}", else: @autoclosure () -> String = "") {
-        self.appendInterpolation(let: value, { then.replacingOccurrences(of: "{}", with: String(describing: $0)) }, else: `else`())
+        self.appendInterpolation(let: value, {
+            then.replacingOccurrences(of: "{}", with: ($0 as? CustomStringConvertible)?.description ?? String(dump: $0))
+        }, else: `else`())
     }
 
     mutating func appendInterpolation<N: FixedWidthInteger, S: FormatStyle>(_ number: N, as style: S)
