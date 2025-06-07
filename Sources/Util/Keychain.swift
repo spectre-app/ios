@@ -21,7 +21,7 @@ public class Keychain {
             )
         }
 
-        var query: [CFString: Any] = [
+        return [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: [SpectreKeyPurpose.authentication.scope, algorithm.description]
                 .compactMap { $0 }.joined(separator: "."),
@@ -31,12 +31,6 @@ public class Keychain {
             kSecUseDataProtectionKeychain: true,
             kSecUseAuthenticationContext: context,
         ]
-        #if targetEnvironment(simulator)
-        // FIXME: https://developer.apple.com/forums/thread/685773
-        query.removeValue(forKey: kSecAttrAccessControl)
-        #endif
-
-        return query
     }
 
     public func keyStatus(for userName: String, algorithm: SpectreAlgorithm, context: LAContext)
