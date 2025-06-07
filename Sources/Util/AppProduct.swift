@@ -3,7 +3,6 @@
 //
 
 import StoreKit
-import UIKit
 
 enum AppFeature: String, CaseIterable {
     case notifications, diagnostics, offline, handoff, style, icons, incognito, sharing

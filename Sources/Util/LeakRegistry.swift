@@ -47,7 +47,7 @@ class LeakRegistry: LeakObserver {
 
         return self.semaphore.sync {
             var report = String(format: "Monitored Objects: %d\n", self.members.count)
-            report += String(format: "Memory Remaining: %0.3f Mb\n", Double(os_proc_available_memory()) / 1024 / 1024)
+            report += String(format: "Memory Remaining: %0.3f Mb\n", Double(self.availableMemory) / 1024 / 1024)
 
             var released = [String: [Registration]]()
             var leaked   = [String: [Registration]](), leaks = 0
@@ -96,6 +96,14 @@ class LeakRegistry: LeakObserver {
 
             return report
         }
+    }
+
+    private var availableMemory: UInt64 {
+#if canImport(UIKit)
+        UInt64(os_proc_available_memory())
+#else
+        ProcessInfo.processInfo.physicalMemory
+#endif
     }
 
     // MARK: - LeakObserver

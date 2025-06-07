@@ -6,6 +6,12 @@ import AuthenticationServices
 import LocalAuthentication
 import SwiftUI
 
+#if canImport(UIKit)
+typealias AHostingController = UIHostingController
+#elseif canImport(AppKit)
+typealias AHostingController = NSHostingController
+#endif
+
 // Note: The Address Sanitizer will break the ability to load this extension due to its excessive memory usage.
 class AutoFillProviderController: ASCredentialProviderViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -13,7 +19,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         LeakRegistry.shared.register(self)
 
         LogSink.shared.register()
-        Tracker.shared.startup(extensionController: self)
+        Tracker.shared.startup()
     }
 
     // MARK: - Life
@@ -23,11 +29,20 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         fatalError("init(coder:) is not supported for this class")
     }
 
+#if canImport(UIKit)
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
         SpectreModel.shared.activeUser?.logout()
     }
+#elseif canImport(AppKit)
+    override func viewWillDisappear() {
+        super.viewWillDisappear()
+
+        SpectreModel.shared.activeUser?.logout()
+    }
+#endif
+
 
     // MARK: - ASCredentialProviderViewController
 
@@ -121,13 +136,15 @@ class AutoFillProviderController: ASCredentialProviderViewController {
 
     private func show(autofill: SpectreModel.AutoFill) {
         SpectreModel.shared.autofill = autofill
-        self.rootViewController = UIHostingController(rootView: MainWindow().spectreStyle().modifier(LeakReporter()))
+        self.rootViewController = AHostingController(rootView: AnyView(MainWindow().spectreStyle().modifier(LeakReporter())))
     }
 
-    private var rootViewController: UIViewController? {
+    private var rootViewController: AHostingController<AnyView>? {
         didSet {
             if let oldViewController = oldValue {
+#if canImport(UIKit)
                 oldViewController.willMove(toParent: nil)
+#endif
                 oldViewController.viewIfLoaded?.removeFromSuperview()
                 oldViewController.removeFromParent()
             }
@@ -135,10 +152,16 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             if let newViewController = self.rootViewController {
                 self.addChild(newViewController)
                 newViewController.view.frame = self.view.bounds
+#if canImport(UIKit)
                 newViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+#elseif canImport(AppKit)
+                newViewController.view.autoresizingMask = [.width, .height]
+#endif
                 self.view.autoresizesSubviews = true
                 self.view.addSubview(newViewController.view)
+#if canImport(UIKit)
                 newViewController.didMove(toParent: self)
+#endif
             }
         }
     }

@@ -3,7 +3,7 @@
 //
 
 import OrderedCollections
-import UIKit
+import Foundation
 
 @Observable
 class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, QuestionObserver {

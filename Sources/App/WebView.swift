@@ -2,6 +2,7 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
+#if canImport(UIKit)
 import SafariServices
 import SwiftUI
 
@@ -43,4 +44,5 @@ struct WebView: UIViewControllerRepresentable {
     WebView(url: URL(string: "https://spectre.pw")!, dismiss: nil)
         .spectreStyle()
 }
+#endif
 #endif

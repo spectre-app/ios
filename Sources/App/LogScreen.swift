@@ -49,10 +49,14 @@ struct LogScreen: View {
                 ) {
                     VStack {
                         Button("Copy Logs") {
+#if canImport(UIKit)
                             UIPasteboard.general.setObjects(
                                 [self.logMessages as NSString],
                                 localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
                             )
+#elseif canImport(AppKit)
+                            // TODO: macOS
+#endif
                         }
 
                         Picker("Log Level", selection: self.$logLevel) {
@@ -67,19 +71,27 @@ struct LogScreen: View {
             Section("Identity") {
                 LabeledContent(self.deviceIdentifier) {
                     Button("Copy Anonymous Device Identifier") {
+#if canImport(UIKit)
                         UIPasteboard.general.setObjects(
                             [self.deviceIdentifier as NSString],
                             localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
                         )
+#elseif canImport(AppKit)
+                            // TODO: macOS
+#endif
                     }
                 }
 
                 LabeledContent(self.ownerIdentifier) {
                     Button("Copy Anonymous Owner Identifier") {
+#if canImport(UIKit)
                         UIPasteboard.general.setObjects(
                             [self.ownerIdentifier as NSString],
                             localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
                         )
+#elseif canImport(AppKit)
+                            // TODO: macOS
+#endif
                     }
                 }
             }

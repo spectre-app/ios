@@ -2,7 +2,12 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
+import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 public protocol SpectreOperand {
     func use()
@@ -31,64 +36,69 @@ public struct SpectreOperation {
     public func copy() {
         Task.detached {
             inf("Copying \(self.purpose) for: \(self.siteName)")
+
+            #if canImport(UIKit)
             try await UIPasteboard.general.setObjects(
                 [self.task.value as NSString],
                 localOnly: AppFeature.handoff.isEnabled, expirationDate: Date(timeIntervalSinceNow: 3 * 60)
             )
+            #elseif canImport(AppKit)
+            // TODO: macOS
+            #endif
             self.operand.use()
         }
     }
 
-    public func copy(fromView view: UIView, trackingFrom: String) {
-        Task.detached {
-            let event = Tracker.shared.begin(track: .subject("site", action: "use"))
-
-            do {
-                let token = try await self.task.value
-                Feedback.shared.play(.trigger)
-
-                inf("Copying \(self.purpose) for: \(self.siteName)")
-                UIPasteboard.general.setObjects(
-                    [token as NSString],
-                    localOnly: AppFeature.handoff.isEnabled, expirationDate: Date(timeIntervalSinceNow: 3 * 60)
-                )
-                self.operand.use()
-
-//                await AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
-//                """
-//                Your \(self.purpose) for \(self.siteName) is:
-//                \(token)
+//    public func copy(fromView view: UIView, trackingFrom: String) {
+//        Task.detached {
+//            let event = Tracker.shared.begin(track: .subject("site", action: "use"))
 //
-//                It was copied to the pasteboard, you can now switch to your application and paste it into the \(self.purpose) field.
+//            do {
+//                let token = try await self.task.value
+//                Feedback.shared.play(.trigger)
 //
-//                Note that after 3 minutes, the \(self.purpose) will expire from the pasteboard for security reasons.
-//                """ ).show( in: view )
-
-                event.end(
-                    [
-                        "result": "success",
-                        "from": trackingFrom,
-                        "action": "copy",
-                        "counter": "\(self.counter)",
-                        "purpose": "\(self.purpose)",
-                        "type": "\(self.type)",
-                        "algorithm": "\(self.algorithm)",
-                        "entropy": Attacker.entropy(type: self.type) ?? Attacker.entropy(string: token),
-                    ]
-                )
-            }
-            catch {
-                event.end(
-                    [
-                        "result": "failure",
-                        "from": trackingFrom,
-                        "action": "copy",
-                        "error": error.localizedDescription,
-                    ]
-                )
-            }
-        }
-    }
+//                inf("Copying \(self.purpose) for: \(self.siteName)")
+//                UIPasteboard.general.setObjects(
+//                    [token as NSString],
+//                    localOnly: AppFeature.handoff.isEnabled, expirationDate: Date(timeIntervalSinceNow: 3 * 60)
+//                )
+//                self.operand.use()
+//
+////                await AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
+////                """
+////                Your \(self.purpose) for \(self.siteName) is:
+////                \(token)
+////
+////                It was copied to the pasteboard, you can now switch to your application and paste it into the \(self.purpose) field.
+////
+////                Note that after 3 minutes, the \(self.purpose) will expire from the pasteboard for security reasons.
+////                """ ).show( in: view )
+//
+//                event.end(
+//                    [
+//                        "result": "success",
+//                        "from": trackingFrom,
+//                        "action": "copy",
+//                        "counter": "\(self.counter)",
+//                        "purpose": "\(self.purpose)",
+//                        "type": "\(self.type)",
+//                        "algorithm": "\(self.algorithm)",
+//                        "entropy": Attacker.entropy(type: self.type) ?? Attacker.entropy(string: token),
+//                    ]
+//                )
+//            }
+//            catch {
+//                event.end(
+//                    [
+//                        "result": "failure",
+//                        "from": trackingFrom,
+//                        "action": "copy",
+//                        "error": error.localizedDescription,
+//                    ]
+//                )
+//            }
+//        }
+//    }
 }
 
 extension SpectreOperation: Hashable {

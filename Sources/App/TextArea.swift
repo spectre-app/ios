@@ -15,7 +15,11 @@ struct TextArea: View {
     private var lineLimit: Int?
     private var lines: CGFloat { CGFloat(self.lineLimit ?? 3) }
     private var height: CGFloat {
+#if canImport(UIKit)
         UIFont.preferredFont(forTextStyle: .body).lineHeight * (self.lines + 0.3 * self.lines) + 16
+#elseif canImport(AppKit)
+        NSLayoutManager().defaultLineHeight(for: .preferredFont(forTextStyle: .body)) * (self.lines + 0.3 * self.lines) + 16
+#endif
     }
 
     var body: some View {
@@ -67,13 +71,18 @@ struct SecureField: View {
                 .font(.spectre.caption1)
         )
         .textContentType(.password)
-        .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
-        .keyboardType(.asciiCapable)
         .foregroundStyle(Color.spectre.body)
         .padding(.spectre.padding)
         .background(Color.spectre.backdrop)
         .cornerRadius(.spectre.spacer)
+        .modify {
+            $0
+            #if canImport(UIKit)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.asciiCapable)
+            #endif
+        }
     }
 }
 

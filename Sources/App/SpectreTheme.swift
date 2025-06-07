@@ -263,8 +263,10 @@ public struct GradientView: View {
 
     @State
     private var offset: CGPoint = .zero
+#if canImport(UIKit)
     @State
     private var view: UIView?
+#endif
 
     public var body: some View {
         let radius = self.width * 2, radians = CGFloat(self.angle.radians)
@@ -279,20 +281,27 @@ public struct GradientView: View {
                 )
             )
         }
-        .introspect(.view, on: .iOS(.v18...)) { view in
-            DispatchQueue.main.async {
-                self.view = view
-            }
-        }
-        .onGeometryChange(for: CGPoint.self) { $0.frame(in: .global).origin } action: {
-            var scrollOffset = CGPoint.zero, view: UIView? = self.view
-            while let superView = view?.superview {
-                if let scrollView = superView as? UIScrollView {
-                    scrollOffset += scrollView.contentOffset
+        .modify {
+            $0
+            #if canImport(UIKit)
+            .introspect(.view, on: .iOS(.v18...)) { view in
+                DispatchQueue.main.async {
+                    self.view = view
                 }
-                view = superView
             }
-            self.offset = -$0 - scrollOffset
+            .onGeometryChange(for: CGPoint.self) { $0.frame(in: .global).origin } action: {
+                var scrollOffset = CGPoint.zero, view: UIView? = self.view
+                while let superView = view?.superview {
+                    if let scrollView = superView as? UIScrollView {
+                        scrollOffset += scrollView.contentOffset
+                    }
+                    view = superView
+                }
+                self.offset = -$0 - scrollOffset
+            }
+            #else
+            // TODO: macOS
+            #endif
         }
     }
 }
@@ -436,7 +445,14 @@ struct SpectreStyle: ViewModifier {
     func body(content: Content) -> some View {
         NavigationStack {
             content
-                .containerBackground(BackgroundStyle(), for: .navigation)
+                .modify {
+                    $0
+                    #if canImport(UIKit)
+                    .containerBackground(BackgroundStyle(), for: .navigation)
+                    #else
+                    // TODO: macOS
+                    #endif
+                }
         }
         .modifier(MessagesHost())
 
@@ -945,17 +961,31 @@ public struct SpectreFormStyle: FormStyle {
             configuration.content
                 .listItemTint(.preferred(.spectre.alternative))
                 .listRowSeparatorTint(Color.clear)
-                .listRowBackground(Color.spectre.panel)
-                .listSectionSeparatorTint(Color.clear)
-                .listRowInsets(.border(.spectre.margin))
+                .modify {
+                    $0
+                    #if canImport(UIKit)
+                    .listRowBackground(Color.spectre.panel)
+                    .listSectionSeparatorTint(Color.clear)
+                    .listRowInsets(.border(.spectre.margin))
+                    #else
+                    // TODO: macOS
+                    #endif
+                }
         }
         .shadow(color: .spectre.shadow, radius: .on)
         .environment(\.defaultMinListRowHeight, .zero)
         .environment(\.defaultMinListHeaderHeight, .zero)
         .environment(\.headerProminence, .increased)
-        .listRowSpacing(.zero)
-        .listSectionSpacing(.zero)
-        .listStyle(.insetGrouped)
+        .modify {
+            $0
+            #if canImport(UIKit)
+            .listRowSpacing(.zero)
+            .listSectionSpacing(.zero)
+            .listStyle(.insetGrouped)
+            #else
+            // TODO: macOS
+            #endif
+        }
     }
 }
 
@@ -963,11 +993,16 @@ public struct SpectreFormStyle: FormStyle {
 
 extension Font {
     fileprivate static func custom(_ name: String, relativeTo textStyle: Font.TextStyle) -> Font {
+#if canImport(UIKit)
         self.custom(name, size: UIFont.preferredFont(forTextStyle: textStyle.uiTextStyle).pointSize, relativeTo: textStyle)
+#elseif canImport(AppKit)
+        self.custom(name, size: NSFont.preferredFont(forTextStyle: textStyle.nsTextStyle).pointSize, relativeTo: textStyle)
+#endif
     }
 }
 
 extension Font.TextStyle {
+#if canImport(UIKit)
     fileprivate var uiTextStyle: UIFont.TextStyle {
         switch self {
             case .largeTitle:
@@ -996,6 +1031,36 @@ extension Font.TextStyle {
                 return .body
         }
     }
+#elseif canImport(AppKit)
+    fileprivate var nsTextStyle: NSFont.TextStyle {
+        switch self {
+            case .largeTitle:
+                return .largeTitle
+            case .title:
+                return .title1
+            case .title2:
+                return .title2
+            case .title3:
+                return .title3
+            case .headline:
+                return .headline
+            case .subheadline:
+                return .subheadline
+            case .body:
+                return .body
+            case .callout:
+                return .callout
+            case .footnote:
+                return .footnote
+            case .caption:
+                return .caption1
+            case .caption2:
+                return .caption2
+            @unknown default:
+                return .body
+        }
+    }
+#endif
 }
 
 /// - Preview

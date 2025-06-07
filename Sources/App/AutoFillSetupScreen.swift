@@ -53,7 +53,7 @@ struct AutoFillSetupScreen: View {
         ) {
             Text(
                 """
-                To get AutoFill working smoothly on your \(UIDevice.current.model), there are a few things we need to get done.
+                To get AutoFill working smoothly on your \(AppConfig.shared.model), there are a few things we need to get done.
                 """
             )
             Text(
@@ -109,11 +109,16 @@ struct AutoFillSetupScreen: View {
             TextField(prompt: "Your default login", text: self.$loginName)
                 .submitLabel(.done)
                 .textContentType(.emailAddress)
-                .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
-                .keyboardType(.emailAddress)
                 .focused(self.$isLoginNameFocused)
                 .disabled(!self.user.loginType.in(class: .stateful))
+                .modify {
+                    $0
+                    #if canImport(UIKit)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
+                    #endif
+                }
             Text("You can also add site-specific logins to individual sites.")
                 .font(.spectre.caption1)
         }
@@ -121,25 +126,29 @@ struct AutoFillSetupScreen: View {
 
     var systemItem: Pager.PagerItem {
         Pager.PagerItem(
-            title: "\(UIDevice.current.model) Settings", systemImage: "gear.badge.checkmark",
+            title: "\(AppConfig.shared.model) Settings", systemImage: "gear.badge.checkmark",
             isDone: self.isAutoFillEnabled
         ) {
             Text(
                 """
-                To enable AutoFill on your \(UIDevice.current.model):
+                To enable AutoFill on your \(AppConfig.shared.model):
                 ❶ Open ⦗Settings⦘ ❯ ⦗General⦘
                 ❷ Find ⦗AutoFill & Passwords⦘
                 ❸ Enable ⦗AutoFill From⦘ for ⦗\(productName)⦘
                 """
             )
-            Toggle("AutoFill in \(UIDevice.current.model) Settings", systemImage: "keyboard", isOn: self.$isAutoFillEnabled)
+            Toggle("AutoFill in \(AppConfig.shared.model) Settings", systemImage: "keyboard", isOn: self.$isAutoFillEnabled)
                 .allowsHitTesting(false)
                 .overlay {
                     Button {
                         Task {
+                            #if canImport(UIKit)
                             if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
                                 await UIApplication.shared.open(settingsURL)
                             }
+                            #else
+                            // TODO: macOS
+                            #endif
                         }
                     } label: { Color.spectre.placeholder.opacity(0.1) /* FIXME: */ }
                         .buttonStyle(.plain)

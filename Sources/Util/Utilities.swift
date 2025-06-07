@@ -2,7 +2,7 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
-import UIKit
+import Foundation
 
 let productName       = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Spectre"
 let productBuild      = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"

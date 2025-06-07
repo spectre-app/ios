@@ -8,8 +8,13 @@ import SwiftUI
 
 @main
 struct SpectreApp: App {
+#if canImport(UIKit)
     @UIApplicationDelegateAdaptor
     private var appDelegate: Delegate
+#elseif canImport(AppKit)
+    @NSApplicationDelegateAdaptor
+    private var appDelegate: Delegate
+#endif
 
     var body: some Scene {
         WindowGroup {
@@ -20,12 +25,14 @@ struct SpectreApp: App {
         }
     }
 
-    private class Delegate: NSObject, UIApplicationDelegate {
+    @MainActor
+    fileprivate class Delegate: NSObject {
         override init() {
             super.init()
             LeakRegistry.shared.register(self)
         }
 
+#if canImport(UIKit)
         func application(_ application: UIApplication,
                          willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil)
             -> Bool {
@@ -34,6 +41,13 @@ struct SpectreApp: App {
             Migration.shared.perform()
             return true
         }
+#elseif canImport(AppKit)
+        func applicationWillFinishLaunching(_ notification: Notification) {
+            LogSink.shared.register()
+            Tracker.shared.startup()
+            Migration.shared.perform()
+        }
+#endif
     }
 
     private struct AppModifier: ViewModifier {
@@ -48,13 +62,20 @@ struct SpectreApp: App {
         @Environment(\.requestReview)
         private var requestReview
         @State
-        private var productOverlay: SKOverlay.Configuration?
-        @State
         private var deactivated: Date? = .now
+#if canImport(UIKit)
+        @State
+        private var productOverlay: SKOverlay.Configuration?
+#endif
 
         func body(content: Content) -> some View {
             content
-                .appStoreOverlay(isPresented: self.$productOverlay.isSet()) { self.productOverlay! }
+                .modify {
+                    $0
+                    #if canImport(UIKit)
+                    .appStoreOverlay(isPresented: self.$productOverlay.isSet()) { self.productOverlay! }
+                    #endif
+                }
                 .confirmationDialog("Keeping Safe", isPresented: self.$config.notificationsDecided.inverse()) {
                     Button("Thanks!") {
                         Task { await Tracker.shared.enableNotifications(userRequested: false) }
@@ -228,28 +249,6 @@ struct SpectreApp: App {
                     self.requestReview()
                     return true
 
-                case .store:
-                    // spectre:store[?id=<appleid>,campaignToken=<token>,providerToken=<token>,customProductPageIdentifier=<identifier>]
-                    guard components.verifySignature()
-                    else {
-                        wrn("Tried to open an untrusted URL for action: \(action)", data: components.url)
-                        return false
-                    }
-
-                    let id = components.queryItems?.first(where: { $0.name == "id" })?.value ?? "\(productAppleID)"
-                    let overlay = SKOverlay.AppConfiguration(appIdentifier: id, position: .bottom)
-                    (components.queryItems?.first(where: { $0.name == "campaignToken" })?.value).flatMap {
-                        overlay.campaignToken = $0
-                    }
-                    (components.queryItems?.first(where: { $0.name == "providerToken" })?.value).flatMap {
-                        overlay.providerToken = $0
-                    }
-                    (components.queryItems?.first(where: { $0.name == "customProductPageIdentifier" })?.value).flatMap {
-                        overlay.customProductPageIdentifier = $0
-                    }
-                    self.productOverlay = overlay
-                    return true
-
                 case .update:
                     // spectre:update[?id=<appleid>[&build=<version>]]
                     guard components.verifySignature()
@@ -274,7 +273,9 @@ struct SpectreApp: App {
                                     "\(productName) is outdated",
                                     data: "build[\(result.buildVersion)] < store[\(result.storeVersion)]"
                                 )
+#if canImport(UIKit)
                                 self.productOverlay = SKOverlay.AppConfiguration(appIdentifier: id, position: .bottom)
+#endif
                             }
                         }
                         catch {
@@ -282,6 +283,30 @@ struct SpectreApp: App {
                         }
                     }
                     return true
+
+#if canImport(UIKit)
+                case .store:
+                    // spectre:store[?id=<appleid>,campaignToken=<token>,providerToken=<token>,customProductPageIdentifier=<identifier>]
+                    guard components.verifySignature()
+                    else {
+                        wrn("Tried to open an untrusted URL for action: \(action)", data: components.url)
+                        return false
+                    }
+
+                    let id = components.queryItems?.first(where: { $0.name == "id" })?.value ?? "\(productAppleID)"
+                    let overlay = SKOverlay.AppConfiguration(appIdentifier: id, position: .bottom)
+                    (components.queryItems?.first(where: { $0.name == "campaignToken" })?.value).flatMap {
+                        overlay.campaignToken = $0
+                    }
+                    (components.queryItems?.first(where: { $0.name == "providerToken" })?.value).flatMap {
+                        overlay.providerToken = $0
+                    }
+                    (components.queryItems?.first(where: { $0.name == "customProductPageIdentifier" })?.value).flatMap {
+                        overlay.customProductPageIdentifier = $0
+                    }
+                    self.productOverlay = overlay
+                    return true
+#endif
             }
         }
 
@@ -340,6 +365,15 @@ struct SpectreApp: App {
     }
 
     private enum Action: String, CaseIterable {
-        case `import`, web, review, store, update
+        case `import`, web, review, update
+#if canImport(UIKit)
+        case store
+#endif
     }
 }
+
+#if canImport(UIKit)
+extension SpectreApp.Delegate: UIApplicationDelegate {}
+#elseif canImport(AppKit)
+extension SpectreApp.Delegate: NSApplicationDelegate {}
+#endif

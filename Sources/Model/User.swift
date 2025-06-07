@@ -2,7 +2,7 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
-import UIKit
+import Foundation
 
 @Observable
 class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observed, UserObserver, SiteObserver, MarshalObserver {
@@ -553,10 +553,6 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
 
         public var imageName: String {
             "avatar-\(self.rawValue)"
-        }
-
-        public var image: UIImage? {
-            UIImage(named: self.imageName)
         }
     }
 }

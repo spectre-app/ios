@@ -157,8 +157,13 @@ struct MessagesHost: ViewModifier {
             .modifier(CurrentPromptDialog(messages: self.messages))
         }
         .modifier(AuthenticationRequestAlert(messages: self.messages))
-        .fullScreenCover(item: self.$messages.activePage) {
-            WebView(url: $0).ignoresSafeArea()
+        .modify {
+            $0
+            #if canImport(UIKit)
+            .fullScreenCover(item: self.$messages.activePage) {
+                WebView(url: $0).ignoresSafeArea()
+            }
+            #endif
         }
         .environment(\.messages, self.messages)
     }
@@ -364,9 +369,14 @@ struct MessagesHost: ViewModifier {
                     TextField(prompt: "Full name", text: self.$userName)
                         .submitLabel(.done)
                         .textContentType(.name)
-                        .textInputAutocapitalization(.words)
                         .autocorrectionDisabled()
-                        .keyboardType(.alphabet)
+                        .modify {
+                            $0
+                            #if canImport(UIKit)
+                            .textInputAutocapitalization(.words)
+                            .keyboardType(.alphabet)
+                            #endif
+                        }
                 }
                 SecureField(prompt: "Spectre secret", text: self.$secret)
 

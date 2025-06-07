@@ -122,6 +122,10 @@ extension View {
         }
     }
 
+    public func modify(@ViewBuilder _ modifier: (Self) -> some View) -> some View {
+        modifier(self)
+    }
+
     public func paddingEffect(_ padding: CGFloat) -> some View {
         self.modifier(PaddingEffectModifier(padding: padding))
     }

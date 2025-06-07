@@ -164,10 +164,16 @@ struct SettingsScreen: View {
                         }
                     }
                     .overlay(Image(systemName: "paintbrush"))
-                    .pickerStyle(.wheel)
+                    .modify {
+                        $0
+                        #if canImport(UIKit)
+                        .pickerStyle(.wheel)
+                        #endif
+                    }
                 }
             }
 
+#if canImport(UIKit)
             StoreContent(feature: .icons) {
                 LabeledContent("Pick your favourite home screen icon for \(productName).") {
                     Carousel(values: type(of: self.config.appIcon).allCases, selection: .init {
@@ -181,6 +187,7 @@ struct SettingsScreen: View {
                     }
                 }
             }
+#endif
         }
     }
 

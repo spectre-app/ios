@@ -279,9 +279,12 @@
 		DA31C2692B7316A20043D10A /* SiteEditScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA31C2682B7316A20043D10A /* SiteEditScreen.swift */; };
 		DA31C26B2B731C350043D10A /* LogScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA31C26A2B731C350043D10A /* LogScreen.swift */; };
 		DA37DDF128415248002663EA /* country-codes.json in Resources */ = {isa = PBXBuildFile; fileRef = DA37DDF028415248002663EA /* country-codes.json */; };
+		DA40C64F2DF4C31F00AA8347 /* CoreGraphics+Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA40C64E2DF4C31F00AA8347 /* CoreGraphics+Spectre.swift */; };
+		DA40C6502DF4C31F00AA8347 /* CoreGraphics+Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA40C64E2DF4C31F00AA8347 /* CoreGraphics+Spectre.swift */; };
+		DA40C6632DF4F23000AA8347 /* Spectre-AutoFill.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DA4563D7265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
 		DA4563D8265623D600911BFF /* public-suffix-list.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA4563D6265623D600911BFF /* public-suffix-list.txt */; };
-		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; };
+		DA494EB92032A626004F3CB5 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */; platformFilter = ios; };
 		DA4DB13F2C27B4B60069C4C2 /* sodium.h in Headers */ = {isa = PBXBuildFile; fileRef = DA2439D42C27A24B0064A5CC /* sodium.h */; };
 		DA4DB1412C27B5380069C4C2 /* version.h in Headers */ = {isa = PBXBuildFile; fileRef = DA4DB1402C27B5380069C4C2 /* version.h */; };
 		DA4DB1422C27B58A0069C4C2 /* libjson-c.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5A21982C27AE5300380EE7 /* libjson-c.framework */; };
@@ -367,7 +370,6 @@
 		DABB83702826EED000AEC9E7 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = DABB836F2826EED000AEC9E7 /* OrderedCollections */; };
 		DABB83722826F1C300AEC9E7 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = DABB83712826F1C300AEC9E7 /* OrderedCollections */; };
 		DAC51053247C672C006CC5D6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC51052247C672C006CC5D6 /* CoreServices.framework */; };
-		DAC5457D2CCD3944006FC4AD /* Spectre-AutoFill.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA0E552A250D6F7F002B3AB1 /* Spectre-AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DAC545942CCDFF97006FC4AD /* Spectre-API.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA2431BD2C2792C70064A5CC /* Spectre-API.framework */; };
 		DAC545972CCEB7AB006FC4AD /* AutoFillProviderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3901C556A5B4D1C04E2D4 /* AutoFillProviderController.swift */; };
 		DAC89D452AC8F02600BD77EA /* WrappingHStack in Frameworks */ = {isa = PBXBuildFile; productRef = DAC89D442AC8F02600BD77EA /* WrappingHStack */; };
@@ -460,7 +462,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				DAC5457D2CCD3944006FC4AD /* Spectre-AutoFill.appex in Embed Foundation Extensions */,
+				DA40C6632DF4F23000AA8347 /* Spectre-AutoFill.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -845,6 +847,7 @@
 		DA351489233EF8FE00BCF504 /* spectre-algorithm_v0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "spectre-algorithm_v0.h"; sourceTree = "<group>"; };
 		DA37DDF028415248002663EA /* country-codes.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "country-codes.json"; sourceTree = "<group>"; };
 		DA3954B32066D2B5004621DB /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
+		DA40C64E2DF4C31F00AA8347 /* CoreGraphics+Spectre.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreGraphics+Spectre.swift"; sourceTree = "<group>"; };
 		DA4563D6265623D600911BFF /* public-suffix-list.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "public-suffix-list.txt"; sourceTree = "<group>"; };
 		DA494EB82032A626004F3CB5 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		DA4A0C1E201531B9004E2CE5 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
@@ -1019,6 +1022,7 @@
 				93D3917402B9BC4575713560 /* Tracker.swift */,
 				93D393F8D17BB4283C64AC37 /* Types.swift */,
 				93D39647B07609C89AA66767 /* UIKit+Spectre.swift */,
+				DA40C64E2DF4C31F00AA8347 /* CoreGraphics+Spectre.swift */,
 				93D39E1D19BCA02E43657384 /* Utilities.swift */,
 			);
 			path = Util;
@@ -2489,10 +2493,10 @@
 			buildConfigurationList = DA5BFA6D147E415C00F98B1E /* Build configuration list for PBXNativeTarget "Spectre" */;
 			buildPhases = (
 				DA5BFA40147E415C00F98B1E /* Sources */,
-				DA5BFA41147E415C00F98B1E /* Frameworks */,
 				DA5BFA42147E415C00F98B1E /* Resources */,
 				DAC545762CCD3929006FC4AD /* Embed Foundation Extensions */,
 				DA2431CB2C2792C70064A5CC /* Embed Frameworks */,
+				DA5BFA41147E415C00F98B1E /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -2813,6 +2817,7 @@
 				DAD0D4842CCEC9780046E281 /* Question.swift in Sources */,
 				DA1F336B2CCEE720005764AD /* Period.swift in Sources */,
 				DAC545972CCEB7AB006FC4AD /* AutoFillProviderController.swift in Sources */,
+				DA40C6502DF4C31F00AA8347 /* CoreGraphics+Spectre.swift in Sources */,
 				DA1F336A2CCEE717005764AD /* Resources.swift in Sources */,
 				DAD0D4892CCEC9B60046E281 /* Boxes.swift in Sources */,
 				DA1F33A92CCF1419005764AD /* LoginScreen.swift in Sources */,
@@ -3015,6 +3020,7 @@
 				DAA3207429B4EDC700AB142C /* LoginScreen.swift in Sources */,
 				DA2FDA7B29D9DDE1009249F3 /* SwiftUI+Spectre.swift in Sources */,
 				DA5FAB782B5A071F00E4F34B /* TextArea.swift in Sources */,
+				DA40C64F2DF4C31F00AA8347 /* CoreGraphics+Spectre.swift in Sources */,
 				DAA9CD752CF82424009DA0D6 /* Pager.swift in Sources */,
 				93D39E4BA0810541D1A91953 /* Marshal.swift in Sources */,
 				DA31C26B2B731C350043D10A /* LogScreen.swift in Sources */,
@@ -3246,16 +3252,17 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				LLVM_LTO = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				RUN_CLANG_STATIC_ANALYZER = YES;
-				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRIP_PNG_TEXT = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = PUBLIC;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
@@ -3290,6 +3297,7 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
+				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_APP $(inherited)";
 			};
@@ -3311,6 +3319,7 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=*]" = "Spectre AutoFill Development (macOS)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
 			};
 			name = Development;
@@ -3363,13 +3372,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = $MARKETING_VERSION;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.api;
 			};
@@ -3383,13 +3386,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = $MARKETING_VERSION;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.api;
 			};
@@ -3403,13 +3400,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = $MARKETING_VERSION;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.api;
 			};
@@ -3435,11 +3426,6 @@
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = $SOURCE_ROOT/libsodium/upstream/src/libsodium/include/sodium;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.libsodium;
 				WARNING_CFLAGS = "-Wno-implicit-int-conversion";
@@ -3463,11 +3449,6 @@
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = $SOURCE_ROOT/libsodium/upstream/src/libsodium/include/sodium;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.libsodium;
 				WARNING_CFLAGS = "-Wno-implicit-int-conversion";
@@ -3491,11 +3472,6 @@
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = $SOURCE_ROOT/libsodium/upstream/src/libsodium/include/sodium;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.libsodium;
 				WARNING_CFLAGS = "-Wno-implicit-int-conversion";
@@ -3518,11 +3494,6 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "$SOURCE_ROOT/libjson-c/upstream";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 0.17;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.spectre.libjson-c";
 				WARNING_CFLAGS = "-Wno-implicit-int-conversion";
@@ -3545,11 +3516,6 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "$SOURCE_ROOT/libjson-c/upstream";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 0.17;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.spectre.libjson-c";
 				WARNING_CFLAGS = "-Wno-implicit-int-conversion";
@@ -3572,11 +3538,6 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "$SOURCE_ROOT/libjson-c/upstream";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MARKETING_VERSION = 0.17;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.spectre.libjson-c";
 				WARNING_CFLAGS = "-Wno-implicit-int-conversion";
@@ -3747,7 +3708,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				LLVM_LTO = NO;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -3755,9 +3716,10 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				RUN_CLANG_STATIC_ANALYZER = NO;
-				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRIP_PNG_TEXT = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PRIVATE DEBUG";
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
@@ -3938,16 +3900,17 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				LLVM_LTO = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				RUN_CLANG_STATIC_ANALYZER = YES;
-				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRIP_PNG_TEXT = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = PILOT;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
@@ -3982,6 +3945,8 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "Spectre Development (macOS)";
+				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_APP $(inherited)";
 			};
@@ -4004,6 +3969,7 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
+				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_APP $(inherited)";
 			};

@@ -296,7 +296,7 @@ struct LoginScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .preference(key: PhaseBackground.self, value: self.selectedUser.avatar.image.flatMap(Image.init))
+            .preference(key: PhaseBackground.self, value: Image(self.selectedUser.avatar.imageName))
             .onChange(of: self.selectedUser, initial: true) {
                 if self.selectedUser.biometricLock, AppFeature.biometrics.isEnabled {
                     let keychainKeyFactory = KeychainKeyFactory(userName: self.selectedUser.userName, expiry: .minutes(5))
@@ -372,16 +372,20 @@ struct LoginScreen: View {
                 Spacer()
 
                 TextField(prompt: "Your full name", text: self.$newUser.userName)
-                    .submitLabel(.done)
                     .textContentType(.name)
-                    .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
-                    .keyboardType(.alphabet)
-                    .focused(self.$isFocusOnUserName)
                     .submitLabel(.next)
-                    .onSubmit { self.isFocusOnSecret = true }
                     .fontWeight(.heavy)
                     .font(.spectre.largeTitle)
+                    .modify {
+                        $0
+                        #if canImport(UIKit)
+                        .textInputAutocapitalization(.words)
+                        .keyboardType(.alphabet)
+                        #endif
+                    }
+                    .focused(self.$isFocusOnUserName)
+                    .onSubmit { self.isFocusOnSecret = true }
 
                 SecretField(userName: self.newUser.userName, showStrength: true) { keyFactory in
                     Task {
@@ -403,7 +407,7 @@ struct LoginScreen: View {
             .onAppear {
                 self.isFocusOnUserName = true
             }
-            .preference(key: PhaseBackground.self, value: self.newUser.avatar.image.flatMap(Image.init))
+            .preference(key: PhaseBackground.self, value: Image(self.newUser.avatar.imageName))
         }
     }
 

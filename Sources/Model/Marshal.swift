@@ -2,7 +2,7 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
-import UIKit
+import Foundation
 
 // swiftlint:disable:next type_body_length
 actor Marshal: Observed, LeakObserver {
@@ -741,80 +741,81 @@ actor Marshal: Observed, LeakObserver {
 
     // MARK: - Types
 
-    class ActivityItem: NSObject, UIActivityItemSource {
-        let user:     User
-        let format:   SpectreFormat
-        let redacted: Bool
-        let exportFile: URL
-
-        init(user: User, format: SpectreFormat, redacted: Bool) async throws {
-            self.user = user
-            self.format = format
-            self.redacted = redacted
-            self.exportFile = try await Marshal.shared.save(
-                user: self.user, in: URL(fileURLWithPath: NSTemporaryDirectory()),
-                format: self.format, redacted: self.redacted
-            )
-            super.init()
-            LeakRegistry.shared.register(self)
-        }
-
-        func text() -> String {
-            if self.redacted {
-                """
-                \(productName) export file (\(self.format)) for \(self.user)
-                NOTE: This is a SECURE export; access to the file does not expose its secrets.
-                ---
-                \(productName) v\(productVersion) (\(productBuild))
-                """
-            }
-            else {
-                """
-                \(productName) export (\(self.format)) for \(self.user)
-                NOTE: This export file's passwords are REVEALED.  Keep it safe!
-                ---
-                \(productName) v\(productVersion) (\(productBuild))
-                """
-            }
-        }
-
-        // MARK: - UIActivityItemSource
-
-        func activityViewControllerPlaceholderItem(_: UIActivityViewController)
-            -> Any {
-            self.user.description
-        }
-
-        func activityViewController(_ activityViewController: UIActivityViewController,
-                                    itemForActivityType activityType: UIActivity.ActivityType?)
-            -> Any? {
-            self.exportFile
-        }
-
-        func activityViewController(_ activityViewController: UIActivityViewController,
-                                    dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?)
-            -> String {
-            self.format.uti ?? ""
-        }
-
-        func activityViewController(_ activityViewController: UIActivityViewController,
-                                    subjectForActivityType activityType: UIActivity.ActivityType?)
-            -> String {
-            "\(productName) Export: \(self.user.userName)"
-        }
-
-        func activityViewController(_ activityViewController: UIActivityViewController,
-                                    thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize)
-            -> UIImage? {
-            self.user.avatar.image
-        }
-
-        func activityViewController(_ activityViewController: UIActivityViewController,
-                                    completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?,
-                                    activityError error: Swift.Error?) {
-            try? FileManager.default.removeItem(at: self.exportFile)
-        }
-    }
+    // TODO: Export
+//    class ActivityItem: NSObject, UIActivityItemSource {
+//        let user:     User
+//        let format:   SpectreFormat
+//        let redacted: Bool
+//        let exportFile: URL
+//
+//        init(user: User, format: SpectreFormat, redacted: Bool) async throws {
+//            self.user = user
+//            self.format = format
+//            self.redacted = redacted
+//            self.exportFile = try await Marshal.shared.save(
+//                user: self.user, in: URL(fileURLWithPath: NSTemporaryDirectory()),
+//                format: self.format, redacted: self.redacted
+//            )
+//            super.init()
+//            LeakRegistry.shared.register(self)
+//        }
+//
+//        func text() -> String {
+//            if self.redacted {
+//                """
+//                \(productName) export file (\(self.format)) for \(self.user)
+//                NOTE: This is a SECURE export; access to the file does not expose its secrets.
+//                ---
+//                \(productName) v\(productVersion) (\(productBuild))
+//                """
+//            }
+//            else {
+//                """
+//                \(productName) export (\(self.format)) for \(self.user)
+//                NOTE: This export file's passwords are REVEALED.  Keep it safe!
+//                ---
+//                \(productName) v\(productVersion) (\(productBuild))
+//                """
+//            }
+//        }
+//
+//        // MARK: - UIActivityItemSource
+//
+//        func activityViewControllerPlaceholderItem(_: UIActivityViewController)
+//            -> Any {
+//            self.user.description
+//        }
+//
+//        func activityViewController(_ activityViewController: UIActivityViewController,
+//                                    itemForActivityType activityType: UIActivity.ActivityType?)
+//            -> Any? {
+//            self.exportFile
+//        }
+//
+//        func activityViewController(_ activityViewController: UIActivityViewController,
+//                                    dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?)
+//            -> String {
+//            self.format.uti ?? ""
+//        }
+//
+//        func activityViewController(_ activityViewController: UIActivityViewController,
+//                                    subjectForActivityType activityType: UIActivity.ActivityType?)
+//            -> String {
+//            "\(productName) Export: \(self.user.userName)"
+//        }
+//
+//        func activityViewController(_ activityViewController: UIActivityViewController,
+//                                    thumbnailImageForActivityType activityType: UIActivity.ActivityType?, suggestedSize size: CGSize)
+//            -> UIImage? {
+//            self.user.avatar.image
+//        }
+//
+//        func activityViewController(_ activityViewController: UIActivityViewController,
+//                                    completed: Bool, forActivityType activityType: UIActivity.ActivityType?, returnedItems: [Any]?,
+//                                    activityError error: Swift.Error?) {
+//            try? FileManager.default.removeItem(at: self.exportFile)
+//        }
+//    }
 
     class UserFile: Hashable, Identifiable, Comparable, CustomStringConvertible, CredentialSupplier {
         public var origin: URL?

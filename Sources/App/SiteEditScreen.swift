@@ -31,6 +31,7 @@ struct SiteEditScreen: View {
         .popoverTitle("Edit site")
     }
 
+    @ViewBuilder
     var editMyAccount: some View {
         Section(self.site.siteName) {
             if let result = self.site.result(keyPurpose: .identification) {
@@ -85,6 +86,7 @@ struct SiteEditScreen: View {
         }.groupBoxStyle(.spectre(systemImage: "signature"))
     }
 
+    @ViewBuilder
     var editCounter: some View {
         Section("Counter") {
             Stepper("Using Password #\(self.site.counter)" as String, value: self.$site.counter)
@@ -94,6 +96,7 @@ struct SiteEditScreen: View {
         }.groupBoxStyle(.spectre(systemImage: "number"))
     }
 
+    @ViewBuilder
     var editType: some View {
         Section("Login Types") {
             StoreContent(feature: .logins) {
@@ -152,6 +155,7 @@ struct SiteEditScreen: View {
         }.groupBoxStyle(.spectre(systemImage: "checkerboard.shield"))
     }
 
+    @ViewBuilder
     var editSecurityQuestions: some View {
         Section("Security Questions") {
             StoreContent(feature: .answers) {
@@ -187,11 +191,16 @@ struct SiteEditScreen: View {
                             TextField(prompt: "eg. teacher", text: self.$addingAnswerKeyword)
                                 .submitLabel(.done)
                                 .textContentType(.jobTitle)
-                                .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
-                                .keyboardType(.alphabet)
                                 .fixedSize(horizontal: true, vertical: false)
                                 .focused(self.$isAddingAnswerFocused)
+                                .modify {
+                                    $0
+                                    #if canImport(UIKit)
+                                    .textInputAutocapitalization(.never)
+                                    .keyboardType(.alphabet)
+                                    #endif
+                                }
                                 .onSubmit {
                                     if let keyword = self.addingAnswerKeyword.nonEmpty {
                                         self.site.questions.append(.init(site: self.site, keyword: keyword))
@@ -213,6 +222,7 @@ struct SiteEditScreen: View {
         }.groupBoxStyle(.spectre(systemImage: "bubble.left.and.exclamationmark.bubble.right"))
     }
 
+    @ViewBuilder
     var editDetails: some View {
         Section("Details") {
             LabeledContent("Landing page") {
@@ -222,9 +232,14 @@ struct SiteEditScreen: View {
                 ))
                 .submitLabel(.done)
                 .textContentType(.URL)
-                .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
-                .keyboardType(.URL)
+                .modify {
+                    $0
+                    #if canImport(UIKit)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    #endif
+                }
             }
             .labeledContentStyle(.spectreVertical)
 
@@ -235,9 +250,14 @@ struct SiteEditScreen: View {
                 ))
                 .submitLabel(.done)
                 .textContentType(.URL)
-                .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
-                .keyboardType(.URL)
+                .modify {
+                    $0
+                    #if canImport(UIKit)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    #endif
+                }
             }
             .labeledContentStyle(.spectreVertical)
 

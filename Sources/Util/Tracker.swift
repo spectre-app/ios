@@ -5,7 +5,11 @@
 import Combine
 import Sentry
 import System
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 #if TARGET_APP
 // Countly does not support App Extensions.
 import Countly
@@ -62,6 +66,7 @@ class Tracker: ObservableObject {
             wrn("Notifications not authorized.", data: error)
         }
 
+#if canImport(UIKit)
         if userRequested, let settingsURL = URL(string: UIApplication.openSettingsURLString) {
             if self.hasCountlyStartedConfig != nil {
                 await MainActor.run { Countly.sharedInstance().giveConsent(forFeature: .pushNotifications) }
@@ -69,6 +74,9 @@ class Tracker: ObservableObject {
             await UIApplication.shared.open(settingsURL)
             return true
         }
+#elseif canImport(AppKit)
+        // TODO: macOS
+#endif
 
         AppConfig.shared.notifications = false
         if self.hasCountlyStartedConfig != nil {
@@ -88,9 +96,13 @@ class Tracker: ObservableObject {
     // identifierForVendor     | survives: restart                           -- doesn't survive: reinstall, other devices
     // identifierForDevice     | survives: restart, reinstall                -- doesn't survive: other devices
     // identifierForOwner      | survives: restart, reinstall, owned devices -- doesn't survive: unowned devices
-    // authenticatedIdentifier | survives: restart, reinstall, all devices   -- doesn't survive:
+    // authenticatedIdentifier | survives: restart, reinstall, all devices   -- doesn't survive: different user
     var identifierForVendor: String {
+        #if canImport(UIKit)
         UIDevice.current.identifierForVendor?.uuidString ?? ""
+        #else
+        self.identifierForDevice // TODO: macOS
+        #endif
     }
 
     lazy var identifierForDevice = self.identifier(for: "device", attributes: [
@@ -125,8 +137,7 @@ class Tracker: ObservableObject {
     private var recordSink: AnyCancellable?
 
     @MainActor
-    func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                 extensionController: UIViewController? = nil) {
+    func startup(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
         dbg("Startup", data: self.identifiers)
 
         // Breadcrumbs & errors
@@ -252,6 +263,7 @@ class Tracker: ObservableObject {
 
     #if TARGET_APP
     func feedback(_ rating: Int, comment: String?, contact: String?) {
+#if canImport(UIKit)
         if let widget = [
             .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
         ][AppConfig.shared.environment]?.feedback.b64Decrypt() {
@@ -259,6 +271,9 @@ class Tracker: ObservableObject {
                 withID: widget, rating: rating, email: contact, comment: comment, userCanBeContacted: contact != nil
             )
         }
+#elseif canImport(AppKit)
+        // TODO: macOS
+#endif
     }
     #endif
 
@@ -301,12 +316,16 @@ class Tracker: ObservableObject {
                 countlyConfig.customMetrics = self.identifiers.merging(self.tags)
 
                 #if TARGET_APP
+#if canImport(UIKit)
                 if UIApplication.shared.isRegisteredForRemoteNotifications {
                     Countly.sharedInstance().giveConsent(forFeature: .pushNotifications)
                 }
                 else {
                     Countly.sharedInstance().cancelConsent(forFeature: .pushNotifications)
                 }
+#elseif canImport(AppKit)
+                // TODO: macOS
+#endif
                 #endif
 
                 if AppConfig.shared.diagnostics {
@@ -337,9 +356,11 @@ class Tracker: ObservableObject {
                     $0.environment = AppConfig.shared.environment.rawValue.capitalized
                     $0.swiftAsyncStacktraces = true
                     $0.sendDefaultPii = false
-                    $0.attachScreenshot = false
-                    $0.enableUserInteractionTracing = true
                     $0.tracesSampleRate = 0.1
+#if canImport(UIKit)
+                    $0.enableUserInteractionTracing = true
+                    $0.attachScreenshot = false
+#endif
                 }
                 self.hasSentryStarted = true
             }

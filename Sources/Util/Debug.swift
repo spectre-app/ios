@@ -2,8 +2,6 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
-import UIKit
-
 #if DEBUG
 var debuggedObjects = [WeakBox<Any>]()
 

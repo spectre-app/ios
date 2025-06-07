@@ -3,7 +3,6 @@
 //
 
 import LocalAuthentication
-import UIKit
 
 public class Keychain {
     public static let shared = Keychain()

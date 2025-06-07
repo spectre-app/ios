@@ -4,6 +4,11 @@
 
 import Foundation
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 final class AppConfig: ObservableObject {
     static let shared = AppConfig()
@@ -11,6 +16,13 @@ final class AppConfig: ObservableObject {
     var isApp:       Bool
     let isDebug:     Bool
     var environment: AppConfiguration
+    let model:       String = {
+#if canImport(UIKit)
+        UIDevice.current.model
+#elseif canImport(AppKit)
+        "Mac"
+#endif
+    }()
 
     @UserDefault("runCount") var runCount: Int = .zero
     @UserDefault("diagnostics") var diagnostics = false
@@ -77,9 +89,13 @@ final class AppConfig: ObservableObject {
             }
         }
         #if TARGET_APP
+        #if canImport(UIKit)
         UNUserNotificationCenter.current().getNotificationSettings {
             self.notifications = $0.authorizationStatus != .denied
         }
+        #elseif canImport(AppKit)
+        // TODO: macOS
+        #endif
         #endif
     }
 

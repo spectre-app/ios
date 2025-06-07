@@ -97,9 +97,14 @@ struct UserEditScreen: View {
                         .disabled(!self.user.loginType.in(class: .stateful))
                         .submitLabel(.done)
                         .textContentType(.emailAddress)
-                        .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .keyboardType(.emailAddress)
+                        .modify {
+                            $0
+                            #if canImport(UIKit)
+                            .textInputAutocapitalization(.never)
+                            .keyboardType(.emailAddress)
+                            #endif
+                        }
 
                     Text(
                         """
@@ -255,10 +260,14 @@ struct UserEditScreen: View {
 
             LabeledContent(self.authenticatedIdentifier) {
                 Button("Copy Anonymous User Identifier") {
+                    #if canImport(UIKit)
                     UIPasteboard.general.setObjects(
                         [self.authenticatedIdentifier as NSString],
                         localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
                     )
+                    #elseif canImport(AppKit)
+                    // TODO: macOS
+                    #endif
                 }
             }
             .labeledContentStyle(.spectreCaptioned)

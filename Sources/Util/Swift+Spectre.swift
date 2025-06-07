@@ -4,7 +4,7 @@
 
 import OrderedCollections
 import Swift
-import UIKit
+import Foundation
 
 // TODO: Remove when https://www.swift.org/swift-evolution/#?proposal=SE-0418 is released
 extension KeyPath: @unchecked @retroactive Sendable {}
@@ -408,16 +408,6 @@ extension String {
 
     public var variantNames: OrderedSet<String> {
         .init([self.privateName, self.hostName, self.contains("/") ? nil : self].removingNil())
-    }
-
-    func color() -> UIColor {
-        guard let digest = self.digest()
-        else { return .clear }
-
-        let hue        = CGFloat(scale(int: digest[0], into: 0 ..< 1))
-        let saturation = CGFloat(scale(int: digest[1], into: 0.3 ..< 1))
-        let brightness = CGFloat(scale(int: digest[2], into: 0.5 ..< 0.7))
-        return UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: .on)
     }
 
     func b64Decrypt() -> String? {

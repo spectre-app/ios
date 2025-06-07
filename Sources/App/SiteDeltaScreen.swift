@@ -65,7 +65,12 @@ struct SiteDeltaScreen: View {
 
         // Behaviour
         .navigationTitle("Site changes")
-        .navigationBarTitleDisplayMode(.large)
+        .modify {
+            $0
+            #if canImport(UIKit)
+            .navigationBarTitleDisplayMode(.large)
+            #endif
+        }
     }
 
     struct PairView: View {

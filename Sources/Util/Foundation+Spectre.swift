@@ -312,3 +312,63 @@ extension URLRequest {
         }
     }
 }
+
+private let requiredQueue = DispatchQueue(label: "\(productName): Network Required", qos: .userInitiated, attributes: [.concurrent])
+private let optionalQueue = DispatchQueue(label: "\(productName): Network Optional", qos: .background, attributes: [.concurrent])
+
+extension URLSession {
+    public static var required = LazyBox<URLSession> {
+        guard !LeakRegistry.shared.isSuspended, !AppConfig.shared.offline
+        else { return nil }
+
+        return URLSession(configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue(queue: requiredQueue))
+    } unset: {
+        $0.getAllTasks { $0.forEach { $0.cancel() } }
+    }
+
+    public static var optional = LazyBox<URLSession> {
+        guard !LeakRegistry.shared.isSuspended, !AppConfig.shared.offline
+        else { return nil }
+
+        return URLSession(configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(queue: optionalQueue))
+    } unset: {
+        $0.getAllTasks { $0.forEach { $0.cancel() } }
+    }
+
+    public static func requiredConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpShouldSetCookies = false
+        configuration.httpCookieAcceptPolicy = .never
+        configuration.httpCookieStorage = nil
+        configuration.httpAdditionalHeaders = [
+            "User-Agent": "\(productName)/\(productVersion) " +
+                "(\(AppConfig.shared.model); CPU \(ProcessInfo.processInfo.operatingSystemVersionString)) " +
+                "Mozilla/5.0 AppleWebKit/605.1.15",
+        ]
+        configuration.sharedContainerIdentifier = productGroup
+        configuration.networkServiceType = .responsiveData
+        configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        return configuration
+    }
+
+    public static func optionalConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpShouldSetCookies = false
+        configuration.httpCookieAcceptPolicy = .never
+        configuration.httpCookieStorage = nil
+        configuration.httpAdditionalHeaders = [
+            "User-Agent": "\(productName)/\(productVersion) " +
+                "(\(AppConfig.shared.model); CPU \(ProcessInfo.processInfo.operatingSystemVersionString)) " +
+                "Mozilla/5.0 AppleWebKit/605.1.15",
+        ]
+        configuration.sharedContainerIdentifier = productGroup
+        configuration.networkServiceType = .background
+        configuration.timeoutIntervalForResource = TimeInterval(600 /* 10 min */ )
+        configuration.isDiscretionary = true
+        configuration.waitsForConnectivity = true
+        configuration.allowsExpensiveNetworkAccess = false
+        configuration.allowsConstrainedNetworkAccess = false
+        configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        return configuration
+    }
+}

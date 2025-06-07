@@ -2,7 +2,10 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
+import Foundation
+#if canImport(UIKit)
 import UIKit
+#endif
 
 public enum AppIcon: String, Identifiable, CaseIterable {
     case personal = "Personal", enterprise = "Enterprise"
@@ -29,6 +32,7 @@ public enum AppIcon: String, Identifiable, CaseIterable {
     }
 
     #if TARGET_APP
+    #if canImport(UIKit)
     @MainActor
     var isActive: Bool {
         UIApplication.shared.alternateIconName.flatMap { $0 == self.iconName } ?? (self == .primary)
@@ -51,5 +55,6 @@ public enum AppIcon: String, Identifiable, CaseIterable {
             }
         }
     }
+    #endif
     #endif
 }

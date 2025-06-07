@@ -3,7 +3,6 @@
 //
 
 import LocalAuthentication
-import UIKit
 
 public class KeyFactory: Hashable {
     public let  userName: String

@@ -58,8 +58,13 @@ struct Carousel<Value: Identifiable, Content: View>: View {
                 .padding(.horizontal, .spectre.margin)
             }
             .padding(.horizontal, -.spectre.margin)
-            .introspect(.scrollView, on: .iOS(.v18...)) {
-                $0.horizontalScrollIndicatorInsets = .horizontal(.spectre.margin)
+            .modify {
+                $0
+                #if canImport(UIKit)
+                .introspect(.scrollView, on: .iOS(.v18...)) {
+                    $0.horizontalScrollIndicatorInsets = .init(top: .zero, left: .spectre.margin, bottom: .zero, right: .spectre.margin)
+                }
+                #endif
             }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { self.width = $0 }
