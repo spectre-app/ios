@@ -8,9 +8,7 @@ import UIKit
 actor Marshal: Observed, LeakObserver {
     public static let shared = Marshal()
 
-    public nonisolated lazy var observers = Observers<MarshalObserver>(registration: { [unowned self] observer in
-        Task { observer.didChange(userFiles: self.userFiles) }
-    })
+    public nonisolated let observers = Observers<MarshalObserver>()
 
     public lazy var userFiles: [UserFile] = self.loadUserFiles() {
         didSet {
@@ -34,6 +32,9 @@ actor Marshal: Observed, LeakObserver {
 
     private init() {
         LeakRegistry.shared.observers.register(observer: self)
+        self.observers.registration = { [unowned self] observer in
+            Task { await observer.didChange(userFiles: self.userFiles) }
+        }
     }
 
     // MARK: - Interface

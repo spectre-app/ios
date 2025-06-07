@@ -11,7 +11,7 @@ public protocol Observed {
 
 public class Observers<O> {
     private var observers = [WeakBox<O>]()
-    private let registration: (O) -> Void
+    public var registration: (O) -> Void
 
     public init(registration: @escaping (O) -> Void = { _ in }) {
         self.registration = registration
