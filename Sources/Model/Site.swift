@@ -65,7 +65,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var url: String? {
+    public var url: String {
         didSet {
             if oldValue != self.url {
 //                self.preview.url = self.url
@@ -162,7 +162,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         self.resultState = resultState
         self.loginType = loginType ?? .none
         self.loginState = loginState
-        self.url = url
+        self.url = url ?? ""
         self.domains = domains
         self.uses = uses
         self.lastUsed = lastUsed ?? Date()
@@ -210,7 +210,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
     // MARK: - Credential
 
     var credential: AutoFill.Credential? {
-        self.user.flatMap { .init(supplier: $0, siteName: self.siteName, url: self.url, domains: self.domains) }
+        self.user.flatMap { .init(supplier: $0, siteName: self.siteName, url: self.url.nonEmpty, domains: self.domains) }
     }
 
     // MARK: - Operand

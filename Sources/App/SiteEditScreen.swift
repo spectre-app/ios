@@ -217,8 +217,8 @@ struct SiteEditScreen: View {
         Section("Details") {
             LabeledContent("Landing page") {
                 TextField(prompt: "eg. https://spectre.app", text: Binding(
-                    get: { self.site.url ?? "" },
-                    set: { self.site.url = $0.nonEmpty }
+                    get: { self.site.url },
+                    set: { self.site.url = $0 }
                 ))
                 .submitLabel(.done)
                 .textContentType(.URL)

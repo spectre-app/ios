@@ -163,8 +163,8 @@ actor Marshal: Observed, LeakObserver {
             marshalledSite.pointee.resultState = spectre_strdup(site.resultState)
             marshalledSite.pointee.loginType = site.loginType
             marshalledSite.pointee.loginState = spectre_strdup(site.loginState)
-            marshalledSite.pointee.url = spectre_strdup(site.url)
-            marshalledSite.pointee.domains = spectre_strdup(site.domains.joined(separator: ","))
+            marshalledSite.pointee.url = spectre_strdup(site.url.nonEmpty)
+            marshalledSite.pointee.domains = spectre_strdup(site.domains.joined(separator: ",").nonEmpty)
             marshalledSite.pointee.uses = site.uses
             marshalledSite.pointee.lastUsed = time_t(site.lastUsed.timeIntervalSince1970)
 
@@ -197,7 +197,7 @@ actor Marshal: Observed, LeakObserver {
     public func `import`(
         data importingData: Data, merge: Bool,
         needAuthentication: (UserFile, Error?) async throws -> KeyFactory,
-        didMerge: (User, User, (isUpdated: Bool, new: Int, replaced: Int)) -> Void
+        didMerge: (User, User, (userDetails: Bool, addedSites: Int, replacedSites: Int)) -> Void
     ) async throws {
         let importEvent = Tracker.shared.begin(track: .subject("import", action: "to-file"))
 
@@ -295,13 +295,14 @@ actor Marshal: Observed, LeakObserver {
     // MARK: - Private
 
     private func `import`(from importedUser: User, into existingUser: User) async throws
-        -> (isUpdated: Bool, new: Int, replaced: Int) {
+        -> (userDetails: Bool, addedSites: Int, replacedSites: Int) {
         let importEvent = Tracker.shared.begin(track: .subject("import", action: "to-user"))
 
-        var replacedSites = 0, newSites = 0
+        var replacedSites = 0, addedSites = 0
         for importedSite in importedUser.sites {
             if let existedSite = existingUser.sites.first(where: { $0.siteName == importedSite.siteName }) {
-                if importedSite.lastUsed <= existedSite.lastUsed {
+                // TODO: Merge questions.
+                if importedSite.lastUsed < existedSite.lastUsed || importedSite == existedSite {
                     continue
                 }
 
@@ -309,13 +310,13 @@ actor Marshal: Observed, LeakObserver {
                 replacedSites += 1
             }
             else {
-                newSites += 1
+                addedSites += 1
             }
 
             existingUser.sites.append(importedSite.copy(to: existingUser))
         }
 
-        var updatedUser = false
+        var userDetails = false
         if importedUser.lastUsed >= existingUser.lastUsed {
             existingUser.algorithm = importedUser.algorithm
             existingUser.avatar = importedUser.avatar
@@ -329,10 +330,10 @@ actor Marshal: Observed, LeakObserver {
             existingUser.biometricLock = importedUser.biometricLock
             existingUser.autofill = importedUser.autofill
             existingUser.attacker = importedUser.attacker
-            updatedUser = true
+            userDetails = true
         }
 
-        if !updatedUser, replacedSites + newSites == 0 {
+        if !userDetails, replacedSites + addedSites == 0 {
             importEvent.end(["result": "success", "type": "skipped"])
         }
         else {
@@ -340,7 +341,7 @@ actor Marshal: Observed, LeakObserver {
         }
 
         self.updateUserFiles()
-        return (isUpdated: updatedUser, new: newSites, replaced: replacedSites)
+        return (userDetails: userDetails, addedSites: addedSites, replacedSites: replacedSites)
     }
 
     @MainActor
@@ -575,7 +576,7 @@ actor Marshal: Observed, LeakObserver {
 //                                             content: UIActivityIndicatorView( style: .large ) )
 //        await spinner.show( in: viewController.view, dismissAutomatically: false )
 //
-//        var replacedSites = 0, newSites = 0
+//        var replacedSites = 0, addedSites = 0
 //        for importedSite in importedUser.sites {
 //            if let existedSite = existedUser.sites.first( where: { $0.siteName == importedSite.siteName } ) {
 //                if importedSite.lastUsed <= existedSite.lastUsed {
@@ -586,7 +587,7 @@ actor Marshal: Observed, LeakObserver {
 //                replacedSites += 1
 //            }
 //            else {
-//                newSites += 1
+//                addedSites += 1
 //            }
 //
 //            existedUser.sites.append( importedSite.copy( to: existedUser ) )
@@ -611,7 +612,7 @@ actor Marshal: Observed, LeakObserver {
 //
 //        await spinner.dismiss()
 //
-//        if !updatedUser && replacedSites + newSites == 0 {
+//        if !updatedUser && replacedSites + addedSites == 0 {
 //            importEvent.end( [ "result": "success", "type": "skipped" ] )
 //            await AlertController( title: "Import Skipped", message: existedUser.description, details:
 //            """
@@ -626,7 +627,7 @@ actor Marshal: Observed, LeakObserver {
 //            """
 //            Completed the import of sites into \(existedUser).
 //
-//            This was a merge import.  \(replacedSites) sites were replaced, \(newSites) new sites were created.
+//            This was a merge import.  \(replacedSites) sites were replaced, \(addedSites) new sites were created.
 //            \(updatedUser ? "The user settings were updated from the import."
 //                          : "The existing user's settings were more recent than the import.")
 //            """ ).show( in: viewController.view )
