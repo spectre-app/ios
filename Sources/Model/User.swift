@@ -201,7 +201,12 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
 
     var dirty = false {
         didSet {
+            guard !self.initializing
+            else { return }
+
             if self.dirty {
+                assert(self.userKeyFactory != nil)
+
                 if !oldValue {
                     OperationQueue.main.addOperation {
                         Task { try await self.save() }
@@ -261,18 +266,18 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
             guard spectre_id_valid([authKey.pointee.keyID])
             else { throw AppError.internal(reason: "Could not determine key ID for authentication key", details: self) }
 
+            if self.userKeyID != authKey.pointee.keyID {
+                throw AppError.issue("Incorrect user key", reason: self)
+            }
+            self.userKeyFactory = keyFactory
+
             if !spectre_id_valid(&self.userKeyID) {
                 self.userKeyID = authKey.pointee.keyID
             }
-            else if self.userKeyID != authKey.pointee.keyID {
-                throw AppError.issue("Incorrect user key", reason: self)
-            }
-
             if let keyFactory = keyFactory as? SecretKeyFactory {
                 self.identicon = keyFactory.metadata.identicon
             }
 
-            self.userKeyFactory = keyFactory
             return self
         }
         catch {
@@ -289,24 +294,28 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
     }
 
     func save(onlyIfDirty: Bool = true) async throws {
-        if !onlyIfDirty || (self.dirty && !self.initializing) {
-            do {
-                let destination = try await Marshal.shared.save(user: self)
-                if let origin = self.origin, origin != destination,
-                   FileManager.default.fileExists(atPath: origin.path) {
-                    // swiftlint:disable:next statement_position - FIXME: https://github.com/realm/SwiftLint/issues/4632
-                    do { try FileManager.default.removeItem(at: origin) }
-                    catch {
-                        err("Obsolete origin document could not be deleted.", data: origin, error)
-                    }
+        assert(self.userKeyFactory != nil)
+
+        if onlyIfDirty && !self.dirty {
+            return
+        }
+
+        do {
+            let destination = try await Marshal.shared.save(user: self)
+            if let origin = self.origin, origin != destination,
+               FileManager.default.fileExists(atPath: origin.path) {
+                // swiftlint:disable:next statement_position - FIXME: https://github.com/realm/SwiftLint/issues/4632
+                do { try FileManager.default.removeItem(at: origin) }
+                catch {
+                    err("Obsolete origin document could not be deleted.", data: origin, error)
                 }
-                self.origin = destination
-                self.dirty = false
             }
-            catch {
-                err("Couldn't save user", data: self, error)
-                throw error
-            }
+            self.origin = destination
+            self.dirty = false
+        }
+        catch {
+            err("Couldn't save user", data: self, error)
+            throw error
         }
     }
 
