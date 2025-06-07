@@ -462,17 +462,70 @@ extension Numeric {
     }
 }
 
-extension String.StringInterpolation {
-    mutating func appendInterpolation(if value: Bool, _ then: @autoclosure () -> String, _ else: @autoclosure () -> String) {
-        self.appendInterpolation(value ? then() : `else`())
+private let percentFormatter = using(NumberFormatter()) {
+    $0.numberStyle = .percent
+}
+
+extension StringInterpolationProtocol where StringLiteralType == String {
+    mutating func appendInterpolation(if value: Bool, _ then: @autoclosure () -> String, else: @autoclosure () -> String = "") {
+        self.appendLiteral(value ? then() : `else`())
     }
 
-    mutating func appendInterpolation<V>(`let` value: V?, _ then: (V) -> String, _ else: @autoclosure () -> String = "") {
-        self.appendInterpolation(value.flatMap { then($0) } ?? `else`())
+    mutating func appendInterpolation<V>(`let` value: V?, _ then: (V) -> String, else: @autoclosure () -> String = "") {
+        self.appendLiteral(value.flatMap { then($0) } ?? `else`())
     }
 
-    mutating func appendInterpolation(`let`: (some CustomStringConvertible)?, _ then: String, _ else: @autoclosure () -> String = "") {
-        self.appendInterpolation(let: `let`, { then.replacingOccurrences(of: "{}", with: $0.description) }, `else`())
+    mutating func appendInterpolation(`let` value: (some Any)?, _ then: String = "{}", else: @autoclosure () -> String = "") {
+        self.appendInterpolation(let: value, { then.replacingOccurrences(of: "{}", with: String(describing: $0)) }, else: `else`())
+    }
+
+    mutating func appendInterpolation<N: FixedWidthInteger, S: FormatStyle>(_ number: N, as style: S)
+        where S.FormatInput == N, S.FormatOutput == String {
+        if number == .max {
+            self.appendLiteral("max")
+        }
+        else if number == .min {
+            self.appendLiteral("min")
+        }
+        else if number == .zero {
+            self.appendLiteral("zero")
+        }
+        else {
+            self.appendLiteral(number.formatted(style))
+        }
+    }
+
+    mutating func appendInterpolation<N: BinaryFloatingPoint, S: FormatStyle>(_ number: N, as style: S)
+        where S.FormatInput == N, S.FormatOutput == String {
+        if number == .greatestFiniteMagnitude || number == .infinity {
+            self.appendLiteral("max")
+        }
+        else if number == -.greatestFiniteMagnitude || number == -.infinity {
+            self.appendLiteral("min")
+        }
+        else if number.isNaN {
+            self.appendLiteral("nan")
+        }
+        else if number.isZero || number.isSubnormal || number == .ulpOfOne || number == .leastNonzeroMagnitude {
+            self.appendLiteral("zero")
+        }
+        else {
+            self.appendLiteral(number.formatted(style))
+        }
+    }
+
+    mutating func appendInterpolation<S: FormatStyle>(_ number: NSNumber, as style: S)
+        where S.FormatInput == Double, S.FormatOutput == String {
+        self.appendInterpolation(number.doubleValue, as: style)
+    }
+
+    mutating func appendInterpolation<S: FormatStyle>(_ input: S.FormatInput, as style: S)
+        where S.FormatOutput == String {
+        self.appendLiteral(style.format(input))
+    }
+
+    mutating func appendInterpolation(percent ratio: some BinaryFloatingPoint) {
+        self.appendLiteral(percentFormatter.string(for: ratio) ?? "")
     }
 
     mutating func appendInterpolation(_ value: String, prePadToLength length: Int) {
@@ -484,7 +537,7 @@ extension String.StringInterpolation {
     }
 
     mutating func appendInterpolation(number value: CGFloat, as format: String? = nil,
-                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...) {
         self.appendInterpolation(
             number: Double(value), as: format,
             decimals: decimals, locale: locale, options.reduce([]) { $0.union($1) }
@@ -492,7 +545,7 @@ extension String.StringInterpolation {
     }
 
     mutating func appendInterpolation(number value: Double, as format: String? = nil,
-                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...) {
         self.appendInterpolation(
             number: Decimal(value), as: format,
             decimals: decimals, locale: locale, options.reduce([]) { $0.union($1) }
@@ -500,7 +553,7 @@ extension String.StringInterpolation {
     }
 
     mutating func appendInterpolation(number value: Decimal, as format: String? = nil,
-                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberOptions...) {
+                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...) {
         let formatter = NumberFormatter()
         if let format {
             formatter.positiveFormat = format
@@ -551,14 +604,6 @@ extension String.StringInterpolation {
         }
     }
 
-    struct NumberOptions: OptionSet {
-        let rawValue: Int
-
-        static let abbreviated = NumberOptions(rawValue: 1 << 0)
-        static let currency    = NumberOptions(rawValue: 1 << 1)
-        static let signed      = NumberOptions(rawValue: 1 << 2)
-    }
-
     mutating func appendInterpolation(measurement: Measurement<Unit>,
                                       options: MeasurementFormatter.UnitOptions = .naturalScale,
                                       style: Formatter.UnitStyle = .short) {
@@ -577,3 +622,12 @@ extension String.StringInterpolation {
         )
     }
 }
+
+struct NumberFormat: OptionSet {
+    let rawValue: Int
+
+    static let abbreviated = NumberFormat(rawValue: 1 << 0)
+    static let currency    = NumberFormat(rawValue: 1 << 1)
+    static let signed      = NumberFormat(rawValue: 1 << 2)
+}
+

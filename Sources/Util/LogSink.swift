@@ -25,13 +25,13 @@ public func trp(file: String = #file, line: Int32 = #line, function: String = #f
     guard condition
     else { return }
 
-    log(file: file, line: line, function: function, dso: dso, level: .trace, message)
+    log(file: file, line: line, function: function, dso: dso, level: .trace, message, data: data)
     print("<SIGTRAP>")
 }
 
 public func trc(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ message: String, data: Any?...) {
-    log(file: file, line: line, function: function, dso: dso, level: .trace, message)
+    log(file: file, line: line, function: function, dso: dso, level: .trace, message, data: data)
 }
 
 #if DEBUG
@@ -41,33 +41,33 @@ public func dbg(file: String = #file, line: Int32 = #line, function: String = #f
         return
     }
 
-    return log(file: file, line: line, function: function, dso: dso, level: .debug, message)
+    return log(file: file, line: line, function: function, dso: dso, level: .debug, message, data: data)
 }
 #endif
 
 public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ message: String, data: Any?...) {
-    log(file: file, line: line, function: function, dso: dso, level: .debug, message)
+    log(file: file, line: line, function: function, dso: dso, level: .debug, message, data: data)
 }
 
 public func inf(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ message: String, data: Any?...) {
-    log(file: file, line: line, function: function, dso: dso, level: .info, message)
+    log(file: file, line: line, function: function, dso: dso, level: .info, message, data: data)
 }
 
 public func wrn(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ message: String, data: Any?...) {
-    log(file: file, line: line, function: function, dso: dso, level: .warning, message)
+    log(file: file, line: line, function: function, dso: dso, level: .warning, message, data: data)
 }
 
 public func err(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ message: String, data: Any?...) {
-    log(file: file, line: line, function: function, dso: dso, level: .error, message)
+    log(file: file, line: line, function: function, dso: dso, level: .error, message, data: data)
 }
 
 public func ftl(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
                 _ message: String, data: Any?...) {
-    log(file: file, line: line, function: function, dso: dso, level: .fatal, message)
+    log(file: file, line: line, function: function, dso: dso, level: .fatal, message, data: data)
 }
 
 public func log(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,

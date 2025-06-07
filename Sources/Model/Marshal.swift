@@ -101,7 +101,7 @@ actor Marshal: Observed, LeakObserver {
                     userURL.stopAccessingSecurityScopedResource()
                 }
             }
-            if let error = coordinateError ?? saveError {
+            if let error = coordinateError.flatMap({ AppError.issue("Couldn't access file", cause: $0) }) ?? saveError {
                 throw error
             }
 
@@ -956,7 +956,7 @@ actor Marshal: Observed, LeakObserver {
                             userURL.stopAccessingSecurityScopedResource()
                         }
                     }
-                    if let error = coordinateError ?? saveError {
+                    if let error = coordinateError.flatMap({ AppError.issue("Couldn't access file", cause: $0) }) ?? saveError {
                         throw error
                     }
                 }

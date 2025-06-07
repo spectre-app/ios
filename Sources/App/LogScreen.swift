@@ -94,9 +94,9 @@ struct LogScreen: View {
             self.logMessages = await LogSink.shared.enumerate(level: self.logLevel).map { record in
                 """
                 \(self.dateFormatter.string(from: record.occurrence)) \(record.level.tag) | \(record.source)
-                \(record.message)
+                \(let: record.action?.tracking, "[{}] ")\(record.message)\(let: record.data.nonEmpty, "\n{}")
                 """
-            }.joined()
+            }.joined(separator: "\n")
         }
 
         // Behaviour

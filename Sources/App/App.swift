@@ -295,8 +295,17 @@ struct SpectreApp: App {
                     )
                 },
                 didMerge: { _, existingUser, result in
-                    if result.isUpdated {
-                        inf("Updated \(existingUser.userName)", data: "Added \(result.new), updated \(result.replaced) sites")
+                    if result.userDetails || result.addedSites > .zero || result.replacedSites > .zero {
+                        inf("Updated \(existingUser.userName) from import.", data:
+                            """
+                            Added \(result.addedSites), \
+                            updated \(result.replacedSites) sites, \
+                            user details \(result.userDetails ? "" : "not ")updated.
+                            """
+                        )
+                    }
+                    else {
+                        inf("No new changes in import.")
                     }
                 }
             )

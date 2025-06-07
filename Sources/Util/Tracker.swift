@@ -11,10 +11,14 @@ import UIKit
 import Countly
 #endif
 
-struct Tracking {
+struct Tracking: CustomStringConvertible {
     let subject:    String
     let action:     String
     var parameters: [String: Any?]
+
+    var description: String {
+        "\(self.subject)::\(self.action) \(let: self.parameters.nonEmpty, "({})"))"
+    }
 
     static func subject(_ subject: String, action: String, _ parameters: [String: Any?] = [:]) -> Tracking {
         Tracking(subject: subject, action: action, parameters: parameters)

@@ -12,7 +12,7 @@ final class MessagesModel {
             for await record in logRecords.values where record.level <= .info {
                 let error = record.data.compactMap { $0 as? Error }.first
                 if let tracking = record.action?.tracking {
-                    MessagesModel.shared.show(message: "\(tracking.subject): \(tracking.action)", description: record.message, error: error)
+                    MessagesModel.shared.show(message: tracking.description, description: record.message, error: error)
                 }
                 else {
                     MessagesModel.shared.show(message: "Internal \(record.level.description)", description: record.message, error: error)
