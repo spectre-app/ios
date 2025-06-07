@@ -24,7 +24,7 @@ struct TextArea: View {
             set: { self.text = $0 }
         ))
         .textEditorStyle(.plain)
-        .font(self.text.isEmpty && !self.isFocused ? .spectre.caption1 : nil)
+        .if(self.text.isEmpty && !self.isFocused) { $0.font(.spectre.caption1) }
         .focused(self.$isFocused)
         .foregroundStyle(self.text.isEmpty ? Color.spectre.alternative : Color.spectre.body)
         .frame(height: self.height, alignment: .topLeading)

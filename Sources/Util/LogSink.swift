@@ -5,6 +5,7 @@
 import Combine
 import Foundation
 import os
+import OSLog
 import System
 
 @TaskLocal
@@ -116,20 +117,6 @@ extension SpectreLogLevel: Identifiable, Strideable, CaseIterable, CustomStringC
     }
 }
 
-@globalActor
-private actor LogState: GlobalActor {
-    static var shared = LogState()
-    private var records    = [LogRecord]()
-
-    fileprivate func enumerate(level: SpectreLogLevel) -> [LogRecord] {
-        self.records.filter { $0.level <= level }.sorted()
-    }
-
-    fileprivate func record(_ record: LogRecord) {
-        self.records.append(record)
-    }
-}
-
 class LogSink {
     public static let shared = LogSink()
 
@@ -139,6 +126,9 @@ class LogSink {
     }
 
     private var recordSink: AnyCancellable?
+    private var dateFormatter = using(DateFormatter()) {
+        $0.dateFormat = "DDD'-'HH':'mm':'ss"
+    }
 
     public func register() {
         Spectre.shared.use {
@@ -157,9 +147,6 @@ class LogSink {
                     \(record.message)\
                     \("\(let: record.data.nonEmpty, "\n{}")", privacy: .sensitive(mask: .none))
                     """)
-                Task {
-                    await LogState.shared.record(record)
-                }
             }
 
             spectre_verbosity = .debug
@@ -181,8 +168,23 @@ class LogSink {
         }
     }
 
-    func enumerate(level: SpectreLogLevel) async -> [LogRecord] {
-        await LogState.shared.enumerate(level: level)
+    func enumerate(level: SpectreLogLevel) async -> [String] {
+        let levels: [OSLogType] = SpectreLogLevel.allCases.filter({ $0.rawValue <= level.rawValue }).compactMap {
+            [
+                .trace: .debug, .debug: .debug, .info: .info,
+                .warning: .default, .error: .error, .fatal: .fault,
+            ][$0]
+        }
+        do {
+            return try OSLogStore(scope: .currentProcessIdentifier)
+                .getEntries(matching: NSPredicate(
+                    format: "(subsystem == 'app.spectre' AND messageType IN %@) OR messageType IN { 0x10, 0x11 }", levels.map(\.rawValue)
+                ))
+                .compactMap { $0 as? OSLogEntryLog }
+                .map { "\(self.dateFormatter.string(from: $0.date)) \($0.level) | \($0.composedMessage)" }
+        } catch {
+            return ["Couldn't access logs: \(error)"]
+        }
     }
 }
 
@@ -216,5 +218,19 @@ struct LogRecord: Comparable {
         lhs.occurrence == rhs.occurrence && lhs.level == rhs.level &&
             lhs.file == rhs.file && lhs.line == rhs.line && lhs.function == rhs.function &&
             lhs.message == rhs.message
+    }
+}
+
+extension OSLogEntryLog.Level: @retroactive CustomStringConvertible {
+    public var description: String {
+        switch self {
+            case .debug:      "DBG"
+            case .info:       "INF"
+            case .notice:     "NOT"
+            case .error:      "ERR"
+            case .fault:      "FLT"
+            case .undefined:  "UND"
+            @unknown default: "UNK"
+        }
     }
 }

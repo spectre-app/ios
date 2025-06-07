@@ -14,10 +14,6 @@ struct LogScreen: View {
     private var logLevel = LogSink.shared.level
     @State
     private var logMessages = ""
-    @State
-    private var dateFormatter = using(DateFormatter()) {
-        $0.dateFormat = "DDD'-'HH':'mm':'ss"
-    }
 
     @State
     private var deviceIdentifier = Tracker.shared.identifierForDevice
@@ -91,12 +87,7 @@ struct LogScreen: View {
         .labeledContentStyle(.spectreCaptioned)
         .multilineTextAlignment(.center)
         .task(id: self.logLevel) {
-            self.logMessages = await LogSink.shared.enumerate(level: self.logLevel).map { record in
-                """
-                \(self.dateFormatter.string(from: record.occurrence)) \(record.level.tag) | \(record.source)
-                \(let: record.action?.tracking, "[{}] ")\(record.message)\(let: record.data.nonEmpty, "\n{}")
-                """
-            }.joined(separator: "\n")
+            self.logMessages = await LogSink.shared.enumerate(level: self.logLevel).joined(separator: "\n")
         }
 
         // Behaviour
