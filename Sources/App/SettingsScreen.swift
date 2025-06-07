@@ -121,12 +121,14 @@ struct SettingsScreen: View {
     private var preferencesSection: some View {
         Section("Preferences") {
             LabeledContent("Be notified of important impacts on your security.") {
-                Toggle("Notifications", systemImage: "bell", isOn: .init { self.config.notifications } set: {
-                    if $0 {
-                        self.tracker.enableNotifications()
-                    }
-                    else {
-                        self.tracker.disableNotifications()
+                Toggle("Notifications", systemImage: "bell", isOn: .init { self.config.notifications } set: { enabled in
+                    Task {
+                        if enabled {
+                            await self.tracker.enableNotifications()
+                        }
+                        else {
+                            await self.tracker.disableNotifications()
+                        }
                     }
                 })
             }

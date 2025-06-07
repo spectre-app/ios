@@ -37,60 +37,51 @@ class Tracker: ObservableObject {
     static let shared = Tracker()
 
     #if TARGET_APP
-    func enableNotifications(userRequested: Bool = true, completion: @escaping (Bool) -> Void = { _ in }) {
-        UNUserNotificationCenter.current().getNotificationSettings {
-            if $0.authorizationStatus == .authorized {
-                AppConfig.shared.notificationsDecided = true
+    @discardableResult
+    func enableNotifications(userRequested: Bool = true) async -> Bool {
+        if await UNUserNotificationCenter.current().notificationSettings().authorizationStatus == .authorized {
+            AppConfig.shared.notificationsDecided = true
+            AppConfig.shared.notifications = true
+            if self.hasCountlyStartedConfig != nil {
+                await MainActor.run { Countly.sharedInstance().giveConsent(forFeature: .pushNotifications) }
+            }
+            return true
+        }
+
+        do {
+            defer { AppConfig.shared.notificationsDecided = true }
+            if try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) {
                 AppConfig.shared.notifications = true
                 if self.hasCountlyStartedConfig != nil {
-                    Countly.sharedInstance().giveConsent(forFeature: .pushNotifications)
+                    await MainActor.run { Countly.sharedInstance().giveConsent(forFeature: .pushNotifications) }
                 }
-                completion(true)
-                return
-            }
-
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-                Task.detached {
-                    AppConfig.shared.notificationsDecided = true
-
-                    if let error {
-                        wrn("Notifications not authorized.", data: error)
-                    }
-                    if granted {
-                        AppConfig.shared.notifications = true
-                        if self.hasCountlyStartedConfig != nil {
-                            Countly.sharedInstance().giveConsent(forFeature: .pushNotifications)
-                        }
-                        completion(true)
-                        return
-                    }
-
-                    if userRequested, let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                        if self.hasCountlyStartedConfig != nil {
-                            Countly.sharedInstance().giveConsent(forFeature: .pushNotifications)
-                        }
-                        await UIApplication.shared.open(settingsURL)
-                        completion(true)
-                        return
-                    }
-
-                    AppConfig.shared.notifications = false
-                    if self.hasCountlyStartedConfig != nil {
-                        Countly.sharedInstance().cancelConsent(forFeature: .pushNotifications)
-                    }
-                    completion(false)
-                }
+                return true
             }
         }
+        catch {
+            wrn("Notifications not authorized.", data: error)
+        }
+
+        if userRequested, let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+            if self.hasCountlyStartedConfig != nil {
+                await MainActor.run { Countly.sharedInstance().giveConsent(forFeature: .pushNotifications) }
+            }
+            await UIApplication.shared.open(settingsURL)
+            return true
+        }
+
+        AppConfig.shared.notifications = false
+        if self.hasCountlyStartedConfig != nil {
+            await MainActor.run { Countly.sharedInstance().cancelConsent(forFeature: .pushNotifications) }
+        }
+        return false
     }
 
-    func disableNotifications() {
+    func disableNotifications() async {
         AppConfig.shared.notificationsDecided = true
         AppConfig.shared.notifications = false
 
-        if self.hasCountlyStartedConfig != nil {
-            Countly.sharedInstance().cancelConsent(forFeature: .pushNotifications)
-        }
+        await MainActor.run { Countly.sharedInstance().cancelConsent(forFeature: .pushNotifications) }
     }
     #endif
 
@@ -183,9 +174,8 @@ class Tracker: ObservableObject {
 
     func appeared(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle) {
         #if TARGET_APP
-        if self.hasCountlyStartedConfig != nil {
-            Countly.sharedInstance().appLoadingFinished()
-        }
+        assert(self.hasCountlyStartedConfig != nil && Thread.isMainThread)
+        Countly.sharedInstance().appLoadingFinished()
         #endif
         self.event(
             file: file, line: line, function: function, dso: dso,
@@ -221,7 +211,7 @@ class Tracker: ObservableObject {
                 Countly.user().custom = userConfig as NSDictionary
                 Countly.user().save()
                 #if TARGET_APP
-                Countly.sharedInstance().recordPushNotificationToken()
+                DispatchQueue.main.async { Countly.sharedInstance().recordPushNotificationToken() }
                 #endif
             }
             #endif
@@ -281,6 +271,7 @@ class Tracker: ObservableObject {
     private func initialize() {
         // Countly
         #if TARGET_APP
+        assert(Thread.isMainThread, "Countly assumes main-thread access.")
         if !AppConfig.shared.offline {
             if self.hasCountlyStartedConfig == nil, let countly = [
                 .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,

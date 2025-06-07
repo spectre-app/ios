@@ -57,7 +57,7 @@ struct SpectreApp: App {
                 .appStoreOverlay(isPresented: self.$productOverlay.isSet()) { self.productOverlay! }
                 .confirmationDialog("Keeping Safe", isPresented: self.$config.notificationsDecided.inverse()) {
                     Button("Thanks!") {
-                        Tracker.shared.enableNotifications(userRequested: false)
+                        Task { await Tracker.shared.enableNotifications(userRequested: false) }
                     }
                 } message: {
                     Text("""
