@@ -27,8 +27,8 @@ func _describe(_ type: AnyClass, details: Bool = false, abbreviated: Bool = fals
     if let swiftType = swiftTypePattern.firstMatch(in: className, range: NSRange(location: 0, length: className.count))?.range,
        swiftType.location != NSNotFound, swiftType.length > 0, let range = Range(swiftType, in: className) {
         let decoding = className[range.upperBound...]
-        var decoded  = [String]()
-        var index    = decoding.startIndex
+        var decoded: [String] = []
+        var index = decoding.startIndex
         while index < decoding.endIndex {
             // FIXME: Sometimes the encoding's length starts with a letter, like: P33_64194F838F350DFFFF7A6F647B1BDC6715PropertyUpdater
             guard let next = decoding[index...].firstIndex(where: { $0.isNumber })
@@ -39,9 +39,9 @@ func _describe(_ type: AnyClass, details: Bool = false, abbreviated: Bool = fals
             else { break }
 
             let lengthLength = Int(log10(Double(length)) + 1)
-            let from         = decoding.index(next, offsetBy: lengthLength)
-            let to           = decoding.index(next, offsetBy: lengthLength + length)
-            let typeElement  = String(decoding[from ..< to])
+            let from = decoding.index(next, offsetBy: lengthLength)
+            let to = decoding.index(next, offsetBy: lengthLength + length)
+            let typeElement = String(decoding[from ..< to])
 
             if prefix.isEmpty {
                 decoded.append(typeElement)

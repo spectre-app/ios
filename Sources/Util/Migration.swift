@@ -6,9 +6,9 @@ import Countly
 import Foundation
 
 class Migration {
-    public static let shared = Migration()
+    static let shared = Migration()
 
-    public var migrationBuild: String {
+    var migrationBuild: String {
         get { UserDefaults.shared.string(forKey: #function) ?? "" }
         set { UserDefaults.shared.set(newValue, forKey: #function) }
     }

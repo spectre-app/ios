@@ -10,7 +10,7 @@ class LeakRegistry: LeakObserver {
     let observers = Observers<LeakObserver>()
     var isSuspended = false
     private let semaphore = DispatchQueue(label: "LeakRegistry")
-    private var members   = [ObjectIdentifier: Registration]()
+    private var members: [ObjectIdentifier: Registration] = [:]
     private var isEnabled: Bool { UserDefaults.shared.bool(forKey: "memoryProfiler") }
 
     init() {
@@ -49,8 +49,8 @@ class LeakRegistry: LeakObserver {
             var report = String(format: "Monitored Objects: %d\n", self.members.count)
             report += String(format: "Memory Remaining: %0.3f Mb\n", Double(self.availableMemory) / 1024 / 1024)
 
-            var released = [String: [Registration]]()
-            var leaked   = [String: [Registration]](), leaks = 0
+            var released: [String: [Registration]] = [:]
+            var leaked: [String: [Registration]] = [:], leaks = 0
             for member in self.members.values {
                 if member.value == nil {
                     released[member.shortType, defaultSet: []].append(member)
@@ -70,7 +70,7 @@ class LeakRegistry: LeakObserver {
                 for (type, members) in leaked.sorted(by: { $0.key < $1.key }) {
                     report += String(
                         format: "%dx %@ %@\n", members.count, type,
-                        String(repeating: "*", count: members.filter(\.isDebugging).count)
+                        String(repeating: "*", count: members.filter(\.isDebugging).count),
                     )
                 }
 
@@ -89,7 +89,7 @@ class LeakRegistry: LeakObserver {
                 for (type, members) in released.sorted(by: { $0.key < $1.key }) {
                     report += String(
                         format: "%dx %@ %@\n", members.count, type,
-                        String(repeating: "*", count: members.filter(\.isDebugging).count)
+                        String(repeating: "*", count: members.filter(\.isDebugging).count),
                     )
                 }
             }
@@ -99,11 +99,11 @@ class LeakRegistry: LeakObserver {
     }
 
     private var availableMemory: UInt64 {
-#if canImport(UIKit)
+        #if canImport(UIKit)
         UInt64(os_proc_available_memory())
-#else
+        #else
         ProcessInfo.processInfo.physicalMemory
-#endif
+        #endif
     }
 
     // MARK: - LeakObserver
@@ -112,9 +112,9 @@ class LeakRegistry: LeakObserver {
 
     func shouldCancelOperations() {
         self.isSuspended = true
-//        #if TARGET_APP
-//        SitePreview.linkPreview.unset()
-//        #endif
+        //        #if TARGET_APP
+        //        SitePreview.linkPreview.unset()
+        //        #endif
         URLSession.required.clear()
         URLSession.optional.clear()
     }
@@ -122,8 +122,8 @@ class LeakRegistry: LeakObserver {
     struct Registration: CustomStringConvertible {
         weak var value: AnyObject?
         var isDebugging: Bool
-        let shortType:   String
-        let detailType:  String
+        let shortType: String
+        let detailType: String
         let description: String
         let registered = Date()
 

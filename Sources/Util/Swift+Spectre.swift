@@ -2,9 +2,9 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
+import Foundation
 import OrderedCollections
 import Swift
-import Foundation
 
 // TODO: Remove when https://www.swift.org/swift-evolution/#?proposal=SE-0418 is released
 extension KeyPath: @unchecked @retroactive Sendable {}
@@ -30,11 +30,14 @@ public func ??? <T>(optional: T?, defaultValue: @autoclosure () async throws -> 
 }
 
 public func withObservationTracking(_ apply: @Sendable @escaping () -> Void) {
-    withObservationTracking(apply, onChange: {
-        Task { @MainActor in
-            withObservationTracking(apply)
-        }
-    })
+    withObservationTracking(
+        apply,
+        onChange: {
+            Task { @MainActor in
+                withObservationTracking(apply)
+            }
+        },
+    )
 }
 
 // FIXME: This should be removed and replaced by a safe solution.
@@ -77,19 +80,19 @@ extension RangeReplaceableCollection {
 extension Array {
     static func joined<E: Equatable>(separator: E? = nil, _ elements: [E]?...) -> [E] {
         if let separator {
-            [E](elements.compactMap { $0 }.joined(separator: [separator]))
+            [E](elements.compactMap(\.self).joined(separator: [separator]))
         }
         else {
-            [E](elements.compactMap { $0 }.joined())
+            [E](elements.compactMap(\.self).joined())
         }
     }
 
     static func joined<E: Equatable>(separator: [E?]? = nil, _ elements: [E?]?...) -> [E?] {
         if let separator {
-            [E?](elements.compactMap { $0 }.joined(separator: separator))
+            [E?](elements.compactMap(\.self).joined(separator: separator))
         }
         else {
-            [E?](elements.compactMap { $0 }.joined())
+            [E?](elements.compactMap(\.self).joined())
         }
     }
 }
@@ -97,7 +100,7 @@ extension Array {
 extension Array where Element: Equatable {
     /** Retains only the first of each equal element, filtering out any future occurrences.  Preserves all nil elements. */
     func unique() -> Self {
-        var uniqueElements = [Element]()
+        var uniqueElements: [Element] = []
         return self.filter { element in
             defer { uniqueElements.append(element) }
             return !uniqueElements.contains(element) || String(reflecting: element) == "nil"
@@ -131,14 +134,12 @@ extension Dictionary {
 
     subscript(key: Key, default def: @autoclosure () -> Value) -> Value {
         mutating get {
-            if let value = self[key] {
-                return value
-            }
-            else {
+            guard let value = self[key] else {
                 let def = def()
                 self[key] = def
                 return def
             }
+            return value
         }
         set {
             self[key] = newValue
@@ -148,7 +149,7 @@ extension Dictionary {
 
 extension Error {
     var details: (description: String, failure: String?, suggestion: String?, underlying: [String]) {
-        let error    = self as NSError
+        let error = self as NSError
         let provider = NSError.userInfoValueProvider(forDomain: error.domain)
         let resolver: (String) -> Any? = { error.userInfo[$0] ?? provider?(self, $0) }
 
@@ -163,9 +164,9 @@ extension Error {
         return (
             description: resolver(NSLocalizedDescriptionKey) as? String ?? self.localizedDescription,
             failure: [resolver(NSLocalizedFailureErrorKey) as? String, error.localizedFailureReason]
-                .compactMap { $0 }.joined(separator: " ").nonEmpty,
+                .compactMap(\.self).joined(separator: " ").nonEmpty,
             suggestion: error.localizedRecoverySuggestion,
-            underlying: underlyingErrors.compactMap(\.detailsDescription)
+            underlying: underlyingErrors.compactMap(\.detailsDescription),
         )
     }
 
@@ -177,32 +178,32 @@ extension Error {
             details.suggestion.flatMap { "Suggestion: \($0)" },
             details.underlying.joined(separator: "\n\n").nonEmpty
                 .flatMap { "Underlying:\n  - \($0.replacingOccurrences(of: "\n", with: "    "))" },
-        ].compactMap { $0 }.joined(separator: "\n")
+        ].compactMap(\.self).joined(separator: "\n")
     }
 }
 
 extension Double {
-    public static let φ     = (1 + sqrt(5)) / 2 // Golden Ratio
+    public static let φ = (1 + sqrt(5)) / 2  // Golden Ratio
     public static let short = (1 - long)
-    public static let long  = 1 / φ
-    public static let off   = 0.0
-    public static let on    = 1.0
+    public static let long = 1 / φ
+    public static let off = 0.0
+    public static let on = 1.0
 }
 
 extension Float {
-    public static let φ     = Float(Double.φ) // Golden Ratio
-    public static let long  = 1 / φ
+    public static let φ = Float(Double.φ)  // Golden Ratio
+    public static let long = 1 / φ
     public static let short = (1 - long)
-    public static let off   = Float(0.0)
-    public static let on    = Float(1.0)
+    public static let off = Float(0.0)
+    public static let on = Float(1.0)
 }
 
 extension CGFloat {
-    public static let φ     = CGFloat(Double.φ) // Golden Ratio
+    public static let φ = CGFloat(Double.φ)  // Golden Ratio
     public static let short = (1 - long)
-    public static let long  = 1 / φ
-    public static let off   = CGFloat(0.0)
-    public static let on    = CGFloat(1.0)
+    public static let long = 1 / φ
+    public static let off = CGFloat(0.0)
+    public static let on = CGFloat(1.0)
 }
 
 extension ObjectIdentifier {
@@ -247,7 +248,7 @@ extension URL: @retroactive Identifiable {
 }
 
 extension Result {
-    var error:       Failure? {
+    var error: Failure? {
         guard case let .failure(error) = self
         else { return nil }
 
@@ -258,7 +259,7 @@ extension Result {
         self.error is CancellationError
     }
 
-    var name:        String {
+    var name: String {
         if self.isCancelled {
             return "cancelled"
         }
@@ -352,12 +353,12 @@ extension String {
     }
 
     public func isVersionOutdated(by other: String) -> Bool {
-        let selfComponents  = self.components(separatedBy: ".")
+        let selfComponents = self.components(separatedBy: ".")
         let otherComponents = other.components(separatedBy: ".")
         for c in 0 ..< max(otherComponents.count, selfComponents.count) {
             if c < otherComponents.count, c < selfComponents.count {
                 let otherComponent = (otherComponents[c] as NSString).integerValue
-                let selfComponent  = (selfComponents[c] as NSString).integerValue
+                let selfComponent = (selfComponents[c] as NSString).integerValue
                 if otherComponent > selfComponent {
                     // Other version component higher than this, this is outdated.
                     return true
@@ -431,7 +432,7 @@ extension String {
 
         return .valid(
             spectre_aes_decrypt(key, keyLength, &secretData, &secretLength),
-            length: secretLength, consume: true
+            length: secretLength, consume: true,
         )
     }
 
@@ -444,7 +445,8 @@ extension String {
     func indent(spaces: Int = 4) -> String {
         if self.isEmpty {
             self
-        } else {
+        }
+        else {
             String(repeating: " ", count: spaces)
                 + self.replacingOccurrences(of: "\n", with: "\n\(String(repeating: " ", count: spaces))")
         }
@@ -488,9 +490,12 @@ extension StringInterpolationProtocol where StringLiteralType == String {
     }
 
     mutating func appendInterpolation(`let` value: (some Any)?, _ then: String = "{}", else: @autoclosure () -> String = "") {
-        self.appendInterpolation(let: value, {
-            then.replacingOccurrences(of: "{}", with: ($0 as? CustomStringConvertible)?.description ?? String(dump: $0))
-        }, else: `else`())
+        self.appendInterpolation(
+            let: value,
+            {
+                then.replacingOccurrences(of: "{}", with: ($0 as? CustomStringConvertible)?.description ?? String(dump: $0))
+            }, else: `else`(),
+        )
     }
 
     mutating func appendInterpolation<N: FixedWidthInteger, S: FormatStyle>(_ number: N, as style: S)
@@ -550,24 +555,30 @@ extension StringInterpolationProtocol where StringLiteralType == String {
         self.appendLiteral(value.appending(String(repeating: " ", count: max(0, length - value.count))))
     }
 
-    mutating func appendInterpolation(number value: CGFloat, as format: String? = nil,
-                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...) {
+    mutating func appendInterpolation(
+        number value: CGFloat, as format: String? = nil,
+        decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...,
+    ) {
         self.appendInterpolation(
             number: Double(value), as: format,
-            decimals: decimals, locale: locale, options.reduce([]) { $0.union($1) }
+            decimals: decimals, locale: locale, options.reduce([]) { $0.union($1) },
         )
     }
 
-    mutating func appendInterpolation(number value: Double, as format: String? = nil,
-                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...) {
+    mutating func appendInterpolation(
+        number value: Double, as format: String? = nil,
+        decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...,
+    ) {
         self.appendInterpolation(
             number: Decimal(value), as: format,
-            decimals: decimals, locale: locale, options.reduce([]) { $0.union($1) }
+            decimals: decimals, locale: locale, options.reduce([]) { $0.union($1) },
         )
     }
 
-    mutating func appendInterpolation(number value: Decimal, as format: String? = nil,
-                                      decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...) {
+    mutating func appendInterpolation(
+        number value: Decimal, as format: String? = nil,
+        decimals: ClosedRange<Int>? = nil, locale: Locale? = nil, _ options: NumberFormat...,
+    ) {
         let formatter = NumberFormatter()
         if let format {
             formatter.positiveFormat = format
@@ -618,21 +629,25 @@ extension StringInterpolationProtocol where StringLiteralType == String {
         }
     }
 
-    mutating func appendInterpolation(measurement: Measurement<Unit>,
-                                      options: MeasurementFormatter.UnitOptions = .naturalScale,
-                                      style: Formatter.UnitStyle = .short) {
+    mutating func appendInterpolation(
+        measurement: Measurement<Unit>,
+        options: MeasurementFormatter.UnitOptions = .naturalScale,
+        style: Formatter.UnitStyle = .short,
+    ) {
         let formatter = MeasurementFormatter()
         formatter.unitOptions = options
         formatter.unitStyle = style
         self.appendLiteral(formatter.string(from: measurement))
     }
 
-    mutating func appendInterpolation(measurement value: Decimal, _ unit: Unit,
-                                      options: MeasurementFormatter.UnitOptions = [.providedUnit, .naturalScale],
-                                      style: Formatter.UnitStyle = .short) {
+    mutating func appendInterpolation(
+        measurement value: Decimal, _ unit: Unit,
+        options: MeasurementFormatter.UnitOptions = [.providedUnit, .naturalScale],
+        style: Formatter.UnitStyle = .short,
+    ) {
         self.appendInterpolation(
             measurement: Measurement(value: (value as NSDecimalNumber).doubleValue, unit: unit),
-            options: options, style: style
+            options: options, style: style,
         )
     }
 }
@@ -641,7 +656,6 @@ struct NumberFormat: OptionSet {
     let rawValue: Int
 
     static let abbreviated = NumberFormat(rawValue: 1 << 0)
-    static let currency    = NumberFormat(rawValue: 1 << 1)
-    static let signed      = NumberFormat(rawValue: 1 << 2)
+    static let currency = NumberFormat(rawValue: 1 << 1)
+    static let signed = NumberFormat(rawValue: 1 << 2)
 }
-

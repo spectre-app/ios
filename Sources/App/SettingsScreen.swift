@@ -59,61 +59,61 @@ struct SettingsScreen: View {
             Divider()
 
             // TODO: Countly feedback plugin not available in Flex plan.
-//            LabeledContent("How are we doing?") {
-//                VStack {
-//                    HStack {
-//                        ForEach(1 ... 5, id: \.self) { rating in
-//                            Button {
-//                                self.submittingRating = true
-//                                self.config.rating = rating
-//                            } label: {
-//                                Image(systemName: rating <= self.config.rating ? "star.fill" : "star")
-//                            }
-//                        }
-//                    }
-//
-//                    if self.submittingRating {
-//                        TextArea(prompt: self.ratingPrompt, text: self.$comment)
-//                            .multilineTextAlignment(.center)
-//
-//                        LabeledContent("Can we get back to you?") {
-//                            TextField(prompt: "E-mail address", text: self.$email)
-//                                .submitLabel(.done)
-//                                .textContentType(.emailAddress)
-//                                .textInputAutocapitalization(.never)
-//                                .autocorrectionDisabled()
-//                                .keyboardType(.emailAddress)
-//                        }
-//                        .labeledContentStyle(.spectreVertical)
-//                        .textContentType(.emailAddress)
-//                        .keyboardType(.emailAddress)
-//                        .onSubmit(self.submitRating)
-//                        .submitLabel(.send)
-//
-//                        Button("Send your rating", action: self.submitRating)
-//                    }
-//                }
-//            }
-//            .alert("Publish Review?", isPresented: self.$isReviewQuestionPresented) {
-//                Button( "Not now", role: .cancel ) {}
-//                Button( "I will!" ) {
-//                    self.isReviewPresented = true
-//                    self.config.reviewed = Date()
-//                }
-//            } message: {
-//                Text(
-//                    """
-//                    Sharing your thoughts on the App Store helps us immeasurably.
-//                    Would you like to write a short public review?
-//                    """
-//                )
-//            }
-//            .popoverForm(isPresented: self.$isReviewPresented) {
-//                if let url = URL( string: "https://apps.apple.com/us/app/password-spectre/id1526402806?action=write-review" ) {
-//                    WebView(url: url)
-//                }
-//            }
-//            .disabled(self.config.offline)
+            //            LabeledContent("How are we doing?") {
+            //                VStack {
+            //                    HStack {
+            //                        ForEach(1 ... 5, id: \.self) { rating in
+            //                            Button {
+            //                                self.submittingRating = true
+            //                                self.config.rating = rating
+            //                            } label: {
+            //                                Image(systemName: rating <= self.config.rating ? "star.fill" : "star")
+            //                            }
+            //                        }
+            //                    }
+            //
+            //                    if self.submittingRating {
+            //                        TextArea(prompt: self.ratingPrompt, text: self.$comment)
+            //                            .multilineTextAlignment(.center)
+            //
+            //                        LabeledContent("Can we get back to you?") {
+            //                            TextField(prompt: "E-mail address", text: self.$email)
+            //                                .submitLabel(.done)
+            //                                .textContentType(.emailAddress)
+            //                                .textInputAutocapitalization(.never)
+            //                                .autocorrectionDisabled()
+            //                                .keyboardType(.emailAddress)
+            //                        }
+            //                        .labeledContentStyle(.spectreVertical)
+            //                        .textContentType(.emailAddress)
+            //                        .keyboardType(.emailAddress)
+            //                        .onSubmit(self.submitRating)
+            //                        .submitLabel(.send)
+            //
+            //                        Button("Send your rating", action: self.submitRating)
+            //                    }
+            //                }
+            //            }
+            //            .alert("Publish Review?", isPresented: self.$isReviewQuestionPresented) {
+            //                Button( "Not now", role: .cancel ) {}
+            //                Button( "I will!" ) {
+            //                    self.isReviewPresented = true
+            //                    self.config.reviewed = Date()
+            //                }
+            //            } message: {
+            //                Text(
+            //                    """
+            //                    Sharing your thoughts on the App Store helps us immeasurably.
+            //                    Would you like to write a short public review?
+            //                    """
+            //                )
+            //            }
+            //            .popoverForm(isPresented: self.$isReviewPresented) {
+            //                if let url = URL( string: "https://apps.apple.com/us/app/password-spectre/id1526402806?action=write-review" ) {
+            //                    WebView(url: url)
+            //                }
+            //            }
+            //            .disabled(self.config.offline)
         }
     }
 
@@ -121,16 +121,21 @@ struct SettingsScreen: View {
     private var preferencesSection: some View {
         Section("Preferences") {
             LabeledContent("Be notified of important impacts on your security.") {
-                Toggle("Notifications", systemImage: "bell", isOn: .init { self.config.notifications } set: { enabled in
-                    Task {
-                        if enabled {
-                            await self.tracker.enableNotifications()
+                Toggle(
+                    "Notifications", systemImage: "bell",
+                    isOn: .init {
+                        self.config.notifications
+                    } set: { enabled in
+                        Task {
+                            if enabled {
+                                await self.tracker.enableNotifications()
+                            }
+                            else {
+                                await self.tracker.disableNotifications()
+                            }
                         }
-                        else {
-                            await self.tracker.disableNotifications()
-                        }
-                    }
-                })
+                    },
+                )
             }
 
             LabeledContent("Anonymously send app issues to development for resolution.") {
@@ -173,21 +178,24 @@ struct SettingsScreen: View {
                 }
             }
 
-#if canImport(UIKit)
+            #if canImport(UIKit)
             StoreContent(feature: .icons) {
                 LabeledContent("Pick your favourite home screen icon for \(productName).") {
-                    Carousel(values: type(of: self.config.appIcon).allCases, selection: .init {
-                        self.config.appIcon
-                    } set: {
-                        $0.activate()
-                    }) {
+                    Carousel(
+                        values: type(of: self.config.appIcon).allCases,
+                        selection: .init {
+                            self.config.appIcon
+                        } set: {
+                            $0.activate()
+                        },
+                    ) {
                         Image($0.logoName)
                             .resizable()
                             .frame(width: .spectre.shape / 2, height: .spectre.shape / 2)
                     }
                 }
             }
-#endif
+            #endif
         }
     }
 

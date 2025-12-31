@@ -6,10 +6,10 @@ import Foundation
 
 @Observable
 class Question: SpectreOperand, CustomStringConvertible, Observed, QuestionObserver {
-    public let observers = Observers<QuestionObserver>()
+    let observers = Observers<QuestionObserver>()
 
-    public weak var site: Site?
-    public var keyword: String {
+    weak var site: Site?
+    var keyword: String {
         didSet {
             if oldValue != self.keyword {
                 self.dirty = true
@@ -18,7 +18,7 @@ class Question: SpectreOperand, CustomStringConvertible, Observed, QuestionObser
         }
     }
 
-    public var resultType: SpectreResultType {
+    var resultType: SpectreResultType {
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
@@ -27,7 +27,7 @@ class Question: SpectreOperand, CustomStringConvertible, Observed, QuestionObser
         }
     }
 
-    public var resultState: String? {
+    var resultState: String? {
         didSet {
             if oldValue != self.resultState {
                 self.dirty = true
@@ -74,45 +74,47 @@ class Question: SpectreOperand, CustomStringConvertible, Observed, QuestionObser
         self.site?.use()
     }
 
-    public func result(for name: String? = nil, counter: SpectreCounter? = nil,
-                       keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil,
-                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    func result(
+        for name: String? = nil, counter: SpectreCounter? = nil,
+        keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
+        resultType: SpectreResultType? = nil, resultParam: String? = nil,
+        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil,
+    )
         -> SpectreOperation? {
         self.site?.result(
             for: name, counter: counter,
             keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
             resultType: resultType, resultParam: resultParam ?? self.resultState,
-            algorithm: algorithm, operand: operand ?? self
+            algorithm: algorithm, operand: operand ?? self,
         )
     }
 
-    public func state(for name: String? = nil, counter: SpectreCounter? = nil,
-                      keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String,
-                      algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    func state(
+        for name: String? = nil, counter: SpectreCounter? = nil,
+        keyPurpose: SpectreKeyPurpose = .recovery, keyContext: String? = nil,
+        resultType: SpectreResultType? = nil, resultParam: String,
+        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil,
+    )
         -> SpectreOperation? {
         self.site?.state(
             for: name, counter: counter,
             keyPurpose: keyPurpose, keyContext: keyContext ?? self.keyword,
             resultType: resultType, resultParam: resultParam,
-            algorithm: algorithm, operand: operand ?? self
+            algorithm: algorithm, operand: operand ?? self,
         )
     }
 }
 
 extension Question: Identifiable {
-    public var id: String { self.keyword }
+    var id: String { self.keyword }
 }
 
 extension Question: Hashable {
-    public static func == (lhs: Question, rhs: Question) -> Bool {
-        lhs.keyword == rhs.keyword &&
-            lhs.resultType == rhs.resultType &&
-            lhs.resultState == rhs.resultState
+    static func == (lhs: Question, rhs: Question) -> Bool {
+        lhs.keyword == rhs.keyword && lhs.resultType == rhs.resultType && lhs.resultState == rhs.resultState
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hash(into hasher: inout Hasher) {
         hasher.combine(self.keyword)
         hasher.combine(self.resultType)
         hasher.combine(self.resultState)
@@ -120,7 +122,7 @@ extension Question: Hashable {
 }
 
 extension Question: Comparable {
-    public static func < (lhs: Question, rhs: Question) -> Bool {
+    static func < (lhs: Question, rhs: Question) -> Bool {
         lhs.keyword < rhs.keyword
     }
 }

@@ -31,14 +31,18 @@ public struct Pager: View {
                 .scrollTargetLayout()
                 .onGeometryChange(for: CGRect.self) {
                     $0.frame(in: .named("pager"))
-                } action: { self.scroll = -$0.origin.x / ($0.size.width - self.width) }
+                } action: {
+                    self.scroll = -$0.origin.x / ($0.size.width - self.width)
+                }
             }
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
             .coordinateSpace(name: "pager")
             .onGeometryChange(for: CGFloat.self) {
                 $0.frame(in: .local).size.width
-            } action: { self.width = $0 }
+            } action: {
+                self.width = $0
+            }
             .background(alignment: .top) {
                 Color.spectre.placeholder
                     .background(alignment: .leading) {
@@ -79,7 +83,7 @@ public struct Pager: View {
 
         public init(
             title: String, systemImage: String? = nil, isDone: Bool = false,
-            @ViewBuilder content: @escaping () -> some View
+            @ViewBuilder content: @escaping () -> some View,
         ) {
             self.title = title
             self.systemImage = systemImage

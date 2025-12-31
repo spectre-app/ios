@@ -113,7 +113,7 @@ struct PremiumScreen: View {
                                     Divider()
 
                                     LabeledContent(
-                                        "If your existing subscription wasn't automatically activated, you may need to restore it."
+                                        "If your existing subscription wasn't automatically activated, you may need to restore it.",
                                     ) {
                                         Button("Restore Subscription") {
                                             Task {
@@ -141,9 +141,13 @@ struct PremiumScreen: View {
                                         """
                                         Spectre is committed to supporting humanitarian concerns in Ukraine.
                                         Residents can use code « SUPPORTUA »
-                                        """
+                                        """,
                                     ) {
-                                        Label { Text("Support Ukraine") } icon: { Text("🇺🇦") }
+                                        Label {
+                                            Text("Support Ukraine")
+                                        } icon: {
+                                            Text("🇺🇦")
+                                        }
                                     }
                                     .multilineTextAlignment(.leading)
                                     .padding(.horizontal, 16)

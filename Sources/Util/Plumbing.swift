@@ -7,9 +7,9 @@ import Foundation
 // The va_list C type is incompatible with CVaListPointer on x86_64.
 // FIXME: https://bugs.swift.org/browse/SR-13779
 #if arch(x86_64)
-typealias va_list_c = va_list // swiftlint:disable:this type_name
+typealias va_list_c = va_list  // swiftlint:disable:this type_name
 #else
-typealias va_list_c = CVaListPointer? // swiftlint:disable:this type_name
+typealias va_list_c = CVaListPointer?  // swiftlint:disable:this type_name
 #endif
 
 dynamic func property(of object: Any, withValue value: AnyObject) -> String? {
@@ -64,12 +64,12 @@ func load<T>(_ name: String) -> T? {
 
 extension NSObject {
     dynamic var identityDescription: String {
-        var description      = ""
+        var description = ""
         var type_: AnyClass? = Self.self
         while let type = type_ {
             description += "\(type):\n"
             var count: UInt32 = .zero
-            let ivars         = UnsafeBufferPointer(start: class_copyIvarList(type, &count), count: Int(count))
+            let ivars = UnsafeBufferPointer(start: class_copyIvarList(type, &count), count: Int(count))
             defer { ivars.deallocate() }
 
             for ivar in ivars {

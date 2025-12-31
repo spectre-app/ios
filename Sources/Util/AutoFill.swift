@@ -6,7 +6,7 @@ import AuthenticationServices
 import OrderedCollections
 
 final actor AutoFill {
-    public static let shared = AutoFill()
+    static let shared = AutoFill()
 
     private let semaphore = DispatchQueue(label: "\(productName): AutoFill", qos: .utility)
     private var credentials: Set<Credential> {
@@ -22,7 +22,8 @@ final actor AutoFill {
                     dbg("autofill: clearing")
                     do {
                         try await ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
-                    } catch {
+                    }
+                    catch {
                         err("Cannot clear autofill credentials", data: error)
                     }
                     UserDefaults.shared.removeObject(forKey: "autofill.credentials")
@@ -35,7 +36,8 @@ final actor AutoFill {
                     dbg("autofill: replacing: \(allCredentials.count)")
                     do {
                         try await ASCredentialIdentityStore.shared.replaceCredentialIdentities(allCredentials.flatMap(\.identities))
-                    } catch {
+                    }
+                    catch {
                         err("Cannot reset autofill credentials", data: allCredentials, error)
                     }
                     return
@@ -46,7 +48,8 @@ final actor AutoFill {
                         dbg("autofill: removing: \(expiredCredentials.count)")
                         do {
                             try await ASCredentialIdentityStore.shared.removeCredentialIdentities(expiredCredentials.flatMap(\.identities))
-                        } catch {
+                        }
+                        catch {
                             err("Cannot purge autofill credentials", data: expiredCredentials, error)
                         }
                     }
@@ -69,9 +72,10 @@ final actor AutoFill {
     }
 
     init() {
-        self.credentials = Set(UserDefaults.shared.array(forKey: "autofill.credentials")?.compactMap {
-            Credential(dictionary: $0 as? [String: Any])
-        } ?? [])
+        self.credentials = Set(
+            UserDefaults.shared.array(forKey: "autofill.credentials")?.compactMap {
+                Credential(dictionary: $0 as? [String: Any])
+            } ?? [])
 
         Task.detached {
             await self.restoreCredentials()
@@ -96,11 +100,11 @@ final actor AutoFill {
         catch { err("Cannot restore autofill credentials", data: allCredentials, error) }
     }
 
-    public func seed(_ suppliers: some Sequence<CredentialSupplier>) {
+    func seed(_ suppliers: some Sequence<CredentialSupplier>) {
         self.credentials = Set(suppliers.flatMap { $0.credentials ?? [] })
     }
 
-    public func update(for supplier: CredentialSupplier) {
+    func update(for supplier: CredentialSupplier) {
         self.credentials = self.credentials.filter { !$0.isSupplied(by: supplier) }.union(supplier.credentials ?? [])
     }
 
@@ -124,7 +128,7 @@ final actor AutoFill {
                 siteName.variantNames
                     .union(url?.variantNames ?? [])
                     .union(domains.flatMap(\.variantNames))
-                    .sorted()
+                    .sorted(),
             )
         }
 
@@ -151,10 +155,12 @@ final actor AutoFill {
 
         var identities: [ASCredentialIdentity] {
             self.variants.map {
-                using(ASPasswordCredentialIdentity(
-                    serviceIdentifier: ASCredentialServiceIdentifier(identifier: $0, type: $0.contains("://") ? .URL : .domain),
-                    user: self.userName, recordIdentifier: self.userName
-                )) { $0.rank = self.userRank }
+                using(
+                    ASPasswordCredentialIdentity(
+                        serviceIdentifier: ASCredentialServiceIdentifier(identifier: $0, type: $0.contains("://") ? .URL : .domain),
+                        user: self.userName, recordIdentifier: self.userName,
+                    ),
+                ) { $0.rank = self.userRank }
             }
         }
 
@@ -185,7 +191,7 @@ final actor AutoFill {
 protocol CredentialSupplier {
     var credentialOwnerName: String { get }
     var credentialOwnerRank: Int { get }
-    var credentials:         [AutoFill.Credential]? { get }
+    var credentials: [AutoFill.Credential]? { get }
 }
 
 extension CredentialSupplier {

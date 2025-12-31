@@ -31,7 +31,7 @@ struct UserEditScreen: View {
         }
         .popoverTitle(self.user.userName)
         .task(id: String(reflecting: type(of: self.user.userKeyFactory))) {
-            self.authenticatedIdentifier = (try? await self.user.authenticatedIdentifier) ?? ""
+            self.authenticatedIdentifier = await (try? self.user.authenticatedIdentifier) ?? ""
         }
         .task(id: self.user.loginState) {
             self.loginName = await (try? self.user.result(keyPurpose: .identification)?.task.value) ?? ""
@@ -63,9 +63,9 @@ struct UserEditScreen: View {
             }
 
             ControlGroup {
-                Button("Export") { /* TODO: */ }
-                Button("Settings") { /* TODO: */ }
-                Button("Log Out") { /* TODO: */ }
+                Button("Export") { /* TODO: */  }
+                Button("Settings") { /* TODO: */  }
+                Button("Log Out") { /* TODO: */  }
             }
         }
     }
@@ -75,11 +75,13 @@ struct UserEditScreen: View {
         Section("Sites") {
             StoreContent(feature: .logins) {
                 GroupBox("Login") {
-                    Carousel(values: [SpectreResultType].joined(
-                        [.statePersonal],
-                        SpectreResultType.recommendedTypes[.identification],
-                        SpectreResultType.allCases.filter { !$0.has(feature: .alternate) }
-                    ).unique(), selection: self.$user.loginType) { type in
+                    Carousel(
+                        values: [SpectreResultType].joined(
+                            [.statePersonal],
+                            SpectreResultType.recommendedTypes[.identification],
+                            SpectreResultType.allCases.filter { !$0.has(feature: .alternate) },
+                        ).unique(), selection: self.$user.loginType,
+                    ) { type in
                         Block {
                             Text(verbatim: type.description)
                         } caption: {
@@ -110,18 +112,20 @@ struct UserEditScreen: View {
                         """
                         The login name to use for sites that have no site-specific name. \
                         Typically this is your e-mail address.
-                        """
+                        """,
                     )
                     .font(.caption)
                 }
             }
 
             GroupBox("Password") {
-                Carousel(values: [SpectreResultType].joined(
-                    SpectreResultType.recommendedTypes[.authentication],
-                    [SpectreResultType.statePersonal],
-                    SpectreResultType.allCases.filter { !$0.has(feature: .alternate) }
-                ).unique(), selection: self.$user.resultType) { type in
+                Carousel(
+                    values: [SpectreResultType].joined(
+                        SpectreResultType.recommendedTypes[.authentication],
+                        [SpectreResultType.statePersonal],
+                        SpectreResultType.allCases.filter { !$0.has(feature: .alternate) },
+                    ).unique(), selection: self.$user.resultType,
+                ) { type in
                     Block {
                         Text(verbatim: type.description)
                     } caption: {
@@ -147,7 +151,7 @@ struct UserEditScreen: View {
                     .padding(.horizontal, -.spectre.margin)
 
                     Text(
-                        "Yearly budget of the primary attacker persona you're seeking to repel (@ \((self.user.attacker?.rig.cost_per_kwh ?? .zero).formatted())$/kWh)."
+                        "Yearly budget of the primary attacker persona you're seeking to repel (@ \((self.user.attacker?.rig.cost_per_kwh ?? .zero).formatted())$/kWh).",
                     )
                     .font(.caption)
                 }
@@ -158,26 +162,32 @@ struct UserEditScreen: View {
     @ViewBuilder
     var editFeatures: some View {
         Section("Preferences") {
-            LabeledContent("""
+            LabeledContent(
+                """
                 Do not reveal passwords on screen.
                 Useful to deter screen snooping.
-                """) {
+                """,
+            ) {
                 Toggle("Mask Passwords", systemImage: "eye", isOn: self.$user.maskPasswords)
             }
 
             StoreContent(feature: .biometrics) {
-                LabeledContent("""
+                LabeledContent(
+                    """
                     Sign in using biometrics (eg. TouchID, FaceID).
                     Saves your user key in the device's key chain.
-                    """) {
+                    """,
+                ) {
                     Toggle("Biometric Lock", systemImage: KeychainKeyFactory.factor.iconName ?? "touchid", isOn: self.$user.biometricLock)
                 }
             }
 
             StoreContent(feature: .autofill) {
-                LabeledContent("""
+                LabeledContent(
+                    """
                     Auto-fill your site passwords from other apps.
-                    """) {
+                    """,
+                ) {
                     Toggle("AutoFill", systemImage: "keyboard", isOn: self.$user.autofill)
                 }
             }
@@ -191,9 +201,11 @@ struct UserEditScreen: View {
             }
 
             StoreContent(feature: .sharing) {
-                LabeledContent("""
+                LabeledContent(
+                    """
                     Allow other apps to see and backup your user through On My iPhone.
-                    """) {
+                    """,
+                ) {
                     Toggle("File Sharing", systemImage: "point.3.connected.trianglepath.dotted", isOn: self.$user.sharing)
                 }
             }
@@ -215,7 +227,7 @@ struct UserEditScreen: View {
             .foregroundColor(self.user.algorithm != .current ? .red : nil)
             .alert(
                 "\(self.algorithm ?? .current < self.user.algorithm ? "Downgrade" : "Upgrade") your Spectre user",
-                isPresented: self.$algorithm.isSet(), presenting: self.algorithm
+                isPresented: self.$algorithm.isSet(), presenting: self.algorithm,
             ) { (algorithm: SpectreAlgorithm) in
                 SecureField(prompt: "Enter your Spectre secret to confirm", text: self.$secret)
                 Button("Cancel", role: .cancel) {
@@ -244,7 +256,7 @@ struct UserEditScreen: View {
                 }
             } message: {
                 Text(
-                    "Your Spectre user algorithm will be \(self.algorithm ?? .current < self.user.algorithm ? "downgraded" : "upgraded") to \($0.localizedDescription)."
+                    "Your Spectre user algorithm will be \(self.algorithm ?? .current < self.user.algorithm ? "downgraded" : "upgraded") to \($0.localizedDescription).",
                 )
             }
 
@@ -263,7 +275,7 @@ struct UserEditScreen: View {
                     #if canImport(UIKit)
                     UIPasteboard.general.setObjects(
                         [self.authenticatedIdentifier as NSString],
-                        localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
+                        localOnly: AppFeature.handoff.isEnabled, expirationDate: nil,
                     )
                     #elseif canImport(AppKit)
                     // TODO: macOS
@@ -282,7 +294,7 @@ struct UserEditScreen: View {
         UserEditScreen(user: user)
             .task {
                 _ = try? await user.login(
-                    using: SecretKeyFactory(userName: user.userName, userSecret: "banana duckling")
+                    using: SecretKeyFactory(userName: user.userName, userSecret: "banana duckling"),
                 )
             }
     }

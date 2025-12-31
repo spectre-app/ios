@@ -71,3 +71,6 @@
 --disable wrapMultilineStatementBraces,wrapSingleLineComments,consecutiveSpaces,blankLinesBetweenChainedFunctions
 #--disable spaceInsideParens,wrap,wrapArguments
 --enable isEmpty
+--asynccapturing ???
+--asynccapturing |||
+--asynccapturing &&&

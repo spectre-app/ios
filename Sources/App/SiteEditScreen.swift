@@ -37,33 +37,42 @@ struct SiteEditScreen: View {
             if let result = self.site.result(keyPurpose: .identification) {
                 StoreContent(feature: .logins) {
                     LabeledContent("Login") {
-                        AsyncView(onChange: result) { try await $0.task.value } finished: {
+                        AsyncView(onChange: result) {
+                            try await $0.task.value
+                        } finished: {
                             Button($0 ?? "...", systemImage: "doc.on.doc") {
                                 result.copy()
                             }
-                        } failure: { _ in /* TODO: */ }
+                        } failure: { _ in /* TODO: */
+                        }
                     }
                 }
             }
 
             if let result = self.site.result(keyPurpose: .authentication) {
                 LabeledContent("Password") {
-                    AsyncView(onChange: result) { try await $0.task.value } finished: {
+                    AsyncView(onChange: result) {
+                        try await $0.task.value
+                    } finished: {
                         Button($0 ?? "...", systemImage: "doc.on.doc") {
                             result.copy()
                         }
-                    } failure: { _ in /* TODO: */ }
+                    } failure: { _ in /* TODO: */
+                    }
                 }
             }
 
             if let result = self.site.result(keyPurpose: .recovery) {
                 StoreContent(feature: .answers) {
                     LabeledContent("Recovery Answer") {
-                        AsyncView(onChange: result) { try await $0.task.value } finished: {
+                        AsyncView(onChange: result) {
+                            try await $0.task.value
+                        } finished: {
                             Button($0 ?? "...", systemImage: "doc.on.doc") {
                                 result.copy()
                             }
-                        } failure: { _ in /* TODO: */ }
+                        } failure: { _ in /* TODO: */
+                        }
                     }
                     .labeledContentStyle(.spectreVertical)
                 }
@@ -72,10 +81,13 @@ struct SiteEditScreen: View {
             ControlGroup {
                 if let user = self.site.user {
                     Button("Delete") {
-                        self.messages.prompt(message: "Remove this site from \(user.userName)?", options: [
-                            (true, "Delete \(self.site.siteName)"),
-                            (false, "Cancel"),
-                        ]) { shouldDelete in
+                        self.messages.prompt(
+                            message: "Remove this site from \(user.userName)?",
+                            options: [
+                                (true, "Delete \(self.site.siteName)"),
+                                (false, "Cancel"),
+                            ],
+                        ) { shouldDelete in
                             guard shouldDelete else { return }
 
                             user.sites.removeAll { $0.siteName == self.site.siteName }
@@ -101,12 +113,14 @@ struct SiteEditScreen: View {
         Section("Login Types") {
             StoreContent(feature: .logins) {
                 Picker(selection: self.$site.loginType) {
-                    ForEach([SpectreResultType].joined(
-                        [SpectreResultType.none],
-                        SpectreResultType.recommendedTypes[.identification],
-                        [.statePersonal],
-                        SpectreResultType.allCases.filter { !$0.has(feature: .alternate) }
-                    ).unique()) { type in
+                    ForEach(
+                        [SpectreResultType].joined(
+                            [SpectreResultType.none],
+                            SpectreResultType.recommendedTypes[.identification],
+                            [.statePersonal],
+                            SpectreResultType.allCases.filter { !$0.has(feature: .alternate) },
+                        ).unique(),
+                    ) { type in
                         if type == .none {
                             Text("User Login (\(self.site.user?.loginType.localizedDescription ?? type.localizedDescription))")
                         }
@@ -120,11 +134,13 @@ struct SiteEditScreen: View {
             }
 
             Picker(selection: self.$site.resultType) {
-                ForEach([SpectreResultType].joined(
-                    SpectreResultType.recommendedTypes[.authentication],
-                    [SpectreResultType.statePersonal],
-                    SpectreResultType.allCases.filter { !$0.has(feature: .alternate) }
-                ).unique()) { type in
+                ForEach(
+                    [SpectreResultType].joined(
+                        SpectreResultType.recommendedTypes[.authentication],
+                        [SpectreResultType.statePersonal],
+                        SpectreResultType.allCases.filter { !$0.has(feature: .alternate) },
+                    ).unique(),
+                ) { type in
                     Text(type.localizedDescription)
                 }
             } label: {
@@ -163,7 +179,9 @@ struct SiteEditScreen: View {
                     if let result = question.result() {
                         LabeledContent(question.keyword) {
                             HStack(spacing: .zero) {
-                                AsyncView(onChange: result) { try await $0.task.value } finished: {
+                                AsyncView(onChange: result) {
+                                    try await $0.task.value
+                                } finished: {
                                     Button($0 ?? "...", systemImage: "doc.on.doc") {
                                         result.copy()
                                     }
@@ -226,10 +244,13 @@ struct SiteEditScreen: View {
     var editDetails: some View {
         Section("Details") {
             LabeledContent("Landing page") {
-                TextField(prompt: "eg. https://spectre.app", text: Binding(
-                    get: { self.site.url },
-                    set: { self.site.url = $0 }
-                ))
+                TextField(
+                    prompt: "eg. https://spectre.app",
+                    text: Binding(
+                        get: { self.site.url },
+                        set: { self.site.url = $0 },
+                    ),
+                )
                 .submitLabel(.done)
                 .textContentType(.URL)
                 .autocorrectionDisabled()
@@ -244,10 +265,13 @@ struct SiteEditScreen: View {
             .labeledContentStyle(.spectreVertical)
 
             LabeledContent("Associated domains") {
-                TextArea(prompt: "eg. spectre.app", text: Binding(
-                    get: { self.site.domains.joined(separator: "\n") },
-                    set: { self.site.domains = .init($0.split(separator: /[\n,]/).map(String.init)) }
-                ))
+                TextArea(
+                    prompt: "eg. spectre.app",
+                    text: Binding(
+                        get: { self.site.domains.joined(separator: "\n") },
+                        set: { self.site.domains = .init($0.split(separator: /[\n,]/).map(String.init)) },
+                    ),
+                )
                 .submitLabel(.done)
                 .textContentType(.URL)
                 .autocorrectionDisabled()
@@ -287,7 +311,7 @@ struct SiteEditScreen: View {
 #Preview {
     Path().popoverForm(isPresented: .constant(true)) {
         SiteEditScreen(
-            site: Site(user: nil, siteName: "spectre.app")
+            site: Site(user: nil, siteName: "spectre.app"),
         )
     }
     .spectreStyle()

@@ -3,6 +3,7 @@
 //
 
 import Foundation
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -10,10 +11,13 @@ import UIKit
 public enum AppIcon: String, Identifiable, CaseIterable, Sendable {
     case personal = "Personal", enterprise = "Enterprise"
 
-    static let primary = ((
-        (Bundle.main.infoDictionary as? NSDictionary)?
-            .value(forKeyPath: "CFBundleIcons.CFBundlePrimaryIcon.CFBundleIconName") as? String
-    )?.replacingOccurrences(of: "Icon ", with: "")).flatMap(AppIcon.find(named:)) ?? AppIcon.allCases[0]
+    static let primary =
+        (((Bundle.main.infoDictionary as? NSDictionary)?
+                .value(forKeyPath: "CFBundleIcons.CFBundlePrimaryIcon.CFBundleIconName") as? String)?.replacingOccurrences(
+            of: "Icon ",
+            with: "",
+        ))
+        .flatMap(AppIcon.find(named:)) ?? AppIcon.allCases[0]
 
     static func find(named name: String?) -> Self? {
         .allCases.first { $0.rawValue == name }

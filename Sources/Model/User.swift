@@ -6,9 +6,9 @@ import Foundation
 
 @Observable
 class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observed, UserObserver, SiteObserver, MarshalObserver {
-    public let observers = Observers<UserObserver>()
+    let observers = Observers<UserObserver>()
 
-    public var algorithm: SpectreAlgorithm {
+    var algorithm: SpectreAlgorithm {
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
@@ -17,7 +17,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var avatar: Avatar {
+    var avatar: Avatar {
         didSet {
             if oldValue != self.avatar {
                 self.dirty = true
@@ -26,8 +26,8 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public let userName: String
-    public var identicon: SpectreIdenticon {
+    let userName: String
+    var identicon: SpectreIdenticon {
         didSet {
             if oldValue != self.identicon {
                 self.dirty = true
@@ -36,7 +36,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var userKeyID: SpectreKeyID {
+    var userKeyID: SpectreKeyID {
         didSet {
             if !spectre_id_equals([oldValue], &self.userKeyID) {
                 self.dirty = true
@@ -45,7 +45,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public private(set) var userKeyFactory: KeyFactory? {
+    private(set) var userKeyFactory: KeyFactory? {
         didSet {
             if self.userKeyFactory !== oldValue {
                 if self.userKeyFactory != nil, oldValue == nil {
@@ -62,13 +62,13 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var authenticatedIdentifier: String? {
+    var authenticatedIdentifier: String? {
         get async throws {
             try await self.userKeyFactory?.authenticatedIdentifier(for: self.algorithm)
         }
     }
 
-    public var resultType: SpectreResultType {
+    var resultType: SpectreResultType {
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
@@ -77,7 +77,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var loginType: SpectreResultType {
+    var loginType: SpectreResultType {
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
@@ -86,7 +86,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var loginState: String? {
+    var loginState: String? {
         didSet {
             if oldValue != self.loginState {
                 self.dirty = true
@@ -95,7 +95,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var lastUsed: Date {
+    var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
                 self.dirty = true
@@ -104,11 +104,11 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var exportDate: Date? {
+    var exportDate: Date? {
         self.file?.spectre_get(path: "export", "date")
     }
 
-    public var maskPasswords = false {
+    var maskPasswords = false {
         didSet {
             if oldValue != self.maskPasswords, !self.initializing,
                self.file?.spectre_set(self.maskPasswords, path: "user", "_ext_spectre", "maskPasswords") ?? true {
@@ -118,7 +118,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var biometricLock = false {
+    var biometricLock = false {
         didSet {
             if oldValue != self.biometricLock, !self.initializing,
                self.file?.spectre_set(self.biometricLock, path: "user", "_ext_spectre", "biometricLock") ?? true {
@@ -130,7 +130,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var autofill = false {
+    var autofill = false {
         didSet {
             if oldValue != self.autofill, !self.initializing,
                self.file?.spectre_set(self.autofill, path: "user", "_ext_spectre", "autofill") ?? true {
@@ -142,11 +142,11 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var autofillDecided: Bool {
+    var autofillDecided: Bool {
         (self.file?.spectre_get(path: "user", "_ext_spectre", "autofill") as Bool?) != nil
     }
 
-    public var sharing = false {
+    var sharing = false {
         didSet {
             if oldValue != self.sharing, !self.initializing,
                self.file?.spectre_set(self.sharing, path: "user", "_ext_spectre", "sharing") ?? true {
@@ -156,7 +156,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var attacker: Attacker? {
+    var attacker: Attacker? {
         didSet {
             if oldValue != self.attacker, !self.initializing,
                self.file?.spectre_set(self.attacker?.description, path: "user", "_ext_spectre", "attacker") ?? true {
@@ -166,10 +166,10 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var file:   UnsafeMutablePointer<SpectreMarshalledFile>?
-    public var origin: URL?
+    var file: UnsafeMutablePointer<SpectreMarshalledFile>?
+    var origin: URL?
 
-    public var sites = [Site]() {
+    var sites: [Site] = [] {
         didSet {
             if oldValue != self.sites {
                 self.dirty = true
@@ -184,7 +184,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         }
     }
 
-    public var  description: String {
+    var description: String {
         if let identicon = self.identicon.encoded() {
             "\(self.userName): \(identicon)"
         }
@@ -221,12 +221,14 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
 
     // MARK: - Life
 
-    init(algorithm: SpectreAlgorithm? = nil, avatar: Avatar = .avatar_0, userName: String,
-         identicon: SpectreIdenticon = SpectreIdenticonUnset, userKeyID: SpectreKeyID = .unset,
-         resultType: SpectreResultType? = nil, loginType: SpectreResultType? = nil, loginState: String? = nil,
-         lastUsed: Date = Date(), origin: URL? = nil,
-         file: UnsafeMutablePointer<SpectreMarshalledFile>? = spectre_marshal_file(nil, nil, nil),
-         initialize: (User) -> Void = { _ in }) {
+    init(
+        algorithm: SpectreAlgorithm? = nil, avatar: Avatar = .avatar_0, userName: String,
+        identicon: SpectreIdenticon = SpectreIdenticonUnset, userKeyID: SpectreKeyID = .unset,
+        resultType: SpectreResultType? = nil, loginType: SpectreResultType? = nil, loginState: String? = nil,
+        lastUsed: Date = Date(), origin: URL? = nil,
+        file: UnsafeMutablePointer<SpectreMarshalledFile>? = spectre_marshal_file(nil, nil, nil),
+        initialize: (User) -> Void = { _ in },
+    ) {
         // TODO: why are these defaults in here and not in the method signature?
         // TODO: is self.file ever free'ed?
         self.algorithm = algorithm ?? .current
@@ -295,7 +297,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
     func save(onlyIfDirty: Bool = true) async throws {
         assert(self.userKeyFactory != nil)
 
-        if onlyIfDirty && !self.dirty {
+        if onlyIfDirty, !self.dirty {
             return
         }
 
@@ -390,14 +392,16 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
 
     // MARK: - SpectreOperand
 
-    public func use() {
+    func use() {
         self.lastUsed = Date()
     }
 
-    public func result(for name: String? = nil, counter: SpectreCounter? = nil,
-                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil,
-                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    func result(
+        for name: String? = nil, counter: SpectreCounter? = nil,
+        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+        resultType: SpectreResultType? = nil, resultParam: String? = nil,
+        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil,
+    )
         -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
@@ -405,7 +409,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
                     for: name ?? self.userName, counter: counter ?? .initial,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? self.resultType, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .identification:
@@ -413,7 +417,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
                     for: name ?? self.userName, counter: counter ?? .initial,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .recovery:
@@ -421,24 +425,27 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
                     for: name ?? self.userName, counter: counter ?? .initial,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? .templatePhrase, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             @unknown default:
                 return SpectreOperation(
                     siteName: name ?? self.userName, counter: counter ?? .initial, type: resultType ?? .none,
                     param: resultParam, purpose: keyPurpose, context: keyContext,
-                    identity: self.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task: Task.detached {
+                    identity: self.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
+                    task: Task.detached {
                         throw AppError.internal(reason: "Unsupported key purpose", details: keyPurpose)
-                    }
+                    },
                 )
         }
     }
 
-    public func state(for name: String? = nil, counter: SpectreCounter? = nil,
-                      keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String,
-                      algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    func state(
+        for name: String? = nil, counter: SpectreCounter? = nil,
+        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+        resultType: SpectreResultType? = nil, resultParam: String,
+        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil,
+    )
         -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
@@ -446,7 +453,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
                     for: name ?? self.userName, counter: counter ?? .initial,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? self.resultType, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .identification:
@@ -454,7 +461,7 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
                     for: name ?? self.userName, counter: counter ?? .initial,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType?.nonEmpty ?? self.loginType, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .recovery:
@@ -462,24 +469,27 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
                     for: name ?? self.userName, counter: counter ?? .initial,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? .templatePhrase, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             @unknown default:
                 return SpectreOperation(
                     siteName: name ?? self.userName, counter: counter ?? .initial, type: resultType ?? .none,
                     param: resultParam, purpose: keyPurpose, context: keyContext,
-                    identity: self.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task: Task.detached {
+                    identity: self.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
+                    task: Task.detached {
                         throw AppError.internal(reason: "Unsupported key purpose", details: keyPurpose)
-                    }
+                    },
                 )
         }
     }
 
-    private func spectre_result(for name: String, counter: SpectreCounter,
-                                keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                                resultType: SpectreResultType, resultParam: String?,
-                                algorithm: SpectreAlgorithm, operand: SpectreOperand)
+    private func spectre_result(
+        for name: String, counter: SpectreCounter,
+        keyPurpose: SpectreKeyPurpose, keyContext: String?,
+        resultType: SpectreResultType, resultParam: String?,
+        algorithm: SpectreAlgorithm, operand: SpectreOperand,
+    )
         -> SpectreOperation? {
         guard let keyFactory = self.userKeyFactory
         else { return nil }
@@ -487,19 +497,22 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         return SpectreOperation(
             siteName: name, counter: counter, type: resultType,
             param: resultParam, purpose: keyPurpose, context: keyContext,
-            identity: self.userKeyID, algorithm: algorithm, operand: operand, task: Task.detached {
+            identity: self.userKeyID, algorithm: algorithm, operand: operand,
+            task: Task.detached {
                 try await keyFactory.getKey(for: algorithm).result(
                     for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                    resultType: resultType, resultParam: resultParam, algorithm: algorithm
+                    resultType: resultType, resultParam: resultParam, algorithm: algorithm,
                 )
-            }
+            },
         )
     }
 
-    private func spectre_state(for name: String, counter: SpectreCounter,
-                               keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                               resultType: SpectreResultType, resultParam: String?,
-                               algorithm: SpectreAlgorithm, operand: SpectreOperand)
+    private func spectre_state(
+        for name: String, counter: SpectreCounter,
+        keyPurpose: SpectreKeyPurpose, keyContext: String?,
+        resultType: SpectreResultType, resultParam: String?,
+        algorithm: SpectreAlgorithm, operand: SpectreOperand,
+    )
         -> SpectreOperation? {
         guard let keyFactory = self.userKeyFactory
         else { return nil }
@@ -507,12 +520,13 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         return SpectreOperation(
             siteName: name, counter: counter, type: resultType,
             param: resultParam, purpose: keyPurpose, context: keyContext,
-            identity: self.userKeyID, algorithm: algorithm, operand: operand, task: Task.detached {
+            identity: self.userKeyID, algorithm: algorithm, operand: operand,
+            task: Task.detached {
                 try await keyFactory.getKey(for: algorithm).state(
                     for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
-                    resultType: resultType, resultParam: resultParam, algorithm: algorithm
+                    resultType: resultType, resultParam: resultParam, algorithm: algorithm,
                 )
-            }
+            },
         )
     }
 
@@ -522,52 +536,39 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
         case avatar_0, avatar_1, avatar_2, avatar_3, avatar_4, avatar_5, avatar_6, avatar_7, avatar_8, avatar_9,
              avatar_10, avatar_11, avatar_12, avatar_13, avatar_14, avatar_15, avatar_16, avatar_17, avatar_18
 
-        public static func random() -> Avatar {
+        static func random() -> Avatar {
             allCases.randomElement() ?? .avatar_0
         }
 
-        public mutating func previous() {
+        mutating func previous() {
             self = Avatar.allCases[((Avatar.allCases.firstIndex(of: self) ?? -1) + Avatar.allCases.count - 1) % Avatar.allCases.count]
         }
 
-        public mutating func next() {
+        mutating func next() {
             self = Avatar.allCases[((Avatar.allCases.firstIndex(of: self) ?? -1) + Avatar.allCases.count + 1) % Avatar.allCases.count]
         }
 
-        public var imageName: String {
+        var imageName: String {
             "avatar-\(self.rawValue)"
         }
     }
 }
 
 extension User: Identifiable {
-    public var id: String { self.userName }
+    var id: String { self.userName }
 }
 
 extension User: Hashable {
-    public static func == (lhs: User, rhs: User) -> Bool {
-        lhs.algorithm == rhs.algorithm &&
-            lhs.avatar == rhs.avatar &&
-            lhs.userName == rhs.userName &&
-            lhs.identicon == rhs.identicon &&
-            lhs.userKeyID == rhs.userKeyID &&
-            lhs.resultType == rhs.resultType &&
-            lhs.loginType == rhs.loginType &&
-            lhs.loginState == rhs.loginState &&
-            lhs.lastUsed == rhs.lastUsed &&
-            lhs.exportDate == rhs.exportDate &&
-            lhs.maskPasswords == rhs.maskPasswords &&
-            lhs.biometricLock == rhs.biometricLock &&
-            lhs.autofill == rhs.autofill &&
-            lhs.autofillDecided == rhs.autofillDecided &&
-            lhs.sharing == rhs.sharing &&
-            lhs.attacker == rhs.attacker &&
-            lhs.file == rhs.file &&
-            lhs.origin == rhs.origin &&
-            lhs.sites == rhs.sites
+    static func == (lhs: User, rhs: User) -> Bool {
+        lhs.algorithm == rhs.algorithm && lhs.avatar == rhs.avatar && lhs.userName == rhs.userName && lhs.identicon == rhs.identicon
+            && lhs.userKeyID == rhs.userKeyID && lhs.resultType == rhs.resultType && lhs.loginType == rhs.loginType
+            && lhs.loginState == rhs.loginState && lhs.lastUsed == rhs.lastUsed && lhs.exportDate == rhs.exportDate
+            && lhs.maskPasswords == rhs.maskPasswords && lhs.biometricLock == rhs.biometricLock && lhs.autofill == rhs.autofill
+            && lhs.autofillDecided == rhs.autofillDecided && lhs.sharing == rhs.sharing && lhs.attacker == rhs.attacker
+            && lhs.file == rhs.file && lhs.origin == rhs.origin && lhs.sites == rhs.sites
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hash(into hasher: inout Hasher) {
         hasher.combine(self.algorithm)
         hasher.combine(self.avatar)
         hasher.combine(self.userName)
@@ -591,7 +592,7 @@ extension User: Hashable {
 }
 
 extension User: Comparable {
-    public static func < (lhs: User, rhs: User) -> Bool {
+    static func < (lhs: User, rhs: User) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
             return lhs.lastUsed > rhs.lastUsed
         }

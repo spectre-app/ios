@@ -51,10 +51,11 @@ struct PopoverForm<Content: View>: View {
             GradientView(gradient: .stripes(tint: .spectre.panel))
                 .ignoresSafeArea()
         }
-        .spectreStyle(background: LinearGradient(
-            colors: [.spectre.backdrop.opacity(.long), .spectre.backdrop, .spectre.backdrop.opacity(.short)],
-            startPoint: .top, endPoint: .bottom
-        ))
+        .spectreStyle(
+            background: LinearGradient(
+                colors: [.spectre.backdrop.opacity(.long), .spectre.backdrop, .spectre.backdrop.opacity(.short)],
+                startPoint: .top, endPoint: .bottom,
+            ))
     }
 }
 

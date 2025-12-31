@@ -96,10 +96,10 @@ enum StoreSubscription: String, CaseIterable {
 }
 
 enum StoreProduct: String, CaseIterable {
-    case premiumAnnual         = "app.spectre.premium.annual"
-    case premiumMonthly        = "app.spectre.premium.monthly"
-    case premiumMasterPassword = "app.spectre.premium.masterpassword" // swiftlint:disable:this inclusive_language
-    case legacyMasterPassword  = "app.spectre.legacy.masterpassword" // swiftlint:disable:this inclusive_language
+    case premiumAnnual = "app.spectre.premium.annual"
+    case premiumMonthly = "app.spectre.premium.monthly"
+    case premiumMasterPassword = "app.spectre.premium.masterpassword"  // swiftlint:disable:this inclusive_language
+    case legacyMasterPassword = "app.spectre.legacy.masterpassword"  // swiftlint:disable:this inclusive_language
 
     static func find(_ productIdentifier: String) -> StoreProduct? {
         self.allCases.first(where: { $0.productIdentifier == productIdentifier })
@@ -109,20 +109,20 @@ enum StoreProduct: String, CaseIterable {
         self.rawValue
     }
 
-    var isPublic:          Bool {
+    var isPublic: Bool {
         [
             StoreProduct.premiumAnnual,
             StoreProduct.premiumMonthly,
         ].contains(self)
     }
 
-    var isInStore:         Bool {
+    var isInStore: Bool {
         ![
             StoreProduct.legacyMasterPassword,
         ].contains(self)
     }
 
-    var features:          [StoreFeature] {
+    var features: [StoreFeature] {
         [
             .premiumAnnual: [.biometrics, .autofill, .logins, .answers, .strength, .themes, .integrations, .support],
             .premiumMonthly: [.biometrics, .autofill, .logins, .answers, .strength, .themes, .integrations, .support],
@@ -131,7 +131,7 @@ enum StoreProduct: String, CaseIterable {
         ][self] ?? []
     }
 
-    var subscription:      StoreSubscription? {
+    var subscription: StoreSubscription? {
         [
             .premiumAnnual: .premium,
             .premiumMonthly: .premium,
@@ -142,7 +142,7 @@ enum StoreProduct: String, CaseIterable {
 
 @MainActor
 func updateStoreFeatures(deliver delivered: VerificationResult<StoreKit.Transaction>? = nil) async {
-    var enabledProducts = [StoreProduct]()
+    var enabledProducts: [StoreProduct] = []
 
     // Master Password customers automatically get all legacy in-app purchases for free.
     if AppConfig.shared.masterPasswordCustomer {
@@ -172,7 +172,7 @@ func updateStoreFeatures(deliver delivered: VerificationResult<StoreKit.Transact
                 else if let revocationDate = transaction.revocationDate, revocationDate < .now {
                     // Expired subscription.
                     dbg(
-                        "Skipping revoked product: \(transaction.productID) (\(revocationDate), reason: \(String(describing: transaction.revocationReason)))"
+                        "Skipping revoked product: \(transaction.productID) (\(revocationDate), reason: \(String(describing: transaction.revocationReason)))",
                     )
                 }
                 else if let product = StoreProduct.find(transaction.productID) {
@@ -227,26 +227,26 @@ func updateStoreFeatures(deliver delivered: VerificationResult<StoreKit.Transact
         item.enable(enabledSubscriptions.contains(item))
     }
 
-//            let originalPremiumPurchase =
-//                    StoreProduct.allCases.filter { $0.features.contains( .premium ) }
-//                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
-//                        .sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
-//            let currentPremiumPurchase =
-//                    StoreProduct.allCases.filter { $0.features.contains( .premium ) }
-//                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
-//                        .sorted( by: {
-//                            $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
-//                            $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
-//                        } ).last
-//            let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
-//            Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
-//                "answers_active": StoreFeature.answers.isEnabled,
-//                "logins_active": StoreFeature.logins.isEnabled,
-//                "biometrics_active": StoreFeature.biometrics.isEnabled,
-//                "premium_active": StoreFeature.premium.isEnabled,
-//                "premium_in_trial": currentPremiumPurchase?.subscriptionTrialPeriod ?? false,
-//                "premium_in_intro": currentPremiumPurchase?.subscriptionIntroductoryPricePeriod ?? false,
-//                "premium_months_age": originalPremiumPurchase?.originalPurchaseDate.flatMap { months( $0, Date() ) } ?? -1,
-//                "premium_months_left": currentPremiumPurchase?.subscriptionExpirationDate.flatMap { months( Date(), $0 ) } ?? -1,
-//            ] ) )
+    //            let originalPremiumPurchase =
+    //                    StoreProduct.allCases.filter { $0.features.contains( .premium ) }
+    //                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+    //                        .sorted( by: { $0.originalPurchaseDate < $1.originalPurchaseDate } ).first
+    //            let currentPremiumPurchase =
+    //                    StoreProduct.allCases.filter { $0.features.contains( .premium ) }
+    //                        .compactMap { self.receipt?.lastAutoRenewableSubscriptionPurchase( ofProductIdentifier: $0.productIdentifier ) }
+    //                        .sorted( by: {
+    //                            $0.subscriptionExpirationDate ?? $0.cancellationDate ?? $0.purchaseDate <
+    //                            $1.subscriptionExpirationDate ?? $1.cancellationDate ?? $1.purchaseDate
+    //                        } ).last
+    //            let months = { Calendar.current.dateComponents( [ .month ], from: $0, to: $1 as Date ).month }
+    //            Tracker.shared.event( track: .subject( "appstore", action: "receipt", [
+    //                "answers_active": StoreFeature.answers.isEnabled,
+    //                "logins_active": StoreFeature.logins.isEnabled,
+    //                "biometrics_active": StoreFeature.biometrics.isEnabled,
+    //                "premium_active": StoreFeature.premium.isEnabled,
+    //                "premium_in_trial": currentPremiumPurchase?.subscriptionTrialPeriod ?? false,
+    //                "premium_in_intro": currentPremiumPurchase?.subscriptionIntroductoryPricePeriod ?? false,
+    //                "premium_months_age": originalPremiumPurchase?.originalPurchaseDate.flatMap { months( $0, Date() ) } ?? -1,
+    //                "premium_months_left": currentPremiumPurchase?.subscriptionExpirationDate.flatMap { months( Date(), $0 ) } ?? -1,
+    //            ] ) )
 }

@@ -20,7 +20,7 @@ public class Feedback {
     }
 
     private var hapticEngine: CHHapticEngine?
-    private var players = [Effect: CHHapticPatternPlayer]()
+    private var players: [Effect: CHHapticPatternPlayer] = [:]
 
     private init() {
         do {
@@ -30,34 +30,58 @@ public class Feedback {
             for effect in Effect.allCases {
                 switch effect {
                     case .flick:
-                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
-                            CHHapticEvent(eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .off),
-                                CHHapticEventParameter(parameterID: .hapticIntensity, value: .long),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
-                        ], parameters: []))
+                        self.players[effect] = try hapticEngine.makePlayer(
+                            with: CHHapticPattern(
+                                events: [
+                                    CHHapticEvent(
+                                        eventType: .hapticTransient,
+                                        parameters: [
+                                            CHHapticEventParameter(parameterID: .hapticSharpness, value: .off),
+                                            CHHapticEventParameter(parameterID: .hapticIntensity, value: .long),
+                                        ], relativeTime: CHHapticTimeImmediate, duration: .immediate,
+                                    ),
+                                ], parameters: [],
+                            ))
 
                     case .activate:
-                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
-                            CHHapticEvent(eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .off),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
-                        ], parameters: []))
+                        self.players[effect] = try hapticEngine.makePlayer(
+                            with: CHHapticPattern(
+                                events: [
+                                    CHHapticEvent(
+                                        eventType: .hapticTransient,
+                                        parameters: [
+                                            CHHapticEventParameter(parameterID: .hapticSharpness, value: .off),
+                                        ], relativeTime: CHHapticTimeImmediate, duration: .immediate,
+                                    ),
+                                ], parameters: [],
+                            ))
 
                     case .trigger:
-                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
-                            CHHapticEvent(eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .on),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
-                        ], parameters: []))
+                        self.players[effect] = try hapticEngine.makePlayer(
+                            with: CHHapticPattern(
+                                events: [
+                                    CHHapticEvent(
+                                        eventType: .hapticTransient,
+                                        parameters: [
+                                            CHHapticEventParameter(parameterID: .hapticSharpness, value: .on),
+                                        ], relativeTime: CHHapticTimeImmediate, duration: .immediate,
+                                    ),
+                                ], parameters: [],
+                            ))
 
                     case .error:
                         // TODO:
-                        self.players[effect] = try hapticEngine.makePlayer(with: CHHapticPattern(events: [
-                            CHHapticEvent(eventType: .hapticTransient, parameters: [
-                                CHHapticEventParameter(parameterID: .hapticSharpness, value: .on),
-                            ], relativeTime: CHHapticTimeImmediate, duration: .immediate),
-                        ], parameters: []))
+                        self.players[effect] = try hapticEngine.makePlayer(
+                            with: CHHapticPattern(
+                                events: [
+                                    CHHapticEvent(
+                                        eventType: .hapticTransient,
+                                        parameters: [
+                                            CHHapticEventParameter(parameterID: .hapticSharpness, value: .on),
+                                        ], relativeTime: CHHapticTimeImmediate, duration: .immediate,
+                                    ),
+                                ], parameters: [],
+                            ))
                 }
             }
             self.hapticEngine = hapticEngine

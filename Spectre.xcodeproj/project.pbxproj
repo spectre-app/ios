@@ -31,7 +31,6 @@
 		93D39C05281D4E4CB11F07AC /* Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39267543CBFB6B0D7F54C /* Spectre.swift */; };
 		93D39C94D7BFAAE6C4B1471F /* KeyFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D395FD92D751588A645D15 /* KeyFactory.swift */; };
 		93D39C999EF9BD048E3892AA /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39E1D19BCA02E43657384 /* Utilities.swift */; };
-		93D39DC523A8A2E162CEB420 /* UIKit+Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+Spectre.swift */; };
 		93D39E4BA0810541D1A91953 /* Marshal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D399D8E0D5A547143642A7 /* Marshal.swift */; };
 		93D39E5844BBC51269120A5C /* Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D3983E1434A32BDCA270A2 /* Cache.swift */; };
 		93D39F25FCF5747C9ECAAF8F /* LeakRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396D3EC5965FB7E9C5257 /* LeakRegistry.swift */; };
@@ -52,7 +51,6 @@
 		DA1F336B2CCEE720005764AD /* Period.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39651387222CBD2F9CCE0 /* Period.swift */; };
 		DA1F336C2CCEE738005764AD /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5FAB712B53332B00E4F34B /* WebView.swift */; };
 		DA1F336D2CCEE748005764AD /* Describe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D396FE084F709867C7C6CC /* Describe.swift */; };
-		DA1F336E2CCEE753005764AD /* UIKit+Spectre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D39647B07609C89AA66767 /* UIKit+Spectre.swift */; };
 		DA1F33712CCEE7E4005764AD /* TextArea.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5FAB772B5A071F00E4F34B /* TextArea.swift */; };
 		DA1F33A92CCF1419005764AD /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAA3207329B4EDC700AB142C /* LoginScreen.swift */; };
 		DA1F33AA2CCF1437005764AD /* SitesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD3D0E62AA2DBFF00EC264A /* SitesScreen.swift */; };
@@ -489,7 +487,6 @@
 		93D394077F8FAB8167647187 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		93D3944D27B033E791F675BB /* Resources.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Resources.swift; sourceTree = "<group>"; };
 		93D395FD92D751588A645D15 /* KeyFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyFactory.swift; sourceTree = "<group>"; };
-		93D39647B07609C89AA66767 /* UIKit+Spectre.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIKit+Spectre.swift"; sourceTree = "<group>"; };
 		93D39651387222CBD2F9CCE0 /* Period.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Period.swift; sourceTree = "<group>"; };
 		93D3969393A3A46BD27D7078 /* spectre-algorithm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-algorithm.c"; sourceTree = "<group>"; };
 		93D396C311C3725870343EE0 /* spectre-util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "spectre-util.c"; sourceTree = "<group>"; };
@@ -1021,7 +1018,6 @@
 				93D39754A28ADCAE0E58937F /* Swift+Spectre.swift */,
 				93D3917402B9BC4575713560 /* Tracker.swift */,
 				93D393F8D17BB4283C64AC37 /* Types.swift */,
-				93D39647B07609C89AA66767 /* UIKit+Spectre.swift */,
 				DA40C64E2DF4C31F00AA8347 /* CoreGraphics+Spectre.swift */,
 				93D39E1D19BCA02E43657384 /* Utilities.swift */,
 			);
@@ -2815,7 +2811,6 @@
 				DAD0D4822CCEC9780046E281 /* User.swift in Sources */,
 				DAD0D4922CCED68E0046E281 /* Foundation+Spectre.swift in Sources */,
 				DA1F33672CCEE6DD005764AD /* AppProduct.swift in Sources */,
-				DA1F336E2CCEE753005764AD /* UIKit+Spectre.swift in Sources */,
 				DAD0D4832CCEC9780046E281 /* Spectre.swift in Sources */,
 				DA1F33AA2CCF1437005764AD /* SitesScreen.swift in Sources */,
 				DAD0D48F2CCED6550046E281 /* Keychain.swift in Sources */,
@@ -3059,7 +3054,6 @@
 				93D39B0F44709C2D285A04D1 /* Foundation+Spectre.swift in Sources */,
 				DA31C2672B7314F10043D10A /* SettingsScreen.swift in Sources */,
 				DA9391DD2B93D25300FD0B2D /* Block.swift in Sources */,
-				93D39DC523A8A2E162CEB420 /* UIKit+Spectre.swift in Sources */,
 				93D3973CB116392EFE182225 /* Swift+Spectre.swift in Sources */,
 				93D39C05281D4E4CB11F07AC /* Spectre.swift in Sources */,
 				93D39BD8CD302F5A72A64961 /* Debug.swift in Sources */,

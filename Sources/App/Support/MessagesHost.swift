@@ -39,8 +39,10 @@ final class MessagesModel {
     }
 
     @discardableResult
-    func start(message: String, description: String? = nil, amount: Int64? = nil,
-               isForCurrent: Bool = false, userInfo: [ProgressUserInfoKey: Any]? = nil)
+    func start(
+        message: String, description: String? = nil, amount: Int64? = nil,
+        isForCurrent: Bool = false, userInfo: [ProgressUserInfoKey: Any]? = nil,
+    )
         -> Progress {
         using(Progress(parent: isForCurrent ? .current() : nil, userInfo: userInfo)) {
             if let amount {
@@ -51,17 +53,21 @@ final class MessagesModel {
     }
 
     @discardableResult
-    func prompt<V: Hashable>(message: String, description: String? = nil, error: Error? = nil,
-                             options: [(value: V, description: String)], decision: @escaping (V) -> Void)
+    func prompt<V: Hashable>(
+        message: String, description: String? = nil, error: Error? = nil,
+        options: [(value: V, description: String)], decision: @escaping (V) -> Void,
+    )
         -> Prompt {
-        using(Prompt(
-            message: Message(title: message, description: description, error: error),
-            options: options.map { option in
-                Prompt.Option(id: option.value, description: option.description) {
-                    decision(option.value)
-                }
-            }
-        )) {
+        using(
+            Prompt(
+                message: Message(title: message, description: description, error: error),
+                options: options.map { option in
+                    Prompt.Option(id: option.value, description: option.description) {
+                        decision(option.value)
+                    }
+                },
+            ),
+        ) {
             self.currentPrompt = $0
         }
     }
@@ -70,7 +76,7 @@ final class MessagesModel {
         -> KeyFactory {
         try await withCheckedThrowingContinuation {
             self.authenticationRequest = .init(
-                reason: reason, userName: userName, previousError: previousError, action: action, continuation: $0
+                reason: reason, userName: userName, previousError: previousError, action: action, continuation: $0,
             )
         }
     }
@@ -212,9 +218,11 @@ struct MessagesHost: ViewModifier {
                     }
                 }
             }
-            .groupBoxStyle(.spectre(with: {
-                Rectangle().fill(.ultraThickMaterial).opacity(self.isSticky ? .on : .long)
-            }))
+            .groupBoxStyle(
+                .spectre(with: {
+                    Rectangle().fill(.ultraThickMaterial).opacity(self.isSticky ? .on : .long)
+                }),
+            )
             .overlay(alignment: .topTrailing) {
                 if self.isSticky {
                     Image(systemName: "xmark.circle")
@@ -276,17 +284,19 @@ struct MessagesHost: ViewModifier {
                 .font(self.isActive ? .spectre.callout : .spectre.caption1)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .groupBoxStyle(.spectre(with: {
-                if self.isFinished {
-                    Color.spectre.placeholder
-                }
-                else if self.isActive {
-                    Color.spectre.selection
-                }
-                else {
-                    Color.clear
-                }
-            }))
+            .groupBoxStyle(
+                .spectre(with: {
+                    if self.isFinished {
+                        Color.spectre.placeholder
+                    }
+                    else if self.isActive {
+                        Color.spectre.selection
+                    }
+                    else {
+                        Color.clear
+                    }
+                }),
+            )
             .overlay(alignment: .topTrailing) {
                 if self.isActive {
                     Image(systemName: "xmark.circle")
@@ -329,7 +339,7 @@ struct MessagesHost: ViewModifier {
         func body(content: Content) -> some View {
             content.confirmationDialog(
                 Text(self.messages.currentPrompt?.message.title ?? ""),
-                isPresented: self.$messages.currentPrompt.isSet(), presenting: self.messages.currentPrompt
+                isPresented: self.$messages.currentPrompt.isSet(), presenting: self.messages.currentPrompt,
             ) {
                 ForEach($0.options) { option in
                     Button(option.description) {
@@ -345,7 +355,7 @@ struct MessagesHost: ViewModifier {
                     \(let: prompt.message.error?.details.failure, "\n\n{}")\
                     \(let: prompt.message.error?.details.underlying.joined(separator: "\n").nonEmpty, "\n{}")\
                     \(let: prompt.message.error?.details.suggestion, "\n\n{}")
-                    """
+                    """,
                 )
             }
         }
@@ -363,7 +373,7 @@ struct MessagesHost: ViewModifier {
             content.alert(
                 self.messages.authenticationRequest?.reason ?? "Authentication",
                 isPresented: self.$messages.authenticationRequest.isSet(),
-                presenting: self.messages.authenticationRequest
+                presenting: self.messages.authenticationRequest,
             ) { authenticationRequest in
                 if authenticationRequest.userName == nil {
                     TextField(prompt: "Full name", text: self.$userName)
@@ -384,10 +394,11 @@ struct MessagesHost: ViewModifier {
                     authenticationRequest.continuation.resume(throwing: CancellationError())
                 }
                 Button(authenticationRequest.action) {
-                    authenticationRequest.continuation.resume(returning: SecretKeyFactory(
-                        userName: authenticationRequest.userName ?? self.userName,
-                        userSecret: self.secret
-                    ))
+                    authenticationRequest.continuation.resume(
+                        returning: SecretKeyFactory(
+                            userName: authenticationRequest.userName ?? self.userName,
+                            userSecret: self.secret,
+                        ))
                 }
             } message: { authenticationRequest in
                 if let previousError = authenticationRequest.previousError {
@@ -421,7 +432,7 @@ private struct Preview: View {
             self.messages.show(message: "title", description: "description")
             self.messages.show(
                 message: "title", description: "description",
-                error: AppError.issue("Issue", reason: "Reason", suggestion: "Suggestion", cause: errSecAllocate)
+                error: AppError.issue("Issue", reason: "Reason", suggestion: "Suggestion", cause: errSecAllocate),
             )
             let progress = self.messages.start(message: "Running the progress", description: "description")
             self.messages.prompt(
@@ -430,7 +441,7 @@ private struct Preview: View {
                 options: [
                     (true, "Yes"),
                     (false, "No"),
-                ]
+                ],
             ) { progress.completedUnitCount = $0 ? 1 : 0 }
         }
     }

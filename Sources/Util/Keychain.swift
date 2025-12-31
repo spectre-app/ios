@@ -11,19 +11,19 @@ public class Keychain {
         -> [CFString: Any] {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
-            kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error
+            kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error,
         ), error == nil
         else {
             throw AppError.issue(
                 "Keychain unavailable", reason: "Keychain access control could not be created.",
-                cause: error?.takeRetainedValue() as Error?
+                cause: error?.takeRetainedValue() as Error?,
             )
         }
 
         return [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: [SpectreKeyPurpose.authentication.scope, algorithm.description]
-                .compactMap { $0 }.joined(separator: "."),
+                .compactMap(\.self).joined(separator: "."),
             kSecAttrAccount: userName,
             kSecAttrAccessGroup: productGroup,
             kSecAttrAccessControl: accessControl,
@@ -71,11 +71,11 @@ public class Keychain {
     public func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) async throws
         -> UnsafePointer<SpectreUserKey> {
         try await withCheckedThrowingContinuation { continuation in
-//        let spinner = await AlertController( title: "Biometrics Authentication",
-//                                       message: "Please authenticate to access user key for:\n\(userName)",
-//                                       content: UIActivityIndicatorView( style: .medium ) )
-//        await spinner.show( dismissAutomatically: false )
-//        defer { Task { @MainActor in spinner.dismiss() } }
+            //        let spinner = await AlertController( title: "Biometrics Authentication",
+            //                                       message: "Please authenticate to access user key for:\n\(userName)",
+            //                                       content: UIActivityIndicatorView( style: .medium ) )
+            //        await spinner.show( dismissAutomatically: false )
+            //        defer { Task { @MainActor in spinner.dismiss() } }
             do {
                 context.interactionNotAllowed = false
                 var query = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
@@ -112,7 +112,7 @@ public class Keychain {
                 ]
 
                 context.interactionNotAllowed = false
-                let query  = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
+                let query = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
                 var status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
                 if status == errSecItemNotFound {
                     status = SecItemAdd(query.merging(attributes, uniquingKeysWith: { $1 }) as CFDictionary, nil)

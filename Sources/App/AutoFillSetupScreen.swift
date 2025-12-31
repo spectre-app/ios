@@ -49,17 +49,17 @@ struct AutoFillSetupScreen: View {
     var introItem: Pager.PagerItem {
         Pager.PagerItem(
             title: "Turning On AutoFill", systemImage: "signpost.right",
-            isDone: true
+            isDone: true,
         ) {
             Text(
                 """
                 To get AutoFill working smoothly on your \(AppConfig.shared.model), there are a few things we need to get done.
-                """
+                """,
             )
             Text(
                 """
                 Swipe ahead to begin.
-                """
+                """,
             )
         }
     }
@@ -67,12 +67,12 @@ struct AutoFillSetupScreen: View {
     var biometricItem: Pager.PagerItem {
         Pager.PagerItem(
             title: "Biometric Lock", systemImage: KeychainKeyFactory.factor.iconName ?? "touchid",
-            isDone: self.user.biometricLock
+            isDone: self.user.biometricLock,
         ) {
             Text(
                 """
                 Consider turning on \(KeychainKeyFactory.factor.description) as the quickest way to unlock your passwords.
-                """
+                """,
             )
             Toggle("Biometric Lock", systemImage: KeychainKeyFactory.factor.iconName ?? "touchid", isOn: self.$user.biometricLock)
         }
@@ -81,19 +81,21 @@ struct AutoFillSetupScreen: View {
     var loginItem: Pager.PagerItem {
         Pager.PagerItem(
             title: "Standard Login", systemImage: "person.crop.rectangle",
-            isDone: !self.loginName.isEmpty
+            isDone: !self.loginName.isEmpty,
         ) {
             Text(
                 """
                 Set the login name you use for most sites.
                 To save an e-mail address, first select ⦗\(SpectreResultType.statePersonal.description)⦘.
-                """
+                """,
             )
-            Carousel(values: [SpectreResultType].joined(
-                [.statePersonal],
-                SpectreResultType.recommendedTypes[.identification],
-                SpectreResultType.allCases.filter { !$0.has(feature: .alternate) }
-            ).unique(), selection: self.$user.loginType) { type in
+            Carousel(
+                values: [SpectreResultType].joined(
+                    [.statePersonal],
+                    SpectreResultType.recommendedTypes[.identification],
+                    SpectreResultType.allCases.filter { !$0.has(feature: .alternate) },
+                ).unique(), selection: self.$user.loginType,
+            ) { type in
                 Block {
                     Text(verbatim: type.description)
                 } caption: {
@@ -127,7 +129,7 @@ struct AutoFillSetupScreen: View {
     var systemItem: Pager.PagerItem {
         Pager.PagerItem(
             title: "\(AppConfig.shared.model) Settings", systemImage: "gear.badge.checkmark",
-            isDone: self.isAutoFillEnabled
+            isDone: self.isAutoFillEnabled,
         ) {
             Text(
                 """
@@ -135,7 +137,7 @@ struct AutoFillSetupScreen: View {
                 ❶ Open ⦗Settings⦘ ❯ ⦗General⦘
                 ❷ Find ⦗AutoFill & Passwords⦘
                 ❸ Enable ⦗AutoFill From⦘ for ⦗\(productName)⦘
-                """
+                """,
             )
             Toggle("AutoFill in \(AppConfig.shared.model) Settings", systemImage: "keyboard", isOn: self.$isAutoFillEnabled)
                 .allowsHitTesting(false)
@@ -150,8 +152,10 @@ struct AutoFillSetupScreen: View {
                             // TODO: macOS
                             #endif
                         }
-                    } label: { Color.spectre.placeholder.opacity(0.1) /* FIXME: */ }
-                        .buttonStyle(.plain)
+                    } label: {
+                        Color.spectre.placeholder.opacity(0.1) /* FIXME: */
+                    }
+                    .buttonStyle(.plain)
                 }
         }
     }
@@ -159,12 +163,12 @@ struct AutoFillSetupScreen: View {
     var userItem: Pager.PagerItem {
         Pager.PagerItem(
             title: "\(self.user.userName)", systemImage: "keyboard",
-            isDone: self.user.autofill
+            isDone: self.user.autofill,
         ) {
             Text(
                 """
                 Show auto-fill suggestions for \(self.user.userName)'s sites from other apps.
-                """
+                """,
             )
             Toggle("AutoFill for \(self.user.userName)", systemImage: "keyboard", isOn: self.$user.autofill)
         }
@@ -175,7 +179,7 @@ struct AutoFillSetupScreen: View {
 #Preview {
     Path().popoverForm(isPresented: .constant(true)) {
         AutoFillSetupScreen(
-            user: User(avatar: .avatar_3, userName: "Robert Lee Mitchell")
+            user: User(avatar: .avatar_3, userName: "Robert Lee Mitchell"),
         )
     }
     .spectreStyle()

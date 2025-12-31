@@ -2,6 +2,7 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
+import AuthenticationServices
 import Observation
 import SwiftUI
 
@@ -186,7 +187,7 @@ struct LoginScreen: View {
                         case .selectedUser:
                             if let keychainKeyFactory {
                                 self.model.phase = .authenticatingUserWithBiometrics(
-                                    user: self.selectedUser, keyFactory: keychainKeyFactory
+                                    user: self.selectedUser, keyFactory: keychainKeyFactory,
                                 )
                             }
                             else {
@@ -208,14 +209,11 @@ struct LoginScreen: View {
                         .font(.spectre.mono)
                         .matchedGeometryEffect(id: "identicon", in: self.namespace)
 
-                    (
-                        Text(verbatim: self.selectedUser.userName) +
-                            Text("&nbsp;") + Text(self.selectedActionImage)
-                    )
-                    .fontWeight(.heavy)
-                    .font(.spectre.largeTitle)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    (Text(verbatim: self.selectedUser.userName) + Text("&nbsp;") + Text(self.selectedActionImage))
+                        .fontWeight(.heavy)
+                        .font(.spectre.largeTitle)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                     ControlGroup {
                         if case .authenticatingUserWithSecret = self.model.phase {
@@ -224,7 +222,7 @@ struct LoginScreen: View {
                                     userName: self.selectedUser.userName,
                                     userIdenticon: self.selectedUser.identicon,
                                     keyFactory: self.$secretKeyFactory,
-                                    namespace: self.namespace
+                                    namespace: self.namespace,
                                 )
                                 Button("Submit", systemImage: "rectangle.portrait.and.arrow.forward.fill") {}
                             }
@@ -263,7 +261,7 @@ struct LoginScreen: View {
                                 }
                                 .alert(
                                     "Would you like Spectre to forget and change \(self.selectedUser.userName)'s secret?",
-                                    isPresented: self.$model.isResettingSecret
+                                    isPresented: self.$model.isResettingSecret,
                                 ) {
                                     Button("Reset Secret", role: .destructive) {
                                         Task {
@@ -272,8 +270,8 @@ struct LoginScreen: View {
                                     }
                                     Button("Cancel", role: .cancel) {}
                                 } message: {
-                                    Text("This will change all passwords for \(self.selectedUser.userName)'s sites.") +
-                                        Text("\nReverting the change will also recover the original passwords.")
+                                    Text("This will change all passwords for \(self.selectedUser.userName)'s sites.")
+                                        + Text("\nReverting the change will also recover the original passwords.")
                                 }
 
                                 Button("Delete User", systemImage: "trash.fill") {
@@ -283,7 +281,7 @@ struct LoginScreen: View {
                                 }
                                 .alert(
                                     "Would you like Spectre to permanently remove and forget \(self.selectedUser.userName)?",
-                                    isPresented: self.$model.isDeletingUser
+                                    isPresented: self.$model.isDeletingUser,
                                 ) {
                                     Button("Delete User", role: .destructive) {
                                         Task {
@@ -292,8 +290,8 @@ struct LoginScreen: View {
                                     }
                                     Button("Cancel", role: .cancel) {}
                                 } message: {
-                                    Text("Recreating the user will also recover its generated passwords.") +
-                                        Text("\nAny non-generated tokens will be lost.")
+                                    Text("Recreating the user will also recover its generated passwords.")
+                                        + Text("\nAny non-generated tokens will be lost.")
                                 }
                             }
                         }
@@ -401,21 +399,21 @@ struct LoginScreen: View {
 
                 SecretField(userName: self.newUser.userName, keyFactory: self.$secretKeyFactory, showStrength: true)
                     .onSubmit {
-                    Task {
-                        guard let secretKeyFactory
-                        else { return }
+                        Task {
+                            guard let secretKeyFactory
+                            else { return }
 
-                        let newUser = try await self.spectre.loginNewUser(using: secretKeyFactory)
-                        newUser.avatar = self.newUser.avatar
-                        if let newUser = try Marshal.UserFile(user: newUser) {
-                            self.model.phase = .selectedUser(user: newUser)
-                        }
-                        else {
-                            self.model.phase = .switchingUser
+                            let newUser = try await self.spectre.loginNewUser(using: secretKeyFactory)
+                            newUser.avatar = self.newUser.avatar
+                            if let newUser = try Marshal.UserFile(user: newUser) {
+                                self.model.phase = .selectedUser(user: newUser)
+                            }
+                            else {
+                                self.model.phase = .switchingUser
+                            }
                         }
                     }
-                }
-                .focused(self.$isFocusOnSecret)
+                    .focused(self.$isFocusOnSecret)
 
                 Spacer()
             }
@@ -458,16 +456,13 @@ struct LoginScreen: View {
                             } label: {
                                 Text(verbatim: user.userName)
 
-                                (
-                                    Text("\(user.lastUsed, format: .dateTime)") +
-                                        Text("&nbsp;—&nbsp;") +
-                                        Text(
-                                            (user.biometricLock ? KeychainKeyFactory.factor.iconName : nil)
-                                                .flatMap(Image.init(systemName:)) ?? Image(systemName: "character.cursor.ibeam")
-                                        )
-                                )
-                                .font(.spectre.caption1)
-                                .foregroundStyle(Color.spectre.alternative)
+                                (Text("\(user.lastUsed, format: .dateTime)") + Text("&nbsp;—&nbsp;")
+                                    + Text(
+                                        (user.biometricLock ? KeychainKeyFactory.factor.iconName : nil)
+                                            .flatMap(Image.init(systemName:)) ?? Image(systemName: "character.cursor.ibeam"),
+                                    ))
+                                    .font(.spectre.caption1)
+                                    .foregroundStyle(Color.spectre.alternative)
 
                                 if let origin = user.origin,
                                    self.model.allUsers.count(where: { $0.userName == user.userName }) > 1 {
@@ -476,12 +471,13 @@ struct LoginScreen: View {
                                         .foregroundStyle(Color.spectre.alternative)
                                 }
                             }
-                            .buttonStyle(.spectreBox(alignment: .leading, image: Image(user.avatar.imageName)) {
-                                Color.spectre.selection
-                                    .blur(radius: .spectre.margin)
-                                    .background(ContainerRelativeShape().stroke(Color.spectre.tint))
-                                    .opacity(self.isPreferred(user: user) ? .on : .off)
-                            })
+                            .buttonStyle(
+                                .spectreBox(alignment: .leading, image: Image(user.avatar.imageName)) {
+                                    Color.spectre.selection
+                                        .blur(radius: .spectre.margin)
+                                        .background(ContainerRelativeShape().stroke(Color.spectre.tint))
+                                        .opacity(self.isPreferred(user: user) ? .on : .off)
+                                })
                         }
                     }
 
@@ -495,9 +491,11 @@ struct LoginScreen: View {
                             Text("Spectre")
                                 .font(.spectre.largeTitle)
                             Divider()
-                            Text("""
+                            Text(
+                                """
                                 To begin using auto-fill, open the Spectre app and activate your subscription.
-                                """)
+                                """,
+                            )
                             .font(.spectre.body)
                         }
                         else if self.model.users.isEmpty || !autofill.isRequestingCredentials {
@@ -509,11 +507,13 @@ struct LoginScreen: View {
                             Text("Spectre")
                                 .font(.spectre.largeTitle)
                             Divider()
-                            Text("""
+                            Text(
+                                """
                                 The following Spectre users have enabled auto-fill.
                                 To change a user's participation, log into the user from the Spectre app \
                                 and toggle their ⦗AutoFill⦘ preference.
-                                """)
+                                """,
+                            )
                             .font(.spectre.body)
 
                             ForEach(self.model.allUsers) { user in
@@ -534,13 +534,14 @@ struct LoginScreen: View {
                                 .font(.spectre.caption1)
                                 .foregroundStyle(Color.spectre.alternative)
                         }
-                        .buttonStyle(.spectreBox(alignment: .trailing) {
-                            Image(self.config.appIcon.glyphName)
-                                .renderingMode(.template)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .padding(-.spectre.margin)
-                        })
+                        .buttonStyle(
+                            .spectreBox(alignment: .trailing) {
+                                Image(self.config.appIcon.glyphName)
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .padding(-.spectre.margin)
+                            })
 
                         if AppFeature.incognito.isEnabled {
                             Button {
@@ -554,13 +555,14 @@ struct LoginScreen: View {
                                     .font(.spectre.caption1)
                                     .foregroundStyle(Color.spectre.alternative)
                             }
-                            .buttonStyle(.spectreBox(alignment: .trailing) {
-                                Image(systemName: "person.crop.rectangle.stack.fill")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .aspectRatio(1, contentMode: .fit)
-                            })
+                            .buttonStyle(
+                                .spectreBox(alignment: .trailing) {
+                                    Image(systemName: "person.crop.rectangle.stack.fill")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .aspectRatio(1, contentMode: .fit)
+                                })
                         }
                     }
                 }
@@ -574,63 +576,68 @@ struct LoginScreen: View {
     }
 }
 
-import AuthenticationServices
-
 #if DEBUG
 #Preview {
-    LoginScreen(model: .init(allUsers: [
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_3,
-            userName: "Robert Lee Mitchell", identicon: .from("╚☻╯⛄", color: .green)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: true, autofill: true
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_10,
-            userName: "Katherine Johnson", identicon: .from("╚▒╯⛄", color: .blue)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: true
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_8,
-            userName: "Mary Jackson", identicon: .from("═☻╝☔", color: .yellow)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_9,
-            userName: "Dorothy Vaughan", identicon: .from("═☻╝☔", color: .yellow)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: true, autofill: false
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_7,
-            userName: "Valentina Tereshkova", identicon: .from("═☻╝☔", color: .yellow)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_6,
-            userName: "Alan Shepard", identicon: .from("═☻╝☔", color: .yellow)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: true, autofill: false
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_5,
-            userName: "Yuri Gagarin", identicon: .from("═☻╝☔", color: .yellow)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_1,
-            userName: "John Glenn", identicon: .from("═☻╝☔", color: .yellow)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false
-        ),
-        Marshal.UserFile(
-            format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_13,
-            userName: "Eileen Collins", identicon: .from("═☻╝☔", color: .yellow)!,
-            userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false
-        ),
-    ]))
+    LoginScreen(
+        model: .init(allUsers: [
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_3,
+                userName: "Robert Lee Mitchell", identicon: .from("╚☻╯⛄", color: .green)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: true, autofill: true,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_10,
+                userName: "Katherine Johnson", identicon: .from("╚▒╯⛄", color: .blue)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: true,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_8,
+                userName: "Mary Jackson", identicon: .from("═☻╝☔", color: .yellow)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_9,
+                userName: "Dorothy Vaughan", identicon: .from("═☻╝☔", color: .yellow)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: true, autofill: false,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_7,
+                userName: "Valentina Tereshkova", identicon: .from("═☻╝☔", color: .yellow)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_6,
+                userName: "Alan Shepard", identicon: .from("═☻╝☔", color: .yellow)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: true, autofill: false,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_5,
+                userName: "Yuri Gagarin", identicon: .from("═☻╝☔", color: .yellow)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_1,
+                userName: "John Glenn", identicon: .from("═☻╝☔", color: .yellow)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false,
+            ),
+            Marshal.UserFile(
+                format: .default, exportDate: Date(), redacted: true, algorithm: .current, avatar: .avatar_13,
+                userName: "Eileen Collins", identicon: .from("═☻╝☔", color: .yellow)!,
+                userKeyID: .init(), lastUsed: Date(), biometricLock: false, autofill: false,
+            ),
+        ]),
+    )
     .spectreStyle()
-    .environment(\.spectre, using(.shared) {
-        $0.autofill = .init(credentialRequest: ASPasswordCredentialRequest(credentialIdentity: .init(
-            serviceIdentifier: ASCredentialServiceIdentifier(identifier: "spectre.app", type: .domain),
-            user: "Robert Lee Mitchell", recordIdentifier: nil
-        )))
-    })
+    .environment(
+        \.spectre,
+        using(.shared) {
+            $0.autofill = .init(
+                credentialRequest: ASPasswordCredentialRequest(
+                    credentialIdentity: .init(
+                        serviceIdentifier: ASCredentialServiceIdentifier(identifier: "spectre.app", type: .domain),
+                        user: "Robert Lee Mitchell", recordIdentifier: nil,
+                    )))
+        },
+    )
 }
 #endif

@@ -12,8 +12,10 @@ import System
 private var currentAction: Tracker.TimedEvent?
 let logRecords = PassthroughSubject<LogRecord, Never>()
 
-public func act<R>(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   _ subject: String, _ action: String, parameters: [String: Any?] = [:], perform: () -> R)
+public func act<R>(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ subject: String, _ action: String, parameters: [String: Any?] = [:], perform: () -> R,
+)
     -> R {
     $currentAction.withValue(Tracker.shared.begin(track: .init(subject: subject, action: action, parameters: parameters))) {
         defer { currentAction?.end() }
@@ -21,8 +23,10 @@ public func act<R>(file: String = #file, line: Int32 = #line, function: String =
     }
 }
 
-public func trp(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ condition: Bool = true, _ message: String = "<trap>", data: Any?...) {
+public func trp(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ condition: Bool = true, _ message: String = "<trap>", data: Any?...,
+) {
     guard condition
     else { return }
 
@@ -30,14 +34,18 @@ public func trp(file: String = #file, line: Int32 = #line, function: String = #f
     print("<SIGTRAP>")
 }
 
-public func trc(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ message: String, data: Any?...) {
+public func trc(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ message: String, data: Any?...,
+) {
     log(file: file, line: line, function: function, dso: dso, level: .trace, message, data: data)
 }
 
 #if DEBUG
-public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                ifDebugging object: AnyObject, _ message: String, data: Any?...) {
+public func dbg(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    ifDebugging object: AnyObject, _ message: String, data: Any?...,
+) {
     if !isDebuggingObject(object) {
         return
     }
@@ -46,37 +54,50 @@ public func dbg(file: String = #file, line: Int32 = #line, function: String = #f
 }
 #endif
 
-public func dbg(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ message: String, data: Any?...) {
+public func dbg(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ message: String, data: Any?...,
+) {
     log(file: file, line: line, function: function, dso: dso, level: .debug, message, data: data)
 }
 
-public func inf(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ message: String, data: Any?...) {
+public func inf(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ message: String, data: Any?...,
+) {
     log(file: file, line: line, function: function, dso: dso, level: .info, message, data: data)
 }
 
-public func wrn(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ message: String, data: Any?...) {
+public func wrn(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ message: String, data: Any?...,
+) {
     log(file: file, line: line, function: function, dso: dso, level: .warning, message, data: data)
 }
 
-public func err(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ message: String, data: Any?...) {
+public func err(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ message: String, data: Any?...,
+) {
     log(file: file, line: line, function: function, dso: dso, level: .error, message, data: data)
 }
 
-public func ftl(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                _ message: String, data: Any?...) {
+public func ftl(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    _ message: String, data: Any?...,
+) {
     log(file: file, line: line, function: function, dso: dso, level: .fatal, message, data: data)
 }
 
-public func log(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                level: SpectreLogLevel, _ message: String, data: Any?...) {
-    logRecords.send(LogRecord(
-        occurrence: .now, level: level, file: file, line: line, function: function,
-        message: message, action: currentAction, data: data.compactMap(\.self)
-    ))
+public func log(
+    file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+    level: SpectreLogLevel, _ message: String, data: Any?...,
+) {
+    logRecords.send(
+        LogRecord(
+            occurrence: .now, level: level, file: file, line: line, function: function,
+            message: message, action: currentAction, data: data.compactMap(\.self),
+        ))
 }
 
 extension SpectreLogLevel: Identifiable, Strideable, CaseIterable, CustomStringConvertible {
@@ -118,9 +139,9 @@ extension SpectreLogLevel: Identifiable, Strideable, CaseIterable, CustomStringC
 }
 
 class LogSink {
-    public static let shared = LogSink()
+    static let shared = LogSink()
 
-    public var level: SpectreLogLevel {
+    var level: SpectreLogLevel {
         get { spectre_verbosity }
         set { spectre_verbosity = newValue }
     }
@@ -130,22 +151,25 @@ class LogSink {
         $0.dateFormat = "DDD'-'HH':'mm':'ss"
     }
 
-    public func register() async {
+    func register() async {
         guard self.recordSink == nil
         else { return }
 
         self.recordSink = logRecords.sink { record in
-            let osLevel: OSLogType = [
-                .trace: .debug, .debug: .debug, .info: .info,
-                .warning: .default, .error: .error, .fatal: .fault,
-            ][record.level] ?? .debug
+            let osLevel: OSLogType =
+                [
+                    .trace: .debug, .debug: .debug, .info: .info,
+                    .warning: .default, .error: .error, .fatal: .fault,
+                ][record.level] ?? .debug
             Logger(subsystem: productIdentifier, category: "\(record.fileStem):\(record.line)")
-                .log(level: osLevel,
-                """
-                \("\(let: record.action?.tracking, "({}) ")")\
-                \(record.message)\
-                \("\(let: record.data.nonEmpty, "\n{}")", privacy: .sensitive(mask: .none))
-                """)
+                .log(
+                    level: osLevel,
+                    """
+                    \("\(let: record.action?.tracking, "({}) ")")\
+                    \(record.message)\
+                    \("\(let: record.data.nonEmpty, "\n{}")", privacy: .sensitive(mask: .none))
+                    """,
+                )
         }
 
         spectre_verbosity = .debug
@@ -153,11 +177,12 @@ class LogSink {
             guard let event = eventPointer?.pointee, let message = String.valid(event.formatter(eventPointer))
             else { return false }
 
-            logRecords.send(LogRecord(
-                occurrence: .now, level: event.level,
-                file: .valid(event.file) ?? "", line: event.line, function: .valid(event.function) ?? "",
-                message: message, action: currentAction, data: []
-            ))
+            logRecords.send(
+                LogRecord(
+                    occurrence: .now, level: event.level,
+                    file: .valid(event.file) ?? "", line: event.line, function: .valid(event.function) ?? "",
+                    message: message, action: currentAction, data: [],
+                ))
             return true
         }
 
@@ -167,7 +192,7 @@ class LogSink {
     }
 
     func enumerate(level: SpectreLogLevel) async -> [String] {
-        let levels: [OSLogType] = SpectreLogLevel.allCases.filter({ $0.rawValue <= level.rawValue }).compactMap {
+        let levels: [OSLogType] = SpectreLogLevel.allCases.filter { $0.rawValue <= level.rawValue }.compactMap {
             [
                 .trace: .debug, .debug: .debug, .info: .info,
                 .warning: .default, .error: .error, .fatal: .fault,
@@ -175,59 +200,62 @@ class LogSink {
         }
         do {
             return try OSLogStore(scope: .currentProcessIdentifier)
-                .getEntries(matching: NSPredicate(
-                    format: "(subsystem == 'app.spectre' AND messageType IN %@) OR messageType IN { 0x10, 0x11 }", levels.map(\.rawValue)
-                ))
+                .getEntries(
+                    matching: NSPredicate(
+                        format: "(subsystem == 'app.spectre' AND messageType IN %@) OR messageType IN { 0x10, 0x11 }",
+                        levels.map(\.rawValue),
+                    ),
+                )
                 .compactMap { $0 as? OSLogEntryLog }
                 .map { "\(self.dateFormatter.string(from: $0.date)) \($0.level) | \($0.composedMessage)" }
-        } catch {
+        }
+        catch {
             return ["Couldn't access logs: \(error)"]
         }
     }
 }
 
 struct LogRecord: Comparable {
-    public let occurrence: Date
-    public let level:      SpectreLogLevel
-    public let file:       String
-    public let line:       Int32
-    public let function:   String
-    public let message:    String
-    public let action:     Tracker.TimedEvent?
-    public let data:       [Any]
+    let occurrence: Date
+    let level: SpectreLogLevel
+    let file: String
+    let line: Int32
+    let function: String
+    let message: String
+    let action: Tracker.TimedEvent?
+    let data: [Any]
 
-    public var fileName:   String {
+    var fileName: String {
         FilePath(self.file).lastComponent?.string ?? self.file
     }
 
-    public var fileStem:   String {
+    var fileStem: String {
         FilePath(self.file).lastComponent?.stem ?? self.file
     }
 
-    public var source:     String {
+    var source: String {
         "\(self.fileStem):\(self.line)"
     }
 
-    public static func < (lhs: Self, rhs: Self) -> Bool {
+    static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.occurrence < rhs.occurrence
     }
 
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.occurrence == rhs.occurrence && lhs.level == rhs.level &&
-            lhs.file == rhs.file && lhs.line == rhs.line && lhs.function == rhs.function &&
-            lhs.message == rhs.message
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.occurrence == rhs.occurrence && lhs.level == rhs.level && lhs.file == rhs.file && lhs.line == rhs.line
+            && lhs.function == rhs.function && lhs.message == rhs.message
     }
 }
 
 extension OSLogEntryLog.Level: @retroactive CustomStringConvertible {
     public var description: String {
         switch self {
-            case .debug:      "DBG"
-            case .info:       "INF"
-            case .notice:     "NOT"
-            case .error:      "ERR"
-            case .fault:      "FLT"
-            case .undefined:  "UND"
+            case .debug: "DBG"
+            case .info: "INF"
+            case .notice: "NOT"
+            case .error: "ERR"
+            case .fault: "FLT"
+            case .undefined: "UND"
             @unknown default: "UNK"
         }
     }

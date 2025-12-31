@@ -4,12 +4,12 @@
 
 import Foundation
 
-let productName       = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Spectre"
-let productBuild      = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
-let productVersion    = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+let productName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Spectre"
+let productBuild = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+let productVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
 let productIdentifier = Bundle.main.bundleIdentifier ?? "app.spectre"
-let productGroup      = "group.app.spectre"
-let productAppleID    = 1_526_402_806
+let productGroup = "group.app.spectre"
+let productAppleID = 1_526_402_806
 
 @discardableResult
 func using<V>(_ value: V, do: (inout V) -> Void) -> V {

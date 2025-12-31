@@ -3,7 +3,7 @@
 //
 
 #if DEBUG
-var debuggedObjects = [WeakBox<AnyObject>]()
+var debuggedObjects: [WeakBox<AnyObject>] = []
 
 @discardableResult
 func debugObject<O: AnyObject>(_ object: O, ifDebugging other: AnyObject? = nil) -> O {

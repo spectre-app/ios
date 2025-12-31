@@ -1,0 +1,76 @@
+// Apple Swift-Format, https://github.com/swiftlang/swift-format/tree/main/Documentation
+{
+  "fileScopedDeclarationPrivacy" : {
+    "accessLevel" : "private"
+  },
+  "indentConditionalCompilationBlocks" : false,
+  "indentSwitchCaseLabels" : true,
+  "indentation" : {
+    "spaces" : 4
+  },
+  "lineBreakAroundMultilineExpressionChainComponents" : false,
+  "lineBreakBeforeControlFlowKeywords" : true,
+  "lineBreakBeforeEachArgument" : false,
+  "lineBreakBeforeEachGenericRequirement" : false,
+  "lineBreakBetweenDeclarationAttributes" : false,
+  "lineLength" : 140,
+  "maximumBlankLines" : 1,
+  "multiElementCollectionTrailingCommas" : true,
+  "noAssignmentInExpressions" : {
+    "allowedFunctions" : [
+      "XCTAssertNoThrow"
+    ]
+  },
+  "prioritizeKeepingFunctionOutputTogether" : false,
+  "reflowMultilineStringLiterals" : "onlyLinesOverLength",
+  "respectsExistingLineBreaks" : true,
+  "rules" : {
+    "AllPublicDeclarationsHaveDocumentation" : true,
+    "AlwaysUseLiteralForEmptyCollectionInit" : true,
+    "AlwaysUseLowerCamelCase" : true,
+    "AmbiguousTrailingClosureOverload" : true,
+    "AvoidRetroactiveConformances" : true,
+    "BeginDocumentationCommentWithOneLineSummary" : true,
+    "DoNotUseSemicolons" : true,
+    "DontRepeatTypeInStaticProperties" : true,
+    "FileScopedDeclarationPrivacy" : true,
+    "FullyIndirectEnum" : true,
+    "GroupNumericLiterals" : true,
+    "IdentifiersMustBeASCII" : true,
+    "NeverForceUnwrap" : true,
+    "NeverUseForceTry" : true,
+    "NeverUseImplicitlyUnwrappedOptionals" : true,
+    "NoAccessLevelOnExtensionDeclaration" : true,
+    "NoAssignmentInExpressions" : true,
+    "NoBlockComments" : true,
+    "NoCasesWithOnlyFallthrough" : true,
+    "NoEmptyLinesOpeningClosingBraces" : true,
+    "NoEmptyTrailingClosureParentheses" : true,
+    "NoLabelsInCasePatterns" : true,
+    "NoLeadingUnderscores" : true,
+    "NoParensAroundConditions" : true,
+    "NoPlaygroundLiterals" : true,
+    "NoVoidReturnOnFunctionSignature" : true,
+    "OmitExplicitReturns" : true,
+    "OneCasePerLine" : false,
+    "OneVariableDeclarationPerLine" : false,
+    "OnlyOneTrailingClosureArgument" : true,
+    "OrderedImports" : true,
+    "ReplaceForEachWithForLoop" : true,
+    "ReturnVoidInsteadOfEmptyTuple" : true,
+    "TypeNamesShouldBeCapitalized" : true,
+    "UseEarlyExits" : true,
+    "UseExplicitNilCheckInConditions" : true,
+    "UseLetInEveryBoundCaseVariable" : false,
+    "UseShorthandTypeNames" : true,
+    "UseSingleLinePropertyGetter" : true,
+    "UseSynthesizedInitializer" : true,
+    "UseTripleSlashForDocumentationComments" : true,
+    "UseWhereClausesInForLoops" : true,
+    "ValidateDocumentationComments" : true
+  },
+  "spacesAroundRangeFormationOperators" : true,
+  "spacesBeforeEndOfLineComments" : 2,
+  "tabWidth" : 8,
+  "version" : 1
+}

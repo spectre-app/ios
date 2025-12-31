@@ -30,14 +30,14 @@ extension EdgeInsets {
     public static func + (lhs: Self, rhs: Self) -> Self {
         Self(
             top: lhs.top + rhs.top, leading: lhs.leading + rhs.leading,
-            bottom: lhs.bottom + rhs.bottom, trailing: lhs.trailing + rhs.trailing
+            bottom: lhs.bottom + rhs.bottom, trailing: lhs.trailing + rhs.trailing,
         )
     }
 
     public static func - (lhs: Self, rhs: Self) -> Self {
         Self(
             top: lhs.top - rhs.top, leading: lhs.leading - rhs.leading,
-            bottom: lhs.bottom - rhs.bottom, trailing: lhs.trailing - rhs.trailing
+            bottom: lhs.bottom - rhs.bottom, trailing: lhs.trailing - rhs.trailing,
         )
     }
 
@@ -55,7 +55,7 @@ extension EdgeInsets {
         lhs.trailing -= rhs.trailing
     }
 
-    var width:  CGFloat {
+    var width: CGFloat {
         self.leading + self.trailing
     }
 
@@ -63,7 +63,7 @@ extension EdgeInsets {
         self.top + self.bottom
     }
 
-    var size:   CGSize {
+    var size: CGSize {
         CGSize(width: self.width, height: self.height)
     }
 }
@@ -91,8 +91,10 @@ extension View {
         self.if(condition(), then: ifTrue, else: { $0 })
     }
 
-    public func `if`(_ condition: @autoclosure () -> Bool = true, @ViewBuilder then ifTrue: (Self) -> some View,
-                     @ViewBuilder else ifFalse: (Self) -> some View)
+    public func `if`(
+        _ condition: @autoclosure () -> Bool = true, @ViewBuilder then ifTrue: (Self) -> some View,
+        @ViewBuilder else ifFalse: (Self) -> some View,
+    )
         -> AnyView {
         if condition() {
             AnyView(ifTrue(self))
@@ -111,8 +113,10 @@ extension View {
         }
     }
 
-    public func `if`<V>(`let` value: @autoclosure () -> V?, @ViewBuilder then ifTrue: (Self, V) -> some View,
-                        @ViewBuilder else ifFalse: (Self) -> some View)
+    public func `if`<V>(
+        `let` value: @autoclosure () -> V?, @ViewBuilder then ifTrue: (Self, V) -> some View,
+        @ViewBuilder else ifFalse: (Self) -> some View,
+    )
         -> AnyView {
         if let value = value() {
             AnyView(ifTrue(self, value))
@@ -139,10 +143,14 @@ private struct PaddingEffectModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onGeometryChange(for: CGSize.self) { $0.size } action: { self.size = $0 }
+            .onGeometryChange(for: CGSize.self) {
+                $0.size
+            } action: {
+                self.size = $0
+            }
             .scaleEffect(
                 x: 1 - self.padding / (self.size.width.nonEmpty ?? .on),
-                y: 1 - self.padding / (self.size.height.nonEmpty ?? .on)
+                y: 1 - self.padding / (self.size.height.nonEmpty ?? .on),
             )
     }
 }
@@ -182,10 +190,10 @@ extension Color.Resolved {
     public init?(colorSpace: Color.RGBColorSpace = .sRGB, hex: String, opacity: Float = 1) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
-        var rgb:   UInt64  = 0
-        var red:   Float = 0.0
+        var rgb: UInt64 = 0
+        var red: Float = 0.0
         var green: Float = 0.0
-        var blue:  Float = 0.0
+        var blue: Float = 0.0
         var opacity: Float = opacity
 
         guard Scanner(string: hexSanitized).scanHexInt64(&rgb)
@@ -221,14 +229,14 @@ extension Binding {
     public func nonEmpty<V>(default: V) -> Binding<V> where Value == V? {
         .init(
             get: { self.wrappedValue ?? `default` },
-            set: { self.wrappedValue = $0 }
+            set: { self.wrappedValue = $0 },
         )
     }
 
     public func inverse() -> Binding<Bool> where Value == Bool {
         .init(
             get: { !self.wrappedValue },
-            set: { self.wrappedValue = !$0 }
+            set: { self.wrappedValue = !$0 },
         )
     }
 
@@ -239,7 +247,7 @@ extension Binding {
                 if !$0 {
                     self.wrappedValue = nil
                 }
-            }
+            },
         )
     }
 }
@@ -313,7 +321,11 @@ public struct OverflowView<Content: View>: View {
             VStack(spacing: self.spacing) {
                 self.content()
             }
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { self.contentHeight = $0 }
+            .onGeometryChange(for: CGFloat.self) {
+                $0.size.height
+            } action: {
+                self.contentHeight = $0
+            }
         }
         .frame(maxHeight: min(self.maxHeight, self.contentHeight))
     }

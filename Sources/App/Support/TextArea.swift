@@ -15,18 +15,20 @@ struct TextArea: View {
     private var lineLimit: Int?
     private var lines: CGFloat { CGFloat(self.lineLimit ?? 3) }
     private var height: CGFloat {
-#if canImport(UIKit)
+        #if canImport(UIKit)
         UIFont.preferredFont(forTextStyle: .body).lineHeight * (self.lines + 0.3 * self.lines) + 16
-#elseif canImport(AppKit)
+        #elseif canImport(AppKit)
         NSLayoutManager().defaultLineHeight(for: .preferredFont(forTextStyle: .body)) * (self.lines + 0.3 * self.lines) + 16
-#endif
+        #endif
     }
 
     var body: some View {
-        TextEditor(text: Binding(
-            get: { self.text.nonEmpty ?? (self.isFocused ? "" : self.prompt) },
-            set: { self.text = $0 }
-        ))
+        TextEditor(
+            text: Binding(
+                get: { self.text.nonEmpty ?? (self.isFocused ? "" : self.prompt) },
+                set: { self.text = $0 },
+            ),
+        )
         .textEditorStyle(.plain)
         .if(self.text.isEmpty && !self.isFocused) { $0.font(.spectre.caption1) }
         .focused(self.$isFocused)
@@ -46,10 +48,11 @@ struct TextField: View {
 
     var body: some View {
         SwiftUI.TextField(
-            "", text: self.$text, prompt:
+            "", text: self.$text,
+            prompt:
             Text(self.prompt)
                 .foregroundStyle(Color.spectre.alternative)
-                .font(.spectre.caption1)
+                .font(.spectre.caption1),
         )
         .foregroundStyle(Color.spectre.body)
         .padding(.spectre.padding)
@@ -65,10 +68,11 @@ struct SecureField: View {
 
     var body: some View {
         SwiftUI.SecureField(
-            "", text: self.$text, prompt:
+            "", text: self.$text,
+            prompt:
             Text(self.prompt)
                 .foregroundStyle(Color.spectre.alternative)
-                .font(.spectre.caption1)
+                .font(.spectre.caption1),
         )
         .textContentType(.password)
         .autocorrectionDisabled()

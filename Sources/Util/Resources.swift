@@ -7,7 +7,7 @@ import Foundation
 class Resources {
     static let shared = Resources()
 
-    var vocabulary:     [String]? {
+    var vocabulary: [String]? {
         self.cachedLinesList(named: "enwiki-top-30000")
     }
 

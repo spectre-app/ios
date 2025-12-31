@@ -4,8 +4,8 @@
 
 import AuthenticationServices
 import SwiftUI
-import WrappingHStack
 @_spi(Advanced) import SwiftUIIntrospect
+import WrappingHStack
 
 /// - Fonts and Colors
 
@@ -62,15 +62,17 @@ extension Color {
             public var opacity: Float = 1
 
             public func resolve(in environment: EnvironmentValues) -> Color.Resolved {
-                using({
-                    switch environment.colorScheme {
-                        case .dark:
-                            environment.theme[keyPath: self.dark]
+                using(
+                    {
+                        switch environment.colorScheme {
+                            case .dark:
+                                environment.theme[keyPath: self.dark]
 
-                        default:
-                            environment.theme[keyPath: self.light]
-                    }
-                }() ?? .init(red: .on, green: .off, blue: .off)) {
+                            default:
+                                environment.theme[keyPath: self.light]
+                        }
+                    }() ?? .init(red: .on, green: .off, blue: .off),
+                ) {
                     $0.opacity *= self.opacity
                 }
             }
@@ -85,70 +87,70 @@ extension Color {
                 flat: .init(hex: "41A0A0"),
                 dawn: .init(hex: "F1F9FC"),
                 pale: .init(hex: "FFFFFF"),
-                mood: "It's just a mental reflection."
+                mood: "It's just a mental reflection.",
             )
-            public static let dream   = Self(
+            public static let dream = Self(
                 rawValue: ".dream",
                 dark: .init(hex: "385359"),
                 dusk: .init(hex: "4C6C73"),
                 flat: .init(hex: "64858C"),
                 dawn: .init(hex: "AAB9BF"),
                 pale: .init(hex: "F2F2F2"),
-                mood: "This weather is for dreaming."
+                mood: "This weather is for dreaming.",
             )
-            public static let deep    = Self(
+            public static let deep = Self(
                 rawValue: ".deep",
                 dark: .init(hex: "1A2A40"),
                 dusk: .init(hex: "3F4859"),
                 flat: .init(hex: "877B8C"),
                 dawn: .init(hex: "B6A8BF"),
                 pale: .init(hex: "BFCDD9"),
-                mood: "I am my past and I am beautiful."
+                mood: "I am my past and I am beautiful.",
             )
-            public static let sand    = Self(
+            public static let sand = Self(
                 rawValue: ".sand",
                 dark: .init(hex: "0D0D0D"),
                 dusk: .init(hex: "736656"),
                 flat: .init(hex: "A69880"),
                 dawn: .init(hex: "D9CDBF"),
                 pale: .init(hex: "F2EEEB"),
-                mood: "Sandstone cabin by the beech."
+                mood: "Sandstone cabin by the beech.",
             )
-            public static let lush    = Self(
+            public static let lush = Self(
                 rawValue: ".lush",
                 dark: .init(hex: "141F26"),
                 dusk: .init(hex: "213A40"),
                 flat: .init(hex: "4C6C73"),
                 dawn: .init(hex: "5D878C"),
                 pale: .init(hex: "F0F1F2"),
-                mood: "A clean and modest kind of lush."
+                mood: "A clean and modest kind of lush.",
             )
-            public static let oak     = Self(
+            public static let oak = Self(
                 rawValue: ".oak",
                 dark: .init(hex: "0D0D0D"),
                 dusk: .init(hex: "262523"),
                 flat: .init(hex: "595958"),
                 dawn: .init(hex: "A68877"),
                 pale: .init(hex: "D9C9BA"),
-                mood: "The cabin below deck on my yacht."
+                mood: "The cabin below deck on my yacht.",
             )
-            public static let spring  = Self(
+            public static let spring = Self(
                 rawValue: ".spring",
                 dark: .init(hex: "0D0D0D"),
                 dusk: .init(hex: "2E5955"),
                 flat: .init(hex: "618C8C"),
                 dawn: .init(hex: "99BFBF"),
                 pale: .init(hex: "F2F2F2"),
-                mood: "Bright morning fog in spring-time."
+                mood: "Bright morning fog in spring-time.",
             )
-            public static let fuzzy   = Self(
+            public static let fuzzy = Self(
                 rawValue: ".fuzzy",
                 dark: .init(hex: "000F08"),
                 dusk: .init(hex: "004A4F"),
                 flat: .init(hex: "3E8989"),
                 dawn: .init(hex: "9AD5CA"),
                 pale: .init(hex: "CCE3DE"),
-                mood: "Soft and just a touch fuzzy."
+                mood: "Soft and just a touch fuzzy.",
             )
             public static let premium = Self(
                 rawValue: ".premium",
@@ -157,25 +159,25 @@ extension Color {
                 flat: .init(hex: "593825"),
                 dawn: .init(hex: "BFB7A8"),
                 pale: .init(hex: "F2D5BB"),
-                mood: "The kind of wealthy you don't advertise."
+                mood: "The kind of wealthy you don't advertise.",
             )
-            public static let pale    = Self(
+            public static let pale = Self(
                 rawValue: ".pale",
                 dark: .init(hex: "09090D"),
                 dusk: .init(hex: "1F1E26"),
                 flat: .init(hex: "3E5159"),
                 dawn: .init(hex: "5E848C"),
                 pale: .init(hex: "B0CDD9"),
-                mood: "Weathered stone foundation standing tall."
+                mood: "Weathered stone foundation standing tall.",
             )
-            public static let aged    = Self(
+            public static let aged = Self(
                 rawValue: ".aged",
                 dark: .init(hex: "07090D"),
                 dusk: .init(hex: "1E2626"),
                 flat: .init(hex: "6C7365"),
                 dawn: .init(hex: "A3A68D"),
                 pale: .init(hex: "BBBF9F"),
-                mood: "Whiff of a Victorian manuscript."
+                mood: "Whiff of a Victorian manuscript.",
             )
 
             public let rawValue: String
@@ -197,12 +199,13 @@ extension Color {
 public struct ControlShape: Shape {
     public func path(in rect: CGRect) -> Path {
         Path {
-            $0.addRect(CGRect(
-                x: min(rect.minX, rect.midX - .spectre.control / 2),
-                y: min(rect.minY, rect.midY - .spectre.control / 2),
-                width: max(rect.width, .spectre.control),
-                height: max(rect.height, .spectre.control)
-            ))
+            $0.addRect(
+                CGRect(
+                    x: min(rect.minX, rect.midX - .spectre.control / 2),
+                    y: min(rect.minY, rect.midY - .spectre.control / 2),
+                    width: max(rect.width, .spectre.control),
+                    height: max(rect.height, .spectre.control),
+                ))
         }
     }
 }
@@ -217,22 +220,25 @@ extension Color.Spectre.Theme: RawRepresentable, Identifiable {
 }
 
 extension Gradient {
-    public static func stripes(count: Int = 2, tint: Color = .spectre.tint,
-                               opacity1: CGFloat = .long, opacity2: CGFloat = .short)
+    public static func stripes(
+        count: Int = 2, tint: Color = .spectre.tint,
+        opacity1: CGFloat = .long, opacity2: CGFloat = .short,
+    )
         -> Self {
         self.stripes(count: count, color1: tint.opacity(opacity1), color2: tint.opacity(opacity2))
     }
 
     public static func stripes(count: Int = 2, color1: Color, color2: Color)
         -> Self {
-        Gradient(stops: stride(from: .zero, to: count, by: 2).flatMap { (step: Int) in
-            [
-                Gradient.Stop(color: color1, location: CGFloat(step) / CGFloat(count)),
-                Gradient.Stop(color: color2, location: CGFloat(step) / CGFloat(count)),
-                Gradient.Stop(color: color2, location: CGFloat(step + 1) / CGFloat(count)),
-                Gradient.Stop(color: color1, location: CGFloat(step + 1) / CGFloat(count)),
-            ]
-        })
+        Gradient(
+            stops: stride(from: .zero, to: count, by: 2).flatMap { (step: Int) in
+                [
+                    Gradient.Stop(color: color1, location: CGFloat(step) / CGFloat(count)),
+                    Gradient.Stop(color: color2, location: CGFloat(step) / CGFloat(count)),
+                    Gradient.Stop(color: color2, location: CGFloat(step + 1) / CGFloat(count)),
+                    Gradient.Stop(color: color1, location: CGFloat(step + 1) / CGFloat(count)),
+                ]
+            })
     }
 }
 
@@ -240,7 +246,7 @@ extension LinearGradient {
     public static func angled(gradient: Gradient = .stripes(), angle: Angle = .degrees(20)) -> Self {
         Self(
             gradient: gradient, startPoint: .zero,
-            endPoint: .init(x: cos(CGFloat(angle.radians)), y: sin(CGFloat(angle.radians)))
+            endPoint: .init(x: cos(CGFloat(angle.radians)), y: sin(CGFloat(angle.radians))),
         )
     }
 
@@ -263,10 +269,10 @@ public struct GradientView: View {
 
     @State
     private var offset: CGPoint = .zero
-#if canImport(UIKit)
+    #if canImport(UIKit)
     @State
     private var view: UIView?
-#endif
+    #endif
 
     public var body: some View {
         let radius = self.width * 2, radians = CGFloat(self.angle.radians)
@@ -275,10 +281,11 @@ public struct GradientView: View {
             $0.fill(
                 Path(CGRect(origin: .zero, size: $1)),
                 with: .linearGradient(
-                    self.gradient, startPoint: self.offset, endPoint: .init(
-                        x: radius * cos(radians), y: radius * sin(radians)
-                    ) + self.offset, options: .repeat
-                )
+                    self.gradient, startPoint: self.offset,
+                    endPoint: .init(
+                        x: radius * cos(radians), y: radius * sin(radians),
+                    ) + self.offset, options: .repeat,
+                ),
             )
         }
         .modify {
@@ -289,7 +296,9 @@ public struct GradientView: View {
                     self.view = view
                 }
             }
-            .onGeometryChange(for: CGPoint.self) { $0.frame(in: .global).origin } action: {
+            .onGeometryChange(for: CGPoint.self) {
+                $0.frame(in: .global).origin
+            } action: {
                 var scrollOffset = CGPoint.zero, view: UIView? = self.view
                 while let superView = view?.superview {
                     if let scrollView = superView as? UIScrollView {
@@ -433,7 +442,7 @@ extension CoordinateSpaceProtocol where Self == NamedCoordinateSpace {
 }
 
 struct SpectreStyle: ViewModifier {
-    public var background: AnyShapeStyle
+    var background: AnyShapeStyle
 
     @Environment(\.spectre)
     private var spectre: SpectreModel
@@ -533,47 +542,56 @@ public struct SpectreButtonStyle: PrimitiveButtonStyle {
         }
         .padding(.spectre.padding)
         .font(.spectre.callout)
-        .animation(.default) { $0
-            .background {
-                self.isEnabled ? Color.spectre.placeholder : .spectre.mute
-            }
-            .cornerRadius(.spectre.spacer)
-            .overlay {
-                RoundedRectangle(cornerRadius: .spectre.spacer)
-                    .strokeBorder(Color.spectre.body)
-                    .opacity(self.isPressed || self.isPressing ? .on : .off)
-                    .paddingEffect(self.isPressed ? -.spectre.padding / 2 : .zero)
-            }
+        .animation(.default) {
+            $0
+                .background {
+                    self.isEnabled ? Color.spectre.placeholder : .spectre.mute
+                }
+                .cornerRadius(.spectre.spacer)
+                .overlay {
+                    RoundedRectangle(cornerRadius: .spectre.spacer)
+                        .strokeBorder(Color.spectre.body)
+                        .opacity(self.isPressed || self.isPressing ? .on : .off)
+                        .paddingEffect(self.isPressed ? -.spectre.padding / 2 : .zero)
+                }
         }
-        .animation(.default.delay(self.isPressing ? .zero : .short)) { $0
-            .paddingEffect(self.isPressing ? -.spectre.padding / 2 : .zero)
+        .animation(.default.delay(self.isPressing ? .zero : .short)) {
+            $0
+                .paddingEffect(self.isPressing ? -.spectre.padding / 2 : .zero)
         }
-        ._onButtonGesture(pressing: {
-            self.isPressing = $0
-        }, perform: {
-            self.isPressing = false
-            self.isPressed = true
-            configuration.trigger()
-            Task {
-                try? await Task.sleep(for: .seconds(.short))
-                self.isPressed = false
-            }
-        })
-//        .strikethrough(!self.isEnabled)
+        ._onButtonGesture(
+            pressing: {
+                self.isPressing = $0
+            },
+            perform: {
+                self.isPressing = false
+                self.isPressed = true
+                configuration.trigger()
+                Task {
+                    try? await Task.sleep(for: .seconds(.short))
+                    self.isPressed = false
+                }
+            },
+        )
+        //        .strikethrough(!self.isEnabled)
         .opacity(self.isEnabled ? .on : .short)
         .saturation(self.isEnabled ? .on : .off)
     }
 }
 
 extension PrimitiveButtonStyle where Self == SpectreBoxButtonStyle {
-    public static func spectreBox(alignment: Alignment = .topTrailing, systemImage: String?,
-                                  @ViewBuilder with background: @escaping () -> some View = { EmptyView() })
+    public static func spectreBox(
+        alignment: Alignment = .topTrailing, systemImage: String?,
+        @ViewBuilder with background: @escaping () -> some View = { EmptyView() },
+    )
         -> Self {
         self.spectreBox(alignment: alignment, image: systemImage.flatMap(Image.init(systemName:)))
     }
 
-    public static func spectreBox(alignment: Alignment = .topTrailing, image: Image?,
-                                  @ViewBuilder with background: @escaping () -> some View = { EmptyView() })
+    public static func spectreBox(
+        alignment: Alignment = .topTrailing, image: Image?,
+        @ViewBuilder with background: @escaping () -> some View = { EmptyView() },
+    )
         -> Self {
         self.spectreBox(alignment: alignment) {
             ZStack(alignment: alignment) {
@@ -589,8 +607,10 @@ extension PrimitiveButtonStyle where Self == SpectreBoxButtonStyle {
         }
     }
 
-    public static func spectreBox(alignment: Alignment = .center,
-                                  @ViewBuilder with background: @escaping () -> some View = { EmptyView() })
+    public static func spectreBox(
+        alignment: Alignment = .center,
+        @ViewBuilder with background: @escaping () -> some View = { EmptyView() },
+    )
         -> Self {
         Self(alignment: alignment, background: { AnyView(background()) })
     }
@@ -616,37 +636,43 @@ public struct SpectreBoxButtonStyle: PrimitiveButtonStyle {
         .font(.spectre.callout)
         .padding(.spectre.margin)
         .frame(maxWidth: .infinity, alignment: self.multilineTextAlignment.horizontal.vertically())
-        .animation(.default) { $0
-            .background(alignment: self.alignment, content: self.background)
-            .background(self.isEnabled ? Color.spectre.placeholder : .spectre.mute)
-            .clipShape(ContainerRelativeShape())
-            .overlay {
-                ContainerRelativeShape()
-                    .strokeBorder(Color.spectre.body)
-                    .opacity(self.isPressed || self.isPressing ? .on : .off)
-                    .paddingEffect(self.isPressed ? -.spectre.padding / 2 : .zero)
-            }
-            .containerShape(UnevenRoundedRectangle(
-                topLeadingRadius: .spectre.margin, bottomLeadingRadius: .spectre.margin,
-                bottomTrailingRadius: .zero, topTrailingRadius: .zero, style: .continuous
-            ))
+        .animation(.default) {
+            $0
+                .background(alignment: self.alignment, content: self.background)
+                .background(self.isEnabled ? Color.spectre.placeholder : .spectre.mute)
+                .clipShape(ContainerRelativeShape())
+                .overlay {
+                    ContainerRelativeShape()
+                        .strokeBorder(Color.spectre.body)
+                        .opacity(self.isPressed || self.isPressing ? .on : .off)
+                        .paddingEffect(self.isPressed ? -.spectre.padding / 2 : .zero)
+                }
+                .containerShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: .spectre.margin, bottomLeadingRadius: .spectre.margin,
+                        bottomTrailingRadius: .zero, topTrailingRadius: .zero, style: .continuous,
+                    ))
         }
-        .animation(.default.delay(self.isPressing ? .zero : .short)) { $0
-            .paddingEffect(self.isPressing ? -.spectre.padding / 2 : .zero)
+        .animation(.default.delay(self.isPressing ? .zero : .short)) {
+            $0
+                .paddingEffect(self.isPressing ? -.spectre.padding / 2 : .zero)
         }
-        ._onButtonGesture(pressing: {
-            self.isPressing = $0
-        }, perform: {
-            self.isPressing = false
-            self.isPressed = true
-            configuration.trigger()
-            Task {
-                try? await Task.sleep(for: .seconds(.short))
-                self.isPressed = false
-            }
-        })
+        ._onButtonGesture(
+            pressing: {
+                self.isPressing = $0
+            },
+            perform: {
+                self.isPressing = false
+                self.isPressed = true
+                configuration.trigger()
+                Task {
+                    try? await Task.sleep(for: .seconds(.short))
+                    self.isPressed = false
+                }
+            },
+        )
         .padding(.trailing, -.spectre.margin)
-//        .strikethrough(!self.isEnabled)
+        //        .strikethrough(!self.isEnabled)
         .opacity(self.isEnabled ? .on : .short)
         .saturation(self.isEnabled ? .on : .off)
     }
@@ -672,24 +698,26 @@ public struct SpectreToggleStyle: ToggleStyle {
         } label: {
             configuration.label
         }
-        .buttonStyle(.spectre {
-            Image(
-                systemName: !self.isEnabled
-                    ? "circle.slash"
-                    : configuration.isMixed
-                        ? "circle.fill"
-                        : configuration.isOn
-                            ? "checkmark"
-                            : "xmark"
-            )
-            .transition(.symbolEffect)
-            .animation(.default) { $0
-                .font(.spectre.caption1)
-                .padding(.spectre.padding / 2)
-                .background { Circle().fill(configuration.isOn ? Color.spectre.selection : Color.spectre.mute) }
-                .overlay { Circle().stroke(Color.spectre.selection) }
-            }
-        })
+        .buttonStyle(
+            .spectre {
+                Image(
+                    systemName: !self.isEnabled
+                        ? "circle.slash"
+                        : configuration.isMixed
+                            ? "circle.fill"
+                            : configuration.isOn
+                                ? "checkmark"
+                                : "xmark",
+                )
+                .transition(.symbolEffect)
+                .animation(.default) {
+                    $0
+                        .font(.spectre.caption1)
+                        .padding(.spectre.padding / 2)
+                        .background { Circle().fill(configuration.isOn ? Color.spectre.selection : Color.spectre.mute) }
+                        .overlay { Circle().stroke(Color.spectre.selection) }
+                }
+            })
     }
 }
 
@@ -716,14 +744,15 @@ public struct SpectreBoxToggleStyle: ToggleStyle {
                             ? "circle.fill"
                             : configuration.isOn
                                 ? "checkmark"
-                                : "xmark"
+                                : "xmark",
                 )
                 .transition(.symbolEffect)
-                .animation(.default) { $0
-                    .font(.spectre.caption1)
-                    .padding(.spectre.padding / 2)
-                    .background { Circle().fill(configuration.isOn ? Color.spectre.selection : Color.spectre.mute) }
-                    .overlay { Circle().stroke(Color.spectre.selection) }
+                .animation(.default) {
+                    $0
+                        .font(.spectre.caption1)
+                        .padding(.spectre.padding / 2)
+                        .background { Circle().fill(configuration.isOn ? Color.spectre.selection : Color.spectre.mute) }
+                        .overlay { Circle().stroke(Color.spectre.selection) }
                 }
             }
         }
@@ -822,10 +851,12 @@ public struct SpectreGroupBoxStyle: GroupBoxStyle {
         .background(Color.spectre.shade)
         .clipShape(ContainerRelativeShape())
         .background(ContainerRelativeShape().stroke(Color.spectre.placeholder))
-        .containerShape(UnevenRoundedRectangle(
-            topLeadingRadius: .spectre.margin, bottomLeadingRadius: .spectre.margin,
-            bottomTrailingRadius: .zero, topTrailingRadius: .zero, style: .continuous
-        ))
+        .containerShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: .spectre.margin, bottomLeadingRadius: .spectre.margin,
+                bottomTrailingRadius: .zero, topTrailingRadius: .zero, style: .continuous,
+            ),
+        )
         .padding(.trailing, -.spectre.margin - 1)
     }
 }
@@ -896,7 +927,7 @@ public struct SpectreLabeledContentStyleCaptioned: LabeledContentStyle {
         VStack(alignment: self.multilineTextAlignment.horizontal) {
             HStack { configuration.content }
                 .font(.spectre.callout)
-                .layoutPriority(1) // Prevents content compression when label exceeds 1 line.
+                .layoutPriority(1)  // Prevents content compression when label exceeds 1 line.
 
             HStack { configuration.label }
                 .font(.spectre.caption1)
@@ -940,10 +971,11 @@ public struct SpectreControlGroupStyleFlow: ControlGroupStyle {
                 .background(Color.spectre.shade)
                 .clipShape(ContainerRelativeShape())
                 .background(ContainerRelativeShape().stroke(Color.spectre.placeholder))
-                .containerShape(UnevenRoundedRectangle(
-                    topLeadingRadius: .spectre.margin, bottomLeadingRadius: .spectre.margin,
-                    bottomTrailingRadius: .zero, topTrailingRadius: .zero, style: .continuous
-                ))
+                .containerShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: .spectre.margin, bottomLeadingRadius: .spectre.margin,
+                        bottomTrailingRadius: .zero, topTrailingRadius: .zero, style: .continuous,
+                    ))
         }
         .padding(.trailing, -.spectre.margin - 1)
     }
@@ -993,16 +1025,16 @@ public struct SpectreFormStyle: FormStyle {
 
 extension Font {
     fileprivate static func custom(_ name: String, relativeTo textStyle: Font.TextStyle) -> Font {
-#if canImport(UIKit)
+        #if canImport(UIKit)
         self.custom(name, size: UIFont.preferredFont(forTextStyle: textStyle.uiTextStyle).pointSize, relativeTo: textStyle)
-#elseif canImport(AppKit)
+        #elseif canImport(AppKit)
         self.custom(name, size: NSFont.preferredFont(forTextStyle: textStyle.nsTextStyle).pointSize, relativeTo: textStyle)
-#endif
+        #endif
     }
 }
 
 extension Font.TextStyle {
-#if canImport(UIKit)
+    #if canImport(UIKit)
     fileprivate var uiTextStyle: UIFont.TextStyle {
         switch self {
             case .largeTitle:
@@ -1031,7 +1063,8 @@ extension Font.TextStyle {
                 return .body
         }
     }
-#elseif canImport(AppKit)
+
+    #elseif canImport(AppKit)
     fileprivate var nsTextStyle: NSFont.TextStyle {
         switch self {
             case .largeTitle:
@@ -1060,7 +1093,7 @@ extension Font.TextStyle {
                 return .body
         }
     }
-#endif
+    #endif
 }
 
 /// - Preview
@@ -1082,9 +1115,10 @@ extension Font.TextStyle {
             Button("Box Button") {}
                 .buttonStyle(.spectreBox())
             Button("Box Background") {}
-                .buttonStyle(.spectreBox(alignment: .leading, image: Image("avatar-0")) {
-                    Color.spectre.selection
-                })
+                .buttonStyle(
+                    .spectreBox(alignment: .leading, image: Image("avatar-0")) {
+                        Color.spectre.selection
+                    })
             Button("Box Disabled") {}
                 .buttonStyle(.spectreBox())
                 .disabled(true)
@@ -1105,7 +1139,11 @@ extension Font.TextStyle {
             GroupBox("Group Box with Image") {
                 Text("Body Text")
 
-                Label { Text("Label Title") } icon: { Text("Label  Icon") }
+                Label {
+                    Text("Label Title")
+                } icon: {
+                    Text("Label  Icon")
+                }
                 Label("Image Label", systemImage: "photo.circle")
 
                 Picker("Picker", selection: .constant("Foo")) {

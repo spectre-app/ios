@@ -63,7 +63,7 @@ struct SitesScreen: View {
                         if proposedSites.count == 1, let proposedSite = proposedSites.first {
                             SiteBox(
                                 site: proposedSite, editingSite: self.$editingSite,
-                                isPreferred: true, isActivated: autofill.credentialRequest != nil
+                                isPreferred: true, isActivated: autofill.credentialRequest != nil,
                             )
                         }
                         else {
@@ -95,43 +95,43 @@ struct SitesScreen: View {
             // Navigation
         .popoverForm(item: self.$editingSite) { editingSite in
                 SiteEditScreen(site: editingSite)
-//                .presentationBackground(content: {
-//                    Image(uiImage: editingSite.preview.data.image ?? UIImage())
-//                        .resizable().aspectRatio(contentMode: .fit)
-//                        .blur(radius: (editingSite.preview.data.image?.size.width) ?? .zero > 200 ? .off : .on)
-//                        .mask { GradientView() }
-//                        .overlay {
-//                            GradientView(gradient: .stripes(
-//                                tint: Color(uiColor: editingSite.preview.color),
-//                                opacity1: .short, opacity2: .long
-//                            ))
-//                        }
-//                        .mask(Rectangle().fill(Gradient(colors: [
-//                            Color.white.opacity(.short),
-//                            Color.white.opacity(.off),
-//                        ])))
-//                        .frame(maxHeight: .infinity, alignment: .top)
-//                })
+                //                .presentationBackground(content: {
+                //                    Image(uiImage: editingSite.preview.data.image ?? UIImage())
+                //                        .resizable().aspectRatio(contentMode: .fit)
+                //                        .blur(radius: (editingSite.preview.data.image?.size.width) ?? .zero > 200 ? .off : .on)
+                //                        .mask { GradientView() }
+                //                        .overlay {
+                //                            GradientView(gradient: .stripes(
+                //                                tint: Color(uiColor: editingSite.preview.color),
+                //                                opacity1: .short, opacity2: .long
+                //                            ))
+                //                        }
+                //                        .mask(Rectangle().fill(Gradient(colors: [
+                //                            Color.white.opacity(.short),
+                //                            Color.white.opacity(.off),
+                //                        ])))
+                //                        .frame(maxHeight: .infinity, alignment: .top)
+                //                })
             }
             .popoverForm(isPresented: self.$isPreferencesShown) {
                 UserEditScreen(user: self.user)
-//                .presentationBackground(content: {
-//                    Image(uiImage: editingSite.preview.data.image ?? UIImage())
-//                        .resizable().aspectRatio(contentMode: .fit)
-//                        .blur(radius: (editingSite.preview.data.image?.size.width) ?? .zero > 200 ? .off : .on)
-//                        .mask { GradientView() }
-//                        .overlay {
-//                            GradientView(gradient: .stripes(
-//                                tint: Color(uiColor: editingSite.preview.color),
-//                                opacity1: .short, opacity2: .long
-//                            ))
-//                        }
-//                        .mask(Rectangle().fill(Gradient(colors: [
-//                            Color.white.opacity(.short),
-//                            Color.white.opacity(.off),
-//                        ])))
-//                        .frame(maxHeight: .infinity, alignment: .top)
-//                })
+                //                .presentationBackground(content: {
+                //                    Image(uiImage: editingSite.preview.data.image ?? UIImage())
+                //                        .resizable().aspectRatio(contentMode: .fit)
+                //                        .blur(radius: (editingSite.preview.data.image?.size.width) ?? .zero > 200 ? .off : .on)
+                //                        .mask { GradientView() }
+                //                        .overlay {
+                //                            GradientView(gradient: .stripes(
+                //                                tint: Color(uiColor: editingSite.preview.color),
+                //                                opacity1: .short, opacity2: .long
+                //                            ))
+                //                        }
+                //                        .mask(Rectangle().fill(Gradient(colors: [
+                //                            Color.white.opacity(.short),
+                //                            Color.white.opacity(.off),
+                //                        ])))
+                //                        .frame(maxHeight: .infinity, alignment: .top)
+                //                })
             }
         #endif
 
@@ -186,12 +186,14 @@ struct SitesScreen: View {
                         self.loginView
                     }
                     .disabled(AppFeature.autofill.isEnabled)
-                    .buttonStyle(.spectreBox {
-                        Color.spectre.selection
-                            .blur(radius: .spectre.margin)
-                            .background(ContainerRelativeShape().stroke(Color.spectre.tint))
-                            .opacity(self.isPreferred ? .on : .off)
-                    })
+                    .buttonStyle(
+                        .spectreBox {
+                            Color.spectre.selection
+                                .blur(radius: .spectre.margin)
+                                .background(ContainerRelativeShape().stroke(Color.spectre.tint))
+                                .opacity(self.isPreferred ? .on : .off)
+                        },
+                    )
                     .onChange(of: self.isActivated, initial: true) { _, isActivated in
                         if isActivated {
                             Task { await self.perform(autofill: autofill) }
@@ -207,12 +209,13 @@ struct SitesScreen: View {
                         Spacer()
                         self.editView
                     }
-                    .groupBoxStyle(.spectre {
-                        Color.spectre.selection
-                            .blur(radius: .spectre.margin)
-                            .background(ContainerRelativeShape().stroke(Color.spectre.tint))
-                            .opacity(self.isPreferred ? .on : .off)
-                    })
+                    .groupBoxStyle(
+                        .spectre {
+                            Color.spectre.selection
+                                .blur(radius: .spectre.margin)
+                                .background(ContainerRelativeShape().stroke(Color.spectre.tint))
+                                .opacity(self.isPreferred ? .on : .off)
+                        })
                 }
             }
             .shadow(color: .spectre.shadow, radius: .on)
@@ -226,7 +229,9 @@ struct SitesScreen: View {
         @ViewBuilder
         private var resultView: some View {
             if let result = self.site.result(keyPurpose: self.mode) {
-                AsyncView(onChange: result) { try await $0.task.value } finished: { resultText in
+                AsyncView(onChange: result) {
+                    try await $0.task.value
+                } finished: { resultText in
                     HStack(spacing: .zero) {
                         Text(resultText ?? "...")
                             .font(.spectre.password)
@@ -248,7 +253,8 @@ struct SitesScreen: View {
                             }
                         }
                     }
-                } failure: { _ in }
+                } failure: { _ in
+                }
             }
         }
 
@@ -278,12 +284,15 @@ struct SitesScreen: View {
         @ViewBuilder
         private var loginView: some View {
             if AppFeature.logins.isEnabled, let result = self.site.result(keyPurpose: .identification) {
-                AsyncView(onChange: result) { try await $0.task.value } finished: { resultText in
+                AsyncView(onChange: result) {
+                    try await $0.task.value
+                } finished: { resultText in
                     Text(resultText ?? "...")
                         .font(.spectre.callout)
                         .lineLimit(1)
                         .minimumScaleFactor(.short)
-                } failure: { _ in }
+                } failure: { _ in
+                }
             }
         }
 
@@ -324,31 +333,39 @@ struct SitesScreen: View {
 
 #if DEBUG
 #Preview {
-    SitesScreen(user: User(avatar: .avatar_3, userName: "Robert Lee Mitchell") { user in
-        user.sites.append(contentsOf: [
-            Site(user: user, siteName: "apple.com"),
-            Site(user: user, siteName: "modem"),
-            Site(user: user, siteName: "gog.com"),
-            using(Site(user: user, siteName: "twitter.com")) {
-                $0.questions += [
-                    Question(site: $0, keyword: "mother"),
-                    Question(site: $0, keyword: "film"),
-                    Question(site: $0, keyword: "teacher"),
-                ]
-            },
-            Site(user: user, siteName: "wesnoth.org"),
-        ])
+    SitesScreen(
+        user: User(avatar: .avatar_3, userName: "Robert Lee Mitchell") { user in
+            user.sites.append(contentsOf: [
+                Site(user: user, siteName: "apple.com"),
+                Site(user: user, siteName: "modem"),
+                Site(user: user, siteName: "gog.com"),
+                using(Site(user: user, siteName: "twitter.com")) {
+                    $0.questions += [
+                        Question(site: $0, keyword: "mother"),
+                        Question(site: $0, keyword: "film"),
+                        Question(site: $0, keyword: "teacher"),
+                    ]
+                },
+                Site(user: user, siteName: "wesnoth.org"),
+            ])
 
-        Task {
-            try? await user.login(using: SecretKeyFactory(
-                userName: user.userName, userSecret: "banana duckling"
-            ))
-        }
-    })
+            Task {
+                try? await user.login(
+                    using: SecretKeyFactory(
+                        userName: user.userName, userSecret: "banana duckling",
+                    ))
+            }
+        },
+    )
     .spectreStyle()
-    .environment(\.spectre, using(.shared) { $0.autofill = .init(
-        serviceIdentifiers: [.init(identifier: "spectre.app", type: .domain)]
-    ) })
+    .environment(
+        \.spectre,
+        using(.shared) {
+            $0.autofill = .init(
+                serviceIdentifiers: [.init(identifier: "spectre.app", type: .domain)],
+            )
+        },
+    )
     .task { AppConfig.shared.testingPremium = true }
 }
 #endif

@@ -24,7 +24,7 @@ public struct AsyncView: View {
 
     public init<Input: Hashable & Sendable, Output>(
         onChange input: Input, do task: @escaping (Input) async throws -> Output,
-        @ViewBuilder finished: @escaping (Result<Output, Error>?) -> some View
+        @ViewBuilder finished: @escaping (Result<Output, Error>?) -> some View,
     ) {
         self.input = input
         self.progressView = { AnyView(finished(nil)) }
@@ -34,7 +34,7 @@ public struct AsyncView: View {
     public init<Input: Hashable, Output>(
         onChange input: Input, do task: @escaping (Input) async throws -> Output,
         @ViewBuilder finished: @escaping (Output?) -> some View,
-        @ViewBuilder failure: @escaping (Error) -> some View
+        @ViewBuilder failure: @escaping (Error) -> some View,
     ) {
         self.input = input
         self.progressView = { AnyView(finished(nil)) }
@@ -50,7 +50,7 @@ public struct AsyncView: View {
 
     public init<Input: Hashable, Output>(
         onChange input: Input, do task: @escaping (Input) async -> Output,
-        @ViewBuilder finished: @escaping (Output?) -> some View
+        @ViewBuilder finished: @escaping (Output?) -> some View,
     ) {
         self.input = input
         self.progressView = { AnyView(finished(nil)) }
@@ -59,7 +59,7 @@ public struct AsyncView: View {
 
     public init<Output>(
         do task: @escaping () async throws -> Output,
-        @ViewBuilder finished: @escaping (Result<Output, Error>?) -> some View
+        @ViewBuilder finished: @escaping (Result<Output, Error>?) -> some View,
     ) {
         self.init(onChange: Int.zero, do: { _ in try await task() }, finished: finished)
     }
@@ -67,14 +67,14 @@ public struct AsyncView: View {
     public init<Output>(
         do task: @escaping () async throws -> Output,
         @ViewBuilder finished: @escaping (Output?) -> some View,
-        @ViewBuilder failure: @escaping (Error) -> some View
+        @ViewBuilder failure: @escaping (Error) -> some View,
     ) {
         self.init(onChange: Int.zero, do: { _ in try await task() }, finished: finished, failure: failure)
     }
 
     public init<Output>(
         do task: @escaping () async -> Output,
-        @ViewBuilder finished: @escaping (Output?) -> some View
+        @ViewBuilder finished: @escaping (Output?) -> some View,
     ) {
         self.init(onChange: Int.zero, do: { _ in await task() }, finished: finished)
     }

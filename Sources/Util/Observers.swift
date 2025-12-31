@@ -10,7 +10,7 @@ public protocol Observed {
 }
 
 public class Observers<O> {
-    private var observers = [WeakBox<AnyObject>]()
+    private var observers: [WeakBox<AnyObject>] = []
     public var registration: (O) -> Void
 
     public init(registration: @escaping (O) -> Void = { _ in }) {

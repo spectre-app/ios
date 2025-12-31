@@ -15,7 +15,7 @@ extension Sequence {
     }
 
     public func removingNil<NNElement>() -> [NNElement] where Element == NNElement? {
-        self.compactMap { $0 }
+        self.compactMap(\.self)
     }
 }
 
@@ -25,7 +25,7 @@ extension Array {
     }
 
     func reordered(first: ((Element) -> Bool)? = nil, last: ((Element) -> Bool)? = nil) -> [Element] {
-        var firstElements = [Element](), middleElements = [Element](), lastElements = [Element]()
+        var firstElements: [Element] = [], middleElements: [Element] = [], lastElements: [Element] = []
 
         for element in self {
             if first?(element) ?? false {
@@ -96,19 +96,19 @@ extension Decimal {
         // To speed convergence, using ln(z) = y + ln(A), A = z / e^y approximation for values larger than 1.5
         let approximateInput = Double(truncating: self as NSNumber)
         if approximateInput > 1.5 {
-            let y       = Int(ceil(Darwin.log(approximateInput)))
+            let y = Int(ceil(Darwin.log(approximateInput)))
             // Using integer because of more precise powers for integers
             let smaller = self / pow(Decimal.e, y)
             return Decimal(y) + smaller.ln()
         }
         if approximateInput < 0.4 {
-            let y       = Int(floor(Darwin.log(approximateInput)))
+            let y = Int(floor(Darwin.log(approximateInput)))
             // Using integer because of more precise powers for integers
             let smaller = self / pow(Decimal.e, y)
             return Decimal(y) + smaller.ln()
         }
 
-        let seriesConstant       = (self - 1) / (self + 1)
+        let seriesConstant = (self - 1) / (self + 1)
         var currentConstantValue = seriesConstant, final = seriesConstant
         for i in stride(from: 3, through: 93, by: 2) {
             currentConstantValue *= seriesConstant
@@ -199,11 +199,11 @@ extension MappedComparator {
 }
 
 extension FileManager {
-    public static let groupCaches    = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: productGroup)?
+    public static let groupCaches = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: productGroup)?
         .appendingPathComponent("Library/Caches")
     public static let groupDocuments = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: productGroup)?
         .appendingPathComponent("Documents")
-    public static let appDocuments   = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+    public static let appDocuments = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
 }
 
 extension Locale {
@@ -218,7 +218,7 @@ extension NSAttributedString {
     }
 
     func attributeLocations(_ attrName: NSAttributedString.Key, in range: NSRange? = nil, options: EnumerationOptions = []) -> [Int] {
-        var locations = [Int]()
+        var locations: [Int] = []
         self.enumerateAttribute(attrName, in: range ?? NSRange(location: .zero, length: self.length), options: options) { value, range, _ in
             if value != nil {
                 locations.append(range.location)
@@ -341,9 +341,9 @@ extension URLSession {
         configuration.httpCookieAcceptPolicy = .never
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
-            "User-Agent": "\(productName)/\(productVersion) " +
-                "(\(AppConfig.shared.model); CPU \(ProcessInfo.processInfo.operatingSystemVersionString)) " +
-                "Mozilla/5.0 AppleWebKit/605.1.15",
+            "User-Agent": "\(productName)/\(productVersion) "
+                + "(\(AppConfig.shared.model); CPU \(ProcessInfo.processInfo.operatingSystemVersionString)) "
+                + "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .responsiveData
@@ -357,9 +357,9 @@ extension URLSession {
         configuration.httpCookieAcceptPolicy = .never
         configuration.httpCookieStorage = nil
         configuration.httpAdditionalHeaders = [
-            "User-Agent": "\(productName)/\(productVersion) " +
-                "(\(AppConfig.shared.model); CPU \(ProcessInfo.processInfo.operatingSystemVersionString)) " +
-                "Mozilla/5.0 AppleWebKit/605.1.15",
+            "User-Agent": "\(productName)/\(productVersion) "
+                + "(\(AppConfig.shared.model); CPU \(ProcessInfo.processInfo.operatingSystemVersionString)) "
+                + "Mozilla/5.0 AppleWebKit/605.1.15",
         ]
         configuration.sharedContainerIdentifier = productGroup
         configuration.networkServiceType = .background

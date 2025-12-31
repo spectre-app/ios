@@ -62,6 +62,7 @@ public struct LazyBox<O> {
             self.clear()
         }
     }
+
     public var unset: (O) -> Void
 
     public init<OO>() where O == OO? {
@@ -117,13 +118,11 @@ public struct ChangesBox<V: Equatable> {
     }
 
     public mutating func hasChanged(_ value: V) -> Bool {
-        if self.value == value {
-            return false
-        }
-        else {
+        guard self.value == value else {
             self.value = value
             return true
         }
+        return false
     }
 }
 
@@ -409,7 +408,7 @@ public struct SingleLockBox<V: Sendable>: Sendable {
     }
 
     // - Private
-    private var value:   V
+    private var value: V
     private let lock = OSAllocatedUnfairLock()
 }
 

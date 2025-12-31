@@ -2,16 +2,16 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
-import OrderedCollections
 import Foundation
+import OrderedCollections
 
 @Observable
 class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, QuestionObserver {
-    public let observers = Observers<SiteObserver>()
+    let observers = Observers<SiteObserver>()
 
-    public weak var user:     User?
-    public let siteName: String
-    public var algorithm: SpectreAlgorithm {
+    weak var user: User?
+    let siteName: String
+    var algorithm: SpectreAlgorithm {
         didSet {
             if oldValue != self.algorithm {
                 self.dirty = true
@@ -20,7 +20,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var counter: SpectreCounter = .default {
+    var counter: SpectreCounter = .default {
         didSet {
             if oldValue != self.counter {
                 self.dirty = true
@@ -29,7 +29,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var resultType: SpectreResultType {
+    var resultType: SpectreResultType {
         didSet {
             if oldValue != self.resultType {
                 self.dirty = true
@@ -38,7 +38,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var loginType: SpectreResultType {
+    var loginType: SpectreResultType {
         didSet {
             if oldValue != self.loginType {
                 self.dirty = true
@@ -47,7 +47,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var resultState: String? {
+    var resultState: String? {
         didSet {
             if oldValue != self.resultState {
                 self.dirty = true
@@ -56,7 +56,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var loginState: String? {
+    var loginState: String? {
         didSet {
             if oldValue != self.loginState {
                 self.dirty = true
@@ -65,27 +65,27 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var url: String {
+    var url: String {
         didSet {
             if oldValue != self.url {
-//                self.preview.url = self.url
+                //                self.preview.url = self.url
                 self.dirty = true
                 self.observers.notify { $0.didChange(site: self, at: \Site.url) }
             }
         }
     }
 
-    public var domains: OrderedSet<String> {
+    var domains: OrderedSet<String> {
         didSet {
             if oldValue != self.domains {
-//                self.preview.domains = self.domains
+                //                self.preview.domains = self.domains
                 self.dirty = true
                 self.observers.notify { $0.didChange(site: self, at: \Site.domains) }
             }
         }
     }
 
-    public var uses: UInt32 = .zero {
+    var uses: UInt32 = .zero {
         didSet {
             if oldValue != self.uses {
                 self.dirty = true
@@ -94,7 +94,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-    public var lastUsed: Date {
+    var lastUsed: Date {
         didSet {
             if oldValue != self.lastUsed {
                 self.dirty = true
@@ -103,15 +103,15 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
         }
     }
 
-//    @ObservationIgnored
-//    public lazy var preview: SitePreview = SitePreview.for( self.siteName, withURL: self.url ) {
-//        didSet {
-//            if oldValue != self.preview {
-//                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
-//            }
-//        }
-//    }
-    public var questions = [Question]() {
+    //    @ObservationIgnored
+    //    public lazy var preview: SitePreview = SitePreview.for( self.siteName, withURL: self.url ) {
+    //        didSet {
+    //            if oldValue != self.preview {
+    //                self.observers.notify { $0.didChange( site: self, at: \Site.preview ) }
+    //            }
+    //        }
+    //    }
+    var questions: [Question] = [] {
         didSet {
             if oldValue != self.questions {
                 self.dirty = true
@@ -149,11 +149,13 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
 
     // MARK: - Life
 
-    init(user: User?, siteName: String, algorithm: SpectreAlgorithm? = nil, counter: SpectreCounter? = nil,
-         resultType: SpectreResultType? = nil, resultState: String? = nil,
-         loginType: SpectreResultType? = nil, loginState: String? = nil,
-         url: String? = nil, domains: OrderedSet<String> = [], uses: UInt32 = .zero, lastUsed: Date? = nil, questions: [Question] = [],
-         initialize: (Site) -> Void = { _ in }) {
+    init(
+        user: User?, siteName: String, algorithm: SpectreAlgorithm? = nil, counter: SpectreCounter? = nil,
+        resultType: SpectreResultType? = nil, resultState: String? = nil,
+        loginType: SpectreResultType? = nil, loginState: String? = nil,
+        url: String? = nil, domains: OrderedSet<String> = [], uses: UInt32 = .zero, lastUsed: Date? = nil, questions: [Question] = [],
+        initialize: (Site) -> Void = { _ in },
+    ) {
         self.user = user
         self.siteName = siteName
         self.algorithm = algorithm ?? user?.algorithm ?? .current
@@ -177,19 +179,19 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
 
     // MARK: - Interface
 
-    public func use() {
+    func use() {
         self.lastUsed = Date()
         self.uses += 1
         self.user?.use()
     }
 
-    public func copy(to user: User? = nil) -> Site {
+    func copy(to user: User? = nil) -> Site {
         // TODO: do we need to re-encode state?
         let site = Site(
             user: user ?? self.user, siteName: self.siteName, algorithm: self.algorithm, counter: self.counter,
             resultType: self.resultType, resultState: self.resultState,
             loginType: self.loginType, loginState: self.loginState,
-            url: self.url, domains: self.domains, uses: self.uses, lastUsed: self.lastUsed
+            url: self.url, domains: self.domains, uses: self.uses, lastUsed: self.lastUsed,
         )
         site.questions = self.questions.map { $0.copy(to: site) }
         return site
@@ -215,10 +217,12 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
 
     // MARK: - Operand
 
-    public func result(for name: String? = nil, counter: SpectreCounter? = nil,
-                       keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                       resultType: SpectreResultType? = nil, resultParam: String? = nil,
-                       algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    func result(
+        for name: String? = nil, counter: SpectreCounter? = nil,
+        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+        resultType: SpectreResultType? = nil, resultParam: String? = nil,
+        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil,
+    )
         -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
@@ -226,7 +230,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
                     for: name ?? self.siteName, counter: counter ?? self.counter,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? self.resultType, resultParam: resultParam ?? self.resultState,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .identification:
@@ -234,7 +238,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
                     for: name ?? self.siteName, counter: counter,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? self.loginType, resultParam: resultParam ?? self.loginState,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .recovery:
@@ -242,25 +246,28 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
                     for: name ?? self.siteName, counter: counter,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? .templatePhrase, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             @unknown default:
                 return SpectreOperation(
                     siteName: name ?? self.siteName, counter: counter ?? .initial, type: resultType ?? .none,
                     param: resultParam, purpose: keyPurpose, context: keyContext,
-                    identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task:
+                    identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
+                    task:
                     Task.detached {
                         throw AppError.internal(reason: "Unsupported key purpose", details: keyPurpose)
-                    }
+                    },
                 )
         }
     }
 
-    public func state(for name: String? = nil, counter: SpectreCounter? = nil,
-                      keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
-                      resultType: SpectreResultType? = nil, resultParam: String,
-                      algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil)
+    func state(
+        for name: String? = nil, counter: SpectreCounter? = nil,
+        keyPurpose: SpectreKeyPurpose = .authentication, keyContext: String? = nil,
+        resultType: SpectreResultType? = nil, resultParam: String,
+        algorithm: SpectreAlgorithm? = nil, operand: SpectreOperand? = nil,
+    )
         -> SpectreOperation? {
         switch keyPurpose {
             case .authentication:
@@ -268,7 +275,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
                     for: name ?? self.siteName, counter: counter ?? self.counter,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? self.resultType, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .identification:
@@ -276,7 +283,7 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
                     for: name ?? self.siteName, counter: counter,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? self.loginType, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             case .recovery:
@@ -284,42 +291,35 @@ class Site: SpectreOperand, CustomStringConvertible, Observed, SiteObserver, Que
                     for: name ?? self.siteName, counter: counter,
                     keyPurpose: keyPurpose, keyContext: keyContext,
                     resultType: resultType ?? .templatePhrase, resultParam: resultParam,
-                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self
+                    algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
                 )
 
             @unknown default:
                 return SpectreOperation(
                     siteName: name ?? self.siteName, counter: counter ?? .initial, type: resultType ?? .none,
                     param: resultParam, purpose: keyPurpose, context: keyContext,
-                    identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self, task:
+                    identity: self.user?.userKeyID, algorithm: algorithm ?? self.algorithm, operand: operand ?? self,
+                    task:
                     Task.detached {
                         throw AppError.internal(reason: "Unsupported key purpose", details: keyPurpose)
-                    }
+                    },
                 )
         }
     }
 }
 
 extension Site: Identifiable {
-    public var id: String { self.siteName }
+    var id: String { self.siteName }
 }
 
 extension Site: Hashable {
-    public static func == (lhs: Site, rhs: Site) -> Bool {
-        lhs.siteName == rhs.siteName &&
-            lhs.algorithm == rhs.algorithm &&
-            lhs.counter == rhs.counter &&
-            lhs.resultType == rhs.resultType &&
-            lhs.loginType == rhs.loginType &&
-            lhs.resultState == rhs.resultState &&
-            lhs.loginState == rhs.loginState &&
-            lhs.url == rhs.url &&
-            lhs.uses == rhs.uses &&
-            lhs.lastUsed == rhs.lastUsed &&
-            lhs.questions == rhs.questions
+    static func == (lhs: Site, rhs: Site) -> Bool {
+        lhs.siteName == rhs.siteName && lhs.algorithm == rhs.algorithm && lhs.counter == rhs.counter && lhs.resultType == rhs.resultType
+            && lhs.loginType == rhs.loginType && lhs.resultState == rhs.resultState && lhs.loginState == rhs.loginState
+            && lhs.url == rhs.url && lhs.uses == rhs.uses && lhs.lastUsed == rhs.lastUsed && lhs.questions == rhs.questions
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hash(into hasher: inout Hasher) {
         hasher.combine(self.siteName)
         hasher.combine(self.algorithm)
         hasher.combine(self.counter)
@@ -336,7 +336,7 @@ extension Site: Hashable {
 }
 
 extension Site: Comparable {
-    public static func < (lhs: Site, rhs: Site) -> Bool {
+    static func < (lhs: Site, rhs: Site) -> Bool {
         if lhs.lastUsed != rhs.lastUsed {
             return lhs.lastUsed > rhs.lastUsed
         }

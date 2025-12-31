@@ -3,6 +3,7 @@
 //
 
 import Foundation
+
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -12,26 +13,30 @@ import AppKit
 public protocol SpectreOperand {
     func use()
 
-    func result(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                resultType: SpectreResultType?, resultParam: String?, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
+    func result(
+        for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+        resultType: SpectreResultType?, resultParam: String?, algorithm: SpectreAlgorithm?, operand: SpectreOperand?,
+    )
         -> SpectreOperation?
 
-    func state(for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
-               resultType: SpectreResultType?, resultParam: String, algorithm: SpectreAlgorithm?, operand: SpectreOperand?)
+    func state(
+        for name: String?, counter: SpectreCounter?, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+        resultType: SpectreResultType?, resultParam: String, algorithm: SpectreAlgorithm?, operand: SpectreOperand?,
+    )
         -> SpectreOperation?
 }
 
 public struct SpectreOperation {
-    let siteName:  String
-    let counter:   SpectreCounter
-    let type:      SpectreResultType
-    let param:     String?
-    let purpose:   SpectreKeyPurpose
-    let context:   String?
-    let identity:  SpectreKeyID?
+    let siteName: String
+    let counter: SpectreCounter
+    let type: SpectreResultType
+    let param: String?
+    let purpose: SpectreKeyPurpose
+    let context: String?
+    let identity: SpectreKeyID?
     let algorithm: SpectreAlgorithm
-    let operand:   SpectreOperand
-    let task:      Task<String, Error>
+    let operand: SpectreOperand
+    let task: Task<String, Error>
 
     public func copy() {
         Task.detached {
@@ -40,7 +45,7 @@ public struct SpectreOperation {
             #if canImport(UIKit)
             try await UIPasteboard.general.setObjects(
                 [self.task.value as NSString],
-                localOnly: AppFeature.handoff.isEnabled, expirationDate: Date(timeIntervalSinceNow: 3 * 60)
+                localOnly: AppFeature.handoff.isEnabled, expirationDate: Date(timeIntervalSinceNow: 3 * 60),
             )
             #elseif canImport(AppKit)
             // TODO: macOS
@@ -49,68 +54,62 @@ public struct SpectreOperation {
         }
     }
 
-//    public func copy(fromView view: UIView, trackingFrom: String) {
-//        Task.detached {
-//            let event = Tracker.shared.begin(track: .subject("site", action: "use"))
-//
-//            do {
-//                let token = try await self.task.value
-//                Feedback.shared.play(.trigger)
-//
-//                inf("Copying \(self.purpose) for: \(self.siteName)")
-//                UIPasteboard.general.setObjects(
-//                    [token as NSString],
-//                    localOnly: AppFeature.handoff.isEnabled, expirationDate: Date(timeIntervalSinceNow: 3 * 60)
-//                )
-//                self.operand.use()
-//
-////                await AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
-////                """
-////                Your \(self.purpose) for \(self.siteName) is:
-////                \(token)
-////
-////                It was copied to the pasteboard, you can now switch to your application and paste it into the \(self.purpose) field.
-////
-////                Note that after 3 minutes, the \(self.purpose) will expire from the pasteboard for security reasons.
-////                """ ).show( in: view )
-//
-//                event.end(
-//                    [
-//                        "result": "success",
-//                        "from": trackingFrom,
-//                        "action": "copy",
-//                        "counter": "\(self.counter)",
-//                        "purpose": "\(self.purpose)",
-//                        "type": "\(self.type)",
-//                        "algorithm": "\(self.algorithm)",
-//                        "entropy": Attacker.entropy(type: self.type) ?? Attacker.entropy(string: token),
-//                    ]
-//                )
-//            }
-//            catch {
-//                event.end(
-//                    [
-//                        "result": "failure",
-//                        "from": trackingFrom,
-//                        "action": "copy",
-//                        "error": error.localizedDescription,
-//                    ]
-//                )
-//            }
-//        }
-//    }
+    //    public func copy(fromView view: UIView, trackingFrom: String) {
+    //        Task.detached {
+    //            let event = Tracker.shared.begin(track: .subject("site", action: "use"))
+    //
+    //            do {
+    //                let token = try await self.task.value
+    //                Feedback.shared.play(.trigger)
+    //
+    //                inf("Copying \(self.purpose) for: \(self.siteName)")
+    //                UIPasteboard.general.setObjects(
+    //                    [token as NSString],
+    //                    localOnly: AppFeature.handoff.isEnabled, expirationDate: Date(timeIntervalSinceNow: 3 * 60)
+    //                )
+    //                self.operand.use()
+    //
+    //                await AlertController( title: "Copied \(self.purpose) (3 min)", message: self.siteName, details:
+    //                """
+    //                Your \(self.purpose) for \(self.siteName) is:
+    //                \(token)
+    //
+    //                It was copied to the pasteboard, you can now switch to your application and paste it into the \(self.purpose) field.
+    //
+    //                Note that after 3 minutes, the \(self.purpose) will expire from the pasteboard for security reasons.
+    //                """ ).show( in: view )
+    //
+    //                event.end(
+    //                    [
+    //                        "result": "success",
+    //                        "from": trackingFrom,
+    //                        "action": "copy",
+    //                        "counter": "\(self.counter)",
+    //                        "purpose": "\(self.purpose)",
+    //                        "type": "\(self.type)",
+    //                        "algorithm": "\(self.algorithm)",
+    //                        "entropy": Attacker.entropy(type: self.type) ?? Attacker.entropy(string: token),
+    //                    ]
+    //                )
+    //            }
+    //            catch {
+    //                event.end(
+    //                    [
+    //                        "result": "failure",
+    //                        "from": trackingFrom,
+    //                        "action": "copy",
+    //                        "error": error.localizedDescription,
+    //                    ]
+    //                )
+    //            }
+    //        }
+    //    }
 }
 
 extension SpectreOperation: Hashable {
     public static func == (lhs: SpectreOperation, rhs: SpectreOperation) -> Bool {
-        lhs.siteName == rhs.siteName &&
-            lhs.counter == rhs.counter &&
-            lhs.type == rhs.type &&
-            lhs.param == rhs.param &&
-            lhs.purpose == rhs.purpose &&
-            lhs.context == rhs.context &&
-            lhs.identity == rhs.identity &&
-            lhs.algorithm == rhs.algorithm
+        lhs.siteName == rhs.siteName && lhs.counter == rhs.counter && lhs.type == rhs.type && lhs.param == rhs.param
+            && lhs.purpose == rhs.purpose && lhs.context == rhs.context && lhs.identity == rhs.identity && lhs.algorithm == rhs.algorithm
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -134,26 +133,32 @@ actor Spectre {
         spectre_user_key(userName, userSecret, algorithmVersion)
     }
 
-    func site_result(userKey: SpectreUserKey, siteName: String?,
-                     resultType: SpectreResultType, resultParam: String?,
-                     keyCounter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?)
+    func site_result(
+        userKey: SpectreUserKey, siteName: String?,
+        resultType: SpectreResultType, resultParam: String?,
+        keyCounter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+    )
         -> String? {
         withUnsafePointer(to: userKey) { userKey in
             .valid(spectre_site_result(userKey, siteName, resultType, resultParam, keyCounter, keyPurpose, keyContext), consume: true)
         }
     }
 
-    func site_state(userKey: SpectreUserKey, siteName: String?,
-                    resultType: SpectreResultType, resultParam: String?,
-                    keyCounter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?)
+    func site_state(
+        userKey: SpectreUserKey, siteName: String?,
+        resultType: SpectreResultType, resultParam: String?,
+        keyCounter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+    )
         -> String? {
         withUnsafePointer(to: userKey) { userKey in
             .valid(spectre_site_state(userKey, siteName, resultType, resultParam, keyCounter, keyPurpose, keyContext), consume: true)
         }
     }
 
-    func site_key(userKey: SpectreUserKey, siteName: String?,
-                  keyCounter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?)
+    func site_key(
+        userKey: SpectreUserKey, siteName: String?,
+        keyCounter: SpectreCounter, keyPurpose: SpectreKeyPurpose, keyContext: String?,
+    )
         -> SpectreSiteKey? {
         withUnsafePointer(to: userKey) { userKey in
             spectre_site_key(userKey, siteName, keyCounter, keyPurpose, keyContext)?.pointee
@@ -192,14 +197,15 @@ actor Spectre {
                                 formatter: { event in
                                     // Define how our arguments should be interpolated into the format.
                                     if event?.pointee.formatted == nil, let args = event?.pointee.args {
-                                        event?.pointee.formatted = spectre_strdup(CFStringCreateWithFormatAndArguments(
-                                            nil, nil, String.valid(event?.pointee.format) as CFString?,
-                                            UnsafeRawPointer(args).load(as: CVaListPointer.self)
-                                        ) as String)
+                                        event?.pointee.formatted = spectre_strdup(
+                                            CFStringCreateWithFormatAndArguments(
+                                                nil, nil, String.valid(event?.pointee.format) as CFString?,
+                                                UnsafeRawPointer(args).load(as: CVaListPointer.self),
+                                            ) as String)
                                     }
 
                                     return event?.pointee.formatted ?? event?.pointee.format
-                                }, formatted: nil, format: format, args: args.baseAddress?.assumingMemoryBound(to: va_list_c.self)
+                                }, formatted: nil, format: format, args: args.baseAddress?.assumingMemoryBound(to: va_list_c.self),
                             )
 
                             // Sink the log event.
@@ -226,11 +232,9 @@ actor Spectre {
         }
         #endif
 
-        if let error = arg as? Error {
-            return prefix + error.detailsDescription
-        }
-        else {
+        guard let error = arg as? Error else {
             return prefix + String(reflecting: arg)
         }
+        return prefix + error.detailsDescription
     }
 }

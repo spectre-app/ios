@@ -45,18 +45,18 @@ struct LogScreen: View {
                     """
                     Show only messages at the selected level or higher.
                     Debug and trace messages are not recorded unless the level is set accordingly.
-                    """
+                    """,
                 ) {
                     VStack {
                         Button("Copy Logs") {
-#if canImport(UIKit)
+                            #if canImport(UIKit)
                             UIPasteboard.general.setObjects(
                                 [self.logMessages as NSString],
-                                localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
+                                localOnly: AppFeature.handoff.isEnabled, expirationDate: nil,
                             )
-#elseif canImport(AppKit)
+                            #elseif canImport(AppKit)
                             // TODO: macOS
-#endif
+                            #endif
                         }
 
                         Picker("Log Level", selection: self.$logLevel) {
@@ -71,27 +71,27 @@ struct LogScreen: View {
             Section("Identity") {
                 LabeledContent(self.deviceIdentifier) {
                     Button("Copy Anonymous Device Identifier") {
-#if canImport(UIKit)
+                        #if canImport(UIKit)
                         UIPasteboard.general.setObjects(
                             [self.deviceIdentifier as NSString],
-                            localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
+                            localOnly: AppFeature.handoff.isEnabled, expirationDate: nil,
                         )
-#elseif canImport(AppKit)
-                            // TODO: macOS
-#endif
+                        #elseif canImport(AppKit)
+                        // TODO: macOS
+                        #endif
                     }
                 }
 
                 LabeledContent(self.ownerIdentifier) {
                     Button("Copy Anonymous Owner Identifier") {
-#if canImport(UIKit)
+                        #if canImport(UIKit)
                         UIPasteboard.general.setObjects(
                             [self.ownerIdentifier as NSString],
-                            localOnly: AppFeature.handoff.isEnabled, expirationDate: nil
+                            localOnly: AppFeature.handoff.isEnabled, expirationDate: nil,
                         )
-#elseif canImport(AppKit)
-                            // TODO: macOS
-#endif
+                        #elseif canImport(AppKit)
+                        // TODO: macOS
+                        #endif
                     }
                 }
             }

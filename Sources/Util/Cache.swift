@@ -50,7 +50,7 @@ class Cache<Key: AnyObject, Value: AnyObject>: NSObject, NSCacheDelegate, LeakOb
 
     // NSCacheDelegate
 
-    func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
+    func cache(_: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
         // dbg( "Evicting from cache %@: %@", cache.name, obj )
     }
 

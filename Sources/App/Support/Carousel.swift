@@ -3,8 +3,8 @@
 //
 
 import SwiftUI
-import WrappingHStack
 @_spi(Advanced) import SwiftUIIntrospect
+import WrappingHStack
 
 struct Carousel<Value: Identifiable, Content: View>: View {
     let values: [Value]
@@ -67,7 +67,11 @@ struct Carousel<Value: Identifiable, Content: View>: View {
                 #endif
             }
         }
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { self.width = $0 }
+        .onGeometryChange(for: CGFloat.self) {
+            $0.size.width
+        } action: {
+            self.width = $0
+        }
         .listRowInsets(.zero)
     }
 }

@@ -9,21 +9,21 @@ import SwiftUI
 public enum AppError: LocalizedError {
     case issue(_ title: String, reason: CustomStringConvertible? = nil, suggestion: String? = nil, cause: Error? = nil)
     case `internal`(reason: String, details: CustomStringConvertible? = nil)
-//    case `state`(title: String, details: CustomStringConvertible? = nil, suggestion: String? = nil)
+    //    case `state`(title: String, details: CustomStringConvertible? = nil, suggestion: String? = nil)
     case marshal(SpectreMarshalError, title: String, details: CustomStringConvertible? = nil)
 
     public var errorDescription: String? {
         switch self {
             case let .issue(title, _, _, cause):
                 [title, cause?.localizedDescription]
-                    .compactMap { $0 }.joined(separator: ": ").nonEmpty
+                    .compactMap(\.self).joined(separator: ": ").nonEmpty
             case .internal:
                 "Internal Inconsistency"
-//            case .state(let title, _, _):
-//                return title
+            //            case .state(let title, _, _):
+            //                return title
             case let .marshal(error, title, _):
                 [title, error.localizedDescription]
-                    .compactMap { $0 }.joined(separator: ": ").nonEmpty
+                    .compactMap(\.self).joined(separator: ": ").nonEmpty
         }
     }
 
@@ -31,15 +31,15 @@ public enum AppError: LocalizedError {
         switch self {
             case let .issue(_, reason, _, cause):
                 [reason?.description, (cause as NSError?)?.localizedFailureReason]
-                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
+                    .compactMap(\.self).joined(separator: "\n").nonEmpty
             case let .internal(cause, details):
                 [cause, details?.description]
-                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
-//            case .state(_, let details, _):
-//                return details?.description
+                    .compactMap(\.self).joined(separator: "\n").nonEmpty
+            //            case .state(_, let details, _):
+            //                return details?.description
             case let .marshal(error, _, details):
                 [(error as NSError).localizedFailureReason, details?.description]
-                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
+                    .compactMap(\.self).joined(separator: "\n").nonEmpty
         }
     }
 
@@ -47,11 +47,11 @@ public enum AppError: LocalizedError {
         switch self {
             case let .issue(_, _, suggestion, cause):
                 [suggestion, (cause as NSError?)?.localizedRecoverySuggestion]
-                    .compactMap { $0 }.joined(separator: "\n").nonEmpty
+                    .compactMap(\.self).joined(separator: "\n").nonEmpty
             case let .marshal(error, _, _):
                 (error as NSError).localizedRecoverySuggestion
-//            case .state(_, _, let suggestion):
-//                return suggestion
+            //            case .state(_, _, let suggestion):
+            //                return suggestion
             default:
                 nil
         }
@@ -61,7 +61,7 @@ public enum AppError: LocalizedError {
 extension SpectreAlgorithm: Strideable, CaseIterable, Identifiable, CustomLocalizedStringResourceConvertible {
     public static let allCases = [Self](.first ... .last)
 
-    public var description:          String {
+    public var description: String {
         String.valid(spectre_algorithm_short_name(self)) ?? "?"
     }
 
@@ -82,11 +82,8 @@ extension SpectreCounter: Strideable, CustomStringConvertible {
 
 extension SpectreIdenticon: Hashable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.leftArm == rhs.leftArm &&
-            lhs.body == rhs.body &&
-            lhs.rightArm == rhs.rightArm &&
-            lhs.accessory == rhs.accessory &&
-            lhs.color == rhs.color
+        lhs.leftArm == rhs.leftArm && lhs.body == rhs.body && lhs.rightArm == rhs.rightArm && lhs.accessory == rhs.accessory
+            && lhs.color == rhs.color
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -116,7 +113,7 @@ extension SpectreIdenticon: Hashable {
                             body: spectre_strdup(body),
                             rightArm: spectre_strdup(rightArm),
                             accessory: spectre_strdup(accessory),
-                            color: color
+                            color: color,
                         )
                     }
                 }
@@ -143,21 +140,21 @@ extension SpectreIdenticon: Hashable {
             ].joined()
     }
 
-//    public func attributedText() -> NSAttributedString? {
-//        if self.isUnset {
-//            return nil
-//        }
-//
-//        let shadow = NSShadow()
-//        shadow.shadowColor = Theme.current.color.shadow.get(forTraits: .current) // TODO: Update on theme change.
-//        shadow.shadowOffset = CGSize( width: 0, height: 1 )
-//        return self.text().flatMap {
-//            NSAttributedString( string: $0, attributes: [
-//                .foregroundColor: self.color.ui(),
-//                .shadow: shadow,
-//            ] )
-//        }
-//    }
+    //    public func attributedText() -> NSAttributedString? {
+    //        if self.isUnset {
+    //            return nil
+    //        }
+    //
+    //        let shadow = NSShadow()
+    //        shadow.shadowColor = Theme.current.color.shadow.get(forTraits: .current) // TODO: Update on theme change.
+    //        shadow.shadowOffset = CGSize( width: 0, height: 1 )
+    //        return self.text().flatMap {
+    //            NSAttributedString( string: $0, attributes: [
+    //                .foregroundColor: self.color.ui(),
+    //                .shadow: shadow,
+    //            ] )
+    //        }
+    //    }
 }
 
 struct UnsafeSpectrePointer<P>: @unchecked Sendable {
@@ -224,7 +221,7 @@ extension SpectreFormat: Strideable, CaseIterable, Identifiable, CustomStringCon
         .valid(spectre_format_name(self))
     }
 
-    public var uti:         String? {
+    public var uti: String? {
         switch self {
             case .none: nil
             case .flat: "app.spectre.user.mpsites"
@@ -265,11 +262,11 @@ extension SpectreResultType: CustomStringConvertible, CaseIterable, Identifiable
         .recovery: [.templatePhrase],
     ]
 
-    public var abbreviation:         String {
+    public var abbreviation: String {
         String.valid(spectre_type_abbreviation(self)) ?? "?"
     }
 
-    public var description:          String {
+    public var description: String {
         String.valid(spectre_type_short_name(self)) ?? "?"
     }
 

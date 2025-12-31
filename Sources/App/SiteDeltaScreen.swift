@@ -14,17 +14,17 @@ struct SiteDeltaScreen: View {
                 PairView(
                     label: "Name",
                     old: self.old.siteName,
-                    new: self.new.siteName
+                    new: self.new.siteName,
                 )
                 PairView(
                     label: "Algorithm",
                     old: self.old.algorithm.localizedDescription,
-                    new: self.new.algorithm.localizedDescription
+                    new: self.new.algorithm.localizedDescription,
                 )
                 PairView(
                     label: "Counter",
                     old: self.old.counter.description,
-                    new: self.new.counter.description
+                    new: self.new.counter.description,
                 )
                 if AppFeature.logins.isEnabled {
                     PairResultView(
@@ -32,7 +32,7 @@ struct SiteDeltaScreen: View {
                         oldLabel: self.old.loginType.localizedDescription,
                         old: self.old.result(keyPurpose: .identification),
                         newLabel: self.new.loginType.localizedDescription,
-                        new: self.new.result(keyPurpose: .identification)
+                        new: self.new.result(keyPurpose: .identification),
                     )
                 }
                 PairResultView(
@@ -40,13 +40,13 @@ struct SiteDeltaScreen: View {
                     oldLabel: self.old.resultType.localizedDescription,
                     old: self.old.result(keyPurpose: .authentication),
                     newLabel: self.new.resultType.localizedDescription,
-                    new: self.new.result(keyPurpose: .authentication)
+                    new: self.new.result(keyPurpose: .authentication),
                 )
                 if AppFeature.answers.isEnabled {
                     PairResultView(
                         label: "Recovery Answer",
                         old: self.old.result(keyPurpose: .recovery),
-                        new: self.new.result(keyPurpose: .recovery)
+                        new: self.new.result(keyPurpose: .recovery),
                     )
                     let oldQuestions = self.old.questions.sorted(), newQuestions = self.new.questions.sorted()
                     ForEach(0 ..< max(oldQuestions.count, newQuestions.count), id: \.self) { q in
@@ -55,7 +55,7 @@ struct SiteDeltaScreen: View {
                             oldLabel: q >= self.old.questions.count ? nil : self.old.questions[q].keyword,
                             old: q >= self.old.questions.count ? nil : self.old.questions[q].result(),
                             newLabel: q >= self.new.questions.count ? nil : self.new.questions[q].keyword,
-                            new: q >= self.new.questions.count ? nil : self.new.questions[q].result()
+                            new: q >= self.new.questions.count ? nil : self.new.questions[q].result(),
                         )
                     }
                 }
@@ -108,7 +108,9 @@ struct SiteDeltaScreen: View {
         let new: SpectreOperation?
 
         var body: some View {
-            AsyncView(onChange: [self.old, self.new]) { try await [$0[0]?.task.value, $0[1]?.task.value] } finished: { results in
+            AsyncView(onChange: [self.old, self.new]) {
+                try await [$0[0]?.task.value, $0[1]?.task.value]
+            } finished: { results in
                 if let results, results[0] != results[1] {
                     VStack {
                         Text(self.label)
@@ -135,7 +137,8 @@ struct SiteDeltaScreen: View {
                         .multilineTextAlignment(.center)
                     }
                 }
-            } failure: { _ in /* TODO: */ }
+            } failure: { _ in /* TODO: */
+            }
         }
     }
 }
@@ -149,7 +152,7 @@ struct SiteDeltaScreen: View {
     oldSite.questions.append(Question(site: oldSite, keyword: "quux"))
     let newSite = Site(
         user: user, siteName: "spectre.pw", algorithm: .V0, counter: .TOTP,
-        resultType: .templateMaximum, loginType: .templatePhrase
+        resultType: .templateMaximum, loginType: .templatePhrase,
     )
     newSite.questions.append(Question(site: newSite, keyword: "foo"))
     newSite.questions.append(Question(site: oldSite, keyword: "baz"))

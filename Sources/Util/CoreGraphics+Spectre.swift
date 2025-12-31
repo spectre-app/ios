@@ -2,27 +2,8 @@
 // Copyright (c) 2011-2025 Maarten Billemont. Spectre is free software licensed under the GNU GPLv3.
 //
 
-import SafariServices
 import CoreGraphics
-
-// extension SFSafariViewController: ThemeObserver {
-//    convenience init(url: URL) {
-//        self.init( url: url, configuration: Configuration() )
-//
-//        self.dismissButtonStyle = .close
-//        self.modalPresentationStyle = .pageSheet
-//
-//        Theme.current.observers.register( observer: self )?
-//             .didChange( theme: Theme.current )
-//    }
-//
-//    // MARK: - ThemeObserver
-//
-//    func didChange(theme: Theme) {
-//        self.preferredBarTintColor = theme.color.backdrop.get(forTraits: self.traitCollection)
-//        self.preferredControlTintColor = theme.color.tint.get(forTraits: self.traitCollection)
-//    }
-// }
+import SafariServices
 
 extension CGPath {
     static func between(_ fromRect: CGRect, _ toRect: CGRect) -> CGPath {
@@ -48,35 +29,35 @@ extension CGPath {
 }
 
 extension CGRect {
-    var center:      CGPoint {
+    var center: CGPoint {
         CGPoint(x: self.minX + (self.maxX - self.minX) / 2, y: self.minY + (self.maxY - self.minY) / 2)
     }
 
-    var top:         CGPoint {
+    var top: CGPoint {
         CGPoint(x: self.minX + (self.maxX - self.minX) / 2, y: self.minY)
     }
 
-    var topLeft:     CGPoint {
+    var topLeft: CGPoint {
         CGPoint(x: self.minX, y: self.minY)
     }
 
-    var topRight:    CGPoint {
+    var topRight: CGPoint {
         CGPoint(x: self.maxX, y: self.minY)
     }
 
-    var left:        CGPoint {
+    var left: CGPoint {
         CGPoint(x: self.minX, y: self.minY + (self.maxY - self.minY) / 2)
     }
 
-    var right:       CGPoint {
+    var right: CGPoint {
         CGPoint(x: self.maxX, y: self.minY + (self.maxY - self.minY) / 2)
     }
 
-    var bottom:      CGPoint {
+    var bottom: CGPoint {
         CGPoint(x: self.minX + (self.maxX - self.minX) / 2, y: self.maxY)
     }
 
-    var bottomLeft:  CGPoint {
+    var bottomLeft: CGPoint {
         CGPoint(x: self.minX, y: self.maxY)
     }
 
@@ -169,7 +150,7 @@ extension CGSize {
     }
 
     func grow(width: CGFloat = .zero, height: CGFloat = .zero, size: CGSize = .zero, point: CGPoint = .zero) -> CGSize {
-        let width  = width + size.width + point.x
+        let width = width + size.width + point.x
         let height = height + size.height + point.y
         return width == .zero && height == .zero
             ? self

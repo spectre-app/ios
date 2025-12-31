@@ -13,6 +13,7 @@ public class UserKey {
         self.key = key
         self.userName = userName
     }
+
     deinit {
         self.key.deallocate()
     }
@@ -36,7 +37,7 @@ public class UserKey {
     }
 
     public func digest() -> Data? {
-        return withUnsafeBytes(of: self.key.pointee.bytes) {
+        withUnsafeBytes(of: self.key.pointee.bytes) {
             $0.bindMemory(to: UInt8.self).digest()
         }
     }
@@ -48,26 +49,30 @@ public class UserKey {
         return self.keyID == keyID
     }
 
-    public func result(for name: String, counter: SpectreCounter,
-                       keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                       resultType: SpectreResultType, resultParam: String?,
-                       algorithm: SpectreAlgorithm)
+    public func result(
+        for name: String, counter: SpectreCounter,
+        keyPurpose: SpectreKeyPurpose, keyContext: String?,
+        resultType: SpectreResultType, resultParam: String?,
+        algorithm: SpectreAlgorithm,
+    )
         throws -> String {
         guard let result = String.valid(
-            spectre_site_result(self.key, name, resultType, resultParam, counter, keyPurpose, keyContext), consume: true
+            spectre_site_result(self.key, name, resultType, resultParam, counter, keyPurpose, keyContext), consume: true,
         )
         else { throw AppError.internal(reason: "Cannot calculate result", details: self.userName) }
 
         return result
     }
 
-    public func state(for name: String, counter: SpectreCounter,
-                      keyPurpose: SpectreKeyPurpose, keyContext: String?,
-                      resultType: SpectreResultType, resultParam: String?,
-                      algorithm: SpectreAlgorithm)
+    public func state(
+        for name: String, counter: SpectreCounter,
+        keyPurpose: SpectreKeyPurpose, keyContext: String?,
+        resultType: SpectreResultType, resultParam: String?,
+        algorithm: SpectreAlgorithm,
+    )
         throws -> String {
         guard let result = String.valid(
-            spectre_site_state(self.key, name, resultType, resultParam, counter, keyPurpose, keyContext), consume: true
+            spectre_site_state(self.key, name, resultType, resultParam, counter, keyPurpose, keyContext), consume: true,
         )
         else { throw AppError.internal(reason: "Cannot calculate result", details: self.userName) }
 
@@ -76,11 +81,11 @@ public class UserKey {
 }
 
 public class KeyFactory: Hashable {
-    public let  userName: String
+    public let userName: String
 
     fileprivate let keyState = KeyState()
     fileprivate class KeyState {
-        private var keys = [SpectreAlgorithm: UserKey]()
+        private var keys: [SpectreAlgorithm: UserKey] = [:]
 
         fileprivate func find(for algorithm: SpectreAlgorithm) -> UserKey? {
             self.keys[algorithm]
@@ -124,7 +129,7 @@ public class KeyFactory: Hashable {
                     if let key = String.valid(userName).flatMap({ userName in
                         KeyFactory.allFactories.use { $0[userName]?.object }
                     }) {
-                        return UnsafeSpectrePointer(pointer: try await key.getKey(for: algorithm).copy())
+                        return try await UnsafeSpectrePointer(pointer: key.getKey(for: algorithm).copy())
                     }
                 }
                 catch {
@@ -169,7 +174,7 @@ public class SecretKeyFactory: KeyFactory {
         self.metadata = (
             length: self.userSecret.count,
             entropy: Attacker.entropy(string: userSecret) ?? -1,
-            identicon: spectre_identicon(userName, self.userSecret)
+            identicon: spectre_identicon(userName, self.userSecret),
         )
         super.init(userName: userName)
     }
@@ -195,7 +200,7 @@ public class SecretKeyFactory: KeyFactory {
 
     override fileprivate func createKey(for algorithm: SpectreAlgorithm) async throws -> UserKey {
         guard let userKey = await Spectre.shared.user_key(
-            userName: self.userName, userSecret: self.userSecret, algorithmVersion: algorithm
+            userName: self.userName, userSecret: self.userSecret, algorithmVersion: algorithm,
         )
         else { throw AppError.internal(reason: "Couldn't allocate a user key") }
 
@@ -241,14 +246,14 @@ public class KeychainKeyFactory: KeyFactory {
             }
         }
 
-        private var contextExpiry:   TimeInterval? {
+        private var contextExpiry: TimeInterval? {
             didSet {
                 self.contextValidity = self.contextExpiry.flatMap { Date() + $0 }
             }
         }
 
         private var contextValidity: Date?
-        private var isContextValid:   Bool {
+        private var isContextValid: Bool {
             guard let validity = self.contextValidity
             else { return true }
 
@@ -324,11 +329,11 @@ public class KeychainKeyFactory: KeyFactory {
     // MARK: - Private
 
     override fileprivate func createKey(for algorithm: SpectreAlgorithm) async throws -> UserKey {
-        UserKey(
-            key: try await Keychain.shared.loadKey(
-                for: self.userName, algorithm: algorithm, context: self.keychainState.use { $0.context }
+        try await UserKey(
+            key: Keychain.shared.loadKey(
+                for: self.userName, algorithm: algorithm, context: self.keychainState.use { $0.context },
             ),
-            for: self.userName
+            for: self.userName,
         )
     }
 
@@ -337,7 +342,7 @@ public class KeychainKeyFactory: KeyFactory {
             self.keyState.save(key)
             try await Keychain.shared.saveKey(
                 for: self.userName, algorithm: key.algorithm,
-                keyFactory: self, context: self.keychainState.use { $0.context }
+                keyFactory: self, context: self.keychainState.use { $0.context },
             )
         }
         dbg("Saved keychain keys for: \(self.userName)")

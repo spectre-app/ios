@@ -8,13 +8,13 @@ import SwiftUI
 
 @main
 struct SpectreApp: App {
-#if canImport(UIKit)
+    #if canImport(UIKit)
     @UIApplicationDelegateAdaptor
     private var appDelegate: Delegate
-#elseif canImport(AppKit)
+    #elseif canImport(AppKit)
     @NSApplicationDelegateAdaptor
     private var appDelegate: Delegate
-#endif
+    #endif
 
     var body: some Scene {
         WindowGroup {
@@ -32,9 +32,8 @@ struct SpectreApp: App {
             LeakRegistry.shared.register(self)
         }
 
-#if canImport(UIKit)
-        func application(_ application: UIApplication,
-                         willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil)
+        #if canImport(UIKit)
+        func application(_: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil)
             -> Bool {
             // FIXME: This needs to complete before moving on.
             Task { await LogSink.shared.register() }
@@ -42,13 +41,14 @@ struct SpectreApp: App {
             Migration.shared.perform()
             return true
         }
-#elseif canImport(AppKit)
-        func applicationWillFinishLaunching(_ notification: Notification) {
+
+        #elseif canImport(AppKit)
+        func applicationWillFinishLaunching(_: Notification) {
             LogSink.shared.register()
             Tracker.shared.startup()
             Migration.shared.perform()
         }
-#endif
+        #endif
     }
 
     private struct AppModifier: ViewModifier {
@@ -64,10 +64,10 @@ struct SpectreApp: App {
         private var requestReview
         @State
         private var deactivated: Date? = .now
-#if canImport(UIKit)
+        #if canImport(UIKit)
         @State
         private var productOverlay: SKOverlay.Configuration?
-#endif
+        #endif
 
         func body(content: Content) -> some View {
             content
@@ -82,7 +82,8 @@ struct SpectreApp: App {
                         Task { await Tracker.shared.enableNotifications(userRequested: false) }
                     }
                 } message: {
-                    Text("""
+                    Text(
+                        """
                         Things move fast in the online world.
 
                         If you enable notifications, we can inform you of known breaches and keep you current on important security events.
@@ -96,7 +97,8 @@ struct SpectreApp: App {
                         self.config.diagnostics = true
                     }
                 } message: {
-                    Text("""
+                    Text(
+                        """
                         If a bug, crash or issue should happen, Diagnostics will let us know and fix it.
 
                         It's just code and statistics; personal information is sacred and cannot leave your device.
@@ -156,49 +158,49 @@ struct SpectreApp: App {
         }
 
         private func open(_ url: URL) {
-           // Handle <spectre:*> URLs.
-           if let components = URLComponents(url: url, resolvingAgainstBaseURL: false), components.scheme == "spectre",
-              let action = Action.allCases.first(where: { $0.rawValue == components.path }),
-              self.open(action, components: components) {
-               return
-           }
+            // Handle <spectre:*> URLs.
+            if let components = URLComponents(url: url, resolvingAgainstBaseURL: false), components.scheme == "spectre",
+               let action = Action.allCases.first(where: { $0.rawValue == components.path }),
+               self.open(action, components: components) {
+                return
+            }
 
-           // Handle resource URLs that contain Spectre user files.
-           let progress = self.messages.start(message: "Importing user")
-           let securityScoped = url.startAccessingSecurityScopedResource()
-           let urlRead = NSFileAccessIntent.readingIntent(with: url)
-           NSFileCoordinator().coordinate(with: [urlRead], queue: .init(queue: .global(qos: .userInitiated))) { error in
-               defer {
-                   if securityScoped {
-                       url.stopAccessingSecurityScopedResource()
-                   }
-               }
+            // Handle resource URLs that contain Spectre user files.
+            let progress = self.messages.start(message: "Importing user")
+            let securityScoped = url.startAccessingSecurityScopedResource()
+            let urlRead = NSFileAccessIntent.readingIntent(with: url)
+            NSFileCoordinator().coordinate(with: [urlRead], queue: .init(queue: .global(qos: .userInitiated))) { error in
+                defer {
+                    if securityScoped {
+                        url.stopAccessingSecurityScopedResource()
+                    }
+                }
 
-               if let error {
-                   err("Couldn't open import", data: url, error)
-                   progress.cancel()
-                   return
-               }
+                if let error {
+                    err("Couldn't open import", data: url, error)
+                    progress.cancel()
+                    return
+                }
 
-               guard let importData = FileManager.default.contents(atPath: urlRead.url.path)
-               else {
-                   err("Couldn't read import", data: url, error)
-                   progress.cancel()
-                   return
-               }
+                guard let importData = FileManager.default.contents(atPath: urlRead.url.path)
+                else {
+                    err("Couldn't read import", data: url, error)
+                    progress.cancel()
+                    return
+                }
 
-               // TODO: In-place editing?
-               Task { @MainActor in
-                   do {
-                       try await self.import(data: importData)
-                       inf("Imported user", data: url)
-                       progress.completedUnitCount += 1
-                   }
-                   catch {
-                       err("Couldn't import user", data: error)
-                   }
-               }
-           }
+                // TODO: In-place editing?
+                Task { @MainActor in
+                    do {
+                        try await self.import(data: importData)
+                        inf("Imported user", data: url)
+                        progress.completedUnitCount += 1
+                    }
+                    catch {
+                        err("Couldn't import user", data: error)
+                    }
+                }
+            }
         }
 
         private func open(_ action: Action, components: URLComponents) -> Bool {
@@ -266,17 +268,17 @@ struct SpectreApp: App {
                             if result.upToDate {
                                 inf(
                                     "Your \(productName) app is up-to-date!",
-                                    data: "build[\(result.buildVersion)] > store[\(result.storeVersion)]"
+                                    data: "build[\(result.buildVersion)] > store[\(result.storeVersion)]",
                                 )
                             }
                             else {
                                 inf(
                                     "\(productName) is outdated",
-                                    data: "build[\(result.buildVersion)] < store[\(result.storeVersion)]"
+                                    data: "build[\(result.buildVersion)] < store[\(result.storeVersion)]",
                                 )
-#if canImport(UIKit)
+                                #if canImport(UIKit)
                                 self.productOverlay = SKOverlay.AppConfiguration(appIdentifier: id, position: .bottom)
-#endif
+                                #endif
                             }
                         }
                         catch {
@@ -285,7 +287,7 @@ struct SpectreApp: App {
                     }
                     return true
 
-#if canImport(UIKit)
+                #if canImport(UIKit)
                 case .store:
                     // spectre:store[?id=<appleid>,campaignToken=<token>,providerToken=<token>,customProductPageIdentifier=<identifier>]
                     guard components.verifySignature()
@@ -307,7 +309,7 @@ struct SpectreApp: App {
                     }
                     self.productOverlay = overlay
                     return true
-#endif
+                #endif
             }
         }
 
@@ -317,23 +319,25 @@ struct SpectreApp: App {
                 needAuthentication: { userFile, error in
                     try await self.messages.promptAuthentication(
                         to: "Unlock Import", for: userFile.userName,
-                        previousError: error, action: "Import"
+                        previousError: error, action: "Import",
                     )
                 },
                 didMerge: { _, existingUser, result in
                     if result.userDetails || result.addedSites > .zero || result.replacedSites > .zero {
-                        inf("Updated \(existingUser.userName) from import.", data:
+                        inf(
+                            "Updated \(existingUser.userName) from import.",
+                            data:
                             """
                             Added \(result.addedSites), \
                             updated \(result.replacedSites) sites, \
                             user details \(result.userDetails ? "" : "not ")updated.
-                            """
+                            """,
                         )
                     }
                     else {
                         inf("No new changes in import.")
                     }
-                }
+                },
             )
         }
 
@@ -360,16 +364,16 @@ struct SpectreApp: App {
             let buildVersion = buildVersion ?? productVersion
             return (
                 upToDate: !buildVersion.isVersionOutdated(by: storeVersion),
-                buildVersion: buildVersion, storeVersion: storeVersion
+                buildVersion: buildVersion, storeVersion: storeVersion,
             )
         }
     }
 
     private enum Action: String, CaseIterable {
         case `import`, web, review, update
-#if canImport(UIKit)
+        #if canImport(UIKit)
         case store
-#endif
+        #endif
     }
 }
 

@@ -30,20 +30,20 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         fatalError("init(coder:) is not supported for this class")
     }
 
-#if canImport(UIKit)
+    #if canImport(UIKit)
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
         SpectreModel.shared.activeUser?.logout()
     }
-#elseif canImport(AppKit)
+
+    #elseif canImport(AppKit)
     override func viewWillDisappear() {
         super.viewWillDisappear()
 
         SpectreModel.shared.activeUser?.logout()
     }
-#endif
-
+    #endif
 
     // MARK: - ASCredentialProviderViewController
 
@@ -63,14 +63,14 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                     guard let userFile = userFiles.first(where: { $0.credentialOwnerName == credentialRequest.credentialIdentity.user })
                     else {
                         throw ASExtensionError(
-                            .credentialIdentityNotFound, "No user named: \(credentialRequest.credentialIdentity.user)"
+                            .credentialIdentityNotFound, "No user named: \(credentialRequest.credentialIdentity.user)",
                         )
                     }
 
                     guard userFile.biometricLock, AppFeature.biometrics.isEnabled
                     else {
                         throw ASExtensionError(
-                            .userInteractionRequired, "Biometrics not enabled for: \(userFile.userName)"
+                            .userInteractionRequired, "Biometrics not enabled for: \(userFile.userName)",
                         )
                     }
 
@@ -78,7 +78,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                     guard keychainKeyFactory.isKeyAvailable(for: userFile.algorithm)
                     else {
                         throw ASExtensionError(
-                            .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)"
+                            .userInteractionRequired, "Key unavailable from keychain for: \(userFile.userName)",
                         )
                     }
 
@@ -90,7 +90,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                 else {
                     throw ASExtensionError(
                         .credentialIdentityNotFound,
-                        "No site for: \(credentialRequest.credentialIdentity.serviceIdentifier.identifier), in user: \(user.userName)"
+                        "No site for: \(credentialRequest.credentialIdentity.serviceIdentifier.identifier), in user: \(user.userName)",
                     )
                 }
 
@@ -98,7 +98,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
                       let password = try await site.result(keyPurpose: .authentication)?.task.value
                 else {
                     throw ASExtensionError(
-                        .userInteractionRequired, "Unauthenticated user: \(user.userName)"
+                        .userInteractionRequired, "Unauthenticated user: \(user.userName)",
                     )
                 }
 
@@ -128,10 +128,10 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         self.show(autofill: .init(extensionContext: self.extensionContext))
     }
 
-//    override func prepareInterface(forPasskeyRegistration registrationRequest: any ASCredentialRequest) {
-//    }
-//    override func performWithoutUserInteractionIfPossible(passkeyRegistration registrationRequest: ASPasskeyCredentialRequest) {
-//    }
+    //    override func prepareInterface(forPasskeyRegistration registrationRequest: any ASCredentialRequest) {
+    //    }
+    //    override func performWithoutUserInteractionIfPossible(passkeyRegistration registrationRequest: ASPasskeyCredentialRequest) {
+    //    }
 
     // MARK: - Private
 
@@ -143,9 +143,9 @@ class AutoFillProviderController: ASCredentialProviderViewController {
     private var rootViewController: AHostingController<AnyView>? {
         didSet {
             if let oldViewController = oldValue {
-#if canImport(UIKit)
+                #if canImport(UIKit)
                 oldViewController.willMove(toParent: nil)
-#endif
+                #endif
                 oldViewController.viewIfLoaded?.removeFromSuperview()
                 oldViewController.removeFromParent()
             }
@@ -153,16 +153,16 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             if let newViewController = self.rootViewController {
                 self.addChild(newViewController)
                 newViewController.view.frame = self.view.bounds
-#if canImport(UIKit)
+                #if canImport(UIKit)
                 newViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-#elseif canImport(AppKit)
+                #elseif canImport(AppKit)
                 newViewController.view.autoresizingMask = [.width, .height]
-#endif
+                #endif
                 self.view.autoresizesSubviews = true
                 self.view.addSubview(newViewController.view)
-#if canImport(UIKit)
+                #if canImport(UIKit)
                 newViewController.didMove(toParent: self)
-#endif
+                #endif
             }
         }
     }

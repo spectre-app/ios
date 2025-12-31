@@ -16,27 +16,27 @@ enum Rig {
             case .gtx1080ti:
                 // https://gist.github.com/epixoip/ace60d09981be09544fdd35005051505
                 switch hash {
-                    case .bcrypt10: Decimal(722) // H/s
-                    case .spectre: Decimal(168) // H/s
+                    case .bcrypt10: Decimal(722)  // H/s
+                    case .spectre: Decimal(168)  // H/s
                 }
         }
     }
 
     var cost_fixed: Decimal {
         switch self {
-            case .gtx1080ti: Decimal(1200) // $
+            case .gtx1080ti: Decimal(1200)  // $
         }
     }
 
     var cost_watt: Decimal {
         switch self {
-            case .gtx1080ti: Decimal(250) // W
+            case .gtx1080ti: Decimal(250)  // W
         }
     }
 
     var cost_per_kwh: Decimal {
         switch self {
-            case .gtx1080ti: Decimal(0.15) // $/kWh
+            case .gtx1080ti: Decimal(0.15)  // $/kWh
         }
     }
 }
@@ -46,7 +46,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible, Identifiable {
 
     case single, `private`, corporate, state
 
-    var description:          String {
+    var description: String {
         switch self {
             case .single: "single"
             case .private: "private"
@@ -56,15 +56,15 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible, Identifiable {
     }
 
     var localizedDescription: String {
-        "\(number: self.scale, as: "0.#") x \(number: Rig.gtx1080ti.attempts_per_second(for: .bcrypt10), .abbreviated)/s " +
-            "(~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) + \(number: self.monthly_budget, .currency, .abbreviated)/m)"
+        "\(number: self.scale, as: "0.#") x \(number: Rig.gtx1080ti.attempts_per_second(for: .bcrypt10), .abbreviated)/s "
+            + "(~ \(number: self.fixed_budget, locale: .C, .currency, .abbreviated) + \(number: self.monthly_budget, .currency, .abbreviated)/m)"
     }
 
-    var rig:                  Rig {
+    var rig: Rig {
         .gtx1080ti
     }
 
-    var fixed_budget:         Decimal {
+    var fixed_budget: Decimal {
         switch self {
             case .single: self.rig.cost_fixed
             case .private: 5000
@@ -73,12 +73,12 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible, Identifiable {
         }
     }
 
-    var monthly_budget:       Decimal {
+    var monthly_budget: Decimal {
         (self.scale * self.rig.cost_watt / 1000) * 24 * 30 * self.rig.cost_per_kwh
     }
 
     /// The hardware scale that the attacker employs to attack a hash.
-    var scale:                Decimal {
+    var scale: Decimal {
         self.fixed_budget / self.rig.cost_fixed
     }
 
@@ -90,7 +90,7 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible, Identifiable {
         guard type.in(class: .template)
         else { return nil }
 
-        var count     = 0
+        var count = 0
         let templates = UnsafeBufferPointer(start: spectre_type_templates(type, &count), count: count)
         defer { templates.deallocate() }
 
@@ -199,12 +199,12 @@ enum Attacker: Int, CaseIterable, CustomStringConvertible, Identifiable {
 
 struct TimeToCrack: CustomStringConvertible {
     var permutations: Decimal
-    var attacker:     Attacker
-    var period:       Period
+    var attacker: Attacker
+    var period: Period
 
     var description: String {
         // swiftlint:disable:next identifier_name
-        let Wh   = (self.attacker.scale * self.attacker.rig.cost_watt) * self.period.seconds / 3600
+        let Wh = (self.attacker.scale * self.attacker.rig.cost_watt) * self.period.seconds / 3600
         let cost = (self.attacker.scale * self.attacker.rig.cost_fixed) + self.attacker.rig.cost_per_kwh * Wh / 1000
         if self.period.seconds < 2 {
             return "trivial"
@@ -214,8 +214,7 @@ struct TimeToCrack: CustomStringConvertible {
         if case Period.universes = normalizedPeriod {
             return normalizedPeriod.localizedDescription
         }
-        return "~\(normalizedPeriod.localizedDescription) & " +
-            "~\(number: cost, locale: .C, .currency, .abbreviated), " +
-            "~\(number: Wh, .abbreviated)Wh"
+        return "~\(normalizedPeriod.localizedDescription) & " + "~\(number: cost, locale: .C, .currency, .abbreviated), "
+            + "~\(number: Wh, .abbreviated)Wh"
     }
 }

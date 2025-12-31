@@ -5,6 +5,7 @@
 import Combine
 import Sentry
 import System
+
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -16,8 +17,8 @@ import Countly
 #endif
 
 struct Tracking: CustomStringConvertible {
-    let subject:    String
-    let action:     String
+    let subject: String
+    let action: String
     var parameters: [String: Any?]
 
     var description: String {
@@ -66,7 +67,7 @@ class Tracker: ObservableObject {
             wrn("Notifications not authorized.", data: error)
         }
 
-#if canImport(UIKit)
+        #if canImport(UIKit)
         if userRequested, let settingsURL = URL(string: UIApplication.openSettingsURLString) {
             if self.hasCountlyStartedConfig != nil {
                 await MainActor.run { Countly.sharedInstance().giveConsent(forFeature: .pushNotifications) }
@@ -74,9 +75,9 @@ class Tracker: ObservableObject {
             await UIApplication.shared.open(settingsURL)
             return true
         }
-#elseif canImport(AppKit)
+        #elseif canImport(AppKit)
         // TODO: macOS
-#endif
+        #endif
 
         AppConfig.shared.notifications = false
         if self.hasCountlyStartedConfig != nil {
@@ -101,20 +102,26 @@ class Tracker: ObservableObject {
         #if canImport(UIKit)
         UIDevice.current.identifierForVendor?.uuidString ?? ""
         #else
-        self.identifierForDevice // TODO: macOS
+        self.identifierForDevice  // TODO: macOS
         #endif
     }
 
-    lazy var identifierForDevice = self.identifier(for: "device", attributes: [
-        kSecAttrDescription: "Unique identifier for the device running this app.",
-        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-        kSecAttrSynchronizable: false,
-    ]).uuidString
-    lazy var identifierForOwner  = self.identifier(for: "owner", attributes: [
-        kSecAttrDescription: "Unique identifier for the owner of this app.",
-        kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-        kSecAttrSynchronizable: true,
-    ]).uuidString
+    lazy var identifierForDevice = self.identifier(
+        for: "device",
+        attributes: [
+            kSecAttrDescription: "Unique identifier for the device running this app.",
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+            kSecAttrSynchronizable: false,
+        ],
+    ).uuidString
+    lazy var identifierForOwner = self.identifier(
+        for: "owner",
+        attributes: [
+            kSecAttrDescription: "Unique identifier for the owner of this app.",
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+            kSecAttrSynchronizable: true,
+        ],
+    ).uuidString
     private lazy var identifiers = [
         "id_vendor": self.identifierForVendor,
         "id_device": self.identifierForDevice,
@@ -145,11 +152,12 @@ class Tracker: ObservableObject {
             guard record.level <= .info
             else { return }
 
-            let sentryLevel: SentryLevel = [
-                .trace: .debug, .debug: .debug, .info: .info,
-                .warning: .warning, .error: .error, .fatal: .fatal,
-            ][record.level] ?? .debug
-            let tags               = [
+            let sentryLevel: SentryLevel =
+                [
+                    .trace: .debug, .debug: .debug, .info: .info,
+                    .warning: .warning, .error: .error, .fatal: .fatal,
+                ][record.level] ?? .debug
+            let tags = [
                 "src_file": record.fileName,
                 "src_line": "\(record.line)",
                 "src_func": record.function,
@@ -179,7 +187,7 @@ class Tracker: ObservableObject {
 
         self.event(
             file: file, line: line, function: function, dso: dso,
-            track: .subject(AppConfig.shared.isApp ? "app" : "autofill", action: "startup")
+            track: .subject(AppConfig.shared.isApp ? "app" : "autofill", action: "startup"),
         )
     }
 
@@ -190,7 +198,7 @@ class Tracker: ObservableObject {
         #endif
         self.event(
             file: file, line: line, function: function, dso: dso,
-            track: .subject("app", action: "appeared")
+            track: .subject("app", action: "appeared"),
         )
     }
 
@@ -243,37 +251,43 @@ class Tracker: ObservableObject {
         #endif
     }
 
-    func screen(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                named name: String, _ parameters: [String: Any?] = [:])
+    func screen(
+        file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+        named name: String, _: [String: Any?] = [:],
+    )
         -> Screen {
         Screen(name: name, tracker: self)
     }
 
-    func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               track: Tracking)
+    func begin(
+        file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+        track: Tracking,
+    )
         -> TimedEvent {
         trc(file: file, line: line, function: function, dso: dso, "> \(track.subject) #\(track.action)")
         return TimedEvent(track: track, start: Date())
     }
 
-    func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-               track: Tracking) {
+    func event(
+        file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+        track: Tracking,
+    ) {
         self.event(file: file, line: line, function: function, dso: dso, named: "\(track.subject) >\(track.action)", track.parameters)
     }
 
     #if TARGET_APP
     func feedback(_ rating: Int, comment: String?, contact: String?) {
-#if canImport(UIKit)
+        #if canImport(UIKit)
         if let widget = [
             .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
         ][AppConfig.shared.environment]?.feedback.b64Decrypt() {
             Countly.sharedInstance().recordRatingWidget(
-                withID: widget, rating: rating, email: contact, comment: comment, userCanBeContacted: contact != nil
+                withID: widget, rating: rating, email: contact, comment: comment, userCanBeContacted: contact != nil,
             )
         }
-#elseif canImport(AppKit)
+        #elseif canImport(AppKit)
         // TODO: macOS
-#endif
+        #endif
     }
     #endif
 
@@ -288,10 +302,11 @@ class Tracker: ObservableObject {
         #if TARGET_APP
         assert(Thread.isMainThread, "Countly assumes main-thread access.")
         if !AppConfig.shared.offline {
-            if self.hasCountlyStartedConfig == nil, let countly = [
-                .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
-            ][AppConfig.shared.environment],
-                let countlyKey = countly.key.b64Decrypt(), let countlySalt = countly.salt.b64Decrypt() {
+            if self.hasCountlyStartedConfig == nil,
+               let countly = [
+                   .private: secrets.countly.private, .pilot: secrets.countly.pilot, .public: secrets.countly.public,
+               ][AppConfig.shared.environment],
+               let countlyKey = countly.key.b64Decrypt(), let countlySalt = countly.salt.b64Decrypt() {
                 let countlyConfig = using(CountlyConfig()) {
                     $0.host = "https://countly.spectre.app"
                     $0.urlSessionConfiguration = URLSession.optionalConfiguration()
@@ -304,9 +319,10 @@ class Tracker: ObservableObject {
                     $0.apm().enableManualAppLoadedTrigger = true
                     $0.apm().enableForegroundBackgroundTracking = true
                     $0.enableDebug = false
-                    $0.pushTestMode = [
-                        .private: .development, .pilot: .testFlightOrAdHoc, .public: nil,
-                    ][AppConfig.shared.environment] ?? .development
+                    $0.pushTestMode =
+                        [
+                            .private: .development, .pilot: .testFlightOrAdHoc, .public: nil,
+                        ][AppConfig.shared.environment] ?? .development
                 }
                 Countly.sharedInstance().start(with: countlyConfig)
                 self.hasCountlyStartedConfig = countlyConfig
@@ -316,26 +332,26 @@ class Tracker: ObservableObject {
                 countlyConfig.customMetrics = self.identifiers.merging(self.tags)
 
                 #if TARGET_APP
-#if canImport(UIKit)
+                #if canImport(UIKit)
                 if UIApplication.shared.isRegisteredForRemoteNotifications {
                     Countly.sharedInstance().giveConsent(forFeature: .pushNotifications)
                 }
                 else {
                     Countly.sharedInstance().cancelConsent(forFeature: .pushNotifications)
                 }
-#elseif canImport(AppKit)
+                #elseif canImport(AppKit)
                 // TODO: macOS
-#endif
+                #endif
                 #endif
 
                 if AppConfig.shared.diagnostics {
                     Countly.sharedInstance().giveConsent(
-                        forFeatures: [.sessions, .events, .userDetails, .viewTracking, .performanceMonitoring, .feedback]
+                        forFeatures: [.sessions, .events, .userDetails, .viewTracking, .performanceMonitoring, .feedback],
                     )
                 }
                 else {
                     Countly.sharedInstance().cancelConsent(
-                        forFeatures: [.sessions, .events, .userDetails, .viewTracking, .performanceMonitoring, .feedback]
+                        forFeatures: [.sessions, .events, .userDetails, .viewTracking, .performanceMonitoring, .feedback],
                     )
                 }
             }
@@ -357,10 +373,10 @@ class Tracker: ObservableObject {
                     $0.swiftAsyncStacktraces = true
                     $0.sendDefaultPii = false
                     $0.tracesSampleRate = 0.1
-#if canImport(UIKit)
+                    #if canImport(UIKit)
                     $0.enableUserInteractionTracing = true
                     $0.attachScreenshot = false
-#endif
+                    #endif
                 }
                 self.hasSentryStarted = true
             }
@@ -402,8 +418,10 @@ class Tracker: ObservableObject {
         return uuid
     }
 
-    private func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                       named name: String, _ parameters: [String: Any?] = [:], timing: TimedEvent? = nil) {
+    private func event(
+        file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+        named name: String, _ parameters: [String: Any?] = [:], timing: TimedEvent? = nil,
+    ) {
         var eventParameters = parameters.compactMapValues { unwrap($0) }
         #if TARGET_APP
         eventParameters["app_container"] = "app"
@@ -426,7 +444,9 @@ class Tracker: ObservableObject {
             trc(file: file, line: line, function: function, dso: dso, "# \(name): [\(untimedEventParameters)]")
         }
 
-        let sourceParameters: [String: Any] = ["src_file": FilePath(file).lastComponent ?? file, "src_line": line, "src_function": function]
+        let sourceParameters: [String: Any] = [
+            "src_file": FilePath(file).lastComponent ?? file, "src_line": line, "src_function": function,
+        ]
         eventParameters.merge(sourceParameters, uniquingKeysWith: { $1 })
         untimedEventParameters.merge(sourceParameters, uniquingKeysWith: { $1 })
 
@@ -441,13 +461,14 @@ class Tracker: ObservableObject {
         #if TARGET_APP
         if self.hasCountlyStartedConfig != nil {
             Countly.sharedInstance().recordEvent(
-                name, segmentation: eventParameters.mapValues {
+                name,
+                segmentation: eventParameters.mapValues {
                     String(describing: $0)
                         .replacingOccurrences(of: #"\b0x[A-Z0-9]+\b"#, with: "0x?", options: [.regularExpression, .caseInsensitive])
                 },
                 count: eventParameters["event.count"] as? UInt ?? 1,
                 sum: eventParameters["event.sum"] as? Double ?? 0,
-                duration: duration
+                duration: duration,
             )
         }
         #endif
@@ -468,8 +489,10 @@ class Tracker: ObservableObject {
             LeakRegistry.shared.register(self)
         }
 
-        func open(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                  _ parameters: [String: Any?] = [:]) {
+        func open(
+            file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+            _ parameters: [String: Any?] = [:],
+        ) {
             // Log
             if parameters.isEmpty {
                 trc(file: file, line: line, function: function, dso: dso, "@ \(self.name)")
@@ -497,14 +520,18 @@ class Tracker: ObservableObject {
             #endif
         }
 
-        func begin(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   track: Tracking)
+        func begin(
+            file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+            track: Tracking,
+        )
             -> TimedEvent {
             self.tracker.begin(file: file, line: line, function: function, dso: dso, track: track.scoped(self.name))
         }
 
-        func event(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                   track: Tracking) {
+        func event(
+            file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+            track: Tracking,
+        ) {
             self.tracker.event(file: file, line: line, function: function, dso: dso, track: track.scoped(self.name))
         }
 
@@ -517,7 +544,7 @@ class Tracker: ObservableObject {
 
     class TimedEvent {
         let tracking: Tracking
-        let start:    Date
+        let start: Date
 
         private var ended = false
 
@@ -531,15 +558,17 @@ class Tracker: ObservableObject {
             self.cancel()
         }
 
-        func end(file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
-                 _ parameters: [String: Any?] = [:]) {
+        func end(
+            file: String = #file, line: Int32 = #line, function: String = #function, dso: UnsafeRawPointer = #dsohandle,
+            _ parameters: [String: Any?] = [:],
+        ) {
             guard !self.ended
             else { return }
 
             Tracker.shared.event(
                 file: file, line: line, function: function, dso: dso,
                 named: "\(self.tracking.subject) #\(self.tracking.action)",
-                self.tracking.parameters.merging(parameters), timing: self
+                self.tracking.parameters.merging(parameters), timing: self,
             )
             self.ended = true
         }
@@ -551,7 +580,7 @@ class Tracker: ObservableObject {
             Tracker.shared.event(
                 file: file, line: line, function: function, dso: dso,
                 named: "\(self.tracking.subject) !\(self.tracking.action)",
-                self.tracking.parameters.merging(["result": "cancelled"]), timing: self
+                self.tracking.parameters.merging(["result": "cancelled"]), timing: self,
             )
             self.ended = true
         }

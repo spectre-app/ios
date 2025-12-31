@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -13,15 +14,15 @@ import AppKit
 final class AppConfig: ObservableObject {
     static let shared = AppConfig()
 
-    var isApp:       Bool
-    let isDebug:     Bool
+    var isApp: Bool
+    let isDebug: Bool
     var environment: AppConfiguration
-    let model:       String = {
-#if canImport(UIKit)
+    let model: String = {
+        #if canImport(UIKit)
         UIDevice.current.model
-#elseif canImport(AppKit)
+        #elseif canImport(AppKit)
         "Mac"
-#endif
+        #endif
     }()
 
     @UserDefault("runCount") var runCount: Int = .zero
@@ -30,15 +31,15 @@ final class AppConfig: ObservableObject {
     @UserDefault("memoryProfiler") var memoryProfiler = false
     @UserDefault("diagnosticsDecided") var diagnosticsDecided = false
     @UserDefault("notificationsDecided") var notificationsDecided = false
-//    #if !PUBLIC
-//    @UserDefault("sandboxStore") var sandboxStore: Bool = false
-//    #endif
+    //    #if !PUBLIC
+    //    @UserDefault("sandboxStore") var sandboxStore: Bool = false
+    //    #endif
     @UserDefault("appIcon") var appIcon: AppIcon = .primary
     @UserDefault("theme") var theme: Color.Spectre.Theme = .spectre
     @UserDefault("colorfulSites") var colorfulSites = true
     @UserDefault("allowHandoff") var allowHandoff = true
     @UserDefault("offline") var offline = false
-    @UserDefault("masterPasswordCustomer") var masterPasswordCustomer = false // swiftlint:disable:this inclusive_language
+    @UserDefault("masterPasswordCustomer") var masterPasswordCustomer = false  // swiftlint:disable:this inclusive_language
     #if !PUBLIC
     @UserDefault("testingPremium") var testingPremium = false {
         didSet {
@@ -119,7 +120,7 @@ extension Date: @retroactive RawRepresentable {
 @propertyWrapper
 @Observable
 class UserDefault<T: Equatable>: NSObject {
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T: RawRepresentable, T.RawValue == Int {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T: RawRepresentable, T.RawValue == Int {
         self.init(wrappedValue: wrappedValue, key, defaultValue: wrappedValue.rawValue) {
             store.set($0.rawValue, forKey: key)
         } load: {
@@ -127,7 +128,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T: RawRepresentable, T.RawValue == String {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T: RawRepresentable, T.RawValue == String {
         self.init(wrappedValue: wrappedValue, key, defaultValue: wrappedValue.rawValue) {
             store.set($0.rawValue, forKey: key)
         } load: {
@@ -135,7 +136,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == String {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == String {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -143,7 +144,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init<E: Equatable>(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [E] {
+    convenience init<E: Equatable>(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [E] {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -151,7 +152,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init<E: Equatable>(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [String: E] {
+    convenience init<E: Equatable>(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [String: E] {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -159,7 +160,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Data {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Data {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -167,7 +168,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [String] {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == [String] {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -175,7 +176,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Int {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Int {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -183,7 +184,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Float {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Float {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -191,7 +192,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Double {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Double {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -199,7 +200,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Bool {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == Bool {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -207,7 +208,7 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == URL {
+    convenience init(wrappedValue: T, _ key: String, store: UserDefaults = .shared) where T == URL {
         self.init(wrappedValue: wrappedValue, key) {
             store.set($0, forKey: key)
         } load: {
@@ -215,9 +216,9 @@ class UserDefault<T: Equatable>: NSObject {
         }
     }
 
-    public init(
+    init(
         wrappedValue: T, _ key: String, store: UserDefaults = .shared,
-        defaultValue: Any? = nil, save: @escaping (T) -> Void, load: @escaping () -> T
+        defaultValue: Any? = nil, save: @escaping (T) -> Void, load: @escaping () -> T,
     ) {
         self.key = key
         self.store = store
@@ -251,8 +252,8 @@ class UserDefault<T: Equatable>: NSObject {
     private let load: () -> T
 
     // swiftlint:disable:next block_based_kvo
-    override public func observeValue(
-        forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?
+    override func observeValue(
+        forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?,
     ) {
         // trc("change to: %@: %@", keyPath ?? "", change ?? [:])
         self.withMutation(keyPath: \.wrappedValue) {}

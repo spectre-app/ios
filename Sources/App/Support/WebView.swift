@@ -7,7 +7,7 @@ import SafariServices
 import SwiftUI
 
 struct WebView: UIViewControllerRepresentable {
-    let url:     URL
+    let url: URL
     var dismiss: ((SFSafariViewController) -> Void)?
 
     func makeCoordinator() -> WebDelegate {
@@ -20,7 +20,7 @@ struct WebView: UIViewControllerRepresentable {
         }
     }
 
-    func updateUIViewController(_ viewController: SFSafariViewController, context: Context) {
+    func updateUIViewController(_: SFSafariViewController, context: Context) {
         context.coordinator.view = self
     }
 
