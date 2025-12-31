@@ -51,58 +51,81 @@ public class Keychain {
         return (present: status != errSecItemNotFound, available: status == errSecSuccess, status: status)
     }
 
-    public func deleteKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) throws {
-        let query = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
+    public func deleteKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            do {
+                let query = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
 
-        let status = SecItemDelete(query as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound
-        else { throw AppError.issue("Biometrics key not deleted", reason: userName, cause: status) }
+                let status = SecItemDelete(query as CFDictionary)
+                guard status == errSecSuccess || status == errSecItemNotFound
+                else { throw AppError.issue("Biometrics key not deleted", reason: userName, cause: status) }
+
+                continuation.resume()
+            }
+            catch {
+                continuation.resume(throwing: error)
+            }
+        }
     }
 
-    public func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) throws
+    public func loadKey(for userName: String, algorithm: SpectreAlgorithm, context: LAContext) async throws
         -> UnsafePointer<SpectreUserKey> {
+        try await withCheckedThrowingContinuation { continuation in
 //        let spinner = await AlertController( title: "Biometrics Authentication",
 //                                       message: "Please authenticate to access user key for:\n\(userName)",
 //                                       content: UIActivityIndicatorView( style: .medium ) )
 //        await spinner.show( dismissAutomatically: false )
 //        defer { Task { @MainActor in spinner.dismiss() } }
+            do {
+                context.interactionNotAllowed = false
+                var query = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
+                query[kSecReturnData] = true
 
-        context.interactionNotAllowed = false
-        var query = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
-        query[kSecReturnData] = true
+                var result: CFTypeRef?
+                let status = SecItemCopyMatching(query as CFDictionary, &result)
+                guard status == errSecSuccess
+                else { throw AppError.issue("Biometrics key denied", reason: userName, cause: status) }
 
-        var result: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess
-        else { throw AppError.issue("Biometrics key denied", reason: userName, cause: status) }
+                guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
+                else { throw AppError.internal(reason: "Biometrics key not valid", details: userName) }
 
-        guard let data = result as? Data, data.count == MemoryLayout<SpectreUserKey>.size
-        else { throw AppError.internal(reason: "Biometrics key not valid", details: userName) }
-
-        let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate(capacity: 1)
-        data.withUnsafeBytes { userKeyBytes.initialize(to: $0.load(as: SpectreUserKey.self)) }
-        return UnsafePointer(userKeyBytes)
+                let userKeyBytes = UnsafeMutablePointer<SpectreUserKey>.allocate(capacity: 1)
+                data.withUnsafeBytes { userKeyBytes.initialize(to: $0.load(as: SpectreUserKey.self)) }
+                continuation.resume(returning: UnsafePointer(userKeyBytes))
+            }
+            catch {
+                continuation.resume(throwing: error)
+            }
+        }
     }
 
-    public func saveKey(for userName: String, algorithm: SpectreAlgorithm, keyFactory: KeyFactory, context: LAContext) throws {
-        let userKey = try keyFactory.newKey(for: algorithm)
-        defer { userKey.deallocate() }
+    public func saveKey(for userName: String, algorithm: SpectreAlgorithm, keyFactory: KeyFactory, context: LAContext) async throws {
+        let userKey = try await keyFactory.getKey(for: algorithm)
 
-        let attributes: [CFString: Any] = [
-            kSecValueData: Data(buffer: UnsafeBufferPointer(start: userKey, count: 1)),
-            kSecAttrSynchronizable: false,
-            kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(userName)",
-            kSecAttrDescription: "\(productName) user key (\(algorithm))",
-        ]
+        try await withCheckedThrowingContinuation { continuation in
+            do {
+                let attributes: [CFString: Any] = [
+                    kSecValueData: userKey.data(),
+                    kSecAttrSynchronizable: false,
+                    kSecAttrLabel: "Key\(algorithm.description.uppercased()): \(userName)",
+                    kSecAttrDescription: "\(productName) user key (\(algorithm))",
+                ]
 
-        context.interactionNotAllowed = false
-        let query  = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
-        var status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
-        if status == errSecItemNotFound {
-            status = SecItemAdd(query.merging(attributes, uniquingKeysWith: { $1 }) as CFDictionary, nil)
+                context.interactionNotAllowed = false
+                let query  = try self.keyQuery(for: userName, algorithm: algorithm, context: context)
+                var status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+                if status == errSecItemNotFound {
+                    status = SecItemAdd(query.merging(attributes, uniquingKeysWith: { $1 }) as CFDictionary, nil)
+                }
+                guard status == errSecSuccess
+                else { throw AppError.issue("Biometrics key not saved", reason: userName, cause: status) }
+
+                continuation.resume()
+            }
+            catch {
+                continuation.resume(throwing: error)
+            }
         }
-        guard status == errSecSuccess
-        else { throw AppError.issue("Biometrics key not saved", reason: userName, cause: status) }
     }
 }
 

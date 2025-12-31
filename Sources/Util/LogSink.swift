@@ -130,37 +130,35 @@ class LogSink {
         $0.dateFormat = "DDD'-'HH':'mm':'ss"
     }
 
-    public func register() {
-        Spectre.shared.use {
-            guard self.recordSink == nil
-            else { return }
+    public func register() async {
+        guard self.recordSink == nil
+        else { return }
 
-            self.recordSink = logRecords.sink { record in
-                let osLevel: OSLogType = [
-                    .trace: .debug, .debug: .debug, .info: .info,
-                    .warning: .default, .error: .error, .fatal: .fault,
-                ][record.level] ?? .debug
-                Logger(subsystem: productIdentifier, category: "\(record.fileStem):\(record.line)")
-                    .log(level: osLevel,
-                    """
-                    \("\(let: record.action?.tracking, "({}) ")")\
-                    \(record.message)\
-                    \("\(let: record.data.nonEmpty, "\n{}")", privacy: .sensitive(mask: .none))
-                    """)
-            }
+        self.recordSink = logRecords.sink { record in
+            let osLevel: OSLogType = [
+                .trace: .debug, .debug: .debug, .info: .info,
+                .warning: .default, .error: .error, .fatal: .fault,
+            ][record.level] ?? .debug
+            Logger(subsystem: productIdentifier, category: "\(record.fileStem):\(record.line)")
+                .log(level: osLevel,
+                """
+                \("\(let: record.action?.tracking, "({}) ")")\
+                \(record.message)\
+                \("\(let: record.data.nonEmpty, "\n{}")", privacy: .sensitive(mask: .none))
+                """)
+        }
 
-            spectre_verbosity = .debug
-            _ = $0.log_sink_register { eventPointer in
-                guard let event = eventPointer?.pointee, let message = String.valid(event.formatter(eventPointer))
-                else { return false }
+        spectre_verbosity = .debug
+        _ = await Spectre.shared.log_sink_register { eventPointer in
+            guard let event = eventPointer?.pointee, let message = String.valid(event.formatter(eventPointer))
+            else { return false }
 
-                logRecords.send(LogRecord(
-                    occurrence: .now, level: event.level,
-                    file: .valid(event.file) ?? "", line: event.line, function: .valid(event.function) ?? "",
-                    message: message, action: currentAction, data: []
-                ))
-                return true
-            }
+            logRecords.send(LogRecord(
+                occurrence: .now, level: event.level,
+                file: .valid(event.file) ?? "", line: event.line, function: .valid(event.function) ?? "",
+                message: message, action: currentAction, data: []
+            ))
+            return true
         }
 
         withObservationTracking { [weak self] in

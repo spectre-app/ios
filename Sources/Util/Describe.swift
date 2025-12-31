@@ -71,33 +71,3 @@ extension NSObject: Describable {
         !details ? ObjectIdentifier(self).identity : "[\(ObjectIdentifier(self).identity)]: \(_describe(Self.self))"
     }
 }
-
-//extension UIView {
-//    override public func describe(details: Bool = true) -> String {
-//        Thread.current.threadDictionary["_fromDescribe"] = true
-//        defer {
-//            Thread.current.threadDictionary["_fromDescribe"] = nil
-//        }
-//
-//        if let identifier = self.accessibilityIdentifier?.nonEmpty {
-//            return !details
-//                ? identifier
-//                : "\(identifier): \(_describe(Self.self))"
-//        }
-//
-//        let owner = self.ownership
-//        if let owner {
-//            return !details
-//                ? owner.property
-//                : "\(_describe(type(of: owner.owner), abbreviated: true)).\(owner.property): \(_describe(Self.self))"
-//        }
-//
-//        if let index = self.superview?.subviews.firstIndex(of: self) {
-//            return !details
-//                ? "[\(index)]"
-//                : "[\(index)]: \(_describe(Self.self))"
-//        }
-//
-//        return super.describe(details: details)
-//    }
-//}

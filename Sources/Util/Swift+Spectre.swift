@@ -37,6 +37,13 @@ public func withObservationTracking(_ apply: @Sendable @escaping () -> Void) {
     })
 }
 
+// FIXME: This should be removed and replaced by a safe solution.
+public func unsafelyAwait<R>(task: @escaping () async -> R) -> R {
+    let box = AwaitBox<R>()
+    Task.detached { box.value = await task() }
+    return box.await()
+}
+
 extension Optional {
     public func flatMap<E: Error, U: ~Copyable>(_ transform: (Wrapped) async throws(E) -> U?) async throws(E) -> U? {
         guard let value = self

@@ -18,7 +18,8 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         LeakRegistry.shared.register(self)
 
-        LogSink.shared.register()
+        // FIXME: This needs to complete before moving on.
+        Task { await LogSink.shared.register() }
         Tracker.shared.startup()
     }
 
@@ -55,7 +56,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
         dbg("provideCredentialWithoutUserInteraction -> credentialRequest: \(credentialRequest)")
 
         self.rootViewController = nil
-        Task.detached {
+        Task.detached { @MainActor in
             do {
                 let userFiles = AppFeature.autofill.isEnabled ? await Marshal.shared.updateUserFiles().filter(\.autofill) : []
                 let user = try await {
@@ -103,7 +104,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
 
                 inf("Autofilling non-interactively: \(login), for service: \(credentialRequest.credentialIdentity.serviceIdentifier)")
                 let credential = ASPasswordCredential(user: login, password: password)
-                await self.extensionContext.completeRequest(withSelectedCredential: credential) { expired in
+                self.extensionContext.completeRequest(withSelectedCredential: credential) { expired in
                     if !expired {
                         site.use()
                     }
@@ -112,7 +113,7 @@ class AutoFillProviderController: ASCredentialProviderViewController {
             catch {
                 wrn("Autofill unsuccessful.", data: error)
 
-                await self.extensionContext.cancelRequest(withError: ASExtensionError(for: error))
+                self.extensionContext.cancelRequest(withError: ASExtensionError(for: error))
             }
         }
     }

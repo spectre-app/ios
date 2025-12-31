@@ -81,8 +81,8 @@ final class AppConfig: ObservableObject {
 
         withObservationTracking {
             if self.offline {
-                URLSession.optional.unset()
-                URLSession.required.unset()
+                URLSession.optional.clear()
+                URLSession.required.clear()
             }
             if self.theme.isPremium, !AppFeature.style.isEnabled {
                 self.theme = .spectre
@@ -102,7 +102,7 @@ final class AppConfig: ObservableObject {
     private static var toggles = SingleLockBox(value: [String: UserDefault<Bool>]())
 
     static func `for`(_ key: String, default: Bool = false) -> UserDefault<Bool> {
-        self.toggles.use { $0[key, defaultSet: UserDefault(wrappedValue: `default`, key)] }
+        self.toggles.using { $0[key, defaultSet: UserDefault(wrappedValue: `default`, key)] }
     }
 }
 

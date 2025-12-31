@@ -5,6 +5,7 @@
 import Foundation
 
 // swiftlint:disable:next type_body_length
+// FIXME: This and the Spectre actor need to share the same unique Spectre thread/executor.
 actor Marshal: Observed, LeakObserver {
     public static let shared = Marshal()
 
@@ -1145,6 +1146,6 @@ extension SpectreMarshalError: LocalizedError {
     }
 }
 
-protocol MarshalObserver {
+protocol MarshalObserver: AnyObject {
     func didChange(userFiles: [Marshal.UserFile])
 }

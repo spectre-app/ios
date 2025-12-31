@@ -31,7 +31,7 @@ struct UserEditScreen: View {
         }
         .popoverTitle(self.user.userName)
         .task(id: String(reflecting: type(of: self.user.userKeyFactory))) {
-            self.authenticatedIdentifier = (try? self.user.authenticatedIdentifier) ?? ""
+            self.authenticatedIdentifier = (try? await self.user.authenticatedIdentifier) ?? ""
         }
         .task(id: self.user.loginState) {
             self.loginName = await (try? self.user.result(keyPurpose: .identification)?.task.value) ?? ""
@@ -147,7 +147,7 @@ struct UserEditScreen: View {
                     .padding(.horizontal, -.spectre.margin)
 
                     Text(
-                        "Yearly budget of the primary attacker persona you're seeking to repel (@ \(self.user.attacker?.rig.cost_per_kwh ?? .zero)$/kWh)."
+                        "Yearly budget of the primary attacker persona you're seeking to repel (@ \((self.user.attacker?.rig.cost_per_kwh ?? .zero).formatted())$/kWh)."
                     )
                     .font(.caption)
                 }
@@ -216,35 +216,35 @@ struct UserEditScreen: View {
             .alert(
                 "\(self.algorithm ?? .current < self.user.algorithm ? "Downgrade" : "Upgrade") your Spectre user",
                 isPresented: self.$algorithm.isSet(), presenting: self.algorithm
-            ) { algorithm in
+            ) { (algorithm: SpectreAlgorithm) in
                 SecureField(prompt: "Enter your Spectre secret to confirm", text: self.$secret)
                 Button("Cancel", role: .cancel) {
                     self.secret = ""
                 }
                 Button(algorithm < self.user.algorithm ? "Downgrade" : "Upgrade") {
-                    defer { self.secret = "" }
+                    Task {
+                        defer { self.secret = "" }
 
-                    do {
-                        let keyFactory = SecretKeyFactory(userName: self.user.userName, userSecret: self.secret)
-                        var key = try keyFactory.newKey(for: self.user.algorithm)
-                        defer { key.deallocate() }
-                        if self.user.userKeyID != (key.pointee.keyID) {
-                            throw AppError.issue("Incorrect Spectre secret for \(self.user.userName)")
+                        do {
+                            let keyFactory = SecretKeyFactory(userName: self.user.userName, userSecret: self.secret)
+                            var key = try await keyFactory.getKey(for: self.user.algorithm)
+                            if try !key.matches(keyID: self.user.userKeyID) {
+                                throw AppError.issue("Incorrect Spectre secret for \(self.user.userName)")
+                            }
+
+                            key = try await keyFactory.getKey(for: algorithm)
+                            self.user.identicon = keyFactory.metadata.identicon
+                            self.user.algorithm = key.algorithm
+                            self.user.userKeyID = key.keyID
                         }
-
-                        key = try keyFactory.newKey(for: algorithm)
-                        defer { key.deallocate() }
-                        self.user.identicon = keyFactory.metadata.identicon
-                        self.user.algorithm = key.pointee.algorithm
-                        self.user.userKeyID = key.pointee.keyID
-                    }
-                    catch {
-                        err("Couldn't \(algorithm < self.user.algorithm ? "downgrade" : "upgrade") user", data: error)
+                        catch {
+                            err("Couldn't \(algorithm < self.user.algorithm ? "downgrade" : "upgrade") user", data: error)
+                        }
                     }
                 }
             } message: {
                 Text(
-                    "Your Spectre user algorithm will be \(self.algorithm ?? .current < self.user.algorithm ? "downgraded" : "upgraded") to \($0)."
+                    "Your Spectre user algorithm will be \(self.algorithm ?? .current < self.user.algorithm ? "downgraded" : "upgraded") to \($0.localizedDescription)."
                 )
             }
 

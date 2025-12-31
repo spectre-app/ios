@@ -22,7 +22,7 @@ public struct AsyncView: View {
         }
     }
 
-    public init<Input: Hashable, Output>(
+    public init<Input: Hashable & Sendable, Output>(
         onChange input: Input, do task: @escaping (Input) async throws -> Output,
         @ViewBuilder finished: @escaping (Result<Output, Error>?) -> some View
     ) {

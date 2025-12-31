@@ -196,7 +196,7 @@ class Tracker: ObservableObject {
 
     func login(user: User) {
         Task.detached {
-            guard let userId = try? user.authenticatedIdentifier
+            guard let userId = try? await user.authenticatedIdentifier
             else {
                 wrn("Login [user: unknown]")
                 return

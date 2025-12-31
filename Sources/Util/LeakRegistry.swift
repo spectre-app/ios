@@ -115,8 +115,8 @@ class LeakRegistry: LeakObserver {
 //        #if TARGET_APP
 //        SitePreview.linkPreview.unset()
 //        #endif
-        URLSession.required.unset()
-        URLSession.optional.unset()
+        URLSession.required.clear()
+        URLSession.optional.clear()
     }
 
     struct Registration: CustomStringConvertible {

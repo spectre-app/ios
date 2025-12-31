@@ -36,7 +36,8 @@ struct SpectreApp: App {
         func application(_ application: UIApplication,
                          willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil)
             -> Bool {
-            LogSink.shared.register()
+            // FIXME: This needs to complete before moving on.
+            Task { await LogSink.shared.register() }
             Tracker.shared.startup()
             Migration.shared.perform()
             return true
@@ -342,7 +343,7 @@ struct SpectreApp: App {
                   let searchURL = URL(string: "https://itunes.apple.com/lookup?id=\(appleID)&country=\(country)&limit=1")
             else { throw AppError.internal(reason: "No storefront") }
 
-            guard let urlSession = URLSession.required.get()
+            guard let urlSession = URLSession.required.object
             else { throw AppError.issue("App is in offline mode") }
 
             let data = try await urlSession.data(for: URLRequest(url: searchURL)).0

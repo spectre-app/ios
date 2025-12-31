@@ -14,12 +14,17 @@ final actor AutoFill {
             guard oldValue != self.credentials
             else { return }
 
-            ASCredentialIdentityStore.shared.getState { state in
+            Task {
+                let state = await ASCredentialIdentityStore.shared.state()
                 // If extension is disabled credentials in the store got purged by the system: reflect that in our cache.
                 guard state.isEnabled
                 else {
                     dbg("autofill: clearing")
-                    ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
+                    do {
+                        try await ASCredentialIdentityStore.shared.removeAllCredentialIdentities()
+                    } catch {
+                        err("Cannot clear autofill credentials", data: error)
+                    }
                     UserDefaults.shared.removeObject(forKey: "autofill.credentials")
                     self.credentials.removeAll()
                     return
@@ -28,10 +33,10 @@ final actor AutoFill {
                 if !state.supportsIncrementalUpdates {
                     let allCredentials = self.credentials
                     dbg("autofill: replacing: \(allCredentials.count)")
-                    ASCredentialIdentityStore.shared.replaceCredentialIdentities(allCredentials.flatMap(\.identities)) { success, error in
-                        if !success || error != nil {
-                            err("Cannot reset autofill credentials", data: allCredentials, error)
-                        }
+                    do {
+                        try await ASCredentialIdentityStore.shared.replaceCredentialIdentities(allCredentials.flatMap(\.identities))
+                    } catch {
+                        err("Cannot reset autofill credentials", data: allCredentials, error)
                     }
                     return
                 }
@@ -39,23 +44,22 @@ final actor AutoFill {
                     let expiredCredentials = oldValue.subtracting(self.credentials)
                     if !expiredCredentials.isEmpty {
                         dbg("autofill: removing: \(expiredCredentials.count)")
-                        ASCredentialIdentityStore.shared
-                            .removeCredentialIdentities(expiredCredentials.flatMap(\.identities)) { success, error in
-                                if !success || error != nil {
-                                    err("Cannot purge autofill credentials", data: expiredCredentials, error)
-                                }
-                            }
+                        do {
+                            try await ASCredentialIdentityStore.shared.removeCredentialIdentities(expiredCredentials.flatMap(\.identities))
+                        } catch {
+                            err("Cannot purge autofill credentials", data: expiredCredentials, error)
+                        }
                     }
 
                     let insertedCredentials = self.credentials.subtracting(oldValue)
                     if !insertedCredentials.isEmpty {
                         dbg("autofill: inserting: \(insertedCredentials.count)")
-                        ASCredentialIdentityStore.shared
-                            .saveCredentialIdentities(insertedCredentials.flatMap(\.identities)) { success, error in
-                                if !success || error != nil {
-                                    err("Cannot save autofill credentials", data: insertedCredentials, error)
-                                }
-                            }
+                        do {
+                            try await ASCredentialIdentityStore.shared.saveCredentialIdentities(insertedCredentials.flatMap(\.identities))
+                        }
+                        catch {
+                            err("Cannot save autofill credentials", data: insertedCredentials, error)
+                        }
                     }
                 }
 

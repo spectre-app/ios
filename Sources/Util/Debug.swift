@@ -3,12 +3,12 @@
 //
 
 #if DEBUG
-var debuggedObjects = [WeakBox<Any>]()
+var debuggedObjects = [WeakBox<AnyObject>]()
 
 @discardableResult
 func debugObject<O: AnyObject>(_ object: O, ifDebugging other: AnyObject? = nil) -> O {
     if !isDebuggingObject(object), other == nil || isDebuggingObject(other) {
-        debuggedObjects.append(WeakBox(object))
+        debuggedObjects.append(WeakBox(object: object))
         LeakRegistry.shared.setDebugging(object)
         dbg(ifDebugging: object, "Started debugging: \(ObjectIdentifier(object).identity): \(object)")
     }
@@ -20,6 +20,6 @@ func isDebuggingObject(_ object: AnyObject?) -> Bool {
     guard let object
     else { return false }
 
-    return debuggedObjects.contains(WeakBox(object))
+    return debuggedObjects.contains(WeakBox(object: object))
 }
 #endif

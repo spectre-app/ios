@@ -125,8 +125,9 @@ extension SpectreOperation: Hashable {
     }
 }
 
-class Spectre {
-    static let shared = RecursiveLockBox(value: Spectre())
+// FIXME: This and the Marshal actor need to share the same unique Spectre thread/executor.
+actor Spectre {
+    static let shared = Spectre()
     private init() {}
 
     func user_key(userName: String?, userSecret: String?, algorithmVersion: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {

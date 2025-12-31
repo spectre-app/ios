@@ -7,7 +7,7 @@ import Foundation
 import UIKit
 #endif
 
-public enum AppIcon: String, Identifiable, CaseIterable {
+public enum AppIcon: String, Identifiable, CaseIterable, Sendable {
     case personal = "Personal", enterprise = "Enterprise"
 
     static let primary = ((

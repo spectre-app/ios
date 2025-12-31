@@ -2215,29 +2215,17 @@
 		DAA3207229B4EDAB00AB142C /* App */ = {
 			isa = PBXGroup;
 			children = (
+				DABE7D5F2EA5C4C100449939 /* Support */,
 				DA0594352A5A2A4100418897 /* App.swift */,
-				DAC89D462AC8F34600BD77EA /* AsyncView.swift */,
 				DAA2DFE52BB782BC00D442CF /* AutoFillSetupScreen.swift */,
-				DA9391DC2B93D25300FD0B2D /* Block.swift */,
-				DA9391DA2B8AAF3C00FD0B2D /* Carousel.swift */,
 				DAA3207329B4EDC700AB142C /* LoginScreen.swift */,
 				DA31C26A2B731C350043D10A /* LogScreen.swift */,
 				DA55A0732CDA58E5005B644D /* MainWindow.swift */,
-				DA31C2642B6F07D40043D10A /* MessagesHost.swift */,
-				DAA9CD742CF82424009DA0D6 /* Pager.swift */,
-				DAA9CD722CF822CA009DA0D6 /* PopoverForm.swift */,
-				DA5FAB792B65FDE100E4F34B /* PremiumContent.swift */,
-				DAB0B3B42BAF5EDB00BDCDC8 /* SecretField.swift */,
 				DA31C2662B7314F10043D10A /* SettingsScreen.swift */,
 				DAB0B3B82BAF938500BDCDC8 /* SiteDeltaScreen.swift */,
 				DA31C2682B7316A20043D10A /* SiteEditScreen.swift */,
 				DAD3D0E62AA2DBFF00EC264A /* SitesScreen.swift */,
-				DAA3207629B4F20D00AB142C /* SpectreTheme.swift */,
-				DAA6BAC829F8CB0E00F54B65 /* SpectreTipsView.swift */,
-				DA2FDA7A29D9DDE1009249F3 /* SwiftUI+Spectre.swift */,
-				DA5FAB772B5A071F00E4F34B /* TextArea.swift */,
 				DA9391D82B81105800FD0B2D /* UserEditScreen.swift */,
-				DA5FAB712B53332B00E4F34B /* WebView.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -2256,6 +2244,26 @@
 				93D39760DAE73795CA63D02A /* Util */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		DABE7D5F2EA5C4C100449939 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				DAC89D462AC8F34600BD77EA /* AsyncView.swift */,
+				DA9391DC2B93D25300FD0B2D /* Block.swift */,
+				DA9391DA2B8AAF3C00FD0B2D /* Carousel.swift */,
+				DA31C2642B6F07D40043D10A /* MessagesHost.swift */,
+				DAA9CD742CF82424009DA0D6 /* Pager.swift */,
+				DAA9CD722CF822CA009DA0D6 /* PopoverForm.swift */,
+				DA5FAB792B65FDE100E4F34B /* PremiumContent.swift */,
+				DAB0B3B42BAF5EDB00BDCDC8 /* SecretField.swift */,
+				DAA3207629B4F20D00AB142C /* SpectreTheme.swift */,
+				DAA6BAC829F8CB0E00F54B65 /* SpectreTipsView.swift */,
+				DA2FDA7A29D9DDE1009249F3 /* SwiftUI+Spectre.swift */,
+				DA5FAB772B5A071F00E4F34B /* TextArea.swift */,
+				DA5FAB712B53332B00E4F34B /* WebView.swift */,
+			);
+			path = Support;
 			sourceTree = "<group>";
 		};
 		DACA23B41705DF7D002C6C22 /* Resources */ = {
@@ -3252,7 +3260,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				LLVM_LTO = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -3319,7 +3327,6 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre.autofill;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre AutoFill Development";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=*]" = "Spectre AutoFill Development (macOS)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_AUTOFILL $(inherited)";
 			};
 			name = Development;
@@ -3708,7 +3715,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				LLVM_LTO = NO;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -3900,7 +3907,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2011, Maarten Billemont";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				LLVM_LTO = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -3945,7 +3952,6 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.spectre;
 				PROVISIONING_PROFILE_SPECIFIER = "Spectre Development";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "Spectre Development (macOS)";
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TARGET_APP $(inherited)";

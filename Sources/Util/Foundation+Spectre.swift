@@ -317,22 +317,22 @@ private let requiredQueue = DispatchQueue(label: "\(productName): Network Requir
 private let optionalQueue = DispatchQueue(label: "\(productName): Network Optional", qos: .background, attributes: [.concurrent])
 
 extension URLSession {
-    public static var required = LazyBox<URLSession> {
+    public static var required = LazyBox<URLSession?> {
         guard !LeakRegistry.shared.isSuspended, !AppConfig.shared.offline
         else { return nil }
 
         return URLSession(configuration: requiredConfiguration(), delegate: nil, delegateQueue: OperationQueue(queue: requiredQueue))
     } unset: {
-        $0.getAllTasks { $0.forEach { $0.cancel() } }
+        $0?.getAllTasks { $0.forEach { $0.cancel() } }
     }
 
-    public static var optional = LazyBox<URLSession> {
+    public static var optional = LazyBox<URLSession?> {
         guard !LeakRegistry.shared.isSuspended, !AppConfig.shared.offline
         else { return nil }
 
         return URLSession(configuration: optionalConfiguration(), delegate: nil, delegateQueue: OperationQueue(queue: optionalQueue))
     } unset: {
-        $0.getAllTasks { $0.forEach { $0.cancel() } }
+        $0?.getAllTasks { $0.forEach { $0.cancel() } }
     }
 
     public static func requiredConfiguration() -> URLSessionConfiguration {

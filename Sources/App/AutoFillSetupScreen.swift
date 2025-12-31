@@ -71,7 +71,7 @@ struct AutoFillSetupScreen: View {
         ) {
             Text(
                 """
-                Consider turning on \(KeychainKeyFactory.factor) as the quickest way to unlock your passwords.
+                Consider turning on \(KeychainKeyFactory.factor.description) as the quickest way to unlock your passwords.
                 """
             )
             Toggle("Biometric Lock", systemImage: KeychainKeyFactory.factor.iconName ?? "touchid", isOn: self.$user.biometricLock)

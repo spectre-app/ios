@@ -58,7 +58,7 @@ public enum AppError: LocalizedError {
     }
 }
 
-extension SpectreAlgorithm: Strideable, CaseIterable, Identifiable, CustomStringConvertible {
+extension SpectreAlgorithm: Strideable, CaseIterable, Identifiable, CustomLocalizedStringResourceConvertible {
     public static let allCases = [Self](.first ... .last)
 
     public var description:          String {
@@ -67,6 +67,10 @@ extension SpectreAlgorithm: Strideable, CaseIterable, Identifiable, CustomString
 
     public var localizedDescription: String {
         String.valid(spectre_algorithm_long_name(self)) ?? "?"
+    }
+
+    public var localizedStringResource: LocalizedStringResource {
+        LocalizedStringResource("\(self.localizedDescription)")
     }
 }
 
@@ -156,7 +160,9 @@ extension SpectreIdenticon: Hashable {
 //    }
 }
 
-extension UnsafePointer: @unchecked @retroactive Sendable where Self.Pointee == SpectreUserKey {}
+struct UnsafeSpectrePointer<P>: @unchecked Sendable {
+    let pointer: UnsafePointer<P>
+}
 
 extension SpectreKeyID: Hashable, CustomStringConvertible {
     public static var unset = SpectreKeyIDUnset
@@ -171,6 +177,10 @@ extension SpectreKeyID: Hashable, CustomStringConvertible {
 
     public var description: String {
         withUnsafeBytes(of: self.hex) { String.valid($0) ?? "-" }
+    }
+
+    public var isValid: Bool {
+        spectre_id_valid([self])
     }
 }
 

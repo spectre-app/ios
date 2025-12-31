@@ -4,32 +4,93 @@
 
 import LocalAuthentication
 
+public class UserKey {
+    public let userName: String
+
+    private let key: UnsafePointer<SpectreUserKey>
+
+    public init(key: UnsafePointer<SpectreUserKey>, for userName: String) {
+        self.key = key
+        self.userName = userName
+    }
+    deinit {
+        self.key.deallocate()
+    }
+
+    public var algorithm: SpectreAlgorithm {
+        self.key.pointee.algorithm
+    }
+
+    public var keyID: SpectreKeyID {
+        self.key.pointee.keyID
+    }
+
+    public func data() -> Data {
+        Data(buffer: UnsafeBufferPointer(start: self.key, count: 1))
+    }
+
+    fileprivate func copy() -> UnsafePointer<SpectreUserKey> {
+        let providedUserKey = UnsafeMutablePointer<SpectreUserKey>.allocate(capacity: 1)
+        providedUserKey.initialize(from: self.key, count: 1)
+        return UnsafePointer<SpectreUserKey>(providedUserKey)
+    }
+
+    public func digest() -> Data? {
+        return withUnsafeBytes(of: self.key.pointee.bytes) {
+            $0.bindMemory(to: UInt8.self).digest()
+        }
+    }
+
+    public func matches(keyID: SpectreKeyID) throws -> Bool {
+        guard self.keyID.isValid
+        else { throw AppError.internal(reason: "Could not determine key ID for authentication key", details: self.userName) }
+
+        return self.keyID == keyID
+    }
+
+    public func result(for name: String, counter: SpectreCounter,
+                       keyPurpose: SpectreKeyPurpose, keyContext: String?,
+                       resultType: SpectreResultType, resultParam: String?,
+                       algorithm: SpectreAlgorithm)
+        throws -> String {
+        guard let result = String.valid(
+            spectre_site_result(self.key, name, resultType, resultParam, counter, keyPurpose, keyContext), consume: true
+        )
+        else { throw AppError.internal(reason: "Cannot calculate result", details: self.userName) }
+
+        return result
+    }
+
+    public func state(for name: String, counter: SpectreCounter,
+                      keyPurpose: SpectreKeyPurpose, keyContext: String?,
+                      resultType: SpectreResultType, resultParam: String?,
+                      algorithm: SpectreAlgorithm)
+        throws -> String {
+        guard let result = String.valid(
+            spectre_site_state(self.key, name, resultType, resultParam, counter, keyPurpose, keyContext), consume: true
+        )
+        else { throw AppError.internal(reason: "Cannot calculate result", details: self.userName) }
+
+        return result
+    }
+}
+
 public class KeyFactory: Hashable {
     public let  userName: String
 
-    fileprivate let keyState = SingleLockBox(value: KeyState())
+    fileprivate let keyState = KeyState()
     fileprivate class KeyState {
-        private var keys = [SpectreAlgorithm: UnsafePointer<SpectreUserKey>]()
+        private var keys = [SpectreAlgorithm: UserKey]()
 
-        deinit {
-            self.keys.forEach { $1.deallocate() }
-            self.keys.removeAll()
-        }
-
-        fileprivate func find(for algorithm: SpectreAlgorithm) -> UnsafePointer<SpectreUserKey>? {
+        fileprivate func find(for algorithm: SpectreAlgorithm) -> UserKey? {
             self.keys[algorithm]
         }
 
-        fileprivate func save(_ newKey: UnsafePointer<SpectreUserKey>) {
-            if let oldKey = self.keys[newKey.pointee.algorithm], oldKey != newKey {
-                oldKey.deallocate()
-            }
-
-            self.keys[newKey.pointee.algorithm] = newKey
+        fileprivate func save(_ getKey: UserKey) {
+            self.keys[getKey.algorithm] = getKey
         }
 
         fileprivate func clear() {
-            self.keys.forEach { $1.deallocate() }
             self.keys.removeAll()
         }
     }
@@ -53,55 +114,47 @@ public class KeyFactory: Hashable {
 
     // MARK: - Interface
 
-    private static let allFactories = SingleLockBox(value: [String: WeakBox<KeyFactory>]())
+    private static var allFactories = SingleLockBox(value: [String: WeakBox<KeyFactory>]())
     public func provide() -> SpectreKeyProvider {
-        KeyFactory.allFactories.use { $0[self.userName] = WeakBox(self) }
+        KeyFactory.allFactories.using { $0[self.userName] = WeakBox(object: self) }
 
         return { algorithm, userName in
-            do {
-                return try String.valid(userName).flatMap { userName in
-                    KeyFactory.allFactories.use { $0[userName]?.value }
-                }?.newKey(for: algorithm)
-            }
-            catch {
-                wrn("Key Unavailable", data: error)
+            unsafelyAwait { () -> UnsafeSpectrePointer<SpectreUserKey>? in
+                do {
+                    if let key = String.valid(userName).flatMap({ userName in
+                        KeyFactory.allFactories.use { $0[userName]?.object }
+                    }) {
+                        return UnsafeSpectrePointer(pointer: try await key.getKey(for: algorithm).copy())
+                    }
+                }
+                catch {
+                    wrn("Key Unavailable", data: error)
+                }
+
                 return nil
-            }
+            }?.pointer
         }
     }
 
-    public func authenticatedIdentifier(for algorithm: SpectreAlgorithm) throws -> String? {
-        let userKey = try self.getKey(for: algorithm)
-
-        return withUnsafeBytes(of: userKey.pointee.bytes) {
-            $0.bindMemory(to: UInt8.self).digest()?.hex()
-        }
+    public func authenticatedIdentifier(for algorithm: SpectreAlgorithm) async throws -> String? {
+        try await self.getKey(for: algorithm).digest()?.hex()
     }
 
-    public func newKey(for algorithm: SpectreAlgorithm) throws -> UnsafePointer<SpectreUserKey> {
-        let userKey = try self.getKey(for: algorithm)
-
-        // Create a copy of the user key to be consumed by the caller.
-        let providedUserKey = UnsafeMutablePointer<SpectreUserKey>.allocate(capacity: 1)
-        providedUserKey.initialize(from: userKey, count: 1)
-        return UnsafePointer<SpectreUserKey>(providedUserKey)
-    }
-
-    // MARK: - Private
-
-    private func getKey(for algorithm: SpectreAlgorithm) throws -> UnsafePointer<SpectreUserKey> {
+    public func getKey(for algorithm: SpectreAlgorithm) async throws -> UserKey {
         // Try to resolve the user key from the cache.
-        if let cachedKey = self.keyState.use({ $0.find(for: algorithm) }) {
+        if let cachedKey = self.keyState.find(for: algorithm) {
             return cachedKey
         }
 
         // Try to produce the user key in the factory.
-        let userKey = try self.createKey(for: algorithm)
-        self.keyState.use { $0.save(userKey) }
+        let userKey = try await self.createKey(for: algorithm)
+        self.keyState.save(userKey)
         return userKey
     }
 
-    fileprivate func createKey(for algorithm: SpectreAlgorithm) throws -> UnsafePointer<SpectreUserKey> {
+    // MARK: - Private
+
+    fileprivate func createKey(for algorithm: SpectreAlgorithm) async throws -> UserKey {
         throw AppError.internal(reason: "This key factory does not support key creation")
     }
 }
@@ -128,9 +181,9 @@ public class SecretKeyFactory: KeyFactory {
     public func toKeychain() async throws -> KeychainKeyFactory {
         let keychainKeyFactory = try await KeychainKeyFactory(userName: self.userName).unlock()
 
-        try await withThrowingTaskGroup(of: UnsafePointer<SpectreUserKey>.self) { group in
+        try await withThrowingTaskGroup(of: UserKey.self) { group in
             for algorithm in SpectreAlgorithm.allCases {
-                group.addTask { try self.newKey(for: algorithm) }
+                group.addTask { try await self.getKey(for: algorithm) }
             }
             try await keychainKeyFactory.saveKeys(group)
         }
@@ -140,13 +193,13 @@ public class SecretKeyFactory: KeyFactory {
 
     // MARK: - Private
 
-    override fileprivate func createKey(for algorithm: SpectreAlgorithm) throws -> UnsafePointer<SpectreUserKey> {
-        guard let userKey = Spectre.shared.use({
-            $0.user_key(userName: self.userName, userSecret: self.userSecret, algorithmVersion: algorithm)
-        })
+    override fileprivate func createKey(for algorithm: SpectreAlgorithm) async throws -> UserKey {
+        guard let userKey = await Spectre.shared.user_key(
+            userName: self.userName, userSecret: self.userSecret, algorithmVersion: algorithm
+        )
         else { throw AppError.internal(reason: "Couldn't allocate a user key") }
 
-        return userKey
+        return UserKey(key: userKey, for: self.userName)
     }
 }
 
@@ -249,12 +302,12 @@ public class KeychainKeyFactory: KeyFactory {
 
     public func purgeKeys() async throws {
         for algorithm in SpectreAlgorithm.allCases {
-            try Keychain.shared.deleteKey(for: self.userName, algorithm: algorithm, context: self.keychainState.use { $0.context })
+            try await Keychain.shared.deleteKey(for: self.userName, algorithm: algorithm, context: self.keychainState.use { $0.context })
             dbg("Purged keychain key: \(self.userName), v\(algorithm.rawValue)")
         }
 
         self.keychainState.use { $0.clear() }
-        self.keyState.use { $0.clear() }
+        self.keyState.clear()
     }
 
     // MARK: - Life
@@ -270,15 +323,20 @@ public class KeychainKeyFactory: KeyFactory {
 
     // MARK: - Private
 
-    override fileprivate func createKey(for algorithm: SpectreAlgorithm) throws -> UnsafePointer<SpectreUserKey> {
-        try Keychain.shared.loadKey(for: self.userName, algorithm: algorithm, context: self.keychainState.use { $0.context })
+    override fileprivate func createKey(for algorithm: SpectreAlgorithm) async throws -> UserKey {
+        UserKey(
+            key: try await Keychain.shared.loadKey(
+                for: self.userName, algorithm: algorithm, context: self.keychainState.use { $0.context }
+            ),
+            for: self.userName
+        )
     }
 
-    fileprivate func saveKeys(_ keys: ThrowingTaskGroup<UnsafePointer<SpectreUserKey>, Error>) async throws {
+    fileprivate func saveKeys(_ keys: ThrowingTaskGroup<UserKey, Error>) async throws {
         for try await key in keys {
-            self.keyState.use { $0.save(key) }
-            try Keychain.shared.saveKey(
-                for: self.userName, algorithm: key.pointee.algorithm,
+            self.keyState.save(key)
+            try await Keychain.shared.saveKey(
+                for: self.userName, algorithm: key.algorithm,
                 keyFactory: self, context: self.keychainState.use { $0.context }
             )
         }

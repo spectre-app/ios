@@ -175,6 +175,8 @@ struct LoginScreen: View {
         @Namespace
         private var namespace
         @State
+        private var secretKeyFactory: SecretKeyFactory?
+        @State
         private var keychainKeyFactory: KeychainKeyFactory?
 
         var body: some View {
@@ -217,12 +219,20 @@ struct LoginScreen: View {
 
                     ControlGroup {
                         if case .authenticatingUserWithSecret = self.model.phase {
-                            SecretField(
-                                userName: self.selectedUser.userName,
-                                identicon: self.selectedUser.identicon,
-                                namespace: self.namespace
-                            ) { secretKeyFactory in
+                            HStack {
+                                SecretField(
+                                    userName: self.selectedUser.userName,
+                                    userIdenticon: self.selectedUser.identicon,
+                                    keyFactory: self.$secretKeyFactory,
+                                    namespace: self.namespace
+                                )
+                                Button("Submit", systemImage: "rectangle.portrait.and.arrow.forward.fill") {}
+                            }
+                            .onSubmit {
                                 Task {
+                                    guard let secretKeyFactory
+                                    else { return }
+
                                     do {
                                         try await self.spectre.loginExistingUser(self.selectedUser, using: secretKeyFactory)
                                     }
@@ -238,7 +248,7 @@ struct LoginScreen: View {
                         }
                         else {
                             if let keyFactory = self.keychainKeyFactory {
-                                Button("Skip \(type(of: keyFactory).factor)", systemImage: "character.cursor.ibeam") {
+                                Button("Skip \(type(of: keyFactory).factor.description)", systemImage: "character.cursor.ibeam") {
                                     withAnimation {
                                         self.model.phase = .authenticatingUserWithSecret(user: self.selectedUser)
                                     }
@@ -332,6 +342,8 @@ struct LoginScreen: View {
         @State
         private var newUser: (avatar: User.Avatar, userName: String) = (.random(), "")
 
+        @State
+        private var secretKeyFactory: SecretKeyFactory?
         @Environment(\.spectre)
         private var spectre: SpectreModel
         @FocusState
@@ -387,9 +399,13 @@ struct LoginScreen: View {
                     .focused(self.$isFocusOnUserName)
                     .onSubmit { self.isFocusOnSecret = true }
 
-                SecretField(userName: self.newUser.userName, showStrength: true) { keyFactory in
+                SecretField(userName: self.newUser.userName, keyFactory: self.$secretKeyFactory, showStrength: true)
+                    .onSubmit {
                     Task {
-                        let newUser = try await self.spectre.loginNewUser(using: keyFactory)
+                        guard let secretKeyFactory
+                        else { return }
+
+                        let newUser = try await self.spectre.loginNewUser(using: secretKeyFactory)
                         newUser.avatar = self.newUser.avatar
                         if let newUser = try Marshal.UserFile(user: newUser) {
                             self.model.phase = .selectedUser(user: newUser)

@@ -63,8 +63,8 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
     }
 
     public var authenticatedIdentifier: String? {
-        get throws {
-            try self.userKeyFactory?.authenticatedIdentifier(for: self.algorithm)
+        get async throws {
+            try await self.userKeyFactory?.authenticatedIdentifier(for: self.algorithm)
         }
     }
 
@@ -260,19 +260,15 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
     @discardableResult
     func login(using keyFactory: KeyFactory) async throws -> User {
         do {
-            let authKey = try keyFactory.newKey(for: self.algorithm)
-            defer { authKey.deallocate() }
+            let authKey = try await keyFactory.getKey(for: self.algorithm)
 
-            guard spectre_id_valid([authKey.pointee.keyID])
-            else { throw AppError.internal(reason: "Could not determine key ID for authentication key", details: self) }
-
-            if self.userKeyID != authKey.pointee.keyID {
+            if try !authKey.matches(keyID: self.userKeyID) {
                 throw AppError.issue("Incorrect user key", reason: self)
             }
             self.userKeyFactory = keyFactory
 
-            if !spectre_id_valid(&self.userKeyID) {
-                self.userKeyID = authKey.pointee.keyID
+            if !self.userKeyID.isValid {
+                self.userKeyID = authKey.keyID
             }
             if let keyFactory = keyFactory as? SecretKeyFactory {
                 self.identicon = keyFactory.metadata.identicon
@@ -288,6 +284,9 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
 
     func logout() {
         Task.detached {
+            guard self.userKeyFactory != nil
+            else { return }
+
             try await self.save()
             self.userKeyFactory = nil
         }
@@ -489,18 +488,10 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
             siteName: name, counter: counter, type: resultType,
             param: resultParam, purpose: keyPurpose, context: keyContext,
             identity: self.userKeyID, algorithm: algorithm, operand: operand, task: Task.detached {
-                let userKey = try keyFactory.newKey(for: algorithm)
-                defer { userKey.deallocate() }
-
-                guard let result = String.valid(
-                    spectre_site_result(
-                        userKey, name, resultType, resultParam,
-                        counter, keyPurpose, keyContext
-                    ), consume: true
+                try await keyFactory.getKey(for: algorithm).result(
+                    for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType, resultParam: resultParam, algorithm: algorithm
                 )
-                else { throw AppError.internal(reason: "Cannot calculate result", details: self) }
-
-                return result
             }
         )
     }
@@ -517,18 +508,10 @@ class User: CustomStringConvertible, CredentialSupplier, SpectreOperand, Observe
             siteName: name, counter: counter, type: resultType,
             param: resultParam, purpose: keyPurpose, context: keyContext,
             identity: self.userKeyID, algorithm: algorithm, operand: operand, task: Task.detached {
-                let userKey = try keyFactory.newKey(for: algorithm)
-                defer { userKey.deallocate() }
-
-                guard let result = String.valid(
-                    spectre_site_state(
-                        userKey, name, resultType, resultParam,
-                        counter, keyPurpose, keyContext
-                    ), consume: true
+                try await keyFactory.getKey(for: algorithm).state(
+                    for: name, counter: counter, keyPurpose: keyPurpose, keyContext: keyContext,
+                    resultType: resultType, resultParam: resultParam, algorithm: algorithm
                 )
-                else { throw AppError.internal(reason: "Cannot calculate result", details: self) }
-
-                return result
             }
         )
     }

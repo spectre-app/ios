@@ -6,10 +6,11 @@ import SwiftUI
 
 struct SecretField: View {
     let userName: String
-    var identicon: SpectreIdenticon?
+    var userIdenticon: SpectreIdenticon?
+    @Binding
+    var keyFactory: SecretKeyFactory?
     var showStrength = false
     var namespace: Namespace.ID?
-    let authenticate: (KeyFactory) -> Void
 
     @State
     private var secret = ""
@@ -36,13 +37,11 @@ struct SecretField: View {
                 SecureField(prompt: self.prompt, text: self.$secret)
                     .focused(self.$isFocused)
                     .submitLabel(.go)
-                    .onSubmit {
-                        self.authenticate(
-                            SecretKeyFactory(userName: self.userName, userSecret: self.secret)
-                        )
+                    .onChange(of: self.secret) {
+                        self.keyFactory = SecretKeyFactory(userName: self.userName, userSecret: self.secret)
                     }
 
-                Text(verbatim: (self.secretIdenticon ?? self.identicon)?.text() ?? .init())
+                Text(verbatim: (self.secretIdenticon ?? self.userIdenticon)?.text() ?? .init())
                     .foregroundColor(.spectre.alternative)
                     .font(.spectre.mono)
                     .matchedGeometryEffect(id: "identicon", in: self.namespace ?? self.privateNamespace, isSource: false)
@@ -59,8 +58,8 @@ struct SecretField: View {
                     .foregroundColor(.spectre.alternative)
             }
             .task(id: self.secret) {
-                self.secretIdenticon = self.secret.nonEmpty.flatMap { secret in
-                    Spectre.shared.use { $0.identicon(userName: self.userName, userSecret: secret) }
+                self.secretIdenticon = await self.secret.nonEmpty.flatMap { secret in
+                    await Spectre.shared.identicon(userName: self.userName, userSecret: secret)
                 }
                 var strengthProgress: Double = .zero
                 if let timeToCrack = Attacker.single.timeToCrack(string: self.secret.nonEmpty, hash: .spectre) {
@@ -87,7 +86,7 @@ struct SecretField: View {
 
 #if DEBUG
 #Preview {
-    SecretField(userName: "Robert Lee Mitchell", showStrength: true) { _ in }
+    SecretField(userName: "Robert Lee Mitchell", keyFactory: .constant(nil), showStrength: true)
         .spectreStyle()
 }
 #endif

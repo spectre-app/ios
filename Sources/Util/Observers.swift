@@ -10,7 +10,7 @@ public protocol Observed {
 }
 
 public class Observers<O> {
-    private var observers = [WeakBox<O>]()
+    private var observers = [WeakBox<AnyObject>]()
     public var registration: (O) -> Void
 
     public init(registration: @escaping (O) -> Void = { _ in }) {
@@ -19,7 +19,7 @@ public class Observers<O> {
 
     @discardableResult
     public func register(observer: O) -> O? {
-        let box = WeakBox(observer)
+        let box = WeakBox(object: observer as AnyObject)
         if self.observers.contains(box) {
             return nil
         }
@@ -31,7 +31,7 @@ public class Observers<O> {
     @discardableResult
     public func unregister(observer: O) -> O? {
         let count = self.observers.count
-        self.observers.removeAll { $0 == observer }
+        self.observers.removeAll { $0.object === observer as AnyObject }
         return count != self.observers.count ? observer : nil
     }
 
@@ -43,9 +43,11 @@ public class Observers<O> {
     public func notify(event: (O) -> Void) -> Bool {
         var notified = false
 
-        for observer in self.observers.compactMap(\.value) {
-            event(observer)
-            notified = true
+        for observer in self.observers.compactMap(\.object) {
+            if let observer = observer as? O {
+                event(observer)
+                notified = true
+            }
         }
 
         return notified
